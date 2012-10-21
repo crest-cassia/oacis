@@ -1,5 +1,16 @@
-%h3 User
+- model_class = User
+.page-header
+  %h1=t '.title', :default => model_class.model_name.human
+
 %p
-  User: #{@user.name}
+  %strong= model_class.human_attribute_name(:name) + ':'
+  %br
+  = @user.name
 %p
-  Email: #{@user.email if @user.email}
+  %strong= model_class.human_attribute_name(:email) + ':'
+  %br
+  = @user.email
+
+.form-actions
+  = link_to t('.back', :default => t("helpers.links.back")), users_path, :class => 'btn'
+

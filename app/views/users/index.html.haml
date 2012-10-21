@@ -1,6 +1,13 @@
-%h3 Users
-%ul.users
-  - @users.each do |user|
-    %li
-      = link_to user.name, user
-      signed up #{user.created_at.to_date}
+- model_class = User
+.page-header
+  %h1=t '.title', :default => model_class.model_name.human.pluralize
+%table.table.table-striped
+  %thead
+    %tr
+      %th= model_class.human_attribute_name(:name)
+      %th= model_class.human_attribute_name(:email)
+  %tbody
+    - @users.each do |user|
+      %tr
+        %td= link_to user.name, user_path(user)
+        %td= user.email
