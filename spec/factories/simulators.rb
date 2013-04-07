@@ -4,7 +4,7 @@ FactoryGirl.define do
   factory :simulator do
     name "MyString"
     execution_command "MyString"
-    parameter_keys {"L"=>{"type"=>"Integer"},"T"=>{"type"=>"Float"}}
+    # parameter_keys {"L"=>{"type"=>"Integer"},"T"=>{"type"=>"Float"}}
     # analysis_methods "MyString"
     # simulator_admin_users "MyString"
     # editable_users "MyString"

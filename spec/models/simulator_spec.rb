@@ -4,7 +4,7 @@ describe Simulator do
 
   before(:each) do
     @valid_fields = {
-      name:"a_simulator",
+      name:"simulatorA",
       parameter_keys: {
         "L" => {"type" => "Integer"},
         "T" => {"type" => "Float"}
@@ -41,7 +41,7 @@ describe Simulator do
       Simulator.new(@valid_fields.update(parameter_keys:{})).should_not be_valid
     end
 
-    it "name of each key must organized with word characters" do
+    it "name of each key must be organized with word characters" do
       fields = @valid_fields.update(parameter_keys:{"b lank"=>{"type"=>"String"}})
       Simulator.new(fields).should_not be_valid
     end

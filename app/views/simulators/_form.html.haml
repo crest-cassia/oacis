@@ -1,0 +1,27 @@
+= form_for @simulator, :html => { :class => 'form-horizontal' } do |f|
+  / .control-group
+  /   = f.label :_type, :class => 'control-label'
+  /   .controls
+  /     = f.text_field :_type, :class => 'text_field'
+  / .control-group
+  /   = f.label :_id, :class => 'control-label'
+  /   .controls
+  /     = f.text_field :_id, :class => 'text_field'
+  .control-group
+    = f.label :name, :class => 'control-label'
+    .controls
+      = f.text_field :name, :class => 'text_field'
+  / .control-group
+  /   = f.label :parameter_keys, :class => 'control-label'
+  /   .controls
+  /     - @simulator.parameter_keys.each do |key, val|
+  /       = key + ':'
+  /       = text_field_tag "parameter_keys[#{key}][type]", val["type"], :class => 'text_field'
+  /       %br
+  .control-group
+    = f.label :execution_command, :class => 'control-label'
+    .controls
+      = f.text_field :execution_command, :class => 'text_field'
+  .form-actions
+    = f.submit nil, :class => 'btn btn-primary'
+    = link_to t('.cancel', :default => t("helpers.links.cancel")), simulators_path, :class => 'btn'
