@@ -13,7 +13,7 @@ development:
       options:
         # Change whether the session persists in safe mode by default.
         # (default: false)
-        # safe: false
+        safe: true
 
         # Change the default consistency model to :eventual or :strong.
         # :eventual will send reads to secondaries, :strong sends everything
@@ -74,6 +74,7 @@ test:
         - localhost:27017
       options:
         consistency: :strong
+        safe: true
         # In the test environment we lower the retries and retry interval to
         # low amounts for fast failures.
         max_retries: 1
