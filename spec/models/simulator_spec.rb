@@ -9,9 +9,7 @@ describe Simulator do
         "L" => {"type" => "Integer"},
         "T" => {"type" => "Float"}
       },
-      # run_parameter_keys: {"seed" => {type:"Integer"}},
       execution_command: "~/path_to_a_simulator",
-      analysis_methods: ["calculate_average", "calculate_variance"]
     }
   end
 
@@ -32,6 +30,15 @@ describe Simulator do
 
     it "must be organized with word characters" do
       Simulator.new(@valid_fields.update({name:"b l a n k"})).should_not be_valid
+    end
+  end
+
+  describe "'execution_command' field" do
+
+    it "must exist" do
+      invalid_attr = @valid_fields
+      invalid_attr.delete(:execution_command)
+      Simulator.new(invalid_attr).should_not be_valid
     end
   end
 

@@ -1,5 +1,5 @@
 AcmProto::Application.routes.draw do
-  resources :simulators
+  resources :simulators, :only => ["index", "show"]
 
   authenticated :user do
     root :to => 'home#index'

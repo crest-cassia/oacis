@@ -3,15 +3,10 @@ class Simulator
   include Mongoid::Timestamps
   field :name, type: String
   field :parameter_keys, type: Hash
-  # field :run_parameter_keys, type: Hash
   field :execution_command, type: String
-  # field :comments, type: String
-  # embeds_many :analysis_methods
-  # embeds_many :simulator_admin_users
-  # embeds_many :editable_users
-  # embeds_many :readable_users
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
+  validates :execution_command, presence: true
   validate :parameter_keys_format
   
   private
