@@ -71,4 +71,23 @@ describe Simulator do
     end
   end
 
+  describe "parameters" do
+
+    before(:each) do
+      @simulator = Simulator.create!(@valid_fields)
+    end
+
+    it "should have 'parameters' method" do
+      @simulator.should respond_to(:parameters)
+    end
+
+    it "should return 'parameters'" do
+      @simulator.parameters.should == []
+
+      param_attribute = {:sim_parameters => {"L" => 32, "T" => 0.1} }
+      @simulator.parameters.create!(param_attribute)
+      @simulator.parameters.count == 1
+    end
+  end
+
 end

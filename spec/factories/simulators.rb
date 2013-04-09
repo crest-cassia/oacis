@@ -2,8 +2,9 @@
 
 FactoryGirl.define do
   factory :simulator do
-    name "SimulatorA"
-    execution_command "~/path/to/simulatorA"
-    # parameter_keys {"L"=>{"type"=>"Integer"}, "T"=>{"type"=>"Float"}}
+    sequence(:name, 'AA') {|n| "simulator#{n}"}
+    execution_command { "~/path/to/#{name}"}
+    h = { "L"=>{"type"=>"Integer"}, "T"=>{"type"=>"Float"} }
+    parameter_keys h
   end
 end
