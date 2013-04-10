@@ -27,7 +27,11 @@ describe Parameter do
 
   it "should not be valid when sim_parameters is not a Hash" do
     invalid_attr = @valid_attr.update({:sim_parameters => "xxx"})
-    @sim.parameters.build(invalid_attr).should_not be_valid
+    prev_parameters_count = @sim.parameters.count
+    lambda {
+      @sim.parameters.create!(invalid_attr)
+    }.should raise_error
+    @sim.parameters.count.should == prev_parameters_count
   end
 
   it "should not be valid when keys of sim_parameters are not consistent its Simulator" do
