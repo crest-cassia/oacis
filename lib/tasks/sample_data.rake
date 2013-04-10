@@ -21,25 +21,27 @@ namespace :db do
     end
 
     # create simulators
-    simulator_fields = {
-      name:"simulatorA",
-      parameter_keys: {
-        "L" => {"type" => "Integer"},
-        "T" => {"type" => "Float"}
-      },
-      execution_command: "~/path_to_simulator_a",
-    }
-    Simulator.create!(simulator_fields)
-    simulator_fields = {
-      name:"simulatorB",
-      parameter_keys: {
-        "Time_step" => {"type" => "Integer"},
-        "Velocity" => {"type" => "Float"},
-        "Density" => {"type" => "Float"}
-      },
-      execution_command: "~/path_to_simulator_b",
-    }
-    Simulator.create!(simulator_fields)
+    FactoryGirl.create(:simulator)
+    FactoryGirl.create(:simulator)
+    # simulator_fields = {
+    #   name:"simulatorA",
+    #   parameter_keys: {
+    #     "L" => {"type" => "Integer"},
+    #     "T" => {"type" => "Float"}
+    #   },
+    #   execution_command: "~/path_to_simulator_a",
+    # }
+    # Simulator.create!(simulator_fields)
+    # simulator_fields = {
+    #   name:"simulatorB",
+    #   parameter_keys: {
+    #     "Time_step" => {"type" => "Integer"},
+    #     "Velocity" => {"type" => "Float"},
+    #     "Density" => {"type" => "Float"}
+    #   },
+    #   execution_command: "~/path_to_simulator_b",
+    # }
+    # Simulator.create!(simulator_fields)
 
   end
 end

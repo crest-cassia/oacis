@@ -9,4 +9,15 @@ FactoryGirl.define do
     # required if the Devise Confirmable module is used
     # confirmed_at Time.now
   end
+
+  factory :simulator do
+    sequence(:name, 'A') {|n| "simulator#{n}"}
+    execution_command { "~/path/to/#{name}"}
+    h = { "L"=>{"type"=>"Integer"}, "T"=>{"type"=>"Float"} }
+    parameter_keys h
+  end
+
+  factory :parameter do
+    # IMPLEMENT ME
+  end
 end
