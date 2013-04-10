@@ -1,2 +1,28 @@
-%h1 Parameters#show
-%p Find me in app/views/parameters/show.html.haml
+/ IMPLEMENT ME: breadcrumb list
+
+%ul.breadcrumb
+  %li
+    = link_to("Simulators", simulators_path)
+    %span.divider /
+  %li
+    = link_to(@simulator.name, simulator_path(@parameter.simulator))
+    %span.divider /
+  %li
+    = link_to(@parameter.to_param, simulator_parameter_path(@simulator.to_param, @parameter.to_param))
+
+
+%h1 Parameters
+
+%table.table.table-condensed
+  %tr
+    - @parameter_keys.each do |key|
+      %th= key
+  %tr
+    - @parameter_keys.each do |key|
+      %td= @parameter.sim_parameters[key]
+
+%h2 Runs
+
+%h4 Create new jobs
+
+%h2 Results
