@@ -24,3 +24,4 @@ gem "devise", ">= 2.1.2"
 gem "quiet_assets", ">= 1.0.1", :group => :development
 gem "faker", :group => :development
 gem "will_paginate_mongoid"
+gem "kaminari"

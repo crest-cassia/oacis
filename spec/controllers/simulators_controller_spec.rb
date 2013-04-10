@@ -45,6 +45,7 @@ describe SimulatorsController do
     it "assigns all simulators as @simulators" do
       simulator = Simulator.create! valid_attributes
       get :index, {}, valid_session
+      response.should be_success
       assigns(:simulators).should eq([simulator])
     end
   end
@@ -53,7 +54,16 @@ describe SimulatorsController do
     it "assigns the requested simulator as @simulator" do
       simulator = Simulator.create! valid_attributes
       get :show, {:id => simulator.to_param}, valid_session
+      response.should be_success
       assigns(:simulator).should eq(simulator)
+      assigns(:parameters).should eq(simulator.parameters)
+    end
+
+    it "paginates the list of parameters" do
+      simulator = FactoryGirl.create(:simulator, :parameters_count => 100)
+      get :show, {:id => simulator.to_param, :page => 1}
+      response.should be_success
+      assigns(:parameters).to_a.size.should == 25  # to_a is necessary since #count ignores the limit
     end
   end
 

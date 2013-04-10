@@ -14,6 +14,7 @@ class SimulatorsController < ApplicationController
   # GET /simulators/1.json
   def show
     @simulator = Simulator.find(params[:id])
+    @parameters = Parameter.where(:simulator_id => @simulator).page(params[:page])
 
     respond_to do |format|
       format.html # show.html.erb

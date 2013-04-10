@@ -95,6 +95,9 @@ GEM
       railties (>= 3.1.0, < 5.0)
       thor (~> 0.14)
     json (1.7.5)
+    kaminari (0.14.1)
+      actionpack (>= 3.0.0)
+      activesupport (>= 3.0.0)
     launchy (2.1.2)
       addressable (~> 2.3)
     less (2.2.2)
@@ -224,6 +227,7 @@ DEPENDENCIES
   haml-rails (>= 0.3.5)
   hpricot (>= 0.8.6)
   jquery-rails
+  kaminari
   launchy (>= 2.1.2)
   mongoid (>= 3.0.9)
   mongoid-rspec (>= 1.4.6)
