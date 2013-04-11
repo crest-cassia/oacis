@@ -27,7 +27,7 @@
     %th updated_at
   - @parameter.runs.each do |run|
     %tr
-      %td= run.to_param  # ADD A LINK
+      %td= link_to(run.to_param, simulator_parameter_run_path(@simulator.to_param, @parameter.to_param, run.to_param) )
       %td= run.status
       %td= #run.job  # IMPLEMENT ME
       %td= run.hostname
