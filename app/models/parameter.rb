@@ -3,6 +3,7 @@ class Parameter
   include Mongoid::Timestamps
   field :sim_parameters, type: Hash # , :default .   ### IMPLEMENT ME
   belongs_to :simulator
+  has_many :runs
 
   validates :sim_parameters, :presence => true
   validates :simulator, :presence => true

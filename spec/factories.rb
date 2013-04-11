@@ -18,9 +18,11 @@ FactoryGirl.define do
 
     ignore do
       parameters_count 5
+      runs_count 5
     end
     after(:create) do |simulator, evaluator|
-      FactoryGirl.create_list(:parameter, evaluator.parameters_count, simulator: simulator)
+      FactoryGirl.create_list(:parameter, evaluator.parameters_count,
+                                simulator: simulator, runs_count: evaluator.runs_count)
     end
   end
 
@@ -28,5 +30,16 @@ FactoryGirl.define do
     sequence(:sim_parameters) do |n|
       {"L" => n, "T" => n*2.0}
     end
+
+    ignore do
+      runs_count 5
+    end
+
+    after(:create) do |parameter, evaluator|
+      FactoryGirl.create_list(:run, evaluator.runs_count, parameter: parameter)
+    end
+  end
+
+  factory :run do
   end
 end
