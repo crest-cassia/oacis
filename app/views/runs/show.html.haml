@@ -3,10 +3,11 @@
     = link_to("Simulators", simulators_path)
     %span.divider /
   %li
-    = link_to(@simulator.name, simulator_path(@simulator))
+    - sim = @parameter.simulator
+    = link_to(sim.name, simulator_path(sim))
     %span.divider /
   %li
-    = link_to(@parameter.to_param, simulator_parameter_path(@simulator, @parameter))
+    = link_to(@parameter.to_param, parameter_path(@parameter))
     %span.divider /
   %li
     = @run.to_param
