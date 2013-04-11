@@ -14,8 +14,10 @@ class Run
 
   # validations
   validates :status, :presence => true
-  validates :seed, :presence => true
-  # IMPLEMENT ME: other validations
+  validates :seed, :presence => true, :uniqueness => true
+  validates :parameter, :presence => true
+
+  attr_accessible :seed
 
   before_validation :set_status, :set_unique_seed
 
