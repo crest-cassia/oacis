@@ -1,2 +1,52 @@
-%h1 Runs#show
-%p Find me in app/views/runs/show.html.haml
+%ul.breadcrumb
+  %li
+    = link_to("Simulators", simulators_path)
+    %span.divider /
+  %li
+    = link_to(@simulator.name, simulator_path(@simulator))
+    %span.divider /
+  %li
+    = link_to(@parameter.to_param, simulator_parameter_path(@simulator, @parameter))
+    %span.divider /
+  %li
+    = @run.to_param
+
+%h1 run
+
+%table.table.table-condensed
+  %tr
+    %th ID
+    %td= @run.to_param
+  %tr
+    %th status
+    %td= @run.status
+  %tr
+    %th job
+    %td= # @run.job  # IMPLEMENT ME
+  %tr
+    %th seed
+    %td= @run.seed
+  %tr
+    %th hostname
+    %td= @run.hostname
+  %tr
+    %th CPU time
+    %td= @run.cpu_time
+  %tr
+    %th real time
+    %td= @run.real_time
+  %tr
+    %th created at
+    %td= @run.created_at
+  %tr
+    %th updated at
+    %td= @run.updated_at
+  %tr
+    %th started at
+    %td= @run.started_at
+  %tr
+    %th finished at
+    %td= @run.finished_at
+  %tr
+    %th included at
+    %td= @run.included_at
