@@ -1,5 +1,3 @@
-/ IMPLEMENT ME: breadcrumb list
-
 %ul.breadcrumb
   %li
     = link_to("Simulators", simulators_path)
@@ -18,6 +16,24 @@
       %td= @parameter.sim_parameters[key]
 
 %h2 Runs
+%table.table.table-condensed
+  %tr
+    %th ID
+    %th status
+    %th job
+    %th host
+    %th cpu_time
+    %th real_time
+    %th updated_at
+  - @parameter.runs.each do |run|
+    %tr
+      %td= run.to_param  # ADD A LINK
+      %td= run.status
+      %td= #run.job  # IMPLEMENT ME
+      %td= run.hostname
+      %td= run.cpu_time
+      %td= run.real_time
+      %td= run.updated_at
 
 %h4 Create new jobs
 
