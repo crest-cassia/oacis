@@ -4,7 +4,7 @@ describe ParametersController do
 
   # This should return the minimal set of values that should be in the session
   # in order to pass any filters (e.g. authentication) defined in
-  # SimulatorsController. Be sure to keep this updated too.
+  # ParametersController. Be sure to keep this updated too.
   def valid_session
     {}
   end
