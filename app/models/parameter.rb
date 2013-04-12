@@ -9,6 +9,8 @@ class Parameter
   validates :simulator, :presence => true
   validate :cast_and_validate_sim_parameters
 
+  after_create :create_parameter_dir
+
   private
   def cast_and_validate_sim_parameters
     unless sim_parameters.is_a?(Hash)
@@ -57,5 +59,9 @@ class Parameter
 
   def self.find_identical_parameter(simulator, sim_param_hash)
     self.where(:simulator => simulator, :sim_parameters => sim_param_hash).first
+  end
+
+  def create_parameter_dir
+    FileUtils.mkdir_p(ResultDirectory.parameter_path(self))
   end
 end

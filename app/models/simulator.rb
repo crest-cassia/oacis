@@ -9,6 +9,8 @@ class Simulator
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
   validates :execution_command, presence: true
   validate :parameter_keys_format
+
+  after_create :create_simulator_dir
   
   private
   def parameter_keys_format
@@ -31,5 +33,8 @@ class Simulator
       end
     end
   end
-    
+
+  def create_simulator_dir
+    FileUtils.mkdir_p(ResultDirectory.simulator_path(self))
+  end
 end

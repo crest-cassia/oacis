@@ -20,6 +20,7 @@ class Run
   attr_accessible :seed
 
   before_validation :set_status, :set_unique_seed
+  after_create :create_run_dir
 
   private
   def set_status
@@ -41,4 +42,7 @@ class Run
     end
   end
 
+  def create_run_dir
+    FileUtils.mkdir_p(ResultDirectory.run_path(self))
+  end
 end

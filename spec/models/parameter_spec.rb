@@ -83,4 +83,29 @@ describe Parameter do
       @parameter.should respond_to(:runs)
     end
   end
+
+  describe "result directory" do
+
+    before(:each) do
+      @root_dir = ResultDirectory.root
+      FileUtils.rm_r(@root_dir) if FileTest.directory?(@root_dir)
+      FileUtils.mkdir(@root_dir)
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@root_dir) if FileTest.directory?(@root_dir)
+    end
+
+    it "is created when a new item is added" do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 0)
+      prm = sim.parameters.create!(@valid_attr)
+      FileTest.directory?(ResultDirectory.parameter_path(prm)).should be_true
+    end
+
+    it "is not created when validation fails" do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 0)
+      prm = sim.parameters.create(@valid_attr.update({:sim_parameters => {"L"=>32}}))
+      Dir.entries(ResultDirectory.simulator_path(sim)).should == ['.', '..'] # i.e. empty directory
+    end
+  end
 end

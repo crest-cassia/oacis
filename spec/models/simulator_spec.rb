@@ -90,4 +90,26 @@ describe Simulator do
     end
   end
 
+  describe "result directory" do
+
+    before(:each) do
+      @root_dir = ResultDirectory.root
+      FileUtils.rm_r(@root_dir) if FileTest.directory?(@root_dir)
+      FileUtils.mkdir(@root_dir)
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@root_dir) if FileTest.directory?(@root_dir)
+    end
+
+    it "is created when a new item is added" do
+      sim = Simulator.create!(@valid_fields)
+      FileTest.directory?(ResultDirectory.simulator_path(sim)).should be_true
+    end
+
+    it "is not created when validation fails" do
+      Simulator.create(@valid_fields.update(name:""))
+      Dir.entries(ResultDirectory.root).should == ['.', '..'] # i.e. empty directory
+    end
+  end
 end

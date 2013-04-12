@@ -83,4 +83,35 @@ describe Run do
     end
   end
 
+  describe "result directory" do
+
+    before(:each) do
+      @root_dir = ResultDirectory.root
+      FileUtils.rm_r(@root_dir) if FileTest.directory?(@root_dir)
+      FileUtils.mkdir(@root_dir)
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@root_dir) if FileTest.directory?(@root_dir)
+    end
+
+    it "is created when a new item is added" do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 0)
+      prm = sim.parameters.first
+      run = prm.runs.create!(@valid_attribute)
+      FileTest.directory?(ResultDirectory.run_path(run)).should be_true
+    end
+
+    it "is not created when validation fails" do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
+      prm = sim.parameters.first
+      seed_val = prm.runs.first.seed
+      @valid_attribute.update(seed: seed_val)
+
+      prev_count = Dir.entries(ResultDirectory.parameter_path(prm)).size
+      run = prm.runs.create(@valid_attribute)
+      prev_count = Dir.entries(ResultDirectory.parameter_path(prm)).size.should == prev_count
+    end
+  end
+
 end
