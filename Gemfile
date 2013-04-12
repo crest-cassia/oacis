@@ -25,3 +25,5 @@ gem "quiet_assets", ">= 1.0.1", :group => :development
 gem "faker", :group => :development
 gem "will_paginate_mongoid"
 gem "kaminari"
+gem "simplecov", :require => false, :group => :test
+gem "simplecov-rcov", :require => false, :group => :test
