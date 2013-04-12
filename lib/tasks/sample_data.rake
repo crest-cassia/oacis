@@ -24,6 +24,7 @@ namespace :db do
     FactoryGirl.create(:simulator)
     FactoryGirl.create(:simulator, parameters_count: 0)
     FactoryGirl.create(:simulator, parameters_count: 100)
+    FactoryGirl.create(:simulator, runs_count: 100)
   end
 end
       

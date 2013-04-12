@@ -28,7 +28,7 @@
     %th cpu_time
     %th real_time
     %th updated_at
-  - @parameter.runs.each do |run|
+  - @runs.each do |run|
     %tr
       %td= link_to(run.to_param, run)
       %td= run.status
@@ -37,6 +37,7 @@
       %td= run.cpu_time
       %td= run.real_time
       %td= run.updated_at
+= paginate @runs
 
 %h4 Create new runs
 = form_for(@parameter.runs.build, :url => parameter_runs_path(@parameter)) do |f|
