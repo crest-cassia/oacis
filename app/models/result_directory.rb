@@ -1,6 +1,9 @@
 module ResultDirectory
 
-  DefaultResultRoot = Rails.root.join('Result')
+  yml_path = Rails.root.join('config', 'result_directory.yml')
+  base_dir = YAML.load(File.open(yml_path))[ENV['RAILS_ENV']]
+  raise "Result directory is not specified for this environment. Edit #{yml_path}"  unless base_dir
+  DefaultResultRoot = Rails.root.join(base_dir)
 
   def self.set_root(root_dir)
     @@root_dir = root_dir
