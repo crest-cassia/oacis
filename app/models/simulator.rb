@@ -10,7 +10,7 @@ class Simulator
   validates :execution_command, presence: true
   validate :parameter_keys_format
 
-  after_create :create_simulator_dir
+  after_save :create_simulator_dir
   
   private
   def parameter_keys_format

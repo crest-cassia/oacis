@@ -20,7 +20,7 @@ class Run
   attr_accessible :seed
 
   before_validation :set_status, :set_unique_seed
-  after_create :create_run_dir
+  after_save :create_run_dir
 
   private
   def set_status

@@ -9,7 +9,7 @@ class Parameter
   validates :simulator, :presence => true
   validate :cast_and_validate_sim_parameters
 
-  after_create :create_parameter_dir
+  after_save :create_parameter_dir
 
   private
   def cast_and_validate_sim_parameters
