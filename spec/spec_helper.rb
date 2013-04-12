@@ -47,6 +47,7 @@ RSpec.configure do |config|
   
   config.before(:suite) do
     DatabaseCleaner.strategy = :truncation
+  
     root_dir = ResultDirectory.root
     FileUtils.rm_r(root_dir) if FileTest.directory?(root_dir)
   end
