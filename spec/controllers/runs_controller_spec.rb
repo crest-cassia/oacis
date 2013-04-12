@@ -18,12 +18,12 @@ describe RunsController do
   describe "GET 'show'" do
 
     it "returns http success" do
-      get 'show', {parameter_id: @par, id: @run}, valid_session
+      get 'show', {id: @run}, valid_session
       response.should be_success
     end
 
     it "assigns instance variables" do
-      get 'show', {parameter_id: @par, id: @run}, valid_session
+      get 'show', {id: @run}, valid_session
       assigns(:run).should eq(@run)
       assigns(:parameter).should eq(@par)
     end

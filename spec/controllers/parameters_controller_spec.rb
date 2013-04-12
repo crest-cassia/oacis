@@ -10,9 +10,10 @@ describe ParametersController do
   end
   
   describe "GET 'show'" do
+
     it "returns http success" do
       sim = FactoryGirl.create(:simulator)
-      get 'show', {id: sim.parameters.first, simulator_id: sim}, valid_session
+      get 'show', {id: sim.parameters.first}, valid_session
       response.should be_success
     end
   end
