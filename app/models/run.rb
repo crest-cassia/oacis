@@ -22,6 +22,23 @@ class Run
   before_validation :set_status, :set_unique_seed
   after_save :create_run_dir
 
+  public
+  def submit
+    Resque.enqueue(SimulatorRunner, self.id)
+  end
+
+  def command
+    prm = self.parameter
+    sim = parameter.simulator
+    cmd_array = []
+    cmd_array << sim.execution_command
+    cmd_array += sim.parameter_keys.keys.map do |key|
+      prm.sim_parameters[key]
+    end
+    cmd_array << self.seed
+    return cmd_array.join(' ')
+  end
+
   private
   def set_status
     self.status ||= :created

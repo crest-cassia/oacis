@@ -13,7 +13,7 @@ class RunsController < ApplicationController
     @parameter = Parameter.find(params[:parameter_id])
     @run = @parameter.runs.build(params[:run])
     respond_to do |format|
-      if @run.save
+      if @run.save and @run.submit
         format.html { redirect_to @run, notice: 'Run was successfully created.' }
         format.json { render json: @run, status: :created, location: @run}
       else

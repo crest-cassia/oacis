@@ -114,4 +114,25 @@ describe Run do
     end
   end
 
+  describe "#submit" do
+
+    it "submits a run to Resque" do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
+      prm = sim.parameters.first
+      run = prm.runs.first
+      Resque.should_receive(:enqueue).with(SimulatorRunner, run.id)
+      run.submit
+    end
+  end
+
+  describe "#command" do
+
+    it "returns a shell command to run simulation" do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
+      prm = sim.parameters.first
+      run = prm.runs.first
+      run.command.should == "#{sim.execution_command} #{prm.sim_parameters["L"]} #{prm.sim_parameters["T"]} #{run.seed}"
+    end
+  end
+
 end

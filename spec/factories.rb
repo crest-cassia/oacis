@@ -12,7 +12,7 @@ FactoryGirl.define do
 
   factory :simulator do
     sequence(:name, 'A') {|n| "simulator#{n}"}
-    execution_command { "~/path/to/#{name}"}
+    execution_command { Rails.root.join('spec','support','echo.sh') } #"~/path/to/#{name}"}
     h = { "L"=>{"type"=>"Integer"}, "T"=>{"type"=>"Float"} }
     parameter_keys h
 
