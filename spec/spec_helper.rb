@@ -56,6 +56,7 @@ RSpec.configure do |config|
   end
   config.after(:each) do
     DatabaseCleaner.clean
+    Resque.keys.each {|key| Resque.redis.del key }
   end
 
   config.after(:all) do
