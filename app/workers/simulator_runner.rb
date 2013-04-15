@@ -1,6 +1,6 @@
 class SimulatorRunner
 
-  @queue = "simulator_queue_#{Rails.env}".to_sym
+  @queue = :simulator_queue
 
   def self.perform(run_id)
     run = Run.find(run_id)
