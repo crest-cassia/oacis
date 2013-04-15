@@ -59,6 +59,11 @@ class Run
     self.save
   end
 
+  def set_status_failed
+    self.status = :failed
+    self.save
+  end
+
   private
   def set_status
     self.status ||= :created

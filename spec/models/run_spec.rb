@@ -186,4 +186,25 @@ describe Run do
     end
   end
 
+  describe "#set_status_failed" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
+      prm = sim.parameters.first
+      @run = prm.runs.first
+      @run.set_status_running(:hostname => 'host_ABC')
+    end
+
+    it "updates status to 'failed'" do
+      ret = @run.set_status_failed
+      ret.should be_true
+
+      run = Run.find(@run)
+      run.status.should == :failed
+      run.cpu_time.should be_nil
+      run.real_time.should be_nil
+      run.finished_at.should be_nil
+    end
+  end
+
 end
