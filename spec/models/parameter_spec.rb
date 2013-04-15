@@ -67,6 +67,11 @@ describe Parameter do
       built[:sim_parameters]["L"].should == 32
       built[:sim_parameters]["T"].should == 2.0
     end
+
+    it "should be valid once it is saved with valid attributes" do
+      prm = @sim.parameters.first
+      prm.should be_valid
+    end
   end
 
   describe "relations" do

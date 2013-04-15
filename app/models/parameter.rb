@@ -32,7 +32,7 @@ class Parameter
     cast_sim_parameters
 
     found = self.class.find_identical_parameter(simulator, sim_parameters)
-    if found
+    if found and found.id != self.id
       errors.add(:sim_parameters, "An identical parameters already exists : #{found.to_param}")
       return
     end
