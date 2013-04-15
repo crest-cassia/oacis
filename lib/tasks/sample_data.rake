@@ -5,6 +5,7 @@ namespace :db do
   task :populate => :environment do
     Rake::Task['db:mongoid:drop'].invoke
     Rake::Task['result_dir:drop'].invoke
+    Rake::Task['resque:drop'].invoke
 
     # create users
     User.create!(:name => "Example User",
