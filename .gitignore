@@ -80,4 +80,4 @@ pickle-email-*.html
 *~
 
 # Result directory
-/Result_*
+public/Result_*
