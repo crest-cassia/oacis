@@ -1,7 +1,7 @@
 class Run
   include Mongoid::Document
   include Mongoid::Timestamps
-  field :status, type: Symbol  # created, failed, canceled, finished
+  field :status, type: Symbol  # created, running, failed, canceled, finished
   field :seed, type: Integer
   field :hostname, type: String
   field :cpu_time, type: Float
@@ -37,6 +37,26 @@ class Run
     end
     cmd_array << self.seed
     return cmd_array.join(' ')
+  end
+
+  def dir
+    return ResultDirectory.run_path(self)
+  end
+
+  def set_status_running( option = {hostname: 'localhost'} )
+    self.status = :running
+    self.hostname = option[:hostname]
+    self.started_at = DateTime.now
+    self.save
+  end
+
+  def set_status_finished( option = {cpu_time: 0.0, real_time: 0.0} )
+    self.status = :finished
+    self.cpu_time = option[:cpu_time]
+    self.real_time = option[:real_time]
+    self.finished_at = DateTime.now
+    self.included_at = DateTime.now
+    self.save
   end
 
   private

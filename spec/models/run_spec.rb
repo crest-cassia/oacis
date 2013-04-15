@@ -135,4 +135,55 @@ describe Run do
     end
   end
 
+  describe "#dir" do
+
+    it "returns the result directory of the run" do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
+      prm = sim.parameters.first
+      run = prm.runs.first
+      run.dir.should == ResultDirectory.run_path(run)
+    end
+  end
+
+
+  describe "#set_status_running" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
+      prm = sim.parameters.first
+      @run = prm.runs.first
+    end
+
+    it "updates status to 'running' and sets hostname" do
+      ret = @run.set_status_running(:hostname => 'host_ABC')
+      ret.should be_true
+
+      updated_run = Run.find(@run)
+      updated_run.status.should == :running
+      updated_run.hostname.should == 'host_ABC'
+    end
+  end
+
+  describe "#set_status_finished" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
+      prm = sim.parameters.first
+      @run = prm.runs.first
+      @run.set_status_running(:hostname => 'host_ABC')
+    end
+
+    it "updates status to 'finished' and sets elapsed times" do
+      ret = @run.set_status_finished( {cpu_time: 1.5, real_time: 2.0} )
+      ret.should be_true
+
+      run = Run.find(@run)
+      run.status.should == :finished
+      run.cpu_time.should == 1.5
+      run.real_time.should == 2.0
+      run.finished_at.should_not be_nil
+      run.included_at.should_not be_nil
+    end
+  end
+
 end
