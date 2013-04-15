@@ -3,6 +3,7 @@ class RunsController < ApplicationController
   def show
     @run = Run.find(params[:id])
     @parameter = @run.parameter
+    @result_file_paths = Dir.glob(@run.dir.join('*'))
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @run }
