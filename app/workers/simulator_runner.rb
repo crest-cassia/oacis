@@ -32,7 +32,7 @@ class SimulatorRunner
     run.set_status_finished(atr)
   end
 
-  def self.on_failure(run_id)
+  def self.on_failure(exception, run_id)
     run = Run.find(run_id)
     run.set_status_failed
   end

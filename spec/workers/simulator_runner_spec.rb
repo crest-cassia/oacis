@@ -66,7 +66,7 @@ describe SimulatorRunner do
     end
 
     it "updates status to 'failed' on failure" do
-      SimulatorRunner.on_failure(@run.id)
+      SimulatorRunner.on_failure(StandardError.new, @run.id)
 
       run = Run.find(@run)
       run.status.should == :failed
