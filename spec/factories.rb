@@ -17,6 +17,7 @@ FactoryGirl.define do
           "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Temperature"}
         }
     parameter_keys h
+    description { Faker::Lorem.paragraphs.join("\n") }
 
     ignore do
       parameters_count 5

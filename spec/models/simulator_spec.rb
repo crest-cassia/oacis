@@ -112,4 +112,11 @@ describe Simulator do
       Dir.entries(ResultDirectory.root).should == ['.', '..'] # i.e. empty directory
     end
   end
+
+  describe "'description' field" do
+
+    it "responds to 'description'" do
+      Simulator.new.should respond_to(:description)
+    end
+  end
 end

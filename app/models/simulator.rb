@@ -4,6 +4,7 @@ class Simulator
   field :name, type: String
   field :parameter_keys, type: Hash
   field :execution_command, type: String
+  field :description, type: String
   has_many :parameters
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
