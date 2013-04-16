@@ -1,4 +1,4 @@
-%ul.breadcrumb
+%ul.breadcrumb.well
   %li
     = link_to("Simulators", simulators_path)
     %span.divider /
@@ -8,8 +8,10 @@
   %li
     = @parameter.to_param
 
-%h1 Parameters
+.page-header
+  %h1 Parameters
 
+%h3 Parameter values
 %table.table.table-condensed
   %tr
     - @parameter_keys.each do |key|
@@ -18,29 +20,30 @@
     - @parameter_keys.each do |key|
       %td= @parameter.sim_parameters[key]
 
-%h2 Runs
+%h3 Runs
 %table.table.table-condensed
   %tr
-    %th ID
-    %th status
-    %th job
-    %th host
-    %th cpu_time
-    %th real_time
-    %th updated_at
-  - @runs.each do |run|
+    %th.span1 #
+    %th.span1 status
+    %th.span1 host
+    %th.span1 cpu_time
+    %th.span1 real_time
+    %th.span1 created_at
+    %th.span1 started_at
+    %th.span1 finished_at
+  - @runs.each_with_index do |run,idx|
     %tr
-      %td= link_to(run.to_param, run)
+      %td= link_to(idx+1, run)
       %td= run.status
-      %td= #run.job  # IMPLEMENT ME
       %td= run.hostname
-      %td= run.cpu_time
-      %td= run.real_time
-      %td= run.updated_at
+      %td= formatted_elapsed_time(run.cpu_time)
+      %td= formatted_elapsed_time(run.real_time)
+      %td= distance_to_now_in_words(run.created_at)
+      %td= distance_to_now_in_words(run.started_at)
+      %td= distance_to_now_in_words(run.finished_at)
 = paginate @runs
 
-%h4 Create new runs
 = form_for(@parameter.runs.build, :url => parameter_runs_path(@parameter)) do |f|
   - f.submit "Create new run", :class => 'btn btn-primary'
 
-%h2 Results
+%h3 Results
