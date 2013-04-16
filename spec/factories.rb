@@ -13,7 +13,9 @@ FactoryGirl.define do
   factory :simulator do
     sequence(:name, 'A') {|n| "simulator#{n}"}
     execution_command { Rails.root.join('spec','support','echo.sh') } #"~/path/to/#{name}"}
-    h = { "L"=>{"type"=>"Integer"}, "T"=>{"type"=>"Float"} }
+    h = { "L"=>{"type"=>"Integer", "default" => 50, "description" => "System size"},
+          "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Temperature"}
+        }
     parameter_keys h
 
     ignore do
