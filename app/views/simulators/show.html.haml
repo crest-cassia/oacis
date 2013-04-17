@@ -11,13 +11,13 @@
 
 %div.tabbable
   %ul.nav.nav-tabs
-    %li.active
-      %a{"href"=>"#tab-about", "data-toggle" => "tab"} About
     %li
+      %a{"href"=>"#tab-about", "data-toggle" => "tab"} About
+    %li.active
       %a{"href"=>"#tab-list-parameters", "data-toggle" => "tab"} Parameter Sets
 
   %div.tab-content
-    %div.tab-pane.active#tab-about
+    %div.tab-pane#tab-about
       %h3 About
       = @simulator.description
       %h3 Owner
@@ -44,7 +44,7 @@
       %h3 Simulator Path
       %pre
         = h(@simulator.execution_command)
-    %div.tab-pane#tab-list-parameters
+    %div.tab-pane.active#tab-list-parameters
       %h3 List of Parameter Sets
       %table.table.table-condensed.table-striped
         %thead
