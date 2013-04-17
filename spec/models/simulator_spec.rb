@@ -119,4 +119,12 @@ describe Simulator do
       Simulator.new.should respond_to(:description)
     end
   end
+
+  describe "#dir" do
+
+    it "returns the result directory of the simulator" do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 0, :runs_count => 0)
+      sim.dir.should == ResultDirectory.simulator_path(sim)
+    end
+  end
 end

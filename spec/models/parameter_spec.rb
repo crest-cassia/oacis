@@ -113,4 +113,13 @@ describe Parameter do
       Dir.entries(ResultDirectory.simulator_path(sim)).should == ['.', '..'] # i.e. empty directory
     end
   end
+
+  describe "#dir" do
+
+    it "returns the result directory of the parameter" do
+      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 0)
+      prm = sim.parameters.first
+      prm.dir.should == ResultDirectory.parameter_path(prm)
+    end
+  end
 end

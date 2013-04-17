@@ -12,6 +12,11 @@ class Simulator
   validate :parameter_keys_format
 
   after_save :create_simulator_dir
+
+  public
+  def dir
+    ResultDirectory.simulator_path(self)
+  end
   
   private
   def parameter_keys_format

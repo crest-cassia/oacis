@@ -11,6 +11,11 @@ class Parameter
 
   after_save :create_parameter_dir
 
+  public
+  def dir
+    ResultDirectory.parameter_path(self)
+  end
+
   private
   def cast_and_validate_sim_parameters
     unless sim_parameters.is_a?(Hash)
