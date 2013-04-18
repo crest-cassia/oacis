@@ -122,4 +122,47 @@ describe Parameter do
       prm.dir.should == ResultDirectory.parameter_path(prm)
     end
   end
+
+  describe "#parameters_with_different" do
+
+    before(:each) do
+      h = { "L"=>{"type"=>"Integer", "default" => 50, "description" => "First parameter"},
+            "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Second parameter"},
+            "P"=>{"type"=>"Float", "default" => 1.0, "description" => "Third parameter"}
+      }
+      sim = FactoryGirl.create(:simulator, :parameter_keys => h, :parameters_count => 0)
+      5.times do |n|
+        val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
+        sim.parameters.create( sim_parameters: val )
+      end
+      4.times do |n|
+        val = {"L" => n+2, "T" => 1.0, "P" => 1.0}
+        sim.parameters.create( sim_parameters: val )
+      end
+      4.times do |n|
+        val = {"L" => 1, "T" => 1.0, "P" => (n+2)*1.0}
+        sim.parameters.create( sim_parameters: val )
+      end
+      @prm = sim.parameters.first
+    end
+
+    it "returns parameters whose sim_parameter is same as self except for the specified key" do
+      prms_L = @prm.parameters_with_different("L")
+      prms_L.count.should == 5
+      prms_L.each do |prm_L|
+        prm_L.sim_parameters["T"].should == @prm.sim_parameters["T"]
+      end
+
+      prms_T = @prm.parameters_with_different("T")
+      prms_T.count.should == 5
+      prms_T.each do |prm_T|
+        prm_T.sim_parameters["L"].should == @prm.sim_parameters["L"]
+      end
+    end
+
+    it "includes self" do
+      found = @prm.parameters_with_different("L").find(@prm)
+      found.should be_a(Parameter)
+    end
+  end
 end

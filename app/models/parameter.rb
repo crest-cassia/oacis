@@ -16,6 +16,15 @@ class Parameter
     ResultDirectory.parameter_path(self)
   end
 
+  def parameters_with_different(key)
+    query_param = { simulator: self.simulator }
+    sim_parameters.each_pair do |prm_key,prm_val|
+      next if prm_key == key.to_s
+      query_param["sim_parameters.#{prm_key}"] = prm_val
+    end
+    Parameter.where(query_param)
+  end
+
   private
   def cast_and_validate_sim_parameters
     unless sim_parameters.is_a?(Hash)
