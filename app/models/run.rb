@@ -1,7 +1,7 @@
 class Run
   include Mongoid::Document
   include Mongoid::Timestamps
-  field :status, type: Symbol  # created, running, failed, canceled, finished
+  field :status, type: Symbol  # created, running, including failed, canceled, finished
   field :seed, type: Integer
   field :hostname, type: String
   field :cpu_time, type: Float
