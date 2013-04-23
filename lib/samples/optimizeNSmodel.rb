@@ -24,7 +24,7 @@ def create_simulator
       }
   sim = Simulator.create!(name: name,
                           execution_command: execution_command,
-                          parameter_keys: h,
+                          parameter_definitions: h,
                           description: description)
   return sim
 end
@@ -45,6 +45,7 @@ default_values = { "L" => 75,
 
 # int1_ary = [2,4,8,10,15,20,30]
 # int1_ary = [10]
+t1 = 10
 int2_ary = [10,12,14,16,18,20]
 phase_ary = (0..19).to_a
 

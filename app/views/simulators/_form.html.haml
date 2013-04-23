@@ -12,11 +12,11 @@
     .controls
       = f.text_field :name, :class => 'text_field'
   / .control-group
-  /   = f.label :parameter_keys, :class => 'control-label'
+  /   = f.label :parameter_definitions, :class => 'control-label'
   /   .controls
-  /     - @simulator.parameter_keys.each do |key, val|
+  /     - @simulator.parameter_definitions.each do |key, val|
   /       = key + ':'
-  /       = text_field_tag "parameter_keys[#{key}][type]", val["type"], :class => 'text_field'
+  /       = text_field_tag "parameter_definitions[#{key}][type]", val["type"], :class => 'text_field'
   /       %br
   .control-group
     = f.label :execution_command, :class => 'control-label'

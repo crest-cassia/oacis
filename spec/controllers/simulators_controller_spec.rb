@@ -26,7 +26,7 @@ describe SimulatorsController do
   def valid_attributes
     {
       name:"simulator_A",
-      parameter_keys: {
+      parameter_definitions: {
         "L" => {"type" => "Integer"},
         "T" => {"type" => "Float"}
       },

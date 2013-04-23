@@ -37,7 +37,7 @@ class Parameter
       return
     end
 
-    unless simulator.parameter_keys.keys.sort == sim_parameters.keys.sort
+    unless simulator.parameter_definitions.keys.sort == sim_parameters.keys.sort
       errors.add(:sim_parameters, "Sim_parameters do not have keys consistent with its Simulator")
       return
     end
@@ -54,7 +54,7 @@ class Parameter
 
   def cast_sim_parameters
     sim_parameters.each do |key,val|
-      type = simulator.parameter_keys[key]["type"]
+      type = simulator.parameter_definitions[key]["type"]
       case type
       when "Integer"
         val = val.to_i

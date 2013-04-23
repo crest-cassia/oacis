@@ -130,7 +130,7 @@ describe Parameter do
             "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Second parameter"},
             "P"=>{"type"=>"Float", "default" => 1.0, "description" => "Third parameter"}
       }
-      sim = FactoryGirl.create(:simulator, :parameter_keys => h, :parameters_count => 0)
+      sim = FactoryGirl.create(:simulator, :parameter_definitions => h, :parameters_count => 0)
       5.times do |n|
         val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
         sim.parameters.create( sim_parameters: val )

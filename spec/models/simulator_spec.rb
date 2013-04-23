@@ -5,7 +5,7 @@ describe Simulator do
   before(:each) do
     @valid_fields = {
       name:"simulatorA",
-      parameter_keys: {
+      parameter_definitions: {
         "L" => {"type" => "Integer"},
         "T" => {"type" => "Float"}
       },
@@ -42,31 +42,31 @@ describe Simulator do
     end
   end
 
-  describe "'parameter_keys' field" do
+  describe "'parameter_definitions' field" do
     
     it "must not be a blank" do
-      Simulator.new(@valid_fields.update(parameter_keys:{})).should_not be_valid
+      Simulator.new(@valid_fields.update(parameter_definitions:{})).should_not be_valid
     end
 
     it "name of each key must be organized with word characters" do
-      fields = @valid_fields.update(parameter_keys:{"b lank"=>{"type"=>"String"}})
+      fields = @valid_fields.update(parameter_definitions:{"b lank"=>{"type"=>"String"}})
       Simulator.new(fields).should_not be_valid
     end
 
     it "each key must have a type" do
-      fields = @valid_fields.update(parameter_keys:{"L"=>{"default"=>32}})
+      fields = @valid_fields.update(parameter_definitions:{"L"=>{"default"=>32}})
       Simulator.new(fields).should_not be_valid
     end
 
     it "type of each key must be either 'Boolean', 'Integer', 'Float', or 'String'" do
-      fields = @valid_fields.update(parameter_keys:{
+      fields = @valid_fields.update(parameter_definitions:{
                                       "Boolean_key"=>{"type"=>"Boolean"},
                                       "Integer_key"=>{"type"=>"Integer"},
                                       "Float_key"=>{"type"=>"Float"},
                                       "String_key"=>{"type"=>"String"}
                                     })
       Simulator.new(fields).should be_valid
-      fields[:parameter_keys]["DateTime_key"] = {"type"=>"DateTime"}
+      fields[:parameter_definitions]["DateTime_key"] = {"type"=>"DateTime"}
       Simulator.new(fields).should_not be_valid
     end
   end

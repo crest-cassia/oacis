@@ -34,7 +34,7 @@
             %th.span2 Default
             %th.span6 Description
         %tbody
-          - @simulator.parameter_keys.each do |key,val|
+          - @simulator.parameter_definitions.each do |key,val|
             %tr
               %th= h(key)
               %td= h(val["type"])
@@ -50,12 +50,12 @@
         %thead
           %tr
             %th.span1 ID
-            - @simulator.parameter_keys.each do |key,key_def|
+            - @simulator.parameter_definitions.each do |key,key_def|
               %th.span1= key
         %tbody
         - @parameters.each_with_index do |parameter,idx|
           %tr
             %td= link_to( parameter.id, parameter_path(parameter) )
-            - @simulator.parameter_keys.each do |key,key_def|
+            - @simulator.parameter_definitions.each do |key,key_def|
               %td= parameter.sim_parameters[key]
       = paginate @parameters

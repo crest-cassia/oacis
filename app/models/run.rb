@@ -32,7 +32,7 @@ class Run
     sim = parameter.simulator
     cmd_array = []
     cmd_array << sim.execution_command
-    cmd_array += sim.parameter_keys.keys.map do |key|
+    cmd_array += sim.parameter_definitions.keys.map do |key|
       prm.sim_parameters[key]
     end
     cmd_array << self.seed

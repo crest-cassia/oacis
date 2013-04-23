@@ -17,7 +17,7 @@ FactoryGirl.define do
     h = { "L"=>{"type"=>"Integer", "default" => 50, "description" => "System size"},
           "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Temperature"}
         }
-    parameter_keys h
+    parameter_definitions h
     description { Faker::Lorem.paragraphs.join("\n") }
 
     ignore do

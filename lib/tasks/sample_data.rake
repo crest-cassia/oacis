@@ -36,7 +36,7 @@ namespace :db do
           "tmax" => {"type"=>"Integer", "description" => "Simulation duration"}
         }
     sim = FactoryGirl.create(:simulator,
-      name: name, execution_command: execution_command, parameter_keys: h,
+      name: name, execution_command: execution_command, parameter_definitions: h,
       parameters_count: 0)
     10.times do |i|
       sim_prm = {"L" => 99, "K" => (15+i)*0.01, "tmax" => 256}
