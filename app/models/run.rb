@@ -33,7 +33,7 @@ class Run
     cmd_array = []
     cmd_array << sim.execution_command
     cmd_array += sim.parameter_definitions.keys.map do |key|
-      prm.sim_parameters[key]
+      prm.v[key]
     end
     cmd_array << self.seed
     return cmd_array.join(' ')

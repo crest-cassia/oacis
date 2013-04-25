@@ -1,13 +1,13 @@
 class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
-  field :sim_parameters, type: Hash # , :default .   ### IMPLEMENT ME
+  field :v, type: Hash # , :default .   ### IMPLEMENT ME
   belongs_to :simulator
   has_many :runs
 
-  validates :sim_parameters, :presence => true
+  validates :v, :presence => true
   validates :simulator, :presence => true
-  validate :cast_and_validate_sim_parameters
+  validate :cast_and_validate_parameter_values
 
   after_save :create_parameter_set_dir
 
@@ -18,17 +18,17 @@ class ParameterSet
 
   def parameter_sets_with_different(key)
     query_param = { simulator: self.simulator }
-    sim_parameters.each_pair do |prm_key,prm_val|
+    v.each_pair do |prm_key,prm_val|
       next if prm_key == key.to_s
-      query_param["sim_parameters.#{prm_key}"] = prm_val
+      query_param["v.#{prm_key}"] = prm_val
     end
     self.class.where(query_param)
   end
 
   private
-  def cast_and_validate_sim_parameters
-    unless sim_parameters.is_a?(Hash)
-      errors.add(:sim_parameters, "Sim_parameters is not a Hash")
+  def cast_and_validate_parameter_values
+    unless v.is_a?(Hash)
+      errors.add(:v, "v is not a Hash")
       return
     end
 
@@ -37,23 +37,23 @@ class ParameterSet
       return
     end
 
-    unless simulator.parameter_definitions.keys.sort == sim_parameters.keys.sort
-      errors.add(:sim_parameters, "Sim_parameters do not have keys consistent with its Simulator")
+    unless simulator.parameter_definitions.keys.sort == v.keys.sort
+      errors.add(:v, "v do not have keys consistent with its Simulator")
       return
     end
 
     # cast parameter values
-    cast_sim_parameters
+    cast_parameter_values
 
-    found = self.class.find_identical_parameter_set(simulator, sim_parameters)
+    found = self.class.find_identical_parameter_set(simulator, v)
     if found and found.id != self.id
-      errors.add(:sim_parameters, "An identical parameters already exists : #{found.to_param}")
+      errors.add(:v, "An identical parameters already exists : #{found.to_param}")
       return
     end
   end
 
-  def cast_sim_parameters
-    sim_parameters.each do |key,val|
+  def cast_parameter_values
+    v.each do |key,val|
       type = simulator.parameter_definitions[key]["type"]
       case type
       when "Integer"
@@ -67,12 +67,12 @@ class ParameterSet
       else
         raise "Unknown type : #{type}"
       end
-      sim_parameters[key] = val
+      v[key] = val
     end
   end
 
   def self.find_identical_parameter_set(simulator, sim_param_hash)
-    self.where(:simulator => simulator, :sim_parameters => sim_param_hash).first
+    self.where(:simulator => simulator, :v => sim_param_hash).first
   end
 
   def create_parameter_set_dir

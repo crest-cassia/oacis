@@ -84,7 +84,7 @@ describe Simulator do
     it "should return 'parameter_sets'" do
       @simulator.parameter_sets.should == []
 
-      param_attribute = {:sim_parameters => {"L" => 32, "T" => 0.1} }
+      param_attribute = {:v => {"L" => 32, "T" => 0.1} }
       @simulator.parameter_sets.create!(param_attribute)
       @simulator.parameter_sets.count == 1
     end

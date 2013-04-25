@@ -4,7 +4,7 @@ describe ParameterSet do
 
   before(:each) do
     @sim = FactoryGirl.create(:simulator)
-    @valid_attr = {:sim_parameters => {"L" => 32, "T" => 1.0}}
+    @valid_attr = {:v => {"L" => 32, "T" => 1.0}}
   end
 
   describe "validation" do
@@ -20,15 +20,15 @@ describe ParameterSet do
       param.should_not be_valid
     end
 
-    it "should not be valid when sim_parameters does not exist" do
+    it "should not be valid when v does not exist" do
       invalid_attr = @valid_attr
-      invalid_attr.delete(:sim_parameters)
+      invalid_attr.delete(:v)
       built_param = @sim.parameter_sets.build(invalid_attr)
       built_param.should_not be_valid
     end
 
-    it "should not be valid when sim_parameters is not a Hash" do
-      invalid_attr = @valid_attr.update({:sim_parameters => "xxx"})
+    it "should not be valid when v is not a Hash" do
+      invalid_attr = @valid_attr.update({:v => "xxx"})
       prev_parameters_count = @sim.parameter_sets.count
       lambda {
         @sim.parameter_sets.create!(invalid_attr)
@@ -36,23 +36,23 @@ describe ParameterSet do
       @sim.parameter_sets.count.should == prev_parameters_count
     end
 
-    it "should not be valid when keys of sim_parameters are not consistent its Simulator" do
-      built_param = @sim.parameter_sets.build(@valid_attr.update({:sim_parameters => {"L"=>32}}))
+    it "should not be valid when keys of v are not consistent its Simulator" do
+      built_param = @sim.parameter_sets.build(@valid_attr.update({:v => {"L"=>32}}))
       built_param.should_not be_valid
     end
 
-    it "should not be valid when sim_parameters is not unique" do
+    it "should not be valid when v is not unique" do
       @sim.parameter_sets.create!(@valid_attr)
       built = @sim.parameter_sets.build(@valid_attr)
       built.should_not be_valid
       err = built.errors.messages
-      err.should have_key(:sim_parameters)
-      err[:sim_parameters].find {|x|
+      err.should have_key(:v)
+      err[:v].find {|x|
         x =~ /identical/
       }.should be_true
     end
 
-    it "identical sim_parameters is valid for a differnet simulator" do
+    it "identical v is valid for a differnet simulator" do
       @sim.parameter_sets.create!(@valid_attr)
 
       sim2 = FactoryGirl.create(:simulator)
@@ -60,12 +60,12 @@ describe ParameterSet do
       built_param.should be_valid
     end
 
-    it "should cast the values of sim_parameters properly" do
-      updated_attr = @valid_attr.update(:sim_parameters => {"L"=>"32","T"=>"2.0"})
+    it "should cast the values of v properly" do
+      updated_attr = @valid_attr.update(:v => {"L"=>"32","T"=>"2.0"})
       built = @sim.parameter_sets.build(updated_attr)
       built.should be_valid
-      built[:sim_parameters]["L"].should == 32
-      built[:sim_parameters]["T"].should == 2.0
+      built[:v]["L"].should == 32
+      built[:v]["T"].should == 2.0
     end
 
     it "should be valid once it is saved with valid attributes" do
@@ -109,7 +109,7 @@ describe ParameterSet do
 
     it "is not created when validation fails" do
       sim = FactoryGirl.create(:simulator, :parameter_sets_count => 0)
-      prm = sim.parameter_sets.create(@valid_attr.update({:sim_parameters => {"L"=>32}}))
+      prm = sim.parameter_sets.create(@valid_attr.update({:v => {"L"=>32}}))
       Dir.entries(ResultDirectory.simulator_path(sim)).should == ['.', '..'] # i.e. empty directory
     end
   end
@@ -133,15 +133,15 @@ describe ParameterSet do
       sim = FactoryGirl.create(:simulator, :parameter_definitions => h, :parameter_sets_count => 0)
       5.times do |n|
         val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
-        sim.parameter_sets.create( sim_parameters: val )
+        sim.parameter_sets.create( v: val )
       end
       4.times do |n|
         val = {"L" => n+2, "T" => 1.0, "P" => 1.0}
-        sim.parameter_sets.create( sim_parameters: val )
+        sim.parameter_sets.create( v: val )
       end
       4.times do |n|
         val = {"L" => 1, "T" => 1.0, "P" => (n+2)*1.0}
-        sim.parameter_sets.create( sim_parameters: val )
+        sim.parameter_sets.create( v: val )
       end
       @prm = sim.parameter_sets.first
     end
@@ -150,13 +150,13 @@ describe ParameterSet do
       prms_L = @prm.parameter_sets_with_different("L")
       prms_L.count.should == 5
       prms_L.each do |prm_L|
-        prm_L.sim_parameters["T"].should == @prm.sim_parameters["T"]
+        prm_L.v["T"].should == @prm.v["T"]
       end
 
       prms_T = @prm.parameter_sets_with_different("T")
       prms_T.count.should == 5
       prms_T.each do |prm_T|
-        prm_T.sim_parameters["L"].should == @prm.sim_parameters["L"]
+        prm_T.v["L"].should == @prm.v["L"]
       end
     end
 

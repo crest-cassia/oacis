@@ -57,5 +57,5 @@
           %tr
             %td= link_to( param_set.id, parameter_set_path(param_set) )
             - @simulator.parameter_definitions.each do |key,key_def|
-              %td= param_set.sim_parameters[key]
+              %td= param_set.v[key]
       = paginate @param_sets

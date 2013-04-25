@@ -31,7 +31,7 @@ FactoryGirl.define do
   end
 
   factory :parameter_set do
-    sequence(:sim_parameters) do |n|
+    sequence(:v) do |n|
       {"L" => n, "T" => n*2.0}
     end
 

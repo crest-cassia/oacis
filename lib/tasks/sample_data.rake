@@ -40,7 +40,7 @@ namespace :db do
       parameter_sets_count: 0)
     10.times do |i|
       sim_prm = {"L" => 99, "K" => (15+i)*0.01, "tmax" => 256}
-      sim.parameter_sets.create(sim_parameters: sim_prm)
+      sim.parameter_sets.create(v: sim_prm)
     end
   end
 end

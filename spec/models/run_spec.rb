@@ -131,7 +131,7 @@ describe Run do
       sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
       prm = sim.parameter_sets.first
       run = prm.runs.first
-      run.command.should == "#{sim.execution_command} #{prm.sim_parameters["L"]} #{prm.sim_parameters["T"]} #{run.seed}"
+      run.command.should == "#{sim.execution_command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
     end
   end
 
