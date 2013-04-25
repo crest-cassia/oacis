@@ -34,13 +34,13 @@ end
 sim = Simulator.where(name: "NSmodelWithTrafficSignals").first
 key = "signal_phase_diff"
 [10,12,14,16,18,20].each do |t2|
-  base_prm = Parameter.where("sim_parameters.T_signal2" => t2).first
+  base_prm = ParameterSet.where("v.T_signal2" => t2).first
   pp base_prm
   filename = "phase_diff_#{t2}.txt"
   io = File.open(filename, 'w')
-  base_prm.parameters_with_different(key).each do |prm|
+  base_prm.parameter_sets_with_different(key).each do |prm|
     make_figure(prm.runs.first)
-    io.puts "#{prm.sim_parameters[key]} #{average_num_cars(prm.runs).join(' ')}"
+    io.puts "#{prm.v[key]} #{average_num_cars(prm.runs).join(' ')}"
   end
   io.close
 end

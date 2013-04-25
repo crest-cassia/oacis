@@ -56,8 +56,8 @@ int2_ary.each do |t2|
     param_values = default_values.update(
       {"T_signal1" => t1, "T_signal2" => t2, "signal_phase_diff" => phs} )
     pp param_values
-    prm = sim.parameters.where(:sim_parameters => param_values).first
-    prm = sim.parameters.create!(:sim_parameters => param_values) unless prm
+    prm = sim.parameter_sets.where(:v => param_values).first
+    prm = sim.parameter_sets.create!(:v => param_values) unless prm
     (NUM_RUNS - prm.runs.count).times do |i|
       run = prm.runs.create!
       run.submit
