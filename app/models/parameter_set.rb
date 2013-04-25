@@ -1,4 +1,4 @@
-class Parameter
+class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
   field :sim_parameters, type: Hash # , :default .   ### IMPLEMENT ME
@@ -9,20 +9,20 @@ class Parameter
   validates :simulator, :presence => true
   validate :cast_and_validate_sim_parameters
 
-  after_save :create_parameter_dir
+  after_save :create_parameter_set_dir
 
   public
   def dir
-    ResultDirectory.parameter_path(self)
+    ResultDirectory.parameter_set_path(self)
   end
 
-  def parameters_with_different(key)
+  def parameter_sets_with_different(key)
     query_param = { simulator: self.simulator }
     sim_parameters.each_pair do |prm_key,prm_val|
       next if prm_key == key.to_s
       query_param["sim_parameters.#{prm_key}"] = prm_val
     end
-    Parameter.where(query_param)
+    self.class.where(query_param)
   end
 
   private
@@ -45,7 +45,7 @@ class Parameter
     # cast parameter values
     cast_sim_parameters
 
-    found = self.class.find_identical_parameter(simulator, sim_parameters)
+    found = self.class.find_identical_parameter_set(simulator, sim_parameters)
     if found and found.id != self.id
       errors.add(:sim_parameters, "An identical parameters already exists : #{found.to_param}")
       return
@@ -71,11 +71,11 @@ class Parameter
     end
   end
 
-  def self.find_identical_parameter(simulator, sim_param_hash)
+  def self.find_identical_parameter_set(simulator, sim_param_hash)
     self.where(:simulator => simulator, :sim_parameters => sim_param_hash).first
   end
 
-  def create_parameter_dir
-    FileUtils.mkdir_p(ResultDirectory.parameter_path(self))
+  def create_parameter_set_dir
+    FileUtils.mkdir_p(ResultDirectory.parameter_set_path(self))
   end
 end

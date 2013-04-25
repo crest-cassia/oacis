@@ -4,7 +4,7 @@ describe SimulatorRunner do
   
   before(:each) do
     @sim = FactoryGirl.create(:simulator)
-    @prm = @sim.parameters.first
+    @prm = @sim.parameter_sets.first
     @run = @prm.runs.first
   end
 
@@ -49,7 +49,7 @@ describe SimulatorRunner do
     end
 
     it "raises an exception if the return code of the command is not zero" do
-      sim = @run.parameter.simulator
+      sim = @run.parameter_set.simulator
       sim.execution_command = "INVALID_CMD"
       sim.save!
 

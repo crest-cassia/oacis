@@ -4,14 +4,14 @@ describe RunsController do
 
   # This should return the minimal set of values that should be in the session
   # in order to pass any filters (e.g. authentication) defined in
-  # ParametersController. Be sure to keep this updated too.
+  # RunsController. Be sure to keep this updated too.
   def valid_session
     {}
   end
 
   before(:each) do
     @sim = FactoryGirl.create(:simulator)
-    @par = @sim.parameters.first
+    @par = @sim.parameter_sets.first
     @run = @par.runs.first
   end
 
@@ -25,14 +25,14 @@ describe RunsController do
     it "assigns instance variables" do
       get 'show', {id: @run}, valid_session
       assigns(:run).should eq(@run)
-      assigns(:parameter).should eq(@par)
+      assigns(:param_set).should eq(@par)
     end
   end
 
   describe "POST 'create'" do
 
     before(:each) do
-      @req_param = {parameter_id: @par}
+      @req_param = {parameter_set_id: @par}
     end
 
     describe "with valid parameters" do
@@ -40,13 +40,13 @@ describe RunsController do
       it "creates a new run" do
         expect {
           post 'create', @req_param, valid_session
-        }.to change(Run.where(parameter_id: @par), :count).by(1)
+        }.to change(Run.where(parameter_set_id: @par), :count).by(1)
       end
 
       it "redirects to show page" do
         post 'create', @req_param, valid_session
         run = Run.last
-        parameter = run.parameter
+        # parameter = run.parameter_set
         response.should redirect_to(run)
       end
 
@@ -54,14 +54,14 @@ describe RunsController do
         seed_val = 12345
         @req_param.update(run: {seed: seed_val})
         post 'create', @req_param, valid_session
-        Run.where(parameter_id: @par).last.seed.should == seed_val
+        Run.where(parameter_set_id: @par).last.seed.should == seed_val
       end
     end
 
     describe "with invalid parameters" do
 
-      it "raises an error when the Parameter is not found" do
-        @req_param.update(parameter_id: 1234)
+      it "raises an error when the ParameterSet is not found" do
+        @req_param.update(parameter_set_id: 1234)
         lambda {
           post 'create', @req_param, valid_session
         }.should raise_error
@@ -75,7 +75,7 @@ describe RunsController do
         }.to change(Run, :count).by(0)
       end
 
-      it "redirects to parameter#show path" do
+      it "redirects to parameter_sets#show path" do
         seed_val = @par.runs.first.seed
         @req_param.update(run: {seed: seed_val})
         post 'create', @req_param, valid_session

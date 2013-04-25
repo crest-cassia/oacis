@@ -5,7 +5,7 @@ class Simulator
   field :parameter_definitions, type: Hash
   field :execution_command, type: String
   field :description, type: String
-  has_many :parameters
+  has_many :parameter_sets
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
   validates :execution_command, presence: true

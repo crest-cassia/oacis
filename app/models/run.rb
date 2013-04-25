@@ -9,13 +9,13 @@ class Run
   field :started_at, type: DateTime
   field :finished_at, type: DateTime
   field :included_at, type: DateTime
-  belongs_to :parameter
+  belongs_to :parameter_set
   # belongs_to :job
 
   # validations
   validates :status, :presence => true
   validates :seed, :presence => true, :uniqueness => true
-  validates :parameter, :presence => true
+  validates :parameter_set, :presence => true
 
   attr_accessible :seed
 
@@ -28,8 +28,8 @@ class Run
   end
 
   def command
-    prm = self.parameter
-    sim = parameter.simulator
+    prm = self.parameter_set
+    sim = prm.simulator
     cmd_array = []
     cmd_array << sim.execution_command
     cmd_array += sim.parameter_definitions.keys.map do |key|
@@ -75,7 +75,7 @@ class Run
     unless self.seed
       SeedIterationLimit.times do |i|
         candidate = rand(SeedMax)
-        if self.class.where(:parameter_id => parameter, :seed => candidate).exists? == false
+        if self.class.where(:parameter_set_id => parameter_set, :seed => candidate).exists? == false
           self.seed = candidate
           break
         end

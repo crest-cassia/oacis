@@ -56,14 +56,14 @@ describe SimulatorsController do
       get :show, {:id => simulator.to_param}, valid_session
       response.should be_success
       assigns(:simulator).should eq(simulator)
-      assigns(:parameters).should eq(simulator.parameters)
+      assigns(:param_sets).should eq(simulator.parameter_sets)
     end
 
     it "paginates the list of parameters" do
-      simulator = FactoryGirl.create(:simulator, :parameters_count => 100)
+      simulator = FactoryGirl.create(:simulator, :parameter_sets_count => 30, :runs_count => 0)
       get :show, {:id => simulator.to_param, :page => 1}
       response.should be_success
-      assigns(:parameters).to_a.size.should == 25  # to_a is necessary since #count ignores the limit
+      assigns(:param_sets).to_a.size.should == 25  # to_a is necessary since #count ignores the limit
     end
   end
 

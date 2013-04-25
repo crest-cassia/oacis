@@ -6,10 +6,10 @@
     = link_to(@simulator.name, simulator_path(@simulator))
     %span.divider /
   %li
-    = @parameter.to_param
+    = @param_set.to_param
 
 .page-header
-  %h1 Parameters
+  %h1 Parameter Sets
 
 %h3 Parameter values
 %table.table.table-condensed
@@ -18,7 +18,7 @@
       %th= key
   %tr
     - @parameter_keys.each do |key|
-      %td= @parameter.sim_parameters[key]
+      %td= @param_set.sim_parameters[key]
 
 %h3 Runs
 %table.table.table-condensed
@@ -43,7 +43,7 @@
       %td= distance_to_now_in_words(run.finished_at)
 = paginate @runs
 
-= form_for(@parameter.runs.build, :url => parameter_runs_path(@parameter)) do |f|
+= form_for(@param_set.runs.build, :url => parameter_set_runs_path(@param_set)) do |f|
   - f.submit "Create new run", :class => 'btn btn-primary'
 
 %h3 Results

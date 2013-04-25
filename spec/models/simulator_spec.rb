@@ -71,22 +71,22 @@ describe Simulator do
     end
   end
 
-  describe "parameters" do
+  describe "parameter_sets" do
 
     before(:each) do
       @simulator = Simulator.create!(@valid_fields)
     end
 
-    it "should have 'parameters' method" do
-      @simulator.should respond_to(:parameters)
+    it "should have 'parameter_sets' method" do
+      @simulator.should respond_to(:parameter_sets)
     end
 
-    it "should return 'parameters'" do
-      @simulator.parameters.should == []
+    it "should return 'parameter_sets'" do
+      @simulator.parameter_sets.should == []
 
       param_attribute = {:sim_parameters => {"L" => 32, "T" => 0.1} }
-      @simulator.parameters.create!(param_attribute)
-      @simulator.parameters.count == 1
+      @simulator.parameter_sets.create!(param_attribute)
+      @simulator.parameter_sets.count == 1
     end
   end
 
@@ -123,7 +123,7 @@ describe Simulator do
   describe "#dir" do
 
     it "returns the result directory of the simulator" do
-      sim = FactoryGirl.create(:simulator, :parameters_count => 0, :runs_count => 0)
+      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 0, :runs_count => 0)
       sim.dir.should == ResultDirectory.simulator_path(sim)
     end
   end

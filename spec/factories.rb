@@ -21,16 +21,16 @@ FactoryGirl.define do
     description { Faker::Lorem.paragraphs.join("\n") }
 
     ignore do
-      parameters_count 5
+      parameter_sets_count 5
       runs_count 5
     end
     after(:create) do |simulator, evaluator|
-      FactoryGirl.create_list(:parameter, evaluator.parameters_count,
+      FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
                                 simulator: simulator, runs_count: evaluator.runs_count)
     end
   end
 
-  factory :parameter do
+  factory :parameter_set do
     sequence(:sim_parameters) do |n|
       {"L" => n, "T" => n*2.0}
     end
@@ -39,8 +39,8 @@ FactoryGirl.define do
       runs_count 5
     end
 
-    after(:create) do |parameter, evaluator|
-      FactoryGirl.create_list(:run, evaluator.runs_count, parameter: parameter)
+    after(:create) do |param_set, evaluator|
+      FactoryGirl.create_list(:run, evaluator.runs_count, parameter_set: param_set)
     end
   end
 

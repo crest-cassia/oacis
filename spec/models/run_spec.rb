@@ -4,23 +4,23 @@ describe Run do
 
   before(:each) do
     @simulator = FactoryGirl.create(:simulator)
-    @parameter = @simulator.parameters.first
+    @param_set = @simulator.parameter_sets.first
     @valid_attribute = {}
   end
 
   describe "validations" do
 
     it "creates a Run with a valid attribute" do
-      @parameter.runs.build.should be_valid
+      @param_set.runs.build.should be_valid
     end
 
     it "assigns 'created' stauts by default" do
-      run = @parameter.runs.create
+      run = @param_set.runs.create
       run.status.should == :created
     end
 
     it "assigns a seed by default" do
-      run = @parameter.runs.create
+      run = @param_set.runs.create
       run.seed.should be_a(Integer)
     end
 
@@ -28,27 +28,27 @@ describe Run do
       seeds = []
       n = 10
       n.times do |i|
-        run = @parameter.runs.create
+        run = @param_set.runs.create
         seeds << run.seed
       end
       seeds.uniq.size.should == n
     end
 
-    it "is invalid if parameter is not related" do
+    it "is invalid if parameter set is not related" do
       Run.new(@valid_attribute).should_not be_valid
     end
 
     it "seed is an accessible attribute" do
       seed_val = 12345
       @valid_attribute.update(seed: seed_val)
-      run = @parameter.runs.create!(@valid_attribute)
+      run = @param_set.runs.create!(@valid_attribute)
       run.seed.should == seed_val
     end
 
     it "seed must be unique" do
-      seed_val = @parameter.runs.first.seed
+      seed_val = @param_set.runs.first.seed
       @valid_attribute.update(seed: seed_val)
-      @parameter.runs.build(@valid_attribute).should_not be_valid
+      @param_set.runs.build(@valid_attribute).should_not be_valid
     end
 
     it "the attributes other than seed are not accessible" do
@@ -61,7 +61,7 @@ describe Run do
         finished_at: DateTime.now,
         included_at: DateTime.now
       )
-      run = @parameter.runs.build(@valid_attribute)
+      run = @param_set.runs.build(@valid_attribute)
       run.status.should_not == :canceled
       run.hostname.should be_nil
       run.cpu_time.should be_nil
@@ -75,11 +75,11 @@ describe Run do
   describe "relations" do
 
     before(:each) do
-      @run = @parameter.runs.first
+      @run = @param_set.runs.first
     end
 
     it "belongs to parameter" do
-      @run.should respond_to(:parameter)
+      @run.should respond_to(:parameter_set)
     end
   end
 
@@ -96,29 +96,29 @@ describe Run do
     end
 
     it "is created when a new item is added" do
-      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 0)
-      prm = sim.parameters.first
+      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 0)
+      prm = sim.parameter_sets.first
       run = prm.runs.create!(@valid_attribute)
       FileTest.directory?(ResultDirectory.run_path(run)).should be_true
     end
 
     it "is not created when validation fails" do
-      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
-      prm = sim.parameters.first
+      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
+      prm = sim.parameter_sets.first
       seed_val = prm.runs.first.seed
       @valid_attribute.update(seed: seed_val)
 
-      prev_count = Dir.entries(ResultDirectory.parameter_path(prm)).size
+      prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size
       run = prm.runs.create(@valid_attribute)
-      prev_count = Dir.entries(ResultDirectory.parameter_path(prm)).size.should == prev_count
+      prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size.should == prev_count
     end
   end
 
   describe "#submit" do
 
     it "submits a run to Resque" do
-      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
-      prm = sim.parameters.first
+      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
+      prm = sim.parameter_sets.first
       run = prm.runs.first
       Resque.should_receive(:enqueue).with(SimulatorRunner, run.id)
       run.submit
@@ -128,8 +128,8 @@ describe Run do
   describe "#command" do
 
     it "returns a shell command to run simulation" do
-      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
-      prm = sim.parameters.first
+      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
+      prm = sim.parameter_sets.first
       run = prm.runs.first
       run.command.should == "#{sim.execution_command} #{prm.sim_parameters["L"]} #{prm.sim_parameters["T"]} #{run.seed}"
     end
@@ -138,8 +138,8 @@ describe Run do
   describe "#dir" do
 
     it "returns the result directory of the run" do
-      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
-      prm = sim.parameters.first
+      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
+      prm = sim.parameter_sets.first
       run = prm.runs.first
       run.dir.should == ResultDirectory.run_path(run)
     end
@@ -149,8 +149,8 @@ describe Run do
   describe "#set_status_running" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
-      prm = sim.parameters.first
+      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
+      prm = sim.parameter_sets.first
       @run = prm.runs.first
     end
 
@@ -167,8 +167,8 @@ describe Run do
   describe "#set_status_finished" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
-      prm = sim.parameters.first
+      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
+      prm = sim.parameter_sets.first
       @run = prm.runs.first
       @run.set_status_running(:hostname => 'host_ABC')
     end
@@ -189,8 +189,8 @@ describe Run do
   describe "#set_status_failed" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, :parameters_count => 1, :runs_count => 1)
-      prm = sim.parameters.first
+      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
+      prm = sim.parameter_sets.first
       @run = prm.runs.first
       @run.set_status_running(:hostname => 'host_ABC')
     end
