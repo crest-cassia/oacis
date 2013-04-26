@@ -4,42 +4,51 @@ describe AnalysisRun do
 
   before(:each) do
     @sim = FactoryGirl.create(:simulator, 
-                              parameter_sets_count:0, runs_count:0, analyzer_count: 2)
+                              parameter_sets_count:1, runs_count:1, analyzer_count: 1)
+    @run = @sim.parameter_sets.first.runs.first
     @azr = @sim.analyzers.first
+    @valid_attr = {
+        parameters: {"param1" => 1, "param2" => 2.0},
+        analyzer: @azr
+    }
   end
 
   describe "validation" do
 
-    before(:each) do
-      parameters = {"param1" => 1, "param2" => 2.0}
-
-      @valid_attr = {
-        parameters: parameters
-      }
-    end
-
     it "is valid with proper attributes" do
-      arn = @azr.analysis_runs.build(@valid_attr)
+      arn = @run.analysis_runs.build(@valid_attr)
       arn.should be_valid
     end
 
     it "is invalid when 'parameters' field is not given" do
-      arn = @azr.analysis_runs.build({})
+      invalid_attr = @valid_attr
+      invalid_attr.delete(:parameters)
+      arn = @run.analysis_runs.build(invalid_attr)
       arn.should_not be_valid
     end
 
     it "assigns 'created' stauts by default" do
-      arn = @azr.analysis_runs.create(@valid_attr)
+      arn = @run.analysis_runs.create!(@valid_attr)
       arn.status.should == :created
     end
 
     it "is invalid if Analyzer is not related" do
-      arn = AnalysisRun.new(@valid_attr)
+      invalid_attr = @valid_attr
+      invalid_attr.delete(:analyzer)
+      arn = @run.analysis_runs.build(invalid_attr)
       arn.should_not be_valid
     end
 
+    it "is invalid if there is no parent document" do
+      arn = AnalysisRun.new(@valid_attr)
+      lambda {
+        arn.save!
+      }.should raise_error Mongoid::Errors::NoParent
+    end
+
     it "is invalid when status is not an allowed value" do
-      arn = @azr.analysis_runs.create(@valid_attr)
+      arn = @run.analysis_runs.create!(@valid_attr)
+
       arn.status = :status_XXX
       arn.should_not be_valid
     end
@@ -47,20 +56,32 @@ describe AnalysisRun do
 
   describe "accessibility" do
 
-    before(:each) do
-      @valid_attr = {
-        parameters: {"param1" => 1, "param2" => 2.0}
-      }
-    end
-
     it "result is not an accessible field" do
-      arn = @azr.analysis_runs.create(@valid_attr.update(result: "abc"))
+      arn = @run.analysis_runs.build(@valid_attr.update(result: "abc"))
       arn.result.should be_nil
     end
 
     it "status is not an accessible field" do
-      arn = @azr.analysis_runs.create(@valid_attr.update(status: :running))
+      arn = @run.analysis_runs.build(@valid_attr.update(status: :running))
       arn.status.should_not == :running
+    end
+  end
+
+  describe "relation" do
+
+    it "can be embedded in a run" do
+      @arn = @run.analysis_runs.build(@valid_attr)
+      @arn.save!
+      @run.analysis_runs.last.should be_a(AnalysisRun)
+      @arn.analyzable.should be_a(Run)
+    end
+
+    it "can be embedded in a parameter_set" do
+      ps = @sim.parameter_sets.first
+      @arn = ps.analysis_runs.build(@valid_attr)
+      @arn.save!
+      ps.analysis_runs.last.should be_a(AnalysisRun)
+      @arn.analyzable.should be_a(ParameterSet)
     end
   end
 end

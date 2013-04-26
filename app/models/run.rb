@@ -10,7 +10,7 @@ class Run
   field :finished_at, type: DateTime
   field :included_at, type: DateTime
   belongs_to :parameter_set
-  # belongs_to :job
+  embeds_many :analysis_runs, as: :analyzable
 
   # validations
   validates :status, :presence => true

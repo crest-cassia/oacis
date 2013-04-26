@@ -9,7 +9,6 @@ class Analyzer
   field :description, type: String
 
   embedded_in :simulator
-  has_many :analysis_runs
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
   validates :type, presence: true, 

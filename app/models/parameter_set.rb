@@ -4,6 +4,7 @@ class ParameterSet
   field :v, type: Hash # , :default .   ### IMPLEMENT ME
   belongs_to :simulator
   has_many :runs
+  embeds_many :analysis_runs, as: :analyzable
 
   validates :v, :presence => true
   validates :simulator, :presence => true

@@ -6,6 +6,7 @@ class AnalysisRun
   field :result
   field :status, type: Symbol
   belongs_to :analyzer
+  embedded_in :analyzable, polymorphic: true
 
   validates :parameters, presence: true
   validates :status, presence: true,
@@ -13,7 +14,7 @@ class AnalysisRun
   validates :analyzer, :presence => true
   before_validation :set_status
 
-  attr_accessible :parameters
+  attr_accessible :parameters, :analyzer
 
   private
   def set_status
