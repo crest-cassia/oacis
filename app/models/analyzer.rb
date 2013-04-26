@@ -1,24 +1,21 @@
-class Simulator
+class Analyzer
   include Mongoid::Document
   include Mongoid::Timestamps
+
   field :name, type: String
+  field :type, type: Symbol
   field :parameter_definitions, type: Hash
-  field :execution_command, type: String
+  field :command, type: String
   field :description, type: String
-  has_many :parameter_sets
-  embeds_many :analyzers
+
+  embedded_in :simulator
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
-  validates :execution_command, presence: true
+  validates :type, presence: true, 
+                   inclusion: {in: [:on_run, :on_parameter_set, :on_several_parameter_sets]}
+  validates :command, presence: true
   validate :parameter_definitions_format
 
-  after_save :create_simulator_dir
-
-  public
-  def dir
-    ResultDirectory.simulator_path(self)
-  end
-  
   private
   def parameter_definitions_format
     unless parameter_definitions.size > 0
@@ -39,9 +36,5 @@ class Simulator
         break
       end
     end
-  end
-
-  def create_simulator_dir
-    FileUtils.mkdir_p(ResultDirectory.simulator_path(self))
   end
 end
