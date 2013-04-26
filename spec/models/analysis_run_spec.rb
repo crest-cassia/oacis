@@ -47,12 +47,20 @@ describe AnalysisRun do
 
   describe "accessibility" do
 
+    before(:each) do
+      @valid_attr = {
+        parameters: {"param1" => 1, "param2" => 2.0}
+      }
+    end
+
     it "result is not an accessible field" do
-      pending "implement me"
+      arn = @azr.analysis_runs.create(@valid_attr.update(result: "abc"))
+      arn.result.should be_nil
     end
 
     it "status is not an accessible field" do
-      pending "implement me"
+      arn = @azr.analysis_runs.create(@valid_attr.update(status: :running))
+      arn.status.should_not == :running
     end
   end
 end

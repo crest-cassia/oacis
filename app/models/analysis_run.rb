@@ -11,8 +11,9 @@ class AnalysisRun
   validates :status, presence: true,
                      inclusion: {in: [:created,:running,:including,:failed,:canceled,:finished]}
   validates :analyzer, :presence => true
-
   before_validation :set_status
+
+  attr_accessible :parameters
 
   private
   def set_status
