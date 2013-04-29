@@ -10,9 +10,15 @@ describe RunsController do
   end
 
   before(:each) do
-    @sim = FactoryGirl.create(:simulator)
+    @sim = FactoryGirl.create(:simulator,
+      parameter_sets_count: 1,
+      runs_count: 1,
+      analyzers_count: 1,
+      analysis_on_run: true
+      )
     @par = @sim.parameter_sets.first
     @run = @par.runs.first
+    @arn = @run.analysis_runs
   end
 
   describe "GET 'show'" do
@@ -26,6 +32,11 @@ describe RunsController do
       get 'show', {id: @run}, valid_session
       assigns(:run).should eq(@run)
       assigns(:param_set).should eq(@par)
+    end
+
+    it "assigns 'analysis_runs' variable" do
+      get 'show', {id: @run}, valid_session
+      assigns(:analysis_runs).should eq(@run.analysis_runs)
     end
   end
 

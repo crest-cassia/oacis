@@ -23,6 +23,10 @@ class Run
   after_save :create_run_dir
 
   public
+  def simulator
+    parameter_set.simulator
+  end
+  
   def submit
     Resque.enqueue(SimulatorRunner, self.id)
   end

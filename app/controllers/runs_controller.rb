@@ -4,6 +4,7 @@ class RunsController < ApplicationController
     @run = Run.find(params[:id])
     @param_set = @run.parameter_set
     @result_file_paths = Dir.glob(@run.dir.join('*'))
+    @analysis_runs = @run.analysis_runs
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @run }

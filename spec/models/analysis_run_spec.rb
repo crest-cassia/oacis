@@ -4,7 +4,7 @@ describe AnalysisRun do
 
   before(:each) do
     @sim = FactoryGirl.create(:simulator, 
-                              parameter_sets_count:1, runs_count:1, analyzer_count: 1)
+                              parameter_sets_count:1, runs_count:1, analyzers_count: 1)
     @run = @sim.parameter_sets.first.runs.first
     @azr = @sim.analyzers.first
     @valid_attr = {
@@ -43,7 +43,7 @@ describe AnalysisRun do
       arn = AnalysisRun.new(@valid_attr)
       lambda {
         arn.save!
-      }.should raise_error Mongoid::Errors::NoParent
+      }.should raise_error
     end
 
     it "is invalid when status is not an allowed value" do
@@ -82,6 +82,12 @@ describe AnalysisRun do
       @arn.save!
       ps.analysis_runs.last.should be_a(AnalysisRun)
       @arn.analyzable.should be_a(ParameterSet)
+    end
+
+    it "refers to analyzer" do
+      @arn = @run.analysis_runs.create!(@valid_attr)
+      @arn.reload
+      @arn.analyzer.should be_a(Analyzer)
     end
   end
 end

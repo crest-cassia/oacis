@@ -3,7 +3,9 @@ require 'spec_helper'
 describe ParameterSet do
 
   before(:each) do
-    @sim = FactoryGirl.create(:simulator)
+    @sim = FactoryGirl.create(:simulator,
+                              parameter_sets_count: 1,
+                              runs_count: 1)
     @valid_attr = {:v => {"L" => 32, "T" => 1.0}}
   end
 
@@ -55,7 +57,8 @@ describe ParameterSet do
     it "identical v is valid for a differnet simulator" do
       @sim.parameter_sets.create!(@valid_attr)
 
-      sim2 = FactoryGirl.create(:simulator)
+      sim2 = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 0)
       built_param = sim2.parameter_sets.build(@valid_attr)
       built_param.should be_valid
     end

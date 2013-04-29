@@ -24,12 +24,16 @@ FactoryGirl.define do
       parameter_sets_count 5
       runs_count 5
       analyzers_count 2
+      analysis_on_run true
     end
     after(:create) do |simulator, evaluator|
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
-                                simulator: simulator, runs_count: evaluator.runs_count)
+                              simulator: simulator,
+                              runs_count: evaluator.runs_count
+                              )
       FactoryGirl.create_list(:analyzer, evaluator.analyzers_count,
-                              simulator: simulator
+                              simulator: simulator,
+                              analysis_on_run: evaluator.analysis_on_run
                               )
     end
   end
@@ -63,5 +67,22 @@ FactoryGirl.define do
         }
     parameter_definitions h
     description { Faker::Lorem.paragraphs.join("\n") }
+
+    ignore do
+      analysis_on_run true
+    end
+
+    after(:create) do |analyzer, evaluator|
+      if evaluator.analysis_on_run
+        sim = analyzer.simulator.parameter_sets.each do |ps|
+          ps.runs.each do |run|
+            arn = run.analysis_runs.create!(
+              parameters: {"param1" => 1, "param2" => 2.0},
+              analyzer: analyzer
+              )
+          end
+        end
+      end
+    end
   end
 end

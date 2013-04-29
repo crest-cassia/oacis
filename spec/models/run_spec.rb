@@ -3,7 +3,10 @@ require 'spec_helper'
 describe Run do
 
   before(:each) do
-    @simulator = FactoryGirl.create(:simulator)
+    @simulator = FactoryGirl.create(:simulator,
+                                    parameter_sets_count: 1,
+                                    runs_count: 1
+                                    )
     @param_set = @simulator.parameter_sets.first
     @valid_attribute = {}
   end
@@ -80,6 +83,11 @@ describe Run do
 
     it "belongs to parameter" do
       @run.should respond_to(:parameter_set)
+    end
+
+    it "responds to simulator" do
+      @run.should respond_to(:simulator)
+      @run.simulator.should eq(@run.parameter_set.simulator)
     end
   end
 

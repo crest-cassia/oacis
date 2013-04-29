@@ -69,3 +69,19 @@
         - if file_path =~ /\.png$/i or file_path =~ /\.jpg$/i
           = image_tag(file_path_to_link_path(file_path), :width => '200px')
 
+%h3 List of Analysis Runs
+%table.table.table-condensed
+  %thead
+    %tr
+      %th ID
+      %th analyzer
+      %th status
+      %th created_at
+  %tbody
+    - @analysis_runs.each do |arn|
+      %tr
+        %td= arn.id  # TODO : add a link
+        - azr = arn.analyzer
+        %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
+        %td= arn.status
+        %td= arn.created_at
