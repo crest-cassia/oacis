@@ -23,12 +23,12 @@ FactoryGirl.define do
     ignore do
       parameter_sets_count 5
       runs_count 5
-      analyzer_count 2
+      analyzers_count 2
     end
     after(:create) do |simulator, evaluator|
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
                                 simulator: simulator, runs_count: evaluator.runs_count)
-      FactoryGirl.create_list(:analyzer, evaluator.analyzer_count,
+      FactoryGirl.create_list(:analyzer, evaluator.analyzers_count,
                               simulator: simulator
                               )
     end

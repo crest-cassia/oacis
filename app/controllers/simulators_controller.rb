@@ -15,6 +15,7 @@ class SimulatorsController < ApplicationController
   def show
     @simulator = Simulator.find(params[:id])
     @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
+    @analyzers = @simulator.analyzers
 
     respond_to do |format|
       format.html # show.html.erb

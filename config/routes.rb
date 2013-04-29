@@ -1,9 +1,11 @@
 AcmProto::Application.routes.draw do
 
-  resources :simulators, :shallow => true, :only => ["index", "show"] do
-    resources :parameter_sets, :only => ["show"] do
+  resources :simulators, :only => ["index", "show"] do
+    resources :parameter_sets, :shallow => true, :only => ["show"] do
       resources :runs, :only => ["show","create"]
     end
+
+    resources :analyzers, :only => ["index"]
   end
 
   mount Resque::Server, :at => '/resque'

@@ -57,6 +57,7 @@ describe SimulatorsController do
       response.should be_success
       assigns(:simulator).should eq(simulator)
       assigns(:param_sets).should eq(simulator.parameter_sets)
+      assigns(:analyzers).should eq(simulator.analyzers)
     end
 
     it "paginates the list of parameters" do
