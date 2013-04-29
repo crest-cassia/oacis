@@ -5,7 +5,7 @@ AcmProto::Application.routes.draw do
       resources :runs, :only => ["show","create"]
     end
 
-    resources :analyzers, :only => ["index"]
+    resources :analyzers, :only => ["show"]
   end
 
   mount Resque::Server, :at => '/resque'
