@@ -12,13 +12,21 @@ describe ParameterSetsController do
   describe "GET 'show'" do
 
     it "returns http success" do
-      sim = FactoryGirl.create(:simulator)
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1,
+                               runs_count: 1,
+                               analyzers_count: 1,
+                               analysis_on_run: true)
       get 'show', {id: sim.parameter_sets.first}, valid_session
       response.should be_success
     end
 
     it "assigns instance variables" do
-      sim = FactoryGirl.create(:simulator)
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1,
+                               runs_count: 1,
+                               analyzers_count: 1,
+                               analysis_on_run: true)
       prm = sim.parameter_sets.first
       get 'show', {id: prm}, valid_session
       assigns(:param_set).should eq(prm)

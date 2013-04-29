@@ -3,7 +3,10 @@ require 'spec_helper'
 describe ResultDirectory do
 
   before(:each) do
-    @simulator = FactoryGirl.create(:simulator)
+    @simulator = FactoryGirl.create(:simulator,
+                                    parameter_sets_count: 1,
+                                    runs_count: 1
+                                    )
     @default_root = ResultDirectory::DefaultResultRoot
   end
 
