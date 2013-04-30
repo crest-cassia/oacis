@@ -18,11 +18,11 @@ describe AnalysisRunsController do
     @par = @sim.parameter_sets.first
     @run = @par.runs.first
 
-    FactoryGirl.create(:analyzer, 
-                       simulator: @sim,
-                       type: :on_run,
-                       run_analysis: true
-                       )
+    @azr = FactoryGirl.create(:analyzer,
+                              simulator: @sim,
+                              type: :on_run,
+                              run_analysis: true
+                              )
     @arn = @run.analysis_runs.first
   end
 
@@ -45,10 +45,42 @@ describe AnalysisRunsController do
     end
   end
 
-  describe "GET 'create'" do
-    it "returns http success" do
-      post 'create', {run_id: @run}, valid_session
-      response.should be_success
+  describe "POST 'create'" do
+
+    describe "with valid params" do
+
+      before(:each) do
+        @valid_param = {
+          run_id: @run.to_param,
+          analysis_run: { analyzer: @azr.to_param},
+          parameters: {"param1" => 1, "param2" => 2.0}
+        }
+      end
+
+      it "creates a new AnalysisRun" do
+        expect {
+          post :create, @valid_param, valid_session
+        }.to change{
+          @run.reload.analysis_runs.count
+        }.by(1)
+      end
+
+      it "redirects to the created simulator" do
+        post :create, @valid_param, valid_session
+        @run.reload
+        response.should redirect_to(run_analysis_run_path(@run,@run.analysis_runs.last))
+      end
+    end
+
+    describe "with invalid params" do
+
+      before(:each) do
+        @invalid_param = {}   #IMPLEMENT ME
+      end
+
+      it "re-renders Run#show template showing errors" do
+        pending "not yet implemented"
+      end
     end
   end
 

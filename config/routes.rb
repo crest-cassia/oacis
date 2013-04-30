@@ -9,7 +9,11 @@ AcmProto::Application.routes.draw do
 
   # routes for analyzers and analysis_runs
   resources :simulators, shallow: false, only: [] do
-    resources :analyzers, only: ["show"]
+    resources :analyzers, only: ["show"] do
+      member do
+        get '_parameters_form' # for ajax
+      end
+    end
   end
   resources :parameter_sets, shallow: false, only: [] do
     resources :analysis_runs, :only => ["show", "create"]

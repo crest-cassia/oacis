@@ -1,0 +1,5 @@
+- param_def.each do |key,definition|
+  = label 'parameters', h(key)
+  = text_field 'parameters', h(key)
+  = definition['description']
+  %br

@@ -27,4 +27,19 @@ describe AnalyzersController do
       assigns(:analyzer).should eq(@azr)
     end
   end
+
+  describe "GET '_parameters_form'" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count:0, runs_count:0, analyzers_count:2)
+      @azr = @sim.analyzers.first
+    end
+
+    it "returns http success" do
+      get '_parameters_form', {simulator_id: @sim.id, id: @azr.id}
+      response.should be_success
+    end
+  end
+
 end

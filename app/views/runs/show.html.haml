@@ -3,8 +3,8 @@
     = link_to("Simulators", simulators_path)
     %span.divider /
   %li
-    - sim = @param_set.simulator
-    = link_to(sim.name, simulator_path(sim))
+    - @sim = @param_set.simulator
+    = link_to(@sim.name, simulator_path(@sim))
     %span.divider /
   %li
     = link_to(@param_set.to_param, parameter_set_path(@param_set))
@@ -85,3 +85,20 @@
         %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
         %td= arn.status
         %td= arn.created_at
+
+%h5 Run analysis
+= form_for( @run.analysis_runs.build, :url => run_analysis_runs_path(@run) ) do |f|
+  = f.label :analyzer
+  = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }
+  %div#parameters_form
+    = render 'shared/parameters_form', param_def: @sim.analyzers_on_run.first.parameter_definitions
+  = f.submit "Analyze", :class => 'btn btn-primary'
+
+:javascript
+  $(function() {
+    $('#analysis_run_analyzer').change(function(){
+      $.get("#{_parameters_form_simulator_analyzer_path(@sim,':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
+        $('#parameters_form').html(data)
+      });
+    });
+  });

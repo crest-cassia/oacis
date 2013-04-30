@@ -20,5 +20,20 @@ class AnalysisRunsController < ApplicationController
   end
 
   def create
+    @run = Run.find(params[:run_id])
+    azr = @run.simulator.analyzers.find(params[:analysis_run][:analyzer])
+    arn = @run.analysis_runs.build(analyzer: azr, parameters: params[:parameters])
+
+    respond_to do |format|
+      if arn.save
+        format.html { redirect_to run_analysis_run_path(@run, arn),
+                      notice: "AnalysisRun was successfully created."}
+        format.json { render json: @arn, status: :created, location: @arn}
+      else
+        # UPDATE ME: a tentative implementation
+        format.html { redirect_to @run, alert: "Failed to create analysis run" }
+        format.json { render json: @arn.errors, status: :unprocessable_entity}
+      end
+    end
   end
 end
