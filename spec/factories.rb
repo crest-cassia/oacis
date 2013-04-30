@@ -61,7 +61,7 @@ FactoryGirl.define do
     command { "/path/to/#{name}" }
 
     h = { "param1" =>
-            {"type"=>"Integer", "default" => 0, "description" => "Initial"},
+            {"type"=>"Integer", "default" => 0, "description" => "Initial step"},
           "param2" =>
             {"type"=>"Float", "default" => 1.0, "description" => "Temperature"}
         }
