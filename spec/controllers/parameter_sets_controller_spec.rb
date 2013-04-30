@@ -16,7 +16,7 @@ describe ParameterSetsController do
                                parameter_sets_count: 1,
                                runs_count: 1,
                                analyzers_count: 1,
-                               analysis_on_run: true)
+                               run_analysis: true)
       get 'show', {id: sim.parameter_sets.first}, valid_session
       response.should be_success
     end
@@ -26,7 +26,7 @@ describe ParameterSetsController do
                                parameter_sets_count: 1,
                                runs_count: 1,
                                analyzers_count: 1,
-                               analysis_on_run: true)
+                               run_analysis: true)
       prm = sim.parameter_sets.first
       get 'show', {id: prm}, valid_session
       assigns(:param_set).should eq(prm)
