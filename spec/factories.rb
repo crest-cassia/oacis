@@ -24,7 +24,7 @@ FactoryGirl.define do
       parameter_sets_count 5
       runs_count 5
       analyzers_count 2
-      analysis_on_run true
+      run_analysis true
     end
     after(:create) do |simulator, evaluator|
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
@@ -33,7 +33,7 @@ FactoryGirl.define do
                               )
       FactoryGirl.create_list(:analyzer, evaluator.analyzers_count,
                               simulator: simulator,
-                              analysis_on_run: evaluator.analysis_on_run
+                              run_analysis: evaluator.run_analysis
                               )
     end
   end
@@ -69,20 +69,29 @@ FactoryGirl.define do
     description { Faker::Lorem.paragraphs.join("\n") }
 
     ignore do
-      analysis_on_run true
+      run_analysis true
     end
 
     after(:create) do |analyzer, evaluator|
-      if evaluator.analysis_on_run
+      if evaluator.run_analysis
         sim = analyzer.simulator.parameter_sets.each do |ps|
-          ps.runs.each do |run|
-            arn = run.analysis_runs.create!(
-              parameters: {"param1" => 1, "param2" => 2.0},
-              analyzer: analyzer
-              )
+          case analyzer.type
+          when :on_parameter_set
+            FactoryGirl.create(:analysis_run, analyzable: ps, analyzer: analyzer)
+          when :on_run
+            ps.runs.each do |run|
+              FactoryGirl.create(:analysis_run, analyzable: run, analyzer: analyzer)
+            end
+          else
+            raise "not supported type"
           end
         end
       end
     end
+  end
+
+  factory :analysis_run do
+    h = {"param1" => 1, "param2" => 2.0}
+    parameters h
   end
 end
