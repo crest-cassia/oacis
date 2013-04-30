@@ -11,6 +11,7 @@ class AnalysisRunsController < ApplicationController
       @simulator = @param_set.simulator
       @analysis_run = @run.analysis_runs.find(params[:id])
     end
+    @parameter_keys = @analysis_run.analyzer.parameter_definitions.keys
 
     respond_to do |format|
       format.html # show.html.erb
