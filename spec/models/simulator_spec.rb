@@ -127,4 +127,25 @@ describe Simulator do
       sim.dir.should == ResultDirectory.simulator_path(sim)
     end
   end
+
+  describe "#analyzers_on_run" do
+
+    it "returns analyzers whose type is :on_run" do
+      sim = FactoryGirl.create(:simulator, 
+                               parameter_sets_count: 0,
+                               runs_count: 0,
+                               analyzers_count: 0
+                               )
+      FactoryGirl.create_list(:analyzer, 5,
+                              type: :on_run,
+                              simulator: sim)
+      FactoryGirl.create_list(:analyzer, 5,
+                              type: :on_parameter_set,
+                              simulator: sim)
+
+      sim.analyzers_on_run.should be_a(Mongoid::Criteria)
+      sim.analyzers_on_run.should eq(sim.analyzers.where(type: :on_run))
+      sim.analyzers_on_run.count.should eq(5)
+    end
+  end
 end

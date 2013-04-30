@@ -18,6 +18,10 @@ class Simulator
   def dir
     ResultDirectory.simulator_path(self)
   end
+
+  def analyzers_on_run
+    self.analyzers.where(type: :on_run)
+  end
   
   private
   def parameter_definitions_format
