@@ -75,6 +75,14 @@ describe ParameterSet do
       built[:v]["T"].should == 2.0
     end
 
+    it "uses default values if a parameter value is not given" do
+      updated_attr = @valid_attr.update(v: {})
+      built = @sim.parameter_sets.build(updated_attr)
+      built.should be_valid
+      built[:v]["L"].should == @sim.parameter_definitions["L"]["default"]
+      built[:v]["T"].should == @sim.parameter_definitions["T"]["default"]
+    end
+
     it "should be valid once it is saved with valid attributes" do
       prm = @sim.parameter_sets.first
       prm.should be_valid

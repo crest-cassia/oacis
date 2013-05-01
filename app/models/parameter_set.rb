@@ -6,7 +6,6 @@ class ParameterSet
   has_many :runs
   embeds_many :analysis_runs, as: :analyzable
 
-  validates :v, :presence => true
   validates :simulator, :presence => true
   validate :cast_and_validate_parameter_values
 
