@@ -15,12 +15,13 @@ class AnalysisRun
   end
   embedded_in :analyzable, polymorphic: true
 
+  before_validation :set_status
   validates :parameters, presence: true
   validates :status, presence: true,
                      inclusion: {in: [:created,:running,:including,:failed,:canceled,:finished]}
   validates :analyzable, :presence => true
   validates :analyzer, :presence => true
-  before_validation :set_status
+  validate :cast_and_validate_parameter_values
 
   attr_accessible :parameters, :analyzer
 
@@ -29,5 +30,21 @@ class AnalysisRun
   private
   def set_status
     self.status ||= :created
+  end
+
+  def cast_and_validate_parameter_values
+    unless parameters.is_a?(Hash)
+      errors.add(:parameters, "parameters is not a Hash")
+      return
+    end
+
+    return unless analyzer
+    defn = analyzer.parameter_definitions
+    casted = ParametersUtil.cast_parameter_values(parameters, defn)
+    if casted.nil?
+      errors.add(:parameters, "parameters are invalid. See the definition.")
+      return
+    end
+    self.parameters = casted
   end
 end

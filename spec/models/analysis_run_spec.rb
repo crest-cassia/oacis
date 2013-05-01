@@ -52,6 +52,13 @@ describe AnalysisRun do
       arn.status = :status_XXX
       arn.should_not be_valid
     end
+
+    it "casts the parameter values according to the definition" do
+      updated_attr = @valid_attr.update(parameters: {"param1"=>"32","param2"=>"2.0"})
+      arn = @run.analysis_runs.create!(updated_attr)
+      arn.parameters["param1"].should be_a(Integer)
+      arn.parameters["param2"].should be_a(Float)
+    end
   end
 
   describe "accessibility" do
