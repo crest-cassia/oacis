@@ -36,10 +36,10 @@ describe ParameterSetsController do
     end
 
     it "paginates list of runs" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count:1, runs_count: 30)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count:1, runs_count: 26)
       prm = sim.parameter_sets.first
       get 'show', {id: prm, page: 1}, valid_session
-      assigns(:runs).count.should == 30
+      assigns(:runs).count.should == 26
       assigns(:runs).to_a.size.should == 25
     end
   end

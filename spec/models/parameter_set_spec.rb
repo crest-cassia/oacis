@@ -29,13 +29,11 @@ describe ParameterSet do
       built_param.should_not be_valid
     end
 
-    it "should not be valid when v is not a Hash" do
-      invalid_attr = @valid_attr.update({:v => "xxx"})
-      prev_parameters_count = @sim.parameter_sets.count
+    it "should raise an error when v is not a Hash" do
+      invalid_attr = @valid_attr.update({v: "xxx"})
       lambda {
-        @sim.parameter_sets.create!(invalid_attr)
+        @sim.parameter_sets.build(invalid_attr)
       }.should raise_error
-      @sim.parameter_sets.count.should == prev_parameters_count
     end
 
     it "should not be valid when keys of v are not consistent its Simulator" do
