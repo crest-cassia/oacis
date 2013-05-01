@@ -53,6 +53,9 @@ FactoryGirl.define do
   end
 
   factory :run do
+    sequence(:result) do |n|
+      {"Energy" => n*1.0, "Flow" => n*3.0}
+    end
   end
 
   factory :analyzer do

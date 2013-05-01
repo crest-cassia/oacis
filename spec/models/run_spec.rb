@@ -192,6 +192,17 @@ describe Run do
       run.finished_at.should_not be_nil
       run.included_at.should_not be_nil
     end
+
+    it "also sets result" do
+      result = {x: 0.5, y: 0.2}
+      ret = @run.set_status_finished(result: result)
+      ret.should be_true
+
+      @run.reload
+      @run.status.should eq(:finished)
+      @run.result["x"].should eq(0.5)
+      @run.result["y"].should eq(0.2)
+    end
   end
 
   describe "#set_status_failed" do

@@ -9,6 +9,7 @@ class Run
   field :started_at, type: DateTime
   field :finished_at, type: DateTime
   field :included_at, type: DateTime
+  field :result  # can be any type. it's up to Simulator spec
   belongs_to :parameter_set
   embeds_many :analysis_runs, as: :analyzable
 
@@ -54,10 +55,12 @@ class Run
     self.save
   end
 
-  def set_status_finished( option = {cpu_time: 0.0, real_time: 0.0} )
+  def set_status_finished( option )
+    merged = {cpu_time: 0.0, real_time: 0.0}.merge(option)
     self.status = :finished
-    self.cpu_time = option[:cpu_time]
-    self.real_time = option[:real_time]
+    self.cpu_time = merged[:cpu_time]
+    self.real_time = merged[:real_time]
+    self.result = merged[:result]
     self.finished_at = DateTime.now
     self.included_at = DateTime.now
     self.save
