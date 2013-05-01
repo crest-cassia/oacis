@@ -42,7 +42,6 @@ describe ParameterSet do
       h = @sim.parameter_definitions
       h["T"].delete("default")
       @sim.parameter_definitions = h
-      @sim.save
       built_param = @sim.parameter_sets.build(@valid_attr.update({:v => {"L"=>32}}))
       built_param.should_not be_valid
     end
@@ -77,10 +76,12 @@ describe ParameterSet do
 
     it "uses default values if a parameter value is not given" do
       updated_attr = @valid_attr.update(v: {})
+      @sim.parameter_definitions["L"]["default"] = 30
+      @sim.parameter_definitions["T"]["default"] = 2.0
       built = @sim.parameter_sets.build(updated_attr)
       built.should be_valid
-      built[:v]["L"].should == @sim.parameter_definitions["L"]["default"]
-      built[:v]["T"].should == @sim.parameter_definitions["T"]["default"]
+      built[:v]["L"].should == 30
+      built[:v]["T"].should == 2.0
     end
 
     it "should be valid once it is saved with valid attributes" do
