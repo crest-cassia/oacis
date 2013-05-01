@@ -33,42 +33,21 @@ class ParameterSet
       return
     end
 
-    unless simulator
-      errors.add(:simulator, "Simulator is not found")
-      return
-    end
-
-    unless simulator.parameter_definitions.keys.sort == v.keys.sort
-      errors.add(:v, "v do not have keys consistent with its Simulator")
-      return
-    end
+    return unless self.simulator # presence of simulator is checked by another validator
 
     # cast parameter values
-    cast_parameter_values
+    defn = self.simulator.parameter_definitions
+    casted = ParametersUtil.cast_parameter_values(v, defn)
+    unless casted
+      errors.add(:parameters, "parameters are not consistent with its definition.")
+      return
+    end
+    self.v = casted
 
     found = self.class.find_identical_parameter_set(simulator, v)
     if found and found.id != self.id
       errors.add(:v, "An identical parameters already exists : #{found.to_param}")
       return
-    end
-  end
-
-  def cast_parameter_values
-    v.each do |key,val|
-      type = simulator.parameter_definitions[key]["type"]
-      case type
-      when "Integer"
-        val = val.to_i
-      when "Float"
-        val = val.to_f
-      when "Boolean"
-        val = !!val
-      when "String"
-        val = val.to_s
-      else
-        raise "Unknown type : #{type}"
-      end
-      v[key] = val
     end
   end
 

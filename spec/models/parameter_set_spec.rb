@@ -39,6 +39,10 @@ describe ParameterSet do
     end
 
     it "should not be valid when keys of v are not consistent its Simulator" do
+      h = @sim.parameter_definitions
+      h["T"].delete("default")
+      @sim.parameter_definitions = h
+      @sim.save
       built_param = @sim.parameter_sets.build(@valid_attr.update({:v => {"L"=>32}}))
       built_param.should_not be_valid
     end
@@ -112,6 +116,11 @@ describe ParameterSet do
 
     it "is not created when validation fails" do
       sim = FactoryGirl.create(:simulator, :parameter_sets_count => 0)
+      h = sim.parameter_definitions
+      h["T"].delete("default")
+      sim.parameter_definitions = h
+      sim.save
+
       prm = sim.parameter_sets.create(@valid_attr.update({:v => {"L"=>32}}))
       Dir.entries(ResultDirectory.simulator_path(sim)).should == ['.', '..'] # i.e. empty directory
     end
