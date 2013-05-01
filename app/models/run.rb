@@ -55,7 +55,7 @@ class Run
     self.save
   end
 
-  def set_status_finished( option )
+  def set_status_finished(option = {cpu_time: 0.0, real_time: 0.0})
     merged = {cpu_time: 0.0, real_time: 0.0}.merge(option)
     self.status = :finished
     self.cpu_time = merged[:cpu_time]
