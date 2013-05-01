@@ -25,8 +25,6 @@ class AnalysisRun
 
   attr_accessible :parameters, :analyzer
 
-  # TODO: cast parameters
-
   private
   def set_status
     self.status ||= :created
