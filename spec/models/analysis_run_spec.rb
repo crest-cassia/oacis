@@ -59,6 +59,13 @@ describe AnalysisRun do
       arn.parameters["param1"].should be_a(Integer)
       arn.parameters["param2"].should be_a(Float)
     end
+
+    it "adopts default values if the parameter is not explicitly specified" do
+      updated_attr = @valid_attr.update(parameters: {"param1"=>"32"})
+      arn = @run.analysis_runs.create!(updated_attr)
+      default_val = arn.analyzer.parameter_definitions["param2"]["default"]
+      arn.parameters["param2"].should eq(default_val)
+    end
   end
 
   describe "accessibility" do
