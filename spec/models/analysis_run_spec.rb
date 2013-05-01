@@ -104,4 +104,86 @@ describe AnalysisRun do
       @arn.analyzer.should be_a(Analyzer)
     end
   end
+
+  describe "#update_status_running" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1, runs_count: 1,
+                               analyzers_count: 1, run_analysis: true)
+      prm = sim.parameter_sets.first
+      run = prm.runs.first
+      @arn = run.analysis_runs.first
+    end
+
+    it "updates status to 'running' and sets hostname" do
+      ret = @arn.update_status_running(hostname: 'host_ABC')
+      ret.should be_true
+
+      @arn.reload
+      @arn.status.should == :running
+      @arn.hostname.should == 'host_ABC'
+    end
+  end
+
+  describe "#update_status_including" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1, runs_count: 1,
+                               analyzers_count: 1, run_analysis: true)
+      prm = sim.parameter_sets.first
+      run = prm.runs.first
+      @arn = run.analysis_runs.first
+      @arn.update_status_running(:hostname => 'host_ABC')
+    end
+
+    it "updates status to 'including' and 'finished_at'" do
+      ret = @arn.update_status_including
+      ret.should be_true
+
+      @arn.reload
+      @arn.status.should == :including
+      @arn.result.should be_nil
+      @arn.finished_at.should_not be_nil
+      @arn.included_at.should be_nil
+    end
+
+    it "also updates cpu- and real-times" do
+      ret = @arn.update_status_including(cpu_time: 1.5, real_time: 2.0)
+      @arn.reload
+      @arn.cpu_time.should == 1.5
+      @arn.real_time.should == 2.0
+    end
+
+    it "also updates 'result'" do
+      result = {xxx: "abc", yyy: 12345}
+      ret = @arn.update_status_including(result: result, cpu_time: 1.5, real_time: 2.0)
+      @arn.reload
+      @arn.result["xxx"].should eq("abc")
+      @arn.result["yyy"].should eq(12345)
+    end
+  end
+
+  describe "#update_status_finished" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1, runs_count: 1,
+                               analyzers_count: 1, run_analysis: true)
+      prm = sim.parameter_sets.first
+      run = prm.runs.first
+      @arn = run.analysis_runs.first
+      @arn.update_status_running(:hostname => 'host_ABC')
+      @arn.update_status_including(result: {x:1.0}, cpu_time: 1.5, real_time: 2.0)
+    end
+
+    it "updates status to 'finished'" do
+      ret = @arn.update_status_finished
+      ret.should be_true
+      @arn.reload
+      @arn.status.should eq(:finished)
+      @arn.included_at.should_not be_nil
+    end
+  end
 end

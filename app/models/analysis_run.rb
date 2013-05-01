@@ -3,8 +3,14 @@ class AnalysisRun
   include Mongoid::Timestamps
 
   field :parameters, type: Hash
-  field :result
   field :status, type: Symbol
+  field :hostname, type: String
+  field :cpu_time, type: Float
+  field :real_time, type: Float
+  field :started_at, type: DateTime
+  field :finished_at, type: DateTime
+  field :included_at, type: DateTime
+  field :result
 
   belongs_to :analyzer
   def analyzer  # find embedded document
@@ -24,6 +30,31 @@ class AnalysisRun
   validate :cast_and_validate_parameter_values
 
   attr_accessible :parameters, :analyzer
+
+  public
+  def update_status_running(option = {hostname: 'localhost'})
+    merged = {hostname: 'localhost'}.merge(option)
+    self.status = :running
+    self.hostname = option[:hostname]
+    self.started_at = DateTime.now
+    self.save
+  end
+
+  def update_status_including(option = {cpu_time: 0.0, real_time: 0.0})
+    merged = {cpu_time: 0.0, real_time: 0.0}.merge(option)
+    self.status = :including
+    self.cpu_time = merged[:cpu_time]
+    self.real_time = merged[:real_time]
+    self.result = merged[:result]
+    self.finished_at = DateTime.now
+    self.save
+  end
+
+  def update_status_finished
+    self.status = :finished
+    self.included_at = DateTime.now
+    self.save
+  end
 
   private
   def set_status
