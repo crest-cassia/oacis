@@ -185,12 +185,13 @@ describe Run do
       ret = @run.set_status_finished( {cpu_time: 1.5, real_time: 2.0} )
       ret.should be_true
 
-      run = Run.find(@run)
-      run.status.should == :finished
-      run.cpu_time.should == 1.5
-      run.real_time.should == 2.0
-      run.finished_at.should_not be_nil
-      run.included_at.should_not be_nil
+      @run.reload
+      @run.status.should == :finished
+      @run.cpu_time.should == 1.5
+      @run.real_time.should == 2.0
+      @run.result.should be_nil
+      @run.finished_at.should_not be_nil
+      @run.included_at.should_not be_nil
     end
 
     it "also sets result" do
