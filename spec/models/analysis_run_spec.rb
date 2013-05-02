@@ -107,12 +107,7 @@ describe AnalysisRun do
   describe "#update_status_running" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
-                               parameter_sets_count: 1, runs_count: 1,
-                               analyzers_count: 1, run_analysis: true)
-      prm = sim.parameter_sets.first
-      run = prm.runs.first
-      @arn = run.analysis_runs.first
+      @arn = @run.analysis_runs.first
     end
 
     it "updates status to 'running' and sets hostname" do
@@ -128,12 +123,7 @@ describe AnalysisRun do
   describe "#update_status_including" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
-                               parameter_sets_count: 1, runs_count: 1,
-                               analyzers_count: 1, run_analysis: true)
-      prm = sim.parameter_sets.first
-      run = prm.runs.first
-      @arn = run.analysis_runs.first
+      @arn = @run.analysis_runs.first
       @arn.update_status_running(:hostname => 'host_ABC')
     end
 
@@ -167,12 +157,7 @@ describe AnalysisRun do
   describe "#update_status_finished" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
-                               parameter_sets_count: 1, runs_count: 1,
-                               analyzers_count: 1, run_analysis: true)
-      prm = sim.parameter_sets.first
-      run = prm.runs.first
-      @arn = run.analysis_runs.first
+      @arn = @run.analysis_runs.first
       @arn.update_status_running(:hostname => 'host_ABC')
       @arn.update_status_including(result: {x:1.0}, cpu_time: 1.5, real_time: 2.0)
     end
