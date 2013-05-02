@@ -170,4 +170,42 @@ describe AnalysisRun do
       @arn.included_at.should_not be_nil
     end
   end
+
+  describe "#input" do
+
+    describe "for :on_run type" do
+
+      before(:each) do
+        @arn = @run.analysis_runs.first
+      end
+
+      it "returns a Hash having 'simulation_parameters'" do
+        @arn.input[:simulation_parameters].should eq(@run.parameter_set.v)
+      end
+
+      it "returns a Hash having 'analysis_parameters'" do
+        @arn.input[:analysis_parameters].should eq(@arn.parameters)
+      end
+
+      it "returns a Hash having result of Run" do
+        @run.result = {"xxx" => 1234, "yyy" => 0.5}
+        @run.save!
+        @arn.input[:result].should eq(@run.result)
+      end
+    end
+
+    describe "for :on_parameter_set type" do
+
+      it "returns an appropriate hash" do
+        pending "not yet implemented"
+      end
+    end
+
+    describe "for :on_parameter_sets_group type" do
+
+      it "returns an appropriate hash" do
+        pending "not yet implemented"
+      end
+    end
+  end
 end

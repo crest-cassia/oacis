@@ -56,6 +56,20 @@ class AnalysisRun
     self.save
   end
 
+  def input
+    obj = {}
+    obj[:analysis_parameters] = self.parameters
+    case self.analyzer.type
+    when :on_run
+      run = self.analyzable
+      obj[:simulation_parameters] = run.parameter_set.v
+      obj[:result] = run.result
+    else
+      raise "not supported type"
+    end
+    return obj
+  end
+
   private
   def set_status
     self.status ||= :created
