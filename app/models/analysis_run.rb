@@ -14,10 +14,12 @@ class AnalysisRun
 
   belongs_to :analyzer
   def analyzer  # find embedded document
-    analyzer = nil
-    if analyzer_id and analyzable
-      analyzable.simulator.analyzers.find(analyzer_id)
+    unless @analyzer_cache
+      if analyzer_id and analyzable
+        @analyzer_cache = analyzable.simulator.analyzers.find(analyzer_id)
+      end
     end
+    return @analyzer_cache
   end
   embedded_in :analyzable, polymorphic: true
 
@@ -56,6 +58,7 @@ class AnalysisRun
     self.save
   end
 
+  # returns an hash object which is going to be dumped into _input.json
   def input
     obj = {}
     obj[:analysis_parameters] = self.parameters
