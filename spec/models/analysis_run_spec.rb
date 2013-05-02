@@ -4,7 +4,8 @@ describe AnalysisRun do
 
   before(:each) do
     @sim = FactoryGirl.create(:simulator, 
-                              parameter_sets_count:1, runs_count:1, analyzers_count: 1)
+                              parameter_sets_count:1, runs_count:1,
+                              analyzers_count: 1, run_analysis: true)
     @run = @sim.parameter_sets.first.runs.first
     @azr = @sim.analyzers.first
     @valid_attr = {
@@ -85,7 +86,6 @@ describe AnalysisRun do
 
     it "can be embedded in a run" do
       @arn = @run.analysis_runs.build(@valid_attr)
-      @arn.save!
       @run.analysis_runs.last.should be_a(AnalysisRun)
       @arn.analyzable.should be_a(Run)
     end
@@ -93,7 +93,6 @@ describe AnalysisRun do
     it "can be embedded in a parameter_set" do
       ps = @sim.parameter_sets.first
       @arn = ps.analysis_runs.build(@valid_attr)
-      @arn.save!
       ps.analysis_runs.last.should be_a(AnalysisRun)
       @arn.analyzable.should be_a(ParameterSet)
     end
