@@ -73,6 +73,18 @@ class AnalysisRun
     return obj
   end
 
+  # returns an array of files to be copied to _input/
+  def input_files
+    files = []
+    case self.analyzer.type
+    when :on_run
+      files << self.analyzable.dir
+    else
+      raise "not supported type"
+    end
+    return files
+  end
+
   private
   def set_status
     self.status ||= :created

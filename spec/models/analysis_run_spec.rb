@@ -208,4 +208,33 @@ describe AnalysisRun do
       end
     end
   end
+
+  describe "#input_files" do
+
+    describe "for :on_run type" do
+
+      before(:each) do
+        @arn = @run.analysis_runs.first
+      end
+
+      it "returns an array having run_directory" do
+        ent = @arn.input_files
+        ent.should eq([@run.dir])
+      end
+    end
+
+    describe "for :on_parameter_set type" do
+
+      it "returns an appropriate entries" do
+        pending "not yet implemented"
+      end
+    end
+
+    describe "for :on_parameter_sets_group type" do
+
+      it "returns an appropriate entries" do
+        pending "not yet implemented"
+      end
+    end
+  end
 end
