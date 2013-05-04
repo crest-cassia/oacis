@@ -1,12 +1,18 @@
 module ParametersUtil
 
-  def self.cast_parameter_values(parameters, definitions)
+  def self.cast_parameter_values(parameters, definitions, errors = nil)
     casted = {}
     definitions.each do |key,defn|
 
       type = defn["type"]
       val = parameters[key] || defn["default"]
-      return nil if val.nil? # both parameter and defualt value is not specified
+
+      # neither parameter and defualt value is specified
+      if val.nil?
+        errors.add(:parameters, "can not determine value for #{key}") if errors
+        return nil
+      end
+
       case type
       when "Integer"
         val = val.to_i
