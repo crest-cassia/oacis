@@ -60,6 +60,8 @@
 %pre= @run.dir
 
 %h3 Results
+%pre
+  = @run.result.to_json
 %ul
   - @result_file_paths.each do |file_path|
     %li
