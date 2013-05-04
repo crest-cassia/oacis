@@ -215,11 +215,17 @@ describe AnalysisRun do
 
       before(:each) do
         @arn = @run.analysis_runs.first
+        @dummy_path = @run.dir.join('__dummy__')
+        FileUtils.touch( @dummy_path )
+      end
+
+      after(:each) do
+        FileUtils.rm( @dummy_path ) if File.exist?(@dummy_path)
       end
 
       it "returns an array having run_directory" do
-        ent = @arn.input_files
-        ent.should eq([@run.dir])
+        paths = @arn.input_files
+        paths.should eq([@run.dir.join('__dummy__')])
       end
     end
 

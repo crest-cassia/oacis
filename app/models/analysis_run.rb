@@ -73,12 +73,14 @@ class AnalysisRun
     return obj
   end
 
-  # returns an array of files to be copied to _input/
+  # returns an array of aboslute pathnames of files to be copied to _input/
   def input_files
     files = []
     case self.analyzer.type
     when :on_run
-      files << self.analyzable.dir
+      files = Dir.glob( self.analyzable.dir.join('*') ).map {|x|
+        Pathname(x)
+      }
     else
       raise "not supported type"
     end
