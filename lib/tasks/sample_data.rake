@@ -23,16 +23,11 @@ namespace :db do
     end
 
     # create simulators
-    sim = FactoryGirl.create(:simulator)
+    sim = FactoryGirl.create(:simulator,
+                             parameter_sets_count: 5,
+                             runs_count: 2,
+                             finished_runs_count: 3)
 
-    h = {"Init1" => {"type"=>"Integer","description"=>"initial step1"},
-         "Init2" => {"type"=>"Integer","description"=>"initial step2"}
-       }
-    FactoryGirl.create(:analyzer,
-                       simulator: sim,
-                       type: :on_run,
-                       parameter_definitions: h
-                       )
     FactoryGirl.create(:simulator, parameter_sets_count: 0)
     # FactoryGirl.create(:simulator, parameter_sets_count: 30)
     # FactoryGirl.create(:simulator, runs_count: 30)

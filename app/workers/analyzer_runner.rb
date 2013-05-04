@@ -14,7 +14,7 @@ class AnalyzerRunner
 
   private
   def self.fetch_analysis_run_instance(type, analyzable_id, arn_id)
-    case type
+    case type.to_sym
     when :on_run
       analyzable = Run.find(analyzable_id)
     when :on_parameter_set
@@ -54,7 +54,7 @@ class AnalyzerRunner
 
     FileUtils.mkdir_p(INPUT_FILES_DIR)
     arn.input_files.each do |input_file|
-      FileUtils.cp(input_file, INPUT_FILES_DIR)
+      FileUtils.cp_r(input_file, INPUT_FILES_DIR)
     end
   end
 

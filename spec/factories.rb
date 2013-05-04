@@ -23,13 +23,15 @@ FactoryGirl.define do
     ignore do
       parameter_sets_count 5
       runs_count 5
+      finished_runs_count 0
       analyzers_count 2
       run_analysis true
     end
     after(:create) do |simulator, evaluator|
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
                               simulator: simulator,
-                              runs_count: evaluator.runs_count
+                              runs_count: evaluator.runs_count,
+                              finished_runs_count: evaluator.finished_runs_count
                               )
       FactoryGirl.create_list(:analyzer, evaluator.analyzers_count,
                               simulator: simulator,
@@ -45,23 +47,37 @@ FactoryGirl.define do
 
     ignore do
       runs_count 5
+      finished_runs_count 0
     end
 
     after(:create) do |param_set, evaluator|
       FactoryGirl.create_list(:run, evaluator.runs_count, parameter_set: param_set)
+      FactoryGirl.create_list(:finished_run, evaluator.finished_runs_count, parameter_set: param_set)
     end
   end
 
   factory :run do
-    sequence(:result) do |n|
-      {"Energy" => n*1.0, "Flow" => n*3.0}
+
+    factory :finished_run do
+
+      after(:create) do |run, evaluator|
+        run.set_status_running(hostname: 'hostXYZ')
+        cpu_time = rand * 100.0
+        real_time = cpu_time + rand * 2.0
+        result_hash = {"Energy" => rand*1.0, "Flow" => rand*3.0}
+        run.set_status_finished(cpu_time: cpu_time,
+                                real_time: real_time,
+                                result: result_hash
+                                )
+        FileUtils
+      end
     end
   end
 
   factory :analyzer do
     sequence(:name, 'A') {|n| "analyzer_#{n}"}
     type { :on_run }
-    command { "/path/to/#{name}" }
+    command { "cat _input.json" }
 
     h = { "param1" =>
             {"type"=>"Integer", "default" => 0, "description" => "Initial step"},
@@ -80,10 +96,10 @@ FactoryGirl.define do
         sim = analyzer.simulator.parameter_sets.each do |ps|
           case analyzer.type
           when :on_parameter_set
-            FactoryGirl.create(:analysis_run, analyzable: ps, analyzer: analyzer)
+            FactoryGirl.create(:analysis_run, analyzable: ps, analyzer: analyzer, parameters: {})
           when :on_run
             ps.runs.each do |run|
-              FactoryGirl.create(:analysis_run, analyzable: run, analyzer: analyzer)
+              FactoryGirl.create(:analysis_run, analyzable: run, analyzer: analyzer, parameters: {})
             end
           else
             raise "not supported type"

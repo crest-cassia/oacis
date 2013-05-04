@@ -8,6 +8,7 @@ describe AnalysisRun do
                               analyzers_count: 1, run_analysis: true)
     @run = @sim.parameter_sets.first.runs.first
     @azr = @sim.analyzers.first
+    @arn = @run.analysis_runs.first
     @valid_attr = {
         parameters: {"param1" => 1, "param2" => 2.0},
         analyzer: @azr
@@ -106,10 +107,6 @@ describe AnalysisRun do
 
   describe "#update_status_running" do
 
-    before(:each) do
-      @arn = @run.analysis_runs.first
-    end
-
     it "updates status to 'running' and sets hostname" do
       ret = @arn.update_status_running(hostname: 'host_ABC')
       ret.should be_true
@@ -123,7 +120,6 @@ describe AnalysisRun do
   describe "#update_status_including" do
 
     before(:each) do
-      @arn = @run.analysis_runs.first
       @arn.update_status_running(:hostname => 'host_ABC')
     end
 
@@ -157,7 +153,6 @@ describe AnalysisRun do
   describe "#update_status_finished" do
 
     before(:each) do
-      @arn = @run.analysis_runs.first
       @arn.update_status_running(:hostname => 'host_ABC')
       @arn.update_status_including(result: {x:1.0}, cpu_time: 1.5, real_time: 2.0)
     end
@@ -174,10 +169,6 @@ describe AnalysisRun do
   describe "#input" do
 
     describe "for :on_run type" do
-
-      before(:each) do
-        @arn = @run.analysis_runs.first
-      end
 
       it "returns a Hash having 'simulation_parameters'" do
         @arn.input[:simulation_parameters].should eq(@run.parameter_set.v)
@@ -214,18 +205,34 @@ describe AnalysisRun do
     describe "for :on_run type" do
 
       before(:each) do
-        @arn = @run.analysis_runs.first
         @dummy_path = @run.dir.join('__dummy__')
         FileUtils.touch( @dummy_path )
+        @dummy_dir = @run.dir.join('__dummy_dir__')
+        FileUtils.mkdir_p(@dummy_dir)
       end
 
       after(:each) do
         FileUtils.rm( @dummy_path ) if File.exist?(@dummy_path)
+        FileUtils.rm_r(@dummy_dir) if File.directory?(@dummy_dir)
       end
 
-      it "returns an array having run_directory" do
+      it "returns an file entries in run directory" do
         paths = @arn.input_files
-        paths.should eq([@run.dir.join('__dummy__')])
+        paths.should be_a(Array)
+        paths.include?(@run.dir.join('__dummy__')).should be_true
+        paths.include?(@run.dir.join('__dummy_dir__')).should be_true
+        paths.size.should eq(2)   # entries include '.' and '..'
+      end
+
+      it "does not include analysis_run directory of self" do
+        paths = @arn.input_files
+        paths.should_not include(@arn.dir)
+      end
+
+      it "does not include directories of other AnalysisRuns by defualt" do
+        another_arn = @run.analysis_runs.create!(analyzer: @azr, parameters: {})
+        paths = @arn.input_files
+        paths.should_not include(another_arn.dir)
       end
     end
 
@@ -241,6 +248,29 @@ describe AnalysisRun do
       it "returns an appropriate entries" do
         pending "not yet implemented"
       end
+    end
+  end
+
+  describe "#dir" do
+
+    it "returns directory for analysis run" do
+      @arn.dir.should eq(ResultDirectory.analysis_run_path(@arn))
+    end
+  end
+
+  describe "result directory" do
+
+    it "is created when a new item is saved" do
+      FileTest.directory?(@arn.dir).should be_true
+    end
+
+    it "is not created when validation fails" do
+      invalid_attr = @valid_attr
+      invalid_attr.delete(:analyzer)
+      arn = @run.analysis_runs.build(@invalid_attr)
+      expect {
+        arn.save  # => false
+      }.to change {Dir.entries(@run.dir).size}.by(0)
     end
   end
 end

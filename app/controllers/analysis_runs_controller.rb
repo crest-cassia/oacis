@@ -25,7 +25,7 @@ class AnalysisRunsController < ApplicationController
     arn = @run.analysis_runs.build(analyzer: azr, parameters: params[:parameters])
 
     respond_to do |format|
-      if arn.save
+      if arn.save and arn.submit
         format.html { redirect_to run_analysis_run_path(@run, arn),
                       notice: "AnalysisRun was successfully created."}
         format.json { render json: @arn, status: :created, location: @arn}

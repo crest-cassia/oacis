@@ -5,7 +5,9 @@ describe ResultDirectory do
   before(:each) do
     @simulator = FactoryGirl.create(:simulator,
                                     parameter_sets_count: 1,
-                                    runs_count: 1
+                                    runs_count: 1,
+                                    analyzers_count: 1,
+                                    run_analysis: true
                                     )
     @default_root = ResultDirectory::DefaultResultRoot
   end
@@ -60,5 +62,26 @@ describe ResultDirectory do
     run = prm.runs.first
     ResultDirectory.run_script_path(run).should ==
       @default_root.join(@simulator.to_param, prm.to_param, run.to_param + '.sh')
+  end
+
+  it ".analyzable_path returns the path to run for Run instance" do
+    run = @simulator.parameter_sets.first.runs.first
+    ResultDirectory.analyzable_path(run).should == ResultDirectory.run_path(run)
+  end
+
+  it ".analyzable_path returns the path to run for ParameterSet instance" do
+    ps = @simulator.parameter_sets.first
+    ResultDirectory.analyzable_path(ps).should == ResultDirectory.parameter_set_path(ps)
+  end
+
+  it ".analyzable_path returns the path to run for ParameterSetsGroup instance" do
+    pending "not yet implemented"
+  end
+
+  it ".analysis_run_path returns the output directory of an AnalysisRun for :on_run type" do
+    run = @simulator.parameter_sets.first.runs.first
+    arn = run.analysis_runs.first
+    ResultDirectory.analysis_run_path(arn).should ==
+      ResultDirectory.run_path(run).join(arn.to_param)
   end
 end

@@ -24,16 +24,25 @@ class AnalysisRun
   embedded_in :analyzable, polymorphic: true
 
   before_validation :set_status
-  validates :parameters, presence: true
   validates :status, presence: true,
                      inclusion: {in: [:created,:running,:including,:failed,:canceled,:finished]}
   validates :analyzable, :presence => true
   validates :analyzer, :presence => true
   validate :cast_and_validate_parameter_values
 
+  after_save :create_dir
+
   attr_accessible :parameters, :analyzer
 
   public
+  def dir
+    ResultDirectory.analysis_run_path(self)
+  end
+
+  def submit
+    Resque.enqueue(AnalyzerRunner, analyzer.type, analyzable.to_param, self.to_param)
+  end
+
   def update_status_running(option = {hostname: 'localhost'})
     merged = {hostname: 'localhost'}.merge(option)
     self.status = :running
@@ -78,9 +87,14 @@ class AnalysisRun
     files = []
     case self.analyzer.type
     when :on_run
-      files = Dir.glob( self.analyzable.dir.join('*') ).map {|x|
+      run = self.analyzable
+      files = Dir.glob( run.dir.join('*') ).map {|x|
         Pathname(x)
       }
+      files.delete(self.dir)
+
+      # delete directories of other AnalysisRuns
+      files -= run.analysis_runs.map {|x| x.dir}
     else
       raise "not supported type"
     end
@@ -100,11 +114,15 @@ class AnalysisRun
 
     return unless analyzer
     defn = analyzer.parameter_definitions
-    casted = ParametersUtil.cast_parameter_values(parameters, defn)
+    casted = ParametersUtil.cast_parameter_values(parameters, defn, errors)
     if casted.nil?
       errors.add(:parameters, "parameters are invalid. See the definition.")
       return
     end
     self.parameters = casted
+  end
+
+  def create_dir
+    FileUtils.mkdir_p(self.dir)
   end
 end

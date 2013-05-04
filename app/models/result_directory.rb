@@ -34,4 +34,21 @@ module ResultDirectory
     prm = run.parameter_set_id
     parameter_set_path(run.parameter_set_id).join(run.to_param + '.sh')
   end
+
+  def self.analyzable_path(analyzable)
+    case analyzable
+    when Run
+      return run_path(analyzable.to_param)
+    when ParameterSet
+      return parameter_set_path(analyzable)
+    else
+      raise "not supported type"
+    end
+  end
+
+  def self.analysis_run_path(analysis_run)
+    analyzable = analysis_run.analyzable
+    analyzable_path(analyzable).join(analysis_run.to_param)
+  end
+
 end
