@@ -1,49 +1,10 @@
-%ul.breadcrumb.well
-  %li
-    = link_to("Simulators", simulators_path)
-    %span.divider /
-  %li
-    = link_to(@simulator.name, simulator_path(@simulator))
-    %span.divider /
-  %li
-    = @param_set.to_param
+= render partial: "shared/breadcrumb", locals: {links: breadcrumb_links_for(@param_set)}
 
 .page-header
-  %h1 Parameter Sets
+  %h1 Parameter Set
 
-%h3 Parameter values
-%table.table.table-condensed
-  %tr
-    - @parameter_keys.each do |key|
-      %th= key
-  %tr
-    - @parameter_keys.each do |key|
-      %td= @param_set.v[key]
+= render partial: "shared/parameters_table", locals: {parameters_hash: @param_set.v}
 
-%h3 Runs
-%table.table.table-condensed
-  %tr
-    %th.span1 #
-    %th.span1 status
-    %th.span1 host
-    %th.span1 cpu_time
-    %th.span1 real_time
-    %th.span1 created_at
-    %th.span1 started_at
-    %th.span1 finished_at
-  - @runs.each_with_index do |run,idx|
-    %tr
-      %td= link_to(idx+1, run)
-      %td= run.status
-      %td= run.hostname
-      %td= formatted_elapsed_time(run.cpu_time)
-      %td= formatted_elapsed_time(run.real_time)
-      %td= distance_to_now_in_words(run.created_at)
-      %td= distance_to_now_in_words(run.started_at)
-      %td= distance_to_now_in_words(run.finished_at)
-= paginate @runs
+= render "runs_table"
 
-= form_for(@param_set.runs.build, :url => parameter_set_runs_path(@param_set)) do |f|
-  - f.submit "Create new run", :class => 'btn btn-primary'
-
-%h3 Results
+= render "analysis"

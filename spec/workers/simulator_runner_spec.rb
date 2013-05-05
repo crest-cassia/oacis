@@ -51,7 +51,7 @@ describe SimulatorRunner do
 
     it "raises an exception if the return code of the command is not zero" do
       sim = @run.parameter_set.simulator
-      sim.execution_command = "INVALID_CMD"
+      sim.command = "INVALID_CMD"
       sim.save!
 
       lambda {

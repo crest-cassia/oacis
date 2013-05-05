@@ -34,13 +34,13 @@ namespace :db do
 
     # create simulator for IsingBcc model
     # name = 'IsingBcc'
-    # execution_command = '~/program/acm2/spec/support/ising_bcc.sh'
+    # command = '~/program/acm2/spec/support/ising_bcc.sh'
     # h = { "L" => {"type"=>"Integer", "description" => "System size"},
     #       "K" => {"type"=>"Float", "description" => "inverse temperature"},
     #       "tmax" => {"type"=>"Integer", "description" => "Simulation duration"}
     #     }
     # sim = FactoryGirl.create(:simulator,
-    #   name: name, execution_command: execution_command, parameter_definitions: h,
+    #   name: name, command: command, parameter_definitions: h,
     #   parameter_sets_count: 0,
     #   analyzers_count: 0
     #   )

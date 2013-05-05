@@ -1,19 +1,4 @@
-%ul.breadcrumb.well
-  %li
-    = link_to("Simulators", simulators_path)
-    %span.divider /
-  %li
-    = link_to(@simulator.name, @simulator)
-    %span.divider /
-  %li
-    = link_to(@param_set.to_param, parameter_set_path(@param_set))
-    %span.divider /
-  - if @run
-    %li
-      = link_to(@run.to_param, run_path(@run))
-      %span.divider /
-  %li
-    = @analysis_run.to_param
+= render partial: "shared/breadcrumb", locals: {links: breadcrumb_links_for(@analysis_run)}
 
 .page-header
   %h1 AnalysisRun
@@ -31,14 +16,7 @@
       %th Directory
       %td= @analysis_run.dir
 
-%h3 Parameters
-%table.table.table-condensed
-  %tr
-    - @parameter_keys.each do |key|
-      %th= key
-  %tr
-    - @parameter_keys.each do |key|
-      %td= @analysis_run.parameters[key]
+= render partial: "shared/parameters_table", locals: {parameters_hash: @analysis_run.parameters}
 
 %h3 Results
 /  IMPLEMENT ME

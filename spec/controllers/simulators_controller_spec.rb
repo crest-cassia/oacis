@@ -30,7 +30,7 @@ describe SimulatorsController do
         "L" => {"type" => "Integer"},
         "T" => {"type" => "Float"}
       },
-      execution_command: "~/path_to_simulator_A",
+      command: "~/path_to_simulator_A",
     }
   end
 

@@ -1,35 +1,6 @@
-%ul.breadcrumb.well
-  %li
-    = link_to("Simulators", simulators_path)
-    %span.divider /
-  %li
-    = link_to(@simulator.name, simulator_path(@simulator))
-    %span.divider /
-  %li
-    = @analyzer.name
+= render partial: "shared/breadcrumb", locals: {links: breadcrumb_links_for(@analyzer)}
 
 .page-header
   %h1=t '.title', :default => @analyzer.name
 
-%h3 About
-= @analyzer.description
-
-%h3 Defined Parameters
-%table.table.table-striped
-  %thead
-    %tr
-      %th.span2
-      %th.span2 Type
-      %th.span2 Default
-      %th.span6 Description
-  %tbody
-    - @analyzer.parameter_definitions.each do |key,val|
-      %tr
-        %th= h(key)
-        %td= h(val["type"])
-        %td= h(val["default"] || '-')
-        %td= val["description"] ? h(val["description"]) : h("Explanation of parameter #{key}")
-
-%h3 Analyzer Command
-%pre
-  = h(@analyzer.command)
+= render partial: "shared/about", locals: {executable: @analyzer}

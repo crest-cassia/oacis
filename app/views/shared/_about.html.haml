@@ -1,0 +1,28 @@
+%h3 About
+= executable.description
+
+%h3 Owner
+%ul
+  %li example user1
+  %li example user2
+  %li (list of owners will come to here...)
+
+%h3 Defined Parameters
+%table.table.table-striped
+  %thead
+    %tr
+      %th.span2
+      %th.span2 Type
+      %th.span2 Default
+      %th.span6 Description
+  %tbody
+    - executable.parameter_definitions.each do |key,val|
+      %tr
+        %th= h(key)
+        %td= h(val["type"])
+        %td= h(val["default"] || '-')
+        %td= val["description"] ? h(val["description"]) : "-"
+
+%h3 Command
+%pre
+  = h(executable.command)

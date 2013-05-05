@@ -1,0 +1,14 @@
+%h3 List of Parameter Sets
+%table.table.table-condensed.table-striped
+  %thead
+    %tr
+      %th.span1 ID
+      - @simulator.parameter_definitions.each do |key,key_def|
+        %th.span1= key
+  %tbody
+  - @param_sets.each_with_index do |param_set,idx|
+    %tr
+      %td= link_to( param_set.id, parameter_set_path(param_set) )
+      - @simulator.parameter_definitions.each do |key,key_def|
+        %td= param_set.v[key]
+= paginate @param_sets

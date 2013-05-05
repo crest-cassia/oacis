@@ -88,13 +88,8 @@ class AnalysisRun
     case self.analyzer.type
     when :on_run
       run = self.analyzable
-      files = Dir.glob( run.dir.join('*') ).map {|x|
-        Pathname(x)
-      }
-      files.delete(self.dir)
-
-      # delete directories of other AnalysisRuns
-      files -= run.analysis_runs.map {|x| x.dir}
+      files = run.result_paths
+      # TODO: add directories of dependent analysis
     else
       raise "not supported type"
     end

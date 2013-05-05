@@ -1,0 +1,11 @@
+%h3 Parameters
+%table.table.table-condensed
+  %thead
+    %tr
+      %th.span3 Key
+      %th Value
+  %tbody
+    - parameters_hash.each do |key,val|
+      %tr
+        %th= h(key)
+        %td= h(val)

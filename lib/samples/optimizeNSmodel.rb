@@ -3,7 +3,7 @@ require 'pp'
 
 def create_simulator
   name = 'NSmodelWithTrafficSignals'
-  execution_command = Rails.root.join('vendor','sample_simulators','NS_model','traffic_NSmodel.rb')
+  command = Rails.root.join('vendor','sample_simulators','NS_model','traffic_NSmodel.rb')
   description = <<-EOS
     Nagel-Schreckenberg model with two traffic signals.
     There are two lanes on which cars go through in the opposite direction.
@@ -23,7 +23,7 @@ def create_simulator
         "T_movie" => {"type"=>"Integer", "description" => "Duration during which configuration of cars are dumped."}
       }
   sim = Simulator.create!(name: name,
-                          execution_command: execution_command,
+                          command: command,
                           parameter_definitions: h,
                           description: description)
   return sim

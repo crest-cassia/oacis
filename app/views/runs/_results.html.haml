@@ -1,0 +1,25 @@
+%h3 Results
+- result = @run.result
+- if result.is_a?(Hash)
+  %table.table.table-condensed
+    %thead
+    %tbody
+      - result.each do |key,val|
+        %tr
+          %th= h(key)
+          %td
+            - unless val.is_a?(Hash) or val.is_a?(Array)
+              = h(val)
+            - else
+              %pre= h(JSON.pretty_generate(val))
+- else
+  %pre= h(JSON.pretty_generate(result))
+%ul
+  - @run.result_paths.each do |file_path|
+    - file_path_str = file_path.to_s
+    %li
+      %a{:href => file_path_to_link_path(file_path_str)}
+        = File.basename(file_path_str)
+        %br
+        - if file_path_str =~ /\.png$/i or file_path_str.to_s =~ /\.jpg$/i
+          = image_tag(file_path_to_link_path(file_path_str), :width => '200px')

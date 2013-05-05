@@ -3,13 +3,13 @@ class Simulator
   include Mongoid::Timestamps
   field :name, type: String
   field :parameter_definitions, type: Hash
-  field :execution_command, type: String
+  field :command, type: String
   field :description, type: String
   has_many :parameter_sets
   embeds_many :analyzers
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
-  validates :execution_command, presence: true
+  validates :command, presence: true
   validate :parameter_definitions_format
 
   after_save :create_simulator_dir

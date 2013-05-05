@@ -1,106 +1,19 @@
-%ul.breadcrumb.well
-  %li
-    = link_to("Simulators", simulators_path)
-    %span.divider /
-  %li
-    - @sim = @param_set.simulator
-    = link_to(@sim.name, simulator_path(@sim))
-    %span.divider /
-  %li
-    = link_to(@param_set.to_param, parameter_set_path(@param_set))
-    %span.divider /
-  %li
-    = @run.to_param
-
+= render partial: "shared/breadcrumb", locals: {links: breadcrumb_links_for(@run)}
 
 .page-header
-  %h1 run
+  %h1 Run
 
-%table.table.table-condensed
-  %thead
-  %tbody
-    %tr
-      %th ID
-      %td= @run.to_param
-    %tr
-      %th status
-      %td= @run.status
-    %tr
-      %th job
-      %td= # @run.job  # IMPLEMENT ME
-    %tr
-      %th seed
-      %td= @run.seed
-    %tr
-      %th hostname
-      %td= @run.hostname
-    %tr
-      %th CPU time
-      %td= formatted_elapsed_time(@run.cpu_time)
-    %tr
-      %th real time
-      %td= formatted_elapsed_time(@run.real_time)
-    %tr
-      %th created at
-      %td= @run.created_at
-    %tr
-      %th updated at
-      %td= @run.updated_at
-    %tr
-      %th started at
-      %td= @run.started_at
-    %tr
-      %th finished at
-      %td= @run.finished_at
-    %tr
-      %th included at
-      %td= @run.included_at
-
-%h3 Directory
-%pre= @run.dir
-
-%h3 Results
-%pre
-  = @run.result.to_json
-%ul
-  - @result_file_paths.each do |file_path|
+%div.tabbable
+  %ul.nav.nav-tabs
+    %li.active
+      %a{"href"=>"#tab-about", "data-toggle" => "tab"} About
     %li
-      %a{:href => file_path_to_link_path(file_path)}
-        = File.basename(file_path)
-        %br
-        - if file_path =~ /\.png$/i or file_path =~ /\.jpg$/i
-          = image_tag(file_path_to_link_path(file_path), :width => '200px')
+      %a{"href"=>"#tab-analysis", "data-toggle" => "tab"} Results and Analysis
 
-%h3 List of Analysis Runs
-%table.table.table-condensed
-  %thead
-    %tr
-      %th ID
-      %th analyzer
-      %th status
-      %th created_at
-  %tbody
-    - @analysis_runs.each do |arn|
-      %tr
-        %td= link_to(arn.id, run_analysis_run_path(@run, arn))
-        - azr = arn.analyzer
-        %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
-        %td= arn.status
-        %td= arn.created_at
+  %div.tab-content
+    %div.tab-pane.active#tab-about
+      = render "about"
+    %div.tab-pane#tab-analysis
+      = render "results"
+      = render "analyses"
 
-%h5 Run analysis
-= form_for( @run.analysis_runs.build, :url => run_analysis_runs_path(@run) ) do |f|
-  = f.label :analyzer
-  = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }
-  %div#parameters_form
-    = render 'shared/parameters_form', param_def: @sim.analyzers_on_run.first.parameter_definitions
-  = f.submit "Analyze", :class => 'btn btn-primary'
-
-:javascript
-  $(function() {
-    $('#analysis_run_analyzer').change(function(){
-      $.get("#{_parameters_form_simulator_analyzer_path(@sim,':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
-        $('#parameters_form').html(data)
-      });
-    });
-  });

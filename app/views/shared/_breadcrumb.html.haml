@@ -1,0 +1,6 @@
+%ul.breadcrumb.well
+  - links.each_with_index do |lk,idx|
+    %li
+      = lk
+      - unless idx == links.size - 1
+        %span.divider /

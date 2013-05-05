@@ -36,7 +36,7 @@ class Run
     prm = self.parameter_set
     sim = prm.simulator
     cmd_array = []
-    cmd_array << sim.execution_command
+    cmd_array << sim.command
     cmd_array += sim.parameter_definitions.keys.map do |key|
       prm.v[key]
     end
@@ -46,6 +46,17 @@ class Run
 
   def dir
     return ResultDirectory.run_path(self)
+  end
+
+  # returns result files and directories
+  # directories for AnalysisRuns are not included
+  def result_paths
+    paths = Dir.glob( dir.join('*') ).map {|x|
+      Pathname(x)
+    }
+    # remove directories of AnalysisRuns
+    paths -= analysis_runs.map {|x| x.dir}
+    return paths
   end
 
   def set_status_running( option = {hostname: 'localhost'} )

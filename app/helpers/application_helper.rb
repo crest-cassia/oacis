@@ -7,4 +7,29 @@ module ApplicationHelper
       return ''
     end
   end
+
+  def breadcrumb_links_for(document)
+    links = []
+    case document
+    when Run
+      links = breadcrumb_links_for(document.parameter_set)
+      links << link_to(document.to_param, run_path(document))
+    when ParameterSet
+      links = breadcrumb_links_for(document.simulator)
+      links << link_to(document.to_param, parameter_set_path(document))
+    when Simulator
+      links = [ link_to("Simulators", simulators_path) ]
+      links << link_to(document.name, simulator_path(document))
+    when AnalysisRun
+      links = breadcrumb_links_for(document.analyzable)
+      links << document.to_param
+    when Analyzer
+      links = breadcrumb_links_for(document.simulator)
+      links << document.name
+    else
+      raise "not supported type"
+    end
+    return links
+  end
+
 end

@@ -19,9 +19,9 @@
   /       = text_field_tag "parameter_definitions[#{key}][type]", val["type"], :class => 'text_field'
   /       %br
   .control-group
-    = f.label :execution_command, :class => 'control-label'
+    = f.label :command, :class => 'control-label'
     .controls
-      = f.text_field :execution_command, :class => 'text_field'
+      = f.text_field :command, :class => 'text_field'
   .form-actions
     = f.submit nil, :class => 'btn btn-primary'
     = link_to t('.cancel', :default => t("helpers.links.cancel")), simulators_path, :class => 'btn'

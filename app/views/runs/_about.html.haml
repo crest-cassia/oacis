@@ -1,0 +1,39 @@
+%table.table.table-condensed
+  %thead
+  %tbody
+    %tr
+      %th ID
+      %td= @run.to_param
+    %tr
+      %th status
+      %td= @run.status
+    %tr
+      %th seed
+      %td= @run.seed
+    %tr
+      %th hostname
+      %td= @run.hostname
+    %tr
+      %th CPU time
+      %td= formatted_elapsed_time(@run.cpu_time)
+    %tr
+      %th real time
+      %td= formatted_elapsed_time(@run.real_time)
+    %tr
+      %th created at
+      %td= @run.created_at
+    %tr
+      %th updated at
+      %td= @run.updated_at
+    %tr
+      %th started at
+      %td= @run.started_at
+    %tr
+      %th finished at
+      %td= @run.finished_at
+    %tr
+      %th included at
+      %td= @run.included_at
+
+%h3 Directory
+%pre= @run.dir

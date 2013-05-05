@@ -9,7 +9,7 @@ describe Simulator do
         "L" => {"type" => "Integer"},
         "T" => {"type" => "Float"}
       },
-      execution_command: "~/path_to_a_simulator",
+      command: "~/path_to_a_simulator",
     }
   end
 
@@ -33,11 +33,11 @@ describe Simulator do
     end
   end
 
-  describe "'execution_command' field" do
+  describe "'command' field" do
 
     it "must exist" do
       invalid_attr = @valid_fields
-      invalid_attr.delete(:execution_command)
+      invalid_attr.delete(:command)
       Simulator.new(invalid_attr).should_not be_valid
     end
   end

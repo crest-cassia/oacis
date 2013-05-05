@@ -1,0 +1,12 @@
+%h3 List of Analyzers
+%table.table.table-condensed.table-striped
+  %thead
+    %tr
+      %th.span1 ID
+      %th Name
+      %th Description
+      - @analyzers.each do |azr|
+        %tr
+          %td= link_to( azr.id, simulator_analyzer_path(@simulator.id, azr.id))
+          %td= azr.name
+          %td= azr.description
