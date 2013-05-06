@@ -13,3 +13,7 @@ cmd += " -signal #{SignalPosition[1]} #{signal_interval1} #{signal_phase_diff}"
 
 $stdout.puts cmd
 system(cmd)
+unless $?.to_i == 0
+  $stderr.puts "Rc of the simulator is not 0, but is #{$?.to_i}"
+  raise "Simulator failed."
+end

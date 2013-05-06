@@ -78,10 +78,16 @@ describe Analyzer do
 
     describe "'parameter_definitions' field" do
       
-      it "must not be a blank" do
-        invalid_attr = @valid_fields.update(parameter_definitions:{})
-        azr = @sim.analyzers.build(invalid_attr)
-        azr.should_not be_valid
+      it "can be a empty" do
+        azr = @sim.analyzers.build(@valid_fields.update(parameter_definitions:{}))
+        azr.should be_valid
+      end
+
+      it "can be nil" do
+        @valid_fields.delete(:parameter_definitions)
+        azr = @sim.analyzers.build(@valid_fields)
+        pp azr.errors unless azr.valid?
+        azr.should be_valid
       end
 
       it "name of each key must be organized with letters, numbers, and underscores" do

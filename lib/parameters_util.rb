@@ -2,6 +2,7 @@ module ParametersUtil
 
   def self.cast_parameter_values(parameters, definitions, errors = nil)
     casted = {}
+    parameters ||= {}
     definitions.each do |key,defn|
 
       type = defn["type"]

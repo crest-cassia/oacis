@@ -16,7 +16,7 @@
       %th Directory
       %td= @analysis_run.dir
 
-= render partial: "shared/parameters_table", locals: {parameters_hash: @analysis_run.parameters}
+- unless @analysis_run.parameters.empty?
+  = render partial: "shared/parameters_table", locals: {parameters_hash: @analysis_run.parameters}
 
-%h3 Results
-/  IMPLEMENT ME
+= render partial: "shared/results", locals: {result: @analysis_run.result, result_paths: @analysis_run.result_paths}

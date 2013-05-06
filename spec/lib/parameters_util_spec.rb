@@ -49,5 +49,9 @@ describe ParametersUtil do
       casted = ParametersUtil.cast_parameter_values(parameters, @definitions)
       casted.should be_nil
     end
+
+    it "accept nil as the first argument" do
+      casted = ParametersUtil.cast_parameter_values(nil, @definitions)
+    end
   end
 end

@@ -22,11 +22,11 @@ describe AnalysisRun do
       arn.should be_valid
     end
 
-    it "is invalid when 'parameters' field is not given" do
+    it "is valid even if 'parameters' field is not given when default parameters are specified" do
       invalid_attr = @valid_attr
       invalid_attr.delete(:parameters)
       arn = @run.analysis_runs.build(invalid_attr)
-      arn.should_not be_valid
+      arn.should be_valid
     end
 
     it "assigns 'created' stauts by default" do
@@ -62,11 +62,21 @@ describe AnalysisRun do
       arn.parameters["param2"].should be_a(Float)
     end
 
-    it "adopts default values if the parameter is not explicitly specified" do
+    it "adopts default values if a parameter is not explicitly specified" do
       updated_attr = @valid_attr.update(parameters: {"param1"=>"32"})
       arn = @run.analysis_runs.create!(updated_attr)
       default_val = arn.analyzer.parameter_definitions["param2"]["default"]
       arn.parameters["param2"].should eq(default_val)
+    end
+
+    it "adopts default values when parameter hash is not given" do
+      updated_attr = @valid_attr
+      updated_attr.delete(:parameters)
+      arn = @run.analysis_runs.create(updated_attr)
+      default_val1 = arn.analyzer.parameter_definitions["param1"]["default"]
+      default_val2 = arn.analyzer.parameter_definitions["param2"]["default"]
+      arn.parameters["param1"].should eq(default_val1)
+      arn.parameters["param2"].should eq(default_val2)
     end
   end
 
@@ -255,6 +265,30 @@ describe AnalysisRun do
 
     it "returns directory for analysis run" do
       @arn.dir.should eq(ResultDirectory.analysis_run_path(@arn))
+    end
+  end
+
+  describe "#result_paths" do
+
+    before(:each) do
+      @temp_files = [@arn.dir.join('result1.txt'), @arn.dir.join('result2.txt')]
+      @temp_files.each {|f| FileUtils.touch(f) }
+      @temp_dir = @arn.dir.join('result_dir')
+      FileUtils.mkdir_p(@temp_dir)
+    end
+
+    after(:each) do
+      @temp_files.each {|f| FileUtils.rm(f) if File.exist?(f) }
+      FileUtils.rm_r(@temp_dir)
+    end
+
+    it "returns list of result files" do
+      res = @arn.result_paths
+      @temp_files.each do |f|
+        res.should include(f)
+      end
+      res.should include(@temp_dir)
+      res.size.should eq(3)
     end
   end
 

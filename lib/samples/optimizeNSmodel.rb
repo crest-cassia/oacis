@@ -29,9 +29,20 @@ def create_simulator
   return sim
 end
 
+def create_analyzer(sim)
+  name = 'TrafficFlowVisualizer'
+  type = :on_run
+  vis_jar = Rails.root.join('vendor/sample_simulators/NS_model/Traffic_visualizer/Traffic_visualizer.jar')
+  command = "java -jar #{vis_jar} _input/map.txt"
+  parameter_definitions = nil
+  azr = sim.analyzers.create!(name: name, type: type, command: command,
+                             parameter_definitions: parameter_definitions)
+  return azr
+end
+
 # prepare simulator
-sim = Simulator.where(name: "NSmodelWithTrafficSignals").first or create_simulator
-pp sim
+sim = (Simulator.where(name: "NSmodelWithTrafficSignals").first or create_simulator)
+azr = (sim.analyzers.where(name: "TrafficFlowVisualizer").first or create_analyzer(sim))
 
 # set range of parameters
 default_values = { "L" => 75,
@@ -46,8 +57,8 @@ default_values = { "L" => 75,
 # int1_ary = [2,4,8,10,15,20,30]
 # int1_ary = [10]
 t1 = 10
-int2_ary = [10,12,14,16,18,20]
-phase_ary = (0..19).to_a
+int2_ary = [10] #,12,14,16,18,20]
+phase_ary = (0..2).to_a #(0..19).to_a
 
 NUM_RUNS = 4
 int2_ary.each do |t2|
@@ -60,6 +71,11 @@ int2_ary.each do |t2|
     prm = sim.parameter_sets.create!(:v => param_values) unless prm
     (NUM_RUNS - prm.runs.count).times do |i|
       run = prm.runs.create!
+      run.submit
+    end
+
+    # re-submit failed jobs
+    prm.runs.where(status: :failed).each do |run|
       run.submit
     end
   end

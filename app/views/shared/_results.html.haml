@@ -1,6 +1,7 @@
-%h3 Results
-- result = @run.result
-- if result.is_a?(Hash)
+- title ||= "Results"
+%h3= title
+- if result.nil?
+- elsif result.is_a?(Hash)
   %table.table.table-condensed
     %thead
     %tbody
@@ -8,14 +9,17 @@
         %tr
           %th= h(key)
           %td
-            - unless val.is_a?(Hash) or val.is_a?(Array)
-              = h(val)
-            - else
+            - if val.is_a?(Hash) or val.is_a?(Array)
               %pre= h(JSON.pretty_generate(val))
-- else
+            - else
+              = h(val)
+- elsif result.is_a?(Array)
   %pre= h(JSON.pretty_generate(result))
+- else
+  %pre= h(result.inspect)
+
 %ul
-  - @run.result_paths.each do |file_path|
+  - result_paths.each do |file_path|
     - file_path_str = file_path.to_s
     %li
       %a{:href => file_path_to_link_path(file_path_str)}

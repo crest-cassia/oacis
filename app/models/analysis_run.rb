@@ -39,6 +39,14 @@ class AnalysisRun
     ResultDirectory.analysis_run_path(self)
   end
 
+  # returns result files and directories
+  def result_paths
+    paths = Dir.glob( dir.join('*') ).map {|x|
+      Pathname(x)
+    }
+    return paths
+  end
+
   def submit
     Resque.enqueue(AnalyzerRunner, analyzer.type, analyzable.to_param, self.to_param)
   end
@@ -102,11 +110,6 @@ class AnalysisRun
   end
 
   def cast_and_validate_parameter_values
-    unless parameters.is_a?(Hash)
-      errors.add(:parameters, "parameters is not a Hash")
-      return
-    end
-
     return unless analyzer
     defn = analyzer.parameter_definitions
     casted = ParametersUtil.cast_parameter_values(parameters, defn, errors)

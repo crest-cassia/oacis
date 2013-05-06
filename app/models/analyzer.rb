@@ -18,10 +18,7 @@ class Analyzer
 
   private
   def parameter_definitions_format
-    unless parameter_definitions.size > 0
-      errors.add(:parameter_definitions, "parameter definitions cannot be empty")
-      return
-    end
+    self.parameter_definitions = {} if parameter_definitions.nil?
     parameter_definitions.each do |key, value|
       unless key =~ /\A\w+\z/
         errors.add(:parameter_definitions, "parameter name must match '/\A\w+\z/'")
