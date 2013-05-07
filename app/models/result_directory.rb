@@ -40,7 +40,7 @@ module ResultDirectory
     when Run
       return run_path(analyzable.to_param)
     when ParameterSet
-      return parameter_set_path(analyzable)
+      return parameter_set_path(analyzable.to_param)
     else
       raise "not supported type"
     end

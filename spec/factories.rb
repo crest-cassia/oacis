@@ -26,6 +26,8 @@ FactoryGirl.define do
       finished_runs_count 0
       analyzers_count 2
       run_analysis true
+      analyzers_on_parameter_set_count 0
+      run_analysis_on_parameter_set true
     end
     after(:create) do |simulator, evaluator|
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
@@ -36,6 +38,11 @@ FactoryGirl.define do
       FactoryGirl.create_list(:analyzer, evaluator.analyzers_count,
                               simulator: simulator,
                               run_analysis: evaluator.run_analysis
+                              )
+      FactoryGirl.create_list(:analyzer, evaluator.analyzers_on_parameter_set_count,
+                              simulator: simulator,
+                              type: :on_parameter_set,
+                              run_analysis: evaluator.run_analysis_on_parameter_set
                               )
     end
   end
@@ -79,12 +86,17 @@ FactoryGirl.define do
     type { :on_run }
     command { "cat _input.json" }
 
-    h = { "param1" =>
-            {"type"=>"Integer", "default" => 0, "description" => "Initial step"},
-          "param2" =>
-            {"type"=>"Float", "default" => 1.0, "description" => "Temperature"}
-        }
-    parameter_definitions h
+    sequence(:parameter_definitions, 0) do |n|
+      h = {}
+      types = ["Integer","Float","String","Boolean"]
+      defaults = [1, 2.0, "abc", true]
+      types.size.times do |i|
+        next if n == i
+        h["param#{i}"] = {"type" => types[i], "default" => defaults[i], "description" => "description for param#{i}"}
+      end
+      h
+    end
+    # parameter_definitions h
     description { Faker::Lorem.paragraphs.join("\n") }
 
     ignore do

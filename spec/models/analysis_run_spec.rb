@@ -5,7 +5,8 @@ describe AnalysisRun do
   before(:each) do
     @sim = FactoryGirl.create(:simulator, 
                               parameter_sets_count:1, runs_count:1,
-                              analyzers_count: 1, run_analysis: true)
+                              analyzers_count: 1, run_analysis: true
+                              )
     @run = @sim.parameter_sets.first.runs.first
     @azr = @sim.analyzers.first
     @arn = @run.analysis_runs.first
@@ -56,10 +57,10 @@ describe AnalysisRun do
     end
 
     it "casts the parameter values according to the definition" do
-      updated_attr = @valid_attr.update(parameters: {"param1"=>"32","param2"=>"2.0"})
+      updated_attr = @valid_attr.update(parameters: {"param1"=>"32","param2"=>"abc"})
       arn = @run.analysis_runs.create!(updated_attr)
-      arn.parameters["param1"].should be_a(Integer)
-      arn.parameters["param2"].should be_a(Float)
+      arn.parameters["param1"].should be_a(Float)
+      arn.parameters["param2"].should be_a(String)
     end
 
     it "adopts default values if a parameter is not explicitly specified" do
@@ -176,6 +177,20 @@ describe AnalysisRun do
     end
   end
 
+  describe "#update_status_failed" do
+
+    before(:each) do
+      @arn.update_status_running(hostname: 'host_ABC')
+    end
+
+    it "updates status to failed" do
+      ret = @arn.update_status_failed
+      ret.should be_true
+      @arn.reload
+      @arn.status.should eq(:failed)
+    end
+  end
+
   describe "#input" do
 
     describe "for :on_run type" do
@@ -197,8 +212,30 @@ describe AnalysisRun do
 
     describe "for :on_parameter_set type" do
 
-      it "returns an appropriate hash" do
-        pending "not yet implemented"
+      before(:each) do
+        @azr = FactoryGirl.create(:analyzer,
+                                  simulator: @sim, type: :on_parameter_set, run_analysis: true)
+        @ps = @sim.parameter_sets.first
+        @arn = @ps.analysis_runs.first
+      end
+
+      it "returns a Hash having 'simulation_parameters'" do
+        @arn.input[:simulation_parameters].should eq(@ps.v)
+      end
+
+      it "returns a Hash having 'analysis_parameters'" do
+        @arn.input[:analysis_parameters].should eq(@arn.parameters)
+      end
+
+      it "returns a Hash having result of Runs" do
+        @run.result = {"xxx" => 1234, "yyy" => 0.5}
+        @run.save!
+        run2 = FactoryGirl.create(:finished_run, parameter_set: @ps, result: {"zzz" => true})
+        @arn.input[:result].size.should eq(2)
+        @arn.input[:result].should have_key(@run.to_param)
+        @arn.input[:result].should have_key(run2.to_param)
+        @arn.input[:result][@run.to_param].should eq(@run.result)
+        @arn.input[:result][run2.to_param].should eq(run2.result)
       end
     end
 
@@ -226,30 +263,53 @@ describe AnalysisRun do
         FileUtils.rm_r(@dummy_dir) if File.directory?(@dummy_dir)
       end
 
-      it "returns an file entries in run directory" do
+      it "returns a file entries in run directory" do
         paths = @arn.input_files
-        paths.should be_a(Array)
-        paths.include?(@run.dir.join('__dummy__')).should be_true
-        paths.include?(@run.dir.join('__dummy_dir__')).should be_true
-        paths.size.should eq(2)   # entries include '.' and '..'
+        paths.should be_a(Hash)
+        paths.should eq({'.' => [@dummy_path, @dummy_dir]})
       end
 
       it "does not include analysis_run directory of self" do
         paths = @arn.input_files
-        paths.should_not include(@arn.dir)
+        paths.values.flatten.should_not include(@arn.dir)
       end
 
       it "does not include directories of other AnalysisRuns by defualt" do
         another_arn = @run.analysis_runs.create!(analyzer: @azr, parameters: {})
         paths = @arn.input_files
-        paths.should_not include(another_arn.dir)
+        paths.values.flatten.should_not include(another_arn.dir)
       end
     end
 
     describe "for :on_parameter_set type" do
 
-      it "returns an appropriate entries" do
-        pending "not yet implemented"
+      before(:each) do
+        @azr = FactoryGirl.create(:analyzer,
+                                  simulator: @sim, type: :on_parameter_set, run_analysis: true)
+        @ps = @sim.parameter_sets.first
+        @arn2 = @ps.analysis_runs.first
+
+        @run2 = FactoryGirl.create(:finished_run, parameter_set: @ps)
+
+        @dummy_files = [@run2.dir.join('__dummy__')]
+        @dummy_dirs = [@run2.dir.join('__dummy_dir__')]
+        @dummy_files.each {|path| FileUtils.touch(path) }
+        @dummy_dirs.each {|dir| FileUtils.mkdir_p(dir) }
+      end
+
+      after(:each) do
+        @dummy_files.each {|file| FileUtils.rm(file) if File.exist?(file) }
+        @dummy_dirs.each {|dir| FileUtils.rm_r(dir) if File.directory?(dir) }
+      end
+
+      it "returns a hash whose keys are ids of finished runs" do
+        @arn2.input_files.keys.should eq( [@run2.to_param] )
+        @arn2.input_files.keys.should_not include(@run.to_param)
+      end
+
+      it "returns a hash whose values are output paths of runs" do
+        paths = @arn2.input_files[@run2.to_param]
+        paths.should eq(@run2.result_paths)
       end
     end
 
@@ -305,6 +365,27 @@ describe AnalysisRun do
       expect {
         arn.save  # => false
       }.to change {Dir.entries(@run.dir).size}.by(0)
+    end
+  end
+
+  describe ".find_by_type_and_ids" do
+
+    it "returns the correct AnalysisRun instance for :on_run type" do
+      found = AnalysisRun.find_by_type_and_ids(:on_run, @run.id, @arn.id)
+      found.should eq(@arn)
+    end
+
+    it "returns the correct AnalysisRun instance for :on_parameter_set type" do
+      azr = FactoryGirl.create(:analyzer,
+                               simulator: @sim, type: :on_parameter_set, run_analysis: true)
+      ps = @sim.parameter_sets.first
+      arn = ps.analysis_runs.first
+      found = AnalysisRun.find_by_type_and_ids(:on_parameter_set, ps.to_param, arn.to_param)
+      found.should eq(arn)
+    end
+
+    it "returns the correct AnalysisRun instance for :on_parameter_sets_group type" do
+      pending "not yet implemented"
     end
   end
 end

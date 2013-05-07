@@ -6,27 +6,18 @@ class AnalyzerRunner
   OUTPUT_JSON_FILENAME = '_output.json'
 
   def self.perform(type, analyzable_id, arn_id)
-    arn = fetch_analysis_run_instance(type, analyzable_id, arn_id)
+    arn = AnalysisRun.find_by_type_and_ids(type, analyzable_id, arn_id)
     work_dir = arn.dir  # UPDATE ME: a tentative implementation
     run_analysis(arn, work_dir)
     include_data(arn, work_dir)
   end
 
-  private
-  def self.fetch_analysis_run_instance(type, analyzable_id, arn_id)
-    case type.to_sym
-    when :on_run
-      analyzable = Run.find(analyzable_id)
-    when :on_parameter_set
-      analyzable = ParameterSet.find(analyzable_id)
-    when :on_parameter_sets_group
-      raise "not implemented yet..."  # IMPLEMENT ME
-    else
-      raise "not supported type: #{type}"
-    end
-    return analyzable.analysis_runs.find(arn_id)
+  def self.on_failure(exception, type, analyzable_id, arn_id)
+    arn = AnalysisRun.find_by_type_and_ids(type, analyzable_id, arn_id)
+    arn.update_status_failed
   end
 
+  private
   def self.run_analysis(arn, work_dir)
     arn.update_status_running
     output = {cpu_time: 0.0, real_time: 0.0}
@@ -38,9 +29,9 @@ class AnalyzerRunner
         unless $?.to_i == 0
           raise "Rc of the simulator is not 0, but #{$?.to_i}"
         end
+        output[:result] = parse_output_json
       }
     }
-    output[:result] = parse_output_json
     output[:cpu_time] = tms.cutime
     output[:real_time] = tms.real
     arn.update_status_including(output)
@@ -53,8 +44,12 @@ class AnalyzerRunner
     end
 
     FileUtils.mkdir_p(INPUT_FILES_DIR)
-    arn.input_files.each do |input_file|
-      FileUtils.cp_r(input_file, INPUT_FILES_DIR)
+    arn.input_files.each do |dir, inputs|
+      output_dir = File.join(INPUT_FILES_DIR, dir)
+      FileUtils.mkdir_p(output_dir)
+      inputs.each do |input|
+        FileUtils.cp_r(input, output_dir)
+      end
     end
   end
 
@@ -68,6 +63,7 @@ class AnalyzerRunner
   end
 
   def self.include_data(arn, work_dir)
+    # do NOT copy _input/ and _input.json
     arn.update_status_finished
   end
 end

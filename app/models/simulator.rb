@@ -22,6 +22,10 @@ class Simulator
   def analyzers_on_run
     self.analyzers.where(type: :on_run)
   end
+
+  def analyzers_on_parameter_set
+    self.analyzers.where(type: :on_parameter_set)
+  end
   
   private
   def parameter_definitions_format

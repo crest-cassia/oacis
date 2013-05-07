@@ -40,9 +40,19 @@ def create_analyzer(sim)
   return azr
 end
 
+def create_analyzer2(sim)
+  name = 'SampleAverageOfPassingTime'
+  type = :on_parameter_set
+  script = Rails.root.join('vendor/sample_simulators/NS_model/AverageOfPassingTime/analyze_passing_time.rb')
+  command = "ruby #{script}"
+  azr = sim.analyzers.create!(name: name, type: type, command: command, parameter_definitions: {})
+  return azr
+end
+
 # prepare simulator
 sim = (Simulator.where(name: "NSmodelWithTrafficSignals").first or create_simulator)
 azr = (sim.analyzers.where(name: "TrafficFlowVisualizer").first or create_analyzer(sim))
+azr2 = (sim.analyzers.where(name: "SampleAverageOfPassingTime").first or create_analyzer2(sim))
 
 # set range of parameters
 default_values = { "L" => 75,

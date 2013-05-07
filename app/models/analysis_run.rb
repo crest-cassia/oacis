@@ -35,6 +35,20 @@ class AnalysisRun
   attr_accessible :parameters, :analyzer
 
   public
+  def self.find_by_type_and_ids(type, analyzable_id, id)
+    case type.to_sym
+    when :on_run
+      analyzable = Run.find(analyzable_id)
+    when :on_parameter_set
+      analyzable = ParameterSet.find(analyzable_id)
+    when :on_parameter_sets_group
+      raise "not implemented yet..."  # IMPLEMENT ME
+    else
+      raise "not supported type: #{type}"
+    end
+    return analyzable.analysis_runs.find(id)
+  end
+
   def dir
     ResultDirectory.analysis_run_path(self)
   end
@@ -75,6 +89,11 @@ class AnalysisRun
     self.save
   end
 
+  def update_status_failed
+    self.status = :failed
+    self.save
+  end
+
   # returns an hash object which is going to be dumped into _input.json
   def input
     obj = {}
@@ -84,20 +103,34 @@ class AnalysisRun
       run = self.analyzable
       obj[:simulation_parameters] = run.parameter_set.v
       obj[:result] = run.result
+    when :on_parameter_set
+      ps = self.analyzable
+      obj[:simulation_parameters] = ps.v
+      obj[:result] = {}
+      ps.runs.each do |run|
+        obj[:result][run.to_param] = run.result
+      end
     else
       raise "not supported type"
     end
     return obj
   end
 
-  # returns an array of aboslute pathnames of files to be copied to _input/
+  # returns a hash
+  #   key: relative path of the destination directory from _input/
+  #   value: array of aboslute pathnames of files to be copied to _input/
   def input_files
-    files = []
+    files = {}
     case self.analyzer.type
     when :on_run
       run = self.analyzable
-      files = run.result_paths
+      files['.'] = run.result_paths
       # TODO: add directories of dependent analysis
+    when :on_parameter_set
+      ps = self.analyzable
+      ps.runs.where(status: :finished).each do |finished_run|
+        files[finished_run.to_param] = finished_run.result_paths
+      end
     else
       raise "not supported type"
     end

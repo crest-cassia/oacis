@@ -26,7 +26,12 @@ namespace :db do
     sim = FactoryGirl.create(:simulator,
                              parameter_sets_count: 5,
                              runs_count: 2,
-                             finished_runs_count: 3)
+                             finished_runs_count: 3,
+                             analyzers_count: 2,
+                             run_analysis: false,
+                             analyzers_on_parameter_set_count: 2,
+                             run_analysis_on_parameter_set: false
+                             )
 
     FactoryGirl.create(:simulator, parameter_sets_count: 0)
     # FactoryGirl.create(:simulator, parameter_sets_count: 30)

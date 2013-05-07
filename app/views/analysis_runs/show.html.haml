@@ -10,11 +10,21 @@
       %th ID
       %td= @analysis_run.to_param
     %tr
-      %th status
+      %th Status
       %td= @analysis_run.status
     %tr
       %th Directory
       %td= @analysis_run.dir
+    %tr
+      %th Analyzer
+      - azr = @analysis_run.analyzer
+      %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
+    %tr
+      %th Elapsed Real Time
+      %td= @analysis_run.real_time
+    %tr
+      %th Elapsed CPU Time
+      %td= @analysis_run.cpu_time
 
 - unless @analysis_run.parameters.empty?
   = render partial: "shared/parameters_table", locals: {parameters_hash: @analysis_run.parameters}

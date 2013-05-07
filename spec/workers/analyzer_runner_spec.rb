@@ -5,7 +5,8 @@ describe AnalyzerRunner do
   before(:each) do
     @sim = FactoryGirl.create(:simulator,
                               parameter_sets_count: 1, runs_count: 1,
-                              analyzers_count: 1, run_analysis: true)
+                              analyzers_count: 1, run_analysis: true
+                              )
     @prm = @sim.parameter_sets.first
     @run = @prm.runs.first
     @arn = @run.analysis_runs.first
@@ -14,23 +15,6 @@ describe AnalyzerRunner do
   end
 
   describe ".perform" do
-
-    describe ".fetch_analysis_run_instance" do
-
-      it "returns the correct AnalysisRun instance for :on_run type" do
-        fetched = AnalyzerRunner.__send__(:fetch_analysis_run_instance,
-                                          :on_run, @run.id, @arn.id)
-        fetched.should eq(@arn)
-      end
-
-      it "returns the correct AnalysisRun instance for :on_parameter_set type" do
-        pending "not yet implemented"
-      end
-
-      it "returns the correct AnalysisRun instance for :on_parameter_sets_group type" do
-        pending "not yet implemented"
-      end
-    end
 
     describe ".prepare_inputs" do
 
@@ -59,9 +43,10 @@ describe AnalyzerRunner do
         Dir.chdir(@work_dir) {
           dummy_input = @arn.analyzable.dir.join('dummy.txt')
           FileUtils.touch(dummy_input)
+          @arn.should_receive(:input_files).and_return({'abc' => [dummy_input]})
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
           File.directory?('_input').should be_true
-          File.exist?('_input/dummy.txt').should be_true
+          File.exist?('_input/abc/dummy.txt').should be_true
         }
       end
     end
@@ -120,7 +105,8 @@ describe AnalyzerRunner do
 
       it "updates result of AnalysisRun" do
         result = {xxx: 0.1, yyy:12345}
-        AnalyzerRunner.should_receive(:parse_output_json).and_return(result)
+        output_json = File.join(@work_dir, '_output.json')
+        File.open(output_json, 'w') {|io| io.puts result.to_json}
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
         @arn.reload
         @arn.result["xxx"].should eq(0.1)
@@ -175,6 +161,34 @@ describe AnalyzerRunner do
         @arn.status.should eq(:finished)
       end
     end
+
+    describe "error case" do
+
+      before(:each) do
+        @azr.update_attribute(:command, 'INVALID_COMMAND')
+        @work_dir = '__temp__'
+        FileUtils.mkdir_p(@work_dir)
+      end
+
+      after(:each) do
+        FileUtils.rm_r(@work_dir) if File.directory?(@work_dir)
+      end
+
+      it "raises an exception if the return code of the command is not zero" do
+        lambda {
+          AnalyzerRunner.perform(@azr.type, @run.to_param, @arn.to_param)
+        }.should raise_error
+      end
+    end
   end
 
+  describe ".on_failure" do
+
+
+    it "sets status of AnalysisRun to failed" do
+      AnalyzerRunner.__send__(:on_failure, StandardError.new, @azr.type, @run.to_param, @arn.to_param)
+      @arn.reload
+      @arn.status.should eq(:failed)
+    end
+  end
 end
