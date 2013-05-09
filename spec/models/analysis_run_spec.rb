@@ -266,7 +266,8 @@ describe AnalysisRun do
       it "returns a file entries in run directory" do
         paths = @arn.input_files
         paths.should be_a(Hash)
-        paths.should eq({'.' => [@dummy_path, @dummy_dir]})
+        paths.should have(1).items
+        (paths['.'] - [@dummy_path, @dummy_dir]).should be_empty
       end
 
       it "does not include analysis_run directory of self" do

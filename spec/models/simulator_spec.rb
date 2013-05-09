@@ -109,7 +109,7 @@ describe Simulator do
 
     it "is not created when validation fails" do
       Simulator.create(@valid_fields.update(name:""))
-      Dir.entries(ResultDirectory.root).should == ['.', '..'] # i.e. empty directory
+      (Dir.entries(ResultDirectory.root) - ['.', '..']).should be_empty
     end
   end
 

@@ -129,7 +129,7 @@ describe ParameterSet do
       sim.save
 
       prm = sim.parameter_sets.create(@valid_attr.update({:v => {"L"=>32}}))
-      Dir.entries(ResultDirectory.simulator_path(sim)).should == ['.', '..'] # i.e. empty directory
+      (Dir.entries(ResultDirectory.simulator_path(sim)) - ['.','..']).should be_empty
     end
   end
 
