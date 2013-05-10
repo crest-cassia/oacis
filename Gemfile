@@ -31,3 +31,5 @@ gem "ci_reporter", :group => :test
 gem "resque"
 gem "pry", :group => :development
 gem "pry-debugger", :group => :development
+gem "origin", ">= 1.0.4"
+gem "its"
