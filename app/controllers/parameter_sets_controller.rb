@@ -10,4 +10,23 @@ class ParameterSetsController < ApplicationController
       format.json { render json: @param_set }
     end
   end
+
+  def new
+    @simulator = Simulator.find(params[:simulator_id])
+  end
+
+  def create
+    @simulator = Simulator.find(params[:simulator_id])
+    @param_set = @simulator.parameter_sets.build(v: params[:parameters])
+
+    respond_to do |format|
+      if @param_set.save
+        format.html { redirect_to @param_set, notice: 'New ParameterSet was successfully created.' }
+        format.json { render json: @param_set, status: :created, location: @param_set }
+      else
+        format.html { render action: "new" }
+        format.json { render json: @param_set.errors, status: :unprocessable_entity }
+      end
+    end
+  end
 end

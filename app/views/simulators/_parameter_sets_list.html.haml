@@ -12,3 +12,5 @@
       - @simulator.parameter_definitions.each do |key,key_def|
         %td= param_set.v[key]
 = paginate @param_sets
+%a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
+  New Parameter Set

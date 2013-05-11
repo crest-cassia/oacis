@@ -2,7 +2,7 @@ AcmProto::Application.routes.draw do
 
   # Simulator-ParameterSet-Run relations
   resources :simulators, only: ["index", "show", "new", "create"] do
-    resources :parameter_sets, shallow: true, only: ["show"] do
+    resources :parameter_sets, shallow: true, only: ["show","new","create"] do
       resources :runs, only: ["show","create"]
     end
   end
