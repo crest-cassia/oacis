@@ -15,7 +15,10 @@ module ParametersUtil
       end
 
       val = cast_value(val, type)
-      errors.add(:parameters, "can not cast #{key} to #{type}") if val.nil?
+      if val.nil?
+        errors.add(:parameters, "can not cast #{key} to #{type}") if errors
+        return nil
+      end
 
       casted[key] = val
     end

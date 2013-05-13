@@ -128,7 +128,7 @@ describe ParameterSet do
       sim.parameter_definitions = h
       sim.save
 
-      prm = sim.parameter_sets.create(@valid_attr.update({:v => {"L"=>32}}))
+      prm = sim.parameter_sets.create(@valid_attr.update({:v => {"L"=>"abc"}}))
       (Dir.entries(ResultDirectory.simulator_path(sim)) - ['.','..']).should be_empty
     end
   end
