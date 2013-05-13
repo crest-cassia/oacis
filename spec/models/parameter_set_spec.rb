@@ -49,8 +49,8 @@ describe ParameterSet do
       built = @sim.parameter_sets.build(@valid_attr)
       built.should_not be_valid
       err = built.errors.messages
-      err.should have_key(:v)
-      err[:v].find {|x|
+      err.should have_key(:parameters)
+      err[:parameters].find {|x|
         x =~ /identical/
       }.should be_true
     end

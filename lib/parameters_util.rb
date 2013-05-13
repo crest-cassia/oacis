@@ -10,14 +10,20 @@ module ParametersUtil
 
       # neither parameter and defualt value is specified
       if val.nil?
-        errors.add(:parameters, "can not determine value for #{key}") if errors
-        return nil
+        if errors
+          errors.add(key.to_sym, "is not specified")
+        else
+          return nil
+        end
       end
 
       val = cast_value(val, type)
       if val.nil?
-        errors.add(:parameters, "can not cast #{key} to #{type}") if errors
-        return nil
+        if errors
+          errors.add(key.to_sym, "can not cast to #{type}")
+        else
+          return nil
+        end
       end
 
       casted[key] = val

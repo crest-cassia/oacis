@@ -13,6 +13,11 @@ class ParameterSetsController < ApplicationController
 
   def new
     @simulator = Simulator.find(params[:simulator_id])
+    v = {}
+    @simulator.parameter_definitions.each do |key,defn|
+      v[key] = defn["default"] if defn["default"]
+    end
+    @param_set = @simulator.parameter_sets.build(v: v)
   end
 
   def create

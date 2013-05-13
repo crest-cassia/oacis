@@ -1,7 +1,7 @@
 class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
-  field :v, type: Hash # , :default .   ### IMPLEMENT ME
+  field :v, type: Hash
   belongs_to :simulator
   has_many :runs
   embeds_many :analysis_runs, as: :analyzable
@@ -36,16 +36,15 @@ class ParameterSet
 
     # cast parameter values
     defn = self.simulator.parameter_definitions
-    casted = ParametersUtil.cast_parameter_values(v, defn)
-    unless casted
-      errors.add(:parameters, "parameters are not consistent with its definition.")
+    casted = ParametersUtil.cast_parameter_values(v, defn, errors)
+    if errors.any?
       return
     end
     self.v = casted
 
     found = self.class.find_identical_parameter_set(simulator, v)
     if found and found.id != self.id
-      errors.add(:v, "An identical parameters already exists : #{found.to_param}")
+      errors.add(:parameters, "An identical parameters already exists : #{found.to_param}")
       return
     end
   end

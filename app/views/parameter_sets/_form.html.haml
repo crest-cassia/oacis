@@ -1,0 +1,16 @@
+= form_tag(simulator_parameter_sets_path(@simulator), class: 'form_horizontal') do
+  = render partial: 'shared/error_messages', locals: {error_messages: @param_set.errors.full_messages}
+  - @simulator.parameter_definitions.each do |key,val|
+    - name = "parameters[#{key}]"
+    .control-group
+      = label_tag name, "#{key} (#{val["type"]})", class: 'control-label'
+      .controls
+        - value = @param_set.v[key]
+        - if val["type"] == "Boolean"
+          = select_tag name, options_for_select([[true,"true"],[false,"false"]], value.to_s)
+        - else
+          = text_field_tag name, value, class: 'text_field'
+        = val["description"]
+  .form-actions
+    = submit_tag "Create", class: 'btn btn-primary'
+    = link_to "Cancel", simulator_path(@simulator), :class => 'btn'
