@@ -43,4 +43,67 @@ describe ParameterSetsController do
       assigns(:runs).to_a.size.should == 25
     end
   end
+
+  describe "GET new" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 0)
+    end
+
+    it "assigns instance variables @simulator and @param_set" do
+      get 'new', {simulator_id: @sim}, valid_session
+      assigns(:param_set).should be_a_new(ParameterSet)
+      assigns(:simulator).should be_a(Simulator)
+      assigns(:param_set).should respond_to(:v)
+    end
+  end
+
+ describe "POST create" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 0)
+    end
+
+    describe "with valid params" do
+
+      before(:each) do
+        parameters = {"L" => 10, "T" => 2.0}
+        @valid_param = {simulator_id: @sim, parameters: parameters}
+      end
+
+      it "creates a new ParameterSet" do
+        expect {
+          post :create, @valid_param, valid_session
+        }.to change(ParameterSet, :count).by(1)
+      end
+
+      it "redirects to the created parameter set" do
+        post :create, @valid_param, valid_session
+        response.should redirect_to(ParameterSet.last)
+      end
+    end
+
+    describe "with invalid params" do
+
+      before(:each) do
+        parameters = {"L" => 10, "T" => "abc"}
+        @invalid_param = {simulator_id: @sim, parameters: parameters}
+      end
+
+      it "assigns a new ParameterSet as @param_set" do
+        expect {
+          post :create, @invalid_param, valid_session
+          assigns(:param_set).should be_a_new(ParameterSet)
+        }.to_not change(ParameterSet, :count)
+      end
+
+      it "re-renders the 'new' template" do
+        post :create, @invalid_param, valid_session
+        response.should render_template("new")
+      end
+    end
+  end
+
 end
