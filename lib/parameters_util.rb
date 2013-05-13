@@ -14,21 +14,34 @@ module ParametersUtil
         return nil
       end
 
-      case type
-      when "Integer"
-        val = val.to_i
-      when "Float"
-        val = val.to_f
-      when "Boolean"
-        val = boolean(val)
-      when "String"
-        val = val.to_s
-      else
-        raise "Unknown type : #{type}"
-      end
+      val = cast_value(val, type)
+      errors.add(:parameters, "can not cast #{key} to #{type}") if val.nil?
+
       casted[key] = val
     end
     return casted
+  end
+
+  # returns nil if cast fails
+  def self.cast_value(val, type)
+    case type
+    when "Integer"
+      if val.is_a?(String) and val !~ /^[-+]?[0-9]+$/
+        return nil
+      end
+      return val.to_i
+    when "Float"
+      if val.is_a?(String) and val !~ /^[-+]?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][-+]?[0-9]+)?$/
+        return nil
+      end
+      return val.to_f
+    when "Boolean"
+      return boolean(val)
+    when "String"
+      return val.to_s
+    else
+      raise "Unknown type : #{type}"
+    end
   end
 
   private

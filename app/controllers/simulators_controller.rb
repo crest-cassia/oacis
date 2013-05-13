@@ -3,7 +3,6 @@ class SimulatorsController < ApplicationController
   # GET /simulators.json
   def index
     @simulators = Simulator.all
-
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @simulators }
@@ -25,14 +24,14 @@ class SimulatorsController < ApplicationController
 
   # GET /simulators/new
   # GET /simulators/new.json
-  # def new
-  #   @simulator = Simulator.new
+  def new
+    @simulator = Simulator.new
 
-  #   respond_to do |format|
-  #     format.html # new.html.erb
-  #     format.json { render json: @simulator }
-  #   end
-  # end
+    respond_to do |format|
+      format.html # new.html.erb
+      format.json { render json: @simulator }
+    end
+  end
 
   # GET /simulators/1/edit
   # def edit
@@ -41,19 +40,31 @@ class SimulatorsController < ApplicationController
 
   # POST /simulators
   # POST /simulators.json
-  # def create
-  #   @simulator = Simulator.new(params[:simulator])
+  def create
+    param_def = {}
+    if params.has_key?(:definitions)
+      params[:definitions].each do |defn|
+        name = defn[:name]
+        next if name.empty?
+        param_def[name] = {}
+        param_def[name]["type"] = defn["type"]
+        param_def[name]["default"] = defn["default"]
+        param_def[name]["description"] = defn["description"]
+      end
+    end
+    @simulator = Simulator.new(params[:simulator])
+    @simulator.parameter_definitions = param_def
 
-  #   respond_to do |format|
-  #     if @simulator.save
-  #       format.html { redirect_to @simulator, notice: 'Simulator was successfully created.' }
-  #       format.json { render json: @simulator, status: :created, location: @simulator }
-  #     else
-  #       format.html { render action: "new" }
-  #       format.json { render json: @simulator.errors, status: :unprocessable_entity }
-  #     end
-  #   end
-  # end
+    respond_to do |format|
+      if @simulator.save
+        format.html { redirect_to @simulator, notice: 'Simulator was successfully created.' }
+        format.json { render json: @simulator, status: :created, location: @simulator }
+      else
+        format.html { render action: "new" }
+        format.json { render json: @simulator.errors, status: :unprocessable_entity }
+      end
+    end
+  end
 
   # PUT /simulators/1
   # PUT /simulators/1.json

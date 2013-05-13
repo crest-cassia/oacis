@@ -68,12 +68,12 @@ describe SimulatorsController do
     end
   end
 
-  # describe "GET new" do
-  #   it "assigns a new simulator as @simulator" do
-  #     get :new, {}, valid_session
-  #     assigns(:simulator).should be_a_new(Simulator)
-  #   end
-  # end
+  describe "GET new" do
+    it "assigns a new simulator as @simulator" do
+      get :new, {}, valid_session
+      assigns(:simulator).should be_a_new(Simulator)
+    end
+  end
 
   # describe "GET edit" do
   #   it "assigns the requested simulator as @simulator" do
@@ -83,42 +83,52 @@ describe SimulatorsController do
   #   end
   # end
 
-  # describe "POST create" do
-  #   describe "with valid params" do
-  #     it "creates a new Simulator" do
-  #       expect {
-  #         post :create, {:simulator => valid_attributes}, valid_session
-  #       }.to change(Simulator, :count).by(1)
-  #     end
+  describe "POST create" do
+    describe "with valid params" do
 
-  #     it "assigns a newly created simulator as @simulator" do
-  #       post :create, {:simulator => valid_attributes}, valid_session
-  #       assigns(:simulator).should be_a(Simulator)
-  #       assigns(:simulator).should be_persisted
-  #     end
+      before(:each) do
+        definitions = [
+          {"name" => "param1", "type" => "Integer"},
+          {"name" => "param2", "type" => "Float"}
+        ]
+        simulator = {name: "simulatorA", command: "echo"}
+        @valid_post_parameter = {simulator: simulator, definitions: definitions}
+      end
 
-  #     it "redirects to the created simulator" do
-  #       post :create, {:simulator => valid_attributes}, valid_session
-  #       response.should redirect_to(Simulator.last)
-  #     end
-  #   end
+      it "creates a new Simulator" do
+        expect {
+          post :create, @valid_post_parameter, valid_session
+        }.to change(Simulator, :count).by(1)
+      end
 
-  #   describe "with invalid params" do
-  #     it "assigns a newly created but unsaved simulator as @simulator" do
-  #       # Trigger the behavior that occurs when invalid params are submitted
-  #       Simulator.any_instance.stub(:save).and_return(false)
-  #       post :create, {:simulator => {}}, valid_session
-  #       assigns(:simulator).should be_a_new(Simulator)
-  #     end
+      it "assigns a newly created simulator as @simulator" do
+        post :create, @valid_post_parameter, valid_session
+        assigns(:simulator).should be_a(Simulator)
+        assigns(:simulator).should be_persisted
+      end
 
-  #     it "re-renders the 'new' template" do
-  #       # Trigger the behavior that occurs when invalid params are submitted
-  #       Simulator.any_instance.stub(:save).and_return(false)
-  #       post :create, {:simulator => {}}, valid_session
-  #       response.should render_template("new")
-  #     end
-  #   end
-  # end
+      it "redirects to the created simulator" do
+        post :create, @valid_post_parameter, valid_session
+        response.should redirect_to(Simulator.last)
+      end
+    end
+
+    describe "with invalid params" do
+
+      it "assigns a newly created but unsaved simulator as @simulator" do
+        expect {
+          post :create, {simulator: {}}, valid_session
+          assigns(:simulator).should be_a_new(Simulator)
+        }.to_not change(Simulator, :count)
+      end
+
+      it "re-renders the 'new' template" do
+        # Trigger the behavior that occurs when invalid params are submitted
+        post :create, {simulator: {}}, valid_session
+        response.should render_template("new")
+      end
+    end
+  end
 
   # describe "PUT update" do
   #   describe "with valid params" do

@@ -69,6 +69,29 @@ describe Simulator do
       fields[:parameter_definitions]["DateTime_key"] = {"type"=>"DateTime"}
       Simulator.new(fields).should_not be_valid
     end
+
+    it "default values are casted according to its type" do
+      fields = @valid_fields.update(parameter_definitions:{
+                                      "Boolean_key"=>{"type"=>"Boolean", "default" => "true"},
+                                      "Integer_key"=>{"type"=>"Integer", "default" => "1"},
+                                      "Float_key"=>{"type"=>"Float", "default" => "0.12345e7"},
+                                      "String_key"=>{"type"=>"String", "default" => "abc"}
+                                    })
+      sim = Simulator.new(fields)
+      sim.valid?
+      sim.parameter_definitions["Boolean_key"]["default"].should be_a(TrueClass)
+      sim.parameter_definitions["Integer_key"]["default"].should be_a(Integer)
+      sim.parameter_definitions["Float_key"]["default"].should be_a(Float)
+      sim.parameter_definitions["String_key"]["default"].should be_a(String)
+    end
+
+    it "is invalid if default value can not be casted to the specified type" do
+      fields = @valid_fields.update(parameter_definitions:{
+                                      "Integer_key"=>{"type"=>"Integer", "default" => "foo"}
+                                    })
+      sim = Simulator.new(fields)
+      sim.should_not be_valid
+    end
   end
 
   describe "parameter_sets" do

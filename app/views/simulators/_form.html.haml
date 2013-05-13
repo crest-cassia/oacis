@@ -1,27 +1,38 @@
-= form_for @simulator, :html => { :class => 'form-horizontal' } do |f|
-  / .control-group
-  /   = f.label :_type, :class => 'control-label'
-  /   .controls
-  /     = f.text_field :_type, :class => 'text_field'
-  / .control-group
-  /   = f.label :_id, :class => 'control-label'
-  /   .controls
-  /     = f.text_field :_id, :class => 'text_field'
+= form_for @simulator, html: {class: 'form-horizontal'} do |f|
+  = render partial: 'shared/error_messages', locals: {error_messages: @simulator.errors.full_messages}
   .control-group
-    = f.label :name, :class => 'control-label'
+    = f.label(:name, class: 'control-label')
     .controls
-      = f.text_field :name, :class => 'text_field'
-  / .control-group
-  /   = f.label :parameter_definitions, :class => 'control-label'
-  /   .controls
-  /     - @simulator.parameter_definitions.each do |key, val|
-  /       = key + ':'
-  /       = text_field_tag "parameter_definitions[#{key}][type]", val["type"], :class => 'text_field'
-  /       %br
+      = f.text_field(:name, class: 'text_field')
+  #parameters_form.control-group
+    = label_tag('definitions[][name]', 'Definition of Parameters', class: 'control-label')
+    #parameter_form_original
+      .controls.controls-row
+        = text_field_tag('definitions[][name]', "", placeholder: "Name")
+        = select_tag('definitions[][type]', options_for_select(Simulator::ParameterTypes))
+        = text_field_tag('definitions[][default]', "", placeholder: "Default value")
+        %br
+        = text_area_tag('definitions[][description]', "", placeholder: "Description", rows: 3)
+    .controls
+      .btn#add_parameters_form Add parameter
   .control-group
-    = f.label :command, :class => 'control-label'
+    = f.label(:command, class: 'control-label')
     .controls
-      = f.text_field :command, :class => 'text_field'
+      = f.text_field(:command)
+  .control-group
+    = f.label(:description, class: 'control-label')
+    .controls
+      = f.text_area(:description, rows: 5)
   .form-actions
-    = f.submit nil, :class => 'btn btn-primary'
-    = link_to t('.cancel', :default => t("helpers.links.cancel")), simulators_path, :class => 'btn'
+    = f.submit(class: 'btn btn-primary')
+    = link_to('Cancel', simulators_path, class: 'btn')
+
+:javascript
+  $(function() {
+    $('#add_parameters_form').click(function() {
+      var cloned = $('#parameter_form_original').clone();
+      $('#parameter_form_original').after(cloned);
+      $(cloned).removeAttr("id");
+      $(cloned).find('input').val('');
+    });
+  });

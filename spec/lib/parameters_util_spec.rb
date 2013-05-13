@@ -54,4 +54,19 @@ describe ParametersUtil do
       casted = ParametersUtil.cast_parameter_values(nil, @definitions)
     end
   end
+
+  describe ".cast_value" do
+
+    it "returns casted value" do
+      ParametersUtil.cast_value("-1", "Integer").should eq(-1)
+      ParametersUtil.cast_value("+0.234e5", "Float").should eq(0.234e5)
+      ParametersUtil.cast_value("false", "Boolean").should be_false
+      ParametersUtil.cast_value(123, "String").should eq("123")
+    end
+
+    it "returns nil when format of the value is not valid" do
+      ParametersUtil.cast_value("abc", "Integer").should be_nil
+      ParametersUtil.cast_value("def", "Float").should be_nil
+    end
+  end
 end

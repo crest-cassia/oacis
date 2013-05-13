@@ -12,6 +12,10 @@ class Simulator
   validates :command, presence: true
   validate :parameter_definitions_format
 
+  attr_accessible :name, :command, :description, :parameter_definitions
+
+  ParameterTypes = ["Integer","Float","String","Boolean"]
+
   after_save :create_simulator_dir
 
   public
@@ -30,21 +34,25 @@ class Simulator
   private
   def parameter_definitions_format
     unless parameter_definitions.size > 0
-      errors.add(:parameter_definitions, "parameter definitions cannot be empty")
+      errors.add(:parameter_definitions, "cannot be empty")
       return
     end
     parameter_definitions.each do |key, value|
       unless key =~ /\A\w+\z/
-        errors.add(:parameter_definitions, "parameter name must match '/\A\w+\z/'")
-        break
+        errors.add(:parameter_definitions, "name must match '/\A\w+\z/'")
+        return
       end
       unless value.has_key?("type")
-        errors.add(:parameter_definitions, "each parameter must has a type")
-        break
+        errors.add(:parameter_definitions, "must have a type")
+        return
       end
-      unless ["Boolean","Integer","Float","String"].include?(value["type"])
-        errors.add(:parameter_definitions, "type of each parameter must either 'Boolean', 'Integer', 'Float', or 'String'")
-        break
+      unless ParameterTypes.include?(value["type"])
+        errors.add(:parameter_definitions, "type must be either 'Boolean', 'Integer', 'Float', or 'String'")
+        return
+      end
+      value["default"] = ParametersUtil.cast_value(value["default"], value["type"])
+      if value["default"].nil?
+        errors.add(:parameter_definitions, "default value of #{key} is not valid as #{value['type']}")
       end
     end
   end
