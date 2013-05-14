@@ -15,3 +15,31 @@
 
 %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
   New Parameter Set
+  
+- unless @simulator.parameter_set_querys.empty?
+  %h4 Select query
+  = form_for( @simulator, :url=>{:controller=>"simulators", :action=>"_apply_query"} ) do |f|
+    %table
+      %tbody
+        %tr
+        %td "Key"
+        %td "Macher"
+        %td "Value"
+      %tr
+        %td= f.select :parameter_definitions, @simulator.parameter_definitions, :include_blank => true
+        %td= f.select :query, {"<"=>"macher","<="=>"macher",">"=>"macher",">="=>"macher","=="=>"macher","!="=>"macher"}, :include_blank => true
+        %td= f.text_field :query
+    = f.submit "Set query", :class => 'btn btn-primary'        
+%h4 Make query
+= form_tag( _apply_query_simulator_path(@simulator), :method => :put ) do |f|
+  %table
+    %tbody
+      %tr
+      %td "Key"
+      %td "Macher"
+      %td "Value"
+    %tr
+      %td= select_tag "param[]", options_for_select(@simulator.parameter_definitions), :include_blank => true
+      %td= select_tag "macher[]", options_for_select({"<"=>"$lt","<="=>"$lte",">"=>"$gt",">="=>"$gte","=="=>"$eq","!="=>"$neq"}), :include_blank => true
+      %td= text_field_tag "value[]"
+  = submit_tag "Make query", :class => 'btn btn-primary'
