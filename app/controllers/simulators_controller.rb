@@ -93,4 +93,29 @@ class SimulatorsController < ApplicationController
   #     format.json { head :no_content }
   #   end
   # end
+  # GET /simulators/:_id/_apply_query
+  def _apply_query
+    @simulator = Simulator.find(params[:id])
+    @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
+    @analyzers = @simulator.analyzers
+    #validation
+    #uniqueness
+    @newquery = ParameterSetQuery.new
+    params[:param].each_with_index do |para, idx|
+      h = {para=>{params[:macher][idx]=>params[:value][idx]}}
+      @newquery.set_query(h)
+    end
+    binding.pry
+    #@newquery.save
+    #@simulator.parameter_set_querys << @newquery
+    respond_to do |format|
+      if true
+        format.html # show.html.erb
+        format.json { render json: @simulator }
+      else
+        format.html { render action: "show" }
+        format.json { render json: @simulator.errors, status: :unprocessable_entity }
+      end
+    end
+  end
 end
