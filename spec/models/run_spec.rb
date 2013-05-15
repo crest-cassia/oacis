@@ -154,80 +154,6 @@ describe Run do
     end
   end
 
-
-  describe "#set_status_running" do
-
-    before(:each) do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
-      prm = sim.parameter_sets.first
-      @run = prm.runs.first
-    end
-
-    it "updates status to 'running' and sets hostname" do
-      ret = @run.set_status_running(:hostname => 'host_ABC')
-      ret.should be_true
-
-      updated_run = Run.find(@run)
-      updated_run.status.should == :running
-      updated_run.hostname.should == 'host_ABC'
-    end
-  end
-
-  describe "#set_status_finished" do
-
-    before(:each) do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
-      prm = sim.parameter_sets.first
-      @run = prm.runs.first
-      @run.set_status_running(:hostname => 'host_ABC')
-    end
-
-    it "updates status to 'finished' and sets elapsed times" do
-      ret = @run.set_status_finished( {cpu_time: 1.5, real_time: 2.0} )
-      ret.should be_true
-
-      @run.reload
-      @run.status.should == :finished
-      @run.cpu_time.should == 1.5
-      @run.real_time.should == 2.0
-      @run.result.should be_nil
-      @run.finished_at.should_not be_nil
-      @run.included_at.should_not be_nil
-    end
-
-    it "also sets result" do
-      result = {x: 0.5, y: 0.2}
-      ret = @run.set_status_finished(result: result)
-      ret.should be_true
-
-      @run.reload
-      @run.status.should eq(:finished)
-      @run.result["x"].should eq(0.5)
-      @run.result["y"].should eq(0.2)
-    end
-  end
-
-  describe "#set_status_failed" do
-
-    before(:each) do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
-      prm = sim.parameter_sets.first
-      @run = prm.runs.first
-      @run.set_status_running(:hostname => 'host_ABC')
-    end
-
-    it "updates status to 'failed'" do
-      ret = @run.set_status_failed
-      ret.should be_true
-
-      run = Run.find(@run)
-      run.status.should == :failed
-      run.cpu_time.should be_nil
-      run.real_time.should be_nil
-      run.finished_at.should be_nil
-    end
-  end
-
   describe "#result_paths" do
 
     before(:each) do
@@ -236,8 +162,7 @@ describe Run do
                                )
       prm = sim.parameter_sets.first
       @run = prm.runs.first
-      @run.set_status_running(:hostname => 'host_ABC')
-      @run.set_status_finished({cpu_time: 1.5, real_time: 2.0})
+      @run.status = :finished
       @temp_files = [@run.dir.join('result1.txt'), @run.dir.join('result2.txt')]
       @temp_files.each {|f| FileUtils.touch(f) }
       @temp_dir = @run.dir.join('result_dir')
