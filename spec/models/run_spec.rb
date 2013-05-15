@@ -128,7 +128,7 @@ describe Run do
       sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1)
       prm = sim.parameter_sets.first
       run = prm.runs.first
-      arg = {id: run.id, command: run.command, dir: run.dir.to_s}
+      arg = {id: run.id, command: run.command}
       Resque.should_receive(:enqueue).with(SimulatorRunner, arg)
       run.submit
     end

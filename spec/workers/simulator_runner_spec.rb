@@ -12,21 +12,29 @@ describe SimulatorRunner do
   describe ".perform" do
 
     before(:each) do
-      @run_info = {"id" => @run.id, "command" => @run.command, "dir" => @run.dir}
+      @temp_dir = Pathname.new('__temp')
+      FileUtils.mkdir_p(@temp_dir)
+      ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s
+      @run_dir = @temp_dir.join(@run.id)
+      @run_info = {"id" => @run.id, "command" => @run.command}
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
     end
 
     it "calls Run#command method while performing simulation" do
       @run_info["command"] = "echo hello"
       SimulatorRunner.perform(@run_info)
-      File.exist?(@run.dir.join('_stdout.txt')).should be_true
-      File.exist?(@run.dir.join('_stderr.txt')).should be_true
-      File.open(@run.dir.join('_stdout.txt')).read.should match(/hello/)
+      File.exist?(@run_dir.join('_stdout.txt')).should be_true
+      File.exist?(@run_dir.join('_stderr.txt')).should be_true
+      File.open(@run_dir.join('_stdout.txt')).read.should match(/hello/)
     end
 
     it "write status of Run to '_run_status.json' after simulation successfully finished" do
       @run_info["command"] = "sleep 1"
       SimulatorRunner.perform(@run_info)
-      stat_json = @run.dir.join('_run_status.json')
+      stat_json = @run_dir.join('_run_status.json')
       File.exist?(stat_json).should be_true
 
       loaded = JSON.load(File.open(stat_json))
@@ -41,7 +49,7 @@ describe SimulatorRunner do
     it "sets status 'failed' if the return code of the command is not zero" do
       @run_info["command"] = "INVALID_CMD"
       SimulatorRunner.perform(@run_info)
-      stat_json = @run.dir.join('_run_status.json')
+      stat_json = @run_dir.join('_run_status.json')
       File.exist?(stat_json).should be_true
 
       loaded = JSON.load(File.open(stat_json))
@@ -52,6 +60,16 @@ describe SimulatorRunner do
       loaded["real_time"].should be_within(0.1).of(0.0)
       DateTime.parse(loaded["finished_at"]).should be_within(20/28000.0).of(DateTime.now)
     end
+
+    it "creates working directory under CM_WORK_DIR" do
+      @run_info["command"] = 'pwd'
+      SimulatorRunner.perform(@run_info)
+
+      File.directory?(@temp_dir.join(@run_info["id"])).should be_true
+      @run_dir.join('_stdout.txt').read.should match(/^#{@run_dir.expand_path.to_s}$/)
+    end
+
+
 
     it "enqueues a job for DataIncluder"
   end

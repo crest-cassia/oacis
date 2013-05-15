@@ -9,8 +9,8 @@ class SimulatorRunner
     command = run_info["command"]
     run_dir = run_info["dir"]
 
-    FileUtils.mkdir_p(run_dir) if FileTest.directory?(run_dir)
-    Dir.chdir(run_dir) {
+    work_dir = create_work_dir(run_id)
+    Dir.chdir(work_dir) {
       run_status = {}
       run_status[:hostname] = `hostname`.chomp
       run_status[:started_at] = DateTime.now
@@ -22,6 +22,15 @@ class SimulatorRunner
       end
     }
     # TODO: enqueue DataIncluder
+  end
+
+  def self.create_work_dir(run_id)
+    work_dir_base = ENV['CM_WORK_DIR'] || './__work__'
+    work_dir_base = Pathname.new(work_dir_base)
+    FileUtils.mkdir_p(work_dir_base)
+    work_dir = work_dir_base.join(run_id)
+    FileUtils.mkdir_p(work_dir)
+    return work_dir
   end
 
   def self.run_simulator(command)
