@@ -2,39 +2,44 @@ class SimulatorRunner
 
   @queue = :simulator_queue
 
-  def self.perform(run_id)
-    run = Run.find(run_id)
-    run_dir = run.dir
+  STATUS_JSON_FILENAME = '_run_status.json'
+
+  def self.perform(run_info)
+    run_id = run_info["id"]
+    command = run_info["command"]
+    run_dir = run_info["dir"]
+
     FileUtils.mkdir_p(run_dir) if FileTest.directory?(run_dir)
-
-    elapsed_times = {cpu_time: 0.0, real_time: 0.0}
     Dir.chdir(run_dir) {
-      tms = Benchmark.measure {
-        system("#{run.command} 1> _stdout.txt 2> _stderr.txt")
-        unless $?.to_i == 0
-          raise "Rc of the simulator is not 0, but #{$?.to_i}"
-        end
-      }
-      elapsed_times[:cpu_time] = tms.cutime
-      elapsed_times[:real_time] = tms.real
+      run_status = {}
+      run_status[:hostname] = `hostname`.chomp
+      run_status[:started_at] = DateTime.now
+      stat = run_simulator(command)
+      run_status.update(stat)
+      run_status[:finished_at] = DateTime.now
+      File.open(STATUS_JSON_FILENAME, 'w') do |io|
+        io.print JSON.generate(run_status)
+      end
     }
-
-    update_runs_table(run, elapsed_times)
+    # TODO: enqueue DataIncluder
   end
 
-  def self.before_perform(run_id)
-    run = Run.find(run_id)
-    hostname = `hostname`.chomp
-    run.set_status_running( {hostname: hostname} )
+  def self.run_simulator(command)
+    run_status = {}
+    tms = Benchmark.measure {
+      system("#{command} 1> _stdout.txt 2> _stderr.txt")
+      if $?.to_i == 0
+        run_status[:status] = :finished
+      else
+        run_status[:status] = :failed
+      end
+      run_status[:rc] = $?.to_i
+    }
+    run_status[:cpu_time] = tms.cutime
+    run_status[:real_time] = tms.real
+    return run_status
   end
 
-  def self.update_runs_table(run, atr = {cpu_time: 0.0, real_time: 0.0})
-    run.set_status_finished(atr)
+  def self.on_failure(exception, run_info)
   end
-
-  def self.on_failure(exception, run_id)
-    run = Run.find(run_id)
-    run.set_status_failed
-  end
-
 end

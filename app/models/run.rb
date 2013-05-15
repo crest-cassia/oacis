@@ -29,7 +29,8 @@ class Run
   end
   
   def submit
-    Resque.enqueue(SimulatorRunner, self.id)
+    run_info = {id: id, command: command, dir: dir.to_s}
+    Resque.enqueue(SimulatorRunner, run_info)
   end
 
   def command
