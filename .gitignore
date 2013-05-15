@@ -81,3 +81,5 @@ pickle-email-*.html
 
 # Result directory
 public/Result_*
+# default work directory of SimulatorRunner
+__work__

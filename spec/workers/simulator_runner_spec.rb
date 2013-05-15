@@ -17,6 +17,7 @@ describe SimulatorRunner do
       ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s
       @run_dir = @temp_dir.join(@run.id)
       @run_info = {"id" => @run.id, "command" => @run.command}
+      Resque.stub!(:enqueue)
     end
 
     after(:each) do
@@ -69,8 +70,9 @@ describe SimulatorRunner do
       @run_dir.join('_stdout.txt').read.should match(/^#{@run_dir.expand_path.to_s}$/)
     end
 
-
-
-    it "enqueues a job for DataIncluder"
+    it "enqueues a job for DataIncluder" do
+      Resque.should_receive(:enqueue).with(DataIncluder, {run_id: @run.id, work_dir: @run_dir.expand_path.to_s})
+      SimulatorRunner.perform(@run_info)
+    end
   end
 end

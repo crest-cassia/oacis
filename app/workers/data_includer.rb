@@ -3,7 +3,7 @@ class DataIncluder
   QUEUE_NAME = :data_includer_queue
   @queue = QUEUE_NAME
 
-  STATUS_JSON_FILENAME = SimulatorRunner::STATUS_JSON_FILENAME
+  STATUS_JSON_FILENAME = '_run_status.json'
   FILES_TO_SKIP_COPY = ['_input.json', '_output.json', '_run_status.json']
 
   def self.perform(run_info)
@@ -13,9 +13,7 @@ class DataIncluder
     run = Run.find(run_id)
     copy_files(work_dir, run.dir)
 
-    json_path = work_dir.join(STATUS_JSON_FILENAME)
-    parsed = JSON.load(File.open(json_path))
-    update_run(run, parsed)
+    update_run(run, work_dir)
 
     remove_work_dir(work_dir)
   end
@@ -31,7 +29,9 @@ class DataIncluder
     }
   end
 
-  def self.update_run(run, status_hash)
+  def self.update_run(run, work_dir)
+    json_path = work_dir.join(STATUS_JSON_FILENAME)
+    status_hash = JSON.load(File.open(json_path))
     run.hostname = status_hash["hostname"]
     run.cpu_time = status_hash["cpu_time"]
     run.real_time = status_hash["real_time"]

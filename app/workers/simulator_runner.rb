@@ -1,3 +1,5 @@
+require File.join(File.dirname(__FILE__),'data_includer')
+
 class SimulatorRunner
 
   @queue = :simulator_queue
@@ -21,7 +23,7 @@ class SimulatorRunner
         io.print JSON.generate(run_status)
       end
     }
-    # TODO: enqueue DataIncluder
+    Resque.enqueue(DataIncluder, {run_id: run_id, work_dir: work_dir.to_s})
   end
 
   def self.create_work_dir(run_id)
