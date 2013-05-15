@@ -22,7 +22,6 @@ describe DataIncluder do
 
       before(:each) do
         ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s
-
         run_info = {"id" => @run.id, "command" => @run.command}
         SimulatorRunner.perform(run_info)
 
@@ -71,6 +70,17 @@ describe DataIncluder do
         File.directory?(@work_dir).should be_false
       end
 
+      it "stores contents of '_output.json' into Run#result" do
+        File.open(@work_dir.join('_output.json'), 'w') do |io|
+          io.print ({x: 1.0, y: 2.0}).to_json
+        end
+
+        DataIncluder.perform(@arg)
+        @run.reload
+        @run.result.should be_a(Hash)
+        @run.result["x"].should eq(1.0)
+        @run.result["y"].should eq(2.0)
+      end
     end
 
     describe "for a failed run" do

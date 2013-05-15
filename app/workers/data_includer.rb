@@ -4,7 +4,8 @@ class DataIncluder
   @queue = QUEUE_NAME
 
   STATUS_JSON_FILENAME = '_run_status.json'
-  FILES_TO_SKIP_COPY = ['_input.json', '_output.json', '_run_status.json']
+  OUTPUT_JSON_FILENAME = '_output.json'
+  FILES_TO_SKIP_COPY = ['_input.json', OUTPUT_JSON_FILENAME, STATUS_JSON_FILENAME]
 
   def self.perform(run_info)
     run_id = run_info["run_id"]
@@ -40,6 +41,13 @@ class DataIncluder
     run.included_at = DateTime.now
     run.status = status_hash["status"].to_sym
     run.save!
+
+    json_path = work_dir.join(OUTPUT_JSON_FILENAME)
+    if File.exist?(json_path)
+      result = JSON.load(File.open(json_path))
+      run.result = result
+      run.save!
+    end
   end
 
   def self.remove_work_dir(work_dir)
