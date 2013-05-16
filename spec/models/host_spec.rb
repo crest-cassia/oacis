@@ -98,4 +98,39 @@ describe Host do
       host.should respond_to(:updated_at)
     end
   end
+
+  describe "#download" do
+
+    before(:each) do
+      valid_attr = {
+        name: "localhost",
+        hostname: "localhost",
+        user: ENV['USER']
+      }
+      @host = Host.new(valid_attr)
+      @temp_dir = Pathname.new('__temp__')
+      FileUtils.mkdir_p(@temp_dir)
+      FileUtils.touch(@temp_dir.join('__abc__'))
+      @temp_dir2 = Pathname.new('__temp2__')
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+      FileUtils.rm_r(@temp_dir2) if File.directory?(@temp_dir2)
+    end
+
+    it "downloads files to the specified path and return the paths" do
+      @host.download(@temp_dir.expand_path, @temp_dir2)
+      File.directory?(@temp_dir2).should be_true
+      File.exist?(@temp_dir2.join('__abc__')).should be_true
+    end
+
+    it "raises an exception if connection to the remote host failed" do
+      @host.hostname = 'INVALID.HOSTNAME'
+      expect {
+        @host.download(@temp_dir.expand_path, @temp_dir2)
+      }.to raise_error SocketError
+      File.directory?(@temp_dir2).should_not be_true
+    end
+  end
 end

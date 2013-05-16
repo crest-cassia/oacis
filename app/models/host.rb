@@ -19,4 +19,12 @@ class Host
   # See http://stackoverflow.com/questions/1221985/how-to-validate-a-user-name-with-regex
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
+
+  public
+  def download(remote_path, local_path)
+    raise "Not a absolute path: #{remote_path}" unless Pathname.new(remote_path).absolute?
+    Net::SFTP.start(hostname, user) do |sftp|
+      sftp.download!(remote_path, local_path, recursive: true)
+    end
+  end
 end
