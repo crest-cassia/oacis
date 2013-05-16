@@ -1,37 +1,41 @@
-= form_for @host do |f|
-  - if @host.errors.any?
-    #error_explanation
-      %h2= "#{pluralize(@host.errors.count, "error")} prohibited this host from being saved:"
-      %ul
-        - @host.errors.full_messages.each do |msg|
-          %li= msg
-
-  .field
-    = f.label :name
-    = f.text_field :name
-  .field
-    = f.label :hostname
-    = f.text_field :hostname
-  .field
-    = f.label :user
-    = f.text_field :user
-  .field
-    = f.label :port
-    = f.number_field :port
-  .field
-    = f.label :ssh_key
-    = f.text_field :ssh_key
-  .field
-    = f.label :show_status_command
-    = f.text_field :show_status_command
-  .field
-    = f.label :submission_command
-    = f.text_field :submission_command
-  .field
-    = f.label :work_base_dir
-    = f.text_field :work_base_dir
-  .field
-    = f.label :simulator_base_dir
-    = f.text_field :simulator_base_dir
-  .actions
-    = f.submit 'Save'
+= form_for @host, html: {class: 'form-horizontal'} do |f|
+  = render partial: 'shared/error_messages', locals: {error_messages: @host.errors.full_messages}
+  .control-group
+    = f.label(:name, class: 'control-label')
+    .controls
+      = f.text_field(:name, class: 'text_field')
+  .control-group
+    = f.label(:hostname, class: 'control-label')
+    .controls
+      = f.text_field(:hostname, class: 'text_field')
+  .control-group
+    = f.label(:user, class: 'control-label')
+    .controls
+      = f.text_field(:user, class: 'text_field')
+  .control-group
+    = f.label(:port, class: 'control-label')
+    .controls
+      = f.number_field(:port, class: 'number_field')
+  .control-group
+    = f.label(:ssh_key, class: 'control-label')
+    .controls
+      = f.text_field(:ssh_key, class: 'text_field')
+  .control-group
+    = f.label(:show_status_command, class: 'control-label')
+    .controls
+      = f.text_field(:show_status_command, class: 'text_field')
+  .control-group
+    = f.label(:submission_command, class: 'control-label')
+    .controls
+      = f.text_field(:submission_command, class: 'text_field')
+  .control-group
+    = f.label(:work_base_dir, class: 'control-label')
+    .controls
+      = f.text_field(:work_base_dir, class: 'text_field')
+  .control-group
+    = f.label(:simulator_base_dir, class: 'control-label')
+    .controls
+      = f.text_field(:simulator_base_dir, class: 'text_field')
+  .form-actions
+    = f.submit('Save', class: 'btn btn-primary')
+    = link_to('Cancel', (@host.persisted? ? @host : hosts_path), class: 'btn')

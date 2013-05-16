@@ -1,6 +1,7 @@
-%h1 Listing hosts
+.page-header
+  %h1 Hosts
 
-%table
+%table.table.table-striped
   %tr
     %th Name
     %th Hostname
@@ -12,12 +13,10 @@
     %th Work base dir
     %th Simulator base dir
     %th
-    %th
-    %th
 
   - @hosts.each do |host|
     %tr
-      %td= host.name
+      %td= link_to(host.name, host)
       %td= host.hostname
       %td= host.user
       %td= host.port
@@ -26,10 +25,10 @@
       %td= host.submission_command
       %td= host.work_base_dir
       %td= host.simulator_base_dir
-      %td= link_to 'Show', host
-      %td= link_to 'Edit', edit_host_path(host)
-      %td= link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }
+      %td
+        = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning'
 
 %br
 
-= link_to 'New Host', new_host_path
+%a.btn.btn-primary{href: new_host_path} New Host
+
