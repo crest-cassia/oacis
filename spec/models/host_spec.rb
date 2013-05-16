@@ -28,13 +28,32 @@ describe Host do
       Host.new(@valid_attr).should_not be_valid
     end
 
+    it "'name' must not be an empty string" do
+      @valid_attr.update(name: '')
+      Host.new(@valid_attr).should_not be_valid
+    end
+
     it "'hostname' must be present" do
       @valid_attr.delete(:hostname)
       Host.new(@valid_attr).should_not be_valid
     end
 
+    it "'hostname' must conform to a format of hostname" do
+      @valid_attr.update(hostname: 'hostname;')
+      Host.new(@valid_attr).should_not be_valid
+      @valid_attr.update(hostname: 'xn--bcher-kva.ch.')
+      Host.new(@valid_attr).should be_valid
+    end
+
     it "'user' must be present" do
       @valid_attr.delete(:user)
+      Host.new(@valid_attr).should_not be_valid
+    end
+
+    it "format of the 'user' must be valid" do
+      @valid_attr.update(user: 'user-XYZ')
+      Host.new(@valid_attr).should be_valid
+      @valid_attr.update(user: 'user;XYZ')
       Host.new(@valid_attr).should_not be_valid
     end
 

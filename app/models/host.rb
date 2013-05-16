@@ -11,8 +11,12 @@ class Host
   field :work_base_dir, type: String, default: '~'
   field :simulator_base_dir, type: String, default: '~'
 
-  validates :name, presence: true, uniqueness: true
-  validates :hostname, presence: true
-  validates :user, presence: true
+  validates :name, presence: true, uniqueness: true, length: {minimum: 1}
+  validates :hostname, presence: true, format: {with: /^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/}
+  # See http://stackoverflow.com/questions/1418423/the-hostname-regex for the regexp of the hsotname
+
+  validates :user, presence: true, format: {with: /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/}
+  # See http://stackoverflow.com/questions/1221985/how-to-validate-a-user-name-with-regex
+
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
 end
