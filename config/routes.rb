@@ -24,6 +24,8 @@ AcmProto::Application.routes.draw do
 
   mount Resque::Server, :at => '/resque'
 
+  resources :hosts
+
   authenticated :user do
     root :to => 'home#index'
   end

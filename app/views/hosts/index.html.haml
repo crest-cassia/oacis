@@ -1,0 +1,35 @@
+%h1 Listing hosts
+
+%table
+  %tr
+    %th Name
+    %th Hostname
+    %th User
+    %th Port
+    %th Ssh key
+    %th Show status command
+    %th Submission command
+    %th Work base dir
+    %th Simulator base dir
+    %th
+    %th
+    %th
+
+  - @hosts.each do |host|
+    %tr
+      %td= host.name
+      %td= host.hostname
+      %td= host.user
+      %td= host.port
+      %td= host.ssh_key
+      %td= host.show_status_command
+      %td= host.submission_command
+      %td= host.work_base_dir
+      %td= host.simulator_base_dir
+      %td= link_to 'Show', host
+      %td= link_to 'Edit', edit_host_path(host)
+      %td= link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }
+
+%br
+
+= link_to 'New Host', new_host_path

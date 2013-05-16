@@ -1,0 +1,33 @@
+%p#notice= notice
+
+%p
+  %b Name:
+  = @host.name
+%p
+  %b Hostname:
+  = @host.hostname
+%p
+  %b User:
+  = @host.user
+%p
+  %b Port:
+  = @host.port
+%p
+  %b Ssh key:
+  = @host.ssh_key
+%p
+  %b Show status command:
+  = @host.show_status_command
+%p
+  %b Submission command:
+  = @host.submission_command
+%p
+  %b Work base dir:
+  = @host.work_base_dir
+%p
+  %b Simulator base dir:
+  = @host.simulator_base_dir
+
+= link_to 'Edit', edit_host_path(@host)
+\|
+= link_to 'Back', hosts_path
