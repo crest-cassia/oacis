@@ -23,7 +23,10 @@ class SimulatorRunner
         io.print JSON.generate(run_status)
       end
     }
-    Resque.enqueue(DataIncluder, {run_id: run_id, work_dir: work_dir.to_s})
+
+    arg = {run_id: run_id, work_dir: work_dir.to_s}
+    arg[:host_id] = ENV['CM_HOST_ID'] if ENV['CM_HOST_ID']
+    Resque.enqueue(DataIncluder, arg)
   end
 
   def self.create_work_dir(run_id)

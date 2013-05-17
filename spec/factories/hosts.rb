@@ -4,4 +4,10 @@ FactoryGirl.define do
     sequence(:hostname, 'A') {|n| "hostname.#{n}"}
     user "login_user"
   end
+
+  factory :localhost, class: Host do
+    name "localhost"
+    hostname { `hostname`.chomp }
+    user {ENV['USER']}
+  end
 end

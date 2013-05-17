@@ -7,6 +7,8 @@ describe SimulatorRunner do
                               parameter_sets_count: 1, runs_count: 1)
     @prm = @sim.parameter_sets.first
     @run = @prm.runs.first
+
+    @host = FactoryGirl.create(:host)
   end
 
   describe ".perform" do
@@ -70,8 +72,23 @@ describe SimulatorRunner do
       @run_dir.join('_stdout.txt').read.should match(/^#{@run_dir.expand_path.to_s}$/)
     end
 
-    it "enqueues a job for DataIncluder" do
-      Resque.should_receive(:enqueue).with(DataIncluder, {run_id: @run.id, work_dir: @run_dir.expand_path.to_s})
+    it "enqueues a job for DataIncluder with hostname if 'CM_HOST_ID' is not specified" do
+      ENV.delete('CM_HOST_ID')
+      Resque.should_receive(:enqueue).with(DataIncluder,
+                                           run_id: @run.id,
+                                           work_dir: @run_dir.expand_path.to_s,
+                                           hostname: `hostname`.chomp
+                                           )
+      SimulatorRunner.perform(@run_info)
+    end
+
+    it "enqueues a job for DataIncluder with host_id specified by 'CM_HOST_ID'" do
+      ENV['CM_HOST_ID'] = @host.id
+      Resque.should_receive(:enqueue).with(DataIncluder,
+                                           run_id: @run.id,
+                                           work_dir: @run_dir.expand_path.to_s,
+                                           host_id: @host.id.to_s
+                                           )
       SimulatorRunner.perform(@run_info)
     end
   end

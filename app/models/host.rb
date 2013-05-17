@@ -22,9 +22,16 @@ class Host
 
   public
   def download(remote_path, local_path)
-    raise "Not a absolute path: #{remote_path}" unless Pathname.new(remote_path).absolute?
+    raise "Not an absolute path: #{remote_path}" unless Pathname.new(remote_path).absolute?
     Net::SFTP.start(hostname, user) do |sftp|
       sftp.download!(remote_path, local_path, recursive: true)
+    end
+  end
+
+  def rm_r(remote_path)
+    raise "Not an abosolute path:#{remote_path}" unless Pathname.new(remote_path).absolute?
+    Net::SSH.start(hostname, user) do |ssh|
+      ssh.exec!("rm -r #{remote_path}")
     end
   end
 end

@@ -8,6 +8,8 @@ describe DataIncluder do
     @prm = @sim.parameter_sets.first
     @run = @prm.runs.first
 
+    @localhost = FactoryGirl.create(:localhost)
+
     @temp_dir = Pathname.new('__temp')
     FileUtils.mkdir_p(@temp_dir)
   end
@@ -26,9 +28,8 @@ describe DataIncluder do
         SimulatorRunner.perform(run_info)
 
         @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
-        @arg = {"run_id" => @run.id, "work_dir" => @work_dir.to_s}
+        @arg = {"run_id" => @run.id, "work_dir" => @work_dir.to_s, "host_id" => @localhost.id.to_s}
       end
-
 
       it "copies all the files in the work dir to run_directory" do
         dummy_dir = @work_dir.join('__dummy_dir__')
@@ -37,6 +38,11 @@ describe DataIncluder do
         File.exist?(@run.dir.join('_stdout.txt')).should be_true
         File.exist?(@run.dir.join('_stderr.txt')).should be_true
         File.directory?(@run.dir.join('__dummy_dir__')).should be_true
+      end
+
+      it "copies files using Host#download method" do
+        Host.any_instance.should_receive(:download).and_call_original
+        DataIncluder.perform(@arg)
       end
 
       it "does not copy '_input.json', '_output.json', and '_run_status.json'" do
@@ -70,6 +76,11 @@ describe DataIncluder do
         File.directory?(@work_dir).should be_false
       end
 
+      it "removes working directory using Host#rm_r method" do
+        Host.any_instance.should_receive(:rm_r).and_call_original
+        DataIncluder.perform(@arg)
+      end
+
       it "stores contents of '_output.json' into Run#result" do
         File.open(@work_dir.join('_output.json'), 'w') do |io|
           io.print ({x: 1.0, y: 2.0}).to_json
@@ -92,7 +103,7 @@ describe DataIncluder do
         SimulatorRunner.perform(run_info)
 
         @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
-        @arg = {"run_id" => @run.id, "work_dir" => @work_dir.to_s}
+        @arg = {"run_id" => @run.id, "work_dir" => @work_dir.to_s, "host_id" => @localhost.id.to_s}
       end
 
       it "updates attributes of Run" do

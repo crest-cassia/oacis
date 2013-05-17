@@ -102,15 +102,11 @@ describe Host do
   describe "#download" do
 
     before(:each) do
-      valid_attr = {
-        name: "localhost",
-        hostname: "localhost",
-        user: ENV['USER']
-      }
-      @host = Host.new(valid_attr)
+      @host = FactoryGirl.create(:localhost)
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
       FileUtils.touch(@temp_dir.join('__abc__'))
+      FileUtils.touch(@temp_dir.join('__def__'))
       @temp_dir2 = Pathname.new('__temp2__')
     end
 
@@ -120,9 +116,15 @@ describe Host do
     end
 
     it "downloads files to the specified path and return the paths" do
+      FileUtils.mkdir_p(@temp_dir2)
+      @host.download(@temp_dir.expand_path, @temp_dir2)
+      File.exist?(@temp_dir2.join('__abc__')).should be_true
+      File.exist?(@temp_dir2.join('__def__')).should be_true
+    end
+
+    it "creates local directory if specified directory does not exist" do
       @host.download(@temp_dir.expand_path, @temp_dir2)
       File.directory?(@temp_dir2).should be_true
-      File.exist?(@temp_dir2.join('__abc__')).should be_true
     end
 
     it "raises an exception if connection to the remote host failed" do
@@ -131,6 +133,31 @@ describe Host do
         @host.download(@temp_dir.expand_path, @temp_dir2)
       }.to raise_error SocketError
       File.directory?(@temp_dir2).should_not be_true
+    end
+  end
+
+  describe "#rm_r" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:localhost)
+      @temp_dir = Pathname.new('__temp__')
+      FileUtils.mkdir_p(@temp_dir)
+      @temp_file = @temp_dir.join('__abc__')
+      FileUtils.touch(@temp_file)
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it "removes specified file" do
+      @host.rm_r(@temp_file.expand_path)
+      File.exist?(@temp_file).should be_false
+    end
+
+    it "removes specified directory even if the directory is not empty" do
+      @host.rm_r(@temp_dir.expand_path)
+      File.directory?(@temp_dir).should be_false
     end
   end
 end
