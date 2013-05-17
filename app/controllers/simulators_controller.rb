@@ -13,7 +13,11 @@ class SimulatorsController < ApplicationController
   # GET /simulators/1.json
   def show
     @simulator = Simulator.find(params[:id])
-    @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
+    if @simulator.parameter_set_query.blank?
+      @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
+    else
+      @param_sets = ParameterSet.where(:simulator_id => @simulator).where(@simulator.parameter_set_query.get_selector).page(params[:page])
+    end
     @analyzers = @simulator.analyzers
 
     respond_to do |format|
@@ -96,18 +100,22 @@ class SimulatorsController < ApplicationController
   # GET /simulators/:_id/_apply_query
   def _apply_query
     @simulator = Simulator.find(params[:id])
-    @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
-    @analyzers = @simulator.analyzers
-    #validation
-    #uniqueness
     @newquery = ParameterSetQuery.new
-    params[:param].each_with_index do |para, idx|
-      h = {para=>{params[:macher][idx]=>params[:value][idx]}}
-      @newquery.set_query(h)
+    @newquery.simulator = @simulator
+    @newquery.set_query(params)
+    if @newquery.save
+      #binding.pry
+      #@simulator.parameter_set_query = nil
+      @simulator.parameter_set_query = @newquery
+      @simulator.parameter_set_querys << @newquery
+      @simulator.save
     end
-    binding.pry
-    #@newquery.save
-    #@simulator.parameter_set_querys << @newquery
+    if @simulator.parameter_set_query.blank?
+      @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
+    else
+      @param_sets = ParameterSet.where(:simulator_id => @simulator).where(@simulator.parameter_set_query.get_selector).page(params[:page])
+    end
+    @analyzers = @simulator.analyzers
     respond_to do |format|
       if true
         format.html # show.html.erb

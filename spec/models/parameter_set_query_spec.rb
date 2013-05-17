@@ -1,31 +1,109 @@
+# -*- encoding: utf-8 -*-
 require 'spec_helper'
 
 describe ParameterSetQuery do
+
   #pending "add some examples to (or delete) #{__FILE__}"
   before(:each) do
-    @query = FactoryGirl.create(:parameter_set_query)
+    @sim = FactoryGirl.create(:simulator, 
+                              parameter_sets_count: 1, 
+                              runs_count: 1
+                              )
+    @sim.save
   end
-  describe "basic parameterquery" do
+  
+  describe "validation pattern1" do
+
     before(:each) do
-      @query.query = {"L"=>1, "T"=>2.0}
-      @query.save
+      @query = @sim.parameter_set_querys.first
     end
+
     subject { @query }
-    it {should be_a(ParameterSetQuery)}
-    it {should have_at_least(1).query }
-    its(:query) {should_not be_empty}
+
+    it {should be_valid}
   end
-  describe "method tests" do
+
+  describe "validation pattern2" do
+
     before(:each) do
-      #@query.query = {"L"=>1, "T"=>2.0}
-      #@query.save
-      @sim = FactoryGirl.create(:simulator, 
-        parameter_sets_count: 1, 
-        runs_count: 1)
-      end
+      @query = @sim.parameter_set_querys.first
+      @query.query = {"T" => {"gte" => "4.0"}}
+    end
+
     subject { @query }
-    its(:get_selector) {should == Query.new.where(v: {}).selector}
-    its(:set_query, {"L"=>1, "T"=>2.0}) {should == Query.new.where(v: {"L"=>1, "T"=>2.0}).selector}
-    its(:del_query, {"L"=>1, "T"=>2.0}) {should be_true}
+
+    it {should_not be_valid}
+  end
+
+  describe "validation pattern3" do
+
+    before(:each) do
+      @query = @sim.parameter_set_querys.first
+      @query.query = {"T" => {"match" => "4.0"}}
+    end
+
+    subject { @query }
+
+    it {should_not be_valid}
+  end
+
+  describe "validation pattern4" do
+
+    before(:each) do
+      @query = @sim.parameter_set_querys.first
+      @query.query = {}
+    end
+
+    subject { @query }
+
+    it {should_not be_valid}
+  end
+  # describe "validation pattern5" do
+    # before(:each) do
+      # @query = FactoryGirl.create(:parameter_set_query,
+                              # simulator: @sim,
+                              # query: {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}
+                              # )
+      # @query.query = {"T" => {"gte" => 4.0}}
+    # end
+    # subject { @query }
+    # it {should_not be_valid}
+  # end
+  describe "get_selector" do
+
+    before(:each) do
+      @query = @sim.parameter_set_querys.first
+    end
+
+    subject { @query }
+
+    its(:get_selector) {should == Query.new.gte({"v.T" => 4.0}).where({"v.L" => 2}).selector}
+  end
+
+  describe "set_selector" do
+
+    before(:each) do
+      @query = @sim.parameter_set_querys.first
+    end
+
+    subject { @query }
+
+    its(:set_query, {"utf8"=>"✓",
+                    "_method"=>"put",
+                    "authenticity_token"=>"G2dpxUzQhT6WboU635UqQ8/p87o+xQYGq/Cdyr7wmkc=",
+                    "param"=>["L","T"],
+                    "macher"=>["eq","gte"],
+                    "value"=>["2","4.0"],
+                    "commit"=>"Make query",
+                    "action"=>"_apply_query",
+                    "controller"=>"simulators",
+                    "id"=>"5191905e81e31e8e4100000b"}) {should == {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}}
+
+    after(:all) do
+
+      subject { @query }
+
+      its(:get_selector) {should == Query.new.gte({"v.T" => 4.0}).where({"v.L" => 2}).selector}
+    end
   end
 end
