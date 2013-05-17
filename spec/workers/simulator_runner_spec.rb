@@ -77,7 +77,6 @@ describe SimulatorRunner do
       Resque.should_receive(:enqueue).with(DataIncluder,
                                            run_id: @run.id,
                                            work_dir: @run_dir.expand_path.to_s,
-                                           hostname: `hostname`.chomp
                                            )
       SimulatorRunner.perform(@run_info)
     end
