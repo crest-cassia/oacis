@@ -24,7 +24,7 @@ class SimulatorRunner
       end
     }
 
-    arg = {run_id: run_id, work_dir: work_dir.to_s}
+    arg = {run_id: run_id, work_dir: work_dir.expand_path.to_s}
     arg[:host_id] = ENV['CM_HOST_ID'] if ENV['CM_HOST_ID']
     Resque.enqueue(DataIncluder, arg)
   end
