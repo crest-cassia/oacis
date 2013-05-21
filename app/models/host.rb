@@ -20,18 +20,77 @@ class Host
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
 
+  CONNECTION_EXCEPTIONS = [
+    Errno::ECONNREFUSED,
+    Errno::ENETUNREACH,
+    SocketError,
+    Net::SSH::Exception,
+    OpenSSL::PKey::RSAError
+  ]
+
   public
+  # return true if connection established, return true
+  # return false otherwise
+  # connection exception is stored in @connection_error
+  def connected?
+    Net::SSH.start(hostname, user, password: "")  # disabled password authentication
+  rescue *CONNECTION_EXCEPTIONS => ex
+    @connection_error = ex
+    return false
+  else
+    return true
+  end
+
+  attr_reader :connection_error
+
   def download(remote_path, local_path)
     raise "Not an absolute path: #{remote_path}" unless Pathname.new(remote_path).absolute?
-    Net::SFTP.start(hostname, user) do |sftp|
+    start_sftp do |sftp|
       sftp.download!(remote_path, local_path, recursive: true)
     end
   end
 
   def rm_r(remote_path)
     raise "Not an abosolute path:#{remote_path}" unless Pathname.new(remote_path).absolute?
-    Net::SSH.start(hostname, user) do |ssh|
+    start_ssh do |ssh|
       ssh.exec!("rm -r #{remote_path}")
+    end
+  end
+
+  def uname
+    uname = nil
+    start_ssh do |ssh|
+      uname = ssh.exec!("uname").chomp
+    end
+    return uname
+  end
+
+  def status
+    ret = nil
+    start_ssh do |ssh|
+      unless show_status_command.blank?
+        ret = ssh.exec!(show_status_command)
+      else
+        uname = ssh.exec!("uname").chomp
+        cmd = "top -b -n 1"
+        cmd = "top -l 1 -o cpu" if uname =~ /Darwin/
+        cmd += " | head -n 20"
+        ret = ssh.exec!(cmd)
+      end
+    end
+    return ret
+  end
+
+  private
+  def start_ssh
+    Net::SSH.start(hostname, user, password: "", timeout: 1) do |ssh|
+      yield ssh
+    end
+  end
+
+  def start_sftp
+    Net::SFTP.start(hostname, user, password: "", timeout: 1) do |sftp|
+      yield sftp
     end
   end
 end

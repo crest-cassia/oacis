@@ -160,4 +160,67 @@ describe Host do
       File.directory?(@temp_dir).should be_false
     end
   end
+
+  describe "#uname" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:localhost)
+    end
+
+    it "returns the result of 'uname' on the host" do
+      @host.uname.should satisfy {|u|
+        ["Linux", "Darwin"].include?(u)
+      }
+    end
+  end
+
+  describe "#connected?" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:localhost)
+    end
+
+    it "returns true if ssh connection established" do
+      @host.connected?.should be_true
+    end
+
+    it "returns false when hostname is invalid" do
+      @host.hostname = "INVALID_HOSTNAME"
+      @host.connected?.should be_false
+    end
+
+    it "returns false when user name is not correct" do
+      @host.user = "NOT_EXISTING_USER"
+      @host.connected?.should be_false
+    end
+
+    it "exception is stored into connection_error variable" do
+      @host.hostname = "INVALID_HOSTNAME"
+      @host.connected?
+      @host.connection_error.should be_a(SocketError)
+    end
+  end
+
+  describe "#status" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:localhost)
+      @host.show_status_command = 'ps u'
+    end
+
+    it "returns status of hosts using show_status_command" do
+      stat = @host.status
+      stat.should match(/PID/)
+      stat.should match(/COMMAND/)
+      stat.should match(/TIME/)
+    end
+
+    it "calls top when show_status_command is not assigned" do
+      @host.show_status_command = nil
+      stat = @host.status
+      stat.should match(/PID/)
+      stat.should match(/COMMAND/)
+      stat.should match(/TIME/)
+    end
+  end
 end

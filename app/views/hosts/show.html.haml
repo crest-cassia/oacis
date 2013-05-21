@@ -35,3 +35,8 @@
 = link_to 'Edit', edit_host_path(@host), class: 'btn btn-info'
 = link_to 'Back to Index', hosts_path, class: 'btn'
 = link_to 'Destroy', @host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
+
+%hr
+%h3 Host Status
+%pre= @status
+

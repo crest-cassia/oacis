@@ -14,6 +14,12 @@ class HostsController < ApplicationController
   # GET /hosts/1.json
   def show
     @host = Host.find(params[:id])
+    if @host.connected?
+      @status = @host.status
+    else
+      flash.now[:alert] = "Failed to establish connection. Check host information."
+      @status = @host.connection_error.message
+    end
 
     respond_to do |format|
       format.html # show.html.erb
