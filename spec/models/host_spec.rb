@@ -223,4 +223,9 @@ describe Host do
       stat.should match(/TIME/)
     end
   end
+
+  describe "#launch_worker_cmd" do
+
+    pending "specification is subject to change"
+  end
 end

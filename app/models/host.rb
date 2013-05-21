@@ -71,14 +71,33 @@ class Host
       unless show_status_command.blank?
         ret = ssh.exec!(show_status_command)
       else
+        ps = ssh.exec!('ps au')
+        ret = ps.lines.first
+        ret += ps.lines.find_all {|l| l =~ /resque-\d/}.map{|l| l.chomp.strip }.join("\n")
+        ret += "\n------------------\n\n"
+
         uname = ssh.exec!("uname").chomp
         cmd = "top -b -n 1"
         cmd = "top -l 1 -o cpu" if uname =~ /Darwin/
         cmd += " | head -n 20"
-        ret = ssh.exec!(cmd)
+        ret += ssh.exec!(cmd)
       end
     end
     return ret
+  end
+
+  def launch_worker_cmd
+    exe = './bin/rake'
+    args = ['resque:workers',
+            'QUEUE=simulator_queue',
+            'LOAD_RAILS=false',
+            'VERBOSE=1',
+            "CM_HOST_ID=#{id}",
+            "CM_WORK_DIR=#{work_base_dir}",
+            "CM_SIMULATOR_DIR=#{simulator_base_dir}",
+            'COUNT=1'
+          ]
+    return "cd #{work_base_dir} && nohup #{exe} #{args.join(' ')} &"
   end
 
   private
@@ -92,5 +111,33 @@ class Host
     Net::SFTP.start(hostname, user, password: "", timeout: 1) do |sftp|
       yield sftp
     end
+  end
+
+  def ssh_exec!(ssh, command)
+    # Originally submitted by 'flitzwald' over here: http://stackoverflow.com/a/3386375
+    stdout_data = ""
+    stderr_data = ""
+    exit_code = nil
+
+    ssh.open_channel do |channel|
+      channel.exec(command) do |ch, success|
+        unless success
+          abort "FAILED: couldn't execute command (ssh.channel.exec)"
+        end
+        channel.on_data do |ch,data|
+          stdout_data+=data
+        end
+
+        channel.on_extended_data do |ch,type,data|
+          stderr_data+=data
+        end
+
+        channel.on_request("exit-status") do |ch,data|
+          exit_code = data.read_long
+        end
+      end
+    end
+    ssh.loop
+    [stdout_data, stderr_data, exit_code]
   end
 end
