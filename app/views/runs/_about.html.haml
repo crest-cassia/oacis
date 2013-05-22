@@ -1,4 +1,4 @@
-%table.table.table-condensed
+%table.table.table-condensed.table-striped
   %thead
   %tbody
     %tr
@@ -6,7 +6,7 @@
       %td= @run.to_param
     %tr
       %th status
-      %td= @run.status
+      %td= raw(status_label(@run.status))
     %tr
       %th seed
       %td= @run.seed
