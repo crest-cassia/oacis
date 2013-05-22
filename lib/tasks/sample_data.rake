@@ -53,6 +53,8 @@ namespace :db do
     #   sim_prm = {"L" => 99, "K" => (15+i)*0.01, "tmax" => 256}
     #   sim.parameter_sets.create(v: sim_prm)
     # end
+
+    FactoryGirl.create_list(:host, 5)
   end
 end
 

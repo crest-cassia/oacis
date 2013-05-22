@@ -19,11 +19,11 @@ class AnalysisRunsController < ApplicationController
       if arn.save and arn.submit
         format.html { redirect_to analyzable_analysis_run_path(analyzable, arn),
                       notice: "AnalysisRun was successfully created."}
-        format.json { render json: @arn, status: :created, location: @arn}
+        format.json { render json: arn, status: :created, location: arn}
       else
         # UPDATE ME: a tentative implementation
-        format.html { redirect_to @run, alert: "Failed to create analysis run" }
-        format.json { render json: @arn.errors, status: :unprocessable_entity}
+        format.html { redirect_to analyzable, alert: "Failed to create analysis run" }
+        format.json { render json: arn.errors, status: :unprocessable_entity}
       end
     end
   end
