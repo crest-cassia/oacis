@@ -12,14 +12,29 @@ class RunsController < ApplicationController
 
   def create
     @param_set = ParameterSet.find(params[:parameter_set_id])
-    @run = @param_set.runs.build(params[:run])
+
+    num_runs = 1
+    num_runs = params[:num_runs].to_i if params[:num_runs]
+    raise 'params[:num_runs] is invalid' unless num_runs > 0
+
+    @runs = []
+    num_runs.times do |i|
+      run = @param_set.runs.build(params[:run])
+      @runs << run
+    end
+
     respond_to do |format|
-      if @run.save and @run.submit
-        format.html { redirect_to @run, notice: 'Run was successfully created.' }
-        format.json { render json: @run, status: :created, location: @run}
+      if @runs.all? { |run| run.save and run.submit }
+        format.html {
+          message = "#{@runs.count} run#{@runs.size > 1 ? 's were' : ' was'} successfully created"
+          redirect_to @param_set, notice: message
+        }
+        format.json { render json: @runs, status: :created, location: @param_set}
       else
-        format.html { redirect_to @param_set, error: 'Failed to create a run.' }
-        format.json { render json: @run.errors, status: :unprocessable_entity }
+        format.html { redirect_to @param_set, error: 'Failed to create a run.'}
+        format.json {
+          render json: @runs.map{ |r| r.errors }, status: :unprocessable_entity
+        }
       end
     end
   end

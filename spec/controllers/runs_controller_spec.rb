@@ -54,11 +54,9 @@ describe RunsController do
         }.to change(Run.where(parameter_set_id: @par), :count).by(1)
       end
 
-      it "redirects to show page" do
+      it "redirects to ParameterSetController#show page" do
         post 'create', @req_param, valid_session
-        run = Run.last
-        # parameter = run.parameter_set
-        response.should redirect_to(run)
+        response.should redirect_to(@par)
       end
 
       it "assigns seed specified by request parameter" do
@@ -66,6 +64,13 @@ describe RunsController do
         @req_param.update(run: {seed: seed_val})
         post 'create', @req_param, valid_session
         Run.where(parameter_set_id: @par).last.seed.should == seed_val
+      end
+
+      it "create multiple items when params[num_runs] is given" do
+        num_runs = 3
+        expect {
+          post 'create', @req_param.update(num_runs: num_runs), valid_session
+        }.to change(Run.where(parameter_set_id: @par), :count).by(num_runs)
       end
     end
 

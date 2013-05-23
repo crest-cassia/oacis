@@ -23,5 +23,6 @@
         %td= distance_to_now_in_words(run.finished_at)
 = paginate @runs
 
-= form_for(@param_set.runs.build, :url => parameter_set_runs_path(@param_set)) do |f|
-  - f.submit "Create new run", :class => 'btn btn-primary'
+= form_tag(parameter_set_runs_path(@param_set), class: 'well form-inline') do |f|
+  = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]), class: 'input-mini')
+  = submit_tag "Create Runs", :class => 'btn btn-primary'
