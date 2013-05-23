@@ -56,7 +56,7 @@
     $('#add_querys_form').click(function() {
       var cloned = $('#querys_form_original').clone();
       $('#add_querys_form').before($(cloned));
-      $(cloned).trigger("change");
+      $("select" ,cloned).trigger("change");
     });
   });
   
