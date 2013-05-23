@@ -7,7 +7,6 @@ class Simulator
   field :description, type: String
   has_many :parameter_sets
   has_many :parameter_set_querys
-  has_one :parameter_set_query
   embeds_many :analyzers
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}

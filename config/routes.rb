@@ -3,7 +3,7 @@ AcmProto::Application.routes.draw do
   # Simulator-ParameterSet-Run relations
   resources :simulators, only: ["index", "show", "new", "create"] do
     member do
-        put "_apply_query"
+      post "_make_query" # for ajax
     end
     resources :parameter_sets, shallow: true, only: ["show","new","create"] do
       resources :runs, only: ["show","create"]
@@ -25,6 +25,14 @@ AcmProto::Application.routes.draw do
     resources :analysis_runs, :only => ["show", "create"]
   end
 
+  #match "/patients/:id" => "patients#show"
+  #resources :simulators, shallow: false, only: [] do
+  #  resources :parameter_set_querys, shallow: false, only: [] do
+  #    member do
+  #        get "_apply_query" # for ajax
+  #    end
+  #  end
+  #end
   mount Resque::Server, :at => '/resque'
 
   authenticated :user do

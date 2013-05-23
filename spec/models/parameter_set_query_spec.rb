@@ -12,64 +12,63 @@ describe ParameterSetQuery do
     @sim.save
   end
   
-  describe "validation pattern1" do
+  describe "validation for a Float format" do
 
-    before(:each) do
-      @query = @sim.parameter_set_querys.first
-    end
-
-    subject { @query }
+    subject {ParameterSetQuery.new(
+                                  simulator: @sim,
+                                  query: {"T" => {"gte" => 4.0}}
+                                  )
+            }
 
     it {should be_valid}
   end
 
-  describe "validation pattern2" do
+  describe "validation for a invalid type" do
 
-    before(:each) do
-      @query = @sim.parameter_set_querys.first
-      @query.query = {"T" => {"gte" => "4.0"}}
-    end
-
-    subject { @query }
-
-    it {should_not be_valid}
-  end
-
-  describe "validation pattern3" do
-
-    before(:each) do
-      @query = @sim.parameter_set_querys.first
-      @query.query = {"T" => {"match" => "4.0"}}
-    end
-
-    subject { @query }
+    subject { ParameterSetQuery.new(
+                                  simulator: @sim,
+                                  query: {"T" => {"gte" => "4.0"}}
+                                  )
+            }
 
     it {should_not be_valid}
   end
 
-  describe "validation pattern4" do
+  describe "validation for a invalid macher" do
 
-    before(:each) do
-      @query = @sim.parameter_set_querys.first
-      @query.query = {}
-    end
-
-    subject { @query }
+    subject {ParameterSetQuery.new(
+                                  simulator: @sim,
+                                  query: {"T" => {"match" => "4.0"}}
+                                  )
+            }
 
     it {should_not be_valid}
   end
-  # describe "validation pattern5" do
-    # before(:each) do
-      # @query = FactoryGirl.create(:parameter_set_query,
-                              # simulator: @sim,
-                              # query: {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}
-                              # )
-      # @query.query = {"T" => {"gte" => 4.0}}
-    # end
-    # subject { @query }
-    # it {should_not be_valid}
-  # end
-  describe "get_selector" do
+
+  describe "validation for presence" do
+
+    subject {ParameterSetQuery.new(
+                                  simulator: @sim,
+                                  query: {}
+                                  )
+            }
+
+    it {should_not be_valid}
+  end
+
+  describe "validation for uniqueness" do
+
+
+    subject {ParameterSetQuery.new(
+                                  simulator: @sim,
+                                  query: {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}
+                                  )
+            }
+
+    it {should_not be_valid}
+  end
+
+  describe "selector" do
 
     before(:each) do
       @query = @sim.parameter_set_querys.first
@@ -77,7 +76,7 @@ describe ParameterSetQuery do
 
     subject { @query }
 
-    its(:get_selector) {should == Query.new.gte({"v.T" => 4.0}).where({"v.L" => 2}).selector}
+    its(:selector) {should == Query.new.gte({"v.T" => 4.0}).where({"v.L" => 2}).selector}
   end
 
   describe "set_selector" do
@@ -88,22 +87,8 @@ describe ParameterSetQuery do
 
     subject { @query }
 
-    its(:set_query, {"utf8"=>"✓",
-                    "_method"=>"put",
-                    "authenticity_token"=>"G2dpxUzQhT6WboU635UqQ8/p87o+xQYGq/Cdyr7wmkc=",
-                    "param"=>["L","T"],
-                    "macher"=>["eq","gte"],
-                    "value"=>["2","4.0"],
-                    "commit"=>"Make query",
-                    "action"=>"_apply_query",
-                    "controller"=>"simulators",
-                    "id"=>"5191905e81e31e8e4100000b"}) {should == {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}}
-
-    after(:all) do
-
-      subject { @query }
-
-      its(:get_selector) {should == Query.new.gte({"v.T" => 4.0}).where({"v.L" => 2}).selector}
-    end
+    its(:set_query, [{"param"=>"T", "macher"=>"gte", "value"=>"4.0", "logic"=>"and"},
+                     {"param"=>"L", "macher"=>"eq", "value"=>"2", "logic"=>"and"}
+                    ]) {should == {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}}
   end
 end

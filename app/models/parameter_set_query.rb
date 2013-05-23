@@ -6,158 +6,190 @@ class ParameterSetQuery
   include Mongoid::Document
   field :query, type: Hash
   belongs_to :simulator
-  validates :simulator, presence: true
-  validates :query, presence: true, uniqueness: {:scope => :simulator_id}#, format: {with: /\A\w+\z/}, if: simulator {|x| x.parameter_set_query.include?(self)}
-  validate :query_format_is_valid, on: :create
+  validates :simulator, presence: {message: 'simulator must be presence'}
+  validates :query, presence: {message: 'query must be presence'}
+  validate :query_field_is_valid, message: 'must be unique'
+  validate :query_format_is_valid, on: :create, message: 'format must be valid'
   
-  NumMatchTypes = ["eq", "ne", "gt", "gte", "lt", "lte"]
-  BooleanMatchTypes = ["true", "false"]
-  StringMatchTypes = ["start_with", "end_with", "include", "match"]
+  NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
+  NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]
+  BooleanTypeMatchers = ["eq", "ne"]
+  StringTypeMatchers = ["start_with", "end_with", "include", "match"]
+
+  def query_field_is_valid
+    if self.query.blank?
+      self.errors.add(:query, "query is empty")
+      return
+    end
+
+    ParameterSetQuery.where(:simulator => self.simulator).each do |psq|
+      if psq.selector.eql?(self.selector)
+        self.errors.add(:query, "query is not unique") 
+      end
+    end
+  end
 
   def query_format_is_valid
-    if self.query.is_a?(Hash)
-      self.query.each do |key,val|
-        if (self.simulator.parameter_definitions.has_key?(key))
-          if val.is_a?(Hash)
-            val.each do |inkey,inval|
-              if(self.simulator.parameter_definitions[key]["type"]=="Integer" || self.simulator.parameter_definitions[key]["type"]=="Float")
-                case inkey
-                when "eq", "ne", "gt", "gte", "lt", "lte"
-                  self.errors.add(:query, "type(num) missmatch in psq.query") unless inval.is_a?(Integer) || inval.is_a?(Float) 
-                else
-                  self.errors.add(:query, "undefined matcher(num) in psq.query")
-                end
-              elsif(self.simulator.parameter_definitions[key]["type"]=="Boolean")
-                case inkey
-                when "true", "false"
-                  self.errors.add(:query, "type(num) missmatch in psq.query") unless inval.is_a?(TrueClass) 
-                else
-                  self.errors.add(:query, "undefined matcher(num) in psq.query")
-                end
-              elsif(self.simulator.parameter_definitions[key]["type"]=="String")
-                case inkey
-                when "start_with", "end_with", "include", "match"
-                  self.errors.add(:query, "type(num) missmatch in psq.query") unless inval.is_a?(String) 
-                else
-                  self.errors.add(:query, "undefined matcher(num) in psq.query")
-                end
-              else
-                self.errors.add(:query, "undefined parameter type")
-              end
-            end
-          else
-            self.errors.add(:query, "query does not have defined value")
+    unless !self.query.blank? && self.query.is_a?(Hash)
+      self.errors.add(:query, "query is not a Hash")
+      return
+    end
+
+    self.query.each do |key,val|
+      unless (self.simulator.parameter_definitions.has_key?(key)) && val.is_a?(Hash)
+        self.errors.add(:query, "defined keys and/or values are not exist in parametr_definitions")
+        return
+      end
+
+      val.each do |inkey,inval|
+        case self.simulator.parameter_definitions[key]["type"]
+        when "Integer", "Float"
+          unless NumTypeMatchers.include?(inkey) && (inval.is_a?(Integer) || inval.is_a?(Float))
+            self.errors.add(:query, "Type is not Integer or Float, or undefined matcher for Integer or Float")
+          end
+        when "Boolean"
+          unless BooleanTypeMatchers.include?(inkey) && inval.is_a?(Boolean)
+            self.errors.add(:query, "Type is not Boolean, or undefined matcher for Booleans")
+          end
+        when "String"
+          unless StringTypeMatchers.include?(inkey) && inval.is_a?(String) && inval != "" && !inval.include?("$")
+            self.errors.add(:query, "Type is not String, or undefined matcher for String")
           end
         else
-          self.errors.add(:query, "query does not have keys in parametr_definitions")
+          self.errors.add(:query, "undefined parameter type")
         end
       end
-    else
-      self.errors.add(:query, "query is not a Hash")
     end
   end
   
-  #comvert format from string to selector
-  def get_selector
-    p self.query
+  #convert format from string to selector
+  def selector
     q = Query.new
     self.query.each do |key,val|
       h = {}
       val.each do |inkey,inval|
         if(self.simulator.parameter_definitions[key]["type"]=="Integer")
-          case inkey
-          when "eq"
-            if(inval.is_a?(Integer))
-              h = {"v."+key => inval}
-            else
-              self.errors.add(:get_selector, "val is not a Integer")
-            end
-          when "ne", "gt", "gte", "lt", "lte"
-            if(inval.is_a?(Integer))
-              h = {"v."+key => {"$"+inkey.to_s => inval}}
-            else
-              self.errors.add(:get_selector, "val is not a Integer")
-            end
+          unless(inval.is_a?(Integer))
+            self.errors.add(:selector, "val is not a Integer")
+            return q.where(h).selector
           end
+
+          case inkey
+          when NumTypeMatchers[0]
+            h = {"v."+key => inval}
+          when *NumTypeMatchers[1..5]
+            h = {"v."+key => {"$"+inkey.to_s => inval}}
+          else
+            self.errors.add(:selector, "undefined matcher for (Integer)")
+          end
+          
         elsif(self.simulator.parameter_definitions[key]["type"]=="Float")
-          case inkey
-          when "eq"
-            if(inval.is_a?(Float))
-              h = {"v."+key => inval}
-            else
-              self.errors.add(:get_selector, "val is not a Float")
-            end
-          when "ne", "gt", "gte", "lt", "lte"
-            if(inval.is_a?(Float))
-              h = {"v."+key => {"$"+inkey.to_s => inval}}
-            else
-              self.errors.add(:get_selector, "val is not a Float")
-            end
+          unless(inval.is_a?(Float))
+            self.errors.add(:selector, "val is not a Integer")
+            return q.where(h).selector
           end
+
+          case inkey
+          when NumTypeMatchers[0]
+            h = {"v."+key => inval}
+          when *NumTypeMatchers[1..5]
+            h = {"v."+key => {"$"+inkey.to_s => inval}}
+          else
+            self.errors.add(:selector, "undefined matcher for (Float)")
+          end
+
         elsif(self.simulator.parameter_definitions[key]["type"]=="Boolean")
-          self.errors.add(:get_selector, "macher is not defind for Boolean")
+          unless(inval.is_a?(Boolean))
+            self.errors.add(:selector, "val is not a Boolean")
+            return q.where(h).selector
+          end
+
+          case inkey
+          when BooleanTypeMatchers[0]
+            h = {"v."+key => inval}
+          when BooleanTypeMatchers[1]
+            h = {"v."+key => {"$"+inkey.to_s => inval}}
+          else
+            self.errors.add(:selector, "undefined matcher for (Boolean)")
+          end
+          
         elsif(self.simulator.parameter_definitions[key]["type"]=="String")
-          self.errors.add(:get_selector, "macher is not defind for String")
+          unless(inval.is_a?(String))
+            self.errors.add(:selector, "val is not a String")
+            return q.where(h).selector
+          end
+
+          case inkey
+          when StringTypeMatchers[0]
+            h = {"v."+key => Regexp.new("^"+inval)}
+          when StringTypeMatchers[1]
+            h = {"v."+key => Regexp.new(inval+"$")}
+          when StringTypeMatchers[2]
+            h = {"v."+key => Regexp.new(inval)}
+          when StringTypeMatchers[3]
+            h = {"v."+key => Regexp.new(inval)}
+          else
+            self.errors.add(:selector, "undefined matcher for (String)")
+          end
         end
-        p h
+
         q = q.where(h)
       end
     end
-    #p q.selector
-    #p Query.new.where({"v.L" => 2}).gte({"v.T" => 4.0}).selector
     return q.selector
   end
   
   #ser a query which is a hash expressed with string in key and val
-  def set_query(params)
-    result = true
-    #p "in set_query"
+  def set_query(settings)
+    if settings.blank?
+      return false
+    end
     h = {}
-    #p params
-    #p params['param']
-    params['param'].each_with_index do |para, idx|
-      p para.to_s
-      p params['macher'][idx]
-      p params['value'][idx]
-      if(self.simulator.parameter_definitions[para]["type"]=="Integer")
-        if(params['value'][idx].to_i.is_a?(Integer))
-          h[para.to_s] = {params['macher'][idx]=>params['value'][idx].to_i}
+    settings.each do |para|
+      case self.simulator.parameter_definitions[para['param']]["type"]
+ 
+      when "Integer"
+        if(para['value'].to_i.is_a?(Integer))
+          h[para['param'].to_s] = {para['macher']=>para['value'].to_i}
         else
           self.errors.add(:set_query, "val not match to Integer")
-          result = false
+          return false
         end
-      elsif(self.simulator.parameter_definitions[para]["type"]=="Float")
-        if(params['value'][idx].to_f.is_a?(Float))
-          h[para.to_s] = {params['macher'][idx]=>params['value'][idx].to_f}
+        
+      when "Float"
+        if(para['value'].to_f.is_a?(Float))
+          h[para['param'].to_s] = {para['macher']=>para['value'].to_f}
         else
           self.errors.add(:set_query, "val not match to float")
-          result = false
+          return false
         end
-      elsif(self.simulator.parameter_definitions[para]["type"]=="Boolean")
-        if(params['value'][idx]=="true")
-          h[para.to_s] = {params['macher'][idx]=>true}
-        elsif(params['value'][idx]=="false")
-          h[para.to_s] = {params['macher'][idx]=>false}
+ 
+      when "Boolean"
+        if(para['value']=="true")
+          h[para['param'].to_s] = {para['macher']=>true}
+        elsif(para['value']=="false")
+          h[para['param'].to_s] = {para['macher']=>false}
         else
           self.errors.add(:set_query, "val not match to boolean")
-          result = false
+          return false
         end
-      elsif(self.simulator.parameter_definitions[para]["type"]=="String")
-        unless(params['value'][idx].to_s.include?("$"))
-          h[para.to_s] = {params['macher'][idx]=>params['value'][idx].to_s}
+ 
+      when "String"
+        unless(para['value'].to_s.include?("$"))
+          h[para['param'].to_s] = {para['macher']=>para['value'].to_s}
         else
           self.errors.add(:set_query, "string val has \"$\"")
-          result = false
+          return false
         end
+ 
       else
-        result = false
+        self.errors.add(:set_query, "undefined types")
+        return false
       end
+ 
     end
+    #h includes one or more hash(s) that can be converted to selector(s)
     self.query = h
-    #p self
-    self.save
-    #p ParameterSet.where({"v.L" => 1}).first
-    #p ParameterSet.where(q.selector).first
-    return self.query
+    return h
   end
 end

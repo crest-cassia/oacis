@@ -13,12 +13,25 @@ class SimulatorsController < ApplicationController
   # GET /simulators/1.json
   def show
     @simulator = Simulator.find(params[:id])
-    if @simulator.parameter_set_query.blank?
+    @analyzers = @simulator.analyzers
+    #if @simulator.parameter_set_query.blank?
+    @query_id = params[:query_id]
+    #binding.pry
+    if @query_id.blank?
       @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
     else
-      @param_sets = ParameterSet.where(:simulator_id => @simulator).where(@simulator.parameter_set_query.get_selector).page(params[:page])
+      @param_sets = ParameterSet.where(:simulator_id => @simulator).where(ParameterSetQuery.where(:id => @query_id).first.selector).page(params[:page])
     end
-    @analyzers = @simulator.analyzers
+    unless @simulator.parameter_set_querys.blank?
+      keyary = []
+      keyval = []
+      @simulator.parameter_set_querys.each do |psq|
+        keyary << psq.query.to_s
+        keyval << psq.id
+      end
+      ary = [keyary, keyval].transpose
+      @query_list = Hash[*ary.flatten]
+    end
 
     respond_to do |format|
       format.html # show.html.erb
@@ -97,33 +110,28 @@ class SimulatorsController < ApplicationController
   #     format.json { head :no_content }
   #   end
   # end
-  # GET /simulators/:_id/_apply_query
-  def _apply_query
-    @simulator = Simulator.find(params[:id])
-    @newquery = ParameterSetQuery.new
-    @newquery.simulator = @simulator
-    @newquery.set_query(params)
-    if @newquery.save
-      #binding.pry
-      #@simulator.parameter_set_query = nil
-      @simulator.parameter_set_query = @newquery
-      @simulator.parameter_set_querys << @newquery
-      @simulator.save
-    end
-    if @simulator.parameter_set_query.blank?
-      @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
+
+  # POST /simulators/:_id/_make_query redirect_to simulators#show
+  def _make_query
+    @query_id = params[:query_id]
+    if params[:delete_query]
+      @q = ParameterSetQuery.where(:id => @query_id).first
+      @q.destroy
+      @query_id = ""
     else
-      @param_sets = ParameterSet.where(:simulator_id => @simulator).where(@simulator.parameter_set_query.get_selector).page(params[:page])
-    end
-    @analyzers = @simulator.analyzers
-    respond_to do |format|
-      if true
-        format.html # show.html.erb
-        format.json { render json: @simulator }
+      @simulator = Simulator.find(params[:id])
+      @newquery = ParameterSetQuery.new
+      @newquery.simulator = @simulator
+      if @newquery.set_query(params["query"])
+        if @newquery.save
+          @simulator.parameter_set_querys << @newquery #@simulator is updated
+          @query_id = @newquery.id
+        end
       else
-        format.html { render action: "show" }
-        format.json { render json: @simulator.errors, status: :unprocessable_entity }
+        @newquery.destroy
       end
     end
+
+    redirect_to  :action => "show", :query_id => @query_id
   end
 end

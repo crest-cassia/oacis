@@ -31,5 +31,9 @@ module ApplicationHelper
     end
     return links
   end
+  
+  def utf8_enforcer_tag
+    return "".html_safe
+  end
 
 end
