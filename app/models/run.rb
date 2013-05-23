@@ -29,7 +29,8 @@ class Run
   end
   
   def submit
-    Resque.enqueue(SimulatorRunner, self.id)
+    run_info = {id: id, command: command}
+    Resque.enqueue(SimulatorRunner, run_info)
   end
 
   def command
@@ -57,29 +58,6 @@ class Run
     # remove directories of AnalysisRuns
     paths -= analysis_runs.map {|x| x.dir}
     return paths
-  end
-
-  def set_status_running( option = {hostname: 'localhost'} )
-    self.status = :running
-    self.hostname = option[:hostname]
-    self.started_at = DateTime.now
-    self.save
-  end
-
-  def set_status_finished(option = {cpu_time: 0.0, real_time: 0.0})
-    merged = {cpu_time: 0.0, real_time: 0.0}.merge(option)
-    self.status = :finished
-    self.cpu_time = merged[:cpu_time]
-    self.real_time = merged[:real_time]
-    self.result = merged[:result]
-    self.finished_at = DateTime.now
-    self.included_at = DateTime.now
-    self.save
-  end
-
-  def set_status_failed
-    self.status = :failed
-    self.save
   end
 
   private

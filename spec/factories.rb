@@ -13,7 +13,7 @@ FactoryGirl.define do
 
   factory :simulator do
     sequence(:name, 'A') {|n| "simulator#{n}"}
-    command { Rails.root.join('spec','support','echo.sh') } #"~/path/to/#{name}"}
+    command "echo"
     h = { "L"=>{"type"=>"Integer", "default" => 50, "description" => "System size"},
           "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Temperature"}
         }
@@ -73,15 +73,12 @@ FactoryGirl.define do
     factory :finished_run do
 
       after(:create) do |run, evaluator|
-        run.set_status_running(hostname: 'hostXYZ')
-        cpu_time = rand * 100.0
-        real_time = cpu_time + rand * 2.0
-        result_hash = {"Energy" => rand*1.0, "Flow" => rand*3.0}
-        run.set_status_finished(cpu_time: cpu_time,
-                                real_time: real_time,
-                                result: result_hash
-                                )
-        FileUtils
+        run.hostname = 'hostXYZ'
+        run.cpu_time = rand * 100.0
+        run.real_time = run.cpu_time + rand * 2.0
+        run.result = {"Energy" => rand*1.0, "Flow" => rand*3.0}
+        run.status = :finished
+        run.save!
       end
     end
   end

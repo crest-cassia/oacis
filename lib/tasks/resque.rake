@@ -1,6 +1,14 @@
 require "resque/tasks"
 
-task "resque:setup" => :environment
+task "resque:setup" do
+  if ENV['LOAD_RAILS'] == 'false'
+    Rake::Task["resque:preload"].clear
+    require "#{Rails.root}/config/initializers/resque"
+    require "#{Rails.root}/app/workers/simulator_runner"
+  else
+    Rake::Task['environment'].invoke
+  end
+end
 
 namespace :resque  do
 

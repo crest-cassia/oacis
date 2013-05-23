@@ -25,7 +25,6 @@ describe ParameterQuery do
       end
     subject { @query }
     its(:get_selector) {should == Query.new.where(v: {"L"=>1, "T"=>2.0}).selector}
-    its(:add_constraint, {"S"=>20}) {should == Query.new.where(v: {"L"=>1, "T"=>2.0, "S"=>2.0}).selector}
     its(:del_constraint) {should == Query.new.where(v: {"L"=>1, "T"=>2.0}).selector}
   end
 end

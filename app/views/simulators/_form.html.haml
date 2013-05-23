@@ -13,8 +13,8 @@
         = text_field_tag('definitions[][default]', "", placeholder: "Default value")
         %br
         = text_area_tag('definitions[][description]', "", placeholder: "Description", rows: 3)
-    .controls
-      .btn#add_parameters_form Add parameter
+    .controls#add_parameters_ctrl
+      .btn#add_parameters_btn Add parameter
   .control-group
     = f.label(:command, class: 'control-label')
     .controls
@@ -29,9 +29,9 @@
 
 :javascript
   $(function() {
-    $('#add_parameters_form').click(function() {
+    $('#add_parameters_btn').click(function() {
       var cloned = $('#parameter_form_original').clone();
-      $('#parameter_form_original').after(cloned);
+      $('#add_parameters_ctrl').before(cloned);
       $(cloned).removeAttr("id");
       $(cloned).find('input').val('');
     });

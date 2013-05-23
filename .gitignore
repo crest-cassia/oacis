@@ -14,6 +14,7 @@
 /.bundle
 /vendor/bundle/
 /vendor/ruby/
+/bin/
 
 # minimal Rails specific artifacts
 db/*.sqlite3
@@ -81,3 +82,5 @@ pickle-email-*.html
 
 # Result directory
 public/Result_*
+# default work directory of SimulatorRunner
+__work__
