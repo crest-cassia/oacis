@@ -55,8 +55,8 @@
   $(function() {
     $('#add_querys_form').click(function() {
       var cloned = $('#querys_form_original').clone();
-      $(cloned).find('#query__value').val('');
       $('#add_querys_form').before($(cloned));
+      $(cloned).trigger("change");
     });
   });
   
