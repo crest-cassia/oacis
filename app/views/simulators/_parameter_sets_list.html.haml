@@ -16,7 +16,7 @@
 %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
   New Parameter Set
   
-- unless @simulator.parameter_set_querys.blank?
+- unless @simulator.parameter_set_queries.blank?
   %h4 Select query
   = form_for(@simulator, :url=>{:controller=>"simulators", :action=>"show"}, :html => { :method => :get } ) do |f|
     = select_tag "query_id", options_for_select(@query_list, @query_id), :prompt => "all"
@@ -30,18 +30,18 @@
         %td
           "Key"
         %td
-          "Macher"
+          "Matcher"
         %td
           "Value"
-      %tr#querys_form_original
+      %tr#queries_form_original
         %td#select_param_form
           = select_tag "query[][param]", options_for_select(@simulator.parameter_definitions)
-        %td#select_macher_form
-          = select_tag "query[][macher]", options_for_select({""=>""})
+        %td#select_matcher_form
+          = select_tag "query[][matcher]", options_for_select({""=>""})
         %td#select_value_form
           = text_field_tag "query[][value]"
   .controls
-    .btn#add_querys_form Add more query
+    .btn#add_queries_form Add more query
   = hidden_field_tag "query_id", @query_id
   = submit_tag "Make query", :class => 'btn btn-primary'
 
@@ -53,46 +53,46 @@
   
 :javascript
   $(function() {
-    $('#add_querys_form').click(function() {
-      var cloned = $('#querys_form_original').clone();
-      $('#add_querys_form').before($(cloned));
+    $('#add_queries_form').click(function() {
+      var cloned = $('#queries_form_original').clone();
+      $('#add_queries_form').before($(cloned));
       $("select" ,cloned).trigger("change");
     });
   });
   
-  var macher_val_Ingeter= #{raw ParameterSetQuery::NumTypeMatchers.to_json};
-  var macher_text_Ingeter= #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
-  var macher_val_Float= #{raw ParameterSetQuery::NumTypeMatchers.to_json};
-  var macher_text_Float= #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
-  var macher_val_Boolean= #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
-  var macher_text_Boolean= #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
-  var macher_val_String= #{raw ParameterSetQuery::StringTypeMatchers.to_json};
-  var macher_text_String= #{raw ParameterSetQuery::StringTypeMatchers.to_json};
+  var matcher_val_Ingeter= #{raw ParameterSetQuery::NumTypeMatchers.to_json};
+  var matcher_text_Ingeter= #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
+  var matcher_val_Float= #{raw ParameterSetQuery::NumTypeMatchers.to_json};
+  var matcher_text_Float= #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
+  var matcher_val_Boolean= #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
+  var matcher_text_Boolean= #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
+  var matcher_val_String= #{raw ParameterSetQuery::StringTypeMatchers.to_json};
+  var matcher_text_String= #{raw ParameterSetQuery::StringTypeMatchers.to_json};
 
   $(function() {
     $("body").on("change", "#select_param_form select", function(){
       //alert($(":selected",this).attr('value') + ":" + $(":selected",this).attr('type')+ ":default=" + $(":selected",this).attr('default')+ ":" + $(":selected",this).attr('description'));
-      $("#select_macher_form option",$(this).parent().parent()).remove()
-      var macher_form_selector = $("#select_macher_form",$(this).parent().parent())
+      $("#select_matcher_form option",$(this).parent().parent()).remove()
+      var matcher_form_selector = $("#select_matcher_form",$(this).parent().parent())
       if($(":selected",this).attr('type') == "Integer") {
-        for(i in macher_val_Ingeter){
-          $("select",macher_form_selector).append("<option value=\"\"></option>");
-          $("option:nth-child("+(parseInt(i)+1)+")",macher_form_selector).val(macher_val_Ingeter[i]).text(macher_text_Ingeter[i]);
+        for(i in matcher_val_Ingeter){
+          $("select",matcher_form_selector).append("<option value=\"\"></option>");
+          $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val_Ingeter[i]).text(matcher_text_Ingeter[i]);
         }
       }else if($(":selected",this).attr('type') == "Float") {
-        for(i in macher_val_Float){
-          $("select",macher_form_selector).append("<option value=\"\"></option>");
-          $("option:nth-child("+(parseInt(i)+1)+")",macher_form_selector).val(macher_val_Float[i]).text(macher_text_Float[i]);
+        for(i in matcher_val_Float){
+          $("select",matcher_form_selector).append("<option value=\"\"></option>");
+          $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val_Float[i]).text(matcher_text_Float[i]);
         }
       }else if($(":selected",this).attr('type') == "Boolean") {
-        for(i in macher_val_Boolean){
-          $("select",macher_form_selector).append("<option value=\"\"></option>");
-          $("option:nth-child("+(parseInt(i)+1)+")",macher_form_selector).val(macher_val_Boolean[i]).text(macher_text_Boolean[i]);
+        for(i in matcher_val_Boolean){
+          $("select",matcher_form_selector).append("<option value=\"\"></option>");
+          $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val_Boolean[i]).text(matcher_text_Boolean[i]);
         }
       }else if($(":selected",this).attr('type') == "String") {
-        for(i in macher_val_String){
-          $("select",macher_form_selector).append("<option value=\"\"></option>");
-          $("option:nth-child("+(parseInt(i)+1)+")",macher_form_selector).val(macher_val_String[i]).text(macher_text_String[i]);
+        for(i in matcher_val_String){
+          $("select",matcher_form_selector).append("<option value=\"\"></option>");
+          $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val_String[i]).text(matcher_text_String[i]);
         }
       }
       

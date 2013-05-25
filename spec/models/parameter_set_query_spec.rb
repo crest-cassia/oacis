@@ -33,7 +33,7 @@ describe ParameterSetQuery do
     it {should_not be_valid}
   end
 
-  describe "validation for a invalid macher" do
+  describe "validation for a invalid matcher" do
 
     subject {
       ParameterSetQuery.new(simulator: @sim,
@@ -68,7 +68,7 @@ describe ParameterSetQuery do
   describe "selector" do
 
     before(:each) do
-      @query = @sim.parameter_set_querys.first
+      @query = @sim.parameter_set_queries.first
     end
 
     subject { @query }
@@ -79,13 +79,13 @@ describe ParameterSetQuery do
   describe "set_selector" do
 
     before(:each) do
-      @query = @sim.parameter_set_querys.first
+      @query = @sim.parameter_set_queries.first
     end
 
     subject { @query }
 
-    its(:set_query, [{"param"=>"T", "macher"=>"gte", "value"=>"4.0", "logic"=>"and"},
-                     {"param"=>"L", "macher"=>"eq", "value"=>"2", "logic"=>"and"}
+    its(:set_query, [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
+                     {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}
                     ]) {should == {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}}
   end
 end

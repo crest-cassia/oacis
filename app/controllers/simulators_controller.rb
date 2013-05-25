@@ -20,10 +20,10 @@ class SimulatorsController < ApplicationController
     else
       @param_sets = ParameterSet.where(:simulator_id => @simulator).where(ParameterSetQuery.where(:id => @query_id).first.selector).page(params[:page])
     end
-    unless @simulator.parameter_set_querys.blank?
+    unless @simulator.parameter_set_queries.blank?
       keyary = []
       keyval = []
-      @simulator.parameter_set_querys.each do |psq|
+      @simulator.parameter_set_queries.each do |psq|
         keyary << psq.query.to_s
         keyval << psq.id
       end
@@ -122,7 +122,7 @@ class SimulatorsController < ApplicationController
       @newquery.simulator = @simulator
       if @newquery.set_query(params["query"])
         if @newquery.save
-          @simulator.parameter_set_querys << @newquery #@simulator is updated
+          @simulator.parameter_set_queries << @newquery #@simulator is updated
           @query_id = @newquery.id
         end
       else

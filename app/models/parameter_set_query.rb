@@ -149,30 +149,30 @@ class ParameterSetQuery
       case self.simulator.parameter_definitions[para['param']]["type"]
       when "Integer"
         if(para['value'].to_i.is_a?(Integer))
-          h[para['param'].to_s] = {para['macher']=>para['value'].to_i}
+          h[para['param'].to_s] = {para['matcher']=>para['value'].to_i}
         else
           self.errors.add(:set_query, "val not match to Integer")
           return false
         end
       when "Float"
         if(para['value'].to_f.is_a?(Float))
-          h[para['param'].to_s] = {para['macher']=>para['value'].to_f}
+          h[para['param'].to_s] = {para['matcher']=>para['value'].to_f}
         else
           self.errors.add(:set_query, "val not match to float")
           return false
         end
       when "Boolean"
         if(para['value']=="true")
-          h[para['param'].to_s] = {para['macher']=>true}
+          h[para['param'].to_s] = {para['matcher']=>true}
         elsif(para['value']=="false")
-          h[para['param'].to_s] = {para['macher']=>false}
+          h[para['param'].to_s] = {para['matcher']=>false}
         else
           self.errors.add(:set_query, "val not match to boolean")
           return false
         end
       when "String"
         unless(para['value'].to_s.include?("$"))
-          h[para['param'].to_s] = {para['macher']=>para['value'].to_s}
+          h[para['param'].to_s] = {para['matcher']=>para['value'].to_s}
         else
           self.errors.add(:set_query, "string val has \"$\"")
           return false
