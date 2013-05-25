@@ -71,7 +71,6 @@
 
   $(function() {
     $("body").on("change", "#select_param_form select", function(){
-      //alert($(":selected",this).attr('value') + ":" + $(":selected",this).attr('type')+ ":default=" + $(":selected",this).attr('default')+ ":" + $(":selected",this).attr('description'));
       $("#select_matcher_form option",$(this).parent().parent()).remove()
       var matcher_form_selector = $("#select_matcher_form",$(this).parent().parent())
       if($(":selected",this).attr('type') == "Integer") {
