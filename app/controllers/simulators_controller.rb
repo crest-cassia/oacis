@@ -14,9 +14,7 @@ class SimulatorsController < ApplicationController
   def show
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
-    #if @simulator.parameter_set_query.blank?
     @query_id = params[:query_id]
-    #binding.pry
     if @query_id.blank?
       @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
     else

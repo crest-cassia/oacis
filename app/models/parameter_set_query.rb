@@ -10,7 +10,7 @@ class ParameterSetQuery
   validates :query, presence: {message: 'query must be presence'}
   validate :query_field_is_valid, message: 'must be unique'
   validate :query_format_is_valid, on: :create, message: 'format must be valid'
-  
+
   NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
   NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]
   BooleanTypeMatchers = ["eq", "ne"]
@@ -147,7 +147,6 @@ class ParameterSetQuery
     h = {}
     settings.each do |para|
       case self.simulator.parameter_definitions[para['param']]["type"]
- 
       when "Integer"
         if(para['value'].to_i.is_a?(Integer))
           h[para['param'].to_s] = {para['macher']=>para['value'].to_i}
@@ -155,7 +154,6 @@ class ParameterSetQuery
           self.errors.add(:set_query, "val not match to Integer")
           return false
         end
-        
       when "Float"
         if(para['value'].to_f.is_a?(Float))
           h[para['param'].to_s] = {para['macher']=>para['value'].to_f}
@@ -163,7 +161,6 @@ class ParameterSetQuery
           self.errors.add(:set_query, "val not match to float")
           return false
         end
- 
       when "Boolean"
         if(para['value']=="true")
           h[para['param'].to_s] = {para['macher']=>true}
@@ -173,7 +170,6 @@ class ParameterSetQuery
           self.errors.add(:set_query, "val not match to boolean")
           return false
         end
- 
       when "String"
         unless(para['value'].to_s.include?("$"))
           h[para['param'].to_s] = {para['macher']=>para['value'].to_s}
@@ -181,13 +177,12 @@ class ParameterSetQuery
           self.errors.add(:set_query, "string val has \"$\"")
           return false
         end
- 
       else
         self.errors.add(:set_query, "undefined types")
         return false
       end
- 
     end
+
     #h includes one or more hash(s) that can be converted to selector(s)
     self.query = h
     return h

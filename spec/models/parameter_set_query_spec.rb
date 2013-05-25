@@ -3,7 +3,6 @@ require 'spec_helper'
 
 describe ParameterSetQuery do
 
-  #pending "add some examples to (or delete) #{__FILE__}"
   before(:each) do
     @sim = FactoryGirl.create(:simulator, 
                               parameter_sets_count: 1, 
@@ -14,44 +13,42 @@ describe ParameterSetQuery do
   
   describe "validation for a Float format" do
 
-    subject {ParameterSetQuery.new(
-                                  simulator: @sim,
-                                  query: {"T" => {"gte" => 4.0}}
-                                  )
-            }
+    subject {
+      ParameterSetQuery.new(simulator: @sim,
+                            query: {"T" => {"gte" => 4.0}}
+                            )
+    }
 
     it {should be_valid}
   end
 
   describe "validation for a invalid type" do
 
-    subject { ParameterSetQuery.new(
-                                  simulator: @sim,
-                                  query: {"T" => {"gte" => "4.0"}}
-                                  )
-            }
+    subject {
+      ParameterSetQuery.new(simulator: @sim,
+                            query: {"T" => {"gte" => "4.0"}}
+                            )
+    }
 
     it {should_not be_valid}
   end
 
   describe "validation for a invalid macher" do
 
-    subject {ParameterSetQuery.new(
-                                  simulator: @sim,
-                                  query: {"T" => {"match" => "4.0"}}
-                                  )
-            }
+    subject {
+      ParameterSetQuery.new(simulator: @sim,
+                            query: {"T" => {"match" => "4.0"}}
+                            )
+    }
 
     it {should_not be_valid}
   end
 
   describe "validation for presence" do
 
-    subject {ParameterSetQuery.new(
-                                  simulator: @sim,
-                                  query: {}
-                                  )
-            }
+    subject {
+      ParameterSetQuery.new(simulator: @sim, query: {})
+    }
 
     it {should_not be_valid}
   end
@@ -59,11 +56,11 @@ describe ParameterSetQuery do
   describe "validation for uniqueness" do
 
 
-    subject {ParameterSetQuery.new(
-                                  simulator: @sim,
-                                  query: {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}
-                                  )
-            }
+    subject {
+      ParameterSetQuery.new(simulator: @sim,
+                            query: {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}
+                            )
+    }
 
     it {should_not be_valid}
   end

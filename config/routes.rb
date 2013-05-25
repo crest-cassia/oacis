@@ -25,14 +25,6 @@ AcmProto::Application.routes.draw do
     resources :analysis_runs, :only => ["show", "create"]
   end
 
-  #match "/patients/:id" => "patients#show"
-  #resources :simulators, shallow: false, only: [] do
-  #  resources :parameter_set_querys, shallow: false, only: [] do
-  #    member do
-  #        get "_apply_query" # for ajax
-  #    end
-  #  end
-  #end
   mount Resque::Server, :at => '/resque'
 
   resources :hosts
