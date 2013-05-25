@@ -65,7 +65,7 @@ describe ParameterSetQuery do
     it {should_not be_valid}
   end
 
-  describe "selector" do
+  describe "#selector" do
 
     before(:each) do
       @query = @sim.parameter_set_queries.first
@@ -76,7 +76,7 @@ describe ParameterSetQuery do
     its(:selector) {should == Query.new.gte({"v.T" => 4.0}).where({"v.L" => 2}).selector}
   end
 
-  describe "set_selector" do
+  describe "#set_query" do
 
     before(:each) do
       @query = @sim.parameter_set_queries.first
@@ -86,6 +86,8 @@ describe ParameterSetQuery do
 
     its(:set_query, [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
                      {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}
-                    ]) {should == {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}}
+                    ]) {
+      should == {"T" => {"gte" => 4.0}, "L"=>{"eq"=>2}}
+    }
   end
 end
