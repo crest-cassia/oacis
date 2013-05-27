@@ -59,42 +59,29 @@
       $("select" ,cloned).trigger("change");
     });
   });
-  
-  var matcher_val_Ingeter= #{raw ParameterSetQuery::NumTypeMatchers.to_json};
-  var matcher_text_Ingeter= #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
-  var matcher_val_Float= #{raw ParameterSetQuery::NumTypeMatchers.to_json};
-  var matcher_text_Float= #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
-  var matcher_val_Boolean= #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
-  var matcher_text_Boolean= #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
-  var matcher_val_String= #{raw ParameterSetQuery::StringTypeMatchers.to_json};
-  var matcher_text_String= #{raw ParameterSetQuery::StringTypeMatchers.to_json};
 
   $(function() {
     $("body").on("change", "#select_param_form select", function(){
       $("#select_matcher_form option",$(this).parent().parent()).remove()
       var matcher_form_selector = $("#select_matcher_form",$(this).parent().parent())
-      if($(":selected",this).attr('type') == "Integer") {
-        for(i in matcher_val_Ingeter){
-          $("select",matcher_form_selector).append("<option value=\"\"></option>");
-          $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val_Ingeter[i]).text(matcher_text_Ingeter[i]);
-        }
-      }else if($(":selected",this).attr('type') == "Float") {
-        for(i in matcher_val_Float){
-          $("select",matcher_form_selector).append("<option value=\"\"></option>");
-          $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val_Float[i]).text(matcher_text_Float[i]);
-        }
-      }else if($(":selected",this).attr('type') == "Boolean") {
-        for(i in matcher_val_Boolean){
-          $("select",matcher_form_selector).append("<option value=\"\"></option>");
-          $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val_Boolean[i]).text(matcher_text_Boolean[i]);
-        }
-      }else if($(":selected",this).attr('type') == "String") {
-        for(i in matcher_val_String){
-          $("select",matcher_form_selector).append("<option value=\"\"></option>");
-          $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val_String[i]).text(matcher_text_String[i]);
-        }
+      var matcher_val;
+      var matcher_text;
+      if($(":selected",this).attr('type') == "Integer" || $(":selected",this).attr('type') == "Float") {
+        matcher_val = #{raw ParameterSetQuery::NumTypeMatchers.to_json};
+        matcher_text = #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
+      } else if($(":selected",this).attr('type') == "Boolean") {
+        matcher_val = #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
+        matcher_text = #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
+      } else if($(":selected",this).attr('type') == "String") {
+        mathcer_val = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
+        matcher_text = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
       }
-      
+
+      for(i in matcher_val){
+        $("select",matcher_form_selector).append("<option value=\"\"></option>");
+        $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val[i]).text(matcher_text[i]);
+      }
+
       var value_form_selector = $("#select_value_form",$(this).parent().parent())
       $("input",value_form_selector).remove()
       value_form_selector.append("<input id=\"query__value\" name=\"query[][value]\" type=\"text\" value="+ $(":selected",this).attr('default') +">")
