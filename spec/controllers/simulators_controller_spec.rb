@@ -51,13 +51,38 @@ describe SimulatorsController do
   end
 
   describe "GET show" do
+
+    before(:each) do
+      @simulator = FactoryGirl.create(:simulator,
+                                      parameter_sets_count: 3, runs_count: 0,
+                                      analyzers_count: 3, run_analysis: false,
+                                      parameter_set_queries_count: 1
+                                      )
+    end
+
     it "assigns the requested simulator as @simulator" do
-      simulator = Simulator.create! valid_attributes
-      get :show, {:id => simulator.to_param}, valid_session
+      get :show, {:id => @simulator.to_param}, valid_session
       response.should be_success
-      assigns(:simulator).should eq(simulator)
-      assigns(:param_sets).should eq(simulator.parameter_sets)
-      assigns(:analyzers).should eq(simulator.analyzers)
+      assigns(:simulator).should eq(@simulator)
+      assigns(:param_sets).should eq(@simulator.parameter_sets)
+      assigns(:analyzers).should eq(@simulator.analyzers)
+      assigns(:query_id).should be_nil
+      assigns(:query_list).should have(1).items
+    end
+
+    context "when 'query_id' parameter is given" do
+
+      before(:each) do
+        @query_id = @simulator.parameter_set_queries.first.id
+        params = {id: @simulator.to_param, query_id: @query_id}
+        get :show, params, valid_session
+      end
+
+      it "when 'query_id' is specified, show the list of ParameterSets spec"
+
+      it "assigns 'query_id' variable" do
+        assigns(:query_id).should eq(@query_id.to_s)
+      end
     end
 
     it "paginates the list of parameters" do

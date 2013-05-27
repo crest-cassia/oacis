@@ -16,11 +16,11 @@
 %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
   New Parameter Set
   
-- unless @simulator.parameter_set_queries.blank?
+- if @query_list
   %h4 Select query
   = form_for(@simulator, :url=>{:controller=>"simulators", :action=>"show"}, :html => { :method => :get } ) do |f|
     = select_tag "query_id", options_for_select(@query_list, @query_id), :prompt => "all"
-    = f.submit "Apply query", :class => 'btn btn-primary', :name => nil      
+    = f.submit "Apply query", :class => 'btn btn-primary', :name => nil
 
 %h4 Make query
 = form_tag( _make_query_simulator_path(@simulator) ) do |f|

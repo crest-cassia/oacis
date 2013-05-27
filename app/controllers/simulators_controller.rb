@@ -18,17 +18,15 @@ class SimulatorsController < ApplicationController
     if @query_id.blank?
       @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
     else
-      @param_sets = ParameterSet.where(:simulator_id => @simulator).where(ParameterSetQuery.where(:id => @query_id).first.selector).page(params[:page])
+      psq = ParameterSetQuery.find(@query_id)
+      @param_sets = ParameterSet.where(:simulator_id => @simulator).where(psq.selector).page(params[:page])
     end
-    unless @simulator.parameter_set_queries.blank?
-      keyary = []
-      keyval = []
+
+    if @simulator.parameter_set_queries.present?
+      @query_list = {}
       @simulator.parameter_set_queries.each do |psq|
-        keyary << psq.query.to_s
-        keyval << psq.id
+        @query_list[psq.query.to_s] = psq.id
       end
-      ary = [keyary, keyval].transpose
-      @query_list = Hash[*ary.flatten]
     end
 
     respond_to do |format|
@@ -112,21 +110,18 @@ class SimulatorsController < ApplicationController
   # POST /simulators/:_id/_make_query redirect_to simulators#show
   def _make_query
     @query_id = params[:query_id]
+
     if params[:delete_query]
-      @q = ParameterSetQuery.where(:id => @query_id).first
+      @q = ParameterSetQuery.find(@query_id)
       @q.destroy
-      @query_id = ""
+      @query_id = nil
     else
       @simulator = Simulator.find(params[:id])
-      @newquery = ParameterSetQuery.new
-      @newquery.simulator = @simulator
-      if @newquery.set_query(params["query"])
-        if @newquery.save
-          @simulator.parameter_set_queries << @newquery #@simulator is updated
-          @query_id = @newquery.id
-        end
+      @new_query = @simulator.parameter_set_queries.build
+      if @new_query.set_query(params["query"]) and @new_query.save
+        flash[:notice] = "A new query is created"
       else
-        @newquery.destroy
+        flash[:alert] = "Failed to create a query"
       end
     end
 
