@@ -20,6 +20,13 @@ class ParameterSetsController < ApplicationController
     @param_set = @simulator.parameter_sets.build(v: v)
   end
 
+  def duplicate
+    base_ps = ParameterSet.find(params[:id])
+    @simulator = base_ps.simulator
+    @param_set = @simulator.parameter_sets.build(v: base_ps.v)
+    render :new
+  end
+
   def create
     @simulator = Simulator.find(params[:simulator_id])
     @param_set = @simulator.parameter_sets.build(v: params[:parameters])

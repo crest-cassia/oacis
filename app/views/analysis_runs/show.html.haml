@@ -3,7 +3,7 @@
 .page-header
   %h1 AnalysisRun
 
-%table.table.table-condensed
+%table.table.table-condensed.table-striped
   %thead
   %tbody
     %tr
@@ -11,7 +11,7 @@
       %td= @analysis_run.to_param
     %tr
       %th Status
-      %td= @analysis_run.status
+      %td= raw(status_label(@analysis_run.status))
     %tr
       %th Directory
       %td= @analysis_run.dir
@@ -26,7 +26,9 @@
       %th Elapsed CPU Time
       %td= @analysis_run.cpu_time
 
+%hr
 - unless @analysis_run.parameters.empty?
   = render partial: "shared/parameters_table", locals: {parameters_hash: @analysis_run.parameters}
 
+%hr
 = render partial: "shared/results", locals: {result: @analysis_run.result, result_paths: @analysis_run.result_paths}

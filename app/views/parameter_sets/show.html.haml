@@ -4,7 +4,9 @@
   %h1 Parameter Set
 
 = render partial: "shared/parameters_table", locals: {parameters_hash: @param_set.v}
-
+.well
+  = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
+%hr
 = render "runs_table"
-
+%hr
 = render "analysis"

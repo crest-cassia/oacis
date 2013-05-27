@@ -1,25 +1,28 @@
 %h3 Runs
-%table.table.table-condensed
-  %tr
-    %th.span1 #
-    %th.span1 status
-    %th.span1 host
-    %th.span1 cpu_time
-    %th.span1 real_time
-    %th.span1 created_at
-    %th.span1 started_at
-    %th.span1 finished_at
-  - @runs.each_with_index do |run,idx|
+%table.table.table-condensed.table-hover.table-striped
+  %thead
     %tr
-      %td= link_to(idx+1, run)
-      %td= run.status
-      %td= run.hostname
-      %td= formatted_elapsed_time(run.cpu_time)
-      %td= formatted_elapsed_time(run.real_time)
-      %td= distance_to_now_in_words(run.created_at)
-      %td= distance_to_now_in_words(run.started_at)
-      %td= distance_to_now_in_words(run.finished_at)
+      %th.span1 #
+      %th.span1 status
+      %th.span1 host
+      %th.span1 cpu_time
+      %th.span1 real_time
+      %th.span1 created_at
+      %th.span1 started_at
+      %th.span1 finished_at
+  %tbody
+    - @runs.each_with_index do |run,idx|
+      %tr
+        %td= link_to(idx+1, run)
+        %td= raw(status_label(run.status))
+        %td= run.hostname
+        %td= formatted_elapsed_time(run.cpu_time)
+        %td= formatted_elapsed_time(run.real_time)
+        %td= distance_to_now_in_words(run.created_at)
+        %td= distance_to_now_in_words(run.started_at)
+        %td= distance_to_now_in_words(run.finished_at)
 = paginate @runs
 
-= form_for(@param_set.runs.build, :url => parameter_set_runs_path(@param_set)) do |f|
-  - f.submit "Create new run", :class => 'btn btn-primary'
+= form_tag(parameter_set_runs_path(@param_set), class: 'well form-inline') do |f|
+  = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]), class: 'input-mini')
+  = submit_tag "Create Runs", :class => 'btn btn-primary'

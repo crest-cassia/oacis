@@ -3,7 +3,7 @@
 - analyzable = @param_set
 - arns = analyzable.analysis_runs
 
-%table.table.table-condensed
+%table.table.table-condensed.table-hover.table-striped
   %thead
     %tr
       %th ID
@@ -18,10 +18,9 @@
         - azr = arn.analyzer
         %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
         %td= arn.parameters.empty? ? '-' : arn.parameters.inspect
-        %td= arn.status
+        %td= raw(status_label(arn.status))
         %td= arn.created_at
 
-%h5 Run analysis
 - sim = @param_set.simulator
 - azrs = sim.analyzers_on_parameter_set
 - unless azrs.empty?

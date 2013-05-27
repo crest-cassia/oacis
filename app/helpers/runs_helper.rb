@@ -12,4 +12,17 @@ module RunsHelper
       return ''
     end
   end
+
+  def status_label(status)
+    case status
+    when :created
+      '<span class="label">created</span>'
+    when :failed
+      '<span class="label label-important">failed</span>'
+    when :finished
+      '<span class="label label-success">finished</span>'
+    else
+      status
+    end
+  end
 end
