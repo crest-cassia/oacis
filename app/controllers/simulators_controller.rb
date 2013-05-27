@@ -119,6 +119,7 @@ class SimulatorsController < ApplicationController
       @simulator = Simulator.find(params[:id])
       @new_query = @simulator.parameter_set_queries.build
       if @new_query.set_query(params["query"]) and @new_query.save
+        @query_id = @new_query.id
         flash[:notice] = "A new query is created"
       else
         flash[:alert] = "Failed to create a query"

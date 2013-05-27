@@ -78,7 +78,7 @@ describe SimulatorsController do
         get :show, params, valid_session
       end
 
-      it "when 'query_id' is specified, show the list of ParameterSets spec"
+      it "show the list of filtered ParameterSets"
 
       it "assigns 'query_id' variable" do
         assigns(:query_id).should eq(@query_id.to_s)
