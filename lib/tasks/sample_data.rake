@@ -30,10 +30,11 @@ namespace :db do
                              analyzers_count: 2,
                              run_analysis: false,
                              analyzers_on_parameter_set_count: 2,
-                             run_analysis_on_parameter_set: false
+                             run_analysis_on_parameter_set: false,
+                             parameter_set_queries_count: 5
                              )
 
-    FactoryGirl.create(:simulator, parameter_sets_count: 0)
+    FactoryGirl.create(:simulator, parameter_sets_count: 0, parameter_set_queries_count: 0)
     # FactoryGirl.create(:simulator, parameter_sets_count: 30)
     # FactoryGirl.create(:simulator, runs_count: 30)
 

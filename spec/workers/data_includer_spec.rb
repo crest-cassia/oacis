@@ -4,7 +4,7 @@ describe DataIncluder do
   
   before(:each) do
     @sim = FactoryGirl.create(:simulator,
-                              parameter_sets_count: 1, runs_count: 1)
+                              parameter_sets_count: 1, runs_count: 1, parameter_set_queries_count:1)
     @prm = @sim.parameter_sets.first
     @run = @prm.runs.first
 

@@ -54,9 +54,9 @@ describe SimulatorsController do
 
     before(:each) do
       @simulator = FactoryGirl.create(:simulator,
-                                      parameter_sets_count: 3, runs_count: 0,
+                                      parameter_sets_count: 30, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
-                                      parameter_set_queries_count: 1
+                                      parameter_set_queries_count: 30
                                       )
     end
 
@@ -64,10 +64,16 @@ describe SimulatorsController do
       get :show, {:id => @simulator.to_param}, valid_session
       response.should be_success
       assigns(:simulator).should eq(@simulator)
-      assigns(:param_sets).should eq(@simulator.parameter_sets)
+      assigns(:param_sets).should eq(@simulator.parameter_sets.limit(assigns(:param_sets).to_a.size).to_a)
       assigns(:analyzers).should eq(@simulator.analyzers)
       assigns(:query_id).should be_nil
-      assigns(:query_list).should have(1).items
+      assigns(:query_list).should have(30).items
+    end
+
+    it "paginates the list of parameters" do
+      get :show, {:id => @simulator.to_param, :page => 1}
+      response.should be_success
+      assigns(:param_sets).to_a.size.should == 25  # to_a is necessary since #count ignores the limit
     end
 
     context "when 'query_id' parameter is given" do
@@ -78,18 +84,13 @@ describe SimulatorsController do
         get :show, params, valid_session
       end
 
-      it "show the list of filtered ParameterSets"
+      it "show the list of filtered ParameterSets" do
+        assigns(:param_sets).to_a.size.should == 1
+      end
 
       it "assigns 'query_id' variable" do
         assigns(:query_id).should eq(@query_id.to_s)
       end
-    end
-
-    it "paginates the list of parameters" do
-      simulator = FactoryGirl.create(:simulator, :parameter_sets_count => 30, :runs_count => 0)
-      get :show, {:id => simulator.to_param, :page => 1}
-      response.should be_success
-      assigns(:param_sets).to_a.size.should == 25  # to_a is necessary since #count ignores the limit
     end
   end
 
@@ -214,4 +215,64 @@ describe SimulatorsController do
   #   end
   # end
 
+  describe "POST _make_query" do
+    before(:each) do
+      @simulator = FactoryGirl.create(:simulator,
+                                      parameter_sets_count: 1, runs_count: 0,
+                                      analyzers_count: 3, run_analysis: false,
+                                      parameter_set_queries_count: 1
+                                      )
+    end
+
+    context "with valid params" do
+
+      before(:each) do
+        params = [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
+                  {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}
+                 ]
+        @valid_post_parameter = {:id => @simulator.to_param, "query" => params, query_id: @simulator.parameter_set_queries.first.id}
+      end
+
+      it "creates a new ParameterSetQuery" do
+        expect {
+          post :_make_query, @valid_post_parameter, valid_session
+        }.to change(ParameterSetQuery, :count).by(1)
+      end
+
+      it "assigns a newly created parameter_set_query of @simulator" do
+        post :_make_query, @valid_post_parameter, valid_session
+        assigns(:new_query).should be_a(ParameterSetQuery)
+        assigns(:new_query).query.should eq({"T" =>{"gte"=>4.0}, "L" =>{"eq"=>2}})
+        assigns(:new_query).to_a.first.should be_persisted
+      end
+
+      it "redirects to show with the created parameter_set_query" do
+        post :_make_query, @valid_post_parameter, valid_session
+        assigns(:query_id).should == ParameterSetQuery.last.id
+      end
+
+      context "and with delete option" do
+        it "delete the last parameter_set_query of @simulator" do
+          expect {
+            post :_make_query, {:id => @simulator.to_param, delete_query: "xxx", query_id: @simulator.parameter_set_queries.first.id}, valid_session
+          }.to change(ParameterSetQuery, :count).by(-1)
+        end
+      end
+    end
+
+    context "with invalid params" do
+
+      it "assigns a newly created but unsaved paramater_set_query of @simulator" do
+        expect {
+          post :_make_query, {:id => @simulator.to_param, params: {}}, valid_session
+          assigns(:new_query).should be_a_new(ParameterSetQuery)
+        }.to_not change(ParameterSetQuery, :count)
+      end
+
+      it "redirect to show with nonmodified query_id" do
+        post :_make_query, {:id => @simulator.to_param, params: {}, query_id: ""}, valid_session
+        assigns(:query_id).should == ""
+      end
+    end
+  end
 end

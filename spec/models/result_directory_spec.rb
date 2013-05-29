@@ -7,7 +7,8 @@ describe ResultDirectory do
                                     parameter_sets_count: 1,
                                     runs_count: 1,
                                     analyzers_count: 1,
-                                    run_analysis: true
+                                    run_analysis: true,
+                                    parameter_set_queries_count:1
                                     )
     @default_root = ResultDirectory::DefaultResultRoot
   end

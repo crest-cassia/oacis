@@ -16,7 +16,8 @@ describe ParameterSetsController do
                                parameter_sets_count: 1,
                                runs_count: 1,
                                analyzers_count: 1,
-                               run_analysis: true)
+                               run_analysis: true,
+                               parameter_set_queries_count: 1)
       get 'show', {id: sim.parameter_sets.first}, valid_session
       response.should be_success
     end
@@ -26,7 +27,8 @@ describe ParameterSetsController do
                                parameter_sets_count: 1,
                                runs_count: 1,
                                analyzers_count: 1,
-                               run_analysis: true)
+                               run_analysis: true,
+                               parameter_set_queries_count:1)
       prm = sim.parameter_sets.first
       get 'show', {id: prm}, valid_session
       assigns(:param_set).should eq(prm)
@@ -36,7 +38,7 @@ describe ParameterSetsController do
     end
 
     it "paginates list of runs" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count:1, runs_count: 26)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count:1, runs_count: 26, parameter_set_queries_count:1)
       prm = sim.parameter_sets.first
       get 'show', {id: prm, page: 1}, valid_session
       assigns(:runs).count.should == 26
@@ -48,7 +50,7 @@ describe ParameterSetsController do
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count: 0)
+                                parameter_sets_count: 0, parameter_set_queries_count:0)
     end
 
     it "assigns instance variables @simulator and @param_set" do
@@ -63,7 +65,7 @@ describe ParameterSetsController do
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count: 0)
+                                parameter_sets_count: 0, parameter_set_queries_count:0)
     end
 
     describe "with valid params" do

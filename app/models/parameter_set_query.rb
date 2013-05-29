@@ -143,6 +143,5 @@ class ParameterSetQuery
 
     #h includes one or more hash(s) that can be converted to selector(s)
     self.query = h
-    return h  # TODO : check if this is necessary
   end
 end
