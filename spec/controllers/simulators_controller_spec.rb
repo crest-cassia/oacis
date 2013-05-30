@@ -243,11 +243,12 @@ describe SimulatorsController do
         post :_make_query, @valid_post_parameter, valid_session
         assigns(:new_query).should be_a(ParameterSetQuery)
         assigns(:new_query).query.should eq({"T" =>{"gte"=>4.0}, "L" =>{"eq"=>2}})
-        assigns(:new_query).to_a.first.should be_persisted
+        assigns(:new_query).should be_persisted
       end
 
       it "redirects to show with the created parameter_set_query" do
         post :_make_query, @valid_post_parameter, valid_session
+        response.should redirect_to( simulator_path(@simulator, query_id: ParameterSetQuery.last.to_param) )
         assigns(:query_id).should == ParameterSetQuery.last.id
       end
 
@@ -271,7 +272,7 @@ describe SimulatorsController do
 
       it "redirect to show with nonmodified query_id" do
         post :_make_query, {:id => @simulator.to_param, params: {}, query_id: ""}, valid_session
-        assigns(:query_id).should == ""
+        response.should redirect_to( simulator_path(@simulator, query_id: "") )
       end
     end
   end

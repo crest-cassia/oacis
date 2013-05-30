@@ -19,7 +19,7 @@ class SimulatorsController < ApplicationController
       @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
     else
       psq = ParameterSetQuery.find(@query_id)
-      @param_sets = ParameterSet.where(:simulator_id => @simulator).where(psq.selector).page(params[:page])
+      @param_sets = psq.parameter_sets.page(params[:page])
     end
 
     if @simulator.parameter_set_queries.present?

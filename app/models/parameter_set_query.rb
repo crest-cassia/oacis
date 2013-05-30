@@ -1,7 +1,3 @@
-class Query
-  include Origin::Queryable
-end
-
 class ParameterSetQuery
   include Mongoid::Document
   field :query, type: Hash
@@ -47,18 +43,7 @@ class ParameterSetQuery
       # validate format of a matcher
       criteria.each do |matcher, value|
         type = self.simulator.parameter_definitions[key]["type"]
-        valid_matchers = []
-        case type
-        when "Integer", "Float"
-          valid_matchers = NumTypeMatchers
-        when "Boolean"
-          valid_matchers = BooleanTypeMatchers
-        when "String"
-          valid_matchers = StringTypeMatchers
-        else
-          raise "Not supported type"
-        end
-        unless valid_matchers.include?(matcher)
+        unless supported_matchers(type).include?(matcher)
           self.errors.add(:set_query, "unknown matcher : #{matcher}")
           return false
         end
@@ -75,51 +60,62 @@ class ParameterSetQuery
   end
 
   #convert format from string to selector
-  def selector
-    q = Query.new
-    self.query.each do |key,val|
+  def parameter_sets
+    q = ParameterSet.where(simulator: simulator)
+    self.query.each do |key,criteria|
       h = {}
       type = self.simulator.parameter_definitions[key]["type"]
-      val.each do |inkey,inval|
-        case type
-        when "Integer", "Float"
-          case inkey
-          when NumTypeMatchers[0]
-            h = {"v."+key => inval}
-          when *NumTypeMatchers[1..5]
-            h = {"v."+key => {"$"+inkey.to_s => inval}}
-          else
-            raise "undefined matcher #{inkey} for #{type}"
-          end
-        when "Boolean"
-          case inkey
-          when BooleanTypeMatchers[0]
-            h = {"v."+key => inval}
-          when BooleanTypeMatchers[1]
-            h = {"v."+key => {"$"+inkey.to_s => inval}}
-          else
-            raise "undefined matcher #{inkey} for (Boolean)"
-          end
-        when "String"
-          case inkey
-          when StringTypeMatchers[0]
-            h = {"v."+key => Regexp.new("^"+inval)}
-          when StringTypeMatchers[1]
-            h = {"v."+key => Regexp.new(inval+"$")}
-          when StringTypeMatchers[2]
-            h = {"v."+key => Regexp.new(inval)}
-          when StringTypeMatchers[3]
-            h = {"v."+key => Regexp.new(inval)}
-          else
-            raise "undefined matcher #{inkey} for (String)"
-          end
+      criteria.each do |matcher,value|
+        unless supported_matchers(type).include?(matcher)
+          raise "undefined matcher #{matcher} for #{type}"
+        end
+        if type == "String"
+          h["v.#{key}"] = string_matcher_to_regexp(matcher, value)
+        else
+          h["v.#{key}"] = (matcher == "eq" ? value : {"$#{matcher}" => value} )
         end
         q = q.where(h)
       end
     end
-    return q.selector
+    return q
   end
-  
+
+  def selector
+    parameter_sets.selector
+  end
+
+  private
+  def supported_matchers(type)
+    supported_matchers = []
+    case type
+    when "Integer", "Float"
+      supported_matchers = NumTypeMatchers
+    when "Boolean"
+      supported_matchers = BooleanTypeMatchers
+    when "String"
+      supported_matchers = StringTypeMatchers
+    else
+      raise "not supported type"
+    end
+    return supported_matchers
+  end
+
+  def string_matcher_to_regexp(matcher, val)
+    case matcher
+    when "start_with"
+      /\A#{value}/
+    when "end_with"
+      /#{value}\z/
+    when "include"
+      /#{value}/
+    when "match"
+      /\A#{value}\z/
+    else
+      raise "not supported matcher : #{matcher}"
+    end
+  end
+
+  public
   #ser a query which is a hash expressed with string in key and val
   def set_query(settings)
     return false if settings.blank?

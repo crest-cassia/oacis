@@ -56,23 +56,9 @@ describe ParameterSetQuery do
 
     context "with same simulator and query" do
       before(:each) do
-        @sim.save
+        psq = @sim.parameter_set_queries.first
         @test_query = @sim.parameter_set_queries.build
-        @test_query.query = {"T" => {"gte" => @sim.parameter_sets.first["v"]["L"]*2.0}, "L"=> {"lte" => @sim.parameter_sets.first["v"]["L"]}}
-      end
-
-      subject {
-        @test_query
-      }
-
-      it {should_not be_valid}
-    end
-
-    context "with same simulator and modified query" do
-      before(:each) do
-        @sim.save
-        @test_query = @sim.parameter_set_queries.build
-        @test_query.query = {"L"=> {"lte" => @sim.parameter_sets.first["v"]["L"], "T" => {"gte" => @sim.parameter_sets.first["v"]["L"]*2.0}}}
+        @test_query.query = psq.query
       end
 
       subject {
@@ -86,26 +72,38 @@ describe ParameterSetQuery do
   describe "#selector" do
 
     before(:each) do
-      @query = @sim.parameter_set_queries.first
+      @query = FactoryGirl.create(:parameter_set_query,
+                                  simulator: @sim,
+                                  query: {"L" => {"lte" => 123}, "T" => {"gte" => 456.0}}
+                                  )
     end
 
     subject { @query }
 
-    its(:selector) {should == Query.new.gte({"v.T" => @sim.parameter_sets.first["v"]["L"]*2.0}).lte({"v.L" => @sim.parameter_sets.first["v"]["L"]}).selector}
+    its(:selector) {
+      should == {"simulator_id" => @sim.id, "v.L" => {"$lte" => 123}, "v.T" => {"$gte" => 456.0}}
+    }
   end
 
   describe "#set_query" do
 
     before(:each) do
-      @query = @sim.parameter_set_queries.first
+      @psq = @sim.parameter_set_queries.build
+      @arg = [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
+              {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}]
     end
 
-    subject { @query }
+    it "updates 'query' field" do
+      @psq.set_query(@arg)
+      @psq.query.should eq({"T" => {"gte" => 4.0}, "L" => {"eq" => 2}})
+    end
 
-    its(:set_query, [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
-                     {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}
-                    ]) {
-      should_not be_false
-    }
+    it "returns a Hash when it successfuly updates query field" do
+      @psq.set_query(@arg).should be_a(Hash)
+    end
+
+    it "returns false when argument is invalid" do
+      @psq.set_query(nil).should be_false
+    end
   end
 end
