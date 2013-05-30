@@ -100,7 +100,7 @@ class ParameterSetQuery
     return supported_matchers
   end
 
-  def string_matcher_to_regexp(matcher, val)
+  def string_matcher_to_regexp(matcher, value)
     case matcher
     when "start_with"
       /\A#{value}/
