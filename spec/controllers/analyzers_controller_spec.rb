@@ -13,7 +13,7 @@ describe AnalyzersController do
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count:0, runs_count:0, analyzers_count:2, parameter_set_queries_count:0)
+                                parameter_sets_count:0, runs_count:0, analyzers_count:2)
       @azr = @sim.analyzers.first
     end
 
@@ -32,7 +32,7 @@ describe AnalyzersController do
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count:0, runs_count:0, analyzers_count:2, parameter_set_queries_count:0)
+                                parameter_sets_count:0, runs_count:0, analyzers_count:2)
       @azr = @sim.analyzers.first
     end
 

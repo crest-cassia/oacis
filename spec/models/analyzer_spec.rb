@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Analyzer do
 
   before(:each) do
-    @sim = FactoryGirl.create(:simulator, parameter_sets_count:0, runs_count:0, parameter_set_queries_count:0)
+    @sim = FactoryGirl.create(:simulator, parameter_sets_count:0, runs_count:0)
   end
 
   describe "validations" do

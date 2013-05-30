@@ -5,7 +5,7 @@ describe AnalysisRun do
   before(:each) do
     @sim = FactoryGirl.create(:simulator, 
                               parameter_sets_count:1, runs_count:1,
-                              analyzers_count: 1, run_analysis: true, parameter_set_queries_count:1
+                              analyzers_count: 1, run_analysis: true
                               )
     @run = @sim.parameter_sets.first.runs.first
     @azr = @sim.analyzers.first

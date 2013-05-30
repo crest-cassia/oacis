@@ -14,7 +14,6 @@ describe AnalysisRunsController do
       parameter_sets_count: 1,
       runs_count: 1,
       analyzers_count: 0,
-      parameter_set_queries_count: 1
       )
     @par = @sim.parameter_sets.first
     @run = @par.runs.first

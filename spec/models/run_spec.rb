@@ -5,8 +5,7 @@ describe Run do
   before(:each) do
     @simulator = FactoryGirl.create(:simulator,
                                     parameter_sets_count: 1,
-                                    runs_count: 1,
-                                    parameter_set_queries_count:1
+                                    runs_count: 1
                                     )
     @param_set = @simulator.parameter_sets.first
     @valid_attribute = {}
@@ -105,14 +104,14 @@ describe Run do
     end
 
     it "is created when a new item is added" do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 0, parameter_set_queries_count:1)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       prm = sim.parameter_sets.first
       run = prm.runs.create!(@valid_attribute)
       FileTest.directory?(ResultDirectory.run_path(run)).should be_true
     end
 
     it "is not created when validation fails" do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1, parameter_set_queries_count:1)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       prm = sim.parameter_sets.first
       seed_val = prm.runs.first.seed
       @valid_attribute.update(seed: seed_val)
@@ -126,7 +125,7 @@ describe Run do
   describe "#submit" do
 
     it "submits a run to Resque" do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1, parameter_set_queries_count:1)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       prm = sim.parameter_sets.first
       run = prm.runs.first
       arg = {id: run.id, command: run.command}
@@ -138,7 +137,7 @@ describe Run do
   describe "#command" do
 
     it "returns a shell command to run simulation" do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1, parameter_set_queries_count:1)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       prm = sim.parameter_sets.first
       run = prm.runs.first
       run.command.should == "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
@@ -148,7 +147,7 @@ describe Run do
   describe "#dir" do
 
     it "returns the result directory of the run" do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1, parameter_set_queries_count:1)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       prm = sim.parameter_sets.first
       run = prm.runs.first
       run.dir.should == ResultDirectory.run_path(run)
@@ -158,8 +157,8 @@ describe Run do
   describe "#result_paths" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 1,
-                               analyzers_count: 1, run_analysis: true, parameter_set_queries_count:1
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+                               analyzers_count: 1, run_analysis: true
                                )
       prm = sim.parameter_sets.first
       @run = prm.runs.first

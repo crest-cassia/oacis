@@ -56,22 +56,22 @@ describe SimulatorsController do
       @simulator = FactoryGirl.create(:simulator,
                                       parameter_sets_count: 30, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
-                                      parameter_set_queries_count: 30
+                                      parameter_set_queries_count: 5
                                       )
     end
 
     it "assigns the requested simulator as @simulator" do
-      get :show, {:id => @simulator.to_param}, valid_session
+      get :show, {id: @simulator.to_param}, valid_session
       response.should be_success
       assigns(:simulator).should eq(@simulator)
       assigns(:param_sets).should eq(@simulator.parameter_sets.limit(assigns(:param_sets).to_a.size).to_a)
       assigns(:analyzers).should eq(@simulator.analyzers)
       assigns(:query_id).should be_nil
-      assigns(:query_list).should have(30).items
+      assigns(:query_list).should have(5).items
     end
 
     it "paginates the list of parameters" do
-      get :show, {:id => @simulator.to_param, :page => 1}
+      get :show, {id: @simulator.to_param, page: 1}
       response.should be_success
       assigns(:param_sets).to_a.size.should == 25  # to_a is necessary since #count ignores the limit
     end
@@ -79,17 +79,31 @@ describe SimulatorsController do
     context "when 'query_id' parameter is given" do
 
       before(:each) do
-        @query_id = @simulator.parameter_set_queries.first.id
-        params = {id: @simulator.to_param, query_id: @query_id}
+        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+        10.times do |i|
+          FactoryGirl.create(:parameter_set,
+                             simulator: @simulator,
+                             runs_count: 0,
+                             v: {"L" => i, "T" => i*2.0}
+                             )
+        end
+        @query = FactoryGirl.create(:parameter_set_query,
+                                    simulator: @simulator,
+                                    query: {"L" => {"gte" => 5}})
+
+        params = {id: @simulator.to_param, query_id: @query.id}
         get :show, params, valid_session
       end
 
       it "show the list of filtered ParameterSets" do
-        assigns(:param_sets).to_a.size.should == 1
+        assigns(:param_sets).to_a.should have(5).items
+        assigns(:param_sets).each do |ps|
+          ps.v["L"].should >= 5
+        end
       end
 
       it "assigns 'query_id' variable" do
-        assigns(:query_id).should eq(@query_id.to_s)
+        assigns(:query_id).should eq(@query.id.to_s)
       end
     end
   end
