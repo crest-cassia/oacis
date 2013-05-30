@@ -32,7 +32,5 @@ gem "ci_reporter", :group => :test
 gem "resque"
 gem "pry", :group => :development
 gem "pry-debugger", :group => :development
-gem "origin", ">= 1.0.4"
-gem "its"
 gem "net-ssh", ">= 2.6.5"
 gem "net-sftp", ">= 2.1.2"
