@@ -6,6 +6,7 @@ class Simulator
   field :command, type: String
   field :description, type: String
   has_many :parameter_sets
+  has_many :parameter_set_queries
   embeds_many :analyzers
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}

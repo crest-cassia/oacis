@@ -32,4 +32,10 @@ module ApplicationHelper
     return links
   end
 
+  # to prevent UTF-8 parameter from being added in the URL for GET requests
+  # See http://stackoverflow.com/questions/4104474/rails-3-utf-8-query-string-showing-up-in-url
+  def utf8_enforcer_tag
+    return "".html_safe
+  end
+
 end

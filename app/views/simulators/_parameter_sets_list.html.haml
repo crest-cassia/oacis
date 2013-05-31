@@ -15,3 +15,81 @@
 
 %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
   New Parameter Set
+  
+- if @query_list
+  %h4 Select query
+  = form_for(@simulator, :url=>{:controller=>"simulators", :action=>"show"}, :html => { :method => :get } ) do |f|
+    = select_tag "query_id", options_for_select(@query_list, @query_id), :prompt => "all"
+    = f.submit "Apply query", :class => 'btn btn-primary', :name => nil
+
+%h4 Make query
+= form_tag( _make_query_simulator_path(@simulator) ) do |f|
+  %table
+    %tbody
+      %tr
+        %td
+          "Key"
+        %td
+          "Matcher"
+        %td
+          "Value"
+      %tr#queries_form_original
+        %td#select_param_form
+          = select_tag "query[][param]", options_for_select(@simulator.parameter_definitions)
+        %td#select_matcher_form
+          = select_tag "query[][matcher]", options_for_select({""=>""})
+        %td#select_value_form
+          = text_field_tag "query[][value]"
+  .controls
+    .btn#add_queries_form Add more query
+  = hidden_field_tag "query_id", @query_id
+  = submit_tag "Make query", :class => 'btn btn-primary'
+
+- unless @query_id.blank?
+  %h4 Delete query
+  = form_tag( _make_query_simulator_path(@simulator) ) do |f|
+    = hidden_field_tag "query_id", @query_id
+    = submit_tag "Delete query", :class => 'btn btn-primary', :name => :delete_query
+  
+:javascript
+  $(function() {
+    $('#add_queries_form').click(function() {
+      var cloned = $('#queries_form_original').clone();
+      $('#add_queries_form').before($(cloned));
+      $("select" ,cloned).trigger("change");
+    });
+  });
+
+  $(function() {
+    $("body").on("change", "#select_param_form select", function(){
+      $("#select_matcher_form option",$(this).parent().parent()).remove()
+      var matcher_form_selector = $("#select_matcher_form",$(this).parent().parent())
+      var matcher_val;
+      var matcher_text;
+      if($(":selected",this).attr('type') == "Integer" || $(":selected",this).attr('type') == "Float") {
+        matcher_val = #{raw ParameterSetQuery::NumTypeMatchers.to_json};
+        matcher_text = #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
+      } else if($(":selected",this).attr('type') == "Boolean") {
+        matcher_val = #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
+        matcher_text = #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
+      } else if($(":selected",this).attr('type') == "String") {
+        matcher_val = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
+        matcher_text = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
+      }
+
+      for(i in matcher_val){
+        $("select",matcher_form_selector).append("<option value=\"\"></option>");
+        $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val[i]).text(matcher_text[i]);
+      }
+
+      var value_form_selector = $("#select_value_form",$(this).parent().parent())
+      $("input",value_form_selector).remove()
+      value_form_selector.append("<input id=\"query__value\" name=\"query[][value]\" type=\"text\" value="+ $(":selected",this).attr('default') +">")
+    });
+  });
+  
+  $(function() {
+    var parameter_form_selector = $("#select_param_form select")
+    parameter_form_selector.val("#{@simulator.parameter_definitions.keys[0]}");
+    parameter_form_selector.trigger("change");
+  });

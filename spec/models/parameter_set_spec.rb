@@ -5,7 +5,8 @@ describe ParameterSet do
   before(:each) do
     @sim = FactoryGirl.create(:simulator,
                               parameter_sets_count: 1,
-                              runs_count: 1)
+                              runs_count: 1
+                              )
     @valid_attr = {:v => {"L" => 32, "T" => 1.0}}
   end
 
@@ -116,13 +117,13 @@ describe ParameterSet do
     end
 
     it "is created when a new item is added" do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 0)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
       prm = sim.parameter_sets.create!(@valid_attr)
       FileTest.directory?(ResultDirectory.parameter_set_path(prm)).should be_true
     end
 
     it "is not created when validation fails" do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 0)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
       h = sim.parameter_definitions
       h["T"].delete("default")
       sim.parameter_definitions = h
@@ -136,7 +137,7 @@ describe ParameterSet do
   describe "#dir" do
 
     it "returns the result directory of the parameter" do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 1, :runs_count => 0)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       prm = sim.parameter_sets.first
       prm.dir.should == ResultDirectory.parameter_set_path(prm)
     end
@@ -149,7 +150,7 @@ describe ParameterSet do
             "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Second parameter"},
             "P"=>{"type"=>"Float", "default" => 1.0, "description" => "Third parameter"}
       }
-      sim = FactoryGirl.create(:simulator, :parameter_definitions => h, :parameter_sets_count => 0)
+      sim = FactoryGirl.create(:simulator, parameter_definitions: h, parameter_sets_count: 0)
       5.times do |n|
         val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
         sim.parameter_sets.create( v: val )

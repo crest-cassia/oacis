@@ -28,6 +28,7 @@ FactoryGirl.define do
       run_analysis true
       analyzers_on_parameter_set_count 0
       run_analysis_on_parameter_set true
+      parameter_set_queries_count 0
     end
     after(:create) do |simulator, evaluator|
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
@@ -43,6 +44,9 @@ FactoryGirl.define do
                               simulator: simulator,
                               type: :on_parameter_set,
                               run_analysis: evaluator.run_analysis_on_parameter_set
+                              )
+      FactoryGirl.create_list(:parameter_set_query, evaluator.parameter_set_queries_count,
+                              simulator: simulator
                               )
     end
   end
@@ -121,5 +125,11 @@ FactoryGirl.define do
   factory :analysis_run do
     h = {"param1" => 1, "param2" => 2.0}
     parameters h
+  end
+
+  factory :parameter_set_query do
+    sequence(:query) do |n|
+      {"T" => {"gte" => n*2.0}, "L"=> {"lte" => n}}
+    end
   end
 end

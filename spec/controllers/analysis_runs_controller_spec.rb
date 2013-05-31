@@ -13,7 +13,7 @@ describe AnalysisRunsController do
     @sim = FactoryGirl.create( :simulator,
       parameter_sets_count: 1,
       runs_count: 1,
-      analyzers_count: 0
+      analyzers_count: 0,
       )
     @par = @sim.parameter_sets.first
     @run = @par.runs.first

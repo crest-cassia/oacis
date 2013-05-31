@@ -13,8 +13,21 @@ class SimulatorsController < ApplicationController
   # GET /simulators/1.json
   def show
     @simulator = Simulator.find(params[:id])
-    @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
     @analyzers = @simulator.analyzers
+    @query_id = params[:query_id]
+    if @query_id.blank?
+      @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
+    else
+      psq = ParameterSetQuery.find(@query_id)
+      @param_sets = psq.parameter_sets.page(params[:page])
+    end
+
+    if @simulator.parameter_set_queries.present?
+      @query_list = {}
+      @simulator.parameter_set_queries.each do |psq|
+        @query_list[psq.query.to_s] = psq.id
+      end
+    end
 
     respond_to do |format|
       format.html # show.html.erb
@@ -93,4 +106,26 @@ class SimulatorsController < ApplicationController
   #     format.json { head :no_content }
   #   end
   # end
+
+  # POST /simulators/:_id/_make_query redirect_to simulators#show
+  def _make_query
+    @query_id = params[:query_id]
+
+    if params[:delete_query]
+      @q = ParameterSetQuery.find(@query_id)
+      @q.destroy
+      @query_id = nil
+    else
+      @simulator = Simulator.find(params[:id])
+      @new_query = @simulator.parameter_set_queries.build
+      if @new_query.set_query(params["query"]) and @new_query.save
+        @query_id = @new_query.id
+        flash[:notice] = "A new query is created"
+      else
+        flash[:alert] = "Failed to create a query"
+      end
+    end
+
+    redirect_to  :action => "show", :query_id => @query_id
+  end
 end
