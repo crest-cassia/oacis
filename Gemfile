@@ -34,5 +34,5 @@ gem "pry", :group => :development
 gem "pry-debugger", :group => :development
 gem "net-ssh", ">= 2.6.5"
 gem "net-sftp", ">= 2.1.2"
-gem "jquery-datatables-rails"
+gem "jquery-datatables-rails", github: 'rweng/jquery-datatables-rails'
 gem "d3-rails"

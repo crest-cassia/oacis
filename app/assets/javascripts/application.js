@@ -14,6 +14,8 @@
 //= require jquery_ujs
 //= require twitter/bootstrap
 //= require_tree .
+//= require dataTables/jquery.dataTables
+//= require dataTables/jquery.dataTables.bootstrap
 
 // Handle back button issues with Twitter Bootstrap's tab component.
 // Based on: http://stackoverflow.com/a/10120221/81769
