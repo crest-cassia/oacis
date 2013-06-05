@@ -1,17 +1,11 @@
 %h3 List of Parameter Sets
-%table.table.table-condensed.table-striped.table-hover#datatables
+%table.table.table-condensed.table-striped.table-hover#param_list{:'data-source' => "#{_parameter_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr
       %th.span1 ID
       - @simulator.parameter_definitions.each do |key,key_def|
         %th.span1= key
   %tbody
-    - @param_sets.each_with_index do |param_set,idx|
-      %tr
-        %td= link_to( param_set.id, parameter_set_path(param_set) )
-        - @simulator.parameter_definitions.each do |key,key_def|
-          %td= param_set.v[key]
-= paginate @param_sets
 
 %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
   New Parameter Set
@@ -92,10 +86,4 @@
     var parameter_form_selector = $("#select_param_form select")
     parameter_form_selector.val("#{@simulator.parameter_definitions.keys[0]}");
     parameter_form_selector.trigger("change");
-  });
-
-  $(function() {
-    $("#datatables").dataTable({"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-                                "sPaginationType": "bootstrap"
-    });
   });
