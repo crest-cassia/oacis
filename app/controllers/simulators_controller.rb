@@ -124,8 +124,6 @@ class SimulatorsController < ApplicationController
   end
 
   def _parameter_list
-    respond_to do |format|
-      format.json { render json: ParameterSetsListDatatable.new(view_context) }
-    end
+    render json: ParameterSetsListDatatable.new(view_context)
   end
 end
