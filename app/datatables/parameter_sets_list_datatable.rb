@@ -25,11 +25,7 @@ private
   def data
     a = []
     parameter_sets_lists.map do |param|
-      if param.runs.count > 0
-        param_id_status = {id: param.id, finished: param.runs.where(:status => :finished).count.to_i, running: param.runs.where(:status => :running).or(:status => :including).count.to_i, faild: param.runs.where(:status => :faild).count.to_i }
-      else
-        param_id_status = {id: param.id, finished: 0, running: 0, faild: 0}
-      end
+      param_id_status = {id: param.id, finished: param.runs.where(:status => :finished).count.to_i, running: param.runs.where(:status => :running).or(:status => :including).count.to_i, faild: param.runs.where(:status => :faild).count.to_i, total: param.runs.count }
       tmp = [ @view.link_to(param_id_status.to_json, param) ]
       @simulator.parameter_definitions.each do |key,key_def|
         tmp <<  h(param.v[key])
