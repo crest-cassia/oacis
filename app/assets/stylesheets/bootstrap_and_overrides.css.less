@@ -891,15 +891,33 @@ a.thumbnail {
 }
 
 .progress {
-  height: 6px;
+  height: 20px;
   .border-radius(0);
   .box-shadow(none);
   background-color: @grayLighter;
   background-image: none;
+  margin-top: 0px;
+  margin-bottom: 0px;
 
   .bar {
     background-color: @blue;
     background-image: none;
+
+    &-info {
+      background-color: @purple;
+    }
+
+    &-success {
+      background-color: @green;
+    }
+
+    &-warning {
+      background-color: @orange;
+    }
+
+    &-danger {
+      background-color: @red;
+    }
   }
 
   &-info {

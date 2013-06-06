@@ -25,7 +25,12 @@ private
   def data
     a = []
     parameter_sets_lists.map do |param|
-      tmp = [ @view.link_to(param.id, param) ]
+      if param.runs.count.to_f > 0
+        param_id_status = {id: param.id, finished: (100.0*param.runs.where(:status => :finished).count.to_f/param.runs.count.to_f).to_i, running: (100.0*param.runs.where(:status => :running).or(:status => :including).count.to_f/param.runs.count.to_f).to_i, faild: (100.0*param.runs.where(:status => :faild).count.to_f/param.runs.count.to_f).to_i }
+      else
+        param_id_status = {id: param.id, finished: 0}
+      end
+      tmp = [ @view.link_to(param_id_status.to_json, param) ]
       @simulator.parameter_definitions.each do |key,key_def|
         tmp <<  h(param.v[key])
       end
@@ -39,13 +44,13 @@ private
   end
 
   def fetch_parameter_sets_list
-    parameter_sets_list = @param_sets.order_by("#{sort_column} #{sort_direction}")
-    parameter_sets_list = parameter_sets_list.page(page).limit(per_page)
+    parameter_sets_list = @param_sets.only(:runs,"v").order_by("#{sort_column} #{sort_direction}")
+    parameter_sets_list = parameter_sets_list.skip(page).limit(per_page)
     parameter_sets_list
   end
 
   def page
-    @view.params[:iDisplayStart].to_i/per_page + 1
+    @view.params[:iDisplayStart].to_i
   end
 
   def per_page

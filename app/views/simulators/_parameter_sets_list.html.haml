@@ -44,7 +44,7 @@
   = form_tag( _make_query_simulator_path(@simulator) ) do |f|
     = hidden_field_tag "query_id", @query_id
     = submit_tag "Delete query", :class => 'btn btn-primary', :name => :delete_query
-  
+
 :javascript
   $(function() {
     $('#add_queries_form').click(function() {
