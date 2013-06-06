@@ -41,4 +41,13 @@ class ParameterSetsController < ApplicationController
       end
     end
   end
+
+  def _run_status
+    runs = ParameterSet.only("runs.status").find(params[:id]).runs
+    @status = {total: runs.count}
+    @status["finished"] = runs.where(status: :finished).count
+    @status["running"] = runs.where(status: :running).count
+    @status["faild"] = runs.where(status: :faild).count
+    render json: @status.to_json
+  end
 end

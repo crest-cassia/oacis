@@ -25,8 +25,8 @@ private
   def data
     a = []
     parameter_sets_lists.map do |param|
-      param_id_status = {id: param.id, finished: param.runs.where(:status => :finished).count.to_i, running: param.runs.where(:status => :running).or(:status => :including).count.to_i, faild: param.runs.where(:status => :faild).count.to_i, total: param.runs.count }
-      tmp = [ @view.link_to(param_id_status.to_json, param) ]
+      param_id = {id: param.id}
+      tmp = [ @view.link_to(param_id.to_json, param) ]
       @simulator.parameter_definitions.each do |key,key_def|
         tmp <<  h(param.v[key])
       end
@@ -40,7 +40,7 @@ private
   end
 
   def fetch_parameter_sets_list
-    parameter_sets_list = @param_sets.only("runs.status","v").order_by("#{sort_column} #{sort_direction}")
+    parameter_sets_list = @param_sets.only("v").order_by("#{sort_column} #{sort_direction}")
     parameter_sets_list = parameter_sets_list.skip(page).limit(per_page)
     parameter_sets_list
   end
