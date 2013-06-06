@@ -40,7 +40,7 @@ private
   end
 
   def fetch_parameter_sets_list
-    parameter_sets_list = @param_sets.only(:runs,"v").order_by("#{sort_column} #{sort_direction}")
+    parameter_sets_list = @param_sets.only("runs.status","v").order_by("#{sort_column} #{sort_direction}")
     parameter_sets_list = parameter_sets_list.skip(page).limit(per_page)
     parameter_sets_list
   end
