@@ -45,12 +45,6 @@
     = hidden_field_tag "query_id", @query_id
     = submit_tag "Delete query", :class => 'btn btn-primary', :name => :delete_query
 
-.progress
-  %span.progress.progress-info.progress-striped.active
-    .bar{style: "width:20%"}
-  %span.progress.progress-success.progress-striped.active
-    .bar{style: "width:10%"}
-
 :javascript
   $(function() {
     $('#add_queries_form').click(function() {
