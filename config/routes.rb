@@ -9,7 +9,7 @@ AcmProto::Application.routes.draw do
     resources :parameter_sets, shallow: true, only: ["show","new","create"] do
       member do
         get 'duplicate'
-        get "_run_status" # for ajax, progress bar
+        get "_runs_count" # for ajax, progress bar
       end
       resources :runs, only: ["show","create"]
     end

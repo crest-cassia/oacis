@@ -11,9 +11,9 @@ jQuery ->
     sPaginationType: "bootstrap"
     fnDrawCallback: (oSettings)->
       $("a", this).each (i, element)->
-        param_id = $(element).attr("href").substr(16)
+        param_id = $(element).attr("href").substr($(element).attr("href").lastIndexOf("/"))
         $(element).text("")
-        $.getJSON "/parameter_sets/"+param_id+"/_run_status", (runs)->
+        $.getJSON "/parameter_sets/"+param_id+"/_runs_count", (runs)->
           if runs.total > 0
             $(element).append($("<div>").addClass("progress"))
             div_element = $("div",element)
@@ -25,9 +25,9 @@ jQuery ->
               $(div_element).append($("<span>").addClass("progress progress-warning progress-striped active"))
               percent = Math.floor(100.0*runs.running/runs.total)
               $("span.progress.progress-warning.progress-striped.active", div_element).append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
-            if runs.faild > 0
+            if runs.failed > 0
               $(div_element).append($("<span>").addClass("progress progress-danger progress-striped active"))
-              percent = Math.floor(100.0*runs.faild/runs.total)
+              percent = Math.floor(100.0*runs.failed/runs.total)
               $("span.progress.progress-danger.progress-striped.active", div_element).append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
           else
             $(element).append(param_id)

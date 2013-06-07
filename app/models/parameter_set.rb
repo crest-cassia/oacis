@@ -25,6 +25,15 @@ class ParameterSet
     self.class.where(query_param)
   end
 
+  def runs_count
+    counts = {}
+    counts["total"] = runs.count
+    counts["finished"] = runs.where(status: :finished).count
+    counts["running"] = runs.where(status: :running).count
+    counts["failed"] = runs.where(status: :failed).count
+    counts
+  end
+
   private
   def cast_and_validate_parameter_values
     unless v.is_a?(Hash)

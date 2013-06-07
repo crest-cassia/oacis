@@ -81,7 +81,7 @@
       value_form_selector.append("<input id=\"query__value\" name=\"query[][value]\" type=\"text\" value="+ $(":selected",this).attr('default') +">")
     });
   });
-  
+
   $(function() {
     var parameter_form_selector = $("#select_param_form select")
     parameter_form_selector.val("#{@simulator.parameter_definitions.keys[0]}");

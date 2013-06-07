@@ -5,8 +5,7 @@ group :assets do
   gem 'coffee-rails', '~> 3.2.1'
   gem 'uglifier', '>= 1.0.3'
   gem 'twitter-bootstrap-rails'
-  gem "jquery-datatables-rails", github: 'rweng/jquery-datatables-rails'
-  gem "d3-rails"
+  gem "jquery-datatables-rails"
 end
 gem 'jquery-rails'
 gem "mongoid", ">= 3.0.9"
