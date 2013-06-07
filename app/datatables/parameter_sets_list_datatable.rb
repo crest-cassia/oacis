@@ -25,8 +25,7 @@ private
   def data
     a = []
     parameter_sets_lists.map do |param|
-      param_id = {id: param.id}
-      tmp = [ @view.link_to(param_id.to_json, param) ]
+      tmp = [ @view.link_to(param.id.to_s, param) ]
       @simulator.parameter_definitions.each do |key,key_def|
         tmp <<  h(param.v[key])
       end

@@ -11,20 +11,23 @@ jQuery ->
     sPaginationType: "bootstrap"
     fnDrawCallback: (oSettings)->
       $("a", this).each (i, element)->
-        str = jQuery.parseJSON($(this).text())
+        param_id = $(element).attr("href").substr(16)
         $(element).text("")
-        $.getJSON "/parameter_sets/"+str.id+"/_run_status", (runs)->
+        $.getJSON "/parameter_sets/"+param_id+"/_run_status", (runs)->
           if runs.total > 0
-            $(element).append($("<div>").addClass("progress progress-striped"))
-            span_element = $("div",element)
+            $(element).append($("<div>").addClass("progress"))
+            div_element = $("div",element)
             if runs.finished > 0
+              $(div_element).append($("<span>").addClass("progress progress-success progress-striped active"))
               percent = Math.floor(100.0*runs.finished/runs.total)
-              $(span_element).append($("<div>").addClass("bar bar-success").attr({style: "width: "+percent+"%"}).text(percent+"%"))
+              $("span.progress.progress-success.progress-striped.active", div_element).append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
             if runs.running > 0
+              $(div_element).append($("<span>").addClass("progress progress-warning progress-striped active"))
               percent = Math.floor(100.0*runs.running/runs.total)
-              $(span_element).append($("<div>").addClass("bar bar-warning").attr({style: "width: "+percent+"%"}).text(percent+"%"))
+              $("span.progress.progress-warning.progress-striped.active", div_element).append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
             if runs.faild > 0
+              $(div_element).append($("<span>").addClass("progress progress-danger progress-striped active"))
               percent = Math.floor(100.0*runs.faild/runs.total)
-              $(span_element).append($("<div>").addClass("bar bar-danger").attr({style: "width: "+percent+"%"}).text(percent+"%"))
+              $("span.progress.progress-danger.progress-striped.active", div_element).append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
           else
-            $(element).append(str.id)
+            $(element).append(param_id)
