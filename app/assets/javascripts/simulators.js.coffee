@@ -15,16 +15,16 @@ jQuery ->
         $(element).text("")
         $.getJSON "/parameter_sets/"+str.id+"/_run_status", (runs)->
           if runs.total > 0
-            $(element).append($("<span>").addClass("progress progress-striped"))
-            span_element = $("span",element)
+            $(element).append($("<div>").addClass("progress progress-striped"))
+            span_element = $("div",element)
             if runs.finished > 0
               percent = Math.floor(100.0*runs.finished/runs.total)
-              $(span_element).append($("<span>").addClass("bar bar-success").attr({style: "width: "+percent+"%"}).text(percent+"%"))
+              $(span_element).append($("<div>").addClass("bar bar-success").attr({style: "width: "+percent+"%"}).text(percent+"%"))
             if runs.running > 0
               percent = Math.floor(100.0*runs.running/runs.total)
-              $(span_element).append($("<span>").addClass("bar bar-warning").attr({style: "width: "+percent+"%"}).text(percent+"%"))
+              $(span_element).append($("<div>").addClass("bar bar-warning").attr({style: "width: "+percent+"%"}).text(percent+"%"))
             if runs.faild > 0
               percent = Math.floor(100.0*runs.faild/runs.total)
-              $(span_element).append($("<span>").addClass("bar bar-danger").attr({style: "width: "+percent+"%"}).text(percent+"%"))
+              $(span_element).append($("<div>").addClass("bar bar-danger").attr({style: "width: "+percent+"%"}).text(percent+"%"))
           else
             $(element).append(str.id)
