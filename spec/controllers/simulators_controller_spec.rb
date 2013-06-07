@@ -54,7 +54,7 @@ describe SimulatorsController do
 
     before(:each) do
       @simulator = FactoryGirl.create(:simulator,
-                                      parameter_sets_count: 30, runs_count: 0,
+                                      parameter_sets_count: 5, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
                                       parameter_set_queries_count: 5
                                       )
@@ -64,47 +64,9 @@ describe SimulatorsController do
       get :show, {id: @simulator.to_param}, valid_session
       response.should be_success
       assigns(:simulator).should eq(@simulator)
-      assigns(:param_sets).should eq(@simulator.parameter_sets.limit(assigns(:param_sets).to_a.size).to_a)
       assigns(:analyzers).should eq(@simulator.analyzers)
       assigns(:query_id).should be_nil
       assigns(:query_list).should have(5).items
-    end
-
-    it "paginates the list of parameters" do
-      get :show, {id: @simulator.to_param, page: 1}
-      response.should be_success
-      assigns(:param_sets).to_a.size.should == 25  # to_a is necessary since #count ignores the limit
-    end
-
-    context "when 'query_id' parameter is given" do
-
-      before(:each) do
-        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
-        10.times do |i|
-          FactoryGirl.create(:parameter_set,
-                             simulator: @simulator,
-                             runs_count: 0,
-                             v: {"L" => i, "T" => i*2.0}
-                             )
-        end
-        @query = FactoryGirl.create(:parameter_set_query,
-                                    simulator: @simulator,
-                                    query: {"L" => {"gte" => 5}})
-
-        params = {id: @simulator.to_param, query_id: @query.id}
-        get :show, params, valid_session
-      end
-
-      it "show the list of filtered ParameterSets" do
-        assigns(:param_sets).to_a.should have(5).items
-        assigns(:param_sets).each do |ps|
-          ps.v["L"].should >= 5
-        end
-      end
-
-      it "assigns 'query_id' variable" do
-        assigns(:query_id).should eq(@query.id.to_s)
-      end
     end
   end
 
@@ -287,6 +249,56 @@ describe SimulatorsController do
       it "redirect to show with nonmodified query_id" do
         post :_make_query, {:id => @simulator.to_param, params: {}, query_id: ""}, valid_session
         response.should redirect_to( simulator_path(@simulator, query_id: "") )
+      end
+    end
+  end
+
+  describe "GET _parameter_list" do
+    before(:each) do
+      @simulator = FactoryGirl.create(:simulator,
+                                      parameter_sets_count: 30, runs_count: 0,
+                                      analyzers_count: 3, run_analysis: false,
+                                      parameter_set_queries_count: 5
+                                      )
+      get :_parameter_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      @parsed_body = JSON.parse(response.body)
+    end
+
+    it "return json format" do
+      response.header['Content-Type'].should include 'application/json'
+      @parsed_body["iTotalRecords"].should == 30
+      @parsed_body["iTotalDisplayRecords"].should == 30
+    end
+
+    it "paginates the list of parameters" do
+      @parsed_body["aaData"].size.should == 25
+    end
+
+    context "when 'query_id' parameter is given" do
+
+      before(:each) do
+        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+        10.times do |i|
+          FactoryGirl.create(:parameter_set,
+                             simulator: @simulator,
+                             runs_count: 0,
+                             v: {"L" => i, "T" => i*2.0}
+                             )
+        end
+        @query = FactoryGirl.create(:parameter_set_query,
+                                    simulator: @simulator,
+                                    query: {"L" => {"gte" => 5}})
+
+        get :_parameter_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 1, sSortDir_0: "desc", query_id: @query.id}, :format => :json
+        @parsed_body = JSON.parse(response.body)
+      end
+
+      it "show the list of filtered ParameterSets" do
+        @parsed_body["aaData"].size.should == 5
+        @parsed_body["aaData"].each do |ps|
+          ps[1].to_i.should >= 5 #ps[1].to_i is qeual to v.L
+        end
+        @parsed_body["aaData"].first[1].to_i.should == @query.parameter_sets.max("v.L")
       end
     end
   end

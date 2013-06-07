@@ -15,12 +15,6 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
     @query_id = params[:query_id]
-    if @query_id.blank?
-      @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
-    else
-      psq = ParameterSetQuery.find(@query_id)
-      @param_sets = psq.parameter_sets.page(params[:page])
-    end
 
     if @simulator.parameter_set_queries.present?
       @query_list = {}
@@ -127,5 +121,9 @@ class SimulatorsController < ApplicationController
     end
 
     redirect_to  :action => "show", :query_id => @query_id
+  end
+
+  def _parameter_list
+    render json: ParameterSetsListDatatable.new(view_context)
   end
 end

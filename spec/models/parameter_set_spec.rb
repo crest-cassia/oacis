@@ -185,4 +185,16 @@ describe ParameterSet do
       found.should be_a(ParameterSet)
     end
   end
+
+  describe "#run_count" do
+
+    it "returns the runs count" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 10)
+      prm = sim.parameter_sets.first
+      prm.runs_count["total"] = prm.runs.count
+      prm.runs_count["finished"].should == prm.runs.where(status: :finished).count
+      prm.runs_count["running"].should == prm.runs.where(status: :running).count
+      prm.runs_count["failed"].should == prm.runs.where(status: :failed).count
+    end
+  end
 end
