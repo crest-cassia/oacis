@@ -2,7 +2,7 @@
 %table.table.table-condensed.table-striped.table-hover#param_list{:'data-source' => "#{_parameter_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr
-      %th.span1 Rans Progress
+      %th.span1 Runs Progress
       - @simulator.parameter_definitions.each do |key,key_def|
         %th.span1= key
   %tbody
