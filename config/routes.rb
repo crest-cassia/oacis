@@ -10,6 +10,7 @@ AcmProto::Application.routes.draw do
       member do
         get 'duplicate'
         get "_runs_count" # for ajax, progress bar
+        get "_runs_table" # for ajax, progress bar
       end
       resources :runs, only: ["show","create"]
     end
