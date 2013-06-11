@@ -32,8 +32,8 @@ describe DataIncluder do
         File.directory?(@run.dir.join('__dummy_dir__')).should be_true
       end
 
-      it "does not copy '_input.json', '_output.json', and '_run_status.json'" do
-        filenames = ['_input.json', '_output.json', '_run_status.json']
+      it "does not copy '_input.json' and '_output.json'" do
+        filenames = ['_input.json', '_output.json']
         filenames.each do |f|
           FileUtils.touch( @work_dir.join(f) )
         end
@@ -45,14 +45,13 @@ describe DataIncluder do
       end
 
       it "updates attributes of Run" do
-        stat = JSON.load( File.open(@work_dir.join('_run_status.json')) )
         DataIncluder.perform(@arg)
         @run.reload
         @run.status.should eq(:finished)
         @run.hostname.should_not be_nil
-        @run.hostname.should eq(stat["hostname"])
-        @run.cpu_time.should eq(stat["cpu_time"])
-        @run.real_time.should eq(stat["real_time"])
+        @run.hostname.should eq @arg["run_status"]["hostname"]
+        @run.cpu_time.should eq @arg["run_status"]["cpu_time"]
+        @run.real_time.should eq @arg["run_status"]["real_time"]
         @run.started_at.should be_a(DateTime)
         @run.finished_at.should be_a(DateTime)
         @run.included_at.should be_a(DateTime)
@@ -86,7 +85,18 @@ describe DataIncluder do
           SimulatorRunner.perform(run_info)
 
           @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
-          @arg = {"run_id" => @run.id, "work_dir" => @work_dir.to_s, "host_id" => @localhost.id.to_s}
+          @arg = { "run_id" => @run.id, "work_dir" => @work_dir.to_s,
+                   "host_id" => @localhost.id.to_s,
+                   "run_status" => {
+                     "hostname" => `hostname`,
+                     "started_at" => DateTime.now.to_s,
+                     "status" => "finished",
+                     "rc" => 0,
+                     "cpu_time" => 3.0,
+                     "real_time" => 4.0,
+                     "finished_at" => DateTime.now.to_s
+                   }
+                 }
           @is_remote = true
         end
       end
@@ -101,7 +111,17 @@ describe DataIncluder do
           SimulatorRunner.perform(run_info)
 
           @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
-          @arg = {"run_id" => @run.id, "work_dir" => @work_dir.to_s}
+          @arg = { "run_id" => @run.id, "work_dir" => @work_dir.to_s,
+                   "run_status" => {
+                     "hostname" => `hostname`,
+                     "started_at" => DateTime.now.to_s,
+                     "status" => "finished",
+                     "rc" => 0,
+                     "cpu_time" => 3.0,
+                     "real_time" => 4.0,
+                     "finished_at" => DateTime.now.to_s
+                   }
+                 }
           @is_remote = false
         end
       end
@@ -116,17 +136,27 @@ describe DataIncluder do
         SimulatorRunner.perform(run_info)
 
         @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
-        @arg = {"run_id" => @run.id, "work_dir" => @work_dir.to_s, "host_id" => @localhost.id.to_s}
+        @arg = { "run_id" => @run.id, "work_dir" => @work_dir.to_s,
+                 "host_id" => @localhost.id.to_s,
+                 "run_status" => {
+                   "hostname" => `hostname`,
+                   "started_at" => DateTime.now.to_s,
+                   "status" => "failed",
+                   "rc" => 0,
+                   "cpu_time" => 3.0,
+                   "real_time" => 4.0,
+                   "finished_at" => DateTime.now.to_s
+                 }
+               }
       end
 
       it "updates attributes of Run" do
-        stat = JSON.load( File.open(@work_dir.join('_run_status.json')) )
         DataIncluder.perform(@arg)
         @run.reload
         @run.status.should eq(:failed)
-        @run.hostname.should eq(stat["hostname"])
-        @run.cpu_time.should eq(stat["cpu_time"])
-        @run.real_time.should eq(stat["real_time"])
+        @run.hostname.should eq @arg["run_status"]["hostname"]
+        @run.cpu_time.should eq @arg["run_status"]["cpu_time"]
+        @run.real_time.should eq @arg["run_status"]["real_time"]
         @run.started_at.should be_a(DateTime)
         @run.finished_at.should be_a(DateTime)
         @run.included_at.should be_a(DateTime)
