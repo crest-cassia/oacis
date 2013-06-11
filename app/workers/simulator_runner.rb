@@ -55,4 +55,15 @@ class SimulatorRunner
 
   def self.on_failure(exception, run_info)
   end
+
+  def self.print_warning_messages_on_env
+    envs = ['CM_HOST_ID', 'CM_WORK_DIR']
+    envs.each do |env|
+      unless ENV[env]
+        $stderr.puts "WARNING : #{env} is not given"
+      end
+    end
+  end
 end
+
+SimulatorRunner.print_warning_messages_on_env
