@@ -33,7 +33,7 @@ class Host
   # return false otherwise
   # connection exception is stored in @connection_error
   def connected?
-    Net::SSH.start(hostname, user, password: "")  # disabled password authentication
+    start_ssh {|ssh| } # do nothing
   rescue *CONNECTION_EXCEPTIONS => ex
     @connection_error = ex
     return false
@@ -102,13 +102,13 @@ class Host
 
   private
   def start_ssh
-    Net::SSH.start(hostname, user, password: "", timeout: 1) do |ssh|
+    Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port) do |ssh|
       yield ssh
     end
   end
 
   def start_sftp
-    Net::SFTP.start(hostname, user, password: "", timeout: 1) do |sftp|
+    Net::SFTP.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port) do |sftp|
       yield sftp
     end
   end
