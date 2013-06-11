@@ -3,22 +3,24 @@ class DataIncluder
   QUEUE_NAME = :data_includer_queue
   @queue = QUEUE_NAME
 
-  STATUS_JSON_FILENAME = '_run_status.json'
   OUTPUT_JSON_FILENAME = '_output.json'
-  FILES_TO_SKIP_COPY = ['_input.json', OUTPUT_JSON_FILENAME, STATUS_JSON_FILENAME]
+  FILES_TO_SKIP_COPY = ['_input.json', OUTPUT_JSON_FILENAME]
 
   def self.perform(run_info)
-    run_id = run_info["run_id"]
-    work_dir = Pathname.new(run_info["work_dir"])
-    host_id = run_info["host_id"]
+    run = Run.find( run_info["run_id"] )
+    work_dir = run_info["work_dir"] ? Pathname.new(run_info["work_dir"]) : nil
+    host = run_info["host_id"] ? Host.find(run_info["host_id"]) : nil
+    run_status = run_info["run_status"]
 
-    run = Run.find(run_id)
-    host = Host.find(host_id)
-    copy_files(work_dir, run.dir, host)
+    stat = run_status["status"].to_sym
+    if stat == :finished or stat == :failed
+      copy_files(work_dir, run.dir, host)
+      run_status["included_at"] = DateTime.now
+    end
 
-    update_run(run)
+    update_run(run, run_status)
 
-    remove_work_dir(work_dir, host)
+    remove_work_dir(work_dir, host) if stat == :finished
   end
 
   def self.copy_files(work_dir, run_dir, host = nil)
@@ -35,16 +37,14 @@ class DataIncluder
     end
   end
 
-  def self.update_run(run)
-    json_path = run.dir.join(STATUS_JSON_FILENAME)
-    status_hash = JSON.load(File.open(json_path))
-    run.hostname = status_hash["hostname"]
-    run.cpu_time = status_hash["cpu_time"]
-    run.real_time = status_hash["real_time"]
-    run.started_at = DateTime.parse(status_hash["started_at"])
-    run.finished_at = DateTime.parse(status_hash["finished_at"])
-    run.included_at = DateTime.now
-    run.status = status_hash["status"].to_sym
+  def self.update_run(run, run_status)
+    run.hostname = run_status["hostname"] if run_status["hostname"]
+    run.cpu_time = run_status["cpu_time"] if run_status["cpu_time"]
+    run.real_time = run_status["real_time"] if run_status["real_time"]
+    run.started_at = DateTime.parse(run_status["started_at"]) if run_status["started_at"]
+    run.finished_at = DateTime.parse(run_status["finished_at"]) if run_status["finished_at"]
+    run.included_at = run_status["included_at"] if run_status["included_at"]
+    run.status = run_status["status"].to_sym if run_status["status"]
     run.save!
 
     json_path = run.dir.join(OUTPUT_JSON_FILENAME)

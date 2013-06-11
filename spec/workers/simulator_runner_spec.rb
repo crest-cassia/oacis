@@ -36,32 +36,60 @@ describe SimulatorRunner do
 
     it "write status of Run to '_run_status.json' after simulation successfully finished" do
       @run_info["command"] = "sleep 1"
-      SimulatorRunner.perform(@run_info)
-      stat_json = @run_dir.join('_run_status.json')
-      File.exist?(stat_json).should be_true
 
-      loaded = JSON.load(File.open(stat_json))
-      loaded["hostname"].should eq(`hostname`.chomp)
-      DateTime.parse(loaded["started_at"]).should be_within(20/28000.0).of(DateTime.now)
-      loaded["status"].should eq("finished")
-      loaded["cpu_time"].should be_within(0.1).of(0.0)
-      loaded["real_time"].should be_within(0.1).of(1.0)
-      DateTime.parse(loaded["finished_at"]).should be_within(20/28000.0).of(DateTime.now)
+      Resque.should_receive(:enqueue).once.ordered do |klass, arg|
+        klass.should eq DataIncluder
+        arg[:run_id].should eq @run.id
+        arg[:work_dir].should be_nil
+        arg[:run_status][:hostname].should_not be_nil
+        arg[:run_status][:started_at].should_not be_nil
+        arg[:run_status][:status].should eq :running
+        arg[:run_status][:cpu_time].should be_nil
+        arg[:run_status][:real_time].should be_nil
+        arg[:run_status][:finished_at].should be_nil
+      end
+      Resque.should_receive(:enqueue).once.ordered do |klass, arg|
+        klass.should eq DataIncluder
+        arg[:run_id].should eq @run.id
+        arg[:work_dir].should eq @run_dir.expand_path.to_s
+        arg[:run_status][:hostname].should eq `hostname`.chomp
+        arg[:run_status][:started_at].should be_within(20/28000.0).of(DateTime.now)
+        arg[:run_status][:status].should eq :finished
+        arg[:run_status][:cpu_time].should be_within(0.1).of(0.0)
+        arg[:run_status][:real_time].should be_within(0.1).of(1.0)
+        arg[:run_status][:finished_at].should be_within(20/28000.0).of(DateTime.now)
+      end
+
+      SimulatorRunner.perform(@run_info)
     end
 
     it "sets status 'failed' if the return code of the command is not zero" do
       @run_info["command"] = "INVALID_CMD"
-      SimulatorRunner.perform(@run_info)
-      stat_json = @run_dir.join('_run_status.json')
-      File.exist?(stat_json).should be_true
 
-      loaded = JSON.load(File.open(stat_json))
-      loaded["hostname"].should eq(`hostname`.chomp)
-      DateTime.parse(loaded["started_at"]).should be_within(20/28000.0).of(DateTime.now)
-      loaded["status"].should eq("failed")
-      loaded["cpu_time"].should be_within(0.1).of(0.0)
-      loaded["real_time"].should be_within(0.1).of(0.0)
-      DateTime.parse(loaded["finished_at"]).should be_within(20/28000.0).of(DateTime.now)
+      Resque.should_receive(:enqueue).once.ordered do |klass, arg|
+        klass.should eq DataIncluder
+        arg[:run_id].should eq @run.id
+        arg[:work_dir].should be_nil
+        arg[:run_status][:hostname].should_not be_nil
+        arg[:run_status][:started_at].should_not be_nil
+        arg[:run_status][:status].should eq :running
+        arg[:run_status][:cpu_time].should be_nil
+        arg[:run_status][:real_time].should be_nil
+        arg[:run_status][:finished_at].should be_nil
+      end
+      Resque.should_receive(:enqueue).once.ordered do |klass, arg|
+        klass.should eq DataIncluder
+        arg[:run_id].should eq @run.id
+        arg[:work_dir].should eq @run_dir.expand_path.to_s
+        arg[:run_status][:hostname].should eq `hostname`.chomp
+        arg[:run_status][:started_at].should be_within(20/28000.0).of(DateTime.now)
+        arg[:run_status][:status].should eq :failed
+        arg[:run_status][:cpu_time].should be_within(0.1).of(0.0)
+        arg[:run_status][:real_time].should be_within(0.1).of(0.0)
+        arg[:run_status][:finished_at].should be_within(20/28000.0).of(DateTime.now)
+      end
+
+      SimulatorRunner.perform(@run_info)
     end
 
     it "creates working directory under CM_WORK_DIR" do
@@ -74,20 +102,21 @@ describe SimulatorRunner do
 
     it "enqueues a job for DataIncluder with hostname if 'CM_HOST_ID' is not specified" do
       ENV.delete('CM_HOST_ID')
-      Resque.should_receive(:enqueue).with(DataIncluder,
-                                           run_id: @run.id,
-                                           work_dir: @run_dir.expand_path.to_s,
-                                           )
+      Resque.should_receive(:enqueue).once.ordered
+      Resque.should_receive(:enqueue) do |klass, arg|
+        klass.should eq DataIncluder
+        arg[:host_id].should be_nil
+      end
       SimulatorRunner.perform(@run_info)
     end
 
     it "enqueues a job for DataIncluder with host_id specified by 'CM_HOST_ID'" do
       ENV['CM_HOST_ID'] = @host.id
-      Resque.should_receive(:enqueue).with(DataIncluder,
-                                           run_id: @run.id,
-                                           work_dir: @run_dir.expand_path.to_s,
-                                           host_id: @host.id.to_s
-                                           )
+      Resque.should_receive(:enqueue).once.ordered
+      Resque.should_receive(:enqueue).once.ordered do |klass, arg|
+        klass.should eq DataIncluder
+        arg[:host_id].should_not be_nil
+      end
       SimulatorRunner.perform(@run_info)
     end
   end

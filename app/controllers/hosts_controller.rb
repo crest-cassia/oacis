@@ -18,7 +18,7 @@ class HostsController < ApplicationController
       @status = @host.status
     else
       flash.now[:alert] = "Failed to establish connection. Check host information."
-      @status = @host.connection_error.message
+      @status = @host.connection_error.inspect
     end
 
     respond_to do |format|
