@@ -3,7 +3,7 @@ class DataIncluder
   QUEUE_NAME = :data_includer_queue
   @queue = QUEUE_NAME
 
-  STATUS_JSON_FILENAME = SimulatorRunner::STATUS_JSON_FILENAME # '_run_status.json'
+  STATUS_JSON_FILENAME = '_run_status.json'
   OUTPUT_JSON_FILENAME = '_output.json'
   FILES_TO_SKIP_COPY = ['_input.json', OUTPUT_JSON_FILENAME, STATUS_JSON_FILENAME]
 

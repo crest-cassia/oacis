@@ -1,10 +1,10 @@
-require File.join(File.dirname(__FILE__),'data_includer')
+require File.join(File.dirname(__FILE__), 'data_includer')
 
 class SimulatorRunner
 
   @queue = :simulator_queue
 
-  STATUS_JSON_FILENAME = '_run_status.json'
+  STATUS_JSON_FILENAME = DataIncluder::STATUS_JSON_FILENAME
 
   def self.perform(run_info)
     run_id = run_info["id"]
