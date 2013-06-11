@@ -9,7 +9,6 @@ class SimulatorRunner
   def self.perform(run_info)
     run_id = run_info["id"]
     command = run_info["command"]
-    run_dir = run_info["dir"]
 
     work_dir = create_work_dir(run_id)
     Dir.chdir(work_dir) {
