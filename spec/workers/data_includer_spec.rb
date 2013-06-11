@@ -20,29 +20,16 @@ describe DataIncluder do
 
   describe ".perform" do
 
-    describe "for a successful run" do
-
-      before(:each) do
-        ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s
-        run_info = {"id" => @run.id, "command" => @run.command}
-        SimulatorRunner.perform(run_info)
-
-        @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
-        @arg = {"run_id" => @run.id, "work_dir" => @work_dir.to_s, "host_id" => @localhost.id.to_s}
-      end
+    shared_examples_for 'for successful run' do
 
       it "copies all the files in the work dir to run_directory" do
+        Host.any_instance.should_receive(:download).and_call_original if @is_remote
         dummy_dir = @work_dir.join('__dummy_dir__')
         FileUtils.mkdir_p(dummy_dir)
         DataIncluder.perform(@arg)
         File.exist?(@run.dir.join('_stdout.txt')).should be_true
         File.exist?(@run.dir.join('_stderr.txt')).should be_true
         File.directory?(@run.dir.join('__dummy_dir__')).should be_true
-      end
-
-      it "copies files using Host#download method" do
-        Host.any_instance.should_receive(:download).and_call_original
-        DataIncluder.perform(@arg)
       end
 
       it "does not copy '_input.json', '_output.json', and '_run_status.json'" do
@@ -72,13 +59,9 @@ describe DataIncluder do
       end
 
       it "removes working directory after copy has successfully finished" do
+        Host.any_instance.should_receive(:rm_r).and_call_original if @is_remote
         DataIncluder.perform(@arg)
         File.directory?(@work_dir).should be_false
-      end
-
-      it "removes working directory using Host#rm_r method" do
-        Host.any_instance.should_receive(:rm_r).and_call_original
-        DataIncluder.perform(@arg)
       end
 
       it "stores contents of '_output.json' into Run#result" do
@@ -94,7 +77,37 @@ describe DataIncluder do
       end
     end
 
-    describe "for a failed run" do
+    context "for a successful remote run" do
+
+      it_should_behave_like 'for successful run' do
+        before(:each) do
+          ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s
+          run_info = {"id" => @run.id, "command" => @run.command}
+          SimulatorRunner.perform(run_info)
+
+          @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
+          @arg = {"run_id" => @run.id, "work_dir" => @work_dir.to_s, "host_id" => @localhost.id.to_s}
+          @is_remote = true
+        end
+      end
+    end
+
+    context "for a successful local run" do
+
+      it_should_behave_like 'for successful run' do
+        before(:each) do
+          ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s
+          run_info = {"id" => @run.id, "command" => @run.command}
+          SimulatorRunner.perform(run_info)
+
+          @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
+          @arg = {"run_id" => @run.id, "work_dir" => @work_dir.to_s}
+          @is_remote = false
+        end
+      end
+    end
+
+    context "for a failed run" do
 
       before(:each) do
         ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s

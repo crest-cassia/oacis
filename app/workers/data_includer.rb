@@ -3,7 +3,7 @@ class DataIncluder
   QUEUE_NAME = :data_includer_queue
   @queue = QUEUE_NAME
 
-  STATUS_JSON_FILENAME = '_run_status.json'
+  STATUS_JSON_FILENAME = SimulatorRunner::STATUS_JSON_FILENAME # '_run_status.json'
   OUTPUT_JSON_FILENAME = '_output.json'
   FILES_TO_SKIP_COPY = ['_input.json', OUTPUT_JSON_FILENAME, STATUS_JSON_FILENAME]
 
@@ -13,7 +13,7 @@ class DataIncluder
     host_id = run_info["host_id"]
 
     run = Run.find(run_id)
-    host = Host.find(host_id)
+    host = host_id ? Host.find(host_id) : nil
     copy_files(work_dir, run.dir, host)
 
     update_run(run)
