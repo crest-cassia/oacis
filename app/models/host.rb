@@ -97,7 +97,7 @@ class Host
             "CM_SIMULATOR_DIR=#{simulator_base_dir}",
             'COUNT=1'
           ]
-    return "cd #{work_base_dir} && nohup #{exe} #{args.join(' ')} &"
+    return "nohup #{exe} #{args.join(' ')} &"
   end
 
   private
