@@ -31,6 +31,6 @@ gem "simplecov-rcov", :require => false, :group => :test
 gem "ci_reporter", :group => :test
 gem "resque"
 gem "pry", :group => :development
-gem "pry-debugger", :group => :development
+# gem "pry-debugger", :group => :development
 gem "net-ssh", ">= 2.6.5"
 gem "net-sftp", ">= 2.1.2"
