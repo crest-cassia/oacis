@@ -3,8 +3,9 @@ class DataIncluder
   QUEUE_NAME = :data_includer_queue
   @queue = QUEUE_NAME
 
+  INPUT_JSON_FILENAME = '_input.json'
   OUTPUT_JSON_FILENAME = '_output.json'
-  FILES_TO_SKIP_COPY = ['_input.json', OUTPUT_JSON_FILENAME]
+  FILES_TO_SKIP_COPY = [INPUT_JSON_FILENAME, OUTPUT_JSON_FILENAME]
 
   def self.perform(run_info)
     run = Run.find( run_info["run_id"] )

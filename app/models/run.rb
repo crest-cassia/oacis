@@ -29,20 +29,32 @@ class Run
   end
   
   def submit
+    command, input = command_and_input
     run_info = {id: id, command: command}
+    run_info[:input] = input if input
     Resque.enqueue(SimulatorRunner, run_info)
   end
 
   def command
+    command_and_input[0]
+  end
+
+  def command_and_input
     prm = self.parameter_set
     sim = prm.simulator
     cmd_array = []
     cmd_array << sim.command
-    cmd_array += sim.parameter_definitions.keys.map do |key|
-      prm.v[key]
+    input = nil
+    if sim.support_input_json
+      input = prm.v.dup
+      input[:_seed] = self.seed
+    else
+      cmd_array += sim.parameter_definitions.keys.map do |key|
+        prm.v[key]
+      end
+      cmd_array << self.seed
     end
-    cmd_array << self.seed
-    return cmd_array.join(' ')
+    return cmd_array.join(' '), input
   end
 
   def dir

@@ -7,10 +7,12 @@ class SimulatorRunner
   def self.perform(run_info)
     run_id = run_info["id"]
     command = run_info["command"]
+    input = run_info["input"]
 
     run_status = {}
     work_dir = create_work_dir(run_id)
     Dir.chdir(work_dir) {
+      prepare_input(input) if input
       run_status[:hostname] = `hostname`.chomp
       run_status[:started_at] = DateTime.now
       run_status[:status] = :running
@@ -23,6 +25,12 @@ class SimulatorRunner
     arg = {run_id: run_id, work_dir: work_dir.expand_path.to_s, run_status: run_status}
     arg[:host_id] = ENV['CM_HOST_ID'] if ENV['CM_HOST_ID']
     Resque.enqueue(DataIncluder, arg)
+  end
+
+  def self.prepare_input(input)
+    io = File.open(DataIncluder::INPUT_JSON_FILENAME, 'w')
+    io.print input.to_json
+    io.close
   end
 
   def self.create_work_dir(run_id)

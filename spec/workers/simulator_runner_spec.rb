@@ -18,7 +18,8 @@ describe SimulatorRunner do
       FileUtils.mkdir_p(@temp_dir)
       ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s
       @run_dir = @temp_dir.join(@run.id)
-      @run_info = {"id" => @run.id, "command" => @run.command}
+      command, input = @run.command_and_input
+      @run_info = {"id" => @run.id, "command" => command, "input" => input}
       Resque.stub!(:enqueue)
     end
 
@@ -34,7 +35,18 @@ describe SimulatorRunner do
       File.open(@run_dir.join('_stdout.txt')).read.should match(/hello/)
     end
 
-    it "write status of Run to '_run_status.json' after simulation successfully finished" do
+    it "does not create _input.json when 'input' arg is not given" do
+      SimulatorRunner.perform(@run_info)
+      File.exist?(@run_dir.join('_input.json')).should be_false
+    end
+
+    it "creates _input.json when 'input' arg is given" do
+      @run_info["input"] = {'a' => 1234}
+      SimulatorRunner.perform(@run_info)
+      File.exist?(@run_dir.join('_input.json')).should be_true
+    end
+
+    it "sends status of Run as an argument of Resque::enqueue after simulation successfully finished" do
       @run_info["command"] = "sleep 1"
 
       Resque.should_receive(:enqueue).once.ordered do |klass, arg|

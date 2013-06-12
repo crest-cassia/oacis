@@ -124,23 +124,67 @@ describe Run do
 
   describe "#submit" do
 
-    it "submits a run to Resque" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-      prm = sim.parameter_sets.first
-      run = prm.runs.first
-      arg = {id: run.id, command: run.command}
-      Resque.should_receive(:enqueue).with(SimulatorRunner, arg)
-      run.submit
+    context "for simulators which receives parameters as arguments" do
+
+      it "submits a run to Resque" do
+        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: false)
+        prm = sim.parameter_sets.first
+        run = prm.runs.first
+        Resque.should_receive(:enqueue) do |klass, arg|
+          klass.should eq SimulatorRunner
+          arg[:id].should eq run.id
+          arg[:command].should eq run.command_and_input[0]
+          arg.should_not have_key(:input)
+        end
+        run.submit
+      end
     end
+
+    context "for simulators which receives parameters as _input.json" do
+
+      it "submits a run to Resque" do
+        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: true)
+        prm = sim.parameter_sets.first
+        run = prm.runs.first
+        Resque.should_receive(:enqueue) do |klass, arg|
+          klass.should eq SimulatorRunner
+          arg[:id].should eq run.id
+          arg[:command].should eq run.command_and_input[0]
+          arg.should have_key(:input)
+        end
+        run.submit
+      end
+    end
+
   end
 
-  describe "#command" do
+  describe "#command_and_input" do
 
-    it "returns a shell command to run simulation" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-      prm = sim.parameter_sets.first
-      run = prm.runs.first
-      run.command.should == "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
+    context "for simulators which receives parameters as arguments" do
+
+      it "returns a shell command to run simulation" do
+        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: false)
+        prm = sim.parameter_sets.first
+        run = prm.runs.first
+        command, input = run.command_and_input
+        command.should eq "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
+        input.should be_nil
+      end
+    end
+
+    context "for simulators which receives parameters as _input.json" do
+
+      it "returns a shell command to run simulation" do
+        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: true)
+        prm = sim.parameter_sets.first
+        run = prm.runs.first
+        command, input = run.command_and_input
+        command.should eq "#{sim.command}"
+        prm.v.each do |key, val|
+          input[key].should eq val
+        end
+        input[:_seed].should eq run.seed
+      end
     end
   end
 
