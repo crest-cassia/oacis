@@ -1,0 +1,13 @@
+%div.tabbable
+  %ul.nav.nav-tabs
+    %li.active
+      %a{"href"=>"#tab-list-runs", "data-toggle" => "tab"} Runs
+    %li
+      %a{"href"=>"#tab-parameter-analyzers", "data-toggle" => "tab"} Parameter Analyzers
+
+  .tab-content
+    .tab-pane.active#tab-list-runs
+      = render "runs_table"
+    .tab-pane#tab-parameter-analyzers
+      = render "analysis"
+

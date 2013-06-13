@@ -10,13 +10,7 @@
 %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
   New Parameter Set
   
-- if @query_list
-  %h4 Select query
-  = form_for(@simulator, :url=>{:controller=>"simulators", :action=>"show"}, :html => { :method => :get } ) do |f|
-    = select_tag "query_id", options_for_select(@query_list, @query_id), :prompt => "all"
-    = f.submit "Apply query", :class => 'btn btn-primary', :name => nil
-
-%h4 Make query
+%h3 Parameter Filter
 = form_tag( _make_query_simulator_path(@simulator) ) do |f|
   %table
     %tbody
@@ -35,15 +29,21 @@
         %td#select_value_form
           = text_field_tag "query[][value]"
   .controls
-    .btn#add_queries_form Add more query
-  = hidden_field_tag "query_id", @query_id
-  = submit_tag "Make query", :class => 'btn btn-primary'
+    .btn#add_queries_form Add more filters
+    = hidden_field_tag "query_id", @query_id
+    = submit_tag "Save this Filter", :class => 'btn btn-primary'
+
+- if @query_list
+  %h4 Select query
+  = form_for(@simulator, :url=>{:controller=>"simulators", :action=>"show"}, :html => { :method => :get } ) do |f|
+    = select_tag "query_id", options_for_select(@query_list, @query_id), :prompt => "all"
+    = f.submit "Load Filter", :class => 'btn btn-primary', :name => nil
 
 - unless @query_id.blank?
   %h4 Delete query
   = form_tag( _make_query_simulator_path(@simulator) ) do |f|
     = hidden_field_tag "query_id", @query_id
-    = submit_tag "Delete query", :class => 'btn btn-primary', :name => :delete_query
+    = submit_tag "Delete Filter", :class => 'btn btn-primary', :name => :delete_query
 
 :javascript
   $(function() {
@@ -100,23 +100,22 @@ jQuery ->
     sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
     sPaginationType: "bootstrap"
     fnDrawCallback: (oSettings)->
-      $("tbody", this).append($("<tr>").html($("<td>").attr({colspan: "3"})))
       $("tbody > tr", this).each (i, parent_element)->
         if $("a", parent_element).length
-          element = $("a", parent_element)
+          a_element = $("a", parent_element)
           if $("img", parent_element).length == 0
-            $(element).before($("<img>")
+            $(a_element).before($("<img>")
               .attr("id", "treebtn")
               .attr("src", "/assets/expand.png")
               .attr("align", "left")
               .attr("style", "margin-right: 5px;")
               .attr("dialog", "close"))
-          param_id = $(element).attr("href").substr($(element).attr("href").lastIndexOf("/")+1)
-          $(element).text("")
+          param_id = $(a_element).attr("href").substr($(a_element).attr("href").lastIndexOf("/")+1)
+          $(a_element).text("")
           $.getJSON "/parameter_sets/"+param_id+"/_runs_count", (runs)->
             if runs.total > 0
-              $(element).append($("<div>").addClass("progress"))
-              div_element = $("div",element)
+              $(a_element).append($("<div>").addClass("progress"))
+              div_element = $("div",a_element)
               if runs.finished > 0
                 $(div_element).append($("<span>").addClass("progress progress-success progress-striped active"))
                 percent = Math.floor(100.0*runs.finished/runs.total)
@@ -133,19 +132,20 @@ jQuery ->
                 $("span.progress.progress-danger.progress-striped.active", div_element)
                   .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
             else
-              $(element).append(param_id)
+              $(a_element).append(param_id)
 
 jQuery ->
   $("body").on "click", "img#treebtn", ->
     if ($(this).attr("dialog") == "close")
       td_element = $(this).parent()
-      next_td_element = $(this).parent().parent().next()
+      tr_element = $(this).parent().parent()
       param_id = $("a", td_element).attr("href").substr($("a", td_element).attr("href").lastIndexOf("/")+1)
+      table_cols = $("td", td_element.parent()).length
       $(this)
         .attr("dialog", "open")
         .attr("src", "/assets/collapse.png")
       $.get "/parameter_sets/"+param_id+"/_runs_table", (data) ->
-        next_td_element.before($("<tr>").attr("id", "inline_run").html($("<td>").attr({colspan: "3"}).html(data)))
+        tr_element.after($("<tr>").attr("id", "inline_run").html($("<td>").attr({colspan: table_cols}).html(data)))
     else
       $(this)
         .attr("dialog", "close")
