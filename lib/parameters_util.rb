@@ -53,7 +53,6 @@ module ParametersUtil
     end
   end
 
-  private
   def self.boolean(val)
     compare_value = val.is_a?(String) ? val.downcase : val
     case compare_value

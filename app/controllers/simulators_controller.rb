@@ -61,6 +61,7 @@ class SimulatorsController < ApplicationController
     end
     @simulator = Simulator.new(params[:simulator])
     @simulator.parameter_definitions = param_def
+    @simulator.support_input_json = ParametersUtil.boolean(params[:simulator]["support_input_json"])
 
     respond_to do |format|
       if @simulator.save

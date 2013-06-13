@@ -93,7 +93,7 @@ describe SimulatorsController do
           {"name" => "param1", "type" => "Integer"},
           {"name" => "param2", "type" => "Float"}
         ]
-        simulator = {name: "simulatorA", command: "echo"}
+        simulator = {name: "simulatorA", command: "echo", support_input_json: "0"}
         @valid_post_parameter = {simulator: simulator, definitions: definitions}
       end
 
@@ -101,6 +101,16 @@ describe SimulatorsController do
         expect {
           post :create, @valid_post_parameter, valid_session
         }.to change(Simulator, :count).by(1)
+      end
+
+      it "assigns attributes of newly created Simulator" do
+        post :create, @valid_post_parameter, valid_session
+        sim = Simulator.last
+        sim.name.should eq "simulatorA"
+        sim.command.should eq "echo"
+        sim.support_input_json.should be_false
+        sim.parameter_definitions["param1"]["type"].should eq "Integer"
+        sim.parameter_definitions["param2"]["type"].should eq "Float"
       end
 
       it "assigns a newly created simulator as @simulator" do

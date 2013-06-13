@@ -5,7 +5,7 @@ class Simulator
   field :parameter_definitions, type: Hash
   field :command, type: String
   field :description, type: String
-  field :support_input_json, type: Boolean, default: false
+  field :support_input_json, type: Boolean, default: true
   has_many :parameter_sets
   has_many :parameter_set_queries
   embeds_many :analyzers

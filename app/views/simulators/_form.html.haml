@@ -20,6 +20,10 @@
     .controls
       = f.text_field(:command)
   .control-group
+    = f.label(:support_input_json, class: 'control-label')
+    .controls
+      = f.check_box(:support_input_json)
+  .control-group
     = f.label(:description, class: 'control-label')
     .controls
       = f.text_area(:description, rows: 5)
