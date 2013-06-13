@@ -13,7 +13,7 @@ def traverse_result(results)
     output
   when Array
     output = []
-    result.times do |i|
+    result.size.times do |i|
       mapped = results.map {|a| a[i]}
       output[i] = traverse_result(mapped)
     end
