@@ -3,10 +3,21 @@
 .page-header
   %h1 Parameter Set
 
-= render partial: "shared/parameters_table", locals: {parameters_hash: @param_set.v}
-.well
-  = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
-%hr
-= render "runs_table"
-%hr
-= render "analysis"
+%div.tabbable
+  %ul.nav.nav-tabs
+    %li.active
+      %a{"href"=>"#tab-about", "data-toggle" => "tab"} About
+    %li
+      %a{"href"=>"#tab-list-runs", "data-toggle" => "tab"} Runs
+    %li
+      %a{"href"=>"#tab-analyzers", "data-toggle" => "tab"} Analyzers
+
+  .tab-content
+    .tab-pane.active#tab-about
+      = render partial: "shared/parameters_table", locals: {parameters_hash: @param_set.v}
+      .well
+        = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
+    .tab-pane#tab-list-runs
+      = render "runs_table"
+    .tab-pane#tab-analyzers
+      = render "analysis"

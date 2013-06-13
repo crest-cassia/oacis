@@ -5,7 +5,7 @@ group :assets do
   gem 'coffee-rails', '~> 3.2.1'
   gem 'uglifier', '>= 1.0.3'
   gem 'twitter-bootstrap-rails'
-  gem "jquery-datatables-rails"
+  gem 'jquery-datatables-rails'
 end
 gem 'jquery-rails'
 gem "mongoid", ">= 3.0.9"
@@ -35,3 +35,4 @@ gem "pry", :group => :development
 # gem "pry-debugger", :group => :development
 gem "net-ssh", ">= 2.6.5"
 gem "net-sftp", ">= 2.1.2"
+gem "coffee-filter"

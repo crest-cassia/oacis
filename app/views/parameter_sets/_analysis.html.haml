@@ -29,7 +29,8 @@
     = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }
     %div#parameters_form
       = render 'shared/parameters_form', param_def: azrs.first.parameter_definitions
-    = f.submit "Analyze", :class => 'btn btn-primary'
+    .form-actions
+      = f.submit "Analyze", :class => 'btn btn-primary'
 
 :javascript
   $(function() {
