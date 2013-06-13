@@ -1,7 +1,7 @@
 class Run
   include Mongoid::Document
   include Mongoid::Timestamps
-  field :status, type: Symbol  # created, running, including, failed, canceled, finished
+  field :status, type: Symbol, default: :created  # created, running, failed, finished
   field :seed, type: Integer
   field :hostname, type: String
   field :cpu_time, type: Float
@@ -15,19 +15,24 @@ class Run
 
   # validations
   validates :status, :presence => true
-  validates :seed, :presence => true, :uniqueness => true
-  validates :parameter_set, :presence => true
+  validates :seed, :presence => true, uniqueness: {scope: :parameter_set_id}
+  # do not write validations for the presence of association
+  # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
   attr_accessible :seed
 
-  before_validation :set_status, :set_unique_seed
   after_save :create_run_dir
 
   public
+  def initialize(*arg)
+    super
+    set_unique_seed
+  end
+
   def simulator
     parameter_set.simulator
   end
-  
+
   def submit
     command, input = command_and_input
     run_info = {id: id, command: command}
@@ -72,13 +77,9 @@ class Run
     return paths
   end
 
-  private
-  def set_status
-    self.status ||= :created
-  end
-
   SeedMax = 2 ** 31
   SeedIterationLimit = 1024
+  private
   def set_unique_seed
     unless self.seed
       SeedIterationLimit.times do |i|
