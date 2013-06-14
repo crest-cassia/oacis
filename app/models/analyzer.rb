@@ -6,6 +6,7 @@ class Analyzer
   field :type, type: Symbol
   field :parameter_definitions, type: Hash
   field :command, type: String
+  field :auto_run, type: Symbol, default: :no
   field :description, type: String
 
   embedded_in :simulator
@@ -14,6 +15,7 @@ class Analyzer
   validates :type, presence: true, 
                    inclusion: {in: [:on_run, :on_parameter_set, :on_several_parameter_sets]}
   validates :command, presence: true
+  validates :auto_run, inclusion: {in: [:yes, :no, :first_run_only]}
   validate :parameter_definitions_format
 
   private
