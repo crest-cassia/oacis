@@ -22,7 +22,7 @@ private
     a = []
     runs_lists.each_with_index do |run,idx|
       tmp = []
-      tmp << @view.link_to(idx+1, run_path(run, :anchor => '!tab-about'))
+      tmp << @view.link_to(idx+1, run_path(run, :anchor => '!tab-list-runs'))
       tmp << raw(status_label(run.status))
       tmp << run.hostname
       tmp << formatted_elapsed_time(run.cpu_time)
