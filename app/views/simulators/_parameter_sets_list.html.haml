@@ -88,7 +88,13 @@
     parameter_form_selector.trigger("change");
   });
 
-  var param_list_table_width = $("#param_list").width()
+  var param_list_table_width;
+
+  $(function() {
+    param_list_table_width = $("#param_list").width()
+  });
+
+
 
 :coffeescript
 jQuery ->
