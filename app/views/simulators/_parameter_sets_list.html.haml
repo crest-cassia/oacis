@@ -96,6 +96,10 @@ jQuery ->
     bProcessing: true
     bServerSide: true
     bFilter: false
+    bAutoWidth: false
+    aoColumnDefs: [
+      { "sWidth": "150px", "aTargets": [ 0 ] }
+    ]
     sAjaxSource: $('#param_list').data('source')
     sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
     sPaginationType: "bootstrap"
