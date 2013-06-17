@@ -59,7 +59,7 @@ describe Analyzer do
         azr.should_not be_valid
       end
 
-      it "must be either 'on_run', 'on_parameter_set', 'on_several_parameter_sets'" do
+      it "must be either 'on_run', 'on_parameter_set', 'on_parameter_set_group'" do
         invalid_fields = @valid_fields.update({type: "on_xxx"})
         azr = @sim.analyzers.build(invalid_fields)
         azr.should_not be_valid

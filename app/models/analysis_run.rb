@@ -25,7 +25,7 @@ class AnalysisRun
 
   before_validation :set_status
   validates :status, presence: true,
-                     inclusion: {in: [:created,:running,:including,:failed,:canceled,:finished]}
+                     inclusion: {in: [:created,:running,:including,:failed,:cancelled,:finished]}
   validates :analyzable, :presence => true
   validates :analyzer, :presence => true
   validate :cast_and_validate_parameter_values
@@ -41,8 +41,8 @@ class AnalysisRun
       analyzable = Run.find(analyzable_id)
     when :on_parameter_set
       analyzable = ParameterSet.find(analyzable_id)
-    when :on_parameter_sets_group
-      raise "not implemented yet..."  # IMPLEMENT ME
+    when :on_parameter_set_group
+      analyzable = ParameterSetGroup.find(analyzable_id)
     else
       raise "not supported type: #{type}"
     end
@@ -110,6 +110,19 @@ class AnalysisRun
       ps.runs.each do |run|
         obj[:result][run.to_param] = run.result
       end
+    when :on_parameter_set_group
+      psg = self.analyzable
+      obj[:simulation_parameters] = {}
+      psg.parameter_sets.each do |ps|
+        obj[:simulation_parameters][ps.id] = ps.v
+      end
+      obj[:result] = {}
+      psg.parameter_sets.each do |ps|
+        obj[:result][ps.id] = {}
+        ps.analysis_runs.each do |arn|
+          obj[:result][ps.id][arn.id] = arn.result
+        end
+      end
     else
       raise "not supported type"
     end
@@ -130,6 +143,12 @@ class AnalysisRun
       ps = self.analyzable
       ps.runs.where(status: :finished).each do |finished_run|
         files[finished_run.to_param] = finished_run.result_paths
+      end
+    when :on_parameter_set_group
+      self.analyzable.parameter_sets.each do |ps|
+        pa.analysis_runs.each do |arn|
+          files[ File.join(ps.to_param, arn.to_param) ] = arn.dir
+        end
       end
     else
       raise "not supported type"

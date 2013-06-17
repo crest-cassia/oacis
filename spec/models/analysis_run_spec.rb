@@ -239,7 +239,7 @@ describe AnalysisRun do
       end
     end
 
-    describe "for :on_parameter_sets_group type" do
+    describe "for :on_parameter_set_group type" do
 
       it "returns an appropriate hash" do
         pending "not yet implemented"
@@ -314,7 +314,7 @@ describe AnalysisRun do
       end
     end
 
-    describe "for :on_parameter_sets_group type" do
+    describe "for :on_parameter_set_group type" do
 
       it "returns an appropriate entries" do
         pending "not yet implemented"
@@ -385,8 +385,17 @@ describe AnalysisRun do
       found.should eq(arn)
     end
 
-    it "returns the correct AnalysisRun instance for :on_parameter_sets_group type" do
-      pending "not yet implemented"
+    it "returns the correct AnalysisRun instance for :on_parameter_set_group type" do
+      azr = FactoryGirl.create(:analyzer,
+                               simulator: @sim, type: :on_parameter_set_group, run_analysis: false)
+      FactoryGirl.create_list(:parameter_set, 5, simulator: @sim,
+                              runs_count: 1, finished_runs_count: 1)
+      psg = @sim.parameter_set_groups.build
+      psg.parameter_sets = @sim.parameter_sets.all
+      psg.save!
+      arn = FactoryGirl.create(:analysis_run, analyzable: psg, analyzer: azr, parameters: {})
+      found = AnalysisRun.find_by_type_and_ids(:on_parameter_set_group, psg.id, arn.id)
+      found.should eq arn
     end
   end
 end
