@@ -147,6 +147,8 @@ jQuery ->
 jQuery ->
   $("body").on "click", "img#treebtn", ->
     if ($(this).attr("dialog") == "close")
+      $("img#treebtn[dialog='open']", $(this).parent().parent().parent()).each ->
+        $(this).trigger("click")
       td_element = $(this).parent()
       tr_element = $(this).parent().parent()
       param_id = $("a", td_element).attr("href").substr($("a", td_element).attr("href").lastIndexOf("/")+1)
@@ -156,8 +158,19 @@ jQuery ->
         .attr("src", "/assets/collapse.png")
       $.get "/parameter_sets/"+param_id+"/_runs_table", (data) ->
         tr_element.after($("<tr>").html($("<td>").attr({colspan: table_cols}).html(data)))
+        $("#runs_list" ,tr_element.next()).trigger("change");
     else
       $(this)
         .attr("dialog", "close")
         .attr("src", "/assets/expand.png")
       $(this).parent().parent().next().remove()
+
+jQuery ->
+  $("body").on "change", "#runs_list", ->
+    $('#runs_list').dataTable
+      bProcessing: true
+      bServerSide: true
+      bFilter: false
+      sAjaxSource: $('#runs_list').data('source')
+      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
+      sPaginationType: "bootstrap"
