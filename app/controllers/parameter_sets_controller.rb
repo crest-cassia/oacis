@@ -48,8 +48,6 @@ class ParameterSetsController < ApplicationController
 
   def _runs_table
     @param_set = ParameterSet.find(params[:id])
-    #@runs = Run.where(parameter_set_id: @param_set).page(params[:page])
-    #render "runs_table"
     render :partial => "inner_table"
   end
 

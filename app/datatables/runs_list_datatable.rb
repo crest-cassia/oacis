@@ -54,10 +54,21 @@ private
   end
 
   def sort_column
-    if @view.params[:iSortCol_0].to_i == 0
+    case @view.params[:iSortCol_0].to_i
+    when 0 #it means index
       "id"
-    else
-      "v."+@simulator.parameter_definitions.keys[@view.params[:iSortCol_0].to_i-1]
+    when 1 #it means status
+      "status"
+    when 2 #it means cpu_time
+      "cpu_time"
+    when 3 #it means real_time
+      "real_time"
+    when 4 #it means created_at
+      "created_at"
+    when 5 #it means started_at
+      "started_at"
+    when 6 #it means finished_at
+      "finished_at"
     end
   end
 
