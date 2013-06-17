@@ -124,7 +124,7 @@ class SimulatorsController < ApplicationController
     redirect_to  :action => "show", :query_id => @query_id
   end
 
-  def _parameter_list
+  def _parameters_list
     render json: ParameterSetsListDatatable.new(view_context)
   end
 end

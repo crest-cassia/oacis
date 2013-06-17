@@ -1,5 +1,5 @@
 %h3 List of Parameter Sets
-%table.table.table-condensed.table-striped.table-hover#param_list{:'data-source' => "#{_parameter_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
+%table.table.table-condensed.table-striped.table-hover#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr
       %th.span1 Runs Progress
@@ -98,7 +98,7 @@
 
 :coffeescript
 jQuery ->
-  $('#param_list').dataTable
+  $('#params_list').dataTable
     bProcessing: true
     bServerSide: true
     bFilter: false
@@ -106,7 +106,7 @@ jQuery ->
     aoColumnDefs: [
       { "sWidth": "150px", "aTargets": [ 0 ] }
     ]
-    sAjaxSource: $('#param_list').data('source')
+    sAjaxSource: $('#params_list').data('source')
     sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
     sPaginationType: "bootstrap"
     fnDrawCallback: (oSettings)->
@@ -155,10 +155,9 @@ jQuery ->
         .attr("dialog", "open")
         .attr("src", "/assets/collapse.png")
       $.get "/parameter_sets/"+param_id+"/_runs_table", (data) ->
-        tr_element.after($("<tr>").attr("id", "inline_run").html($("<td>").attr({colspan: table_cols}).html(data)))
+        tr_element.after($("<tr>").html($("<td>").attr({colspan: table_cols}).html(data)))
     else
       $(this)
         .attr("dialog", "close")
         .attr("src", "/assets/expand.png")
-      while ($(this).parent().parent().next().attr("id") == "inline_run")
-        $(this).parent().parent().next().remove()
+      $(this).parent().parent().next().remove()

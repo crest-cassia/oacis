@@ -1,5 +1,5 @@
 %h3 Runs
-%table.table.table-condensed.table-hover.table-striped
+%table.table.table-condensed.table-hover.table-striped#runs_list{:'data-source' => "#{_runs_list_parameter_set_path(@param_set.to_param, format: "json")}"}
   %thead
     %tr
       %th.span1 #
@@ -11,18 +11,17 @@
       %th.span1 started_at
       %th.span1 finished_at
   %tbody
-    - @runs.each_with_index do |run,idx|
-      %tr
-        %td= link_to(idx+1, run_path(run, :anchor => '!tab-analysis'))
-        %td= raw(status_label(run.status))
-        %td= run.hostname
-        %td= formatted_elapsed_time(run.cpu_time)
-        %td= formatted_elapsed_time(run.real_time)
-        %td= distance_to_now_in_words(run.created_at)
-        %td= distance_to_now_in_words(run.started_at)
-        %td= distance_to_now_in_words(run.finished_at)
-= paginate @runs
 
 = form_tag(parameter_set_runs_path(@param_set), class: 'well form-inline') do |f|
   = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]), class: 'input-mini')
   = submit_tag "Create Runs", :class => 'btn btn-primary'
+
+:coffeescript
+jQuery ->
+  $('#runs_list').dataTable
+    bProcessing: true
+    bServerSide: true
+    bFilter: false
+    sAjaxSource: $('#runs_list').data('source')
+    sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
+    sPaginationType: "bootstrap"
