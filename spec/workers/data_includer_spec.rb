@@ -82,7 +82,7 @@ describe DataIncluder do
         @run.result["y"].should eq(2.0)
       end
 
-      describe "auto run of analyzers" do
+      describe "auto run of analyzers for on_run type" do
 
         before(:each) do
           @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_run, auto_run: :yes)
@@ -126,6 +126,28 @@ describe DataIncluder do
               DataIncluder.perform(@arg)
             }.to_not change { @run.reload.analysis_runs.count }
           end
+        end
+      end
+
+      describe "auto run of analyzers for on_parameter_set type" do
+
+        before(:each) do
+          @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_parameter_set, auto_run: :yes)
+        end
+
+        it "creates analysis run if all the other runs within the parameter set are 'finished' or 'failed'" do
+          FactoryGirl.create(:run, parameter_set: @prm, status: :failed)
+          FactoryGirl.create(:run, parameter_set: @prm, status: :finished)
+          expect {
+            DataIncluder.perform(@arg)
+          }.to change { @prm.reload.analysis_runs.count }
+        end
+
+        it "does not create analysis run if any of runs within the parameter set is 'created' or 'running'" do
+          FactoryGirl.create(:run, parameter_set: @prm, status: :create)
+          expect {
+            DataIncluder.perform(@arg)
+          }.to_not change { @prm.reload.analysis_runs.count }
         end
       end
     end

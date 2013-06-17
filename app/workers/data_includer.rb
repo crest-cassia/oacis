@@ -73,10 +73,10 @@ class DataIncluder
   end
 
   def self.enqueue_analyzer_jobs(run)
-    if run.status == :finished
-      ps = run.parameter_set
-      sim = ps.simulator
+    ps = run.parameter_set
+    sim = ps.simulator
 
+    if run.status == :finished
       sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
         arn = run.analysis_runs.build(analyzer: azr)
         arn.save and arn.submit
@@ -86,6 +86,15 @@ class DataIncluder
         scope = ps.runs.where(status: :finished)
         if scope.count == 1 and scope.first.id== run.id
           arn = run.analysis_runs.build(analyzer: azr)
+          arn.save and arn.submit
+        end
+      end
+    end
+
+    if run.status == :finished or run.status == :failed
+      sim.analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
+        unless ps.runs.nin(status: [:finished, :failed]).exists?
+          arn = ps.analysis_runs.build(analyzer: azr)
           arn.save and arn.submit
         end
       end
