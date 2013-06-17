@@ -22,6 +22,8 @@ class DataIncluder
     update_run(run, run_status)
 
     remove_work_dir(work_dir, host) if stat == :finished
+
+    enqueue_analyzer_jobs(run)
   end
 
   def self.copy_files(work_dir, run_dir, host = nil)
@@ -67,6 +69,26 @@ class DataIncluder
       host.rm_r(work_dir)
     else
       FileUtils.rm_r(work_dir)
+    end
+  end
+
+  def self.enqueue_analyzer_jobs(run)
+    if run.status == :finished
+      ps = run.parameter_set
+      sim = ps.simulator
+
+      sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
+        arn = run.analysis_runs.build(analyzer: azr)
+        arn.save and arn.submit
+      end
+
+      sim.analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
+        scope = ps.runs.where(status: :finished)
+        if scope.count == 1 and scope.first.id== run.id
+          arn = run.analysis_runs.build(analyzer: azr)
+          arn.save and arn.submit
+        end
+      end
     end
   end
 
