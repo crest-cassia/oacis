@@ -36,6 +36,7 @@ describe SimulatorRunner do
     end
 
     it "does not create _input.json when 'input' arg is not given" do
+      @run_info.delete("input")
       SimulatorRunner.perform(@run_info)
       File.exist?(@run_dir.join('_input.json')).should be_false
     end
