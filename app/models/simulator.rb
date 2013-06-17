@@ -8,6 +8,7 @@ class Simulator
   field :support_input_json, type: Boolean, default: true
   has_many :parameter_sets
   has_many :parameter_set_queries
+  has_many :parameter_set_groups
   embeds_many :analyzers
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
