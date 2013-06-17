@@ -4,8 +4,7 @@ describe DataIncluder do
   
   before(:each) do
     @sim = FactoryGirl.create(:simulator,
-                              parameter_sets_count: 1, runs_count: 1, parameter_set_queries_count:1,
-                              analyzers_count: 1, run_analysis: false)
+                              parameter_sets_count: 1, runs_count: 1, parameter_set_queries_count:1)
     @prm = @sim.parameter_sets.first
     @run = @prm.runs.first
 
@@ -85,12 +84,13 @@ describe DataIncluder do
 
       describe "auto run of analyzers" do
 
+        before(:each) do
+          @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_run, auto_run: :yes)
+        end
+
         context "when Analyzer#auto_run is :yes" do
 
           it "creates analysis_run if Analyzer#auto_run is :yes" do
-            azr = @sim.analyzers.first
-            azr.update_attributes!(auto_run: :yes)
-
             expect {
               DataIncluder.perform(@arg)
             }.to change { @run.reload.analysis_runs.count }.by(1)
@@ -100,8 +100,7 @@ describe DataIncluder do
         context "when Analyzer#auto_run is :no" do
 
           it "does not create analysis_run if Anaylzer#auto_run is :no" do
-            azr = @sim.analyzers.first
-            azr.update_attributes!(auto_run: :no)
+            @azr.update_attributes!(auto_run: :no)
 
             expect {
               DataIncluder.perform(@arg)
@@ -112,7 +111,6 @@ describe DataIncluder do
         context "when Analyzer#auto_run is :first_run_only" do
 
           before(:each) do
-            @azr = @sim.analyzers.first
             @azr.update_attributes!(auto_run: :first_run_only)
           end
 
