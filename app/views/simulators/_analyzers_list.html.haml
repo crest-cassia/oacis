@@ -6,9 +6,10 @@
       %th Name
       %th Type
       %th Description
-      - @analyzers.each do |azr|
-        %tr
-          %td= link_to( azr.id, simulator_analyzer_path(@simulator.id, azr.id))
-          %td= azr.name
-          %td= azr.type
-          %td= azr.description
+  %tbody
+    - @analyzers.each do |azr|
+      %tr
+        %td= link_to( azr.id, simulator_analyzer_path(@simulator.id, azr.id))
+        %td= azr.name
+        %td= azr.type
+        %td= azr.description
