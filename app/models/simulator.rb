@@ -33,7 +33,20 @@ class Simulator
   def analyzers_on_parameter_set
     self.analyzers.where(type: :on_parameter_set)
   end
-  
+
+  def analyzers_on_parameter_set_group
+    self.analyzers.where(type: :on_parameter_set_group)
+  end
+
+  def analyses(analyzer)
+    raise "not supported type" unless analyzer.type == :on_parameter_set_group
+    matched = []
+    parameter_set_groups.each do |psg|
+      matched += psg.analysis_runs.where(analyzer: analyzer).all
+    end
+    matched
+  end
+
   private
   def parameter_definitions_format
     unless parameter_definitions.size > 0
