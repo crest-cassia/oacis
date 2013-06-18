@@ -146,8 +146,8 @@ class AnalysisRun
       end
     when :on_parameter_set_group
       self.analyzable.parameter_sets.each do |ps|
-        pa.analysis_runs.each do |arn|
-          files[ File.join(ps.to_param, arn.to_param) ] = arn.dir
+        ps.analysis_runs.each do |arn|
+          files[ File.join(ps.to_param, arn.to_param) ] = Dir.glob( arn.dir.join('*') )
         end
       end
     else
