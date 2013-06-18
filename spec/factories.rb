@@ -120,7 +120,7 @@ FactoryGirl.define do
         when :on_parameter_set_group
           sim = analyzer.simulator
           psg = FactoryGirl.create(:parameter_set_group, simulator: sim, parameter_sets: sim.parameter_sets.all)
-          FactoryGirl.create(:analysis_run, analyzable: psg, analyzer: analyzer, parametes: {})
+          FactoryGirl.create(:analysis_run, analyzable: psg, analyzer: analyzer, parameters: {})
         else
           raise "not supported type"
         end
