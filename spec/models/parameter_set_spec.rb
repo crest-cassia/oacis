@@ -194,7 +194,7 @@ describe ParameterSet do
       prm.runs_status_count["total"] = prm.runs.count
       prm.runs_status_count["finished"].should == prm.runs.where(status: :finished).count
       prm.runs_status_count["running"].should == prm.runs.where(status: :running).count
-      prm.runs_status_countt["failed"].should == prm.runs.where(status: :failed).count
+      prm.runs_status_count["failed"].should == prm.runs.where(status: :failed).count
     end
   end
 end
