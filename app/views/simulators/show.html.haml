@@ -12,6 +12,8 @@
       %a{"href"=>"#tab-list-parameters", "data-toggle" => "tab"} Parameter Sets
     %li
       %a{"href"=>"#tab-analyzers", "data-toggle" => "tab"} Analyzers
+    %li
+      %a{"href"=>"#tab-analysis", "data-toggle" => "tab"} Analysis
 
   %div.tab-content
     %div.tab-pane#tab-about
@@ -20,3 +22,5 @@
       = render "parameter_sets_list"
     %div.tab-pane#tab-analyzers
       = render "analyzers_list"
+    %div.tab-pane#tab-analysis
+      = render "analysis_list"
