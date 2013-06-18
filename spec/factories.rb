@@ -106,17 +106,23 @@ FactoryGirl.define do
 
     after(:create) do |analyzer, evaluator|
       if evaluator.run_analysis
-        sim = analyzer.simulator.parameter_sets.each do |ps|
-          case analyzer.type
-          when :on_parameter_set
-            FactoryGirl.create(:analysis_run, analyzable: ps, analyzer: analyzer, parameters: {})
-          when :on_run
+        case analyzer.type
+        when :on_run
+          analyzer.simulator.parameter_sets.each do |ps|
             ps.runs.each do |run|
               FactoryGirl.create(:analysis_run, analyzable: run, analyzer: analyzer, parameters: {})
             end
-          else
-            raise "not supported type"
           end
+        when :on_parameter_set
+          analyzer.simulator.parameter_sets.each do |ps|
+            FactoryGirl.create(:analysis_run, analyzable: ps, analyzer: analyzer, parameters: {})
+          end
+        when :on_parameter_set_group
+          sim = analyzer.simulator
+          psg = FactoryGirl.create(:parameter_set_group, simulator: sim, parameter_sets: sim.parameter_sets.all)
+          FactoryGirl.create(:analysis_run, analyzable: psg, analyzer: analyzer, parametes: {})
+        else
+          raise "not supported type"
         end
       end
     end
