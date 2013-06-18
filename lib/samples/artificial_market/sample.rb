@@ -21,8 +21,7 @@ tb_ary.product(tau_ary, init_weight_ary, weight2_ary, weight3_ary).product do |a
   puts "taumax: #{taumax}"
 
   new_param = base.merge({"TickSizeB" => ticksize_B, "TauMax" => taumax, "InitialMarketWeightA" => init_weight, "Weight2Max" => weight2, "Weight3Max" => weight3})
-  prm = sim.parameter_sets.where(:v => new_param).first
-  prm = sim.parameter_sets.create!(:v => new_param) unless prm
+  prm = sim.parameter_sets.find_or_create_by(:v => new_param)
   (NUM_RUNS - prm.runs.count).times do |i|
     run = prm.runs.create!
     run.submit
