@@ -22,6 +22,13 @@ describe DataIncluder do
 
     shared_examples_for 'for successful run' do
 
+      before(:each) do
+        ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s
+        run_info = {"id" => @run.id, "command" => @run.command}
+        SimulatorRunner.perform(run_info)
+        @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
+      end
+
       it "copies all the files in the work dir to run_directory" do
         Host.any_instance.should_receive(:download).and_call_original if @is_remote
         dummy_dir = @work_dir.join('__dummy_dir__')
@@ -74,17 +81,82 @@ describe DataIncluder do
         @run.result["x"].should eq(1.0)
         @run.result["y"].should eq(2.0)
       end
+
+      describe "auto run of analyzers for on_run type" do
+
+        before(:each) do
+          @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_run, auto_run: :yes)
+        end
+
+        context "when Analyzer#auto_run is :yes" do
+
+          it "creates analysis_run if Analyzer#auto_run is :yes" do
+            expect {
+              DataIncluder.perform(@arg)
+            }.to change { @run.reload.analysis_runs.count }.by(1)
+          end
+        end
+
+        context "when Analyzer#auto_run is :no" do
+
+          it "does not create analysis_run if Anaylzer#auto_run is :no" do
+            @azr.update_attributes!(auto_run: :no)
+
+            expect {
+              DataIncluder.perform(@arg)
+            }.to_not change { @run.reload.analysis_runs.count }
+          end
+        end
+
+        context "when Analyzer#auto_run is :first_run_only" do
+
+          before(:each) do
+            @azr.update_attributes!(auto_run: :first_run_only)
+          end
+
+          it "creates analysis_run if the run is the first 'finished' run within the parameter set" do
+            expect {
+              DataIncluder.perform(@arg)
+            }.to change { @run.reload.analysis_runs.count }.by(1)
+          end
+
+          it "does not create analysis if 'finished' run already exists within the paramter set" do
+            FactoryGirl.create(:run, parameter_set: @prm, status: :finished)
+            expect {
+              DataIncluder.perform(@arg)
+            }.to_not change { @run.reload.analysis_runs.count }
+          end
+        end
+      end
+
+      describe "auto run of analyzers for on_parameter_set type" do
+
+        before(:each) do
+          @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_parameter_set, auto_run: :yes)
+        end
+
+        it "creates analysis run if all the other runs within the parameter set are 'finished' or 'failed'" do
+          FactoryGirl.create(:run, parameter_set: @prm, status: :failed)
+          FactoryGirl.create(:run, parameter_set: @prm, status: :finished)
+          expect {
+            DataIncluder.perform(@arg)
+          }.to change { @prm.reload.analysis_runs.count }
+        end
+
+        it "does not create analysis run if any of runs within the parameter set is 'created' or 'running'" do
+          FactoryGirl.create(:run, parameter_set: @prm, status: :create)
+          expect {
+            DataIncluder.perform(@arg)
+          }.to_not change { @prm.reload.analysis_runs.count }
+        end
+      end
     end
 
     context "for a successful remote run" do
 
       it_should_behave_like 'for successful run' do
-        before(:each) do
-          ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s
-          run_info = {"id" => @run.id, "command" => @run.command}
-          SimulatorRunner.perform(run_info)
 
-          @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
+        before(:each) do
           @arg = { "run_id" => @run.id, "work_dir" => @work_dir.to_s,
                    "host_id" => @localhost.id.to_s,
                    "run_status" => {
@@ -105,12 +177,8 @@ describe DataIncluder do
     context "for a successful local run" do
 
       it_should_behave_like 'for successful run' do
-        before(:each) do
-          ENV['CM_WORK_DIR'] = @temp_dir.expand_path.to_s
-          run_info = {"id" => @run.id, "command" => @run.command}
-          SimulatorRunner.perform(run_info)
 
-          @work_dir = Pathname.new(ENV['CM_WORK_DIR']).join(@run.id)
+        before(:each) do
           @arg = { "run_id" => @run.id, "work_dir" => @work_dir.to_s,
                    "run_status" => {
                      "hostname" => `hostname`,
@@ -160,6 +228,15 @@ describe DataIncluder do
         @run.started_at.should be_a(DateTime)
         @run.finished_at.should be_a(DateTime)
         @run.included_at.should be_a(DateTime)
+      end
+
+      it "does not run analyzer even if Analyzer#auto_run is :yes" do
+        azr = @sim.analyzers.first
+        azr.update_attributes!(auto_run: :yes)
+
+        expect {
+          DataIncluder.perform(@arg)
+        }.to_not change {@run.reload.analysis_runs.count }
       end
     end
 

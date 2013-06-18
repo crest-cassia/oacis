@@ -37,10 +37,6 @@ describe Run do
       seeds.uniq.size.should == n
     end
 
-    it "is invalid if parameter set is not related" do
-      Run.new(@valid_attribute).should_not be_valid
-    end
-
     it "seed is an accessible attribute" do
       seed_val = 12345
       @valid_attribute.update(seed: seed_val)

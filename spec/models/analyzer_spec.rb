@@ -117,6 +117,15 @@ describe Analyzer do
       end
     end
 
+    describe "'auto_run' field" do
+
+      it "must be either 'yes', 'no', or 'first_run_only'" do
+        invalid_fields = @valid_fields.update( auto_run: :every_run )
+        azr = @sim.analyzers.build(invalid_fields)
+        azr.should_not be_valid
+      end
+    end
+
     describe "'description' field" do
 
       it "can be blank" do
