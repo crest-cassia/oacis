@@ -24,6 +24,9 @@ AcmProto::Application.routes.draw do
       end
     end
   end
+  resources :parameter_set_groups, shallow: false, only: [] do
+    resources :analysis_runs, :only => ["show"]
+  end
   resources :parameter_sets, shallow: false, only: [] do
     resources :analysis_runs, :only => ["show", "create"]
   end

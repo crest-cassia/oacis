@@ -35,6 +35,8 @@ class AnalysisRunsController < ApplicationController
       analyzable = Run.find(params[:run_id])
     elsif params[:parameter_set_id]
       analyzable = ParameterSet.find(params[:parameter_set_id])
+    elsif params[:parameter_set_group_id]
+      analyzable = ParameterSetGroup.find(params[:parameter_set_group_id])
     else
       raise "not supported type"
     end
