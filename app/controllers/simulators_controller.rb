@@ -15,6 +15,7 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
     @query_id = params[:query_id]
+    @params_key_count = @simulator.params_key_count
 
     if @simulator.parameter_set_queries.present?
       @query_list = {}
@@ -124,7 +125,11 @@ class SimulatorsController < ApplicationController
     redirect_to  :action => "show", :query_id => @query_id
   end
 
-  def _parameter_list
+  def _parameters_list
     render json: ParameterSetsListDatatable.new(view_context)
+  end
+
+  def _parameter_sets_status_count
+    render json: Simulator.only("parameter_sets.runs.status").find(params[:id]).parameter_sets_status_count.to_json
   end
 end

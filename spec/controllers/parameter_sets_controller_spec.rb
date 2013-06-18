@@ -122,4 +122,32 @@ describe ParameterSetsController do
     end
   end
 
+  describe "GET _runs_list" do
+    before(:each) do
+      @simulator = FactoryGirl.create(:simulator,
+                                      parameter_sets_count: 1, runs_count: 30,
+                                      analyzers_count: 0, run_analysis: false,
+                                      parameter_set_queries_count: 0
+                                      )
+      @param_set = @simulator.parameter_sets.first
+      get :_runs_list, {id: @param_set.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      @parsed_body = JSON.parse(response.body)
+    end
+
+    it "return json format" do
+      response.header['Content-Type'].should include 'application/json'
+      @parsed_body["iTotalRecords"].should == 30
+      @parsed_body["iTotalDisplayRecords"].should == 30
+    end
+
+    it "paginates the list of parameters" do
+      @parsed_body["aaData"].size.should == 25
+    end
+  end
+
+  describe "GET _runs_status_count" do
+  end
+
+  describe "GET _runs_table" do
+  end
 end

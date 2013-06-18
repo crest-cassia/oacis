@@ -22,6 +22,7 @@ describe "ParameterSetsListDatatable" do
         @context = ActionController::Base.new.view_context
         @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"})
         @context.stub(:link_to).and_return("#{@simulator.to_param}")
+        @context.stub(:distance_to_now_in_words).and_return("time")
         @psld = ParameterSetsListDatatable.new(@context)
         @psld_json = JSON.parse(@psld.to_json)
       end
