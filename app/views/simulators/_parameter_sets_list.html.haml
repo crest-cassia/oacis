@@ -3,7 +3,7 @@
   %thead
     %tr
       %th.span1 Runs Progress
-      %th.span1 updated_at
+      %th.span1 Updated_at
       - @simulator.parameter_definitions.each do |key,key_def|
         %th.span1= key
   %tbody
@@ -123,10 +123,11 @@ jQuery ->
               .attr("dialog", "close"))
           param_id = $(a_element).attr("href").substr($(a_element).attr("href").lastIndexOf("/")+1)
           $(a_element).text("")
-          $.getJSON "/parameter_sets/"+param_id+"/_runs_count", (runs)->
+          element  = a_element
+          $.getJSON "/parameter_sets/"+param_id+"/_runs_status_count", (runs)->
             if runs.total > 0
-              $(a_element).append($("<div>").addClass("progress"))
-              div_element = $("div",a_element)
+              $(element).append($("<div>").addClass("progress"))
+              div_element = $("div",element)
               if runs.finished > 0
                 $(div_element).append($("<span>").addClass("progress progress-success progress-striped active"))
                 percent = Math.floor(100.0*runs.finished/runs.total)
@@ -143,7 +144,7 @@ jQuery ->
                 $("span.progress.progress-danger.progress-striped.active", div_element)
                   .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
             else
-              $(a_element).append(param_id)
+              $(element).append(param_id)
 
 jQuery ->
   $("body").on "click", "img#treebtn", ->

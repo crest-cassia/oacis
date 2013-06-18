@@ -144,4 +144,10 @@ describe ParameterSetsController do
       @parsed_body["aaData"].size.should == 25
     end
   end
+
+  describe "GET _runs_status_count" do
+  end
+
+  describe "GET _runs_table" do
+  end
 end

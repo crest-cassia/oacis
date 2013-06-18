@@ -42,8 +42,8 @@ class ParameterSetsController < ApplicationController
     end
   end
 
-  def _runs_count
-    render json: ParameterSet.only("runs.status").find(params[:id]).runs_count.to_json
+  def _runs_status_count
+    render json: ParameterSet.only("runs.status").find(params[:id]).runs_status_count.to_json
   end
 
   def _runs_table
