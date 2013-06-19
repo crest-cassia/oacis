@@ -176,7 +176,7 @@ describe AnalyzerRunner do
 
       it "raises an exception if the return code of the command is not zero" do
         lambda {
-          AnalyzerRunner.perform(@azr.type, @run.to_param, @arn.to_param)
+          AnalyzerRunner.perform(@arn.to_param)
         }.should raise_error
       end
     end
@@ -186,7 +186,7 @@ describe AnalyzerRunner do
 
 
     it "sets status of AnalysisRun to failed" do
-      AnalyzerRunner.__send__(:on_failure, StandardError.new, @azr.type, @run.to_param, @arn.to_param)
+      AnalyzerRunner.__send__(:on_failure, StandardError.new, @arn.to_param)
       @arn.reload
       @arn.status.should eq(:failed)
     end

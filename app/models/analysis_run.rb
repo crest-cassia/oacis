@@ -35,20 +35,6 @@ class AnalysisRun
   attr_accessible :parameters, :analyzer
 
   public
-  def self.find_by_type_and_ids(type, analyzable_id, id)
-    case type.to_sym
-    when :on_run
-      analyzable = Run.find(analyzable_id)
-    when :on_parameter_set
-      analyzable = ParameterSet.find(analyzable_id)
-    when :on_parameter_set_group
-      analyzable = ParameterSetGroup.find(analyzable_id)
-    else
-      raise "not supported type: #{type}"
-    end
-    return analyzable.analysis_runs.find(id)
-  end
-
   def dir
     ResultDirectory.analysis_run_path(self)
   end
@@ -62,7 +48,7 @@ class AnalysisRun
   end
 
   def submit
-    Resque.enqueue(AnalyzerRunner, analyzer.type, analyzable.to_param, self.to_param)
+    Resque.enqueue(AnalyzerRunner, self.to_param)
   end
 
   def update_status_running(option = {hostname: 'localhost'})

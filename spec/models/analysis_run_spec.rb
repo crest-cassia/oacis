@@ -368,34 +368,4 @@ describe AnalysisRun do
       }.to change {Dir.entries(@run.dir).size}.by(0)
     end
   end
-
-  describe ".find_by_type_and_ids" do
-
-    it "returns the correct AnalysisRun instance for :on_run type" do
-      found = AnalysisRun.find_by_type_and_ids(:on_run, @run.id, @arn.id)
-      found.should eq(@arn)
-    end
-
-    it "returns the correct AnalysisRun instance for :on_parameter_set type" do
-      azr = FactoryGirl.create(:analyzer,
-                               simulator: @sim, type: :on_parameter_set, run_analysis: true)
-      ps = @sim.parameter_sets.first
-      arn = ps.analysis_runs.first
-      found = AnalysisRun.find_by_type_and_ids(:on_parameter_set, ps.to_param, arn.to_param)
-      found.should eq(arn)
-    end
-
-    it "returns the correct AnalysisRun instance for :on_parameter_set_group type" do
-      azr = FactoryGirl.create(:analyzer,
-                               simulator: @sim, type: :on_parameter_set_group, run_analysis: false)
-      FactoryGirl.create_list(:parameter_set, 5, simulator: @sim,
-                              runs_count: 1, finished_runs_count: 1)
-      psg = @sim.parameter_set_groups.build
-      psg.parameter_sets = @sim.parameter_sets.all
-      psg.save!
-      arn = FactoryGirl.create(:analysis_run, analyzable: psg, analyzer: azr, parameters: {})
-      found = AnalysisRun.find_by_type_and_ids(:on_parameter_set_group, psg.id, arn.id)
-      found.should eq arn
-    end
-  end
 end

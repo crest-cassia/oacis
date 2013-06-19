@@ -5,15 +5,15 @@ class AnalyzerRunner
   INPUT_FILES_DIR = '_input'
   OUTPUT_JSON_FILENAME = '_output.json'
 
-  def self.perform(type, analyzable_id, arn_id)
-    arn = AnalysisRun.find_by_type_and_ids(type, analyzable_id, arn_id)
+  def self.perform(arn_id)
+    arn = AnalysisRun.find(arn_id)
     work_dir = arn.dir  # UPDATE ME: a tentative implementation
     run_analysis(arn, work_dir)
     include_data(arn, work_dir)
   end
 
-  def self.on_failure(exception, type, analyzable_id, arn_id)
-    arn = AnalysisRun.find_by_type_and_ids(type, analyzable_id, arn_id)
+  def self.on_failure(exception, arn_id)
+    arn = AnalysisRun.find(arn_id)
     arn.update_status_failed
   end
 
