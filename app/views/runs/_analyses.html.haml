@@ -14,7 +14,7 @@
         - azr = arn.analyzer
         %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
         %td= arn.parameters.empty? ? '-' : arn.parameters.inspect
-        %td= arn.status
+        %td= raw(status_label(arn.status))
         %td= arn.created_at
 
 - @analysis_runs.each do |arn|
