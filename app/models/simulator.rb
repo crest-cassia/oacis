@@ -47,6 +47,34 @@ class Simulator
     matched
   end
 
+  def params_key_count
+    counts = {}
+    parameter_definitions.keys.each do |key|
+      kinds = parameter_sets.only("v").distinct("v."+key)
+      counts[key] = []
+      kinds.each do |k|
+        counts[key] << {k.to_s => parameter_sets.only("v").where("v."+key => k).count}
+      end
+    end
+    counts
+  end
+
+  def parameter_sets_status_count
+    counts = {}
+    counts["total"] = 0
+    counts["finished"] = 0
+    counts["running"] = 0
+    counts["failed"] = 0
+    parameter_sets.only("runs.status").each do |param|
+      runs_count = param.runs_status_count
+      counts["total"] = counts["total"] + runs_count["total"]
+      counts["finished"] = counts["finished"] + runs_count["finished"]
+      counts["running"] = counts["running"] + runs_count["running"]
+      counts["failed"] = counts["failed"] + runs_count["failed"]
+    end
+    counts
+  end
+
   private
   def parameter_definitions_format
     unless parameter_definitions.size > 0

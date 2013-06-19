@@ -25,7 +25,7 @@ class ParameterSet
     self.class.where(query_param)
   end
 
-  def runs_count
+  def runs_status_count
     counts = {}
     counts["total"] = runs.count
     counts["finished"] = runs.where(status: :finished).count

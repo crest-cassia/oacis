@@ -42,14 +42,16 @@ class ParameterSetsController < ApplicationController
     end
   end
 
-  def _runs_count
-    render json: ParameterSet.only("runs.status").find(params[:id]).runs_count.to_json
+  def _runs_status_count
+    render json: ParameterSet.only("runs.status").find(params[:id]).runs_status_count.to_json
   end
 
   def _runs_table
     @param_set = ParameterSet.find(params[:id])
-    @runs = Run.where(parameter_set_id: @param_set).page(params[:page])
-    #render "runs_table"
     render :partial => "inner_table"
+  end
+
+  def _runs_list
+    render json: RunsListDatatable.new(view_context)
   end
 end

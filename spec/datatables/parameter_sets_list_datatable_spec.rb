@@ -22,6 +22,7 @@ describe "ParameterSetsListDatatable" do
         @context = ActionController::Base.new.view_context
         @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"})
         @context.stub(:link_to).and_return("#{@simulator.to_param}")
+        @context.stub(:distance_to_now_in_words).and_return("time")
         @psld = ParameterSetsListDatatable.new(@context)
         @psld_json = JSON.parse(@psld.to_json)
       end
@@ -57,6 +58,7 @@ describe "ParameterSetsListDatatable" do
         @context = ActionController::Base.new.view_context
         @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:5 , iSortCol_0: 1, sSortDir_0: "desc", query_id: @query.id})
         @context.stub(:link_to).and_return("#{@simulator.to_param}")
+        @context.stub(:distance_to_now_in_words).and_return("time")
         @psld = ParameterSetsListDatatable.new(@context)
         @psld_json = JSON.parse(@psld.to_json)
       end
@@ -70,7 +72,7 @@ describe "ParameterSetsListDatatable" do
         @psld_json["iTotalRecords"].should == 25
         @psld_json["iTotalDisplayRecords"].should == 25
         @psld_json["aaData"].size.should == 5
-        @psld_json["aaData"].first[1].to_i.should == @query.parameter_sets.only("v.L").max("v.L")
+        @psld_json["aaData"].first[2].to_i.should == @query.parameter_sets.only("v.L").max("v.L")#["aaData"].first[2].to_i is qeual to v.L (["aaData"].first[id, updated_at, [keys]])
       end
     end
   end

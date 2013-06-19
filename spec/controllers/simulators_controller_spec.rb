@@ -263,14 +263,14 @@ describe SimulatorsController do
     end
   end
 
-  describe "GET _parameter_list" do
+  describe "GET _parameters_list" do
     before(:each) do
       @simulator = FactoryGirl.create(:simulator,
                                       parameter_sets_count: 30, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
                                       parameter_set_queries_count: 5
                                       )
-      get :_parameter_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
 
@@ -299,16 +299,16 @@ describe SimulatorsController do
                                     simulator: @simulator,
                                     query: {"L" => {"gte" => 5}})
 
-        get :_parameter_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 1, sSortDir_0: "desc", query_id: @query.id}, :format => :json
+        get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 1, sSortDir_0: "desc", query_id: @query.id}, :format => :json
         @parsed_body = JSON.parse(response.body)
       end
 
       it "show the list of filtered ParameterSets" do
         @parsed_body["aaData"].size.should == 5
         @parsed_body["aaData"].each do |ps|
-          ps[1].to_i.should >= 5 #ps[1].to_i is qeual to v.L
+          ps[2].to_i.should >= 5 #ps[2].to_i is qeual to v.L(ps[id, updated_at, [keys]])
         end
-        @parsed_body["aaData"].first[1].to_i.should == @query.parameter_sets.max("v.L")
+        @parsed_body["aaData"].first[2].to_i.should == @query.parameter_sets.max("v.L")
       end
     end
   end
