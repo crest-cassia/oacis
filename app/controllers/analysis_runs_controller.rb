@@ -1,8 +1,7 @@
 class AnalysisRunsController < ApplicationController
 
   def show
-    analyzable = fetch_analyzable(params)
-    @analysis_run = analyzable.analysis_runs.find(params[:id])
+    @analysis_run = AnalysisRun.find(params[:id])
 
     respond_to do |format|
       format.html # show.html.erb
@@ -17,7 +16,7 @@ class AnalysisRunsController < ApplicationController
 
     respond_to do |format|
       if arn.save and arn.submit
-        format.html { redirect_to analyzable_analysis_run_path(analyzable, arn),
+        format.html { redirect_to analysis_run_path(arn),
                       notice: "AnalysisRun was successfully created."}
         format.json { render json: arn, status: :created, location: arn}
       else
@@ -41,18 +40,5 @@ class AnalysisRunsController < ApplicationController
       raise "not supported type"
     end
     return analyzable
-  end
-
-  def analyzable_analysis_run_path(analyzable, analysis_run)
-    path = nil
-    case analyzable
-    when Run
-      path = run_analysis_run_path(analyzable, analysis_run)
-    when ParameterSet
-      path = parameter_set_analysis_run_path(analyzable, analysis_run)
-    else
-      raise "not supported type"
-    end
-    return path
   end
 end

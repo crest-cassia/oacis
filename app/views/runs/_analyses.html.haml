@@ -10,7 +10,7 @@
   %tbody
     - @analysis_runs.each do |arn|
       %tr
-        %td= link_to(arn.id, run_analysis_run_path(@run, arn))
+        %td= link_to(arn.id, analysis_run_path(arn))
         - azr = arn.analyzer
         %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
         %td= arn.parameters.empty? ? '-' : arn.parameters.inspect

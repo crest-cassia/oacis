@@ -21,7 +21,7 @@ class AnalysisRun
     end
     return @analyzer_cache
   end
-  embedded_in :analyzable, polymorphic: true
+  belongs_to :analyzable, polymorphic: true
 
   before_validation :set_status
   validates :status, presence: true,

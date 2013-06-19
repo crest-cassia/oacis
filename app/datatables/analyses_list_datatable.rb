@@ -22,7 +22,7 @@ private
   def data
     a = analyses_lists.map do |arn|
       [
-        @view.link_to(arn.to_param, @view.parameter_set_group_analysis_run_path( arn.analyzable, arn)),
+        @view.link_to( arn.to_param, @view.analysis_run_path(arn) ),
         arn.updated_at,
         arn.analyzer.name
       ]

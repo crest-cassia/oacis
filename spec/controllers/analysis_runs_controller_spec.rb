@@ -87,7 +87,7 @@ describe AnalysisRunsController do
         it "redirects to the created analysis_run" do
           post :create, @valid_param, valid_session
           @run.reload
-          response.should redirect_to(run_analysis_run_path(@run,@run.analysis_runs.last))
+          response.should redirect_to( analysis_run_path(@run.analysis_runs.last) )
         end
       end
 
@@ -126,7 +126,7 @@ describe AnalysisRunsController do
         it "redirects to the created analysis_run" do
           post :create, @valid_param, valid_session
           @par.reload
-          response.should redirect_to(parameter_set_analysis_run_path(@par, @par.analysis_runs.last))
+          response.should redirect_to( analysis_run_path(@par.analysis_runs.last) )
         end
       end
 
