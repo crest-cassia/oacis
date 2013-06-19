@@ -8,8 +8,8 @@ class AnalyzerRunner
   def self.perform(arn_id)
     arn = AnalysisRun.find(arn_id)
     work_dir = arn.dir  # UPDATE ME: a tentative implementation
-    run_analysis(arn, work_dir)
-    include_data(arn, work_dir)
+    output = run_analysis(arn, work_dir)
+    include_data(arn, work_dir, output)
   end
 
   def self.on_failure(exception, arn_id)
@@ -34,7 +34,7 @@ class AnalyzerRunner
     }
     output[:cpu_time] = tms.cutime
     output[:real_time] = tms.real
-    arn.update_status_including(output)
+    output
   end
 
   # prepare input files into the current directory
@@ -62,8 +62,8 @@ class AnalyzerRunner
     end
   end
 
-  def self.include_data(arn, work_dir)
+  def self.include_data(arn, work_dir, output)
     # do NOT copy _input/ and _input.json
-    arn.update_status_finished
+    arn.update_status_finished(output)
   end
 end

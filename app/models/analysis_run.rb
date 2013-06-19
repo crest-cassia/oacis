@@ -25,7 +25,7 @@ class AnalysisRun
 
   before_validation :set_status
   validates :status, presence: true,
-                     inclusion: {in: [:created,:running,:including,:failed,:cancelled,:finished]}
+                     inclusion: {in: [:created,:running,:failed,:cancelled,:finished]}
   validates :analyzable, :presence => true
   validates :analyzer, :presence => true
   validate :cast_and_validate_parameter_values
@@ -59,17 +59,11 @@ class AnalysisRun
     self.save
   end
 
-  def update_status_including(option = {cpu_time: 0.0, real_time: 0.0})
-    merged = {cpu_time: 0.0, real_time: 0.0}.merge(option)
-    self.status = :including
-    self.cpu_time = merged[:cpu_time]
-    self.real_time = merged[:real_time]
-    self.result = merged[:result]
-    self.finished_at = DateTime.now
-    self.save
-  end
-
-  def update_status_finished
+  def update_status_finished(status)
+    self.cpu_time = status[:cpu_time]
+    self.real_time = status[:real_time]
+    self.result = status[:result] if status.has_key?(:result)
+    self.finished_at = status[:finished_at]
     self.status = :finished
     self.included_at = DateTime.now
     self.save

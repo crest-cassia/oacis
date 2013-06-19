@@ -93,24 +93,21 @@ describe AnalyzerRunner do
         }.should raise_error
       end
 
-      it "updates status to 'including' and sets elapsed times" do
+      it "returns status of analysis" do
         @azr.update_attribute(:command, 'sleep 1')
         @azr.save
-        AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        @arn.reload
-        @arn.status.should eq(:including)
-        @arn.cpu_time.should be_within(0.1).of(0.0)
-        @arn.real_time.should be_within(0.1).of(1.0)
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:cpu_time].should be_within(0.1).of(0.0)
+        status[:real_time].should be_within(0.1).of(1.0)
       end
 
       it "updates result of AnalysisRun" do
         result = {xxx: 0.1, yyy:12345}
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts result.to_json}
-        AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        @arn.reload
-        @arn.result["xxx"].should eq(0.1)
-        @arn.result["yyy"].should eq(12345)
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:result]["xxx"].should eq(0.1)
+        status[:result]["yyy"].should eq(12345)
       end
     end
 
@@ -156,9 +153,8 @@ describe AnalyzerRunner do
       end
 
       it "updates status to 'finished'" do
-        AnalyzerRunner.__send__(:include_data, @arn, @work_dir)
-        @arn.reload
-        @arn.status.should eq(:finished)
+        @arn.should_receive(:update_status_finished)
+        AnalyzerRunner.__send__(:include_data, @arn, @work_dir, {})
       end
     end
 
