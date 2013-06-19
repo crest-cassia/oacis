@@ -36,7 +36,7 @@ describe "ParameterSetsListDatatable" do
         @psld_json["iTotalRecords"].should == 30
         @psld_json["iTotalDisplayRecords"].should == 30
         @psld_json["aaData"].size.should == 25
-        @psld_json["aaData"].first[1].to_i.should == ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).min("v.L")
+        @psld_json["aaData"].first[2].to_i.should == ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).min("v.L")
       end
     end
 
