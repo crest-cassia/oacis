@@ -1,0 +1,19 @@
+%h3 List of Analysis
+
+%table.table.table-condensed.table-striped.table-hover#analyses_list{:'data-source' => "#{_analyses_list_simulator_path(@simulator.to_param, format: "json")}"}
+  %thead
+    %tr
+      %th.span1 ID
+      %th Updated at
+      %th Analyzer
+  %tbody
+
+:coffeescript
+jQuery ->
+  $('#analyses_list').dataTable
+    bProcessing: true
+    bServerSide: true
+    bFilter: false
+    sAjaxSource: $('#analyses_list').data('source')
+    sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
+    sPaginationType: "bootstrap"
