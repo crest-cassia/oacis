@@ -1,6 +1,6 @@
 %h3 List of Analysis
 
-%table.table.table-condensed.table-striped.table-hover#analyses_list{:'data-source' => "#{_analyses_list_simulator_path(@simulator.to_param, format: "json")}"}
+%table.table.table-condensed.table-striped#analyses_list{:'data-source' => "#{_analyses_list_simulator_path(@simulator.to_param, format: "json")}"}
   %thead
     %tr
       %th{width: "18px"}
@@ -32,8 +32,11 @@ $(function () {
       $(this).attr("state", "open").attr("src", "/assets/collapse.png")
       $.get("/analysis_runs/" + analysis_id + "/_result", {}, function(data) {
         tr_element.after(
-          $("<tr>").html( $("<td>").attr({colspan: table_cols}).html(data) )
-                   .attr("id", "result_" + analysis_id)
+          $("<tr>").attr("id", "result_" + analysis_id).html(
+            $("<td>").attr({colspan: table_cols}).html(
+              $("<div>").attr("class", "well").html(data)
+            )
+          )
         );
       });
     }
