@@ -21,10 +21,14 @@ private
 
   def data
     a = analyses_lists.map do |arn|
+      analyzer = arn.analyzer
       [
         @view.link_to( arn.to_param, @view.analysis_run_path(arn) ),
-        arn.updated_at,
-        arn.analyzer.name
+        @view.distance_to_now_in_words(arn.updated_at),
+        @view.status_label(arn.status),
+        @view.link_to( analyzer.name, @view.simulator_analyzer_path(analyzer.simulator, analyzer) ),
+        analyzer.type,
+        arn.analyzable.id
       ]
     end
     a
@@ -55,12 +59,18 @@ private
 
   def sort_target(arn)
     case @view.params[:iSortCol_0].to_i
-    when 0 #it means index
+    when 0
       arn.id
-    when 1 #it means updated_at
+    when 1
       arn.updated_at
-    when 2 #it means name of the analyzer
+    when 2
+      arn.status
+    when 3
       arn.analyzer.name
+    when 4
+      arn.analyzer.type
+    when 5
+      arn.analyzable.id
     else
       raise "must not happen"
     end
