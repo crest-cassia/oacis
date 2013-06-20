@@ -3,9 +3,8 @@ class AnalysesListDatatable
   def initialize(view_context)
     @view = view_context
     @simulator = Simulator.find(@view.params[:id])
-    @analyses = @simulator.analyzers_on_parameter_set_group.inject([]) do |sum, azr|
-      sum += @simulator.analyses(azr)
-    end
+    analyzer_ids = @simulator.analyzers_on_parameter_set_group.only(:id).map {|x| x.id}
+    @analyses = AnalysisRun.in(analyzer: analyzer_ids)
   end
 
   def as_json(options = {})
@@ -27,7 +26,6 @@ private
         @view.distance_to_now_in_words(arn.updated_at),
         @view.status_label(arn.status),
         @view.link_to( analyzer.name, @view.simulator_analyzer_path(analyzer.simulator, analyzer) ),
-        analyzer.type,
         arn.analyzable.id
       ]
     end
@@ -39,13 +37,8 @@ private
   end
 
   def fetch_analyses_list
-    list = @analyses.sort_by {|arn| sort_target(arn) }
-    list.reverse! if sort_direction == "desc"
-    start_idx = per_page * page
-    end_idx = [ per_page * (page+1), list.size ].min
-    list = list[ start_idx..end_idx ]
-    # list = @analyses.order_by("#{sort_column} #{sort_direction}")
-    # list = list.skip(page).limit(per_page)
+    list = @analyses.order_by("#{sort_column} #{sort_direction}")
+    list = list.skip(page).limit(per_page)
     list
   end
 
@@ -57,23 +50,10 @@ private
     @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
   end
 
-  def sort_target(arn)
-    case @view.params[:iSortCol_0].to_i
-    when 0
-      arn.id
-    when 1
-      arn.updated_at
-    when 2
-      arn.status
-    when 3
-      arn.analyzer.name
-    when 4
-      arn.analyzer.type
-    when 5
-      arn.analyzable.id
-    else
-      raise "must not happen"
-    end
+  COLUMN_KEYS = ["id", "updated_at", "status", "analyzer_id", "analyzable_id"]
+  def sort_column
+    idx = @view.params[:iSortCol_0].to_i
+    COLUMN_KEYS[idx]
   end
 
   def sort_direction
