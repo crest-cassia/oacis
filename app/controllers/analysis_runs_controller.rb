@@ -27,6 +27,11 @@ class AnalysisRunsController < ApplicationController
     end
   end
 
+  def _result
+    arn = AnalysisRun.find(params[:id])
+    render partial: "shared/results", layout: false, locals: {result: arn.result, result_paths: arn.result_paths}
+  end
+
   private
   def fetch_analyzable(params)
     analyzable = nil

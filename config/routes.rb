@@ -9,7 +9,11 @@ AcmProto::Application.routes.draw do
       get "_analyses_list" # for ajax
     end
     resources :parameter_set_groups, only: [] do
-      resources :analysis_runs, :only => ["show"]
+      resources :analysis_runs, :only => ["show"] do
+        member do
+          get "_result" # for ajax
+        end
+      end
     end
     resources :parameter_sets, only: ["show","new","create"] do
       member do

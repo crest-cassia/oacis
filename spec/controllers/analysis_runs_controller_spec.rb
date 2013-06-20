@@ -138,4 +138,12 @@ describe AnalysisRunsController do
       end
     end
   end
+
+  describe "GET '_result'" do
+
+    it "returns http success" do
+      get '_result', {id: @arn}, valid_session
+      response.should be_success
+    end
+  end
 end

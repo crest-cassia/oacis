@@ -22,7 +22,7 @@ private
     a = analyses_lists.map do |arn|
       analyzer = arn.analyzer
       [
-        @view.image_tag("/assets/expand.png", id: "tree_for_analysis_#{arn.id}", align: "center"),
+        @view.image_tag("/assets/expand.png", analysis_id: arn.id.to_s, align: "center", state: "close"),
         @view.link_to( arn.to_param, @view.analysis_run_path(arn) ),
         @view.distance_to_now_in_words(arn.updated_at),
         @view.status_label(arn.status),
