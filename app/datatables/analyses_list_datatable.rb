@@ -22,6 +22,7 @@ private
     a = analyses_lists.map do |arn|
       analyzer = arn.analyzer
       [
+        @view.image_tag("/assets/expand.png", id: "tree_for_analysis_#{arn.id}", align: "center"),
         @view.link_to( arn.to_param, @view.analysis_run_path(arn) ),
         @view.distance_to_now_in_words(arn.updated_at),
         @view.status_label(arn.status),
@@ -50,7 +51,7 @@ private
     @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
   end
 
-  COLUMN_KEYS = ["id", "updated_at", "status", "analyzer_id", "analyzable_id"]
+  COLUMN_KEYS = ["id", "id", "updated_at", "status", "analyzer_id", "analyzable_id"]
   def sort_column
     idx = @view.params[:iSortCol_0].to_i
     COLUMN_KEYS[idx]
@@ -59,5 +60,6 @@ private
   def sort_direction
     @view.params[:sSortDir_0] == "desc" ? "desc" : "asc"
   end
+
 end
 
