@@ -131,6 +131,10 @@ FactoryGirl.define do
   factory :analysis_run do
     h = {"param1" => 1, "param2" => 2.0}
     parameters h
+    status :finished
+    sequence(:result) do |n|
+      {"XXX" => n + 1, "YYY" => n*3.0}
+    end
   end
 
   factory :parameter_set_query do
