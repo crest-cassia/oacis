@@ -38,12 +38,12 @@ describe AnalysisRunsController do
     describe "for :on_run type" do
 
       it "returns http success" do
-        get 'show', {run_id: @run, id: @arn}, valid_session
+        get 'show', {id: @arn}, valid_session
         response.should be_success
       end
 
       it "assigns instance variables for analysis_on_run" do
-        get 'show', {run_id: @run, id: @arn}, valid_session
+        get 'show', {id: @arn}, valid_session
         assigns(:analysis_run).should eq(@arn)
       end
     end
@@ -51,12 +51,12 @@ describe AnalysisRunsController do
     describe "for :on_parameter_set type" do
 
       it "returns http success" do
-        get 'show', {parameter_set_id: @par, id: @arn2}, valid_session
+        get 'show', {id: @arn2}, valid_session
         response.should be_success
       end
 
       it "assigns instance variables" do
-        get 'show', {parameter_set_id: @par, id: @arn2}, valid_session
+        get 'show', {id: @arn2}, valid_session
         assigns(:analysis_run).should eq(@arn2)
       end
     end
@@ -138,5 +138,4 @@ describe AnalysisRunsController do
       end
     end
   end
-
 end
