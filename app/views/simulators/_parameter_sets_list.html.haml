@@ -1,5 +1,5 @@
 %h3 List of Parameter Sets
-%table.table.table-condensed.table-striped.table-hover#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
+%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr
       %th.span1 Runs Progress
@@ -104,6 +104,7 @@ jQuery ->
     bServerSide: true
     bFilter: false
     bAutoWidth: false
+    iDisplayLength: 100
     aoColumnDefs: [
       { "sWidth": "150px", "aTargets": [ 0 ] }
     ]
@@ -147,25 +148,34 @@ jQuery ->
               $(element).append(param_id)
 
 jQuery ->
-  $("body").on "click", "img#treebtn", ->
+  $("#params_list").on "click", "img#treebtn", ->
     if ($(this).attr("dialog") == "close")
       $("img#treebtn[dialog='open']", $(this).parent().parent().parent()).each ->
         $(this).trigger("click")
-      td_element = $(this).parent()
-      tr_element = $(this).parent().parent()
+      td_element = $(this).closest("td")
+      tr_element = $(this).closest("tr")
       param_id = $("a", td_element).attr("href").substr($("a", td_element).attr("href").lastIndexOf("/")+1)
-      table_cols = $("td", td_element.parent()).length
+      table_cols = tr_element.children("td").length
       $(this)
         .attr("dialog", "open")
         .attr("src", "/assets/collapse.png")
       $.get "/parameter_sets/"+param_id+"/_runs_table", (data) ->
-        tr_element.after($("<tr>").html($("<td>").attr({colspan: table_cols}).html(data)))
+        tr_element.after(
+          $("<tr>").attr("id", "ps_"+param_id).html(
+            $("<td>").attr({colspan: table_cols}).html(
+              $("<div>").attr("class", "well").html(data)
+            )
+          )
+        )
         $("#runs_list" ,tr_element.next()).trigger("change");
     else
       $(this)
         .attr("dialog", "close")
         .attr("src", "/assets/expand.png")
-      $(this).parent().parent().next().remove()
+      td_element = $(this).closest("td")
+      param_id = $("a", td_element).attr("href").substr($("a", td_element).attr("href").lastIndexOf("/")+1)
+      run_list = $(this).closest("tr").siblings("tr#ps_"+param_id)
+      run_list.remove()
 
 jQuery ->
   $("body").on "change", "#runs_list", ->

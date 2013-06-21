@@ -11,7 +11,7 @@ class Run
   field :included_at, type: DateTime
   field :result  # can be any type. it's up to Simulator spec
   belongs_to :parameter_set
-  embeds_many :analysis_runs, as: :analyzable
+  has_many :analysis_runs, as: :analyzable
 
   # validations
   validates :status, :presence => true

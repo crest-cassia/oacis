@@ -38,12 +38,12 @@ describe AnalysisRunsController do
     describe "for :on_run type" do
 
       it "returns http success" do
-        get 'show', {run_id: @run, id: @arn}, valid_session
+        get 'show', {id: @arn}, valid_session
         response.should be_success
       end
 
       it "assigns instance variables for analysis_on_run" do
-        get 'show', {run_id: @run, id: @arn}, valid_session
+        get 'show', {id: @arn}, valid_session
         assigns(:analysis_run).should eq(@arn)
       end
     end
@@ -51,12 +51,12 @@ describe AnalysisRunsController do
     describe "for :on_parameter_set type" do
 
       it "returns http success" do
-        get 'show', {parameter_set_id: @par, id: @arn2}, valid_session
+        get 'show', {id: @arn2}, valid_session
         response.should be_success
       end
 
       it "assigns instance variables" do
-        get 'show', {parameter_set_id: @par, id: @arn2}, valid_session
+        get 'show', {id: @arn2}, valid_session
         assigns(:analysis_run).should eq(@arn2)
       end
     end
@@ -87,7 +87,7 @@ describe AnalysisRunsController do
         it "redirects to the created analysis_run" do
           post :create, @valid_param, valid_session
           @run.reload
-          response.should redirect_to(run_analysis_run_path(@run,@run.analysis_runs.last))
+          response.should redirect_to( analysis_run_path(@run.analysis_runs.last) )
         end
       end
 
@@ -126,7 +126,7 @@ describe AnalysisRunsController do
         it "redirects to the created analysis_run" do
           post :create, @valid_param, valid_session
           @par.reload
-          response.should redirect_to(parameter_set_analysis_run_path(@par, @par.analysis_runs.last))
+          response.should redirect_to( analysis_run_path(@par.analysis_runs.last) )
         end
       end
 
@@ -139,4 +139,11 @@ describe AnalysisRunsController do
     end
   end
 
+  describe "GET '_result'" do
+
+    it "returns http success" do
+      get '_result', {id: @arn}, valid_session
+      response.should be_success
+    end
+  end
 end

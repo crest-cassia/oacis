@@ -14,7 +14,7 @@
   %tbody
     - arns.each do |arn|
       %tr
-        %td= link_to(arn.id, parameter_set_analysis_run_path(analyzable, arn))
+        %td= link_to(arn.id, analysis_run_path(arn))
         - azr = arn.analyzer
         %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
         %td= arn.parameters.empty? ? '-' : arn.parameters.inspect

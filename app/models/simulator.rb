@@ -8,6 +8,7 @@ class Simulator
   field :support_input_json, type: Boolean, default: true
   has_many :parameter_sets
   has_many :parameter_set_queries
+  has_many :parameter_set_groups
   embeds_many :analyzers
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
@@ -32,7 +33,20 @@ class Simulator
   def analyzers_on_parameter_set
     self.analyzers.where(type: :on_parameter_set)
   end
-  
+
+  def analyzers_on_parameter_set_group
+    self.analyzers.where(type: :on_parameter_set_group)
+  end
+
+  def analyses(analyzer)
+    raise "not supported type" unless analyzer.type == :on_parameter_set_group
+    matched = []
+    parameter_set_groups.each do |psg|
+      matched += psg.analysis_runs.where(analyzer: analyzer).all
+    end
+    matched
+  end
+
   def params_key_count
     counts = {}
     parameter_definitions.keys.each do |key|

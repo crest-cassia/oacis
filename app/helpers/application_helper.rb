@@ -20,6 +20,9 @@ module ApplicationHelper
     when Simulator
       links = [ link_to("Simulators", simulators_path) ]
       links << link_to(document.name, simulator_path(document))
+    when ParameterSetGroup
+      links = breadcrumb_links_for(document.simulator)
+      # ParameterSetGroup#show is not prepared yet
     when AnalysisRun
       links = breadcrumb_links_for(document.analyzable)
       links << "Analysis:#{document.id}"
