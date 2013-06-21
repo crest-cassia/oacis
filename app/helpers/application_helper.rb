@@ -23,7 +23,7 @@ module ApplicationHelper
     when ParameterSetGroup
       links = breadcrumb_links_for(document.simulator)
       # ParameterSetGroup#show is not prepared yet
-    when AnalysisRun
+    when Analysis
       links = breadcrumb_links_for(document.analyzable)
       links << "Analysis:#{document.id}"
     when Analyzer

@@ -222,11 +222,11 @@ describe Run do
       res.should include(@temp_dir)
     end
 
-    it "does not include directories of analysis_run" do
+    it "does not include directories of analysis" do
       entries_in_run_dir = Dir.glob(@run.dir.join('*'))
       entries_in_run_dir.size.should eq(4)
       @run.result_paths.size.should eq(3)
-      arn_dir = @run.analysis_runs.first.dir
+      arn_dir = @run.analyses.first.dir
       @run.result_paths.should_not include(arn_dir)
     end
   end

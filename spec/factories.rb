@@ -110,17 +110,17 @@ FactoryGirl.define do
         when :on_run
           analyzer.simulator.parameter_sets.each do |ps|
             ps.runs.each do |run|
-              FactoryGirl.create(:analysis_run, analyzable: run, analyzer: analyzer, parameters: {})
+              FactoryGirl.create(:analysis, analyzable: run, analyzer: analyzer, parameters: {})
             end
           end
         when :on_parameter_set
           analyzer.simulator.parameter_sets.each do |ps|
-            FactoryGirl.create(:analysis_run, analyzable: ps, analyzer: analyzer, parameters: {})
+            FactoryGirl.create(:analysis, analyzable: ps, analyzer: analyzer, parameters: {})
           end
         when :on_parameter_set_group
           sim = analyzer.simulator
           psg = FactoryGirl.create(:parameter_set_group, simulator: sim, parameter_sets: sim.parameter_sets.all)
-          FactoryGirl.create(:analysis_run, analyzable: psg, analyzer: analyzer, parameters: {})
+          FactoryGirl.create(:analysis, analyzable: psg, analyzer: analyzer, parameters: {})
         else
           raise "not supported type"
         end
@@ -128,7 +128,7 @@ FactoryGirl.define do
     end
   end
 
-  factory :analysis_run do
+  factory :analysis do
     h = {"param1" => 1, "param2" => 2.0}
     parameters h
     status :finished

@@ -42,7 +42,7 @@ class Simulator
     raise "not supported type" unless analyzer.type == :on_parameter_set_group
     matched = []
     parameter_set_groups.each do |psg|
-      matched += psg.analysis_runs.where(analyzer: analyzer).all
+      matched += psg.analyses.where(analyzer: analyzer).all
     end
     matched
   end

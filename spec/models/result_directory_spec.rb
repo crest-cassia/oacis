@@ -79,10 +79,10 @@ describe ResultDirectory do
     ResultDirectory.parameter_set_group_path(psg).should == @default_root.join( @simulator.to_param, psg.to_param)
   end
 
-  it ".analysis_run_path returns the output directory of an AnalysisRun for :on_run type" do
+  it ".analysis_path returns the output directory of an Analysis for :on_run type" do
     run = @simulator.parameter_sets.first.runs.first
-    arn = run.analysis_runs.first
-    ResultDirectory.analysis_run_path(arn).should ==
+    arn = run.analyses.first
+    ResultDirectory.analysis_path(arn).should ==
       ResultDirectory.run_path(run).join(arn.to_param)
   end
 end

@@ -6,14 +6,14 @@ class AnalyzerRunner
   OUTPUT_JSON_FILENAME = '_output.json'
 
   def self.perform(arn_id)
-    arn = AnalysisRun.find(arn_id)
+    arn = Analysis.find(arn_id)
     work_dir = arn.dir  # UPDATE ME: a tentative implementation
     output = run_analysis(arn, work_dir)
     include_data(arn, work_dir, output)
   end
 
   def self.on_failure(exception, arn_id)
-    arn = AnalysisRun.find(arn_id)
+    arn = Analysis.find(arn_id)
     arn.update_status_failed
   end
 

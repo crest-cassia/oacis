@@ -9,7 +9,7 @@ describe AnalyzerRunner do
                               )
     @prm = @sim.parameter_sets.first
     @run = @prm.runs.first
-    @arn = @run.analysis_runs.first
+    @arn = @run.analyses.first
     @azr = @arn.analyzer
     @azr.update_attribute(:command, 'echo hello')
   end
@@ -101,7 +101,7 @@ describe AnalyzerRunner do
         status[:real_time].should be_within(0.1).of(1.0)
       end
 
-      it "updates result of AnalysisRun" do
+      it "updates result of Analysis" do
         result = {xxx: 0.1, yyy:12345}
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts result.to_json}
@@ -181,7 +181,7 @@ describe AnalyzerRunner do
   describe ".on_failure" do
 
 
-    it "sets status of AnalysisRun to failed" do
+    it "sets status of Analysis to failed" do
       AnalyzerRunner.__send__(:on_failure, StandardError.new, @arn.to_param)
       @arn.reload
       @arn.status.should eq(:failed)

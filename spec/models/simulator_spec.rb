@@ -232,8 +232,8 @@ describe Simulator do
       azr = FactoryGirl.create(:analyzer, type: :on_parameter_set_group, simulator: sim, run_analysis: false)
       azr2 = FactoryGirl.create(:analyzer, type: :on_parameter_set_group, simulator: sim, run_analysis: false)
       psg = FactoryGirl.create(:parameter_set_group, parameter_sets: sim.parameter_sets.all, simulator: sim)
-      FactoryGirl.create_list(:analysis_run, 3, analyzer: azr, analyzable: psg)
-      FactoryGirl.create_list(:analysis_run, 3, analyzer: azr2, analyzable: psg)
+      FactoryGirl.create_list(:analysis, 3, analyzer: azr, analyzable: psg)
+      FactoryGirl.create_list(:analysis, 3, analyzer: azr2, analyzable: psg)
 
       sim.analyses(azr).count.should eq 3
       sim.analyses(azr).each do |arn|

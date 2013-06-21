@@ -53,9 +53,9 @@ module ResultDirectory
     end
   end
 
-  def self.analysis_run_path(analysis_run)
-    analyzable = analysis_run.analyzable
-    analyzable_path(analyzable).join(analysis_run.to_param)
+  def self.analysis_path(analysis)
+    analyzable = analysis.analyzable
+    analyzable_path(analyzable).join(analysis.to_param)
   end
 
 end

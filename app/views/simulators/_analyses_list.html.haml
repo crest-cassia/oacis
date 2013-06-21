@@ -30,7 +30,7 @@
         var analysis_id = $(this).attr("analysis_id");
         var table_cols = tr_element.children("td").length
         $(this).attr("state", "open").attr("src", "/assets/collapse.png")
-        $.get("/analysis_runs/" + analysis_id + "/_result", {}, function(data) {
+        $.get("/analyses/" + analysis_id + "/_result", {}, function(data) {
           tr_element.after(
             $("<tr>").attr("id", "result_" + analysis_id).html(
               $("<td>").attr({colspan: table_cols}).html(

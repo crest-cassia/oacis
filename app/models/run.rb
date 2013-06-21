@@ -11,7 +11,7 @@ class Run
   field :included_at, type: DateTime
   field :result  # can be any type. it's up to Simulator spec
   belongs_to :parameter_set
-  has_many :analysis_runs, as: :analyzable
+  has_many :analyses, as: :analyzable
 
   # validations
   validates :status, :presence => true
@@ -67,13 +67,13 @@ class Run
   end
 
   # returns result files and directories
-  # directories for AnalysisRuns are not included
+  # directories for Analysis are not included
   def result_paths
     paths = Dir.glob( dir.join('*') ).map {|x|
       Pathname(x)
     }
-    # remove directories of AnalysisRuns
-    paths -= analysis_runs.map {|x| x.dir}
+    # remove directories of Analysis
+    paths -= analyses.map {|x| x.dir}
     return paths
   end
 
