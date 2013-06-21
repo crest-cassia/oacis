@@ -8,23 +8,23 @@
       %th status
       %th created_at
   %tbody
-    - @analysis_runs.each do |arn|
+    - @analyses.each do |arn|
       %tr
-        %td= link_to(arn.id, analysis_run_path(arn))
+        %td= link_to(arn.id, analysis_path(arn))
         - azr = arn.analyzer
         %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
         %td= arn.parameters.empty? ? '-' : arn.parameters.inspect
         %td= raw(status_label(arn.status))
         %td= arn.created_at
 
-- @analysis_runs.each do |arn|
+- @analyses.each do |arn|
   = render partial: "shared/results", locals: {result: arn.result, result_paths: arn.result_paths, title: "Results for Analysis: #{arn.to_param}"}
 
 - if @run.status == :finished
   %h5 Run analysis
   - @sim = @param_set.simulator
   - unless @sim.analyzers_on_run.empty?
-    = form_for( @run.analysis_runs.build, :url => run_analysis_runs_path(@run) ) do |f|
+    = form_for( @run.analyses.build, :url => run_analyses_path(@run) ) do |f|
       = f.label :analyzer
       = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }
       %div#parameters_form
@@ -33,7 +33,7 @@
 
   :javascript
     $(function() {
-      $('#analysis_run_analyzer').change(function(){
+      $('#analysis_analyzer').change(function(){
         $.get("#{_parameters_form_simulator_analyzer_path(@sim,':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
           $('#parameters_form').html(data)
         });

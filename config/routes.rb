@@ -9,7 +9,7 @@ AcmProto::Application.routes.draw do
       get "_analyses_list" # for ajax
     end
     resources :parameter_set_groups, only: [] do
-      resources :analysis_runs, :only => ["show"] do
+      resources :analyses, :only => ["show"] do
         member do
           get "_result" # for ajax
         end
@@ -23,13 +23,13 @@ AcmProto::Application.routes.draw do
         get "_runs_list" # for ajax, datatables
       end
       resources :runs, only: ["show","create"] do
-        resources :analysis_runs, :only => ["show", "create"]
+        resources :analyses, :only => ["show", "create"]
       end
-      resources :analysis_runs, :only => ["show", "create"]
+      resources :analyses, :only => ["show", "create"]
     end
   end
 
-  # routes for analyzers and analysis_runs
+  # routes for analyzers and analyses
   resources :simulators, shallow: false, only: [] do
     resources :analyzers, only: ["show"] do
       member do

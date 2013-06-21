@@ -1,7 +1,7 @@
 %h3 Analysis
 
 - analyzable = @param_set
-- arns = analyzable.analysis_runs
+- arns = analyzable.analyses
 
 %table.table.table-condensed.table-hover.table-striped
   %thead
@@ -14,7 +14,7 @@
   %tbody
     - arns.each do |arn|
       %tr
-        %td= link_to(arn.id, analysis_run_path(arn))
+        %td= link_to(arn.id, analysis_path(arn))
         - azr = arn.analyzer
         %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
         %td= arn.parameters.empty? ? '-' : arn.parameters.inspect
@@ -24,7 +24,7 @@
 - sim = @param_set.simulator
 - azrs = sim.analyzers_on_parameter_set
 - unless azrs.empty?
-  = form_for( arns.build, :url => parameter_set_analysis_runs_path(@param_set) ) do |f|
+  = form_for( arns.build, :url => parameter_set_analyses_path(@param_set) ) do |f|
     = f.label :analyzer
     = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }
     %div#parameters_form
@@ -34,7 +34,7 @@
 
 :javascript
   $(function() {
-    $('#analysis_run_analyzer').change(function(){
+    $('#analysis_analyzer').change(function(){
       $.get("#{_parameters_form_simulator_analyzer_path(sim,':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
         $('#parameters_form').html(data)
       });

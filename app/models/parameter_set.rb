@@ -4,7 +4,7 @@ class ParameterSet
   field :v, type: Hash
   belongs_to :simulator
   has_many :runs
-  has_many :analysis_runs, as: :analyzable
+  has_many :analyses, as: :analyzable
 
   validates :simulator, :presence => true
   validate :cast_and_validate_parameter_values

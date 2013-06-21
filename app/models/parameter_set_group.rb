@@ -4,7 +4,7 @@ class ParameterSetGroup
 
   belongs_to :simulator
   has_and_belongs_to_many :parameter_sets
-  has_many :analysis_runs, as: :analyzable
+  has_many :analyses, as: :analyzable
 
   after_save :create_dir
 

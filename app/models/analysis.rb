@@ -1,4 +1,4 @@
-class AnalysisRun
+class Analysis
   include Mongoid::Document
   include Mongoid::Timestamps
 
@@ -36,7 +36,7 @@ class AnalysisRun
 
   public
   def dir
-    ResultDirectory.analysis_run_path(self)
+    ResultDirectory.analysis_path(self)
   end
 
   # returns result files and directories
@@ -99,7 +99,7 @@ class AnalysisRun
       obj[:result] = {}
       psg.parameter_sets.each do |ps|
         obj[:result][ps.id] = {}
-        ps.analysis_runs.each do |arn|
+        ps.analyses.each do |arn|
           obj[:result][ps.id][arn.id] = arn.result
         end
       end
@@ -126,7 +126,7 @@ class AnalysisRun
       end
     when :on_parameter_set_group
       self.analyzable.parameter_sets.each do |ps|
-        ps.analysis_runs.each do |arn|
+        ps.analyses.each do |arn|
           files[ File.join(ps.to_param, arn.to_param) ] = Dir.glob( arn.dir.join('*') )
         end
       end

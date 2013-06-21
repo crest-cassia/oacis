@@ -12,5 +12,5 @@ azr = sim.analyzers.find_or_create_by(name: "ExecutionRateAnalysis",
 
 ps_ary = sim.parameter_sets.where("v.InitialMarketWeightA" => 0.8)
 psg = sim.parameter_set_groups.create!(parameter_sets: ps_ary)
-arn = psg.analysis_runs.build(analyzer: azr)
+arn = psg.analyses.build(analyzer: azr)
 arn.save and arn.submit
