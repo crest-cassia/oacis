@@ -116,13 +116,6 @@ jQuery ->
       $("tbody > tr", this).each (i, parent_element)->
         if $("a", parent_element).length
           a_element = $("a", parent_element)
-          if $("img", parent_element).length == 0
-            $(a_element).before($("<img>")
-              .attr("id", "treebtn")
-              .attr("src", "/assets/expand.png")
-              .attr("align", "left")
-              .attr("style", "margin-right: 5px;")
-              .attr("dialog", "close"))
           param_id = $(a_element).attr("href").substr($(a_element).attr("href").lastIndexOf("/")+1)
           $(a_element).text("")
           element  = a_element
@@ -155,7 +148,7 @@ jQuery ->
         $(this).trigger("click")
       td_element = $(this).closest("td")
       tr_element = $(this).closest("tr")
-      param_id = $("a", td_element).attr("href").substr($("a", td_element).attr("href").lastIndexOf("/")+1)
+      param_id = $(this).attr("parameter_set_id")
       table_cols = tr_element.children("td").length
       $(this)
         .attr("dialog", "open")
@@ -175,7 +168,7 @@ jQuery ->
         .attr("dialog", "close")
         .attr("src", "/assets/expand.png")
       td_element = $(this).closest("td")
-      param_id = $("a", td_element).attr("href").substr($("a", td_element).attr("href").lastIndexOf("/")+1)
+      param_id = $(this).attr("parameter_set_id")
       run_list = $(this).closest("tr").siblings("tr#ps_"+param_id)
       run_list.remove()
 
