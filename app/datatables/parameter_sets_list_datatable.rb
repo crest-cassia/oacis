@@ -26,7 +26,7 @@ private
     a = []
     parameter_sets_lists.map do |param|
       tmp = []
-      tmp << @view.image_tag("/assets/expand.png", parameter_set_id: param.id.to_s, align: "center", dialog: "close", id: "treebtn")
+      tmp << @view.image_tag("/assets/expand.png", parameter_set_id: param.id.to_s, align: "center", state: "close", class: "treebtn")
       tmp << @view.link_to(param.id.to_s, param)
       tmp << distance_to_now_in_words(param.updated_at)
       @simulator.parameter_definitions.each do |key,key_def|

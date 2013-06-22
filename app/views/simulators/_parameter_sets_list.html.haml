@@ -142,16 +142,16 @@ jQuery ->
               $(element).append(param_id)
 
 jQuery ->
-  $("#params_list").on "click", "img#treebtn", ->
-    if ($(this).attr("dialog") == "close")
-      $("img#treebtn[dialog='open']", $(this).parent().parent().parent()).each ->
+  $("#params_list").on "click", "img.treebtn[parameter_set_id]", ->
+    if ($(this).attr("state") == "close")
+      $("img.treebtn[state='open']", $(this).parent().parent().parent()).each ->
         $(this).trigger("click")
       td_element = $(this).closest("td")
       tr_element = $(this).closest("tr")
       param_id = $(this).attr("parameter_set_id")
       table_cols = tr_element.children("td").length
       $(this)
-        .attr("dialog", "open")
+        .attr("state", "open")
         .attr("src", "/assets/collapse.png")
       $.get "/parameter_sets/"+param_id+"/_runs_table", (data) ->
         tr_element.after(
@@ -165,7 +165,7 @@ jQuery ->
         expand_collapse_analyses_list();
     else
       $(this)
-        .attr("dialog", "close")
+        .attr("state", "close")
         .attr("src", "/assets/expand.png")
       td_element = $(this).closest("td")
       param_id = $(this).attr("parameter_set_id")
