@@ -144,7 +144,7 @@ jQuery ->
 jQuery ->
   $("#params_list").on "click", "img.treebtn[parameter_set_id]", ->
     if ($(this).attr("state") == "close")
-      $("img.treebtn[state='open']", $(this).parent().parent().parent()).each ->
+      $("img.treebtn[state='open']", $(this).closest("tbody") ).each ->
         $(this).trigger("click")
       td_element = $(this).closest("td")
       tr_element = $(this).closest("tr")
