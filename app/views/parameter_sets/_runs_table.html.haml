@@ -12,7 +12,7 @@
       %th.span1 finished_at
   %tbody
 
-= form_tag(parameter_set_runs_path(@param_set), class: 'well form-inline') do |f|
+= form_tag(parameter_set_runs_path(@param_set), class: 'form-inline') do |f|
   = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]), class: 'input-mini')
   = submit_tag "Create Runs", :class => 'btn btn-primary'
 
