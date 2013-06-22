@@ -1,8 +1,5 @@
 = render partial: 'shared/analyses', locals: {analyses: @analyses}
 
-- @analyses.each do |arn|
-  = render partial: "shared/results", locals: {result: arn.result, result_paths: arn.result_paths, title: "Results for Analysis: #{arn.to_param}"}
-
 - if @run.status == :finished
   %h3 Run analysis
   - @sim = @param_set.simulator
