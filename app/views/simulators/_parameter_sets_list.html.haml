@@ -96,8 +96,6 @@
     param_list_table_width = $("#param_list").width()
   });
 
-
-
 :coffeescript
 jQuery ->
   $('#params_list').dataTable
@@ -169,6 +167,7 @@ jQuery ->
           )
         )
         $("#runs_list" ,tr_element.next()).trigger("change");
+        expand_collapse_analyses_list();
     else
       $(this)
         .attr("dialog", "close")
