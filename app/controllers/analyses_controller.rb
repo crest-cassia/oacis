@@ -21,7 +21,7 @@ class AnalysesController < ApplicationController
         format.json { render json: arn, status: :created, location: arn}
       else
         # UPDATE ME: a tentative implementation
-        format.html { redirect_to analyzable, alert: "Failed to create analysis run" }
+        format.html { redirect_to analyzable, alert: "Failed to create analysis" }
         format.json { render json: arn.errors, status: :unprocessable_entity}
       end
     end

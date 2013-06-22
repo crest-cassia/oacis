@@ -303,7 +303,7 @@ describe Analysis do
 
   describe "#dir" do
 
-    it "returns directory for analysis run" do
+    it "returns directory for analysis" do
       @arn.dir.should eq(ResultDirectory.analysis_path(@arn))
     end
   end
