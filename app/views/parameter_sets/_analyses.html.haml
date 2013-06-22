@@ -1,30 +1,10 @@
-%h3 Analysis
+= render partial: 'shared/analyses', locals: {analyses: @param_set.analyses}
 
-- analyzable = @param_set
-- arns = analyzable.analyses
-
-%table.table.table-condensed.table-hover.table-striped
-  %thead
-    %tr
-      %th ID
-      %th analyzer
-      %th parameters
-      %th status
-      %th created_at
-  %tbody
-    - arns.each do |arn|
-      %tr
-        %td= link_to(arn.id, analysis_path(arn))
-        - azr = arn.analyzer
-        %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
-        %td= arn.parameters.empty? ? '-' : arn.parameters.inspect
-        %td= raw(status_label(arn.status))
-        %td= arn.created_at
 
 - sim = @param_set.simulator
 - azrs = sim.analyzers_on_parameter_set
 - unless azrs.empty?
-  = form_for( arns.build, :url => parameter_set_analyses_path(@param_set) ) do |f|
+  = form_for( @param_set.analyses.build, :url => parameter_set_analyses_path(@param_set) ) do |f|
     = f.label :analyzer
     = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }
     %div#parameters_form

@@ -1,21 +1,4 @@
-%h3 List of Analysis
-%table.table.table-condensed
-  %thead
-    %tr
-      %th ID
-      %th analyzer
-      %th parameters
-      %th status
-      %th created_at
-  %tbody
-    - @analyses.each do |arn|
-      %tr
-        %td= link_to(arn.id, analysis_path(arn))
-        - azr = arn.analyzer
-        %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
-        %td= arn.parameters.empty? ? '-' : arn.parameters.inspect
-        %td= raw(status_label(arn.status))
-        %td= arn.created_at
+= render partial: 'shared/analyses', locals: {analyses: @analyses}
 
 - @analyses.each do |arn|
   = render partial: "shared/results", locals: {result: arn.result, result_paths: arn.result_paths, title: "Results for Analysis: #{arn.to_param}"}
