@@ -112,34 +112,6 @@ jQuery ->
     sAjaxSource: $('#params_list').data('source')
     sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
     sPaginationType: "bootstrap"
-    fnDrawCallback: (oSettings)->
-      $("tbody > tr", this).each (i, parent_element)->
-        if $("a", parent_element).length
-          a_element = $("a", parent_element)
-          param_id = $(a_element).attr("href").substr($(a_element).attr("href").lastIndexOf("/")+1)
-          $(a_element).text("")
-          element  = a_element
-          $.getJSON "/parameter_sets/"+param_id+"/_runs_status_count", (runs)->
-            if runs.total > 0
-              $(element).append($("<div>").addClass("progress"))
-              div_element = $("div",element)
-              if runs.finished > 0
-                $(div_element).append($("<span>").addClass("progress progress-success progress-striped active"))
-                percent = Math.floor(100.0*runs.finished/runs.total)
-                $("span.progress.progress-success.progress-striped.active", div_element)
-                  .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
-              if runs.running > 0
-                $(div_element).append($("<span>").addClass("progress progress-warning progress-striped active"))
-                percent = Math.floor(100.0*runs.running/runs.total)
-                $("span.progress.progress-warning.progress-striped.active", div_element)
-                  .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
-              if runs.failed > 0
-                $(div_element).append($("<span>").addClass("progress progress-danger progress-striped active"))
-                percent = Math.floor(100.0*runs.failed/runs.total)
-                $("span.progress.progress-danger.progress-striped.active", div_element)
-                  .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
-            else
-              $(element).append(param_id)
 
 jQuery ->
   $("#params_list").on "click", "img.treebtn[parameter_set_id]", ->

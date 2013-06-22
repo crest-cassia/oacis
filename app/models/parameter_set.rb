@@ -27,10 +27,10 @@ class ParameterSet
 
   def runs_status_count
     counts = {}
-    counts["total"] = runs.count
-    counts["finished"] = runs.where(status: :finished).count
-    counts["running"] = runs.where(status: :running).count
-    counts["failed"] = runs.where(status: :failed).count
+    counts[:total] = runs.count
+    counts[:finished] = runs.where(status: :finished).count
+    counts[:running] = runs.where(status: :running).count
+    counts[:failed] = runs.where(status: :failed).count
     counts
   end
 
