@@ -84,10 +84,9 @@ describe AnalysesController do
           }.by(1)
         end
 
-        it "redirects to the created analysis" do
+        it "redirects to 'analysis' tab of Run#show page" do
           post :create, @valid_param, valid_session
-          @run.reload
-          response.should redirect_to( analysis_path(@run.analyses.last) )
+          response.should redirect_to( run_path(@run, anchor: '!tab-analysis') )
         end
       end
 
@@ -110,7 +109,7 @@ describe AnalysesController do
         before(:each) do
           @valid_param = {
             parameter_set_id: @par.to_param,
-            analysis: { analyzer: @azr.to_param},
+            analysis: { analyzer: @azr2.to_param},
             parameters: {}
           }
         end
@@ -123,10 +122,9 @@ describe AnalysesController do
           }.by(1)
         end
 
-        it "redirects to the created analysis" do
+        it "redirects to 'analysis' tab of ParameterSet#show page" do
           post :create, @valid_param, valid_session
-          @par.reload
-          response.should redirect_to( analysis_path(@par.analyses.last) )
+          response.should redirect_to( parameter_set_path(@par, anchor: '!tab-analysis') )
         end
       end
 

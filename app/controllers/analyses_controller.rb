@@ -16,7 +16,7 @@ class AnalysesController < ApplicationController
 
     respond_to do |format|
       if arn.save and arn.submit
-        format.html { redirect_to analysis_path(arn),
+        format.html { redirect_to after_create_redirect_path(arn),
                       notice: "Analysis was successfully created."}
         format.json { render json: arn, status: :created, location: arn}
       else
@@ -45,5 +45,20 @@ class AnalysesController < ApplicationController
       raise "not supported type"
     end
     return analyzable
+  end
+
+  def after_create_redirect_path(arn)
+    case arn.analyzer.type
+    when :on_parameter_set_group
+      analysis_path(arn)
+    when :on_parameter_set
+      ps = arn.analyzable
+      parameter_set_path(ps, anchor: '!tab-analysis')
+    when :on_run
+      run = arn.analyzable
+      run_path(run, anchor: '!tab-analysis')
+    else
+      raise "must not happen"
+    end
   end
 end
