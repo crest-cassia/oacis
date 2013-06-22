@@ -47,18 +47,23 @@ module ApplicationHelper
 
     tags = <<-EOS
       <div class="progress">
-        <span class="progress progress-success progress-striped active">
-          <span class="bar" style="width: #{percent_success}%">#{percent_success}%</span>
-        </span>
-        <span class="progress progress-warning progress-striped active">
-          <span class="bar" style="width: #{percent_warning}%">#{percent_warning}%</span>
-        </span>
-        <span class="progress progress-danger progress-striped active">
-          <span class="bar" style="width: #{percent_danger}%">#{percent_danger}%</span>
-        </span>
+        #{progress_bar_tag_for('success', percent_success)}
+        #{progress_bar_tag_for('warning', percent_success)}
+        #{progress_bar_tag_for('danger', percent_success)}
       </div>
     EOS
     tags
+  end
+
+  private
+  MIN_PERCENT_TO_PRINT = 5
+  def progress_bar_tag_for(status, percent)
+    content = percent > MIN_PERCENT_TO_PRINT ? "#{percent}%" : ""
+    tag = <<-EOS
+      <span class="progress progress-#{status} progress-striped active">
+        <span class="bar" style="width: #{percent}%">#{content}</span>
+      </span>
+    EOS
   end
 
   # to prevent UTF-8 parameter from being added in the URL for GET requests
