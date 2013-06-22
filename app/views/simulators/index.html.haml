@@ -16,7 +16,8 @@
         %td - (IMPLEMENT ME)
         %td#progress
 
-%a.btn.btn-primary{href: new_simulator_path} New Simulator
+.form-actions
+  %a.btn.btn-primary{href: new_simulator_path} New Simulator
 :coffeescript
   jQuery ->
     $("tbody > tr").each (i, parent_element) ->

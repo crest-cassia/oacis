@@ -21,7 +21,7 @@
   = render partial: "shared/results", locals: {result: arn.result, result_paths: arn.result_paths, title: "Results for Analysis: #{arn.to_param}"}
 
 - if @run.status == :finished
-  %h5 Run analysis
+  %h3 Run analysis
   - @sim = @param_set.simulator
   - unless @sim.analyzers_on_run.empty?
     = form_for( @run.analyses.build, :url => run_analyses_path(@run) ) do |f|
@@ -29,7 +29,8 @@
       = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }
       %div#parameters_form
         = render 'shared/parameters_form', param_def: @sim.analyzers_on_run.first.parameter_definitions
-      = f.submit "Analyze", :class => 'btn btn-primary'
+      .form-actions
+        = f.submit "Analyze", :class => 'btn btn-primary'
 
   :javascript
     $(function() {
