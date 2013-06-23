@@ -61,16 +61,16 @@ class Simulator
 
   def parameter_sets_status_count
     counts = {}
-    counts["total"] = 0
-    counts["finished"] = 0
-    counts["running"] = 0
-    counts["failed"] = 0
+    counts[:total] = 0
+    counts[:finished] = 0
+    counts[:running] = 0
+    counts[:failed] = 0
     parameter_sets.only("runs.status").each do |param|
       runs_count = param.runs_status_count
-      counts["total"] = counts["total"] + runs_count["total"]
-      counts["finished"] = counts["finished"] + runs_count["finished"]
-      counts["running"] = counts["running"] + runs_count["running"]
-      counts["failed"] = counts["failed"] + runs_count["failed"]
+      counts[:total] = counts[:total] + runs_count[:total]
+      counts[:finished] = counts[:finished] + runs_count[:finished]
+      counts[:running] = counts[:running] + runs_count[:running]
+      counts[:failed] = counts[:failed] + runs_count[:failed]
     end
     counts
   end
