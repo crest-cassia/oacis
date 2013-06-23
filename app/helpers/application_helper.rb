@@ -52,7 +52,7 @@ module ApplicationHelper
         #{progress_bar_tag_for('danger', percent_success)}
       </div>
     EOS
-    tags
+    raw(tags)
   end
 
   private
