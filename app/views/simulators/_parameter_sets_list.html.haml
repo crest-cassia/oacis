@@ -2,7 +2,7 @@
 %table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr
-      %th{style: "min-width: 18px; max-width: 18px"}
+      %th{style: "min-width: 18px; width: 1%"}
       %th.span1{style: "min-width: 150px;"} Runs Progress
       %th.span1 Updated_at
       - @simulator.parameter_definitions.each do |key,key_def|
@@ -105,10 +105,6 @@ jQuery ->
     bFilter: false
     bAutoWidth: false
     iDisplayLength: 100
-    aoColumnDefs: [
-      { "sWidth": "18px", "aTargets": [ 0 ] },
-      { "sWidth": "150px", "aTargets": [ 1 ] }
-    ]
     sAjaxSource: $('#params_list').data('source')
     sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
     sPaginationType: "bootstrap"
