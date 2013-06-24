@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe AnalysisRunsController do
+describe AnalysesController do
 
   # This should return the minimal set of values that should be in the session
   # in order to pass any filters (e.g. authentication) defined in
-  # AnalysisRunsController. Be sure to keep this updated too.
+  # AnalysesController. Be sure to keep this updated too.
   def valid_session
     {}
   end
@@ -23,14 +23,14 @@ describe AnalysisRunsController do
                               type: :on_run,
                               run_analysis: true
                               )
-    @arn = @run.analysis_runs.first
+    @arn = @run.analyses.first
 
     @azr2 = FactoryGirl.create(:analyzer,
                                simulator: @sim,
                                type: :on_parameter_set,
                                run_analysis: true
                                )
-    @arn2 = @par.analysis_runs.first
+    @arn2 = @par.analyses.first
   end
 
   describe "GET 'show'" do
@@ -38,26 +38,26 @@ describe AnalysisRunsController do
     describe "for :on_run type" do
 
       it "returns http success" do
-        get 'show', {run_id: @run, id: @arn}, valid_session
+        get 'show', {id: @arn}, valid_session
         response.should be_success
       end
 
       it "assigns instance variables for analysis_on_run" do
-        get 'show', {run_id: @run, id: @arn}, valid_session
-        assigns(:analysis_run).should eq(@arn)
+        get 'show', {id: @arn}, valid_session
+        assigns(:analysis).should eq(@arn)
       end
     end
 
     describe "for :on_parameter_set type" do
 
       it "returns http success" do
-        get 'show', {parameter_set_id: @par, id: @arn2}, valid_session
+        get 'show', {id: @arn2}, valid_session
         response.should be_success
       end
 
       it "assigns instance variables" do
-        get 'show', {parameter_set_id: @par, id: @arn2}, valid_session
-        assigns(:analysis_run).should eq(@arn2)
+        get 'show', {id: @arn2}, valid_session
+        assigns(:analysis).should eq(@arn2)
       end
     end
   end
@@ -71,23 +71,22 @@ describe AnalysisRunsController do
         before(:each) do
           @valid_param = {
             run_id: @run.to_param,
-            analysis_run: { analyzer: @azr.to_param},
+            analysis: { analyzer: @azr.to_param},
             parameters: {"param1" => 1, "param2" => 2.0}
           }
         end
 
-        it "creates a new AnalysisRun" do
+        it "creates a new Analysis" do
           expect {
             post :create, @valid_param, valid_session
           }.to change{
-            @run.reload.analysis_runs.count
+            @run.reload.analyses.count
           }.by(1)
         end
 
-        it "redirects to the created analysis_run" do
+        it "redirects to 'analysis' tab of Run#show page" do
           post :create, @valid_param, valid_session
-          @run.reload
-          response.should redirect_to(run_analysis_run_path(@run,@run.analysis_runs.last))
+          response.should redirect_to( run_path(@run, anchor: '!tab-analysis') )
         end
       end
 
@@ -110,23 +109,22 @@ describe AnalysisRunsController do
         before(:each) do
           @valid_param = {
             parameter_set_id: @par.to_param,
-            analysis_run: { analyzer: @azr.to_param},
+            analysis: { analyzer: @azr2.to_param},
             parameters: {}
           }
         end
 
-        it "creates a new AnalysisRun" do
+        it "creates a new Analysis" do
           expect {
             post :create, @valid_param, valid_session
           }.to change {
-            @par.reload.analysis_runs.count
+            @par.reload.analyses.count
           }.by(1)
         end
 
-        it "redirects to the created analysis_run" do
+        it "redirects to 'analysis' tab of ParameterSet#show page" do
           post :create, @valid_param, valid_session
-          @par.reload
-          response.should redirect_to(parameter_set_analysis_run_path(@par, @par.analysis_runs.last))
+          response.should redirect_to( parameter_set_path(@par, anchor: '!tab-analysis') )
         end
       end
 
@@ -139,4 +137,11 @@ describe AnalysisRunsController do
     end
   end
 
+  describe "GET '_result'" do
+
+    it "returns http success" do
+      get '_result', {id: @arn}, valid_session
+      response.should be_success
+    end
+  end
 end

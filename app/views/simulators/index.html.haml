@@ -14,33 +14,8 @@
         %td= link_to h(simulator.name), simulator_path(simulator)
         %td= distance_of_time_in_words_to_now(simulator.updated_at)
         %td - (IMPLEMENT ME)
-        %td#progress
+        - counts = simulator.parameter_sets_status_count
+        %td#progress= progress_bar(counts[:total], counts[:finished], counts[:running], counts[:failed])
 
-%a.btn.btn-primary{href: new_simulator_path} New Simulator
-:coffeescript
-  jQuery ->
-    $("tbody > tr").each (i, parent_element) ->
-      if $("a", parent_element).length
-        a_element = $("a", parent_element)
-        sim_id = $(a_element).attr("href").substr($(a_element).attr("href").lastIndexOf("/")+1)
-        progress_element = $("#progress", parent_element)
-        element  = progress_element
-        $.getJSON "/simulators/"+sim_id+"/_parameter_sets_status_count", (runs)->
-          if runs.total > 0
-            $(element).append($("<div>").addClass("progress"))
-            div_element = $("div",element)
-            if runs.finished > 0
-              $(div_element).append($("<span>").addClass("progress progress-success progress-striped active"))
-              percent = Math.floor(100.0*runs.finished/runs.total)
-              $("span.progress.progress-success.progress-striped.active", div_element)
-                .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
-            if runs.running > 0
-              $(div_element).append($("<span>").addClass("progress progress-warning progress-striped active"))
-              percent = Math.floor(100.0*runs.running/runs.total)
-              $("span.progress.progress-warning.progress-striped.active", div_element)
-                .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
-            if runs.failed > 0
-              $(div_element).append($("<span>").addClass("progress progress-danger progress-striped active"))
-              percent = Math.floor(100.0*runs.failed/runs.total)
-              $("span.progress.progress-danger.progress-striped.active", div_element)
-                .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
+.form-actions
+  %a.btn.btn-primary{href: new_simulator_path} New Simulator

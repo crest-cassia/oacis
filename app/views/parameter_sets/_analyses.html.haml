@@ -1,0 +1,22 @@
+= render partial: 'shared/analyses', locals: {analyses: @param_set.analyses}
+
+
+- sim = @param_set.simulator
+- azrs = sim.analyzers_on_parameter_set
+- unless azrs.empty?
+  = form_for( @param_set.analyses.build, :url => parameter_set_analyses_path(@param_set) ) do |f|
+    = f.label :analyzer
+    = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }
+    %div#parameters_form
+      = render 'shared/parameters_form', param_def: azrs.first.parameter_definitions
+    .form-actions
+      = f.submit "Analyze", :class => 'btn btn-primary'
+
+:javascript
+  $(function() {
+    $('#analysis_analyzer').change(function(){
+      $.get("#{_parameters_form_simulator_analyzer_path(sim,':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
+        $('#parameters_form').html(data)
+      });
+    });
+  });

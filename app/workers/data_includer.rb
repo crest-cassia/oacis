@@ -78,14 +78,14 @@ class DataIncluder
 
     if run.status == :finished
       sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
-        arn = run.analysis_runs.build(analyzer: azr)
+        arn = run.analyses.build(analyzer: azr)
         arn.save and arn.submit
       end
 
       sim.analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
         scope = ps.runs.where(status: :finished)
         if scope.count == 1 and scope.first.id== run.id
-          arn = run.analysis_runs.build(analyzer: azr)
+          arn = run.analyses.build(analyzer: azr)
           arn.save and arn.submit
         end
       end
@@ -94,7 +94,7 @@ class DataIncluder
     if run.status == :finished or run.status == :failed
       sim.analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
         unless ps.runs.nin(status: [:finished, :failed]).exists?
-          arn = ps.analysis_runs.build(analyzer: azr)
+          arn = ps.analyses.build(analyzer: azr)
           arn.save and arn.submit
         end
       end

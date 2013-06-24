@@ -20,7 +20,10 @@ module ApplicationHelper
     when Simulator
       links = [ link_to("Simulators", simulators_path) ]
       links << link_to(document.name, simulator_path(document))
-    when AnalysisRun
+    when ParameterSetGroup
+      links = breadcrumb_links_for(document.simulator)
+      # ParameterSetGroup#show is not prepared yet
+    when Analysis
       links = breadcrumb_links_for(document.analyzable)
       links << "Analysis:#{document.id}"
     when Analyzer
@@ -30,6 +33,37 @@ module ApplicationHelper
       raise "not supported type"
     end
     return links
+  end
+
+  def progress_bar( total, num_success, num_warning, num_danger)
+    percent_success = 0.0
+    percent_warning = 0.0
+    percent_danger = 0.0
+    if total.to_f > 0
+      percent_success = ( num_success.to_f / total.to_f * 100 ).round
+      percent_warning = ( num_warning.to_f / total.to_f * 100 ).round
+      percent_danger = ( num_danger.to_f / total.to_f * 100 ).round
+    end
+
+    tags = <<-EOS
+      <div class="progress">
+        #{progress_bar_tag_for('success', percent_success)}
+        #{progress_bar_tag_for('warning', percent_warning)}
+        #{progress_bar_tag_for('danger', percent_danger)}
+      </div>
+    EOS
+    raw(tags)
+  end
+
+  private
+  MIN_PERCENT_TO_PRINT = 5
+  def progress_bar_tag_for(status, percent)
+    content = percent > MIN_PERCENT_TO_PRINT ? "#{percent}%" : ""
+    tag = <<-EOS
+      <span class="progress progress-#{status} progress-striped active">
+        <span class="bar" style="width: #{percent}%">#{content}</span>
+      </span>
+    EOS
   end
 
   # to prevent UTF-8 parameter from being added in the URL for GET requests

@@ -1,4 +1,4 @@
-class AnalysisRun
+class Analysis
   include Mongoid::Document
   include Mongoid::Timestamps
 
@@ -21,11 +21,11 @@ class AnalysisRun
     end
     return @analyzer_cache
   end
-  embedded_in :analyzable, polymorphic: true
+  belongs_to :analyzable, polymorphic: true
 
   before_validation :set_status
   validates :status, presence: true,
-                     inclusion: {in: [:created,:running,:including,:failed,:canceled,:finished]}
+                     inclusion: {in: [:created,:running,:failed,:cancelled,:finished]}
   validates :analyzable, :presence => true
   validates :analyzer, :presence => true
   validate :cast_and_validate_parameter_values
@@ -35,22 +35,8 @@ class AnalysisRun
   attr_accessible :parameters, :analyzer
 
   public
-  def self.find_by_type_and_ids(type, analyzable_id, id)
-    case type.to_sym
-    when :on_run
-      analyzable = Run.find(analyzable_id)
-    when :on_parameter_set
-      analyzable = ParameterSet.find(analyzable_id)
-    when :on_parameter_sets_group
-      raise "not implemented yet..."  # IMPLEMENT ME
-    else
-      raise "not supported type: #{type}"
-    end
-    return analyzable.analysis_runs.find(id)
-  end
-
   def dir
-    ResultDirectory.analysis_run_path(self)
+    ResultDirectory.analysis_path(self)
   end
 
   # returns result files and directories
@@ -62,7 +48,7 @@ class AnalysisRun
   end
 
   def submit
-    Resque.enqueue(AnalyzerRunner, analyzer.type, analyzable.to_param, self.to_param)
+    Resque.enqueue(AnalyzerRunner, self.to_param)
   end
 
   def update_status_running(option = {hostname: 'localhost'})
@@ -73,17 +59,11 @@ class AnalysisRun
     self.save
   end
 
-  def update_status_including(option = {cpu_time: 0.0, real_time: 0.0})
-    merged = {cpu_time: 0.0, real_time: 0.0}.merge(option)
-    self.status = :including
-    self.cpu_time = merged[:cpu_time]
-    self.real_time = merged[:real_time]
-    self.result = merged[:result]
-    self.finished_at = DateTime.now
-    self.save
-  end
-
-  def update_status_finished
+  def update_status_finished(status)
+    self.cpu_time = status[:cpu_time]
+    self.real_time = status[:real_time]
+    self.result = status[:result] if status.has_key?(:result)
+    self.finished_at = status[:finished_at]
     self.status = :finished
     self.included_at = DateTime.now
     self.save
@@ -110,6 +90,19 @@ class AnalysisRun
       ps.runs.each do |run|
         obj[:result][run.to_param] = run.result
       end
+    when :on_parameter_set_group
+      psg = self.analyzable
+      obj[:simulation_parameters] = {}
+      psg.parameter_sets.each do |ps|
+        obj[:simulation_parameters][ps.id] = ps.v
+      end
+      obj[:result] = {}
+      psg.parameter_sets.each do |ps|
+        obj[:result][ps.id] = {}
+        ps.analyses.each do |arn|
+          obj[:result][ps.id][arn.id] = arn.result
+        end
+      end
     else
       raise "not supported type"
     end
@@ -130,6 +123,12 @@ class AnalysisRun
       ps = self.analyzable
       ps.runs.where(status: :finished).each do |finished_run|
         files[finished_run.to_param] = finished_run.result_paths
+      end
+    when :on_parameter_set_group
+      self.analyzable.parameter_sets.each do |ps|
+        ps.analyses.each do |arn|
+          files[ File.join(ps.to_param, arn.to_param) ] = Dir.glob( arn.dir.join('*') )
+        end
       end
     else
       raise "not supported type"

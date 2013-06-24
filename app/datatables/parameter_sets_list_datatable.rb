@@ -25,7 +25,11 @@ private
   def data
     a = []
     parameter_sets_lists.map do |param|
-      tmp = [ @view.link_to(param.id.to_s, param) ]
+      tmp = []
+      tmp << @view.image_tag("/assets/expand.png", parameter_set_id: param.id.to_s, align: "center", state: "close", class: "treebtn")
+      count = param.runs_status_count
+      progress = @view.progress_bar( count[:total], count[:finished], count[:running], count[:failed] )
+      tmp << link_to( @view.raw(progress), @view.parameter_set_path(param) )
       tmp << distance_to_now_in_words(param.updated_at)
       @simulator.parameter_definitions.each do |key,key_def|
         tmp <<  h(param.v[key])
@@ -55,12 +59,12 @@ private
 
   def sort_column
     case @view.params[:iSortCol_0].to_i
-    when 0
+    when 0,1
       "id"
-    when 1
+    when 2
       "updated_at"
     else
-      "v."+@simulator.parameter_definitions.keys[@view.params[:iSortCol_0].to_i-2]
+      "v."+@simulator.parameter_definitions.keys[@view.params[:iSortCol_0].to_i-3]
     end
   end
 

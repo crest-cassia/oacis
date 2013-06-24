@@ -90,21 +90,21 @@ describe DataIncluder do
 
         context "when Analyzer#auto_run is :yes" do
 
-          it "creates analysis_run if Analyzer#auto_run is :yes" do
+          it "creates analysis if Analyzer#auto_run is :yes" do
             expect {
               DataIncluder.perform(@arg)
-            }.to change { @run.reload.analysis_runs.count }.by(1)
+            }.to change { @run.reload.analyses.count }.by(1)
           end
         end
 
         context "when Analyzer#auto_run is :no" do
 
-          it "does not create analysis_run if Anaylzer#auto_run is :no" do
+          it "does not create analysis if Anaylzer#auto_run is :no" do
             @azr.update_attributes!(auto_run: :no)
 
             expect {
               DataIncluder.perform(@arg)
-            }.to_not change { @run.reload.analysis_runs.count }
+            }.to_not change { @run.reload.analyses.count }
           end
         end
 
@@ -114,17 +114,17 @@ describe DataIncluder do
             @azr.update_attributes!(auto_run: :first_run_only)
           end
 
-          it "creates analysis_run if the run is the first 'finished' run within the parameter set" do
+          it "creates analysis if the run is the first 'finished' run within the parameter set" do
             expect {
               DataIncluder.perform(@arg)
-            }.to change { @run.reload.analysis_runs.count }.by(1)
+            }.to change { @run.reload.analyses.count }.by(1)
           end
 
           it "does not create analysis if 'finished' run already exists within the paramter set" do
             FactoryGirl.create(:run, parameter_set: @prm, status: :finished)
             expect {
               DataIncluder.perform(@arg)
-            }.to_not change { @run.reload.analysis_runs.count }
+            }.to_not change { @run.reload.analyses.count }
           end
         end
       end
@@ -135,19 +135,19 @@ describe DataIncluder do
           @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_parameter_set, auto_run: :yes)
         end
 
-        it "creates analysis run if all the other runs within the parameter set are 'finished' or 'failed'" do
+        it "creates analysis if all the other runs within the parameter set are 'finished' or 'failed'" do
           FactoryGirl.create(:run, parameter_set: @prm, status: :failed)
           FactoryGirl.create(:run, parameter_set: @prm, status: :finished)
           expect {
             DataIncluder.perform(@arg)
-          }.to change { @prm.reload.analysis_runs.count }
+          }.to change { @prm.reload.analyses.count }
         end
 
-        it "does not create analysis run if any of runs within the parameter set is 'created' or 'running'" do
+        it "does not create analysis if any of runs within the parameter set is 'created' or 'running'" do
           FactoryGirl.create(:run, parameter_set: @prm, status: :create)
           expect {
             DataIncluder.perform(@arg)
-          }.to_not change { @prm.reload.analysis_runs.count }
+          }.to_not change { @prm.reload.analyses.count }
         end
       end
     end
@@ -236,7 +236,7 @@ describe DataIncluder do
 
         expect {
           DataIncluder.perform(@arg)
-        }.to_not change {@run.reload.analysis_runs.count }
+        }.to_not change {@run.reload.analyses.count }
       end
     end
 

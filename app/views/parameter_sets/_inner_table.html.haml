@@ -3,11 +3,11 @@
     %li.active
       %a{"href"=>"#tab-list-runs", "data-toggle" => "tab"} Runs
     %li
-      %a{"href"=>"#tab-parameter-analyzers", "data-toggle" => "tab"} Parameter Analyzers
+      %a{"href"=>"#tab-parameter-analyzers", "data-toggle" => "tab"} Analysis
 
   .tab-content
     .tab-pane.active#tab-list-runs
       = render "runs_table"
     .tab-pane#tab-parameter-analyzers
-      = render "analysis"
+      = render "analyses"
 

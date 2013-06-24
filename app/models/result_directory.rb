@@ -29,6 +29,11 @@ module ResultDirectory
     parameter_set_path(run.parameter_set_id).join(run.to_param)
   end
 
+  def self.parameter_set_group_path(param_set_group)
+    psg = ParameterSetGroup.find(param_set_group)
+    simulator_path(psg.simulator).join( psg.to_param )
+  end
+
   def self.run_script_path(run)
     run = Run.find(run)
     prm = run.parameter_set_id
@@ -41,14 +46,16 @@ module ResultDirectory
       return run_path(analyzable.to_param)
     when ParameterSet
       return parameter_set_path(analyzable.to_param)
+    when ParameterSetGroup
+      return parameter_set_group_path(analyzable.to_param)
     else
       raise "not supported type"
     end
   end
 
-  def self.analysis_run_path(analysis_run)
-    analyzable = analysis_run.analyzable
-    analyzable_path(analyzable).join(analysis_run.to_param)
+  def self.analysis_path(analysis)
+    analyzable = analysis.analyzable
+    analyzable_path(analyzable).join(analysis.to_param)
   end
 
 end

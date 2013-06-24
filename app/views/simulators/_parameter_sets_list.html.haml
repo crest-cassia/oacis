@@ -1,15 +1,17 @@
 %h3 List of Parameter Sets
-%table.table.table-condensed.table-striped.table-hover#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
+%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr
-      %th.span1 Runs Progress
+      %th{style: "min-width: 18px; width: 1%"}
+      %th.span1{style: "min-width: 150px;"} Runs Progress
       %th.span1 Updated_at
       - @simulator.parameter_definitions.each do |key,key_def|
         %th.span1= key
   %tbody
 
-%a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
-  New Parameter Set
+.form-actions
+  %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
+    New Parameter Set
   
 %h3 Parameter Filter
 = form_tag( _make_query_simulator_path(@simulator) ) do |f|
@@ -95,8 +97,6 @@
     param_list_table_width = $("#param_list").width()
   });
 
-
-
 :coffeescript
 jQuery ->
   $('#params_list').dataTable
@@ -104,68 +104,41 @@ jQuery ->
     bServerSide: true
     bFilter: false
     bAutoWidth: false
-    aoColumnDefs: [
-      { "sWidth": "150px", "aTargets": [ 0 ] }
-    ]
+    iDisplayLength: 100
     sAjaxSource: $('#params_list').data('source')
     sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
     sPaginationType: "bootstrap"
-    fnDrawCallback: (oSettings)->
-      $("tbody > tr", this).each (i, parent_element)->
-        if $("a", parent_element).length
-          a_element = $("a", parent_element)
-          if $("img", parent_element).length == 0
-            $(a_element).before($("<img>")
-              .attr("id", "treebtn")
-              .attr("src", "/assets/expand.png")
-              .attr("align", "left")
-              .attr("style", "margin-right: 5px;")
-              .attr("dialog", "close"))
-          param_id = $(a_element).attr("href").substr($(a_element).attr("href").lastIndexOf("/")+1)
-          $(a_element).text("")
-          element  = a_element
-          $.getJSON "/parameter_sets/"+param_id+"/_runs_status_count", (runs)->
-            if runs.total > 0
-              $(element).append($("<div>").addClass("progress"))
-              div_element = $("div",element)
-              if runs.finished > 0
-                $(div_element).append($("<span>").addClass("progress progress-success progress-striped active"))
-                percent = Math.floor(100.0*runs.finished/runs.total)
-                $("span.progress.progress-success.progress-striped.active", div_element)
-                  .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
-              if runs.running > 0
-                $(div_element).append($("<span>").addClass("progress progress-warning progress-striped active"))
-                percent = Math.floor(100.0*runs.running/runs.total)
-                $("span.progress.progress-warning.progress-striped.active", div_element)
-                  .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
-              if runs.failed > 0
-                $(div_element).append($("<span>").addClass("progress progress-danger progress-striped active"))
-                percent = Math.floor(100.0*runs.failed/runs.total)
-                $("span.progress.progress-danger.progress-striped.active", div_element)
-                  .append($("<span>").addClass("bar").attr({style: "width: "+percent+"%"}).text(percent+"%"))
-            else
-              $(element).append(param_id)
 
 jQuery ->
-  $("body").on "click", "img#treebtn", ->
-    if ($(this).attr("dialog") == "close")
-      $("img#treebtn[dialog='open']", $(this).parent().parent().parent()).each ->
+  $("#params_list").on "click", "img.treebtn[parameter_set_id]", ->
+    if ($(this).attr("state") == "close")
+      $("img.treebtn[state='open']", $(this).closest("tbody") ).each ->
         $(this).trigger("click")
-      td_element = $(this).parent()
-      tr_element = $(this).parent().parent()
-      param_id = $("a", td_element).attr("href").substr($("a", td_element).attr("href").lastIndexOf("/")+1)
-      table_cols = $("td", td_element.parent()).length
+      td_element = $(this).closest("td")
+      tr_element = $(this).closest("tr")
+      param_id = $(this).attr("parameter_set_id")
+      table_cols = tr_element.children("td").length
       $(this)
-        .attr("dialog", "open")
+        .attr("state", "open")
         .attr("src", "/assets/collapse.png")
       $.get "/parameter_sets/"+param_id+"/_runs_table", (data) ->
-        tr_element.after($("<tr>").html($("<td>").attr({colspan: table_cols}).html(data)))
+        tr_element.after(
+          $("<tr>").attr("id", "ps_"+param_id).html(
+            $("<td>").attr({colspan: table_cols}).html(
+              $("<div>").attr("class", "well").html(data)
+            )
+          )
+        )
         $("#runs_list" ,tr_element.next()).trigger("change");
+        expand_collapse_analyses_list();
     else
       $(this)
-        .attr("dialog", "close")
+        .attr("state", "close")
         .attr("src", "/assets/expand.png")
-      $(this).parent().parent().next().remove()
+      td_element = $(this).closest("td")
+      param_id = $(this).attr("parameter_set_id")
+      run_list = $(this).closest("tr").siblings("tr#ps_"+param_id)
+      run_list.remove()
 
 jQuery ->
   $("body").on "change", "#runs_list", ->

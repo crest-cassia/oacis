@@ -3,7 +3,7 @@ class RunsController < ApplicationController
   def show
     @run = Run.find(params[:id])
     @param_set = @run.parameter_set
-    @analysis_runs = @run.analysis_runs
+    @analyses = @run.analyses
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @run }

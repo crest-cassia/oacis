@@ -33,6 +33,11 @@ namespace :db do
                              run_analysis_on_parameter_set: false,
                              parameter_set_queries_count: 5
                              )
+    azrs = FactoryGirl.create_list(:analyzer, 2, simulator: sim, type: :on_parameter_set_group, run_analysis: true)
+    FactoryGirl.create_list(:analysis, 10,
+                            analyzer: azrs.first,
+                            analyzable: sim.parameter_set_groups.first
+                            )
 
     FactoryGirl.create(:simulator, parameter_sets_count: 0, parameter_set_queries_count: 0)
     # FactoryGirl.create(:simulator, parameter_sets_count: 30)

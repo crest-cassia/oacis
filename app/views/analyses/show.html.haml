@@ -1,0 +1,34 @@
+= render partial: "shared/breadcrumb", locals: {links: breadcrumb_links_for(@analysis)}
+
+.page-header
+  %h1 Analysis
+
+%table.table.table-condensed.table-striped
+  %thead
+  %tbody
+    %tr
+      %th ID
+      %td= @analysis.to_param
+    %tr
+      %th Status
+      %td= raw(status_label(@analysis.status))
+    %tr
+      %th Directory
+      %td= @analysis.dir
+    %tr
+      %th Analyzer
+      - azr = @analysis.analyzer
+      %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
+    %tr
+      %th Elapsed Real Time
+      %td= @analysis.real_time
+    %tr
+      %th Elapsed CPU Time
+      %td= @analysis.cpu_time
+
+%hr
+- unless @analysis.parameters.empty?
+  = render partial: "shared/parameters_table", locals: {parameters_hash: @analysis.parameters}
+
+%hr
+= render partial: "shared/results", locals: {result: @analysis.result, result_paths: @analysis.result_paths}

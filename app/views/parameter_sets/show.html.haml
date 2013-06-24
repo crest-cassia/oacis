@@ -10,14 +10,14 @@
     %li.active
       %a{"href"=>"#tab-list-runs", "data-toggle" => "tab"} Runs
     %li
-      %a{"href"=>"#tab-analyzers", "data-toggle" => "tab"} Analyzers
+      %a{"href"=>"#tab-analysis", "data-toggle" => "tab"} Analysis
 
   .tab-content
     .tab-pane#tab-about
       = render partial: "shared/parameters_table", locals: {parameters_hash: @param_set.v}
-      .well
+      .form-actions
         = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
     .tab-pane.active#tab-list-runs
       = render "runs_table"
-    .tab-pane#tab-analyzers
-      = render "analysis"
+    .tab-pane#tab-analysis
+      = render "analyses"

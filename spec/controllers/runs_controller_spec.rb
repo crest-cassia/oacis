@@ -18,7 +18,7 @@ describe RunsController do
       )
     @par = @sim.parameter_sets.first
     @run = @par.runs.first
-    @arn = @run.analysis_runs
+    @arn = @run.analyses
   end
 
   describe "GET 'show'" do
@@ -34,9 +34,9 @@ describe RunsController do
       assigns(:param_set).should eq(@par)
     end
 
-    it "assigns 'analysis_runs' variable" do
+    it "assigns 'analyses' variable" do
       get 'show', {id: @run}, valid_session
-      assigns(:analysis_runs).should eq(@run.analysis_runs)
+      assigns(:analyses).should eq(@run.analyses)
     end
   end
 
