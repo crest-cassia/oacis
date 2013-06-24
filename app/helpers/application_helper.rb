@@ -48,8 +48,8 @@ module ApplicationHelper
     tags = <<-EOS
       <div class="progress">
         #{progress_bar_tag_for('success', percent_success)}
-        #{progress_bar_tag_for('warning', percent_success)}
-        #{progress_bar_tag_for('danger', percent_success)}
+        #{progress_bar_tag_for('warning', percent_warning)}
+        #{progress_bar_tag_for('danger', percent_danger)}
       </div>
     EOS
     raw(tags)
