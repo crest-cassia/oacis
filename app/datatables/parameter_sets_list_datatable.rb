@@ -29,7 +29,9 @@ private
       tmp << @view.image_tag("/assets/expand.png", parameter_set_id: param.id.to_s, align: "center", state: "close", class: "treebtn")
       count = param.runs_status_count
       progress = @view.progress_bar( count[:total], count[:finished], count[:running], count[:failed] )
-      tmp << link_to( @view.raw(progress), @view.parameter_set_path(param) )
+      tmp << @view.raw(progress)
+      link_to_param_last_six_characters_with_monospaced = "<tt>"+link_to( param.to_param.slice(param.to_param.length-6,param.to_param.length), @view.parameter_set_path(param) )+"</tt>"
+      tmp << link_to_param_last_six_characters_with_monospaced
       tmp << distance_to_now_in_words(param.updated_at)
       @simulator.parameter_definitions.each do |key,key_def|
         tmp <<  h(param.v[key])
@@ -59,9 +61,9 @@ private
 
   def sort_column
     case @view.params[:iSortCol_0].to_i
-    when 0,1
+    when 0,1,2
       "id"
-    when 2
+    when 3
       "updated_at"
     else
       "v."+@simulator.parameter_definitions.keys[@view.params[:iSortCol_0].to_i-3]

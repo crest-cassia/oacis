@@ -306,9 +306,9 @@ describe SimulatorsController do
       it "show the list of filtered ParameterSets" do
         @parsed_body["aaData"].size.should == 5
         @parsed_body["aaData"].each do |ps|
-          ps[2].to_i.should >= 5 #ps[2].to_i is qeual to v.L(ps[id, updated_at, [keys]])
+          ps[4].to_i.should >= 5 #ps[3].to_i is qeual to v.L(ps[img, id, id, updated_at, [keys]])
         end
-        @parsed_body["aaData"].first[2].to_i.should == @query.parameter_sets.max("v.L")
+        @parsed_body["aaData"].first[4].to_i.should == @query.parameter_sets.max("v.L")
       end
     end
   end

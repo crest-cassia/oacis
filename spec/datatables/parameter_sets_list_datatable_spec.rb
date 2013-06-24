@@ -23,6 +23,8 @@ describe "ParameterSetsListDatatable" do
         @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"})
         @context.stub(:link_to).and_return("#{@simulator.to_param}")
         @context.stub(:distance_to_now_in_words).and_return("time")
+        @context.stub(:progress_bar).and_return("<div></div>")
+        @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
         @psld = ParameterSetsListDatatable.new(@context)
         @psld_json = JSON.parse(@psld.to_json)
       end
@@ -36,7 +38,7 @@ describe "ParameterSetsListDatatable" do
         @psld_json["iTotalRecords"].should == 30
         @psld_json["iTotalDisplayRecords"].should == 30
         @psld_json["aaData"].size.should == 25
-        @psld_json["aaData"].first[2].to_i.should == ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).min("v.L")
+        @psld_json["aaData"].first[4].to_i.should == ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).min("v.L")
       end
     end
 
@@ -59,6 +61,8 @@ describe "ParameterSetsListDatatable" do
         @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:5 , iSortCol_0: 1, sSortDir_0: "desc", query_id: @query.id})
         @context.stub(:link_to).and_return("#{@simulator.to_param}")
         @context.stub(:distance_to_now_in_words).and_return("time")
+        @context.stub(:progress_bar).and_return("<div></div>")
+        @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
         @psld = ParameterSetsListDatatable.new(@context)
         @psld_json = JSON.parse(@psld.to_json)
       end
@@ -72,7 +76,7 @@ describe "ParameterSetsListDatatable" do
         @psld_json["iTotalRecords"].should == 25
         @psld_json["iTotalDisplayRecords"].should == 25
         @psld_json["aaData"].size.should == 5
-        @psld_json["aaData"].first[2].to_i.should == @query.parameter_sets.only("v.L").max("v.L")#["aaData"].first[2].to_i is qeual to v.L (["aaData"].first[id, updated_at, [keys]])
+        @psld_json["aaData"].first[4].to_i.should == @query.parameter_sets.only("v.L").max("v.L")#["aaData"].first[2].to_i is qeual to v.L (["aaData"].first[id, updated_at, [keys]])
       end
     end
   end
