@@ -60,7 +60,7 @@ namespace :db do
     #   sim.parameter_sets.create(v: sim_prm)
     # end
 
-    FactoryGirl.create_list(:host, 5)
+    FactoryGirl.create(:localhost, work_base_dir: "~/__work__")
   end
 end
 
