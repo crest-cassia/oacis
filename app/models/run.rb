@@ -1,7 +1,7 @@
 class Run
   include Mongoid::Document
   include Mongoid::Timestamps
-  field :status, type: Symbol, default: :created  # created, running, failed, finished
+  field :status, type: Symbol, default: :created  # created, submitted, running, failed, finished
   field :seed, type: Integer
   field :hostname, type: String
   field :cpu_time, type: Float
@@ -12,6 +12,7 @@ class Run
   field :result  # can be any type. it's up to Simulator spec
   belongs_to :parameter_set
   has_many :analyses, as: :analyzable
+  belongs_to :submitted_to, class_name: "Host"
 
   # validations
   validates :status, :presence => true

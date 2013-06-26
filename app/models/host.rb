@@ -100,6 +100,14 @@ class Host
     return "nohup #{exe} #{args.join(' ')} &"
   end
 
+  def submittable_runs
+    Run.where(status: :created)
+  end
+
+  def submitted_runs
+    Run.where(status: :submitted, submitted_to: self)
+  end
+
   private
   def start_ssh
     Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port) do |ssh|

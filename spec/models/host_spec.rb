@@ -224,6 +224,46 @@ describe Host do
     end
   end
 
+  describe "#submittable_runs" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 2, runs_count: 3, finished_runs_count: 2)
+      @host = FactoryGirl.create(:host)
+    end
+
+    it "returns a Mongoid::Critieria" do
+      @host.submittable_runs.should be_a(Mongoid::Criteria)
+    end
+
+    it "returns runs whose status is created" do
+      @host.submittable_runs.should have(6).items
+    end
+  end
+
+  describe "#submitted_runs" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 0)
+      @host = FactoryGirl.create(:host)
+      host2 = FactoryGirl.create(:host)
+      ps = @sim.parameter_sets.first
+      FactoryGirl.create_list(:run, 2,
+                              parameter_set: ps, status: :submitted, submitted_to: @host)
+      FactoryGirl.create_list(:run, 3,
+                              parameter_set: ps, status: :submitted, submitted_to: host2)
+    end
+
+    it "returns the number of jobs submittable to the host" do
+      @host.submitted_runs.should be_a(Mongoid::Criteria)
+    end
+
+    it "returns runs whose status is 'submitted' and 'submitted_to' is the host" do
+      @host.submitted_runs.should have(2).items
+    end
+  end
+
   describe "#launch_worker_cmd" do
 
     pending "specification is subject to change"
