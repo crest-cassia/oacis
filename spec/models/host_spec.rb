@@ -264,6 +264,37 @@ describe Host do
     end
   end
 
+  describe "#submit" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 2)
+      @runs = @sim.parameter_sets.first.runs
+      @host = FactoryGirl.create(:localhost)
+      @temp_dir = Pathname.new('__temp__')
+      FileUtils.mkdir_p(@temp_dir)
+      @host.work_base_dir = File.expand_path(@temp_dir)
+      @host.save!
+      pp @temp_dir, @host
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it "creates a job script on the remote host" do
+      @host.submit(@runs)
+      Dir.glob( @temp_dir.join('*.sh') ).should have(2).items
+    end
+
+    it "creates _input.json on the remote host if simulator support json_input" do
+      @sim.support_input_json = true
+      @sim.save!
+      @host.submit(@runs)
+      Dir.glob( @temp_dir.join('*_input.json') ).should have(2).items
+    end
+  end
+
   describe "#launch_worker_cmd" do
 
     pending "specification is subject to change"

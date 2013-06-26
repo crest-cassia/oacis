@@ -43,17 +43,28 @@ class Host
 
   attr_reader :connection_error
 
-  def download(remote_path, local_path)
-    raise "Not an absolute path: #{remote_path}" unless Pathname.new(remote_path).absolute?
-    start_sftp do |sftp|
-      sftp.download!(remote_path, local_path, recursive: true)
+  def download(remote_path, local_path, sftp = nil)
+    if sftp
+      rpath = expand_remote_home_path(remote_path)
+      sftp.download!(rpath, local_path, recursive: true)
+    else
+      start_sftp {|sftp| download(remote_path, local_path, sftp) }
     end
   end
 
+  # def upload(local_path, remote_path, sftp = nil)
+  #   if sftp
+  #     rpath = expand_remote_home_path(remote_path)
+  #     sftp.upload!(local_path, rpath, recursive: true)
+  #   else
+  #     start_sftp {|sftp| upload(local_path, remote_path, sftp) }
+  #   end
+  # end
+
   def rm_r(remote_path)
-    raise "Not an abosolute path:#{remote_path}" unless Pathname.new(remote_path).absolute?
+    rpath = expand_remote_home_path(remote_path)
     start_ssh do |ssh|
-      ssh.exec!("rm -r #{remote_path}")
+      ssh.exec!("rm -r #{rpath}")
     end
   end
 
@@ -108,6 +119,18 @@ class Host
     Run.where(status: :submitted, submitted_to: self)
   end
 
+  def submit(runs)
+    # copy job_script and input_json files
+    job_script_paths = prepare_job_script_for(runs)
+
+    # enqueue jobs
+    start_ssh do |ssh|
+      job_script_paths.each do |path|
+        ssh.exec!("#{submission_command} #{path} &")
+      end
+    end
+  end
+
   private
   def start_ssh
     Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port) do |ssh|
@@ -147,5 +170,37 @@ class Host
     end
     ssh.loop
     [stdout_data, stderr_data, exit_code]
+  end
+
+  # Net::SSH and Net::SFTP can't interpret '~' as a home directory
+  # Instead, a relative path is calculated from the home directory of login user
+  # Therefore, replace '~' to '.' to correctly specify the home directory
+  def expand_remote_home_path(path)
+    path.sub(/^~/, '.')
+  end
+
+  def prepare_job_script_for(runs)
+    script_paths = []
+    start_sftp do |sftp|
+      runs.each do |run|
+        # prepare job script
+        work_dir = expand_remote_home_path(work_base_dir)
+        script_path = File.join(work_dir, "#{run.id}.sh")
+        sftp.file.open(script_path, 'w') { |f|
+          f.print JobScriptUtil.script_for(run, self)
+        }
+        script_paths << script_path
+
+        # prepare _input.json
+        input = run.command_and_input[1]
+        if input
+          input_json_path = File.join(work_dir, "#{run.id}_input.json")
+          sftp.file.open(input_json_path, 'w') { |f|
+            f.print input.to_json
+          }
+        end
+      end
+    end
+    return script_paths
   end
 end
