@@ -127,6 +127,7 @@ class Host
     start_ssh do |ssh|
       job_script_paths.each do |run_id, path|
         run = Run.find(run_id)
+        ssh.exec!("chmod +x #{path}")
         ssh.exec!("#{submission_command} #{path} &")
         run.status = :submitted
         run.submitted_to = self
