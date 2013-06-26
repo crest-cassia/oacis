@@ -274,6 +274,7 @@ describe Host do
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
       @host.work_base_dir = @temp_dir.expand_path
+      @host.submission_command = 'ls'
       @host.save!
     end
 
@@ -286,9 +287,10 @@ describe Host do
       Dir.glob( @temp_dir.join('*.sh') ).should have(2).items
     end
 
-    it "returns paths of job scripts on remote host" do
-      paths = @runs.map do |run|
-        File.join(@host.work_base_dir, "#{run.id}.sh")
+    it "returns hash of run_id and path to job script" do
+      paths = {}
+      @runs.each do |run|
+        paths[run.id] = File.join(@host.work_base_dir, "#{run.id}.sh")
       end
       @host.submit(@runs).should eq paths
     end
@@ -298,6 +300,15 @@ describe Host do
       @sim.save!
       @host.submit(@runs)
       Dir.glob( @temp_dir.join('*_input.json') ).should have(2).items
+    end
+
+    it "updates status and submitted_to fileds of Run" do
+      @host.submit(@runs)
+      @runs.each do |run|
+        run.reload
+        run.status.should eq :submitted
+        run.submitted_to.should eq @host
+      end
     end
 
     it "submit job to queueing system on the remote host" do

@@ -125,8 +125,12 @@ class Host
 
     # enqueue jobs
     start_ssh do |ssh|
-      job_script_paths.each do |path|
+      job_script_paths.each do |run_id, path|
+        run = Run.find(run_id)
         ssh.exec!("#{submission_command} #{path} &")
+        run.status = :submitted
+        run.submitted_to = self
+        run.save!
       end
     end
 
@@ -182,7 +186,7 @@ class Host
   end
 
   def prepare_job_script_for(runs)
-    script_paths = []
+    script_paths = {}
     start_sftp do |sftp|
       runs.each do |run|
         # prepare job script
@@ -191,7 +195,7 @@ class Host
         sftp.file.open(script_path, 'w') { |f|
           f.print JobScriptUtil.script_for(run, self)
         }
-        script_paths << script_path
+        script_paths[run.id] = script_path
 
         # prepare _input.json
         input = run.command_and_input[1]
