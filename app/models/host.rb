@@ -116,7 +116,7 @@ class Host
   end
 
   def submitted_runs
-    Run.where(status: :submitted, submitted_to: self)
+    Run.where(submitted_to: self).in(status: [:submitted, :running])
   end
 
   def submit(runs)

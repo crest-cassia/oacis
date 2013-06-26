@@ -251,16 +251,20 @@ describe Host do
       ps = @sim.parameter_sets.first
       FactoryGirl.create_list(:run, 2,
                               parameter_set: ps, status: :submitted, submitted_to: @host)
+      FactoryGirl.create_list(:run, 1,
+                              parameter_set: ps, status: :running, submitted_to: @host)
+      FactoryGirl.create_list(:run, 1,
+                              parameter_set: ps, status: :finished, submitted_to: @host)
       FactoryGirl.create_list(:run, 3,
                               parameter_set: ps, status: :submitted, submitted_to: host2)
     end
 
-    it "returns the number of jobs submittable to the host" do
+    it "returns the number of runs submitted to the host" do
       @host.submitted_runs.should be_a(Mongoid::Criteria)
     end
 
-    it "returns runs whose status is 'submitted' and 'submitted_to' is the host" do
-      @host.submitted_runs.should have(2).items
+    it "returns runs whose status is 'submitted' or 'running' and 'submitted_to' is the host" do
+      @host.submitted_runs.should have(3).items
     end
   end
 
