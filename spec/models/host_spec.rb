@@ -273,9 +273,8 @@ describe Host do
       @host = FactoryGirl.create(:localhost)
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
-      @host.work_base_dir = File.expand_path(@temp_dir)
+      @host.work_base_dir = @temp_dir.expand_path
       @host.save!
-      pp @temp_dir, @host
     end
 
     after(:each) do
@@ -287,11 +286,22 @@ describe Host do
       Dir.glob( @temp_dir.join('*.sh') ).should have(2).items
     end
 
+    it "returns paths of job scripts on remote host" do
+      paths = @runs.map do |run|
+        File.join(@host.work_base_dir, "#{run.id}.sh")
+      end
+      @host.submit(@runs).should eq paths
+    end
+
     it "creates _input.json on the remote host if simulator support json_input" do
       @sim.support_input_json = true
       @sim.save!
       @host.submit(@runs)
       Dir.glob( @temp_dir.join('*_input.json') ).should have(2).items
+    end
+
+    it "submit job to queueing system on the remote host" do
+      pending "test is not prepared yet"
     end
   end
 

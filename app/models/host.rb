@@ -129,6 +129,8 @@ class Host
         ssh.exec!("#{submission_command} #{path} &")
       end
     end
+
+    job_script_paths
   end
 
   private
