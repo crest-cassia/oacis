@@ -38,8 +38,11 @@ EOS
     Dir.chdir(run.dir.join('..')) {
       cmd = "bunzip2 #{run.id}.tar.bz2"
       system(cmd)
+      raise "failed to unzip the result" unless $?.to_i == 0
       cmd = "tar xf #{run.id}.tar"
       system(cmd)
+      raise "failed to extract the archive"  unless $?.to_i == 0
+      FileUtils.rm("#{run.id}.tar")
     }
 
     Dir.chdir(run.dir) {
@@ -53,10 +56,12 @@ EOS
         if line =~ /^real \d/
           run.real_time = line.sub(/^real /, '').to_f
         elsif line =~ /^user \d/
-          run.cpu_time += line.sub(/^user /,'').to_f # sum up cpu_times over processes
+          # sum up cpu_times over processes
+          run.cpu_time = run.cpu_time.to_f + line.sub(/^user /,'').to_f
         end
       end
       run.save!
     }
+
   end
 end
