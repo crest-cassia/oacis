@@ -33,7 +33,7 @@ describe JobScriptUtil do
 
         File.directory?(@run.id.to_s).should be_false
 
-        system("tar xvjf #{result_file}")
+        system("tar xjf #{result_file}")
         json_path = File.join(@run.id.to_s, '_status.json')
         File.exist?(json_path).should be_true
         parsed = JSON.load(File.open(json_path))
