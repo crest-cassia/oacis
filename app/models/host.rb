@@ -251,7 +251,21 @@ class Host
     base.join("#{run.id}.tar.bz2")
   end
 
+  def remote_path_exist?(path)
+    start_ssh do |ssh|
+      cmd = "if [ -e '#{path}' ]; then echo -n 'true'; fi"
+      return true if ssh_exec!(ssh, cmd)[0] == 'true'
+    end
+    return false
+  end
+
   def remote_status(run)
-    # IMPLEMENT ME
+    status = :submitted
+    if remote_path_exist?( work_dir_path(run) )
+      status = :running
+    elsif remote_path_exist?( compressed_result_file_path(run) )
+      status = :includable
+    end
+    status
   end
 end
