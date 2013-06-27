@@ -51,9 +51,9 @@ EOS
 
       File.open("_time.txt", 'r').each do |line|
         if line =~ /^real \d/
-          run.real_time = line.split(' ')[1].to_f
+          run.real_time = line.sub(/^real /, '').to_f
         elsif line =~ /^user \d/
-          run.cpu_time = line.split(' ')[1].to_f
+          run.cpu_time += line.sub(/^user /,'').to_f # sum up cpu_times over processes
         end
       end
       run.save!
