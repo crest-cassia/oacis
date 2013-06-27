@@ -2,18 +2,76 @@ require 'spec_helper'
 
 describe JobScriptUtil do
 
-  describe ".script_for" do
-
-    before(:each) do
+  before(:each) do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @run = @sim.parameter_sets.first.runs.first
-      @host = FactoryGirl.create(:localhost, work_base_dir: "./__work__")
+      @temp_dir = Pathname.new('__temp__')
+      FileUtils.mkdir_p(@temp_dir)
+      @host = FactoryGirl.create(:localhost, work_base_dir: @temp_dir.expand_path)
     end
 
-    it "returns a job script string" do
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+  def run_test_script_in_temp_dir
+    Dir.chdir(@temp_dir) {
       str = JobScriptUtil.script_for(@run, @host)
-      str.should be_a(String)
-      File.open("test.sh", 'w') {|f| f.print str }
+      script_path = 'test.sh'
+      File.open( script_path, 'w') {|io| io.print str }
+      system("bash #{script_path}")
+    }
+  end
+
+  describe ".script_for" do
+
+    it "job script creates _status.json and is valid" do
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        File.exist?(result_file).should be_true
+
+        File.directory?(@run.id.to_s).should be_false
+
+        system("tar xvjf #{result_file}")
+        json_path = File.join(@run.id.to_s, '_status.json')
+        File.exist?(json_path).should be_true
+        parsed = JSON.load(File.open(json_path))
+        parsed.should have_key("started_at")
+        parsed.should have_key("hostname")
+        parsed.should have_key("rc")
+        parsed.should have_key("finished_at")
+
+        time_path = File.join(@run.id.to_s, '_time.txt')
+        File.exist?(time_path).should be_true
+      }
+    end
+  end
+
+  describe ".expand_result_file_and_update_run" do
+
+    before(:each) do
+      run_test_script_in_temp_dir
+    end
+
+    it "expand results and parse _status.json" do
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        FileUtils.mv( result_file, @run.dir.join('..') )
+        JobScriptUtil.expand_result_file_and_update_run(@run)
+
+        # expand result properly
+        File.exist?(@run.dir.join('_stdout.txt')).should be_true
+
+        # parse status
+        @run.reload
+        @run.status.should eq :finished
+        @run.hostname.should_not be_empty
+        @run.started_at.should_not be_nil
+        @run.finished_at.should_not be_nil
+        @run.real_time.should_not be_nil
+        @run.cpu_time.should_not be_nil
+      }
     end
   end
 end
