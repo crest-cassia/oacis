@@ -43,10 +43,10 @@ class Host
 
   attr_reader :connection_error
 
-  def download(remote_path, local_path)
+  def download(remote_path, local_path, opt = {recursive: true})
     start_sftp do |sftp|
       rpath = expand_remote_home_path(remote_path)
-      sftp.download!(rpath, local_path, recursive: true)
+      sftp.download!(rpath, local_path, opt)
     end
   end
 
@@ -149,15 +149,13 @@ class Host
             run.save
           end
         when :includable
-          download(result_file_path(run), run.dir)
+          rpath = result_file_path(run)
+          base = File.basename(rpath)
+          download(rpath, run.dir.join('..', base), {recursive: false})
           JobScriptUtil.expand_result_file_and_update_run(run)
         end
       end
     end
-  end
-
-  def download_result_file(run)
-    download(result_file_path(run), '.')
   end
 
   private
@@ -211,16 +209,10 @@ class Host
   end
 
   # Net::SSH and Net::SFTP can't interpret '~' as a home directory
-  # First, get home path and replace '~' with the obtained path.
+  # a relative path is recognized as a relative path from home directory
+  # so replace '~' with '.' in this method
   def expand_remote_home_path(path)
-    if path.to_s =~ /^~/
-      start_ssh do |ssh|
-        home_path = ssh_exec!(ssh, "echo $HOME")[0]
-        Pathname.new( path.to_s.sub(/^~/, home_path) )
-      end
-    else
-      Pathname.new(path)
-    end
+    Pathname.new( path.to_s.sub(/^~/, '.') )
   end
 
   def prepare_job_script_for(runs)
