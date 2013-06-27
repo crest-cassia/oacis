@@ -135,20 +135,29 @@ class Host
     end
   end
 
-  def check_status(runs)
+  def check_submitted_job_status
+    return if submitted_runs.count == 0
     start_ssh do |ssh|
       # check if job is finished
-      runs.each do |run|
+      submitted_runs.each do |run|
         case remote_status(run)
         when :submitted
           # DO NOTHING
         when :running
-          # update status to running
+          if run.status == :submitted
+            run.status = :running
+            run.save
+          end
         when :includable
-          # include runs
+          download(result_file_path(run), run.dir)
+          JobScriptUtil.expand_result_file_and_update_run(run)
         end
       end
     end
+  end
+
+  def download_result_file(run)
+    download(result_file_path(run), '.')
   end
 
   private
@@ -202,10 +211,16 @@ class Host
   end
 
   # Net::SSH and Net::SFTP can't interpret '~' as a home directory
-  # Instead, a relative path is calculated from the home directory of login user
-  # Therefore, replace '~' to '.' to correctly specify the home directory
+  # First, get home path and replace '~' with the obtained path.
   def expand_remote_home_path(path)
-    Pathname.new( path.to_s.sub(/^~/, '.') )
+    if path.to_s =~ /^~/
+      start_ssh do |ssh|
+        home_path = ssh_exec!(ssh, "echo $HOME")[0]
+        Pathname.new( path.to_s.sub(/^~/, home_path) )
+      end
+    else
+      Pathname.new(path)
+    end
   end
 
   def prepare_job_script_for(runs)
@@ -246,7 +261,7 @@ class Host
     base.join("#{run.id}")
   end
 
-  def compressed_result_file_path(run)
+  def result_file_path(run)
     base = expand_remote_home_path(work_base_dir)
     base.join("#{run.id}.tar.bz2")
   end
@@ -263,7 +278,7 @@ class Host
     status = :submitted
     if remote_path_exist?( work_dir_path(run) )
       status = :running
-    elsif remote_path_exist?( compressed_result_file_path(run) )
+    elsif remote_path_exist?( result_file_path(run) )
       status = :includable
     end
     status

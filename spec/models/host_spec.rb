@@ -375,4 +375,45 @@ describe Host do
       @host.__send__(:remote_status, @run).should eq :includable
     end
   end
+
+  describe "#check_submitted_job_status" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 1)
+      @temp_dir = Pathname.new('__temp__')
+      FileUtils.mkdir_p(@temp_dir)
+      @host = FactoryGirl.create(:localhost, work_base_dir: @temp_dir.expand_path)
+
+      @run = @sim.parameter_sets.first.runs.first
+      @run.status = :submitted
+      @run.submitted_to = @host
+      @run.save!
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it "do nothing if remote_status is 'submitted'" do
+      @host.should_receive(:remote_status).and_return(:submitted)
+      @host.check_submitted_job_status
+      @run.status.should eq :submitted
+    end
+
+    it "update status to 'running' when remote_status of Run is 'running'" do
+      @host.should_receive(:remote_status).and_return(:running)
+      @host.check_submitted_job_status
+      @run.reload.status.should eq :running
+    end
+
+    it "include remote data and update status to 'finished' or 'failed'" do
+      @host.should_receive(:remote_status).and_return(:includable)
+      @host.stub!(:download)
+      JobScriptUtil.should_receive(:expand_result_file_and_update_run) do |run|
+        run.id.should eq @run.id
+      end
+      @host.check_submitted_job_status
+    end
+  end
 end
