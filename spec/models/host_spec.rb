@@ -134,6 +134,13 @@ describe Host do
       }.to raise_error SocketError
       File.directory?(@temp_dir2).should_not be_true
     end
+
+    it "creates ssh session once even when #download is called several times" do
+      Net::SSH.should_receive(:start).once.and_call_original
+      @host.__send__(:start_ssh) do |ssh|
+        @host.download(@temp_dir.expand_path, @temp_dir2)
+      end
+    end
   end
 
   describe "#rm_r" do
@@ -315,6 +322,11 @@ describe Host do
       end
     end
 
+    it "creates ssh session only once" do
+      Net::SSH.should_receive(:start).once.and_call_original
+      @host.submit(@runs)
+    end
+
     it "submit job to queueing system on the remote host" do
       pending "test is not prepared yet"
     end
@@ -323,5 +335,44 @@ describe Host do
   describe "#launch_worker_cmd" do
 
     pending "specification is subject to change"
+  end
+
+  describe "#remote_status" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 1)
+      @run = @sim.parameter_sets.first.runs.first
+      @host = FactoryGirl.create(:localhost)
+      @temp_dir = Pathname.new('__temp__')
+      FileUtils.mkdir_p(@temp_dir)
+      @host.work_base_dir = @temp_dir.expand_path
+      @host.save!
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it "returns :submitted when neither work_dir nor compressed_result_file is not found" do
+      @host.__send__(:remote_status, @run).should eq :submitted
+    end
+
+    it "returns :running when work_dir is found" do
+      FileUtils.mkdir( @temp_dir.join(@run.id.to_s) )
+      @host.__send__(:remote_status, @run).should eq :running
+    end
+
+    it "returns :running when both compressed result file and work_dir are found" do
+      FileUtils.mkdir( @temp_dir.join(@run.id.to_s) )
+      FileUtils.touch( @temp_dir.join("#{@run.id.to_s}.tar.bz2") )
+      @host.__send__(:remote_status, @run).should eq :running
+    end
+
+
+    it "returns :includable when compressed result file is found but work_dir is not" do
+      FileUtils.touch( @temp_dir.join("#{@run.id.to_s}.tar.bz2") )
+      @host.__send__(:remote_status, @run).should eq :includable
+    end
   end
 end
