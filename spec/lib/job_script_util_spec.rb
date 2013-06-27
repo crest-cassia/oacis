@@ -68,8 +68,8 @@ describe JobScriptUtil do
         @run.reload
         @run.status.should eq :finished
         @run.hostname.should_not be_empty
-        @run.started_at.should_not be_nil
-        @run.finished_at.should_not be_nil
+        @run.started_at.should be_a(DateTime)
+        @run.finished_at.should be_a(DateTime)
         @run.real_time.should_not be_nil
         @run.cpu_time.should_not be_nil
       }
