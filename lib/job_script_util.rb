@@ -37,10 +37,8 @@ EOS
   def self.expand_result_file_and_update_run(run)
     Dir.chdir(run.dir.join('..')) {
       cmd = "bunzip2 #{run.id}.tar.bz2"
-      pp cmd
       system(cmd)
       cmd = "tar xf #{run.id}.tar"
-      pp cmd
       system(cmd)
     }
 
@@ -58,7 +56,6 @@ EOS
           run.cpu_time = line.split(' ')[1].to_f
         end
       end
-      pp run
       run.save!
     }
   end
