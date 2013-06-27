@@ -153,6 +153,11 @@ class Host
           base = File.basename(rpath)
           download(rpath, run.dir.join('..', base), {recursive: false})
           JobScriptUtil.expand_result_file_and_update_run(run)
+          run.reload
+          if run.status == :finished
+            rm_r( result_file_path(run) )
+            rm_r( job_script_path(run) )
+          end
         end
       end
     end
