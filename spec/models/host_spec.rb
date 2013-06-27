@@ -294,7 +294,7 @@ describe Host do
     it "returns hash of run_id and path to job script" do
       paths = {}
       @runs.each do |run|
-        paths[run.id] = File.join(@host.work_base_dir, "#{run.id}.sh")
+        paths[run.id] = Pathname.new(@host.work_base_dir).join("#{run.id}.sh")
       end
       @host.submit(@runs).should eq paths
     end

@@ -120,11 +120,11 @@ class Host
   end
 
   def submit(runs)
-    # copy job_script and input_json files
-    job_script_paths = prepare_job_script_for(runs)
-
-    # enqueue jobs
     start_ssh do |ssh|
+      # copy job_script and input_json files
+      job_script_paths = prepare_job_script_for(runs, ssh.sftp)
+
+      # enqueue jobs
       job_script_paths.each do |run_id, path|
         run = Run.find(run_id)
         ssh.exec!("chmod +x #{path}")
@@ -133,9 +133,8 @@ class Host
         run.submitted_to = self
         run.save!
       end
+      job_script_paths
     end
-
-    job_script_paths
   end
 
   private
@@ -186,28 +185,42 @@ class Host
     path.sub(/^~/, '.')
   end
 
-  def prepare_job_script_for(runs)
+  def prepare_job_script_for(runs, sftp)
     script_paths = {}
-    start_sftp do |sftp|
-      runs.each do |run|
-        # prepare job script
-        work_dir = expand_remote_home_path(work_base_dir)
-        script_path = File.join(work_dir, "#{run.id}.sh")
-        sftp.file.open(script_path, 'w') { |f|
-          f.print JobScriptUtil.script_for(run, self)
-        }
-        script_paths[run.id] = script_path
+    runs.each do |run|
+      # prepare job script
+      spath = job_script_path(run)
+      sftp.file.open(spath, 'w') { |f|
+        f.print JobScriptUtil.script_for(run, self)
+      }
+      script_paths[run.id] = spath
 
-        # prepare _input.json
-        input = run.command_and_input[1]
-        if input
-          input_json_path = File.join(work_dir, "#{run.id}_input.json")
-          sftp.file.open(input_json_path, 'w') { |f|
-            f.print input.to_json
-          }
-        end
+      # prepare _input.json
+      input = run.command_and_input[1]
+      if input
+        sftp.file.open(input_json_path(run), 'w') { |f|
+          f.print input.to_json
+        }
       end
     end
-    return script_paths
+    script_paths
+  end
+
+  def job_script_path(run)
+    base = expand_remote_home_path(work_base_dir)
+    base = Pathname.new(base)
+    base.join("#{run.id}.sh")
+  end
+
+  def input_json_path(run)
+    base = expand_remote_home_path(work_base_dir)
+    base = Pathname.new(base)
+    base.join("#{run.id}_input.json")
+  end
+
+  def work_dir_path(run)
+    base = expand_remote_home_path(work_base_dir)
+    base = Pathname.new(base)
+    base.join("#{run.id}")
   end
 end
