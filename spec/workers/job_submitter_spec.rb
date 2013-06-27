@@ -19,7 +19,7 @@ describe JobSubmitter do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       expect {
         JobSubmitter.perform
-      }.to { Run.where(status: :submitted).count }.change.by(1)
+      }.to change { Run.where(status: :submitted).count }.by(1)
     end
 
     it "do nothing if there is no 'created' jobs" do
