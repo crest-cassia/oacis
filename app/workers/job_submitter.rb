@@ -3,6 +3,7 @@ class JobSubmitter
   QUEUE_NAME = :job_submitter_queue
   @queue = QUEUE_NAME
 
+  INTERVAL_IN_MINUTES = 1
   MAX_JOBS_FOR_EACH_NODE = 10
 
   def self.perform
@@ -13,6 +14,14 @@ class JobSubmitter
       host.submit(runs)
     end
 
-    # enqueue a job for 5 minutes later
+    clear_queue
+  end
+
+  def self.clear_queue
+    Resque::Job.destroy(QUEUE_NAME, self)
+  end
+
+  def self.on_failure(ex)
+    clear_queue
   end
 end

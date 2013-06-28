@@ -1,4 +1,5 @@
 require "resque/tasks"
+require "resque_scheduler/tasks"
 
 task "resque:setup" do
   if ENV['LOAD_RAILS'] == 'false'
