@@ -4,8 +4,6 @@ describe JobScriptUtil do
 
   before(:each) do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-      @sim.command = "echo '[1,2,3]' > _output.json"
-      @sim.save!
       @run = @sim.parameter_sets.first.runs.first
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
@@ -62,11 +60,10 @@ describe JobScriptUtil do
 
   describe ".expand_result_file_and_update_run" do
 
-    before(:each) do
-      run_test_script_in_temp_dir
-    end
-
     it "expand results and parse _status.json" do
+      @sim.command = "echo '[1,2,3]' > _output.json"
+      @sim.save!
+      run_test_script_in_temp_dir
       Dir.chdir(@temp_dir) {
         result_file = "#{@run.id}.tar.bz2"
         FileUtils.mv( result_file, @run.dir.join('..') )
@@ -86,6 +83,21 @@ describe JobScriptUtil do
         @run.real_time.should_not be_nil
         @run.cpu_time.should_not be_nil
         @run.result.should eq [1,2,3]
+      }
+    end
+
+    it "parse elapsed times" do
+      @sim.command = "sleep 1"
+      @sim.save!
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        FileUtils.mv( result_file, @run.dir.join('..') )
+        JobScriptUtil.expand_result_file_and_update_run(@run)
+
+        @run.reload
+        @run.cpu_time.should be_within(0.2).of(0.0)
+        @run.real_time.should be_within(0.2).of(1.0)
       }
     end
   end
