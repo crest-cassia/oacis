@@ -6,6 +6,7 @@ class Run
   field :hostname, type: String
   field :cpu_time, type: Float
   field :real_time, type: Float
+  field :submitted_at, type: DateTime
   field :started_at, type: DateTime
   field :finished_at, type: DateTime
   field :included_at, type: DateTime

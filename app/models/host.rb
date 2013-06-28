@@ -131,6 +131,7 @@ class Host
         ssh.exec!("#{submission_command} #{path} >> #{work_base_dir}/_submission.log 2>&1 &")
         run.status = :submitted
         run.submitted_to = self
+        run.submitted_at = DateTime.now
         run.save!
       end
       job_script_paths

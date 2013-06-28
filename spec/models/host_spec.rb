@@ -322,6 +322,12 @@ describe Host do
       end
     end
 
+    it "update submitted_at field of Run" do
+      expect {
+        @host.submit(@runs)
+      }.to change { @runs.first.reload.submitted_at }
+    end
+
     it "creates ssh session only once" do
       Net::SSH.should_receive(:start).once.and_call_original
       @host.submit(@runs)
