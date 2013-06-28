@@ -24,6 +24,8 @@ private
       tmp = []
       tmp << @view.link_to(idx+1, run_path(run))
       tmp << raw(status_label(run.status))
+      host = run.submitted_to
+      tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "")
       tmp << run.hostname
       tmp << formatted_elapsed_time(run.cpu_time)
       tmp << formatted_elapsed_time(run.real_time)
@@ -53,23 +55,10 @@ private
     @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
   end
 
+  COLUMNS = ["id", "status", "submitted_to", "host", "cpu_time", "real_time", "created_at", "started_at", "finished_at"]
   def sort_column
-    case @view.params[:iSortCol_0].to_i
-    when 0 #it means index
-      "id"
-    when 1 #it means status
-      "status"
-    when 2 #it means cpu_time
-      "cpu_time"
-    when 3 #it means real_time
-      "real_time"
-    when 4 #it means created_at
-      "created_at"
-    when 5 #it means started_at
-      "started_at"
-    when 6 #it means finished_at
-      "finished_at"
-    end
+    idx = @view.params[:iSortCol_0].to_i
+    COLUMNS[idx]
   end
 
   def sort_direction

@@ -11,6 +11,10 @@
       %th seed
       %td= @run.seed
     %tr
+      %th submitted_to
+      - host = @run.submitted_to
+      %td= (host ? link_to( host.name, host_path(host) ) : "")
+    %tr
       %th hostname
       %td= @run.hostname
     %tr
