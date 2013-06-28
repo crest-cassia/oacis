@@ -97,6 +97,12 @@ describe Host do
       host.should respond_to(:created_at)
       host.should respond_to(:updated_at)
     end
+
+    it "max_num_jobs must be 0 or positive number" do
+      @valid_attr.update(max_num_jobs: -1)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
   end
 
   describe "#download" do

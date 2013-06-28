@@ -4,11 +4,10 @@ class JobSubmitter
   @queue = QUEUE_NAME
 
   INTERVAL_IN_MINUTES = 1
-  MAX_JOBS_FOR_EACH_NODE = 10
 
   def self.perform
     Host.all.each do |host|
-      num = MAX_JOBS_FOR_EACH_NODE - host.submitted_runs.count
+      num = host.max_num_jobs - host.submitted_runs.count
       num = 0 if num < 0
       runs = host.submittable_runs.limit(num)
       host.submit(runs)
