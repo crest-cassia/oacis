@@ -82,6 +82,7 @@ describe JobScriptUtil do
         @run.finished_at.should be_a(DateTime)
         @run.real_time.should_not be_nil
         @run.cpu_time.should_not be_nil
+        @run.included_at.should be_a(DateTime)
         @run.result.should eq [1,2,3]
       }
     end
