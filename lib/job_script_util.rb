@@ -18,7 +18,7 @@ echo "{" > _status.json
 echo "  \\"started_at\\": \\"`date`\\"," >> _status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> _status.json
 # JOB EXECUTION -------------------
-{ time -p { #{cmd} 1> _stdout.txt 2> _stderr.txt; } } 2>> _time.txt
+{ time -p { { #{cmd}; } 1> _stdout.txt 2> _stderr.txt; } } 2>> _time.txt
 echo "  \\"rc\\": $?," >> _status.json
 echo "  \\"finished_at\\": \\"`date`\\"" >> _status.json
 echo "}" >> _status.json
@@ -60,6 +60,9 @@ EOS
           run.cpu_time = run.cpu_time.to_f + line.sub(/^user /,'').to_f
         end
       end
+
+      json_path = '_output.json'
+      run.result = JSON.load(File.open(json_path)) if File.exist?(json_path)
       run.save!
     }
   end

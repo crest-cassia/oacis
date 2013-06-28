@@ -4,6 +4,8 @@ describe JobScriptUtil do
 
   before(:each) do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @sim.command = "echo '[1,2,3]' > _output.json"
+      @sim.save!
       @run = @sim.parameter_sets.first.runs.first
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
@@ -62,6 +64,7 @@ describe JobScriptUtil do
 
         # expand result properly
         File.exist?(@run.dir.join('_stdout.txt')).should be_true
+        File.exist?(@run.dir.join('_output.json')).should be_true
         File.exist?(@run.dir.join('..', "#{@run.id}.tar")).should be_false
 
         # parse status
@@ -72,6 +75,7 @@ describe JobScriptUtil do
         @run.finished_at.should be_a(DateTime)
         @run.real_time.should_not be_nil
         @run.cpu_time.should_not be_nil
+        @run.result.should eq [1,2,3]
       }
     end
   end
