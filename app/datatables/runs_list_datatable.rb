@@ -26,10 +26,10 @@ private
       tmp << raw(status_label(run.status))
       host = run.submitted_to
       tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "")
-      tmp << run.hostname
       tmp << formatted_elapsed_time(run.cpu_time)
       tmp << formatted_elapsed_time(run.real_time)
       tmp << distance_to_now_in_words(run.created_at)
+      tmp << distance_to_now_in_words(run.submitted_at)
       tmp << distance_to_now_in_words(run.started_at)
       tmp << distance_to_now_in_words(run.finished_at)
       a << tmp
@@ -55,7 +55,7 @@ private
     @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
   end
 
-  COLUMNS = ["id", "status", "submitted_to", "host", "cpu_time", "real_time", "created_at", "started_at", "finished_at"]
+  COLUMNS = ["id", "status", "submitted_to", "cpu_time", "real_time", "created_at", "submitted_at", "started_at", "finished_at"]
   def sort_column
     idx = @view.params[:iSortCol_0].to_i
     COLUMNS[idx]
