@@ -144,7 +144,7 @@ describe DataIncluder do
         end
 
         it "does not create analysis if any of runs within the parameter set is 'created' or 'running'" do
-          FactoryGirl.create(:run, parameter_set: @prm, status: :create)
+          FactoryGirl.create(:run, parameter_set: @prm, status: :created)
           expect {
             DataIncluder.perform(@arg)
           }.to_not change { @prm.reload.analyses.count }
