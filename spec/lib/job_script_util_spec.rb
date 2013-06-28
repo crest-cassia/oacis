@@ -48,6 +48,16 @@ describe JobScriptUtil do
         File.exist?(time_path).should be_true
       }
     end
+
+    it "create a valid json file even if command has semi-colon at the end" do
+      @sim.command = "echo hello;"
+      @sim.save!
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        File.exist?(result_file).should be_true
+      }
+    end
   end
 
   describe ".expand_result_file_and_update_run" do
