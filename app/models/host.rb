@@ -126,7 +126,9 @@ class Host
       job_script_paths.each do |run_id, path|
         run = Run.find(run_id)
         ssh.exec!("chmod +x #{path}")
-        ssh.exec!("#{submission_command} #{path} &")
+        # NOTE: must be redirected to a file or ssh.exec! does not return immediately
+        # See http://johanharjono.com/archives/602
+        ssh.exec!("#{submission_command} #{path} >> #{work_base_dir}/_submission.log 2>&1 &")
         run.status = :submitted
         run.submitted_to = self
         run.save!
