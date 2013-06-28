@@ -17,6 +17,8 @@ module RunsHelper
     case status
     when :created
       '<span class="label">created</span>'
+    when :submitted
+      '<span class="label label-info">submitted</span>'
     when :running
       '<span class="label label-warning">running</span>'
     when :failed
