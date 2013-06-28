@@ -78,6 +78,35 @@ class Run
     return paths
   end
 
+  def enqueue_auto_run_analyzers
+    ps = self.parameter_set
+    sim = ps.simulator
+
+    if self.status == :finished
+      sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
+        anl = self.analyses.build(analyzer: azr)
+        anl.save and anl.submit
+      end
+
+      sim.analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
+        scope = ps.runs.where(status: :finished)
+        if scope.count == 1 and scope.first.id == self.id
+          anl = self.analyses.build(analyzer: azr)
+          anl.save and anl.submit
+        end
+      end
+    end
+
+    if self.status == :finished or self.status == :failed
+      sim.analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
+        unless ps.runs.nin(status: [:finished, :failed]).exists?
+          anl = ps.analyses.build(analyzer: azr)
+          anl.save and anl.submit
+        end
+      end
+    end
+  end
+
   SeedMax = 2 ** 31
   SeedIterationLimit = 1024
   private

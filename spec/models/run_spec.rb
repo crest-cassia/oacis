@@ -230,4 +230,91 @@ describe Run do
       @run.result_paths.should_not include(arn_dir)
     end
   end
+
+  describe "#enqueue_auto_run_analyzers" do
+
+    describe "auto run of analyzers for on_run type" do
+
+      before(:each) do
+        @run = @simulator.parameter_sets.first.runs.first
+        # @run.update_attributes!(status: :finished)
+        @run.status = :finished
+        @run.save!
+        @azr = FactoryGirl.create(:analyzer, simulator: @simulator, type: :on_run, auto_run: :yes)
+      end
+
+      context "when Analyzer#auto_run is :yes" do
+
+        it "creates analysis if status is 'finished'" do
+          expect {
+            @run.enqueue_auto_run_analyzers
+          }.to change { @run.reload.analyses.count }.by(1)
+        end
+
+        it "do not create analysis if status is not 'finished'" do
+          @run.status = :failed
+          @run.save!
+          expect {
+            @run.enqueue_auto_run_analyzers
+          }.to_not change { @run.reload.analyses.count }
+        end
+      end
+
+      context "when Analyzer#auto_run is :no" do
+
+        it "does not create analysis if Anaylzer#auto_run is :no" do
+          @azr.update_attributes!(auto_run: :no)
+          expect {
+            @run.enqueue_auto_run_analyzers
+          }.to_not change { @run.reload.analyses.count }
+        end
+      end
+
+      context "when Analyzer#auto_run is :first_run_only" do
+
+        before(:each) do
+          @azr.update_attributes!(auto_run: :first_run_only)
+        end
+
+        it "creates analysis if the run is the first 'finished' run within the parameter set" do
+          expect {
+            @run.enqueue_auto_run_analyzers
+          }.to change { @run.reload.analyses.count }.by(1)
+        end
+
+        it "does not create analysis if 'finished' run already exists within the paramter set" do
+          FactoryGirl.create(:run, parameter_set: @param_set, status: :finished)
+          expect {
+            @run.enqueue_auto_run_analyzers
+          }.to_not change { @run.reload.analyses.count }
+        end
+      end
+    end
+
+    describe "auto run of analyzers for on_parameter_set type" do
+
+      before(:each) do
+        @run = @simulator.parameter_sets.first.runs.first
+        @run.status = :finished
+        @run.save!
+        @azr = FactoryGirl.create(:analyzer,
+                                  simulator: @simulator, type: :on_parameter_set, auto_run: :yes)
+      end
+
+      it "creates analysis if all the other runs within the parameter set are 'finished' or 'failed'" do
+        FactoryGirl.create(:run, parameter_set: @param_set, status: :failed)
+        FactoryGirl.create(:run, parameter_set: @param_set, status: :finished)
+        expect {
+          @run.enqueue_auto_run_analyzers
+        }.to change { @param_set.reload.analyses.count }.by(1)
+      end
+
+      it "does not create analysis if any of runs within the parameter set is not 'finished' or 'failed'" do
+        FactoryGirl.create(:run, parameter_set: @param_set, status: :submitted)
+        expect {
+          @run.enqueue_auto_run_analyzers
+        }.to_not change { @param_set.reload.analyses.count }
+      end
+    end
+  end
 end
