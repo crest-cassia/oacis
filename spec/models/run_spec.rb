@@ -118,42 +118,6 @@ describe Run do
     end
   end
 
-  describe "#submit" do
-
-    context "for simulators which receives parameters as arguments" do
-
-      it "submits a run to Resque" do
-        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: false)
-        prm = sim.parameter_sets.first
-        run = prm.runs.first
-        Resque.should_receive(:enqueue) do |klass, arg|
-          klass.should eq SimulatorRunner
-          arg[:id].should eq run.id
-          arg[:command].should eq run.command_and_input[0]
-          arg.should_not have_key(:input)
-        end
-        run.submit
-      end
-    end
-
-    context "for simulators which receives parameters as _input.json" do
-
-      it "submits a run to Resque" do
-        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: true)
-        prm = sim.parameter_sets.first
-        run = prm.runs.first
-        Resque.should_receive(:enqueue) do |klass, arg|
-          klass.should eq SimulatorRunner
-          arg[:id].should eq run.id
-          arg[:command].should eq run.command_and_input[0]
-          arg.should have_key(:input)
-        end
-        run.submit
-      end
-    end
-
-  end
-
   describe "#command_and_input" do
 
     context "for simulators which receives parameters as arguments" do

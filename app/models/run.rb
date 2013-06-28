@@ -36,13 +36,6 @@ class Run
     parameter_set.simulator
   end
 
-  def submit
-    command, input = command_and_input
-    run_info = {id: id, command: command}
-    run_info[:input] = input if input
-    Resque.enqueue(SimulatorRunner, run_info)
-  end
-
   def command
     command_and_input[0]
   end
