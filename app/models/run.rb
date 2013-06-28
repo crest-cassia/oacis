@@ -15,8 +15,9 @@ class Run
   belongs_to :submitted_to, class_name: "Host"
 
   # validations
-  validates :status, :presence => true
-  validates :seed, :presence => true, uniqueness: {scope: :parameter_set_id}
+  validates :status, presence: true,
+                     inclusion: {in: [:created,:submitted,:running,:failed,:finished]}
+  validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
