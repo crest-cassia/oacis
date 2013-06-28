@@ -185,34 +185,6 @@ class Host
     end
   end
 
-  def ssh_exec!(ssh, command)
-    # Originally submitted by 'flitzwald' over here: http://stackoverflow.com/a/3386375
-    stdout_data = ""
-    stderr_data = ""
-    exit_code = nil
-
-    ssh.open_channel do |channel|
-      channel.exec(command) do |ch, success|
-        unless success
-          abort "FAILED: couldn't execute command (ssh.channel.exec)"
-        end
-        channel.on_data do |ch,data|
-          stdout_data+=data
-        end
-
-        channel.on_extended_data do |ch,type,data|
-          stderr_data+=data
-        end
-
-        channel.on_request("exit-status") do |ch,data|
-          exit_code = data.read_long
-        end
-      end
-    end
-    ssh.loop
-    [stdout_data, stderr_data, exit_code]
-  end
-
   # Net::SSH and Net::SFTP can't interpret '~' as a home directory
   # a relative path is recognized as a relative path from home directory
   # so replace '~' with '.' in this method
@@ -264,9 +236,15 @@ class Host
   end
 
   def remote_path_exist?(path)
-    start_ssh do |ssh|
-      cmd = "if [ -e '#{path}' ]; then echo -n 'true'; fi"
-      return true if ssh_exec!(ssh, cmd)[0] == 'true'
+    start_sftp do |sftp|
+      begin
+        sftp.stat!(path) do |response|
+          return true if response.ok?
+        end
+      rescue Net::SFTP::StatusException => ex
+        # pp ex, ex.code, ex.description, ex.response, ex.text
+        raise ex unless ex.code == 2  # no such file
+      end
     end
     return false
   end
