@@ -1,5 +1,11 @@
 class RunsController < ApplicationController
 
+  def index
+    respond_to do |format|
+      format.html
+    end
+  end
+
   def show
     @run = Run.find(params[:id])
     @param_set = @run.parameter_set

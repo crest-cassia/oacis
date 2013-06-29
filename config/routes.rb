@@ -29,6 +29,8 @@ AcmProto::Application.routes.draw do
     end
   end
 
+  resources :runs, only: ["index"]
+
   # routes for analyzers and analyses
   resources :simulators, shallow: false, only: [] do
     resources :analyzers, only: ["show"] do
