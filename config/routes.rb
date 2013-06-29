@@ -3,6 +3,7 @@ AcmProto::Application.routes.draw do
   resources :runs, only: ["index"] do
     collection do
       get "_jobs_table" # for ajax, datatables
+      get "check_server_status"
     end
   end
 

@@ -11,6 +11,12 @@ class RunsController < ApplicationController
     render json: RunsListDatatable.new(Run.where(status: stat), view_context)
   end
 
+  def check_server_status
+    Resque.enqueue(JobObserver)
+    Resque.enqueue(JobSubmitter)
+    redirect_to runs_path, notice: 'checking server status'
+  end
+
   def show
     @run = Run.find(params[:id])
     @param_set = @run.parameter_set
