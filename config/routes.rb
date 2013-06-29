@@ -1,5 +1,11 @@
 AcmProto::Application.routes.draw do
 
+  resources :runs, only: ["index"] do
+    collection do
+      get "_jobs_table" # for ajax, datatables
+    end
+  end
+
   # Simulator-ParameterSet-Run relations
   resources :simulators, shallow: true, only: ["index", "show", "new", "create"] do
     member do
@@ -28,8 +34,6 @@ AcmProto::Application.routes.draw do
       resources :analyses, :only => ["show", "create"]
     end
   end
-
-  resources :runs, only: ["index"]
 
   # routes for analyzers and analyses
   resources :simulators, shallow: false, only: [] do

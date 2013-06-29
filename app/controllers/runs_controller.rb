@@ -6,6 +6,11 @@ class RunsController < ApplicationController
     end
   end
 
+  def _jobs_table
+    stat = params["run_status"].to_sym
+    render json: RunsListDatatable.new(Run.where(status: stat), view_context)
+  end
+
   def show
     @run = Run.find(params[:id])
     @param_set = @run.parameter_set
