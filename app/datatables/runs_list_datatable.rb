@@ -1,6 +1,11 @@
 class RunsListDatatable
   delegate :params, :h, :link_to, :distance_to_now_in_words, :formatted_elapsed_time, :run_path, :raw, :status_label, to: :@view
 
+  HEADER  = ['#', 'status', 'submitted_to', 'cpu_time', 'real_time',
+             'created_at', 'submitted_at', 'started_at', 'finished_at']
+  SORT_BY = ["id", "status", "submitted_to", "cpu_time", "real_time",
+             "created_at", "submitted_at", "started_at", "finished_at"]
+
   def initialize(runs, view)
     @view = view
     @runs = runs
@@ -54,10 +59,9 @@ private
     @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
   end
 
-  COLUMNS = ["id", "status", "submitted_to", "cpu_time", "real_time", "created_at", "submitted_at", "started_at", "finished_at"]
   def sort_column
     idx = @view.params[:iSortCol_0].to_i
-    COLUMNS[idx]
+    SORT_BY[idx]
   end
 
   def sort_direction

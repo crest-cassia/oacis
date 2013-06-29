@@ -2,15 +2,8 @@
 %table.table.table-condensed.table-hover.table-striped#runs_list{:'data-source' => "#{_runs_list_parameter_set_path(@param_set.to_param, format: "json")}"}
   %thead
     %tr
-      %th.span1 #
-      %th.span1 status
-      %th.span1 submitted_to
-      %th.span1 cpu_time
-      %th.span1 real_time
-      %th.span1 created_at
-      %th.span1 submitted_at
-      %th.span1 started_at
-      %th.span1 finished_at
+      - RunsListDatatable::HEADER.each do |header|
+        %th.span1= header
   %tbody
 
 = form_tag(parameter_set_runs_path(@param_set), class: 'form-inline form-actions') do |f|
