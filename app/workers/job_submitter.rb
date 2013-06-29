@@ -8,9 +8,10 @@ class JobSubmitter
   def self.perform
     Host.all.each do |host|
       num = host.max_num_jobs - host.submitted_runs.count
-      num = 0 if num < 0
-      runs = host.submittable_runs.limit(num)
-      host.submit(runs)
+      if num > 0
+        runs = host.submittable_runs.limit(num)
+        host.submit(runs)
+      end
     end
 
     clear_queue
