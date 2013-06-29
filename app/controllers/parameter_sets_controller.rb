@@ -52,6 +52,7 @@ class ParameterSetsController < ApplicationController
   end
 
   def _runs_list
-    render json: RunsListDatatable.new(view_context)
+    param_set = ParameterSet.find(params[:id])
+    render json: RunsListDatatable.new(param_set.runs, view_context)
   end
 end

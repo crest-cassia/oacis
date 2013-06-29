@@ -1,10 +1,9 @@
 class RunsListDatatable
   delegate :params, :h, :link_to, :distance_to_now_in_words, :formatted_elapsed_time, :run_path, :raw, :status_label, to: :@view
 
-  def initialize(view)
+  def initialize(runs, view)
     @view = view
-    @param_sets = ParameterSet.find(@view.params[:id])
-    @runs = Run.where(:parameter_set_id => @param_sets.id)
+    @runs = runs
   end
 
   def as_json(options = {})
