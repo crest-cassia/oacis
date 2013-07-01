@@ -76,7 +76,7 @@ describe "ParameterSetsListDatatable" do
         @psld_json["iTotalRecords"].should == 25
         @psld_json["iTotalDisplayRecords"].should == 25
         @psld_json["aaData"].size.should == 5
-        @psld_json["aaData"].first[4].to_i.should == @query.parameter_sets.only("v.L").max("v.L")#["aaData"].first[2].to_i is qeual to v.L (["aaData"].first[id, updated_at, [keys]])
+        @psld_json["aaData"].first[4].to_i.should == @query.parameter_sets.only("v.L").max("v.L")#["aaData"].first[4].to_i is qeual to v.L (["aaData"].first[id, updated_at, [keys]])
       end
     end
   end

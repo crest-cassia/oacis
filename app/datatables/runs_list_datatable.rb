@@ -1,10 +1,14 @@
 class RunsListDatatable
   delegate :params, :h, :link_to, :distance_to_now_in_words, :formatted_elapsed_time, :run_path, :raw, :status_label, to: :@view
 
-  def initialize(view)
+  HEADER  = ['#', 'status', 'submitted_to', 'cpu_time', 'real_time',
+             'created_at', 'submitted_at', 'started_at', 'finished_at']
+  SORT_BY = ["id", "status", "submitted_to", "cpu_time", "real_time",
+             "created_at", "submitted_at", "started_at", "finished_at"]
+
+  def initialize(runs, view)
     @view = view
-    @param_sets = ParameterSet.find(@view.params[:id])
-    @runs = Run.where(:parameter_set_id => @param_sets.id)
+    @runs = runs
   end
 
   def as_json(options = {})
@@ -24,10 +28,12 @@ private
       tmp = []
       tmp << @view.link_to(idx+1, run_path(run))
       tmp << raw(status_label(run.status))
-      tmp << run.hostname
+      host = run.submitted_to
+      tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "")
       tmp << formatted_elapsed_time(run.cpu_time)
       tmp << formatted_elapsed_time(run.real_time)
       tmp << distance_to_now_in_words(run.created_at)
+      tmp << distance_to_now_in_words(run.submitted_at)
       tmp << distance_to_now_in_words(run.started_at)
       tmp << distance_to_now_in_words(run.finished_at)
       a << tmp
@@ -54,22 +60,8 @@ private
   end
 
   def sort_column
-    case @view.params[:iSortCol_0].to_i
-    when 0 #it means index
-      "id"
-    when 1 #it means status
-      "status"
-    when 2 #it means cpu_time
-      "cpu_time"
-    when 3 #it means real_time
-      "real_time"
-    when 4 #it means created_at
-      "created_at"
-    when 5 #it means started_at
-      "started_at"
-    when 6 #it means finished_at
-      "finished_at"
-    end
+    idx = @view.params[:iSortCol_0].to_i
+    SORT_BY[idx]
   end
 
   def sort_direction

@@ -1,5 +1,22 @@
 class RunsController < ApplicationController
 
+  def index
+    respond_to do |format|
+      format.html
+    end
+  end
+
+  def _jobs_table
+    stat = params["run_status"].to_sym
+    render json: RunsListDatatable.new(Run.where(status: stat), view_context)
+  end
+
+  def check_server_status
+    Resque.enqueue(JobObserver)
+    Resque.enqueue(JobSubmitter)
+    redirect_to runs_path, notice: 'checking server status'
+  end
+
   def show
     @run = Run.find(params[:id])
     @param_set = @run.parameter_set
@@ -24,8 +41,9 @@ class RunsController < ApplicationController
     end
 
     respond_to do |format|
-      if @runs.all? { |run| run.save and run.submit }
+      if @runs.all? { |run| run.save }
         format.html {
+          Resque.enqueue(JobSubmitter)
           message = "#{@runs.count} run#{@runs.size > 1 ? 's were' : ' was'} successfully created"
           redirect_to @param_set, notice: message
         }

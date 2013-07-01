@@ -31,6 +31,9 @@
     %tr
       %th Simulator base directory
       %td= @host.simulator_base_dir
+    %tr
+      %th Maximum number of jobs
+      %td= @host.max_num_jobs
 
 .form-actions
   = link_to 'Edit', edit_host_path(@host), class: 'btn btn-info'
@@ -40,8 +43,3 @@
 %hr
 %h3 Host Status
 %pre= @status
-
-%hr
-%h3 Command to launch workers
-%pre= @host.launch_worker_cmd
-

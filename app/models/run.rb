@@ -1,21 +1,24 @@
 class Run
   include Mongoid::Document
   include Mongoid::Timestamps
-  field :status, type: Symbol, default: :created  # created, running, failed, finished
+  field :status, type: Symbol, default: :created  # created, submitted, running, failed, finished
   field :seed, type: Integer
   field :hostname, type: String
   field :cpu_time, type: Float
   field :real_time, type: Float
+  field :submitted_at, type: DateTime
   field :started_at, type: DateTime
   field :finished_at, type: DateTime
   field :included_at, type: DateTime
   field :result  # can be any type. it's up to Simulator spec
   belongs_to :parameter_set
   has_many :analyses, as: :analyzable
+  belongs_to :submitted_to, class_name: "Host"
 
   # validations
-  validates :status, :presence => true
-  validates :seed, :presence => true, uniqueness: {scope: :parameter_set_id}
+  validates :status, presence: true,
+                     inclusion: {in: [:created,:submitted,:running,:failed,:finished]}
+  validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
@@ -31,13 +34,6 @@ class Run
 
   def simulator
     parameter_set.simulator
-  end
-
-  def submit
-    command, input = command_and_input
-    run_info = {id: id, command: command}
-    run_info[:input] = input if input
-    Resque.enqueue(SimulatorRunner, run_info)
   end
 
   def command
@@ -75,6 +71,35 @@ class Run
     # remove directories of Analysis
     paths -= analyses.map {|x| x.dir}
     return paths
+  end
+
+  def enqueue_auto_run_analyzers
+    ps = self.parameter_set
+    sim = ps.simulator
+
+    if self.status == :finished
+      sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
+        anl = self.analyses.build(analyzer: azr)
+        anl.save and anl.submit
+      end
+
+      sim.analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
+        scope = ps.runs.where(status: :finished)
+        if scope.count == 1 and scope.first.id == self.id
+          anl = self.analyses.build(analyzer: azr)
+          anl.save and anl.submit
+        end
+      end
+    end
+
+    if self.status == :finished or self.status == :failed
+      sim.analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
+        unless ps.runs.nin(status: [:finished, :failed]).exists?
+          anl = ps.analyses.build(analyzer: azr)
+          anl.save and anl.submit
+        end
+      end
+    end
   end
 
   SeedMax = 2 ** 31

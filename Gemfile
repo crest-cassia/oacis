@@ -36,3 +36,5 @@ gem "pry", :group => :development
 gem "net-ssh", ">= 2.6.5"
 gem "net-sftp", ">= 2.1.2"
 gem "coffee-filter"
+gem "resque-scheduler", :require => 'resque_scheduler'
+gem "spork", :group =>:test

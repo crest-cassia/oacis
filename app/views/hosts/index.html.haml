@@ -12,6 +12,7 @@
     %th Submission command
     %th Work base dir
     %th Simulator base dir
+    %th Max number of jobs
     %th
 
   - @hosts.each do |host|
@@ -25,6 +26,7 @@
       %td= host.submission_command
       %td= host.work_base_dir
       %td= host.simulator_base_dir
+      %td= host.max_num_jobs
       %td
         = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning'
 

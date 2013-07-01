@@ -10,6 +10,7 @@ class Host
   field :submission_command, type: String, default: 'nohup'
   field :work_base_dir, type: String, default: '~'
   field :simulator_base_dir, type: String, default: '~'
+  field :max_num_jobs, type: Integer, default: 1
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
   validates :hostname, presence: true, format: {with: /^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/}
@@ -19,6 +20,7 @@ class Host
   # See http://stackoverflow.com/questions/1221985/how-to-validate-a-user-name-with-regex
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
+  validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
 
   CONNECTION_EXCEPTIONS = [
     Errno::ECONNREFUSED,
@@ -43,17 +45,26 @@ class Host
 
   attr_reader :connection_error
 
-  def download(remote_path, local_path)
-    raise "Not an absolute path: #{remote_path}" unless Pathname.new(remote_path).absolute?
+  def download(remote_path, local_path, opt = {recursive: true})
     start_sftp do |sftp|
-      sftp.download!(remote_path, local_path, recursive: true)
+      rpath = expand_remote_home_path(remote_path)
+      sftp.download!(rpath, local_path, opt)
     end
   end
 
+  # def upload(local_path, remote_path, sftp = nil)
+  #   if sftp
+  #     rpath = expand_remote_home_path(remote_path)
+  #     sftp.upload!(local_path, rpath, recursive: true)
+  #   else
+  #     start_sftp {|sftp| upload(local_path, remote_path, sftp) }
+  #   end
+  # end
+
   def rm_r(remote_path)
-    raise "Not an abosolute path:#{remote_path}" unless Pathname.new(remote_path).absolute?
+    rpath = expand_remote_home_path(remote_path)
     start_ssh do |ssh|
-      ssh.exec!("rm -r #{remote_path}")
+      ssh.exec!("rm -r #{rpath}")
     end
   end
 
@@ -86,58 +97,156 @@ class Host
     return ret
   end
 
-  def launch_worker_cmd
-    exe = './bin/rake'
-    args = ['resque:workers',
-            'QUEUE=simulator_queue',
-            'LOAD_RAILS=false',
-            'VERBOSE=1',
-            "CM_HOST_ID=#{id}",
-            "CM_WORK_DIR=#{work_base_dir}",
-            "CM_SIMULATOR_DIR=#{simulator_base_dir}",
-            'COUNT=1'
-          ]
-    return "nohup #{exe} #{args.join(' ')} &"
+  def submittable_runs
+    Run.where(status: :created)
+  end
+
+  def submitted_runs
+    Run.where(submitted_to: self).in(status: [:submitted, :running])
+  end
+
+  def submit(runs)
+    start_ssh do |ssh|
+      # copy job_script and input_json files
+      job_script_paths = prepare_job_script_for(runs)
+
+      # enqueue jobs
+      job_script_paths.each do |run_id, path|
+        run = Run.find(run_id)
+        ssh.exec!("chmod +x #{path}")
+        # NOTE: must be redirected to a file or ssh.exec! does not return immediately
+        # See http://johanharjono.com/archives/602
+        ssh.exec!("#{submission_command} #{path} >> #{work_base_dir}/_submission.log 2>&1 &")
+        run.status = :submitted
+        run.submitted_to = self
+        run.submitted_at = DateTime.now
+        run.save!
+      end
+      job_script_paths
+    end
+  end
+
+  def check_submitted_job_status
+    return if submitted_runs.count == 0
+    start_ssh do |ssh|
+      # check if job is finished
+      submitted_runs.each do |run|
+        case remote_status(run)
+        when :submitted
+          # DO NOTHING
+        when :running
+          if run.status == :submitted
+            run.status = :running
+            run.save
+          end
+        when :includable
+          rpath = result_file_path(run)
+          base = File.basename(rpath)
+          download(rpath, run.dir.join('..', base), {recursive: false})
+          JobScriptUtil.expand_result_file_and_update_run(run)
+          run.reload
+          run.enqueue_auto_run_analyzers
+          if run.status == :finished
+            rm_r( result_file_path(run) )
+            rm_r( job_script_path(run) )
+          end
+        end
+      end
+    end
   end
 
   private
   def start_ssh
-    Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port) do |ssh|
-      yield ssh
+    if @ssh
+      yield @ssh
+    else
+      Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port) do |ssh|
+        @ssh = ssh
+        begin
+          yield ssh
+        ensure
+          @ssh = nil
+        end
+      end
     end
   end
 
   def start_sftp
-    Net::SFTP.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port) do |sftp|
-      yield sftp
+    start_ssh do |ssh|
+      yield ssh.sftp
     end
   end
 
-  def ssh_exec!(ssh, command)
-    # Originally submitted by 'flitzwald' over here: http://stackoverflow.com/a/3386375
-    stdout_data = ""
-    stderr_data = ""
-    exit_code = nil
+  # Net::SSH and Net::SFTP can't interpret '~' as a home directory
+  # a relative path is recognized as a relative path from home directory
+  # so replace '~' with '.' in this method
+  def expand_remote_home_path(path)
+    Pathname.new( path.to_s.sub(/^~/, '.') )
+  end
 
-    ssh.open_channel do |channel|
-      channel.exec(command) do |ch, success|
-        unless success
-          abort "FAILED: couldn't execute command (ssh.channel.exec)"
-        end
-        channel.on_data do |ch,data|
-          stdout_data+=data
-        end
+  def prepare_job_script_for(runs)
+    script_paths = {}
+    start_sftp do |sftp|
+      runs.each do |run|
+        # prepare job script
+        spath = job_script_path(run)
+        sftp.file.open(spath, 'w') { |f|
+          f.print JobScriptUtil.script_for(run, self)
+        }
+        script_paths[run.id] = spath
 
-        channel.on_extended_data do |ch,type,data|
-          stderr_data+=data
-        end
-
-        channel.on_request("exit-status") do |ch,data|
-          exit_code = data.read_long
+        # prepare _input.json
+        input = run.command_and_input[1]
+        if input
+          sftp.file.open(input_json_path(run), 'w') { |f|
+            f.print input.to_json
+          }
         end
       end
     end
-    ssh.loop
-    [stdout_data, stderr_data, exit_code]
+    script_paths
+  end
+
+  def job_script_path(run)
+    base = expand_remote_home_path(work_base_dir)
+    base.join("#{run.id}.sh")
+  end
+
+  def input_json_path(run)
+    base = expand_remote_home_path(work_base_dir)
+    base.join("#{run.id}_input.json")
+  end
+
+  def work_dir_path(run)
+    base = expand_remote_home_path(work_base_dir)
+    base.join("#{run.id}")
+  end
+
+  def result_file_path(run)
+    base = expand_remote_home_path(work_base_dir)
+    base.join("#{run.id}.tar.bz2")
+  end
+
+  def remote_path_exist?(path)
+    start_sftp do |sftp|
+      begin
+        sftp.stat!(path) do |response|
+          return true if response.ok?
+        end
+      rescue Net::SFTP::StatusException => ex
+        raise ex unless ex.code == 2  # no such file
+      end
+    end
+    return false
+  end
+
+  def remote_status(run)
+    status = :submitted
+    if remote_path_exist?( work_dir_path(run) )
+      status = :running
+    elsif remote_path_exist?( result_file_path(run) )
+      status = :includable
+    end
+    status
   end
 end
