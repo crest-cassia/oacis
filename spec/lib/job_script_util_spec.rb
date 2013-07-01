@@ -101,5 +101,27 @@ describe JobScriptUtil do
         @run.real_time.should be_within(0.2).of(1.0)
       }
     end
+
+    it "parse failed jobs" do
+      @sim.command = "INVALID"
+      @sim.save!
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        FileUtils.mv( result_file, @run.dir.join('..') )
+        JobScriptUtil.expand_result_file_and_update_run(@run)
+
+        @run.reload
+        @run.status.should eq :failed
+        @run.hostname.should_not be_empty
+        @run.started_at.should be_a(DateTime)
+        @run.finished_at.should be_a(DateTime)
+        @run.real_time.should_not be_nil
+        @run.cpu_time.should_not be_nil
+        @run.included_at.should be_a(DateTime)
+        File.exist?(@run.dir.join('_stdout.txt')).should be_true
+      }
+    end
+
   end
 end
