@@ -234,7 +234,6 @@ class Host
           return true if response.ok?
         end
       rescue Net::SFTP::StatusException => ex
-        # pp ex, ex.code, ex.description, ex.response, ex.text
         raise ex unless ex.code == 2  # no such file
       end
     end
