@@ -97,20 +97,6 @@ class Host
     return ret
   end
 
-  def launch_worker_cmd
-    exe = './bin/rake'
-    args = ['resque:workers',
-            'QUEUE=simulator_queue',
-            'LOAD_RAILS=false',
-            'VERBOSE=1',
-            "CM_HOST_ID=#{id}",
-            "CM_WORK_DIR=#{work_base_dir}",
-            "CM_SIMULATOR_DIR=#{simulator_base_dir}",
-            'COUNT=1'
-          ]
-    return "nohup #{exe} #{args.join(' ')} &"
-  end
-
   def submittable_runs
     Run.where(status: :created)
   end
