@@ -43,6 +43,7 @@ class RunsController < ApplicationController
     respond_to do |format|
       if @runs.all? { |run| run.save }
         format.html {
+          Resque.enqueue(JobSubmitter)
           message = "#{@runs.count} run#{@runs.size > 1 ? 's were' : ' was'} successfully created"
           redirect_to @param_set, notice: message
         }
