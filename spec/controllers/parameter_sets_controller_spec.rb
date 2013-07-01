@@ -32,15 +32,6 @@ describe ParameterSetsController do
       assigns(:param_set).should eq(prm)
       assigns(:simulator).should eq(sim)
       assigns(:parameter_keys).should eq(["L","T"])
-      assigns(:runs).first.should be_a(Run)
-    end
-
-    it "paginates list of runs" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count:1, runs_count: 26)
-      prm = sim.parameter_sets.first
-      get 'show', {id: prm, page: 1}, valid_session
-      assigns(:runs).count.should == 26
-      assigns(:runs).to_a.size.should == 25
     end
   end
 
