@@ -3,16 +3,16 @@ require 'spec_helper'
 describe JobScriptUtil do
 
   before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-      @run = @sim.parameter_sets.first.runs.first
-      @temp_dir = Pathname.new('__temp__')
-      FileUtils.mkdir_p(@temp_dir)
-      @host = FactoryGirl.create(:localhost, work_base_dir: @temp_dir.expand_path)
-    end
+    @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+    @run = @sim.parameter_sets.first.runs.first
+    @temp_dir = Pathname.new('__temp__')
+    FileUtils.mkdir_p(@temp_dir)
+    @host = FactoryGirl.create(:localhost, work_base_dir: @temp_dir.expand_path)
+  end
 
-    after(:each) do
-      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
-    end
+  after(:each) do
+    FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+  end
 
   def run_test_script_in_temp_dir
     Dir.chdir(@temp_dir) {
