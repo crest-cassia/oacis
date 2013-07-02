@@ -9,6 +9,7 @@ describe JobSubmitter do
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
       @host.work_base_dir = @temp_dir.expand_path
+      @host.save!
     end
 
     after(:each) do
