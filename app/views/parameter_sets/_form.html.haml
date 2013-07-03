@@ -11,6 +11,11 @@
         - else
           = text_field_tag name, value, class: 'text_field'
         = val["description"]
+  .control-group
+    - name = "num_runs"
+    = label_tag name, "Number of Runs", class: 'control-label'
+    .controls
+      = select_tag(name, options_for_select([0,1,2,3,4,5,10,20]), class: 'input-mini')
   .form-actions
     = submit_tag "Create", class: 'btn btn-primary'
     = link_to "Cancel", simulator_path(@simulator), :class => 'btn'

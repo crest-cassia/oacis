@@ -32,6 +32,7 @@ class ParameterSetsController < ApplicationController
 
     respond_to do |format|
       if @param_set.save
+        params[:num_runs].to_i.times {|i| @param_set.runs.create }
         format.html { redirect_to @param_set, notice: 'New ParameterSet was successfully created.' }
         format.json { render json: @param_set, status: :created, location: @param_set }
       else

@@ -90,6 +90,12 @@ describe ParameterSetsController do
         post :create, @valid_param, valid_session
         response.should redirect_to(ParameterSet.last)
       end
+
+      it "creates runs if num_runs are given" do
+        expect {
+          post :create, @valid_param.update(num_runs: 3), valid_session
+        }.to change { Run.all.count }.by(3)
+      end
     end
 
     describe "with invalid params" do
