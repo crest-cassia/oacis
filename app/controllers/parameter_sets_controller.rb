@@ -28,18 +28,64 @@ class ParameterSetsController < ApplicationController
 
   def create
     @simulator = Simulator.find(params[:simulator_id])
-    @param_set = @simulator.parameter_sets.build(v: params[:parameters])
+    num_runs = params[:num_runs].to_i
+    num_created = 0
+    if params[:parameters].any? {|key,val| val.include?(',') }
+      created = create_multiple(@simulator, params[:parameters].dup)
+      num_created = created.size
+      created.each do |ps|
+        num_runs.times {|i| ps.runs.create }
+      end
+      if created.size == 1
+        @param_set = created.first
+      else created.size == 0
+        @param_set = @simulator.parameter_sets.build(v: params[:parameters])
+      end
+    else
+      @param_set = @simulator.parameter_sets.build(v: params[:parameters])
+    end
 
     respond_to do |format|
-      if @param_set.save
-        params[:num_runs].to_i.times {|i| @param_set.runs.create }
+      if @param_set and @param_set.save
+        num_runs.times {|i| @param_set.runs.create }
         format.html { redirect_to @param_set, notice: 'New ParameterSet was successfully created.' }
         format.json { render json: @param_set, status: :created, location: @param_set }
+      elsif num_created > 1
+        format.html { redirect_to @simulator, notice: "#{num_created} ParameterSets were created" }
+        format.json { render json: @simulator, status: :created, location: @simulator }
       else
         format.html { render action: "new" }
         format.json { render json: @param_set.errors, status: :unprocessable_entity }
       end
     end
+  end
+
+  # return created parameter sets
+  def create_multiple(simulator, parameters)
+    mapped = simulator.parameter_definitions.map do |key, defn|
+      if parameters[key] and parameters[key].include?(',')
+        pp parameters[key]
+        casted = parameters[key].split(',').map {|x|
+          ParametersUtil.cast_value( x.strip, defn["type"] )
+        }
+        casted.compact.uniq.sort
+      else
+        (parameters[key] || defn["default"]).to_a
+      end
+    end
+
+    created = []
+    patterns = mapped[0].product( *mapped[1..-1] ).each do |param_ary|
+      param = {}
+      simulator.parameter_definitions.keys.each_with_index do |key, idx|
+        param[key] = param_ary[idx]
+      end
+      ps = @simulator.parameter_sets.build(v: param)
+      if ps.save
+        created << ps
+      end
+    end
+    created
   end
 
   def _runs_status_count
