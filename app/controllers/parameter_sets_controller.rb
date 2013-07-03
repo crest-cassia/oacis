@@ -4,7 +4,6 @@ class ParameterSetsController < ApplicationController
     @param_set = ParameterSet.find(params[:id])
     @simulator = @param_set.simulator
     @parameter_keys = @simulator.parameter_definitions.keys
-    @runs = Run.where(parameter_set_id: @param_set).page(params[:page])
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @param_set }
@@ -52,6 +51,7 @@ class ParameterSetsController < ApplicationController
   end
 
   def _runs_list
-    render json: RunsListDatatable.new(view_context)
+    param_set = ParameterSet.find(params[:id])
+    render json: RunsListDatatable.new(param_set.runs, view_context)
   end
 end

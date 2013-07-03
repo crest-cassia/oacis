@@ -97,6 +97,12 @@ describe Host do
       host.should respond_to(:created_at)
       host.should respond_to(:updated_at)
     end
+
+    it "max_num_jobs must be 0 or positive number" do
+      @valid_attr.update(max_num_jobs: -1)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
   end
 
   describe "#download" do
@@ -133,6 +139,13 @@ describe Host do
         @host.download(@temp_dir.expand_path, @temp_dir2)
       }.to raise_error SocketError
       File.directory?(@temp_dir2).should_not be_true
+    end
+
+    it "creates ssh session once even when #download is called several times" do
+      Net::SSH.should_receive(:start).once.and_call_original
+      @host.__send__(:start_ssh) do |ssh|
+        @host.download(@temp_dir.expand_path, @temp_dir2)
+      end
     end
   end
 
@@ -224,8 +237,195 @@ describe Host do
     end
   end
 
+  describe "#submittable_runs" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 2, runs_count: 3, finished_runs_count: 2)
+      @host = FactoryGirl.create(:host)
+    end
+
+    it "returns a Mongoid::Critieria" do
+      @host.submittable_runs.should be_a(Mongoid::Criteria)
+    end
+
+    it "returns runs whose status is created" do
+      @host.submittable_runs.should have(6).items
+    end
+  end
+
+  describe "#submitted_runs" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 0)
+      @host = FactoryGirl.create(:host)
+      host2 = FactoryGirl.create(:host)
+      ps = @sim.parameter_sets.first
+      FactoryGirl.create_list(:run, 2,
+                              parameter_set: ps, status: :submitted, submitted_to: @host)
+      FactoryGirl.create_list(:run, 1,
+                              parameter_set: ps, status: :running, submitted_to: @host)
+      FactoryGirl.create_list(:run, 1,
+                              parameter_set: ps, status: :finished, submitted_to: @host)
+      FactoryGirl.create_list(:run, 3,
+                              parameter_set: ps, status: :submitted, submitted_to: host2)
+    end
+
+    it "returns the number of runs submitted to the host" do
+      @host.submitted_runs.should be_a(Mongoid::Criteria)
+    end
+
+    it "returns runs whose status is 'submitted' or 'running' and 'submitted_to' is the host" do
+      @host.submitted_runs.should have(3).items
+    end
+  end
+
+  describe "#submit" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 2)
+      @runs = @sim.parameter_sets.first.runs
+      @host = FactoryGirl.create(:localhost)
+      @temp_dir = Pathname.new('__temp__')
+      FileUtils.mkdir_p(@temp_dir)
+      @host.work_base_dir = @temp_dir.expand_path
+      @host.submission_command = 'ls'
+      @host.save!
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it "creates a job script on the remote host" do
+      @host.submit(@runs)
+      Dir.glob( @temp_dir.join('*.sh') ).should have(2).items
+    end
+
+    it "returns hash of run_id and path to job script" do
+      paths = {}
+      @runs.each do |run|
+        paths[run.id] = Pathname.new(@host.work_base_dir).join("#{run.id}.sh")
+      end
+      @host.submit(@runs).should eq paths
+    end
+
+    it "creates _input.json on the remote host if simulator support json_input" do
+      @sim.support_input_json = true
+      @sim.save!
+      @host.submit(@runs)
+      Dir.glob( @temp_dir.join('*_input.json') ).should have(2).items
+    end
+
+    it "updates status and submitted_to fileds of Run" do
+      @host.submit(@runs)
+      @runs.each do |run|
+        run.reload
+        run.status.should eq :submitted
+        run.submitted_to.should eq @host
+      end
+    end
+
+    it "update submitted_at field of Run" do
+      expect {
+        @host.submit(@runs)
+      }.to change { @runs.first.reload.submitted_at }
+    end
+
+    it "creates ssh session only once" do
+      Net::SSH.should_receive(:start).once.and_call_original
+      @host.submit(@runs)
+    end
+
+    it "submit job to queueing system on the remote host" do
+      pending "test is not prepared yet"
+    end
+  end
+
   describe "#launch_worker_cmd" do
 
     pending "specification is subject to change"
+  end
+
+  describe "#remote_status" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 1)
+      @run = @sim.parameter_sets.first.runs.first
+      @host = FactoryGirl.create(:localhost)
+      @temp_dir = Pathname.new('__temp__')
+      FileUtils.mkdir_p(@temp_dir)
+      @host.work_base_dir = @temp_dir.expand_path
+      @host.save!
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it "returns :submitted when neither work_dir nor compressed_result_file is not found" do
+      @host.__send__(:remote_status, @run).should eq :submitted
+    end
+
+    it "returns :running when work_dir is found" do
+      FileUtils.mkdir( @temp_dir.join(@run.id.to_s) )
+      @host.__send__(:remote_status, @run).should eq :running
+    end
+
+    it "returns :running when both compressed result file and work_dir are found" do
+      FileUtils.mkdir( @temp_dir.join(@run.id.to_s) )
+      FileUtils.touch( @temp_dir.join("#{@run.id.to_s}.tar.bz2") )
+      @host.__send__(:remote_status, @run).should eq :running
+    end
+
+
+    it "returns :includable when compressed result file is found but work_dir is not" do
+      FileUtils.touch( @temp_dir.join("#{@run.id.to_s}.tar.bz2") )
+      @host.__send__(:remote_status, @run).should eq :includable
+    end
+  end
+
+  describe "#check_submitted_job_status" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 1)
+      @temp_dir = Pathname.new('__temp__')
+      FileUtils.mkdir_p(@temp_dir)
+      @host = FactoryGirl.create(:localhost, work_base_dir: @temp_dir.expand_path)
+
+      @run = @sim.parameter_sets.first.runs.first
+      @run.status = :submitted
+      @run.submitted_to = @host
+      @run.save!
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it "do nothing if remote_status is 'submitted'" do
+      @host.should_receive(:remote_status).and_return(:submitted)
+      @host.check_submitted_job_status
+      @run.status.should eq :submitted
+    end
+
+    it "update status to 'running' when remote_status of Run is 'running'" do
+      @host.should_receive(:remote_status).and_return(:running)
+      @host.check_submitted_job_status
+      @run.reload.status.should eq :running
+    end
+
+    it "include remote data and update status to 'finished' or 'failed'" do
+      @host.should_receive(:remote_status).and_return(:includable)
+      @host.stub!(:download)
+      JobScriptUtil.should_receive(:expand_result_file_and_update_run) do |run|
+        run.id.should eq @run.id
+      end
+      @host.check_submitted_job_status
+    end
   end
 end

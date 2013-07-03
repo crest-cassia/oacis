@@ -66,7 +66,7 @@ private
     when 3
       "updated_at"
     else
-      "v."+@simulator.parameter_definitions.keys[@view.params[:iSortCol_0].to_i-3]
+      "v."+@simulator.parameter_definitions.keys[@view.params[:iSortCol_0].to_i-4]
     end
   end
 

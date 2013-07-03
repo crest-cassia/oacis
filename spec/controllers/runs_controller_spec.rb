@@ -21,6 +21,14 @@ describe RunsController do
     @arn = @run.analyses
   end
 
+  describe "GET 'index'" do
+
+    it "returns http success" do
+      get 'index', {}, valid_session
+      response.should be_success
+    end
+  end
+
   describe "GET 'show'" do
 
     it "returns http success" do
