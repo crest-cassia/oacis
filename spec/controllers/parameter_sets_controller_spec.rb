@@ -159,6 +159,24 @@ describe ParameterSetsController do
         post :create, @invalid_param, valid_session
         response.should render_template("new")
       end
+
+      describe "creation of multiple parameter sets" do
+
+        it "does not create a ParameterSet if too much parameter sets are going to be created" do
+          @invalid_param.update(parameters: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
+                                             "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
+          expect {
+            post :create, @invalid_param, valid_session
+          }.to_not change { ParameterSet.count }
+        end
+
+        it "re-renders 'new' template" do
+          @invalid_param.update(parameters: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
+                                             "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
+          post :create, @invalid_param, valid_session
+          response.should render_template("new")
+        end
+      end
     end
   end
 

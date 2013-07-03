@@ -60,11 +60,11 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  MAX_CREATION_SIZE = 100
   # return created parameter sets
   def create_multiple(simulator, parameters)
     mapped = simulator.parameter_definitions.map do |key, defn|
       if parameters[key] and parameters[key].include?(',')
-        pp parameters[key]
         casted = parameters[key].split(',').map {|x|
           ParametersUtil.cast_value( x.strip, defn["type"] )
         }
@@ -72,6 +72,12 @@ class ParameterSetsController < ApplicationController
       else
         (parameters[key] || defn["default"]).to_a
       end
+    end
+
+    creation_size = mapped.inject(1) {|prod, x| prod * x.size }
+    if creation_size > MAX_CREATION_SIZE
+      flash[:alert] = "number of created parameter sets must be less than #{MAX_CREATION_SIZE}"
+      return []
     end
 
     created = []
