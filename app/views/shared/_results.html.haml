@@ -19,7 +19,7 @@
   %pre= h(result.inspect)
 
 %ul
-  - result_paths.each do |file_path|
+  - result_paths.sort.each do |file_path|
     - file_path_str = file_path.to_s
     %li
       %a{:href => file_path_to_link_path(file_path_str)}
@@ -27,3 +27,4 @@
         %br
         - if file_path_str =~ /\.png$/i or file_path_str.to_s =~ /\.jpg$/i
           = image_tag(file_path_to_link_path(file_path_str), :width => '200px')
+

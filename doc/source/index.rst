@@ -12,7 +12,10 @@ Contents:
    :maxdepth: 2
 
    introduction
+   system_configuration
    installation
+   simulator_registration
+   usage
 
 Indices and tables
 ==================

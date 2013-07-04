@@ -90,6 +90,55 @@ describe ParameterSetsController do
         post :create, @valid_param, valid_session
         response.should redirect_to(ParameterSet.last)
       end
+
+      it "creates runs if num_runs are given" do
+        expect {
+          post :create, @valid_param.update(num_runs: 3), valid_session
+        }.to change { Run.count }.by(3)
+      end
+
+      describe "creation of multiple parameter sets" do
+
+        it "creates multiple parameter sets if comma-separated-values are given" do
+          @valid_param.update(parameters: {"L" => "1,2,3", "T" => "1.0, 2.0, 3.0"})
+          expect {
+            post :create, @valid_param, valid_session
+          }.to change { ParameterSet.count }.by(9)
+        end
+
+        it "redirects to simulator when multiple parameter sets were created" do
+          @valid_param.update(parameters: {"L" => "1,2,3", "T" => "1.0, 2.0, 3.0"})
+          post :create, @valid_param, valid_session
+          response.should redirect_to(@sim)
+        end
+
+        it "non-castable elements are skipped" do
+          @valid_param.update(parameters: {"L" => "1, 2", "T" => "1.0, abc"})
+          expect {
+            post :create, @valid_param, valid_session
+          }.to change { ParameterSet.count }.by(2)
+        end
+
+        it "redirects to parameter set when single paraemter set is created" do
+          @valid_param.update(parameters: {"L" => "1", "T" => "1.0, abc"})
+          post :create, @valid_param, valid_session
+          response.should redirect_to(ParameterSet.last)
+        end
+
+        it "does not create duplicated parameter set" do
+          @valid_param.update(parameters: {"L" => "1", "T" => "1.0, 1.0"})
+          expect {
+            post :create, @valid_param, valid_session
+          }.to change { ParameterSet.count }.by(1)
+        end
+
+        it "creates runs for each created parameter set" do
+          @valid_param.update(parameters: {"L" => "1", "T" => "1.0, 2.0"}, num_runs: 3)
+          expect {
+            post :create, @valid_param, valid_session
+          }.to change { Run.count }.by(6)
+        end
+      end
     end
 
     describe "with invalid params" do
@@ -109,6 +158,24 @@ describe ParameterSetsController do
       it "re-renders the 'new' template" do
         post :create, @invalid_param, valid_session
         response.should render_template("new")
+      end
+
+      describe "creation of multiple parameter sets" do
+
+        it "does not create a ParameterSet if too much parameter sets are going to be created" do
+          @invalid_param.update(parameters: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
+                                             "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
+          expect {
+            post :create, @invalid_param, valid_session
+          }.to_not change { ParameterSet.count }
+        end
+
+        it "re-renders 'new' template" do
+          @invalid_param.update(parameters: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
+                                             "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
+          post :create, @invalid_param, valid_session
+          response.should render_template("new")
+        end
       end
     end
   end
