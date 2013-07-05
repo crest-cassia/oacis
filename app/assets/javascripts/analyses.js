@@ -1,5 +1,5 @@
-function expand_collapse_analyses_list() {
-  $('.analyses_list').on("click", 'img[analysis_id]', function() {
+$(function () {
+  $('body').on("click", 'img[analysis_id]', function() {
     if( $(this).attr("state") === "close" ) {
       var tr_element = $(this).closest("tr");
       var analysis_id = $(this).attr("analysis_id");
@@ -21,4 +21,4 @@ function expand_collapse_analyses_list() {
       $(this).closest("tr").siblings("tr#" + result_id).remove()
     }
   });
-}
+});
