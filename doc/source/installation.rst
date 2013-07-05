@@ -4,7 +4,7 @@ Installation
 
 ここではCASSIA Managerのセットアップ方法について説明する。
 
-Supported platforms
+Supported Platforms
 =================
 
 サポートされるプラットフォームは以下の通り。
@@ -52,7 +52,7 @@ http://localhost:3000 にアクセスし、ページが適切に表示されれ�
 Launch Rails and Workers
 =================
 
-Railsおよびworkerの起動は以下のコマンドを実行する。 ::
+Railsおよびworkerの起動は以下のコマンドを実行する。すべてCMのソースのあるディレクトリで行う。 ::
 
   bundle exec rails s -d
   bundle exec rake resque:scheduler PIDFILE=./tmp/pids/resque_scheduler.pid BACKGROUND=yes
