@@ -18,6 +18,3 @@
         %td= anl.parameters.empty? ? '-' : anl.parameters.inspect
         %td= raw(status_label(anl.status))
         %td= anl.created_at
-
-:javascript
-  $(expand_collapse_analyses_list)
