@@ -9,7 +9,6 @@ class Host
   field :show_status_command, type: String, default: 'ps au'
   field :submission_command, type: String, default: 'nohup'
   field :work_base_dir, type: String, default: '~'
-  field :simulator_base_dir, type: String, default: '~'
   field :max_num_jobs, type: Integer, default: 1
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}

@@ -14,7 +14,6 @@ describe Host do
         show_status_command: 'ps au',
         submission_command: 'nohup',
         work_base_dir: '~/__cm_work__',
-        simulator_base_dir: '~'
       }
     end
 
@@ -85,11 +84,6 @@ describe Host do
     it "default of 'work_base_dir' is '~'" do
       @valid_attr.delete(:work_base_dir)
       Host.new(@valid_attr).work_base_dir.should eq('~')
-    end
-
-    it "default of 'simulator_base_dir' is '~'" do
-      @valid_attr.delete(:simulator_base_dir)
-      Host.new(@valid_attr).simulator_base_dir.should eq('~')
     end
 
     it "has timestamp fields" do
