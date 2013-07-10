@@ -167,10 +167,12 @@ describe Run do
       prm = sim.parameter_sets.first
       @run = prm.runs.first
       @run.status = :finished
-      @temp_files = [@run.dir.join('result1.txt'), @run.dir.join('result2.txt')]
-      @temp_files.each {|f| FileUtils.touch(f) }
       @temp_dir = @run.dir.join('result_dir')
       FileUtils.mkdir_p(@temp_dir)
+      @temp_files = [@run.dir.join('result1.txt'),
+                     @run.dir.join('result2.txt'),
+                     @temp_dir.join('result3.txt')]
+      @temp_files.each {|f| FileUtils.touch(f) }
     end
 
     after(:each) do
@@ -183,7 +185,7 @@ describe Run do
       @temp_files.each do |f|
         res.should include(f)
       end
-      res.should include(@temp_dir)
+      res.should_not include(@temp_dir)
     end
 
     it "does not include directories of analysis" do
