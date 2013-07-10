@@ -10,6 +10,7 @@ class Host
   field :submission_command, type: String, default: 'nohup'
   field :work_base_dir, type: String, default: '~'
   field :max_num_jobs, type: Integer, default: 1
+  has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
   validates :hostname, presence: true, format: {with: /^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/}
