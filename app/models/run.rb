@@ -72,7 +72,16 @@ class Run
     }
     # remove directories of Analysis
     paths -= analyses.map {|x| x.dir}
-    return paths
+
+    # traverse sub-directories only for one-level depth
+    paths.map! do |path|
+      if File.directory?(path)
+        Dir.glob( path.join('*') ).map {|f| Pathname(f)}
+      else
+        path
+      end
+    end
+    return paths.flatten
   end
 
   def enqueue_auto_run_analyzers
