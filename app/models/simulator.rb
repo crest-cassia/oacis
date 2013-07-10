@@ -10,12 +10,13 @@ class Simulator
   has_many :parameter_set_queries
   has_many :parameter_set_groups
   embeds_many :analyzers
+  has_and_belongs_to_many :executable_on, class_name: "Host", inverse_of: :executable_simulators
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
   validates :command, presence: true
   validate :parameter_definitions_format
 
-  attr_accessible :name, :command, :description, :parameter_definitions
+  attr_accessible :name, :command, :description, :parameter_definitions, :executable_on_ids
 
   ParameterTypes = ["Integer","Float","String","Boolean"]
 

@@ -27,6 +27,15 @@
     = f.label(:description, class: 'control-label')
     .controls
       = f.text_area(:description, rows: 5)
+  .control-group
+    .control-label
+      Executable_on
+    .controls
+      = hidden_field_tag "simulator[executable_on_ids][]", nil
+      - Host.all.each do |host|
+        %label{ for: dom_id(host) }
+          = check_box_tag "simulator[executable_on_ids][]", host.id, @simulator.executable_on_ids.include?(host.id), id: dom_id(host)
+          = host.name
   .form-actions
     = f.submit(class: 'btn btn-primary')
     = link_to('Cancel', simulators_path, class: 'btn')

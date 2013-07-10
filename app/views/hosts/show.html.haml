@@ -31,6 +31,9 @@
     %tr
       %th Maximum number of jobs
       %td= @host.max_num_jobs
+    %tr
+      %th Executable simulators
+      %td= raw( @host.executable_simulators.map {|sim| h(sim.name) }.join('<br />') )
 
 .form-actions
   = link_to 'Edit', edit_host_path(@host), class: 'btn btn-info'

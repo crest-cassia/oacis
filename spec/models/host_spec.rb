@@ -235,8 +235,18 @@ describe Host do
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count: 2, runs_count: 3, finished_runs_count: 2)
+                                parameter_sets_count: 2, runs_count: 0)
       @host = FactoryGirl.create(:host)
+      @sim.executable_on.push @host
+      @sim.parameter_sets.each do |ps|
+        3.times do |i|
+          ps.runs.create!
+        end
+        2.times do |i|
+          run = ps.runs.create!
+          run.update_attribute(:status, :finished)
+        end
+      end
     end
 
     it "returns a Mongoid::Critieria" do
@@ -245,6 +255,11 @@ describe Host do
 
     it "returns runs whose status is created" do
       @host.submittable_runs.should have(6).items
+    end
+
+    it "returns runs whose submittable_hosts includes the host" do
+      host2 = FactoryGirl.create(:host)
+      host2.submittable_runs.should have(0).items
     end
   end
 
