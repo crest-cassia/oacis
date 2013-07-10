@@ -18,6 +18,8 @@ describe JobSubmitter do
 
     it "enqueues a job to remote host" do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @sim.executable_on.push @host
+      @sim.save!
       expect {
         JobSubmitter.perform
       }.to change { Run.where(status: :submitted).count }.by(1)
