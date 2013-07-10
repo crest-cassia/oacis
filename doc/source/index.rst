@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    introduction
+   introduction2
    system_configuration
    installation
    simulator_registration
