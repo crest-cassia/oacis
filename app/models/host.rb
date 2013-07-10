@@ -98,7 +98,7 @@ class Host
   end
 
   def submittable_runs
-    Run.where(status: :created)
+    Run.where(status: :created).in(submittable_host_ids: self.id)
   end
 
   def submitted_runs
