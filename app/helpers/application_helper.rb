@@ -55,6 +55,11 @@ module ApplicationHelper
     raw(tags)
   end
 
+  def shortened_id(id)
+    str = id.to_s
+    str[3..6] + ".." + str[-3..-1]
+  end
+
   private
   MIN_PERCENT_TO_PRINT = 5
   def progress_bar_tag_for(status, percent)

@@ -23,7 +23,7 @@ private
       analyzer = arn.analyzer
       [
         @view.image_tag("/assets/expand.png", analysis_id: arn.id.to_s, align: "center", state: "close"),
-        @view.link_to( arn.to_param, @view.analysis_path(arn) ),
+        @view.link_to( @view.shortened_id(arn.id), @view.analysis_path(arn) ),
         @view.distance_to_now_in_words(arn.updated_at),
         @view.status_label(arn.status),
         @view.link_to( analyzer.name, @view.simulator_analyzer_path(analyzer.simulator, analyzer) ),
