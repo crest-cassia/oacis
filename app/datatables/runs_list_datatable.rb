@@ -1,6 +1,6 @@
 class RunsListDatatable
 
-  HEADER  = ['#', 'status', 'submitted_to', 'cpu_time', 'real_time',
+  HEADER  = ['ID', 'status', 'submitted_to', 'cpu_time', 'real_time',
              'created_at', 'submitted_at', 'started_at', 'finished_at']
   SORT_BY = ["id", "status", "submitted_to", "cpu_time", "real_time",
              "created_at", "submitted_at", "started_at", "finished_at"]
@@ -23,9 +23,9 @@ private
 
   def data
     a = []
-    runs_lists.each_with_index do |run,idx|
+    runs_lists.each do |run|
       tmp = []
-      tmp << @view.link_to(idx+1, @view.run_path(run))
+      tmp << @view.link_to( @view.shortened_id(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )
       host = run.submitted_to
       tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "")
