@@ -2,10 +2,6 @@ class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
   field :v, type: Hash
-  field :total_runs_count, type: Integer
-  field :finished_runs_count, type: Integer
-  field :running_runs_count, type: Integer
-  field :failed_runs_count, type: Integer
   belongs_to :simulator
   has_many :runs
   has_many :analyses, as: :analyzable
@@ -18,14 +14,6 @@ class ParameterSet
   public
   def dir
     ResultDirectory.parameter_set_path(self)
-  end
-
-  def update_runs_count
-    self.total_runs_count = runs.count
-    self.finished_runs_count = runs.where(status: :finished).count
-    self.running_runs_count = runs.where(status: :running).count
-    self.failed_runs_count = runs.where(status: :failed).count
-    self.save
   end
 
   def parameter_sets_with_different(key)

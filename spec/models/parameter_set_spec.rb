@@ -143,22 +143,6 @@ describe ParameterSet do
     end
   end
 
-  describe "#update_runs_count" do
-
-    it "updates runs_count fields" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 2, finished_runs_count: 1)
-      prm = sim.parameter_sets.first
-      prm.runs.where(status: :created).first.update_attribute(:status, :running)
-      prm.update_runs_count.should be_true
-      prm.should_not be_changed
-
-      prm.total_runs_count.should eq 3
-      prm.finished_runs_count.should eq 1
-      prm.running_runs_count.should eq 1
-      prm.failed_runs_count.should eq 0
-    end
-  end
-
   describe "#parameters_with_different" do
 
     before(:each) do
