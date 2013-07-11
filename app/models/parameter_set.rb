@@ -2,10 +2,6 @@ class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
   field :v, type: Hash
-  field :total_runs_count, type: Integer
-  field :finished_runs_count, type: Integer
-  field :running_runs_count, type: Integer
-  field :failed_runs_count, type: Integer
   belongs_to :simulator
   has_many :runs
   has_many :analyses, as: :analyzable
@@ -20,14 +16,6 @@ class ParameterSet
     ResultDirectory.parameter_set_path(self)
   end
 
-  def update_runs_count
-    self.total_runs_count = runs.count
-    self.finished_runs_count = runs.where(status: :finished).count
-    self.running_runs_count = runs.where(status: :running).count
-    self.failed_runs_count = runs.where(status: :failed).count
-    self.save
-  end
-
   def parameter_sets_with_different(key)
     query_param = { simulator: self.simulator }
     v.each_pair do |prm_key,prm_val|
@@ -38,14 +26,11 @@ class ParameterSet
   end
 
   def runs_status_count
-    unless total_runs_count and finished_runs_count and running_runs_count and failed_runs_count
-      update_runs_count
-    end
     counts = {}
-    counts[:total] = total_runs_count
-    counts[:finished] = finished_runs_count
-    counts[:running] = running_runs_count
-    counts[:failed] = failed_runs_count
+    counts[:total] = runs.count
+    counts[:finished] = runs.where(status: :finished).count
+    counts[:running] = runs.where(status: :running).count
+    counts[:failed] = runs.where(status: :failed).count
     counts
   end
 
