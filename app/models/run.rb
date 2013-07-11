@@ -26,8 +26,7 @@ class Run
   attr_accessible :seed
 
   before_save :set_submittable_hosts
-  after_save :create_run_dir, :update_runs_count
-  after_destroy :update_runs_count
+  after_save :create_run_dir
 
   public
   def initialize(*arg)
@@ -138,9 +137,5 @@ class Run
     if self.submittable_hosts.empty?
       self.submittable_hosts = self.simulator.executable_on
     end
-  end
-
-  def update_runs_count
-    parameter_set.update_runs_count
   end
 end
