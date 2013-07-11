@@ -25,6 +25,7 @@ describe "ParameterSetsListDatatable" do
         @context.stub(:distance_to_now_in_words).and_return("time")
         @context.stub(:progress_bar).and_return("<div></div>")
         @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
+        @context.stub(:shortened_id).and_return("xxxx..yy")
         @psld = ParameterSetsListDatatable.new(@context)
         @psld_json = JSON.parse(@psld.to_json)
       end
@@ -63,6 +64,7 @@ describe "ParameterSetsListDatatable" do
         @context.stub(:distance_to_now_in_words).and_return("time")
         @context.stub(:progress_bar).and_return("<div></div>")
         @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
+        @context.stub(:shortened_id).and_return("xxxx..yy")
         @psld = ParameterSetsListDatatable.new(@context)
         @psld_json = JSON.parse(@psld.to_json)
       end

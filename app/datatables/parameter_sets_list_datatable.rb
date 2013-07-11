@@ -30,8 +30,8 @@ private
       count = param.runs_status_count
       progress = @view.progress_bar( count[:total], count[:finished], count[:running], count[:failed] )
       tmp << @view.raw(progress)
-      link_to_param_last_six_characters_with_monospaced = "<tt>"+link_to( param.to_param.slice(param.to_param.length-6,param.to_param.length), @view.parameter_set_path(param) )+"</tt>"
-      tmp << link_to_param_last_six_characters_with_monospaced
+      link_to_monospaced_shorten_id = "<tt>"+link_to( @view.shortened_id(param.id), @view.parameter_set_path(param) )+"</tt>"
+      tmp << link_to_monospaced_shorten_id
       tmp << distance_to_now_in_words(param.updated_at)
       @simulator.parameter_definitions.each do |key,key_def|
         tmp <<  h(param.v[key])
