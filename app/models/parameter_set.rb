@@ -26,14 +26,11 @@ class ParameterSet
   end
 
   def runs_status_count
-    unless total_runs_count and finished_runs_count and running_runs_count and failed_runs_count
-      update_runs_count
-    end
     counts = {}
-    counts[:total] = total_runs_count
-    counts[:finished] = finished_runs_count
-    counts[:running] = running_runs_count
-    counts[:failed] = failed_runs_count
+    counts[:total] = runs.count
+    counts[:finished] = runs.where(status: :finished).count
+    counts[:running] = runs.where(status: :running).count
+    counts[:failed] = runs.where(status: :failed).count
     counts
   end
 
