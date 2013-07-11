@@ -80,6 +80,10 @@ class Run
     return paths.flatten
   end
 
+  def archived_result_path
+    dir.join('..', "#{self.id}.tar.bz2")
+  end
+
   def enqueue_auto_run_analyzers
     ps = self.parameter_set
     sim = ps.simulator

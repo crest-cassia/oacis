@@ -31,4 +31,4 @@
   = render partial: "shared/parameters_table", locals: {parameters_hash: @analysis.parameters}
 
 %hr
-= render partial: "shared/results", locals: {result: @analysis.result, result_paths: @analysis.result_paths}
+= render partial: "shared/results", locals: {result: @analysis.result, result_paths: @analysis.result_paths, archived_result_path: nil}

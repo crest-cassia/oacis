@@ -73,6 +73,7 @@ describe JobScriptUtil do
         File.exist?(@run.dir.join('_stdout.txt')).should be_true
         File.exist?(@run.dir.join('_output.json')).should be_true
         File.exist?(@run.dir.join('..', "#{@run.id}.tar")).should be_false
+        File.exist?(@run.dir.join('..', "#{@run.id}.tar.bz2")).should be_true
 
         # parse status
         @run.reload

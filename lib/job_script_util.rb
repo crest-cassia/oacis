@@ -37,13 +37,9 @@ EOS
 
   def self.expand_result_file_and_update_run(run)
     Dir.chdir(run.dir.join('..')) {
-      cmd = "bunzip2 #{run.id}.tar.bz2"
-      system(cmd)
-      raise "failed to unzip the result" unless $?.to_i == 0
-      cmd = "tar xf #{run.id}.tar"
+      cmd = "tar xjf #{run.id}.tar.bz2"
       system(cmd)
       raise "failed to extract the archive"  unless $?.to_i == 0
-      FileUtils.rm("#{run.id}.tar")
     }
 
     Dir.chdir(run.dir) {
