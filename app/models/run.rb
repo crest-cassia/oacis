@@ -24,8 +24,8 @@ class Run
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
   attr_accessible :seed
-  before_validation :set_submittable_hosts
 
+  before_save :set_submittable_hosts
   after_save :create_run_dir, :update_runs_count
   after_destroy :update_runs_count
 
