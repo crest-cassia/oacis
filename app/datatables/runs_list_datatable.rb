@@ -1,5 +1,4 @@
 class RunsListDatatable
-  delegate :params, :h, :link_to, :distance_to_now_in_words, :formatted_elapsed_time, :run_path, :raw, :status_label, to: :@view
 
   HEADER  = ['#', 'status', 'submitted_to', 'cpu_time', 'real_time',
              'created_at', 'submitted_at', 'started_at', 'finished_at']
@@ -26,16 +25,16 @@ private
     a = []
     runs_lists.each_with_index do |run,idx|
       tmp = []
-      tmp << @view.link_to(idx+1, run_path(run))
-      tmp << raw(status_label(run.status))
+      tmp << @view.link_to(idx+1, @view.run_path(run))
+      tmp << @view.raw( @view.status_label(run.status) )
       host = run.submitted_to
       tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "")
-      tmp << formatted_elapsed_time(run.cpu_time)
-      tmp << formatted_elapsed_time(run.real_time)
-      tmp << distance_to_now_in_words(run.created_at)
-      tmp << distance_to_now_in_words(run.submitted_at)
-      tmp << distance_to_now_in_words(run.started_at)
-      tmp << distance_to_now_in_words(run.finished_at)
+      tmp << @view.formatted_elapsed_time(run.cpu_time)
+      tmp << @view.formatted_elapsed_time(run.real_time)
+      tmp << @view.distance_to_now_in_words(run.created_at)
+      tmp << @view.distance_to_now_in_words(run.submitted_at)
+      tmp << @view.distance_to_now_in_words(run.started_at)
+      tmp << @view.distance_to_now_in_words(run.finished_at)
       a << tmp
     end
     a
