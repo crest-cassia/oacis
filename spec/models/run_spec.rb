@@ -283,18 +283,4 @@ describe Run do
       end
     end
   end
-
-  describe "#submittable_hosts" do
-
-    before(:each) do
-      hosts = FactoryGirl.create_list(:host, 2)
-      @simulator.executable_on += hosts
-      @simulator.save!
-    end
-
-    it "submittable_hosts is same as simulator#executable_on by default" do
-      @run = @param_set.runs.create
-      @run.submittable_hosts.should eq @simulator.executable_on
-    end
-  end
 end

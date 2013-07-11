@@ -15,7 +15,6 @@ class Run
   belongs_to :simulator  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable
   belongs_to :submitted_to, class_name: "Host"
-  has_and_belongs_to_many :submittable_hosts, class_name: "Host", inverse_of: nil
 
   # validations
   validates :status, presence: true,
@@ -26,7 +25,7 @@ class Run
 
   attr_accessible :seed
 
-  before_save :set_simulator, :set_submittable_hosts
+  before_save :set_simulator
   after_save :create_run_dir
 
   public
@@ -132,11 +131,5 @@ class Run
 
   def create_run_dir
     FileUtils.mkdir_p(ResultDirectory.run_path(self))
-  end
-
-  def set_submittable_hosts
-    if self.submittable_hosts.empty?
-      self.submittable_hosts = self.simulator.executable_on
-    end
   end
 end
