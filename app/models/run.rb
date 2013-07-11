@@ -12,6 +12,7 @@ class Run
   field :included_at, type: DateTime
   field :result  # can be any type. it's up to Simulator spec
   belongs_to :parameter_set
+  belongs_to :simulator  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable
   belongs_to :submitted_to, class_name: "Host"
   has_and_belongs_to_many :submittable_hosts, class_name: "Host", inverse_of: nil
@@ -25,17 +26,13 @@ class Run
 
   attr_accessible :seed
 
-  before_save :set_submittable_hosts
+  before_save :set_simulator, :set_submittable_hosts
   after_save :create_run_dir
 
   public
   def initialize(*arg)
     super
     set_unique_seed
-  end
-
-  def simulator
-    parameter_set.simulator
   end
 
   def command
@@ -113,9 +110,13 @@ class Run
     end
   end
 
+  private
+  def set_simulator
+    self.simulator = parameter_set.simulator
+  end
+
   SeedMax = 2 ** 31
   SeedIterationLimit = 1024
-  private
   def set_unique_seed
     unless self.seed
       SeedIterationLimit.times do |i|
