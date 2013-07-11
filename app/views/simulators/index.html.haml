@@ -6,14 +6,12 @@
     %tr
       %th Name
       %th Updated at
-      %th Owner
       %th Progress
   %tbody
     - @simulators.each do |simulator|
       %tr
         %td= link_to h(simulator.name), simulator_path(simulator)
         %td= distance_of_time_in_words_to_now(simulator.updated_at)
-        %td - (IMPLEMENT ME)
         - counts = simulator.parameter_sets_status_count
         %td#progress= progress_bar(counts[:total], counts[:finished], counts[:running], counts[:failed])
 
