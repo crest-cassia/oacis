@@ -257,7 +257,7 @@ describe Host do
       @host.submittable_runs.should have(6).items
     end
 
-    it "returns runs whose submittable_hosts includes the host" do
+    it "returns runs of the executable_simultors" do
       host2 = FactoryGirl.create(:host)
       host2.submittable_runs.should have(0).items
     end
