@@ -197,6 +197,18 @@ describe Run do
     end
   end
 
+  describe "#archived_result_path" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @run = sim.parameter_sets.first.runs.first
+    end
+
+    it "returns path to archived file" do
+      @run.archived_result_path.should eq @run.dir.join("../#{@run.id}.tar.bz2")
+    end
+  end
+
   describe "#enqueue_auto_run_analyzers" do
 
     describe "auto run of analyzers for on_run type" do

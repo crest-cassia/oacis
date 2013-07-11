@@ -1,7 +1,7 @@
 - title ||= "Results"
-%h3= title
-- if result.nil?
-- elsif result.is_a?(Hash)
+- if result.present?
+  %h3= title
+- if result.is_a?(Hash)
   %table.table.table-condensed
     %thead
     %tbody
@@ -15,16 +15,20 @@
               = h(val)
 - elsif result.is_a?(Array)
   %pre= h(JSON.pretty_generate(result))
-- else
+- elsif not result.nil?
   %pre= h(result.inspect)
 
-%ul
-  - result_paths.sort.each do |file_path|
-    - file_path_str = file_path.to_s
-    %li
-      %a{:href => file_path_to_link_path(file_path_str)}
-        = File.basename(file_path_str)
-        %br
-        - if file_path_str =~ /\.png$/i or file_path_str.to_s =~ /\.jpg$/i
-          = image_tag(file_path_to_link_path(file_path_str), :width => '200px')
-
+- if result_paths.present?
+  %h3 Output Files
+  %ul
+    - result_paths.sort.each do |file_path|
+      - file_path_str = file_path.to_s
+      %li
+        %a{:href => file_path_to_link_path(file_path_str)}
+          = File.basename(file_path_str)
+          %br
+          - if file_path_str =~ /\.png$/i or file_path_str.to_s =~ /\.jpg$/i
+            = image_tag(file_path_to_link_path(file_path_str), :width => '200px')
+  - if File.exist?( archived_result_path.to_s )
+    .form-actions
+      %a.btn.btn-primary{href: file_path_to_link_path(archived_result_path)} Download Archive
