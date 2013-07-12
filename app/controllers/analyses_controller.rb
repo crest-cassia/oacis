@@ -29,7 +29,7 @@ class AnalysesController < ApplicationController
 
   def _result
     arn = Analysis.find(params[:id])
-    render partial: "shared/results", layout: false, locals: {result: arn.result, result_paths: arn.result_paths}
+    render partial: "shared/results", layout: false, locals: {result: arn.result, result_paths: arn.result_paths, archived_result_path: nil}
   end
 
   private
