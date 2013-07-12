@@ -107,4 +107,18 @@ describe RunsController do
       end
     end
   end
+
+  describe "DELETE destroy" do
+
+    it "destroys the requested run" do
+      expect {
+        delete :destroy, {id: @run.to_param}, valid_session
+      }.to change(Run, :count).by(-1)
+    end
+
+    it "redirects to the hosts list" do
+      delete :destroy, {id: @run.to_param}, valid_session
+      response.should redirect_to(runs_url)
+    end
+  end
 end
