@@ -59,10 +59,11 @@ class RunsController < ApplicationController
 
   def destroy
     @run = Run.find(params[:id])
+    ps = @run.parameter_set
     @run.destroy
 
     respond_to do |format|
-      format.html { redirect_to runs_url }
+      format.html { redirect_to parameter_set_url(ps) }
       format.json { head :no_content }
     end
   end
