@@ -346,5 +346,11 @@ describe Analysis do
         arn.save  # => false
       }.to change {Dir.entries(@run.dir).size}.by(0)
     end
+
+    it "is deleted when an item is destroyed" do
+      dir_path = @arn.dir
+      @arn.destroy
+      FileTest.directory?(dir_path).should be_false
+    end
   end
 end

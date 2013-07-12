@@ -31,6 +31,7 @@ class Analysis
   validate :cast_and_validate_parameter_values
 
   after_save :create_dir
+  before_destroy :delete_dir
 
   attr_accessible :parameters, :analyzer
 
@@ -154,5 +155,9 @@ class Analysis
 
   def create_dir
     FileUtils.mkdir_p(self.dir)
+  end
+
+  def delete_dir
+    FileUtils.rm_r(self.dir)
   end
 end
