@@ -54,7 +54,7 @@ describe Run do
 
     it "the attributes other than seed are not accessible" do
       @valid_attribute.update(
-        status: :canceled,
+        status: :cancelled,
         hostname: "host",
         cpu_time: 123.0,
         real_time: 456.0,
@@ -63,13 +63,19 @@ describe Run do
         included_at: DateTime.now
       )
       run = @param_set.runs.build(@valid_attribute)
-      run.status.should_not == :canceled
+      run.status.should_not == :cancelled
       run.hostname.should be_nil
       run.cpu_time.should be_nil
       run.real_time.should be_nil
       run.started_at.should be_nil
       run.finished_at.should be_nil
       run.included_at.should be_nil
+    end
+
+    it "status must be either :created, :submitted, :running, :failed, :finished, or :cancelled" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.status = :unknown
+      run.should_not be_valid
     end
   end
 

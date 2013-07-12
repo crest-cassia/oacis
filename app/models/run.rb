@@ -1,7 +1,8 @@
 class Run
   include Mongoid::Document
   include Mongoid::Timestamps
-  field :status, type: Symbol, default: :created  # created, submitted, running, failed, finished
+  field :status, type: Symbol, default: :created
+  # either :created, :submitted, :running, :failed, :finished, or :cancelled
   field :seed, type: Integer
   field :hostname, type: String
   field :cpu_time, type: Float
@@ -18,7 +19,7 @@ class Run
 
   # validations
   validates :status, presence: true,
-                     inclusion: {in: [:created,:submitted,:running,:failed,:finished]}
+                     inclusion: {in: [:created,:submitted,:running,:failed,:finished, :cancelled]}
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
