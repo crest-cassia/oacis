@@ -5,7 +5,9 @@ describe Run do
   before(:each) do
     @simulator = FactoryGirl.create(:simulator,
                                     parameter_sets_count: 1,
-                                    runs_count: 1
+                                    runs_count: 1,
+                                    analyzers_count: 2,
+                                    run_analysis: true
                                     )
     @param_set = @simulator.parameter_sets.first
     @valid_attribute = {}
@@ -85,6 +87,12 @@ describe Run do
       @run.should respond_to(:simulator)
       @run.simulator.should eq(@run.parameter_set.simulator)
     end
+
+    it "destroys including analyses when destroyed" do
+      expect {
+        @run.destroy
+      }.to change { Analysis.all.count }.by(-2)
+    end
   end
 
   describe "result directory" do
@@ -115,6 +123,14 @@ describe Run do
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size
       run = prm.runs.create(@valid_attribute)
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size.should == prev_count
+    end
+
+    it "is removed when the item is destroyed" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      run = sim.parameter_sets.first.runs.first
+      dir_path = run.dir
+      run.destroy
+      FileTest.directory?(dir_path).should be_false
     end
   end
 

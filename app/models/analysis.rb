@@ -158,6 +158,6 @@ class Analysis
   end
 
   def delete_dir
-    FileUtils.rm_r(self.dir)
+    FileUtils.rm_r(self.dir) if File.directory?(self.dir)
   end
 end

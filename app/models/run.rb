@@ -13,7 +13,7 @@ class Run
   field :result  # can be any type. it's up to Simulator spec
   belongs_to :parameter_set
   belongs_to :simulator  # for caching. do not edit this field explicitly
-  has_many :analyses, as: :analyzable
+  has_many :analyses, as: :analyzable, dependent: :destroy
   belongs_to :submitted_to, class_name: "Host"
 
   # validations
@@ -27,6 +27,7 @@ class Run
 
   before_save :set_simulator
   after_save :create_run_dir
+  before_destroy :delete_run_dir
 
   public
   def initialize(*arg)
@@ -134,6 +135,10 @@ class Run
   end
 
   def create_run_dir
-    FileUtils.mkdir_p(ResultDirectory.run_path(self))
+    FileUtils.mkdir_p(self.dir)
+  end
+
+  def delete_run_dir
+    FileUtils.rm_r(self.dir) if File.directory?(self.dir)
   end
 end
