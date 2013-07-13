@@ -3,7 +3,7 @@
   %thead
     %tr
       - RunsListDatatable::HEADER.each do |header|
-        %th.span1= header
+        = raw(header)
   %tbody
 
 = form_tag(parameter_set_runs_path(@param_set), class: 'form-inline form-actions') do |f|

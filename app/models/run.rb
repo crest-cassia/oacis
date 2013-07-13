@@ -1,7 +1,8 @@
 class Run
   include Mongoid::Document
   include Mongoid::Timestamps
-  field :status, type: Symbol, default: :created  # created, submitted, running, failed, finished
+  field :status, type: Symbol, default: :created
+  # either :created, :submitted, :running, :failed, :finished, or :cancelled
   field :seed, type: Integer
   field :hostname, type: String
   field :cpu_time, type: Float
@@ -13,12 +14,12 @@ class Run
   field :result  # can be any type. it's up to Simulator spec
   belongs_to :parameter_set
   belongs_to :simulator  # for caching. do not edit this field explicitly
-  has_many :analyses, as: :analyzable
+  has_many :analyses, as: :analyzable, dependent: :destroy
   belongs_to :submitted_to, class_name: "Host"
 
   # validations
   validates :status, presence: true,
-                     inclusion: {in: [:created,:submitted,:running,:failed,:finished]}
+                     inclusion: {in: [:created,:submitted,:running,:failed,:finished, :cancelled]}
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
@@ -26,7 +27,8 @@ class Run
   attr_accessible :seed
 
   before_save :set_simulator
-  after_save :create_run_dir
+  after_create :create_run_dir
+  before_destroy :delete_run_dir, :delete_archived_result_file
 
   public
   def initialize(*arg)
@@ -84,6 +86,16 @@ class Run
     dir.join('..', "#{self.id}.tar.bz2")
   end
 
+  def destroy
+    if status == :submitted or status == :running
+      cancel
+    elsif status == :cancelled and submitted_to.present?
+      cancel
+    else
+      super
+    end
+  end
+
   def enqueue_auto_run_analyzers
     ps = self.parameter_set
     sim = ps.simulator
@@ -115,7 +127,11 @@ class Run
 
   private
   def set_simulator
-    self.simulator = parameter_set.simulator
+    if parameter_set
+      self.simulator = parameter_set.simulator
+    else
+      self.simulator = nil
+    end
   end
 
   SeedMax = 2 ** 31
@@ -134,6 +150,27 @@ class Run
   end
 
   def create_run_dir
-    FileUtils.mkdir_p(ResultDirectory.run_path(self))
+    FileUtils.mkdir_p(self.dir)
+  end
+
+  def delete_run_dir
+    if self.parameter_set and File.directory?(self.dir)
+      FileUtils.rm_r(self.dir)
+    end
+  end
+
+  def delete_archived_result_file
+    if self.parameter_set
+      archive = archived_result_path
+      FileUtils.rm(archive) if File.exist?(archive)
+    end
+  end
+
+  def cancel
+    self.status = :cancelled
+    delete_run_dir
+    delete_archived_result_file
+    self.parameter_set = nil
+    self.save
   end
 end

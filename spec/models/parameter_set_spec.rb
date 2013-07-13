@@ -92,15 +92,21 @@ describe ParameterSet do
   describe "relations" do
 
     before(:each) do
-      @parameter = @sim.parameter_sets.first
+      @ps = @sim.parameter_sets.first
     end
 
     it "has simulator method" do
-      @parameter.should respond_to(:simulator)
+      @ps.should respond_to(:simulator)
     end
 
     it "has runs method" do
-      @parameter.should respond_to(:runs)
+      @ps.should respond_to(:runs)
+    end
+
+    it "calls destroy of dependent runs when destroyed" do
+      run = @ps.runs.first
+      run.should_receive(:destroy)
+      @ps.destroy
     end
   end
 

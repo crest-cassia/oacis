@@ -20,7 +20,7 @@ class Simulator
 
   ParameterTypes = ["Integer","Float","String","Boolean"]
 
-  after_save :create_simulator_dir
+  after_create :create_simulator_dir
 
   public
   def dir

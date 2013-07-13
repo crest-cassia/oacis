@@ -6,7 +6,7 @@
   %thead
     %tr
       - RunsListDatatable::HEADER.each do |header|
-        %th.span1= header
+        = raw(header)
   %tbody
 
 %hr
@@ -15,7 +15,7 @@
   %thead
     %tr
       - RunsListDatatable::HEADER.each do |header|
-        %th.span1= header
+        = raw(header)
   %tbody
 
 %hr
@@ -24,7 +24,7 @@
   %thead
     %tr
       - RunsListDatatable::HEADER.each do |header|
-        %th.span1= header
+        = raw(header)
   %tbody
 
 .form-actions

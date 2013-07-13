@@ -1,9 +1,11 @@
 class RunsListDatatable
 
-  HEADER  = ['ID', 'status', 'submitted_to', 'cpu_time', 'real_time',
-             'created_at', 'submitted_at', 'started_at', 'finished_at']
-  SORT_BY = ["id", "status", "submitted_to", "cpu_time", "real_time",
-             "created_at", "submitted_at", "started_at", "finished_at"]
+  HEADER  = ['<th>ID</th>', '<th>status</th>', '<th>submitted_to</th>', '<th>cpu_time</th>',
+             '<th>real_time</th>', '<th>created_at</th>', '<th>submitted_at</th>',
+             '<th>started_at</th>', '<th>finished_at</th>', '<th style="min-width: 18px; width: 1px;"></th>']
+  SORT_BY = ["id", "status", "submitted_to", "cpu_time",
+             "real_time", "created_at", "submitted_at",
+             "started_at", "finished_at", "id"]
 
   def initialize(runs, view)
     @view = view
@@ -35,6 +37,7 @@ private
       tmp << @view.distance_to_now_in_words(run.submitted_at)
       tmp << @view.distance_to_now_in_words(run.started_at)
       tmp << @view.distance_to_now_in_words(run.finished_at)
+      tmp << @view.link_to( @view.raw('<i class="icon-trash">'), run, method: :delete, data: {confirm: 'Are you sure?'})
       a << tmp
     end
     a

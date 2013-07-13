@@ -271,13 +271,14 @@ describe Host do
       @host = FactoryGirl.create(:host)
       host2 = FactoryGirl.create(:host)
       ps = @sim.parameter_sets.first
-      FactoryGirl.create_list(:run, 2,
+      FactoryGirl.create_list(:run, 3,
                               parameter_set: ps, status: :submitted, submitted_to: @host)
       FactoryGirl.create_list(:run, 1,
                               parameter_set: ps, status: :running, submitted_to: @host)
+      run = ps.runs.where(status: :submitted).first.__send__(:cancel)
       FactoryGirl.create_list(:run, 1,
                               parameter_set: ps, status: :finished, submitted_to: @host)
-      FactoryGirl.create_list(:run, 3,
+      FactoryGirl.create_list(:run, 2,
                               parameter_set: ps, status: :submitted, submitted_to: host2)
     end
 
@@ -285,8 +286,8 @@ describe Host do
       @host.submitted_runs.should be_a(Mongoid::Criteria)
     end
 
-    it "returns runs whose status is 'submitted' or 'running' and 'submitted_to' is the host" do
-      @host.submitted_runs.should have(3).items
+    it "returns runs whose status is ['submitted','running','cancelled'] and 'submitted_to' is the host" do
+      @host.submitted_runs.should have(4).items
     end
   end
 
@@ -435,6 +436,39 @@ describe Host do
         run.id.should eq @run.id
       end
       @host.check_submitted_job_status
+    end
+
+    context "when run is cancelled" do
+
+      before(:each) do
+        @run.status = :cancelled
+        @run.save!
+      end
+
+      it "does not update status to 'running' even if remote status is 'running'" do
+        @host.should_receive(:remote_status).and_return(:running)
+        @host.check_submitted_job_status
+        @run.reload.status.should eq :cancelled
+      end
+
+      it "does not include remote data even if remote status is 'includable'" do
+        @host.stub!(:remote_status).and_return(:includable)
+        @host.should_not_receive(:download)
+        @host.check_submitted_job_status
+      end
+
+      it "deletes archived reuslt file on the remote host" do
+        @host.stub!(:remote_status).and_return(:includable)
+        @host.should_receive(:rm_r).exactly(2).times
+        @host.check_submitted_job_status
+      end
+
+      it "destroys run" do
+        @host.stub!(:remote_status).and_return(:includable)
+        expect {
+          @host.check_submitted_job_status
+        }.to change { Run.count }.by(-1)
+      end
     end
   end
 end
