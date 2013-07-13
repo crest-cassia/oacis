@@ -89,6 +89,8 @@ class Run
   def destroy
     if status == :submitted or status == :running
       cancel
+    elsif status == :cancelled and submitted_to.present?
+      cancel
     else
       super
     end

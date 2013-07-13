@@ -102,7 +102,7 @@ class Host
   end
 
   def submitted_runs
-    Run.where(submitted_to: self).in(status: [:submitted, :running])
+    Run.where(submitted_to: self).in(status: [:submitted, :running, :cancelled])
   end
 
   def submit(runs)
@@ -140,15 +140,19 @@ class Host
             run.save
           end
         when :includable
-          rpath = result_file_path(run)
-          base = File.basename(rpath)
-          download(rpath, run.dir.join('..', base), {recursive: false})
-          JobScriptUtil.expand_result_file_and_update_run(run)
-          run.reload
-          run.enqueue_auto_run_analyzers
-          if run.status == :finished
-            rm_r( result_file_path(run) )
-            rm_r( job_script_path(run) )
+          unless run.status == :cancelled
+            rpath = result_file_path(run)
+            base = File.basename(rpath)
+            download(rpath, run.dir.join('..', base), {recursive: false})
+            JobScriptUtil.expand_result_file_and_update_run(run)
+            run.reload
+            run.enqueue_auto_run_analyzers
+          end
+          rm_r( result_file_path(run) )
+          rm_r( job_script_path(run) ) unless run.status == :failed
+          if run.status == :cancelled
+            run.submitted_to = nil
+            run.destroy
           end
         end
       end

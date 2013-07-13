@@ -339,24 +339,43 @@ describe Run do
       }.to change { Run.count }.by(-1)
     end
 
-    it "calls cancel if status is :submitted or :running" do
-      @run.status = :submitted
-      @run.should_receive(:cancel)
-      @run.destroy
-    end
+    context "when status is :submitted or :running" do
 
-    it "does not destroy run if status is :submitted or :running" do
-      @run.status = :submitted
-      run_dir = @run.dir
-      archive = @run.archived_result_path
-      FileUtils.touch(archive)
-      expect {
+      before(:each) do
+        @run.status = :submitted
+        host = FactoryGirl.create(:localhost)
+        @run.submitted_to = host
+      end
+
+      it "calls cancel if status is :submitted or :running" do
+        @run.should_receive(:cancel)
         @run.destroy
-      }.to_not change { Run.count }
-      @run.status.should eq :cancelled
-      File.exist?(run_dir).should be_false
-      File.exist?(archive).should be_false
-      @run.parameter_set.should be_nil
+      end
+
+      it "does not destroy run if status is :submitted or :running" do
+        expect {
+          @run.destroy
+        }.to_not change { Run.count }
+        @run.status.should eq :cancelled
+        @run.parameter_set.should be_nil
+      end
+
+      it "deletes run_directory and archived_result_file when cancel is called" do
+        run_dir = @run.dir
+        archive = @run.archived_result_path
+        FileUtils.touch(archive)
+        @run.destroy
+        File.exist?(run_dir).should be_false
+        File.exist?(archive).should be_false
+      end
+
+      it "does not destroy run even if #destroy is called twice" do
+        expect {
+          @run.destroy
+          @run.destroy
+        }.to_not change { Run.count }
+        @run.status.should eq :cancelled
+      end
     end
   end
 end
