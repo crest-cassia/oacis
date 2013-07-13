@@ -347,10 +347,15 @@ describe Run do
 
     it "does not destroy run if status is :submitted or :running" do
       @run.status = :submitted
+      run_dir = @run.dir
+      archive = @run.archived_result_path
+      FileUtils.touch(archive)
       expect {
         @run.destroy
       }.to_not change { Run.count }
       @run.status.should eq :cancelled
+      File.exist?(run_dir).should be_false
+      File.exist?(archive).should be_false
       @run.parameter_set.should be_nil
     end
   end

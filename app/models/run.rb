@@ -152,16 +152,22 @@ class Run
   end
 
   def delete_run_dir
-    FileUtils.rm_r(self.dir) if File.directory?(self.dir)
+    if self.parameter_set and File.directory?(self.dir)
+      FileUtils.rm_r(self.dir)
+    end
   end
 
   def delete_archived_result_file
-    archive = archived_result_path
-    FileUtils.rm(archive) if File.exist?(archive)
+    if self.parameter_set
+      archive = archived_result_path
+      FileUtils.rm(archive) if File.exist?(archive)
+    end
   end
 
   def cancel
     self.status = :cancelled
+    delete_run_dir
+    delete_archived_result_file
     self.parameter_set = nil
     self.save
   end
