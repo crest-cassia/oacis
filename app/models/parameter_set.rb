@@ -3,7 +3,7 @@ class ParameterSet
   include Mongoid::Timestamps
   field :v, type: Hash
   belongs_to :simulator
-  has_many :runs
+  has_many :runs, dependent: :destroy
   has_many :analyses, as: :analyzable
 
   validates :simulator, :presence => true
