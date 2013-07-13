@@ -318,7 +318,7 @@ describe Run do
     end
   end
 
-  describe "#cancel_or_destroy" do
+  describe "#destroy" do
 
     before(:each) do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
@@ -342,6 +342,8 @@ describe Run do
       expect {
         @run.destroy
       }.to_not change { Run.count }
+      @run.status.should eq :cancelled
+      @run.parameter_set.should be_nil
     end
   end
 end

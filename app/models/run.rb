@@ -27,7 +27,7 @@ class Run
   attr_accessible :seed
 
   before_save :set_simulator
-  after_save :create_run_dir
+  after_create :create_run_dir
   before_destroy :delete_run_dir
 
   public
@@ -125,7 +125,11 @@ class Run
 
   private
   def set_simulator
-    self.simulator = parameter_set.simulator
+    if parameter_set
+      self.simulator = parameter_set.simulator
+    else
+      self.simulator = nil
+    end
   end
 
   SeedMax = 2 ** 31
@@ -153,6 +157,7 @@ class Run
 
   def cancel
     self.status = :cancelled
+    self.parameter_set = nil
     self.save
   end
 end
