@@ -9,7 +9,7 @@ class ParameterSet
   validates :simulator, :presence => true
   validate :cast_and_validate_parameter_values
 
-  after_save :create_parameter_set_dir
+  after_create :create_parameter_set_dir
 
   public
   def dir
