@@ -229,6 +229,14 @@ describe Run do
     it "returns path to archived file" do
       @run.archived_result_path.should eq @run.dir.join("../#{@run.id}.tar.bz2")
     end
+
+    it "is deleted when the run is destroyed" do
+      FileUtils.touch( @run.archived_result_path )
+      archive = @run.archived_result_path
+      expect {
+        @run.destroy
+      }.to change { File.exist?(archive) }.from(true).to(false)
+    end
   end
 
   describe "#enqueue_auto_run_analyzers" do

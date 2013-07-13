@@ -28,7 +28,7 @@ class Run
 
   before_save :set_simulator
   after_create :create_run_dir
-  before_destroy :delete_run_dir
+  before_destroy :delete_run_dir, :delete_archived_result_file
 
   public
   def initialize(*arg)
@@ -153,6 +153,11 @@ class Run
 
   def delete_run_dir
     FileUtils.rm_r(self.dir) if File.directory?(self.dir)
+  end
+
+  def delete_archived_result_file
+    archive = archived_result_path
+    FileUtils.rm(archive) if File.exist?(archive)
   end
 
   def cancel
