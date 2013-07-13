@@ -86,6 +86,14 @@ class Run
     dir.join('..', "#{self.id}.tar.bz2")
   end
 
+  def destroy
+    if status == :submitted or status == :running
+      cancel
+    else
+      super
+    end
+  end
+
   def enqueue_auto_run_analyzers
     ps = self.parameter_set
     sim = ps.simulator
@@ -141,5 +149,10 @@ class Run
 
   def delete_run_dir
     FileUtils.rm_r(self.dir) if File.directory?(self.dir)
+  end
+
+  def cancel
+    self.status = :cancelled
+    self.save
   end
 end

@@ -317,4 +317,31 @@ describe Run do
       end
     end
   end
+
+  describe "#cancel_or_destroy" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @run = sim.parameter_sets.first.runs.first
+    end
+
+    it "calls destroy if status is either :created, :failed, or :finished" do
+      expect {
+        @run.destroy
+      }.to change { Run.count }.by(-1)
+    end
+
+    it "calls cancel if status is :submitted or :running" do
+      @run.status = :submitted
+      @run.should_receive(:cancel)
+      @run.destroy
+    end
+
+    it "does not destroy run if status is :submitted or :running" do
+      @run.status = :submitted
+      expect {
+        @run.destroy
+      }.to_not change { Run.count }
+    end
+  end
 end

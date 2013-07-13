@@ -110,10 +110,18 @@ describe RunsController do
 
   describe "DELETE destroy" do
 
-    it "destroys the requested run" do
+    it "destroys the run when status is neither submitted nor running" do
       expect {
         delete :destroy, {id: @run.to_param}, valid_session
       }.to change(Run, :count).by(-1)
+    end
+
+    it "cancels the run when status is either submitted or running" do
+      @run.status = :running
+      @run.save!
+      expect {
+        delete :destroy, {id: @run.to_param}, valid_session
+      }.to change { Run.where(status: :cancelled).count }.by(1)
     end
 
     it "redirects to the parameter_sets#show" do
