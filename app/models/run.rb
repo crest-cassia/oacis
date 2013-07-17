@@ -154,12 +154,16 @@ class Run
   end
 
   def delete_run_dir
+    # if self.parameter_set.nil, parent ParameterSet is already destroyed.
+    # Therefore, self.dir raises an exception
     if self.parameter_set and File.directory?(self.dir)
       FileUtils.rm_r(self.dir)
     end
   end
 
   def delete_archived_result_file
+    # if self.parameter_set.nil, parent ParameterSet is already destroyed.
+    # Therefore, self.archived_result_path raises an exception
     if self.parameter_set
       archive = archived_result_path
       FileUtils.rm(archive) if File.exist?(archive)

@@ -60,6 +60,32 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  def destroy
+    @ps = ParameterSet.find(params[:id])
+    sim = @ps.simulator
+    @ps.destroy
+
+    respond_to do |format|
+      format.html { redirect_to simulator_url(sim) }
+      format.json { head :no_content }
+    end
+  end
+
+  def _runs_status_count
+    render json: ParameterSet.only("runs.status").find(params[:id]).runs_status_count.to_json
+  end
+
+  def _runs_table
+    @param_set = ParameterSet.find(params[:id])
+    render :partial => "inner_table"
+  end
+
+  def _runs_list
+    param_set = ParameterSet.find(params[:id])
+    render json: RunsListDatatable.new(param_set.runs, view_context)
+  end
+
+  private
   MAX_CREATION_SIZE = 100
   # return created parameter sets
   def create_multiple(simulator, parameters)
@@ -92,19 +118,5 @@ class ParameterSetsController < ApplicationController
       end
     end
     created
-  end
-
-  def _runs_status_count
-    render json: ParameterSet.only("runs.status").find(params[:id]).runs_status_count.to_json
-  end
-
-  def _runs_table
-    @param_set = ParameterSet.find(params[:id])
-    render :partial => "inner_table"
-  end
-
-  def _runs_list
-    param_set = ParameterSet.find(params[:id])
-    render json: RunsListDatatable.new(param_set.runs, view_context)
   end
 end

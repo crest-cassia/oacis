@@ -22,7 +22,7 @@ AcmProto::Application.routes.draw do
         end
       end
     end
-    resources :parameter_sets, only: ["show","new","create"] do
+    resources :parameter_sets, only: ["show","new","create","destroy"] do
       member do
         get 'duplicate'
         get "_runs_status_count" # for ajax, progress bar

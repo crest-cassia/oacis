@@ -180,6 +180,25 @@ describe ParameterSetsController do
     end
   end
 
+  describe "DELETE destroy" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @ps = @sim.parameter_sets.first
+    end
+
+    it "destroys the parameter set" do
+      expect {
+        delete :destroy, {id: @ps.to_param}, valid_session
+      }.to change(ParameterSet, :count).by(-1)
+    end
+
+    it "redirects to the simulator#show" do
+      delete :destroy, {id: @ps.to_param}, valid_session
+      response.should redirect_to(simulator_url(@sim))
+    end
+  end
+
   describe "GET _runs_list" do
     before(:each) do
       @simulator = FactoryGirl.create(:simulator,
