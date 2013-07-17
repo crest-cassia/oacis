@@ -24,12 +24,13 @@ class ParameterSetsListDatatable
     header += simulator.parameter_definitions.keys.map do |key|
       '<th class="span1">' + ERB::Util.html_escape(key) + '</th>'
     end
+    header << '<th style="min-width: 18px; width: 1%;"></th>'
     header
   end
 
 private
   def sort_by
-    ["id", "id", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"}
+    ["id", "id", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
   end
 
   def data
@@ -45,6 +46,7 @@ private
       @param_keys.each do |key|
         tmp <<  ERB::Util.html_escape(param.v[key])
       end
+      tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, method: :delete, data: {confirm: 'Are you sure?'})
       a << tmp
     end
     a
