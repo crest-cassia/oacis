@@ -108,6 +108,13 @@ describe ParameterSet do
       run.should_receive(:destroy)
       @ps.destroy
     end
+
+    it "calls cancel of dependent runs whose status is submitted or running when destroyed" do
+      run = @ps.runs.first
+      run.status = :submitted
+      run.should_receive(:cancel)
+      @ps.destroy
+    end
   end
 
   describe "result directory" do
@@ -201,6 +208,16 @@ describe ParameterSet do
       prm.runs_status_count[:finished].should == prm.runs.where(status: :finished).count
       prm.runs_status_count[:running].should == prm.runs.where(status: :running).count
       prm.runs_status_count[:failed].should == prm.runs.where(status: :failed).count
+    end
+  end
+
+  describe "#destroy" do
+
+    it "deletes result_directory" do
+      ps = @sim.parameter_sets.first
+      dir = ps.dir
+      ps.destroy
+      File.directory?(dir).should be_false
     end
   end
 end
