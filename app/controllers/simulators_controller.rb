@@ -126,7 +126,14 @@ class SimulatorsController < ApplicationController
   end
 
   def _parameters_list
-    render json: ParameterSetsListDatatable.new(view_context)
+    simulator = Simulator.find(params[:id])
+    parameter_sets = simulator.parameter_sets
+    if params[:query_id].present?
+      q = ParameterSetQuery.find(params[:query_id])
+      parameter_sets = q.parameter_sets
+    end
+
+    render json: ParameterSetsListDatatable.new(parameter_sets, simulator.parameter_definitions.keys, view_context)
   end
 
   def _parameter_sets_status_count

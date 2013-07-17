@@ -1,14 +1,21 @@
 class ParameterSetsListDatatable
-  delegate :params, :h, :link_to, :distance_to_now_in_words, to: :@view
 
-  def initialize(view)
+  def initialize(parameter_sets, parameter_definition_keys, view)
     @view = view
-    @simulator = Simulator.find(@view.params[:id])
-    if @view.params[:query_id].present?
-      @param_sets = ParameterSetQuery.find(@view.params[:query_id]).parameter_sets
-    else
-      @param_sets = ParameterSet.where(:simulator_id => @simulator.id)
+    @param_sets = parameter_sets
+    @param_keys = parameter_definition_keys
+  end
+
+  def self.header(simulator)
+    header = [ '<th style="min-width: 18px; width: 1%"></th>',
+               '<th class="span1" style="min-width: 150px;">Progress</th>',
+               '<th class="span1" style="min-width: 50px;">ID</th>',
+               '<th class="span1">Updated_at</th>'
+             ]
+    simulator.parameter_definitions.keys.each do |key|
+      header << '<th class="span1">' + ERB::Util.html_escape(key) + '</th>'
     end
+    header
   end
 
   def as_json(options = {})
@@ -30,11 +37,10 @@ private
       count = param.runs_status_count
       progress = @view.progress_bar( count[:total], count[:finished], count[:running], count[:failed] )
       tmp << @view.raw(progress)
-      link_to_monospaced_shorten_id = "<tt>"+link_to( @view.shortened_id(param.id), @view.parameter_set_path(param) )+"</tt>"
-      tmp << link_to_monospaced_shorten_id
-      tmp << distance_to_now_in_words(param.updated_at)
-      @simulator.parameter_definitions.each do |key,key_def|
-        tmp <<  h(param.v[key])
+      tmp << "<tt>"+@view.link_to( @view.shortened_id(param.id), @view.parameter_set_path(param) )+"</tt>"
+      tmp << @view.distance_to_now_in_words(param.updated_at)
+      @param_keys.each do |key|
+        tmp <<  ERB::Util.html_escape(param.v[key])
       end
       a << tmp
     end
@@ -66,7 +72,7 @@ private
     when 3
       "updated_at"
     else
-      "v."+@simulator.parameter_definitions.keys[@view.params[:iSortCol_0].to_i-4]
+      "v."+@param_keys[@view.params[:iSortCol_0].to_i-4]
     end
   end
 

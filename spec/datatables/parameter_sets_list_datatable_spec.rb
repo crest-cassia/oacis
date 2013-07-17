@@ -26,12 +26,11 @@ describe "ParameterSetsListDatatable" do
         @context.stub(:progress_bar).and_return("<div></div>")
         @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
         @context.stub(:shortened_id).and_return("xxxx..yy")
-        @psld = ParameterSetsListDatatable.new(@context)
+        @psld = ParameterSetsListDatatable.new(@simulator.parameter_sets, @simulator.parameter_definitions.keys, @context)
         @psld_json = JSON.parse(@psld.to_json)
       end
 
       it "is initialized" do
-        @psld.instance_variable_get(:@simulator).should eq(Simulator.find(@simulator.to_param))
         @psld.instance_variable_get(:@param_sets).should eq(ParameterSet.where(:simulator_id => @simulator.to_param))
       end
       
@@ -65,12 +64,11 @@ describe "ParameterSetsListDatatable" do
         @context.stub(:progress_bar).and_return("<div></div>")
         @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
         @context.stub(:shortened_id).and_return("xxxx..yy")
-        @psld = ParameterSetsListDatatable.new(@context)
+        @psld = ParameterSetsListDatatable.new(@query.parameter_sets, @simulator.parameter_definitions.keys, @context)
         @psld_json = JSON.parse(@psld.to_json)
       end
 
       it "is initialized" do
-        @psld.instance_variable_get(:@simulator).should eq(Simulator.find(@simulator.to_param))
         @psld.instance_variable_get(:@param_sets).should eq(@query.parameter_sets)
       end
 
@@ -80,6 +78,19 @@ describe "ParameterSetsListDatatable" do
         @psld_json["aaData"].size.should == 5
         @psld_json["aaData"].first[4].to_i.should == @query.parameter_sets.only("v.L").max("v.L")#["aaData"].first[4].to_i is qeual to v.L (["aaData"].first[id, updated_at, [keys]])
       end
+    end
+  end
+
+  describe ".header" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+    end
+
+    it "returns array of th tags" do
+      arr = ParameterSetsListDatatable.header(@sim)
+      arr.should be_an(Array)
+      arr.should have(4 + @sim.parameter_definitions.size).items
     end
   end
 end
