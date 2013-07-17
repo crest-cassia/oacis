@@ -21,8 +21,8 @@ class ParameterSetsListDatatable
                '<th class="span1" style="min-width: 50px;">ID</th>',
                '<th class="span1">Updated_at</th>'
              ]
-    simulator.parameter_definitions.keys.each do |key|
-      header << '<th class="span1">' + ERB::Util.html_escape(key) + '</th>'
+    header += simulator.parameter_definitions.keys.map do |key|
+      '<th class="span1">' + ERB::Util.html_escape(key) + '</th>'
     end
     header
   end
