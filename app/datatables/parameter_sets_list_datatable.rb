@@ -6,6 +6,15 @@ class ParameterSetsListDatatable
     @param_keys = parameter_definition_keys
   end
 
+  def as_json(options = {})
+    {
+      sEcho: @view.params[:sEcho].to_i,
+      iTotalRecords: @param_sets.count,
+      iTotalDisplayRecords: parameter_sets_lists.count,
+      aaData: data
+    }
+  end
+
   def self.header(simulator)
     header = [ '<th style="min-width: 18px; width: 1%"></th>',
                '<th class="span1" style="min-width: 150px;">Progress</th>',
@@ -18,16 +27,10 @@ class ParameterSetsListDatatable
     header
   end
 
-  def as_json(options = {})
-    {
-      sEcho: @view.params[:sEcho].to_i,
-      iTotalRecords: @param_sets.count,
-      iTotalDisplayRecords: parameter_sets_lists.count,
-      aaData: data
-    }
-  end
-
 private
+  def sort_by
+    ["id", "id", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"}
+  end
 
   def data
     a = []
@@ -66,14 +69,8 @@ private
   end
 
   def sort_column
-    case @view.params[:iSortCol_0].to_i
-    when 0,1,2
-      "id"
-    when 3
-      "updated_at"
-    else
-      "v."+@param_keys[@view.params[:iSortCol_0].to_i-4]
-    end
+    idx = @view.params[:iSortCol_0].to_i
+    sort_by[idx]
   end
 
   def sort_direction
