@@ -60,6 +60,17 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  def destroy
+    @ps = ParameterSet.find(params[:id])
+    sim = @ps.simulator
+    @ps.destroy
+
+    respond_to do |format|
+      format.html { redirect_to simulator_url(sim) }
+      format.json { head :no_content }
+    end
+  end
+
   def _runs_status_count
     render json: ParameterSet.only("runs.status").find(params[:id]).runs_status_count.to_json
   end
