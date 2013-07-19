@@ -2,7 +2,6 @@
 = executable.description
 
 - if executable.is_a?(Simulator)
-  %h3
   %table.table.table-striped
     %thead
     %tbody
@@ -12,6 +11,8 @@
       %tr
         %th Executable On
         %td= raw( executable.executable_on.map {|host| h(host.name) }.join('<br />') )
+  .form-actions
+    = link_to 'Destroy', executable, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
 
 %h3 Defined Parameters
 %table.table.table-striped
