@@ -93,15 +93,15 @@ class SimulatorsController < ApplicationController
 
   # DELETE /simulators/1
   # DELETE /simulators/1.json
-  # def destroy
-  #   @simulator = Simulator.find(params[:id])
-  #   @simulator.destroy
+  def destroy
+    @simulator = Simulator.find(params[:id])
+    @simulator.destroy
 
-  #   respond_to do |format|
-  #     format.html { redirect_to simulators_url }
-  #     format.json { head :no_content }
-  #   end
-  # end
+    respond_to do |format|
+      format.html { redirect_to simulators_url }
+      format.json { head :no_content }
+    end
+  end
 
   # POST /simulators/:_id/_make_query redirect_to simulators#show
   def _make_query
