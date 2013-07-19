@@ -186,20 +186,23 @@ describe SimulatorsController do
   #   end
   # end
 
-  # describe "DELETE destroy" do
-  #   it "destroys the requested simulator" do
-  #     simulator = Simulator.create! valid_attributes
-  #     expect {
-  #       delete :destroy, {:id => simulator.to_param}, valid_session
-  #     }.to change(Simulator, :count).by(-1)
-  #   end
+  describe "DELETE destroy" do
 
-  #   it "redirects to the simulators list" do
-  #     simulator = Simulator.create! valid_attributes
-  #     delete :destroy, {:id => simulator.to_param}, valid_session
-  #     response.should redirect_to(simulators_url)
-  #   end
-  # end
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+    end
+
+    it "destroys the requested simulator" do
+      expect {
+        delete :destroy, {id: @sim.to_param}, valid_session
+      }.to change(Simulator, :count).by(-1)
+    end
+
+    it "redirects to the simulators list" do
+      delete :destroy, {id: @sim.to_param}, valid_session
+      response.should redirect_to(simulators_url)
+    end
+  end
 
   describe "POST _make_query" do
     before(:each) do

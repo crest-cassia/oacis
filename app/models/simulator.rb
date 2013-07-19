@@ -6,7 +6,7 @@ class Simulator
   field :command, type: String
   field :description, type: String
   field :support_input_json, type: Boolean, default: true
-  has_many :parameter_sets
+  has_many :parameter_sets, dependent: :destroy
   has_many :parameter_set_queries
   has_many :parameter_set_groups
   embeds_many :analyzers
