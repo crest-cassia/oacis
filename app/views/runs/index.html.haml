@@ -28,19 +28,28 @@
   %tbody
 
 .form-actions
-  %a.btn.btn-primary{href: check_server_status_runs_path} Update status
+  %a.btn.btn-primary#check_server_stat Update
 
 :javascript
   $(function() {
+    var aoTables = []
     $('.jobs_datatable').each( function() {
       var source = $(this).attr("data-source");
-      $(this).dataTable({
+      var oTable = $(this).dataTable({
         bProcessing: true,
         bServerSide: true,
         bFilter: false,
         sAjaxSource: source,
         sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
         sPaginationType: "bootstrap"
+      });
+      aoTables.push(oTable);
+    });
+
+    $('#check_server_stat').click( function() {
+      $.get("#{check_server_status_runs_path}");
+      aoTables.forEach( function(oTable) {
+        oTable.fnReloadAjax();
       });
     });
   });

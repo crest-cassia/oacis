@@ -14,7 +14,7 @@ class RunsController < ApplicationController
   def check_server_status
     Resque.enqueue(JobObserver)
     Resque.enqueue(JobSubmitter)
-    redirect_to runs_path, notice: 'checking server status'
+    render nothing: true
   end
 
   def show
