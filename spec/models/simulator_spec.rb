@@ -143,6 +143,25 @@ describe Simulator do
     end
   end
 
+  describe "#destroy" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+    end
+
+    it "calls destroy of dependent parameter_sets when destroyed" do
+      expect {
+        @sim.destroy
+      }.to change { ParameterSet.count }.by(-1)
+    end
+
+    it "calls destroy of dependent runs when destroyed" do
+      expect {
+        @sim.destroy
+      }.to change { Run.count }.by(-1)
+    end
+  end
+
   describe "#dir" do
 
     it "returns the result directory of the simulator" do
