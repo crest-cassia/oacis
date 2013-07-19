@@ -90,7 +90,7 @@ describe "ParameterSetsListDatatable" do
     it "returns array of th tags" do
       arr = ParameterSetsListDatatable.header(@sim)
       arr.should be_an(Array)
-      arr.should have(4 + @sim.parameter_definitions.size).items
+      arr.should have(5 + @sim.parameter_definitions.size).items
     end
   end
 end
