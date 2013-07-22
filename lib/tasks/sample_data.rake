@@ -7,21 +7,6 @@ namespace :db do
     Rake::Task['result_dir:drop'].invoke
     Rake::Task['resque:drop'].invoke
 
-    # create users
-    User.create!(:name => "Example User",
-                 :email => "example@example.com",
-                 :password => "foobar",
-                 :password_confirmation => "foobar")
-    9.times do |n|
-      name = Faker::Name.name
-      email = "example-#{n+1}@example.com"
-      password = "password"
-      User.create!(:name => name,
-                   :email => email,
-                   :password => password,
-                   :password_confirmation => password)
-    end
-
     # create simulators
     sim = FactoryGirl.create(:simulator,
                              parameter_sets_count: 5,
