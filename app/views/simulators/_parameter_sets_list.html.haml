@@ -94,18 +94,26 @@
     param_list_table_width = $("#param_list").width()
   });
 
-:coffeescript
-  jQuery ->
-    $('#params_list').dataTable
-      bProcessing: true
-      bServerSide: true
-      bFilter: false
-      bAutoWidth: false
-      iDisplayLength: 100
-      sAjaxSource: $('#params_list').data('source')
-      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
-      sPaginationType: "bootstrap"
+:javascript
+  var oPsTable;
+  function reload_parameter_sets_table() {
+    oPsTable.fnReloadAjax();
+  }
 
+  $(function() {
+    oPsTable = $('#params_list').dataTable({
+      bProcessing: true,
+      bServerSide: true,
+      bFilter: false,
+      bAutoWidth: false,
+      iDisplayLength: 100,
+      sAjaxSource: $('#params_list').data('source'),
+      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+      sPaginationType: "bootstrap"
+    });
+  })
+
+:coffeescript
   jQuery ->
     $("#params_list").on "click", "img.treebtn[parameter_set_id]", ->
       if ($(this).attr("state") == "close")
@@ -138,13 +146,13 @@
         run_list.remove()
 
 :javascript
-  var oTable;
+  var oRunsTable;
   $(function() {
     $("body").on("change", "#runs_list", function() {
-      oTable = datatables_for_runs_table();
+      oRunsTable = datatables_for_runs_table();
     })
   })
 
   function reload_runs_table() {
-    oTable.fnReloadAjax();
+    oRunsTable.fnReloadAjax();
   }

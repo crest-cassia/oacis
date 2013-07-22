@@ -46,7 +46,7 @@ private
       @param_keys.each do |key|
         tmp <<  ERB::Util.html_escape(param.v[key])
       end
-      tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, method: :delete, data: {confirm: 'Are you sure?'})
+      tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
       a << tmp
     end
     a
