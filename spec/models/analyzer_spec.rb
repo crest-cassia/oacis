@@ -135,4 +135,38 @@ describe Analyzer do
       end
     end
   end
+
+  describe "relation" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 3,
+                                analyzers_count: 1, run_analysis: true)
+      @azr = @sim.analyzers.first
+    end
+
+    it "has many analyses" do
+      @azr.analyses.should have(3).items
+    end
+  end
+
+  describe "#destroy" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+                                analyzers_count: 1, run_analysis: true)
+      @azr = @sim.analyzers.first
+    end
+
+    it "destroys analyzer" do
+      expect {
+        @azr.destroy
+      }.to change { @sim.analyzers.count }.by(-1)
+    end
+
+    it "destroys dependent analyses" do
+      expect {
+        @azr.destroy
+      }.to change { Analysis.count }.by(-1)
+    end
+  end
 end
