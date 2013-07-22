@@ -170,6 +170,80 @@ describe Analysis do
     end
   end
 
+  describe "#destroy" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1, runs_count: 1,
+                               analyzers_count: 1, run_analysis: true
+                               )
+      @analysis = sim.parameter_sets.first.runs.first.analyses.first
+    end
+
+    context "when status is either :failed or :finished" do
+
+      before(:each) do
+        @analysis.update_attribute(:status, :finished)
+      end
+
+      it "destroys item" do
+        expect {
+          @analysis.destroy
+        }.to change { Analysis.count }.by(-1)
+      end
+
+      it "delete analysis directory" do
+        dir = @analysis.dir
+        @analysis.destroy
+        File.directory?(dir).should be_false
+      end
+    end
+
+    context "when status is either :created, :running, or :cancelled" do
+
+      before(:each) do
+        @analysis.update_attribute(:status, :created)
+      end
+
+      it "calls cancel" do
+        @analysis.should_receive(:cancel)
+        @analysis.destroy
+      end
+
+      it "does not destroy the analysis" do
+        expect {
+          @analysis.destroy
+        }.to_not change { Analysis.count }
+      end
+
+      it "deletes analysis_directory" do
+        dir = @analysis.dir
+        @analysis.destroy
+        File.directory?(dir).should be_false
+      end
+
+      it "does not destroy analysis even if #destroy is called twice" do
+        expect {
+          @analysis.destroy
+          @analysis.destroy
+        }.to_not change { Analysis.count }
+      end
+
+      describe "#cancel" do
+
+        it "updates status to :cancelled" do
+          @analysis.__send__(:cancel)
+          @analysis.status.should eq :cancelled
+        end
+
+        it "sets analyzable_id to nil" do
+          @analysis.__send__(:cancel)
+          @analysis.analyzable.should be_nil
+        end
+      end
+    end
+  end
+
   describe "#input" do
 
     describe "for :on_run type" do
