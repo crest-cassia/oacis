@@ -28,6 +28,25 @@ describe AnalyzersController do
     end
   end
 
+  describe "DELETE 'destroy'" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
+      @azr = @sim.analyzers.first
+    end
+
+    it "destroys the requested analyzer" do
+      expect {
+        delete :destroy, {simulator_id: @sim.to_param, id: @azr.to_param}, valid_session
+      }.to change { @sim.reload.analyzers.count }.by(-1)
+    end
+
+    it "redirects to the simulators list" do
+      delete :destroy, {simulator_id: @sim.to_param, id: @azr.to_param}, valid_session
+      response.should redirect_to( simulator_url(@sim) )
+    end
+  end
+
   describe "GET '_parameters_form'" do
 
     before(:each) do

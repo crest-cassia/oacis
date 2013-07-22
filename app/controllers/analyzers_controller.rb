@@ -12,6 +12,17 @@ class AnalyzersController < ApplicationController
     end
   end
 
+  def destroy
+    simulator = Simulator.find(params[:simulator_id])
+    analyzer = simulator.analyzers.find(params[:id])
+    analyzer.destroy
+
+    respond_to do |format|
+      format.html { redirect_to simulator_url(simulator, anchor: '!tab-about') }
+      format.json { head :no_content }
+    end
+  end
+
   # GET /simulators/:simulator_id/analyzers/:id/_parameters_form
   def _parameters_form
     simulator = Simulator.find(params[:simulator_id])
