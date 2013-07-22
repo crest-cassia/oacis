@@ -8,6 +8,7 @@
       %th parameters
       %th status
       %th created_at
+      %th{style: "min-width: 18px; width: 1%;"}
   %tbody
     - analyses.each do |anl|
       %tr
@@ -18,3 +19,4 @@
         %td= anl.parameters.empty? ? '-' : anl.parameters.inspect
         %td= raw(status_label(anl.status))
         %td= anl.created_at
+        %td= link_to( raw('<i class="icon-trash">'), anl, method: :delete, data: {confirm: 'Are you sure?'})

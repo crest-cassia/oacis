@@ -26,7 +26,6 @@ class Analysis
   before_validation :set_status
   validates :status, presence: true,
                      inclusion: {in: [:created,:running,:failed,:cancelled,:finished]}
-  validates :analyzable, :presence => true
   validates :analyzer, :presence => true
   validate :cast_and_validate_parameter_values
 
@@ -50,6 +49,15 @@ class Analysis
 
   def submit
     Resque.enqueue(AnalyzerRunner, self.to_param)
+  end
+
+  def destroy( call_super = false )
+    s = self.status
+    if s == :failed or s == :finished or call_super
+      super
+    else
+      cancel
+    end
   end
 
   def update_status_running(option = {hostname: 'localhost'})
@@ -158,6 +166,17 @@ class Analysis
   end
 
   def delete_dir
-    FileUtils.rm_r(self.dir) if File.directory?(self.dir)
+    # if self.analyzable_id.nil, parent Analyzable item is already destroyed.
+    # Therefore, self.dir raises an exception
+    if self.analyzable and File.directory?(self.dir)
+      FileUtils.rm_r(self.dir)
+    end
+  end
+
+  def cancel
+    delete_dir
+    self.status = :cancelled
+    self.analyzable_id = nil
+    self.save
   end
 end

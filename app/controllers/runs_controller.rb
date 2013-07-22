@@ -59,7 +59,6 @@ class RunsController < ApplicationController
 
   def destroy
     @run = Run.find(params[:id])
-    ps = @run.parameter_set
     @run.destroy
 
     respond_to do |format|
