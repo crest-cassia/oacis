@@ -192,11 +192,6 @@ describe ParameterSetsController do
         delete :destroy, {id: @ps.to_param}, valid_session
       }.to change(ParameterSet, :count).by(-1)
     end
-
-    it "redirects to the simulator#show" do
-      delete :destroy, {id: @ps.to_param}, valid_session
-      response.should redirect_to(simulator_url(@sim))
-    end
   end
 
   describe "GET _runs_list" do

@@ -31,8 +31,14 @@
   %a.btn.btn-primary#check_server_stat Update
 
 :javascript
+  var aoTables = [];
+  function reload_runs_table() {
+    aoTables.forEach( function(oTable) {
+      oTable.fnReloadAjax();
+    });
+  }
+
   $(function() {
-    var aoTables = []
     $('.jobs_datatable').each( function() {
       var source = $(this).attr("data-source");
       var oTable = $(this).dataTable({
@@ -48,8 +54,6 @@
 
     $('#check_server_stat').click( function() {
       $.get("#{check_server_status_runs_path}");
-      aoTables.forEach( function(oTable) {
-        oTable.fnReloadAjax();
-      });
+      reload_runs_table();
     });
   });
