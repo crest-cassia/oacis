@@ -137,6 +137,14 @@
         run_list = $(this).closest("tr").siblings("tr#ps_"+param_id)
         run_list.remove()
 
-  jQuery ->
-    $("body").on "change", "#runs_list", ->
-      datatables_for_runs_table()
+:javascript
+  var oTable;
+  $(function() {
+    $("body").on("change", "#runs_list", function() {
+      oTable = datatables_for_runs_table();
+    })
+  })
+
+  function reload_runs_table() {
+    oTable.fnReloadAjax();
+  }

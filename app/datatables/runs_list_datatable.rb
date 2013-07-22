@@ -37,7 +37,7 @@ private
       tmp << @view.distance_to_now_in_words(run.submitted_at)
       tmp << @view.distance_to_now_in_words(run.started_at)
       tmp << @view.distance_to_now_in_words(run.finished_at)
-      tmp << @view.link_to( @view.raw('<i class="icon-trash">'), run, method: :delete, data: {confirm: 'Are you sure?'})
+      tmp << @view.link_to( @view.raw('<i class="icon-trash">'), run, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
       a << tmp
     end
     a
