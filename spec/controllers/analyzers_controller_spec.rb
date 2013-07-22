@@ -43,7 +43,7 @@ describe AnalyzersController do
 
     it "redirects to the simulators list" do
       delete :destroy, {simulator_id: @sim.to_param, id: @azr.to_param}, valid_session
-      response.should redirect_to( simulator_url(@sim) )
+      response.should redirect_to( simulator_url(@sim, anchor: '!tab-about') )
     end
   end
 
