@@ -30,9 +30,9 @@ AcmProto::Application.routes.draw do
         get "_runs_list" # for ajax, datatables
       end
       resources :runs, only: ["show","create", "destroy"] do
-        resources :analyses, :only => ["show", "create"]
+        resources :analyses, :only => ["show", "create", "destroy"]
       end
-      resources :analyses, :only => ["show", "create"]
+      resources :analyses, :only => ["show", "create", "destroy"]
     end
   end
 
