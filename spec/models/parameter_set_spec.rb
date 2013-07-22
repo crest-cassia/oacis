@@ -109,6 +109,16 @@ describe ParameterSet do
       @ps.destroy
     end
 
+    it "calls destroy of dependent analyses when destroyed" do
+      azr = FactoryGirl.create(:analyzer,
+                         simulator: @sim,
+                         type: :on_parameter_set
+                         )
+      anl = @ps.analyses.build(analyzable: @ps, analyzer: azr)
+      anl.should_receive(:destroy)
+      @ps.destroy
+    end
+
     it "calls cancel of dependent runs whose status is submitted or running when destroyed" do
       run = @ps.runs.first
       run.status = :submitted
