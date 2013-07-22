@@ -16,6 +16,26 @@ describe AnalyzerRunner do
 
   describe ".perform" do
 
+    context "when the status is :cancelled" do
+
+      before(:each) do
+        @arn.update_attribute(:status, :cancelled)
+        @arn.save!
+      end
+
+      it "calls Analysis#destroy when status is cancelled" do
+        expect {
+          AnalyzerRunner.perform(@arn.id)
+        }.to change { Analysis.count }.by(-1)
+      end
+
+      it "does not call run_analysis nor include_data methods when cancelled" do
+        AnalyzerRunner.should_not_receive(:run_analysis)
+        AnalyzerRunner.should_not_receive(:include_data)
+        AnalyzerRunner.perform(@arn.id)
+      end
+    end
+
     describe ".prepare_inputs" do
 
       before(:each) do
@@ -156,6 +176,14 @@ describe AnalyzerRunner do
         @arn.should_receive(:update_status_finished)
         AnalyzerRunner.__send__(:include_data, @arn, @work_dir, {})
       end
+
+      it "destroys analysis when its status is :cancelled" do
+        @arn.update_attribute(:status, :cancelled)
+        @arn.save!
+        expect {
+          AnalyzerRunner.__send__(:include_data, @arn, @work_dir, {})
+        }.to change { Analysis.count }.by(-1)
+      end
     end
 
     describe "error case" do
@@ -180,11 +208,18 @@ describe AnalyzerRunner do
 
   describe ".on_failure" do
 
-
     it "sets status of Analysis to failed" do
       AnalyzerRunner.__send__(:on_failure, StandardError.new, @arn.to_param)
       @arn.reload
       @arn.status.should eq(:failed)
+    end
+
+    it "destroys analysis when its status is cancelled" do
+      @arn.update_attribute(:status, :cancelled)
+      @arn.save!
+      expect {
+        AnalyzerRunner.__send__(:on_failure, StandardError.new, @arn.id)
+      }.to change { Analysis.count }.by(-1)
     end
   end
 end

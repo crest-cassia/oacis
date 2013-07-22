@@ -7,14 +7,22 @@ class AnalyzerRunner
 
   def self.perform(arn_id)
     arn = Analysis.find(arn_id)
-    work_dir = arn.dir  # UPDATE ME: a tentative implementation
-    output = run_analysis(arn, work_dir)
-    include_data(arn, work_dir, output)
+    if arn.status == :cancelled
+      arn.destroy(true)
+    else
+      work_dir = arn.dir  # UPDATE ME: a tentative implementation
+      output = run_analysis(arn, work_dir)
+      include_data(arn, work_dir, output)
+    end
   end
 
   def self.on_failure(exception, arn_id)
     arn = Analysis.find(arn_id)
-    arn.update_status_failed
+    if arn.status == :cancelled
+      arn.destroy(true)
+    else
+      arn.update_status_failed
+    end
   end
 
   private
@@ -63,7 +71,11 @@ class AnalyzerRunner
   end
 
   def self.include_data(arn, work_dir, output)
-    # do NOT copy _input/ and _input.json
-    arn.update_status_finished(output)
+    if arn.status == :cancelled
+      arn.destroy(true)
+    else
+      # do NOT copy _input/ and _input.json
+      arn.update_status_finished(output)
+    end
   end
 end

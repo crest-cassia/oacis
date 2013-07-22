@@ -51,9 +51,9 @@ class Analysis
     Resque.enqueue(AnalyzerRunner, self.to_param)
   end
 
-  def destroy
+  def destroy( call_super = false )
     s = self.status
-    if s == :failed or s == :finished
+    if s == :failed or s == :finished or call_super
       super
     else
       cancel
