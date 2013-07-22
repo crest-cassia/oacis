@@ -123,11 +123,5 @@ describe RunsController do
         delete :destroy, {id: @run.to_param}, valid_session
       }.to change { Run.where(status: :cancelled).count }.by(1)
     end
-
-    it "redirects to the parameter_sets#show" do
-      ps = @run.parameter_set
-      delete :destroy, {id: @run.to_param}, valid_session
-      response.should redirect_to(parameter_set_url(ps))
-    end
   end
 end

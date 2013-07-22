@@ -63,7 +63,6 @@ class RunsController < ApplicationController
     @run.destroy
 
     respond_to do |format|
-      format.html { redirect_to parameter_set_url(ps) }
       format.json { head :no_content }
       format.js
     end
