@@ -13,7 +13,7 @@ describe JobSubmitter do
     end
 
     after(:each) do
-      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+      FileUtils.rm_rf(@temp_dir) if File.directory?(@temp_dir)
     end
 
     it "enqueues a job to remote host" do
