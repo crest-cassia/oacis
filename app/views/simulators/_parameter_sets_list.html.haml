@@ -133,10 +133,9 @@
                 $("<div>").attr("class", "well").html(data)
               )
             )
-          )
+          );
           $("#runs_list" ,tr_element.next()).trigger("change");
-          expand_collapse_analyses_list();
-          });
+        });
       } else {
         $(this)
           .attr("state", "close")
