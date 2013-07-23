@@ -20,7 +20,7 @@ echo "  \\"started_at\\": \\"`date`\\"," >> ../#{run.id}_status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> ../#{run.id}_status.json
 # JOB EXECUTION -------------------
 { time -p { { #{cmd}; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../#{run.id}_time.txt
-echo "  \\"rc\\": $?," >> _status.json
+echo "  \\"rc\\": $?," >> ../#{run.id}_status.json
 echo "  \\"finished_at\\": \\"`date`\\"" >> ../#{run.id}_status.json
 echo "}" >> ../#{run.id}_status.json
 # POST-PROCESS --------------------
