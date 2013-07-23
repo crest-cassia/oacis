@@ -148,13 +148,11 @@
     });
   })
 
-  var oRunsTable;
+:javascript
   $(function() {
     $("body").on("change", "#runs_list", function() {
-      oRunsTable = datatables_for_runs_table();
+      var oTable = datatables_for_runs_table();
+      aoRunsTables = [];
+      aoRunsTables.push(oTable);
     })
   })
-
-  function reload_runs_table() {
-    oRunsTable.fnReloadAjax();
-  }

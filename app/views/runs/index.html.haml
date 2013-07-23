@@ -31,13 +31,6 @@
   %a.btn.btn-primary#check_server_stat Update
 
 :javascript
-  var aoTables = [];
-  function reload_runs_table() {
-    aoTables.forEach( function(oTable) {
-      oTable.fnReloadAjax();
-    });
-  }
-
   $(function() {
     $('.jobs_datatable').each( function() {
       var source = $(this).attr("data-source");
@@ -49,7 +42,7 @@
         sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
         sPaginationType: "bootstrap"
       });
-      aoTables.push(oTable);
+      aoRunsTables.push(oTable);
     });
 
     $('#check_server_stat').click( function() {

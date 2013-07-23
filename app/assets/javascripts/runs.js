@@ -15,3 +15,10 @@ $(function() {
   window.datatables_for_runs_table = datatables_for_runs_table;
 
 });
+
+var aoRunsTables = [];
+function reload_runs_table() {
+  aoRunsTables.forEach( function(oTable) {
+    oTable.fnReloadAjax();
+  });
+}
