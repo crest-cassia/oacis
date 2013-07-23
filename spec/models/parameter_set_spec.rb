@@ -92,15 +92,38 @@ describe ParameterSet do
   describe "relations" do
 
     before(:each) do
-      @parameter = @sim.parameter_sets.first
+      @ps = @sim.parameter_sets.first
     end
 
     it "has simulator method" do
-      @parameter.should respond_to(:simulator)
+      @ps.should respond_to(:simulator)
     end
 
     it "has runs method" do
-      @parameter.should respond_to(:runs)
+      @ps.should respond_to(:runs)
+    end
+
+    it "calls destroy of dependent runs when destroyed" do
+      run = @ps.runs.first
+      run.should_receive(:destroy)
+      @ps.destroy
+    end
+
+    it "calls destroy of dependent analyses when destroyed" do
+      azr = FactoryGirl.create(:analyzer,
+                         simulator: @sim,
+                         type: :on_parameter_set
+                         )
+      anl = @ps.analyses.build(analyzable: @ps, analyzer: azr)
+      anl.should_receive(:destroy)
+      @ps.destroy
+    end
+
+    it "calls cancel of dependent runs whose status is submitted or running when destroyed" do
+      run = @ps.runs.first
+      run.status = :submitted
+      run.should_receive(:cancel)
+      @ps.destroy
     end
   end
 
@@ -195,6 +218,16 @@ describe ParameterSet do
       prm.runs_status_count[:finished].should == prm.runs.where(status: :finished).count
       prm.runs_status_count[:running].should == prm.runs.where(status: :running).count
       prm.runs_status_count[:failed].should == prm.runs.where(status: :failed).count
+    end
+  end
+
+  describe "#destroy" do
+
+    it "deletes result_directory" do
+      ps = @sim.parameter_sets.first
+      dir = ps.dir
+      ps.destroy
+      File.directory?(dir).should be_false
     end
   end
 end

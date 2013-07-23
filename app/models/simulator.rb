@@ -6,20 +6,21 @@ class Simulator
   field :command, type: String
   field :description, type: String
   field :support_input_json, type: Boolean, default: true
-  has_many :parameter_sets
-  has_many :parameter_set_queries
+  has_many :parameter_sets, dependent: :destroy
+  has_many :parameter_set_queries, dependent: :destroy
   has_many :parameter_set_groups
   embeds_many :analyzers
+  has_and_belongs_to_many :executable_on, class_name: "Host", inverse_of: :executable_simulators
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
   validates :command, presence: true
   validate :parameter_definitions_format
 
-  attr_accessible :name, :command, :description, :parameter_definitions
+  attr_accessible :name, :command, :description, :parameter_definitions, :executable_on_ids
 
   ParameterTypes = ["Integer","Float","String","Boolean"]
 
-  after_save :create_simulator_dir
+  after_create :create_simulator_dir
 
   public
   def dir
@@ -61,17 +62,10 @@ class Simulator
 
   def parameter_sets_status_count
     counts = {}
-    counts[:total] = 0
-    counts[:finished] = 0
-    counts[:running] = 0
-    counts[:failed] = 0
-    parameter_sets.only("runs.status").each do |param|
-      runs_count = param.runs_status_count
-      counts[:total] = counts[:total] + runs_count[:total]
-      counts[:finished] = counts[:finished] + runs_count[:finished]
-      counts[:running] = counts[:running] + runs_count[:running]
-      counts[:failed] = counts[:failed] + runs_count[:failed]
-    end
+    counts[:total] = Run.where(simulator_id: self.id).count
+    counts[:finished] = Run.where(simulator_id: self.id, status: :finished).count
+    counts[:running] = Run.where(simulator_id: self.id, status: :running).count
+    counts[:failed] = Run.where(simulator_id: self.id, status: :failed).count
     counts
   end
 

@@ -1,11 +1,18 @@
 %h3 About
 = executable.description
 
-%h3 Owner
-%ul
-  %li example user1
-  %li example user2
-  %li (list of owners will come to here...)
+- if executable.is_a?(Simulator)
+  %table.table.table-striped
+    %thead
+    %tbody
+      %tr
+        %th Parameter Input Type
+        %td= executable.support_input_json ? "JSON" : "ARGUMENTS"
+      %tr
+        %th Executable On
+        %td= raw( executable.executable_on.map {|host| h(host.name) }.join('<br />') )
+  .form-actions
+    = link_to 'Destroy', executable, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
 
 %h3 Defined Parameters
 %table.table.table-striped
@@ -26,6 +33,3 @@
 %h3 Command
 %pre
   = h(executable.command)
-- if executable.is_a?(Simulator)
-  %ul
-    %li= "Support JSON input : #{executable.support_input_json.to_s}"

@@ -27,9 +27,20 @@ class AnalysesController < ApplicationController
     end
   end
 
+  def destroy
+    anl = Analysis.find(params[:id])
+    redirect_path = after_create_redirect_path(anl)
+    anl.destroy
+
+    respond_to do |format|
+      format.html { redirect_to redirect_path }
+      format.json { head :no_content }
+    end
+  end
+
   def _result
     arn = Analysis.find(params[:id])
-    render partial: "shared/results", layout: false, locals: {result: arn.result, result_paths: arn.result_paths}
+    render partial: "shared/results", layout: false, locals: {result: arn.result, result_paths: arn.result_paths, archived_result_path: nil}
   end
 
   private

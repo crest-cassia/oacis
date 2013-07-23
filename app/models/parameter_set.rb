@@ -3,13 +3,14 @@ class ParameterSet
   include Mongoid::Timestamps
   field :v, type: Hash
   belongs_to :simulator
-  has_many :runs
-  has_many :analyses, as: :analyzable
+  has_many :runs, dependent: :destroy
+  has_many :analyses, as: :analyzable, dependent: :destroy
 
   validates :simulator, :presence => true
   validate :cast_and_validate_parameter_values
 
-  after_save :create_parameter_set_dir
+  after_create :create_parameter_set_dir
+  before_destroy :delete_parameter_set_dir
 
   public
   def dir
@@ -64,5 +65,13 @@ class ParameterSet
 
   def create_parameter_set_dir
     FileUtils.mkdir_p(ResultDirectory.parameter_set_path(self))
+  end
+
+  def delete_parameter_set_dir
+    # if self.simulator.nil, parent Simulator is already destroyed.
+    # Therefore, self.dir raises an exception
+    if self.simulator and File.directory?(self.dir)
+      FileUtils.rm_r(self.dir)
+    end
   end
 end

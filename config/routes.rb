@@ -8,7 +8,7 @@ AcmProto::Application.routes.draw do
   end
 
   # Simulator-ParameterSet-Run relations
-  resources :simulators, shallow: true, only: ["index", "show", "new", "create"] do
+  resources :simulators, shallow: true, only: ["index", "show", "new", "create", "destroy"] do
     member do
       post "_make_query" # for ajax
       get "_parameters_list" # for ajax, datatables
@@ -22,23 +22,23 @@ AcmProto::Application.routes.draw do
         end
       end
     end
-    resources :parameter_sets, only: ["show","new","create"] do
+    resources :parameter_sets, only: ["show","new","create","destroy"] do
       member do
         get 'duplicate'
         get "_runs_status_count" # for ajax, progress bar
         get "_runs_table" # for ajax, datatables
         get "_runs_list" # for ajax, datatables
       end
-      resources :runs, only: ["show","create"] do
-        resources :analyses, :only => ["show", "create"]
+      resources :runs, only: ["show","create", "destroy"] do
+        resources :analyses, :only => ["show", "create", "destroy"]
       end
-      resources :analyses, :only => ["show", "create"]
+      resources :analyses, :only => ["show", "create", "destroy"]
     end
   end
 
   # routes for analyzers and analyses
   resources :simulators, shallow: false, only: [] do
-    resources :analyzers, only: ["show"] do
+    resources :analyzers, only: ["show", "destroy"] do
       member do
         get '_parameters_form' # for ajax
       end
@@ -49,10 +49,5 @@ AcmProto::Application.routes.draw do
 
   resources :hosts
 
-  authenticated :user do
-    root :to => 'home#index'
-  end
-  root :to => "home#index"
-  devise_for :users
-  resources :users
+  root :to => "simulators#index"
 end

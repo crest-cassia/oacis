@@ -5,7 +5,9 @@ describe Run do
   before(:each) do
     @simulator = FactoryGirl.create(:simulator,
                                     parameter_sets_count: 1,
-                                    runs_count: 1
+                                    runs_count: 1,
+                                    analyzers_count: 2,
+                                    run_analysis: true
                                     )
     @param_set = @simulator.parameter_sets.first
     @valid_attribute = {}
@@ -52,7 +54,7 @@ describe Run do
 
     it "the attributes other than seed are not accessible" do
       @valid_attribute.update(
-        status: :canceled,
+        status: :cancelled,
         hostname: "host",
         cpu_time: 123.0,
         real_time: 456.0,
@@ -61,13 +63,19 @@ describe Run do
         included_at: DateTime.now
       )
       run = @param_set.runs.build(@valid_attribute)
-      run.status.should_not == :canceled
+      run.status.should_not == :cancelled
       run.hostname.should be_nil
       run.cpu_time.should be_nil
       run.real_time.should be_nil
       run.started_at.should be_nil
       run.finished_at.should be_nil
       run.included_at.should be_nil
+    end
+
+    it "status must be either :created, :submitted, :running, :failed, :finished, or :cancelled" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.status = :unknown
+      run.should_not be_valid
     end
   end
 
@@ -84,6 +92,12 @@ describe Run do
     it "responds to simulator" do
       @run.should respond_to(:simulator)
       @run.simulator.should eq(@run.parameter_set.simulator)
+    end
+
+    it "destroys including analyses when destroyed" do
+      expect {
+        @run.destroy
+      }.to change { Analysis.all.count }.by(-2)
     end
   end
 
@@ -115,6 +129,14 @@ describe Run do
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size
       run = prm.runs.create(@valid_attribute)
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size.should == prev_count
+    end
+
+    it "is removed when the item is destroyed" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      run = sim.parameter_sets.first.runs.first
+      dir_path = run.dir
+      run.destroy
+      FileTest.directory?(dir_path).should be_false
     end
   end
 
@@ -167,10 +189,12 @@ describe Run do
       prm = sim.parameter_sets.first
       @run = prm.runs.first
       @run.status = :finished
-      @temp_files = [@run.dir.join('result1.txt'), @run.dir.join('result2.txt')]
-      @temp_files.each {|f| FileUtils.touch(f) }
       @temp_dir = @run.dir.join('result_dir')
       FileUtils.mkdir_p(@temp_dir)
+      @temp_files = [@run.dir.join('result1.txt'),
+                     @run.dir.join('result2.txt'),
+                     @temp_dir.join('result3.txt')]
+      @temp_files.each {|f| FileUtils.touch(f) }
     end
 
     after(:each) do
@@ -183,7 +207,7 @@ describe Run do
       @temp_files.each do |f|
         res.should include(f)
       end
-      res.should include(@temp_dir)
+      res.should_not include(@temp_dir)
     end
 
     it "does not include directories of analysis" do
@@ -192,6 +216,26 @@ describe Run do
       @run.result_paths.size.should eq(3)
       arn_dir = @run.analyses.first.dir
       @run.result_paths.should_not include(arn_dir)
+    end
+  end
+
+  describe "#archived_result_path" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @run = sim.parameter_sets.first.runs.first
+    end
+
+    it "returns path to archived file" do
+      @run.archived_result_path.should eq @run.dir.join("../#{@run.id}.tar.bz2")
+    end
+
+    it "is deleted when the run is destroyed" do
+      FileUtils.touch( @run.archived_result_path )
+      archive = @run.archived_result_path
+      expect {
+        @run.destroy
+      }.to change { File.exist?(archive) }.from(true).to(false)
     end
   end
 
@@ -278,6 +322,59 @@ describe Run do
         expect {
           @run.enqueue_auto_run_analyzers
         }.to_not change { @param_set.reload.analyses.count }
+      end
+    end
+  end
+
+  describe "#destroy" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @run = sim.parameter_sets.first.runs.first
+    end
+
+    it "calls destroy if status is either :created, :failed, or :finished" do
+      expect {
+        @run.destroy
+      }.to change { Run.count }.by(-1)
+    end
+
+    context "when status is :submitted or :running" do
+
+      before(:each) do
+        @run.status = :submitted
+        host = FactoryGirl.create(:localhost)
+        @run.submitted_to = host
+      end
+
+      it "calls cancel if status is :submitted or :running" do
+        @run.should_receive(:cancel)
+        @run.destroy
+      end
+
+      it "does not destroy run if status is :submitted or :running" do
+        expect {
+          @run.destroy
+        }.to_not change { Run.count }
+        @run.status.should eq :cancelled
+        @run.parameter_set.should be_nil
+      end
+
+      it "deletes run_directory and archived_result_file when cancel is called" do
+        run_dir = @run.dir
+        archive = @run.archived_result_path
+        FileUtils.touch(archive)
+        @run.destroy
+        File.exist?(run_dir).should be_false
+        File.exist?(archive).should be_false
+      end
+
+      it "does not destroy run even if #destroy is called twice" do
+        expect {
+          @run.destroy
+          @run.destroy
+        }.to_not change { Run.count }
+        @run.status.should eq :cancelled
       end
     end
   end

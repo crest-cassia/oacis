@@ -14,7 +14,7 @@ class RunsController < ApplicationController
   def check_server_status
     Resque.enqueue(JobObserver)
     Resque.enqueue(JobSubmitter)
-    redirect_to runs_path, notice: 'checking server status'
+    render nothing: true
   end
 
   def show
@@ -57,4 +57,13 @@ class RunsController < ApplicationController
     end
   end
 
+  def destroy
+    @run = Run.find(params[:id])
+    @run.destroy
+
+    respond_to do |format|
+      format.json { head :no_content }
+      format.js
+    end
+  end
 end

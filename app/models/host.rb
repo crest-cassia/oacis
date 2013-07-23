@@ -10,6 +10,7 @@ class Host
   field :submission_command, type: String, default: 'nohup'
   field :work_base_dir, type: String, default: '~'
   field :max_num_jobs, type: Integer, default: 1
+  has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
   validates :hostname, presence: true, format: {with: /^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/}
@@ -97,11 +98,11 @@ class Host
   end
 
   def submittable_runs
-    Run.where(status: :created)
+    Run.where(status: :created).in(simulator: executable_simulator_ids)
   end
 
   def submitted_runs
-    Run.where(submitted_to: self).in(status: [:submitted, :running])
+    Run.where(submitted_to: self).in(status: [:submitted, :running, :cancelled])
   end
 
   def submit(runs)
@@ -139,15 +140,19 @@ class Host
             run.save
           end
         when :includable
-          rpath = result_file_path(run)
-          base = File.basename(rpath)
-          download(rpath, run.dir.join('..', base), {recursive: false})
-          JobScriptUtil.expand_result_file_and_update_run(run)
-          run.reload
-          run.enqueue_auto_run_analyzers
-          if run.status == :finished
-            rm_r( result_file_path(run) )
-            rm_r( job_script_path(run) )
+          unless run.status == :cancelled
+            rpath = result_file_path(run)
+            base = File.basename(rpath)
+            download(rpath, run.dir.join('..', base), {recursive: false})
+            JobScriptUtil.expand_result_file_and_update_run(run)
+            run.reload
+            run.enqueue_auto_run_analyzers
+          end
+          rm_r( result_file_path(run) )
+          rm_r( job_script_path(run) ) unless run.status == :failed
+          if run.status == :cancelled
+            run.submitted_to = nil
+            run.destroy
           end
         end
       end

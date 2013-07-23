@@ -16,6 +16,7 @@ describe "RunsListDatatable" do
       @context.stub(:formatted_elapsed_time).and_return("time")
       @context.stub(:raw).and_return("label")
       @context.stub(:status_label).and_return("status_label")
+      @context.stub(:shortened_id).and_return("xxxx..yy")
       @rld = RunsListDatatable.new(@runs, @context)
       @rld_json = JSON.parse(@rld.to_json)
     end
