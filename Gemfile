@@ -11,12 +11,10 @@ gem "net-sftp", ">= 2.1.2"
 
 group :assets do
   gem 'sass-rails',   '~> 3.2.3'
-  gem 'coffee-rails', '~> 3.2.1'
   gem 'uglifier', '>= 1.0.3'
   gem 'twitter-bootstrap-rails'
   gem 'jquery-datatables-rails'
   gem "haml-rails", ">= 0.3.5"
-  gem "coffee-filter"
   gem "factory_girl_rails", ">= 4.1.0"
 end
 
