@@ -2,35 +2,35 @@ source 'https://rubygems.org'
 
 gem 'rails', '3.2.8'
 gem 'jquery-rails'
-gem "mongoid", ">= 3.0.9"
-gem "haml", ">= 3.1.7"
+gem "mongoid"
+gem "haml"
 gem "resque"
 gem "resque-scheduler", :require => 'resque_scheduler'
-gem "net-ssh", ">= 2.6.5"
-gem "net-sftp", ">= 2.1.2"
+gem "net-ssh"
+gem "net-sftp"
 
 group :assets do
-  gem 'sass-rails',   '~> 3.2.3'
-  gem 'uglifier', '>= 1.0.3'
+  gem 'sass-rails'
+  gem 'uglifier'
   gem 'twitter-bootstrap-rails'
   gem 'jquery-datatables-rails'
-  gem "haml-rails", ">= 0.3.5"
-  gem "factory_girl_rails", ">= 4.1.0"
+  gem "haml-rails"
+  gem "factory_girl_rails"
 end
 
 group :development, :test do
-  gem "rspec-rails", ">= 2.13"
+  gem "rspec-rails"
 end
 
 group :development do
-  gem "quiet_assets", ">= 1.0.1"
+  gem "quiet_assets"
   gem "faker"
   gem "pry"
 end
 
 group :test do
-  gem "database_cleaner", ">= 0.9.1"
-  gem "mongoid-rspec", ">= 1.4.6"
+  gem "database_cleaner"
+  gem "mongoid-rspec"
   gem "simplecov", :require => false
   gem "simplecov-rcov", :require => false
   gem "ci_reporter"
