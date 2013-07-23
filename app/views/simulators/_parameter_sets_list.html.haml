@@ -113,20 +113,20 @@
     });
   })
 
-:coffeescript
-  jQuery ->
-    $("#params_list").on "click", "img.treebtn[parameter_set_id]", ->
-      if ($(this).attr("state") == "close")
-        $("img.treebtn[state='open']", $(this).closest("tbody") ).each ->
-          $(this).trigger("click")
-        td_element = $(this).closest("td")
-        tr_element = $(this).closest("tr")
-        param_id = $(this).attr("parameter_set_id")
-        table_cols = tr_element.children("td").length
+  $(function() {
+    $("#params_list").on("click", "img.treebtn[parameter_set_id]", function() {
+      if ($(this).attr("state") == "close") {
+        $("img.treebtn[state='open']", $(this).closest("tbody") ).each(function(){
+          $(this).trigger("click");
+        });
+        var td_element = $(this).closest("td");
+        var tr_element = $(this).closest("tr");
+        var param_id = $(this).attr("parameter_set_id");
+        var table_cols = tr_element.children("td").length;
         $(this)
           .attr("state", "open")
           .attr("src", "/assets/collapse.png")
-        $.get "/parameter_sets/"+param_id+"/_runs_table", (data) ->
+        $.get("/parameter_sets/"+param_id+"/_runs_table", function(data) {
           tr_element.after(
             $("<tr>").attr("id", "ps_"+param_id).html(
               $("<td>").attr({colspan: table_cols}).html(
@@ -136,16 +136,19 @@
           )
           $("#runs_list" ,tr_element.next()).trigger("change");
           expand_collapse_analyses_list();
-      else
+          });
+      } else {
         $(this)
           .attr("state", "close")
           .attr("src", "/assets/expand.png")
-        td_element = $(this).closest("td")
-        param_id = $(this).attr("parameter_set_id")
-        run_list = $(this).closest("tr").siblings("tr#ps_"+param_id)
+        var td_element = $(this).closest("td")
+        var param_id = $(this).attr("parameter_set_id")
+        var run_list = $(this).closest("tr").siblings("tr#ps_"+param_id)
         run_list.remove()
+      }
+    });
+  })
 
-:javascript
   var oRunsTable;
   $(function() {
     $("body").on("change", "#runs_list", function() {
