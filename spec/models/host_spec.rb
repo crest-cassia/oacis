@@ -431,7 +431,7 @@ describe Host do
 
     it "include remote data and update status to 'finished' or 'failed'" do
       @host.should_receive(:remote_status).and_return(:includable)
-      @host.stub!(:download)
+      @host.stub(:download)
       JobScriptUtil.should_receive(:expand_result_file_and_update_run) do |run|
         run.id.should eq @run.id
       end
@@ -452,19 +452,19 @@ describe Host do
       end
 
       it "does not include remote data even if remote status is 'includable'" do
-        @host.stub!(:remote_status).and_return(:includable)
+        @host.stub(:remote_status).and_return(:includable)
         @host.should_not_receive(:download)
         @host.check_submitted_job_status
       end
 
       it "deletes archived reuslt file on the remote host" do
-        @host.stub!(:remote_status).and_return(:includable)
+        @host.stub(:remote_status).and_return(:includable)
         @host.should_receive(:rm_r).exactly(2).times
         @host.check_submitted_job_status
       end
 
       it "destroys run" do
-        @host.stub!(:remote_status).and_return(:includable)
+        @host.stub(:remote_status).and_return(:includable)
         expect {
           @host.check_submitted_job_status
         }.to change { Run.count }.by(-1)

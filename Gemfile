@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '3.2.8'
+gem 'rails', '3.2.13'
 gem 'jquery-rails'
 gem "mongoid"
 gem "haml"
@@ -12,7 +12,9 @@ gem "net-sftp"
 group :assets do
   gem 'sass-rails'
   gem 'uglifier'
-  gem 'twitter-bootstrap-rails'
+  gem 'therubyracer'
+  gem "less-rails"
+  gem 'twitter-bootstrap-rails', '2.2.6'
   gem 'jquery-datatables-rails'
   gem "haml-rails"
   gem "factory_girl_rails"
