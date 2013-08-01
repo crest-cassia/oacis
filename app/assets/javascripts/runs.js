@@ -6,6 +6,7 @@ $(function() {
       bProcessing: true,
       bServerSide: true,
       bFilter: false,
+      bDestroy: true,
       sAjaxSource: $('#runs_list').data('source'),
       sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
       sPaginationType: "bootstrap"
@@ -15,3 +16,10 @@ $(function() {
   window.datatables_for_runs_table = datatables_for_runs_table;
 
 });
+
+var aoRunsTables = [];
+function reload_runs_table() {
+  aoRunsTables.forEach( function(oTable) {
+    oTable.fnReloadAjax();
+  });
+}

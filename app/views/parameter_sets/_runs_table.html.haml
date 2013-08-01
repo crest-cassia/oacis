@@ -11,11 +11,8 @@
   = submit_tag "Create Runs", :class => 'btn btn-primary'
 
 :javascript
-  var oTable;
   $(function() {
-    oTable = datatables_for_runs_table();
+    var oTable = datatables_for_runs_table();
+    aoRunsTables = [];
+    aoRunsTables.push(oTable);
   })
-
-  function reload_runs_table() {
-    oTable.fnReloadAjax();
-  }
