@@ -1,5 +1,7 @@
 module ParametersUtil
 
+  TYPES = ["Integer","Float","String","Boolean"]
+
   def self.cast_parameter_values(parameters, definitions, errors = nil)
     casted = {}
     parameters ||= {}
