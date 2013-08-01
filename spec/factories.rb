@@ -6,10 +6,15 @@ FactoryGirl.define do
   factory :simulator do
     sequence(:name, 'A') {|n| "simulator#{n}"}
     command "echo"
-    h = { "L"=>{"type"=>"Integer", "default" => 50, "description" => "System size"},
-          "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Temperature"}
-        }
-    parameter_definitions h
+
+    parameter_definitions {
+      [
+      ParameterDefinition.new(
+        { key: "L", type: "Integer", default: 50, description: "System size"}),
+      ParameterDefinition.new(
+        { key: "T", type: "Float", default: 1.0, description: "Temperature" })
+      ]
+    }
     description { Faker::Lorem.paragraphs.join("\n") }
 
     ignore do

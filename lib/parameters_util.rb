@@ -5,10 +5,22 @@ module ParametersUtil
   def self.cast_parameter_values(parameters, definitions, errors = nil)
     casted = {}
     parameters ||= {}
-    definitions.each do |key,defn|
 
-      type = defn["type"]
-      val = parameters[key] || defn["default"]
+    # TODO : fix me
+    a = []
+    if definitions.is_a?(Hash)
+      definitions.each do |key,defn|
+        pd = ParameterDefinition.new(key: key, type: defn["type"], default: defn["default"])
+        a << pd
+      end
+    else
+      a = definitions
+    end
+    # END
+    a.each do |pdef|
+      key = pdef.key
+      type = pdef.type
+      val = parameters[key] || pdef.default
 
       # neither parameter and defualt value is specified
       if val.nil?
