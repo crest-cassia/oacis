@@ -8,7 +8,7 @@ class ParameterDefinition
 
   embedded_in :simulator
 
-  validates :key, presence: true, uniqueness: true
+  validates :key, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
   validates :type, presence: true, inclusion: { in: ParametersUtil::TYPES }
   validate :cast_default_value
 
