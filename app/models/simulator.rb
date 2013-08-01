@@ -2,10 +2,12 @@ class Simulator
   include Mongoid::Document
   include Mongoid::Timestamps
   field :name, type: String
-  field :parameter_definitions, type: Hash
+  # field :parameter_definitions, type: Hash
   field :command, type: String
   field :description, type: String
   field :support_input_json, type: Boolean, default: true
+
+  embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :parameter_set_queries, dependent: :destroy
   has_many :parameter_set_groups
