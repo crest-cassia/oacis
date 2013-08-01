@@ -26,7 +26,8 @@ describe "ParameterSetsListDatatable" do
         @context.stub(:progress_bar).and_return("<div></div>")
         @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
         @context.stub(:shortened_id).and_return("xxxx..yy")
-        @psld = ParameterSetsListDatatable.new(@simulator.parameter_sets, @simulator.parameter_definitions.keys, @context)
+        keys = @simulator.parameter_definitions.map {|x| x.key}
+        @psld = ParameterSetsListDatatable.new(@simulator.parameter_sets, keys, @context)
         @psld_json = JSON.parse(@psld.to_json)
       end
 
@@ -64,7 +65,8 @@ describe "ParameterSetsListDatatable" do
         @context.stub(:progress_bar).and_return("<div></div>")
         @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
         @context.stub(:shortened_id).and_return("xxxx..yy")
-        @psld = ParameterSetsListDatatable.new(@query.parameter_sets, @simulator.parameter_definitions.keys, @context)
+        keys = @simulator.parameter_definitions.map {|x| x.key}
+        @psld = ParameterSetsListDatatable.new(@query.parameter_sets, keys, @context)
         @psld_json = JSON.parse(@psld.to_json)
       end
 

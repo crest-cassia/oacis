@@ -23,12 +23,12 @@
       %th.span2 Default
       %th.span6 Description
   %tbody
-    - executable.parameter_definitions.each do |key,val|
+    - executable.parameter_definitions.each do |pd|
       %tr
-        %th= h(key)
-        %td= h(val["type"])
-        %td= h(val["default"] || '-')
-        %td= val["description"] ? h(val["description"]) : "-"
+        %th= pd.key
+        %td= pd.type
+        %td= pd.default || '-'
+        %td= pd.description ? pd.description : "-"
 
 %h3 Command
 %pre

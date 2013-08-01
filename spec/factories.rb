@@ -27,6 +27,7 @@ FactoryGirl.define do
       run_analysis_on_parameter_set true
       parameter_set_queries_count 0
     end
+
     after(:create) do |simulator, evaluator|
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
                               simulator: simulator,

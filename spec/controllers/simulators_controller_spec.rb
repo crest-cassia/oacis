@@ -26,11 +26,11 @@ describe SimulatorsController do
   def valid_attributes
     {
       name:"simulator_A",
-      parameter_definitions: {
-        "L" => {"type" => "Integer"},
-        "T" => {"type" => "Float"}
-      },
-      command: "~/path_to_simulator_A",
+      parameter_definitions_attributes: [
+        { key: "L", type: "Integer"},
+        { key: "T", type: "Float"}
+      ],
+      command: "~/path_to_simulator_A"
     }
   end
 
@@ -90,10 +90,13 @@ describe SimulatorsController do
 
       before(:each) do
         definitions = [
-          {"name" => "param1", "type" => "Integer"},
-          {"name" => "param2", "type" => "Float"}
+          {key: "param1", type: "Integer"},
+          {key: "param2", type: "Float"}
         ]
-        simulator = {name: "simulatorA", command: "echo", support_input_json: "0"}
+        simulator = {
+          name: "simulatorA", command: "echo", support_input_json: "0",
+          parameter_definitions_attributes: definitions
+        }
         @valid_post_parameter = {simulator: simulator, definitions: definitions}
       end
 
@@ -109,8 +112,8 @@ describe SimulatorsController do
         sim.name.should eq "simulatorA"
         sim.command.should eq "echo"
         sim.support_input_json.should be_false
-        sim.parameter_definitions["param1"]["type"].should eq "Integer"
-        sim.parameter_definitions["param2"]["type"].should eq "Float"
+        sim.parameter_definition_for("param1").type.should eq "Integer"
+        sim.parameter_definition_for("param2").type.should eq "Float"
       end
 
       it "assigns a newly created simulator as @simulator" do

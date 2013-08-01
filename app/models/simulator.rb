@@ -70,6 +70,13 @@ class Simulator
     counts
   end
 
+  def parameter_definition_for(key)
+    found = self.parameter_definitions.detect do |pd|
+      pd.key == key
+    end
+    found
+  end
+
   private
   def create_simulator_dir
     FileUtils.mkdir_p(ResultDirectory.simulator_path(self))

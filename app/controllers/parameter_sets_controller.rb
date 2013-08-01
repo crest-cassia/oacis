@@ -3,7 +3,7 @@ class ParameterSetsController < ApplicationController
   def show
     @param_set = ParameterSet.find(params[:id])
     @simulator = @param_set.simulator
-    @parameter_keys = @simulator.parameter_definitions.keys
+    @parameter_keys = @simulator.parameter_definitions.map {|x| x.key}
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @param_set }
@@ -13,8 +13,8 @@ class ParameterSetsController < ApplicationController
   def new
     @simulator = Simulator.find(params[:simulator_id])
     v = {}
-    @simulator.parameter_definitions.each do |key,defn|
-      v[key] = defn["default"] if defn["default"]
+    @simulator.parameter_definitions.each do |defn|
+      v[defn.key] = defn.default if defn.default
     end
     @param_set = @simulator.parameter_sets.build(v: v)
   end
@@ -89,7 +89,8 @@ class ParameterSetsController < ApplicationController
   MAX_CREATION_SIZE = 100
   # return created parameter sets
   def create_multiple(simulator, parameters)
-    mapped = simulator.parameter_definitions.map do |key, defn|
+    mapped = simulator.parameter_definitions.map do |defn|
+      key = defn.key
       if parameters[key] and parameters[key].include?(',')
         casted = parameters[key].split(',').map {|x|
           ParametersUtil.cast_value( x.strip, defn["type"] )
@@ -109,8 +110,8 @@ class ParameterSetsController < ApplicationController
     created = []
     patterns = mapped[0].product( *mapped[1..-1] ).each do |param_ary|
       param = {}
-      simulator.parameter_definitions.keys.each_with_index do |key, idx|
-        param[key] = param_ary[idx]
+      simulator.parameter_definitions.each_with_index do |defn, idx|
+        param[defn.key] = param_ary[idx]
       end
       ps = @simulator.parameter_sets.build(v: param)
       if ps.save

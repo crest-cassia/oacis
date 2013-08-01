@@ -49,19 +49,7 @@ class SimulatorsController < ApplicationController
   # POST /simulators
   # POST /simulators.json
   def create
-    param_def = {}
-    if params.has_key?(:definitions)
-      params[:definitions].each do |defn|
-        name = defn[:name]
-        next if name.empty?
-        param_def[name] = {}
-        param_def[name]["type"] = defn["type"]
-        param_def[name]["default"] = defn["default"]
-        param_def[name]["description"] = defn["description"]
-      end
-    end
     @simulator = Simulator.new(params[:simulator])
-    @simulator.parameter_definitions = param_def
     @simulator.support_input_json = ParametersUtil.boolean(params[:simulator]["support_input_json"])
 
     respond_to do |format|
@@ -132,8 +120,8 @@ class SimulatorsController < ApplicationController
       q = ParameterSetQuery.find(params[:query_id])
       parameter_sets = q.parameter_sets
     end
-
-    render json: ParameterSetsListDatatable.new(parameter_sets, simulator.parameter_definitions.keys, view_context)
+    keys = simulator.parameter_definitions.map {|pd| pd.key }
+    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context)
   end
 
   def _parameter_sets_status_count
