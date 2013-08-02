@@ -1,0 +1,35 @@
+%h3 About
+= simulator.description
+
+%table.table.table-striped
+  %thead
+  %tbody
+    %tr
+      %th Parameter Input Type
+      %td= simulator.support_input_json ? "JSON" : "ARGUMENTS"
+    %tr
+      %th simulator On
+      %td= raw( simulator.executable_on.map {|host| h(host.name) }.join('<br />') )
+.form-actions
+  = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
+  = link_to 'Destroy', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
+
+%h3 Defined Parameters
+%table.table.table-striped
+  %thead
+    %tr
+      %th.span2
+      %th.span2 Type
+      %th.span2 Default
+      %th.span6 Description
+  %tbody
+    - simulator.parameter_definitions.each do |pd|
+      %tr
+        %th= pd.key
+        %td= pd.type
+        %td= pd.default || '-'
+        %td= pd.description ? pd.description : "-"
+
+%h3 Command
+%pre
+  = simulator.command
