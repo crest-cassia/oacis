@@ -67,6 +67,7 @@ class SimulatorsController < ApplicationController
   # PUT /simulators/1.json
   def update
     @simulator = Simulator.find(params[:id])
+    @simulator.support_input_json = ParametersUtil.boolean(params[:simulator]["support_input_json"])
 
     respond_to do |format|
       if @simulator.update_attributes(params[:simulator])
