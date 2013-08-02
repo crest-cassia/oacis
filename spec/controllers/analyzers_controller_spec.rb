@@ -18,12 +18,12 @@ describe AnalyzersController do
     end
 
     it "returns http success" do
-      get 'show', {simulator_id: @sim.id, id: @azr.id }
+      get 'show', {id: @azr.id }
       response.should be_success
     end
 
     it "assigns the requested analyzer to @analyzer" do
-      get 'show', {simulator_id: @sim.id, id: @azr.id }
+      get 'show', {id: @azr.id }
       assigns(:analyzer).should eq(@azr)
     end
   end
@@ -56,7 +56,7 @@ describe AnalyzersController do
     end
 
     it "returns http success" do
-      get '_parameters_form', {simulator_id: @sim.id, id: @azr.id}
+      get '_parameters_form', {id: @azr.id}
       response.should be_success
     end
   end

@@ -26,7 +26,7 @@ private
         @view.link_to( @view.shortened_id(arn.id), @view.analysis_path(arn) ),
         @view.distance_to_now_in_words(arn.updated_at),
         @view.status_label(arn.status),
-        @view.link_to( analyzer.name, @view.simulator_analyzer_path(analyzer.simulator, analyzer) ),
+        @view.link_to( analyzer.name, @view.analyzer_path(analyzer) ),
         arn.analyzable.id
       ]
     end

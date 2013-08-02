@@ -10,8 +10,8 @@
   %tbody
     - @analyzers.each do |azr|
       %tr
-        %td= link_to( azr.id, simulator_analyzer_path(@simulator.id, azr.id))
+        %td= link_to( azr.id, analyzer_path(@simulator.id, azr.id))
         %td= azr.name
         %td= azr.type
         %td= azr.description
-        %td= link_to( raw('<i class="icon-trash">'), simulator_analyzer_path(@simulator.to_param, azr.to_param), method: :delete, data: {confirm: 'Are you sure? Dependent analyses are also going to be destroyed.'})
+        %td= link_to( raw('<i class="icon-trash">'), analyzer_path(azr.to_param), method: :delete, data: {confirm: 'Are you sure? Dependent analyses are also going to be destroyed.'})

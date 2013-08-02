@@ -8,7 +8,7 @@
       %th Parameter Input Type
       %td= simulator.support_input_json ? "JSON" : "ARGUMENTS"
     %tr
-      %th simulator On
+      %th Executable On
       %td= raw( simulator.executable_on.map {|host| h(host.name) }.join('<br />') )
 .form-actions
   = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
