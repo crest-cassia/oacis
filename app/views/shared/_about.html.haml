@@ -12,6 +12,7 @@
         %th Executable On
         %td= raw( executable.executable_on.map {|host| h(host.name) }.join('<br />') )
   .form-actions
+    = link_to 'Edit', edit_simulator_path(executable), class: 'btn btn-info'
     = link_to 'Destroy', executable, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
 
 %h3 Defined Parameters
