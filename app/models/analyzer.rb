@@ -9,7 +9,7 @@ class Analyzer
   field :auto_run, type: Symbol, default: :no
   field :description, type: String
 
-  embedded_in :simulator
+  belongs_to :simulator
   has_many :analyses, dependent: :destroy
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
