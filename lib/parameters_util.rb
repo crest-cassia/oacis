@@ -6,18 +6,7 @@ module ParametersUtil
     casted = {}
     parameters ||= {}
 
-    # TODO : fix me
-    a = []
-    if definitions.is_a?(Hash)
-      definitions.each do |key,defn|
-        pd = ParameterDefinition.new(key: key, type: defn["type"], default: defn["default"])
-        a << pd
-      end
-    else
-      a = definitions
-    end
-    # END
-    a.each do |pdef|
+    definitions.each do |pdef|
       key = pdef.key
       type = pdef.type
       val = parameters[key] || pdef.default

@@ -84,18 +84,14 @@ FactoryGirl.define do
     sequence(:name, 'A') {|n| "analyzer_#{n}"}
     type { :on_run }
     command { "cat _input.json" }
-
-    sequence(:parameter_definitions, 0) do |n|
-      h = {}
-      types = ["Integer","Float","String","Boolean"]
-      defaults = [1, 2.0, "abc", true]
-      types.size.times do |i|
-        next if n == i
-        h["param#{i}"] = {"type" => types[i], "default" => defaults[i], "description" => "description for param#{i}"}
-      end
-      h
-    end
-    # parameter_definitions h
+    parameter_definitions {
+      [
+      ParameterDefinition.new(
+        { key: "param1", type: "Integer", default: 50, description: "param1 desc"}),
+      ParameterDefinition.new(
+        { key: "param2", type: "Float", default: 1.0, description: "param2 desc" })
+      ]
+    }
     description { Faker::Lorem.paragraphs.join("\n") }
 
     ignore do

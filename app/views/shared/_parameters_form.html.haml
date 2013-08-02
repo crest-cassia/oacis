@@ -1,6 +1,6 @@
-- param_def.each do |key,definition|
-  = label 'parameters', h(key)
-  = text_field 'parameters', h(key)
-  = definition['description']
-  = definition['type']
+- param_def.each do |definition|
+  = label 'parameters', definition.key
+  = text_field 'parameters', definition.key
+  = definition.description
+  = definition.type
   %br
