@@ -5,16 +5,11 @@
     .controls
       = f.text_field(:name, class: 'text_field')
   #parameters_form.control-group
-    = label_tag('definitions[][name]', 'Definition of Parameters', class: 'control-label')
-    #parameter_form_original
-      .controls.controls-row
-        = text_field_tag('definitions[][name]', "", placeholder: "Name")
-        = select_tag('definitions[][type]', options_for_select(Simulator::ParameterTypes))
-        = text_field_tag('definitions[][default]', "", placeholder: "Default value")
-        %br
-        = text_area_tag('definitions[][description]', "", placeholder: "Description", rows: 3)
-    .controls#add_parameters_ctrl
-      .btn#add_parameters_btn Add parameter
+    = label_tag('', 'Definition of Parameters', class: 'control-label')
+    .controls
+      = f.fields_for :parameter_definitions do |builder|
+        = render 'parameter_definition_fields', f: builder
+      = link_to_add_fields "Add Parameter", f, :parameter_definitions
   .control-group
     = f.label(:command, class: 'control-label')
     .controls
@@ -39,13 +34,3 @@
   .form-actions
     = f.submit(class: 'btn btn-primary')
     = link_to('Cancel', simulators_path, class: 'btn')
-
-:javascript
-  $(function() {
-    $('#add_parameters_btn').click(function() {
-      var cloned = $('#parameter_form_original').clone();
-      $('#add_parameters_ctrl').before(cloned);
-      $(cloned).removeAttr("id");
-      $(cloned).find('input').val('');
-    });
-  });

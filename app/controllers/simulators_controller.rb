@@ -42,9 +42,9 @@ class SimulatorsController < ApplicationController
   end
 
   # GET /simulators/1/edit
-  # def edit
-  #   @simulator = Simulator.find(params[:id])
-  # end
+  def edit
+    @simulator = Simulator.find(params[:id])
+  end
 
   # POST /simulators
   # POST /simulators.json
@@ -65,19 +65,19 @@ class SimulatorsController < ApplicationController
 
   # PUT /simulators/1
   # PUT /simulators/1.json
-  # def update
-  #   @simulator = Simulator.find(params[:id])
+  def update
+    @simulator = Simulator.find(params[:id])
 
-  #   respond_to do |format|
-  #     if @simulator.update_attributes(params[:simulator])
-  #       format.html { redirect_to @simulator, notice: 'Simulator was successfully updated.' }
-  #       format.json { head :no_content }
-  #     else
-  #       format.html { render action: "edit" }
-  #       format.json { render json: @simulator.errors, status: :unprocessable_entity }
-  #     end
-  #   end
-  # end
+    respond_to do |format|
+      if @simulator.update_attributes(params[:simulator])
+        format.html { redirect_to @simulator, notice: 'Simulator was successfully updated.' }
+        format.json { head :no_content }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @simulator.errors, status: :unprocessable_entity }
+      end
+    end
+  end
 
   # DELETE /simulators/1
   # DELETE /simulators/1.json

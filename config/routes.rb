@@ -8,7 +8,7 @@ AcmProto::Application.routes.draw do
   end
 
   # Simulator-ParameterSet-Run relations
-  resources :simulators, shallow: true, only: ["index", "show", "new", "create", "destroy"] do
+  resources :simulators, shallow: true, only: ["index", "show", "new", "create", "edit", "update", "destroy"] do
     member do
       post "_make_query" # for ajax
       get "_parameters_list" # for ajax, datatables
