@@ -31,7 +31,7 @@
       = f.text_area(:description, rows: 5)
   .form-actions
     = f.submit(class: 'btn btn-primary')
-    = link_to('Cancel', simulator_path(simulator), class: 'btn')
+    = link_to('Cancel', simulator_path(simulator, anchor: '!tab-about'), class: 'btn')
 
 :javascript
   $(function() {
