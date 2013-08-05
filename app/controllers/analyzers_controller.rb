@@ -19,6 +19,10 @@ class AnalyzersController < ApplicationController
     end
   end
 
+  def edit
+    @analyzer = Analyzer.find(params[:id])
+  end
+
   def create
     simulator = Simulator.find(params[:simulator_id])
     @analyzer = simulator.analyzers.build(params[:analyzer])
@@ -34,10 +38,23 @@ class AnalyzersController < ApplicationController
     end
   end
 
+  def update
+    @analyzer = Analyzer.find(params[:id])
+
+    respond_to do |format|
+      if @analyzer.update_attributes(params[:analyzer])
+        format.html { redirect_to @analyzer, notice: 'Analyzer was successfully updated.' }
+        format.json { head :no_content }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @analyzer.errors, status: :unprocessable_entity }
+      end
+    end
+  end
 
   def destroy
-    simulator = Simulator.find(params[:simulator_id])
-    analyzer = simulator.analyzers.find(params[:id])
+    analyzer = Analyzer.find(params[:id])
+    simulator = analyzer.simulator
     analyzer.destroy
 
     respond_to do |format|

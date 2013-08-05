@@ -41,6 +41,21 @@ describe AnalyzersController do
     end
   end
 
+  describe "GET edit" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 0, runs_count: 0, analyzers_count: 1)
+      @azr = @sim.analyzers.first
+    end
+
+    it "assigns the requested simulator as @simulator" do
+      get :edit, {:id => @azr.to_param}, valid_session
+      assigns(:analyzer).should eq(@azr)
+    end
+  end
+
+
   describe "POST create" do
 
     before(:each) do
@@ -95,7 +110,7 @@ describe AnalyzersController do
 
     describe "with invalid params" do
 
-      it "assigns a newly created but unsaved simulator as @simulator" do
+      it "assigns a newly created but unsaved analyzer as @analyzer" do
         expect {
           post :create, {simulator_id: @sim.id, analyzer: {}}, valid_session
           assigns(:analyzer).should be_a_new(Analyzer)
@@ -110,6 +125,61 @@ describe AnalyzersController do
     end
   end
 
+  describe "PUT update" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 0, runs_count: 0, analyzers_count: 1)
+      @azr = @sim.analyzers.first
+    end
+
+    describe "with valid params" do
+
+      before(:each) do
+        definitions = [
+          {key: "param1", type: "Integer"},
+          {key: "param2", type: "Float"}
+        ]
+        analyzer = {
+          name: "analyzerA", type: "on_run", command: "echo",
+          parameter_definitions_attributes: definitions,
+          auto_run: "no", description: "xxx yyy"
+        }
+        @valid_post_parameter = {analyzer: analyzer}
+      end
+
+      it "updates the requested analyzer" do
+        Analyzer.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
+        put :update, {:id => @azr.to_param, :analyzer => {'these' => 'params'}}, valid_session
+      end
+
+      it "assigns the requested analyzer as @analyzer" do
+        put :update, {:id => @azr.to_param, :analyzer => @valid_post_parameter}, valid_session
+        assigns(:analyzer).should eq(@azr)
+      end
+
+      it "redirects to the analyzer" do
+        put :update, {:id => @azr.to_param, :analyzer => @valid_post_parameter}, valid_session
+        response.should redirect_to(@azr)
+      end
+    end
+
+    describe "with invalid params" do
+      it "assigns the simulator as @simulator" do
+        Analyzer.any_instance.stub(:update_attributes).and_return(false)
+        put :update, {:id => @azr.to_param, :analyzer => {}}, valid_session
+        assigns(:analyzer).should eq(@azr)
+      end
+
+      it "re-renders the 'edit' template" do
+        Analyzer.any_instance.stub(:update_attributes).and_return(false)
+        put :update, {:id => @azr.to_param, :analyzer => {}}, valid_session
+        response.should render_template("edit")
+      end
+    end
+  end
+
+
   describe "DELETE 'destroy'" do
 
     before(:each) do
@@ -119,12 +189,12 @@ describe AnalyzersController do
 
     it "destroys the requested analyzer" do
       expect {
-        delete :destroy, {simulator_id: @sim.to_param, id: @azr.to_param}, valid_session
+        delete :destroy, {id: @azr.to_param}, valid_session
       }.to change { @sim.reload.analyzers.count }.by(-1)
     end
 
     it "redirects to the simulators list" do
-      delete :destroy, {simulator_id: @sim.to_param, id: @azr.to_param}, valid_session
+      delete :destroy, {id: @azr.to_param}, valid_session
       response.should redirect_to( simulator_url(@sim, anchor: '!tab-about') )
     end
   end

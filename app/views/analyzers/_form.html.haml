@@ -1,5 +1,6 @@
-= form_for [simulator, analyzer], html: {class: 'form-horizontal'} do |f|
-  = render partial: 'shared/error_messages', locals: {error_messages: @analyzer.errors.full_messages}
+- path = analyzer.persisted? ? analyzer : [simulator, analyzer]
+= form_for path, html: {class: 'form-horizontal'} do |f|
+  = render partial: 'shared/error_messages', locals: {error_messages: analyzer.errors.full_messages}
   - has_child = analyzer.analyses.present?
   .control-group
     = f.label(:name, class: 'control-label')

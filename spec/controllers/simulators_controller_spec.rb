@@ -157,7 +157,7 @@ describe SimulatorsController do
           name: "simulatorA", command: "echo", support_input_json: "0",
           parameter_definitions_attributes: definitions
         }
-        @valid_post_parameter = {simulator: simulator, definitions: definitions}
+        @valid_post_parameter = {simulator: simulator}
       end
 
       it "updates the requested simulator" do
