@@ -1,5 +1,5 @@
 %fieldset.controls-row
-  - disabled = false unless defined?(disabled)
+  - disabled ||= false
   = f.text_field :key, placeholder: "Name", disabled: disabled
   = f.select :type, ParametersUtil::TYPES, {}, disabled: disabled
   = f.text_field :default, placeholder: "Default value"
