@@ -10,7 +10,7 @@
   %tbody
     - @analyzers.each do |azr|
       %tr
-        %td= link_to( azr.id, analyzer_path(@simulator.id, azr.id))
+        %td= link_to( azr.id, analyzer_path(azr.id))
         %td= azr.name
         %td= azr.type
         %td= azr.description
