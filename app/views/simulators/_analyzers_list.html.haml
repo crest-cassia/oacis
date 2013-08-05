@@ -15,3 +15,5 @@
         %td= azr.type
         %td= azr.description
         %td= link_to( raw('<i class="icon-trash">'), analyzer_path(azr.to_param), method: :delete, data: {confirm: 'Are you sure? Dependent analyses are also going to be destroyed.'})
+.form-actions
+  = link_to 'New Analyzer', new_simulator_analyzer_path(@simulator), class: 'btn btn-primary'

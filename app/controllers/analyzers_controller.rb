@@ -1,7 +1,5 @@
 class AnalyzersController < ApplicationController
 
-  # GET /analyzers/:id
-  # GET /analyzers/:id
   def show
     @analyzer = Analyzer.find(params[:id])
 
@@ -10,6 +8,32 @@ class AnalyzersController < ApplicationController
       format.json { render json: @analyzers }
     end
   end
+
+  def new
+    simulator = Simulator.find(params[:simulator_id])
+    @analyzer = simulator.analyzers.build
+
+    respond_to do |format|
+      format.html # new.html.erb
+      format.json { render json: @analyzer }
+    end
+  end
+
+  def create
+    simulator = Simulator.find(params[:simulator_id])
+    @analyzer = simulator.analyzers.build(params[:analyzer])
+
+    respond_to do |format|
+      if @analyzer.save
+        format.html { redirect_to @analyzer, notice: 'Analyzer was successfully created.' }
+        format.json { render json: @analyzer, status: :created, location: @analyzer }
+      else
+        format.html { render action: "new" }
+        format.json { render json: @analyzer.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
 
   def destroy
     simulator = Simulator.find(params[:simulator_id])
