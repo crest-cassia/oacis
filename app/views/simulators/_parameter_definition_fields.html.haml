@@ -1,8 +1,10 @@
 %fieldset.controls-row
-  = f.text_field :key, placeholder: "Name"
-  = f.select :type, options_for_select(ParametersUtil::TYPES)
+  - disabled = false unless defined?(disabled)
+  = f.text_field :key, placeholder: "Name", disabled: disabled
+  = f.select :type, ParametersUtil::TYPES, {}, disabled: disabled
   = f.text_field :default, placeholder: "Default value"
   %br
   = f.text_area :description, placeholder: "Description", rows: 3
   = f.hidden_field :_destroy
-  = link_to "remove", '#', class: "remove_fields"
+  - unless disabled
+    = link_to "remove", '#', class: "remove_fields"

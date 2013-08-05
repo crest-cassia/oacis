@@ -1,15 +1,16 @@
 = form_for @simulator, html: {class: 'form-horizontal'} do |f|
   = render partial: 'shared/error_messages', locals: {error_messages: @simulator.errors.full_messages}
+  - has_ps = @simulator.parameter_sets.present?
   .control-group
     = f.label(:name, class: 'control-label')
     .controls
-      = f.text_field(:name, class: 'text_field')
+      = f.text_field(:name, class: 'text_field', disabled: has_ps)
   #parameters_form.control-group
     = label_tag('', 'Definition of Parameters', class: 'control-label')
     .controls
       = f.fields_for :parameter_definitions do |builder|
-        = render 'parameter_definition_fields', f: builder
-      = link_to_add_fields "Add Parameter", f, :parameter_definitions
+        = render 'parameter_definition_fields', f: builder, disabled: has_ps
+      = link_to_add_fields "Add Parameter", f, :parameter_definitions unless has_ps
   .control-group
     = f.label(:command, class: 'control-label')
     .controls
