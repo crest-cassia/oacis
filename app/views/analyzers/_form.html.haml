@@ -1,0 +1,47 @@
+= form_for [simulator, analyzer], html: {class: 'form-horizontal'} do |f|
+  = render partial: 'shared/error_messages', locals: {error_messages: @analyzer.errors.full_messages}
+  - has_child = analyzer.analyses.present?
+  .control-group
+    = f.label(:name, class: 'control-label')
+    .controls
+      = f.text_field(:name, class: 'text_field', disabled: has_child)
+  .control-group
+    = f.label(:type, class: 'control-label')
+    .controls
+      = f.select(:type, ["on_run", "on_parameter_set"], {}, disabled: has_child)
+  #parameters_form.control-group
+    = label_tag('', 'Definition of Parameters', class: 'control-label')
+    .controls
+      = f.fields_for :parameter_definitions do |builder|
+        = render 'simulators/parameter_definition_fields', f: builder, disabled: has_child
+      - unless has_child
+        = link_to_add_fields "Add Parameter", f, :parameter_definitions, 'simulators/parameter_definition_fields'
+  .control-group
+    = f.label(:command, class: 'control-label')
+    .controls
+      = f.text_field(:command)
+  .control-group
+    = f.label(:auto_run, class: 'control-label')
+    .controls
+      = f.select(:auto_run, [:no,:yes,:first_run_only], id: "auto_run")
+  .control-group
+    = f.label(:description, class: 'control-label')
+    .controls
+      = f.text_area(:description, rows: 5)
+  .form-actions
+    = f.submit(class: 'btn btn-primary')
+    = link_to('Cancel', simulator_path(simulator), class: 'btn')
+
+:javascript
+  $(function() {
+    $('select#analyzer_type').change(function() {
+      var selected = $(this).val();
+      var auto_run = $('select#analyzer_auto_run');
+      if(selected == "on_run") {
+        auto_run.append( $('<option>').val('first_run_only').text('first_run_only') );
+      }
+      else if(selected == "on_parameter_set") {
+        auto_run.children('[value=first_run_only]').remove();
+      }
+    });
+  });
