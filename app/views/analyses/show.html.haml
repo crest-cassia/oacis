@@ -18,7 +18,7 @@
     %tr
       %th Analyzer
       - azr = @analysis.analyzer
-      %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
+      %td= link_to(azr.name, analyzer_path(azr))
     %tr
       %th Elapsed Real Time
       %td= @analysis.real_time

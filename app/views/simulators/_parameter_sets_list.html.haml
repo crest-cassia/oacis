@@ -84,7 +84,7 @@
 
   $(function() {
     var parameter_form_selector = $("#select_param_form select")
-    parameter_form_selector.val("#{@simulator.parameter_definitions.keys[0]}");
+    parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
     parameter_form_selector.trigger("change");
   });
 

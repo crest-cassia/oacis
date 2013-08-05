@@ -57,16 +57,18 @@ describe Analysis do
     end
 
     it "casts the parameter values according to the definition" do
-      updated_attr = @valid_attr.update(parameters: {"param1"=>"32","param2"=>"abc"})
+      updated_attr = @valid_attr.update(parameters: {"param1"=>"32","param2"=>"3.0"})
       arn = @run.analyses.create!(updated_attr)
-      arn.parameters["param1"].should be_a(Float)
-      arn.parameters["param2"].should be_a(String)
+      type1 = @azr.parameter_definition_for("param1").type.constantize
+      arn.parameters["param1"].should be_a(type1)
+      type2 = @azr.parameter_definition_for("param2").type.constantize
+      arn.parameters["param2"].should be_a(type2)
     end
 
     it "adopts default values if a parameter is not explicitly specified" do
       updated_attr = @valid_attr.update(parameters: {"param1"=>"32"})
       arn = @run.analyses.create!(updated_attr)
-      default_val = arn.analyzer.parameter_definitions["param2"]["default"]
+      default_val = arn.analyzer.parameter_definition_for("param2").default
       arn.parameters["param2"].should eq(default_val)
     end
 
@@ -74,8 +76,8 @@ describe Analysis do
       updated_attr = @valid_attr
       updated_attr.delete(:parameters)
       arn = @run.analyses.create(updated_attr)
-      default_val1 = arn.analyzer.parameter_definitions["param1"]["default"]
-      default_val2 = arn.analyzer.parameter_definitions["param2"]["default"]
+      default_val1 = arn.analyzer.parameter_definition_for("param1").default
+      default_val2 = arn.analyzer.parameter_definition_for("param2").default
       arn.parameters["param1"].should eq(default_val1)
       arn.parameters["param2"].should eq(default_val2)
     end

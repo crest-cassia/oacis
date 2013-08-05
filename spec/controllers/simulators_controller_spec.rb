@@ -26,11 +26,11 @@ describe SimulatorsController do
   def valid_attributes
     {
       name:"simulator_A",
-      parameter_definitions: {
-        "L" => {"type" => "Integer"},
-        "T" => {"type" => "Float"}
-      },
-      command: "~/path_to_simulator_A",
+      parameter_definitions_attributes: [
+        { key: "L", type: "Integer"},
+        { key: "T", type: "Float"}
+      ],
+      command: "~/path_to_simulator_A"
     }
   end
 
@@ -77,24 +77,27 @@ describe SimulatorsController do
     end
   end
 
-  # describe "GET edit" do
-  #   it "assigns the requested simulator as @simulator" do
-  #     simulator = Simulator.create! valid_attributes
-  #     get :edit, {:id => simulator.to_param}, valid_session
-  #     assigns(:simulator).should eq(simulator)
-  #   end
-  # end
+  describe "GET edit" do
+    it "assigns the requested simulator as @simulator" do
+      simulator = Simulator.create! valid_attributes
+      get :edit, {:id => simulator.to_param}, valid_session
+      assigns(:simulator).should eq(simulator)
+    end
+  end
 
   describe "POST create" do
     describe "with valid params" do
 
       before(:each) do
         definitions = [
-          {"name" => "param1", "type" => "Integer"},
-          {"name" => "param2", "type" => "Float"}
+          {key: "param1", type: "Integer"},
+          {key: "param2", type: "Float"}
         ]
-        simulator = {name: "simulatorA", command: "echo", support_input_json: "0"}
-        @valid_post_parameter = {simulator: simulator, definitions: definitions}
+        simulator = {
+          name: "simulatorA", command: "echo", support_input_json: "0",
+          parameter_definitions_attributes: definitions
+        }
+        @valid_post_parameter = {simulator: simulator}
       end
 
       it "creates a new Simulator" do
@@ -109,8 +112,8 @@ describe SimulatorsController do
         sim.name.should eq "simulatorA"
         sim.command.should eq "echo"
         sim.support_input_json.should be_false
-        sim.parameter_definitions["param1"]["type"].should eq "Integer"
-        sim.parameter_definitions["param2"]["type"].should eq "Float"
+        sim.parameter_definition_for("param1").type.should eq "Integer"
+        sim.parameter_definition_for("param2").type.should eq "Float"
       end
 
       it "assigns a newly created simulator as @simulator" do
@@ -142,49 +145,56 @@ describe SimulatorsController do
     end
   end
 
-  # describe "PUT update" do
-  #   describe "with valid params" do
-  #     it "updates the requested simulator" do
-  #       simulator = Simulator.create! valid_attributes
-  #       # Assuming there are no other simulators in the database, this
-  #       # specifies that the Simulator created on the previous line
-  #       # receives the :update_attributes message with whatever params are
-  #       # submitted in the request.
-  #       Simulator.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
-  #       put :update, {:id => simulator.to_param, :simulator => {'these' => 'params'}}, valid_session
-  #     end
+  describe "PUT update" do
+    describe "with valid params" do
 
-  #     it "assigns the requested simulator as @simulator" do
-  #       simulator = Simulator.create! valid_attributes
-  #       put :update, {:id => simulator.to_param, :simulator => valid_attributes}, valid_session
-  #       assigns(:simulator).should eq(simulator)
-  #     end
+      before(:each) do
+        definitions = [
+          {key: "param1", type: "Integer"},
+          {key: "param2", type: "Float"}
+        ]
+        simulator = {
+          name: "simulatorA", command: "echo", support_input_json: "0",
+          parameter_definitions_attributes: definitions
+        }
+        @valid_post_parameter = {simulator: simulator}
+      end
 
-  #     it "redirects to the simulator" do
-  #       simulator = Simulator.create! valid_attributes
-  #       put :update, {:id => simulator.to_param, :simulator => valid_attributes}, valid_session
-  #       response.should redirect_to(simulator)
-  #     end
-  #   end
+      it "updates the requested simulator" do
+        simulator = Simulator.create! valid_attributes
+        Simulator.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
+        put :update, {:id => simulator.to_param, :simulator => {'these' => 'params'}}, valid_session
+      end
 
-  #   describe "with invalid params" do
-  #     it "assigns the simulator as @simulator" do
-  #       simulator = Simulator.create! valid_attributes
-  #       # Trigger the behavior that occurs when invalid params are submitted
-  #       Simulator.any_instance.stub(:save).and_return(false)
-  #       put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
-  #       assigns(:simulator).should eq(simulator)
-  #     end
+      it "assigns the requested simulator as @simulator" do
+        simulator = Simulator.create! valid_attributes
+        put :update, {:id => simulator.to_param, :simulator => @valid_post_parameter}, valid_session
+        assigns(:simulator).should eq(simulator)
+      end
 
-  #     it "re-renders the 'edit' template" do
-  #       simulator = Simulator.create! valid_attributes
-  #       # Trigger the behavior that occurs when invalid params are submitted
-  #       Simulator.any_instance.stub(:save).and_return(false)
-  #       put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
-  #       response.should render_template("edit")
-  #     end
-  #   end
-  # end
+      it "redirects to the simulator" do
+        simulator = Simulator.create! valid_attributes
+        put :update, {:id => simulator.to_param, :simulator => @valid_post_parameter}, valid_session
+        response.should redirect_to(simulator)
+      end
+    end
+
+    describe "with invalid params" do
+      it "assigns the simulator as @simulator" do
+        simulator = Simulator.create! valid_attributes
+        Simulator.any_instance.stub(:save).and_return(false)
+        put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
+        assigns(:simulator).should eq(simulator)
+      end
+
+      it "re-renders the 'edit' template" do
+        simulator = Simulator.create! valid_attributes
+        Simulator.any_instance.stub(:save).and_return(false)
+        put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
+        response.should render_template("edit")
+      end
+    end
+  end
 
   describe "DELETE destroy" do
 

@@ -15,7 +15,7 @@
 
   %div.tab-content
     %div.tab-pane#tab-about
-      = render partial: "shared/about", locals: {executable: @simulator}
+      = render partial: "about", locals: {simulator: @simulator}
       = render "analyzers_list"
     %div.tab-pane.active#tab-list-parameters
       = render "parameter_sets_list"

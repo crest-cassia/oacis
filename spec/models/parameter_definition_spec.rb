@@ -21,6 +21,11 @@ describe ParameterDefinition do
         pd.should_not be_valid
       end
 
+      it "must be organized with word characters only" do
+        pd = ParameterDefinition.new(@valid_attr.update(key: "b l a n k"))
+        pd.should_not be_valid
+      end
+
       it "must be unique within a simulator" do
         sim = Simulator.new(name: "simA", command: "echo")
         pd = sim.parameter_definitions.build(@valid_attr)

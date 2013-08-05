@@ -5,11 +5,11 @@ describe Simulator do
   before(:each) do
     @valid_fields = {
       name:"simulatorA",
-      parameter_definitions: {
-        "L" => {"type" => "Integer"},
-        "T" => {"type" => "Float"}
-      },
       command: "~/path_to_a_simulator",
+      parameter_definitions_attributes: [
+        { key: "L", type: "Integer", default: "0" },
+        { key: "T", type: "Float", default: "3.0" }
+      ]
     }
   end
 
@@ -39,58 +39,6 @@ describe Simulator do
       invalid_attr = @valid_fields
       invalid_attr.delete(:command)
       Simulator.new(invalid_attr).should_not be_valid
-    end
-  end
-
-  describe "'parameter_definitions' field" do
-    
-    it "must not be a blank" do
-      Simulator.new(@valid_fields.update(parameter_definitions:{})).should_not be_valid
-    end
-
-    it "name of each key must be organized with word characters" do
-      fields = @valid_fields.update(parameter_definitions:{"b lank"=>{"type"=>"String"}})
-      Simulator.new(fields).should_not be_valid
-    end
-
-    it "each key must have a type" do
-      fields = @valid_fields.update(parameter_definitions:{"L"=>{"default"=>32}})
-      Simulator.new(fields).should_not be_valid
-    end
-
-    it "type of each key must be either 'Boolean', 'Integer', 'Float', or 'String'" do
-      fields = @valid_fields.update(parameter_definitions:{
-                                      "Boolean_key"=>{"type"=>"Boolean"},
-                                      "Integer_key"=>{"type"=>"Integer"},
-                                      "Float_key"=>{"type"=>"Float"},
-                                      "String_key"=>{"type"=>"String"}
-                                    })
-      Simulator.new(fields).should be_valid
-      fields[:parameter_definitions]["DateTime_key"] = {"type"=>"DateTime"}
-      Simulator.new(fields).should_not be_valid
-    end
-
-    it "default values are casted according to its type" do
-      fields = @valid_fields.update(parameter_definitions:{
-                                      "Boolean_key"=>{"type"=>"Boolean", "default" => "true"},
-                                      "Integer_key"=>{"type"=>"Integer", "default" => "1"},
-                                      "Float_key"=>{"type"=>"Float", "default" => "0.12345e7"},
-                                      "String_key"=>{"type"=>"String", "default" => "abc"}
-                                    })
-      sim = Simulator.new(fields)
-      sim.valid?
-      sim.parameter_definitions["Boolean_key"]["default"].should be_a(TrueClass)
-      sim.parameter_definitions["Integer_key"]["default"].should be_a(Integer)
-      sim.parameter_definitions["Float_key"]["default"].should be_a(Float)
-      sim.parameter_definitions["String_key"]["default"].should be_a(String)
-    end
-
-    it "is invalid if default value can not be casted to the specified type" do
-      fields = @valid_fields.update(parameter_definitions:{
-                                      "Integer_key"=>{"type"=>"Integer", "default" => "foo"}
-                                    })
-      sim = Simulator.new(fields)
-      sim.should_not be_valid
     end
   end
 
