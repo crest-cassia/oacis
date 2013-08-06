@@ -10,6 +10,8 @@ class Host
   field :submission_command, type: String, default: 'nohup'
   field :work_base_dir, type: String, default: '~'
   field :max_num_jobs, type: Integer, default: 1
+  field :script_header_template, type: String, default: JobScriptUtil::DEFAULT_HEADER
+
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}

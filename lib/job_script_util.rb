@@ -1,5 +1,7 @@
 module JobScriptUtil
 
+  DEFAULT_HEADER = "#!/bin/bash"
+
   def self.script_for(run, host)
     cmd, input = run.command_and_input
     cmd.sub!(/;$/, '')  # semi-colon in the last of the command causes bash syntax error
