@@ -72,4 +72,14 @@ EOS
   def self.extract_runtime_parameters(header_template)
     header_template.scan(/<%=\s*(\w+)\s*%>/).flatten.uniq
   end
+
+  def self.expand_runtime_parameters(header_template, runtime_parameters)
+    replaced = header_template.dup
+    extract_runtime_parameters(header_template).each do |variable|
+      value = runtime_parameters[variable]
+      pattern = /<%=\s*#{variable}\s*%>/
+      replaced.gsub!(pattern, value)
+    end
+    replaced
+  end
 end

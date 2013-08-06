@@ -146,4 +146,48 @@ describe JobScriptUtil do
       arr.should eq %w(node elapse rscgrp mpi_procs stgin)
     end
   end
+
+  describe ".expand_runtime_parameters" do
+
+    it "returns header expanded by the given runtime parameters" do
+      template = <<-EOS
+#!/bin/bash
+#
+#PJM --rsc-list "node=<%= node %>"
+#PJM --rsc-list "elapse=<%= elapse %>"
+#PJM --rsc-list "rscgrp=<%= rscgrp %>"
+#PJM --stg-transfiles all
+#PJM --mpi "use-rankdir"
+#PJM --mpi "shape=<%= node %>"
+#PJM --mpi "proc=<%= mpi_procs %>"
+#PJM --stgin "<%= stgin %>"
+#PJM -s
+#
+      EOS
+
+      variables = { "node" => "16",
+                    "elapse" => "3:00:00",
+                    "rscgrp" => "small",
+                    "mpi_procs" => "128",
+                    "stgin" => 'rank=* ./rank%r/* %r:./'
+                  }
+      expanded = JobScriptUtil.expand_runtime_parameters(template, variables)
+
+      header = <<-EOS
+#!/bin/bash
+#
+#PJM --rsc-list "node=16"
+#PJM --rsc-list "elapse=3:00:00"
+#PJM --rsc-list "rscgrp=small"
+#PJM --stg-transfiles all
+#PJM --mpi "use-rankdir"
+#PJM --mpi "shape=16"
+#PJM --mpi "proc=128"
+#PJM --stgin "rank=* ./rank%r/* %r:./"
+#PJM -s
+#
+      EOS
+      expanded.should eq header
+    end
+  end
 end
