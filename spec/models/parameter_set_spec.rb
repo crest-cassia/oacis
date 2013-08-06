@@ -37,11 +37,10 @@ describe ParameterSet do
       }.should raise_error
     end
 
-    it "should not be valid when keys of v are not consistent its Simulator" do
-      h = @sim.parameter_definitions
-      h["T"].delete("default")
-      @sim.parameter_definitions = h
-      built_param = @sim.parameter_sets.build(@valid_attr.update({:v => {"L"=>32}}))
+    it "should not be valid when keys of v are not consistent with its Simulator" do
+      pd = @sim.parameter_definitions.first
+      pd.default = nil
+      built_param = @sim.parameter_sets.build(@valid_attr.update({:v => {}}))
       built_param.should_not be_valid
     end
 
@@ -75,8 +74,8 @@ describe ParameterSet do
 
     it "uses default values if a parameter value is not given" do
       updated_attr = @valid_attr.update(v: {})
-      @sim.parameter_definitions["L"]["default"] = 30
-      @sim.parameter_definitions["T"]["default"] = 2.0
+      @sim.parameter_definition_for("L").default = 30
+      @sim.parameter_definition_for("T").default = 2.0
       built = @sim.parameter_sets.build(updated_attr)
       built.should be_valid
       built[:v]["L"].should == 30
@@ -147,10 +146,9 @@ describe ParameterSet do
 
     it "is not created when validation fails" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
-      h = sim.parameter_definitions
-      h["T"].delete("default")
-      sim.parameter_definitions = h
-      sim.save
+      h = sim.parameter_definition_for("T")
+      h.default = nil
+      h.save!
 
       prm = sim.parameter_sets.create(@valid_attr.update({:v => {"L"=>"abc"}}))
       (Dir.entries(ResultDirectory.simulator_path(sim)) - ['.','..']).should be_empty
@@ -169,11 +167,15 @@ describe ParameterSet do
   describe "#parameters_with_different" do
 
     before(:each) do
-      h = { "L"=>{"type"=>"Integer", "default" => 50, "description" => "First parameter"},
-            "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Second parameter"},
-            "P"=>{"type"=>"Float", "default" => 1.0, "description" => "Third parameter"}
-      }
-      sim = FactoryGirl.create(:simulator, parameter_definitions: h, parameter_sets_count: 0)
+      pds = [
+        ParameterDefinition.new(
+          {key: "L", type: "Integer", default: 50, description: "First parameter"}),
+        ParameterDefinition.new(
+          {key: "T", type: "Float", default: 1.0, description: "Second parameter"}),
+        ParameterDefinition.new(
+          {key: "P", type: "Float", default: 1.0, description: "Third parameter"})
+      ]
+      sim = FactoryGirl.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
       5.times do |n|
         val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
         sim.parameter_sets.create( v: val )

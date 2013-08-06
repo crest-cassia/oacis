@@ -5,12 +5,12 @@ describe ParametersUtil do
   describe ".cast_parameter_values" do
 
     before(:each) do
-      @definitions = {
-        "param1"=>{"type"=>"Integer", "description" => "System size"},
-        "param2"=>{"type"=>"Float", "default" => 1.0, "description" => "Temperature"},
-        "param3"=>{"type"=>"Boolean", "default" => false, "description" => "Sequential update?"},
-        "param4"=>{"type"=>"String", "default" => "abc", "description" => "a string parameter"}
-      }
+      @definitions = [
+        ParameterDefinition.new(key: "param1", type: "Integer", description: "System size"),
+        ParameterDefinition.new(key: "param2", type: "Float", default: 1.0, description: "temperature"),
+        ParameterDefinition.new(key: "param3", type: "Boolean", default: false, description: "sequential update?"),
+        ParameterDefinition.new(key: "param4", type: "String", default: "abc", description: "a string parameter")
+      ]
     end
 
     it "casts values properly according to its definition" do

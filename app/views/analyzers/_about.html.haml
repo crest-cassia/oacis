@@ -1,0 +1,37 @@
+%h3 About
+= analyzer.description
+
+%table.table.table-striped
+  %thead
+  %tbody
+    %tr
+      %th Type
+      %td= analyzer.type
+    %tr
+      %th Auto-Run Flag
+      %td= analyzer.auto_run
+
+- if analyzer.parameter_definitions.present?
+  %h3 Defined Parameters
+  %table.table.table-striped
+    %thead
+      %tr
+        %th.span2
+        %th.span2 Type
+        %th.span2 Default
+        %th.span6 Description
+    %tbody
+      - analyzer.parameter_definitions.each do |pd|
+        %tr
+          %th= pd.key
+          %td= pd.type
+          %td= pd.default || '-'
+          %td= pd.description ? pd.description : "-"
+
+%h3 Command
+%pre
+  = h(analyzer.command)
+
+.form-actions
+  = link_to 'Edit', edit_analyzer_path(analyzer), class: 'btn btn-info'
+  = link_to 'Destroy', analyzer, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'

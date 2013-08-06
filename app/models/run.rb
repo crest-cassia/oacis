@@ -50,8 +50,8 @@ class Run
       input = prm.v.dup
       input[:_seed] = self.seed
     else
-      cmd_array += sim.parameter_definitions.keys.map do |key|
-        prm.v[key]
+      cmd_array += sim.parameter_definitions.map do |pd|
+        prm.v[pd.key]
       end
       cmd_array << self.seed
     end

@@ -15,7 +15,7 @@
 :javascript
   $(function() {
     $('#analysis_analyzer').change(function(){
-      $.get("#{_parameters_form_simulator_analyzer_path(sim,':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
+      $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
         $('#parameters_form').html(data)
       });
     });
