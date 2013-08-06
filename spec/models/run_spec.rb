@@ -77,6 +77,38 @@ describe Run do
       run.status = :unknown
       run.should_not be_valid
     end
+
+    it "mpi_procs must be a positive integer" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.mpi_procs = 1
+      run.should be_valid
+      run.mpi_procs = 16384
+      run.should be_valid
+      run.mpi_procs = 0
+      run.should_not be_valid
+    end
+
+    it "mpi_procs can be nil" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.mpi_procs = nil
+      run.should be_valid
+    end
+
+    it "omp_threads must be a positive integer" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.omp_threads = 1
+      run.should be_valid
+      run.omp_threads = 8
+      run.should be_valid
+      run.omp_threads = 0
+      run.should_not be_valid
+    end
+
+    it "omp_threads can be nil" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.omp_threads = nil
+      run.should be_valid
+    end
   end
 
   describe "relations" do
