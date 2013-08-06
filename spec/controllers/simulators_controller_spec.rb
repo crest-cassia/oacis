@@ -95,6 +95,7 @@ describe SimulatorsController do
         ]
         simulator = {
           name: "simulatorA", command: "echo", support_input_json: "0",
+          support_mpi: "0", support_omp: "1",
           parameter_definitions_attributes: definitions
         }
         @valid_post_parameter = {simulator: simulator}
@@ -114,6 +115,8 @@ describe SimulatorsController do
         sim.support_input_json.should be_false
         sim.parameter_definition_for("param1").type.should eq "Integer"
         sim.parameter_definition_for("param2").type.should eq "Float"
+        sim.support_mpi.should be_false
+        sim.support_omp.should be_true
       end
 
       it "assigns a newly created simulator as @simulator" do
@@ -155,6 +158,7 @@ describe SimulatorsController do
         ]
         simulator = {
           name: "simulatorA", command: "echo", support_input_json: "0",
+          support_mpi: "0", support_omp: "1",
           parameter_definitions_attributes: definitions
         }
         @valid_post_parameter = {simulator: simulator}
