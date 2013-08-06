@@ -68,4 +68,8 @@ EOS
       run.save!
     }
   end
+
+  def self.extract_runtime_parameters(header_template)
+    header_template.scan(/<%=\s*(\w+)\s*%>/).flatten.uniq
+  end
 end

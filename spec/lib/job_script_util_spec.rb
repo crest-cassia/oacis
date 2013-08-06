@@ -123,6 +123,27 @@ describe JobScriptUtil do
         File.exist?(@run.dir.join('_stdout.txt')).should be_true
       }
     end
+  end
 
+  describe ".extract_runtime_parameters" do
+
+    it "returns array of runtime parameters used in the template" do
+      template = <<-EOS
+#!/bin/bash
+#
+#PJM --rsc-list "node=<%= node %>"
+#PJM --rsc-list "elapse=<%= elapse %>"
+#PJM --rsc-list "rscgrp=<%= rscgrp %>"
+#PJM --stg-transfiles all
+#PJM --mpi "use-rankdir"
+#PJM --mpi "shape=<%= node %>"
+#PJM --mpi "proc=<%= mpi_procs %>"
+#PJM --stgin "<%= stgin %>"
+#PJM -s
+#
+      EOS
+      arr = JobScriptUtil.extract_runtime_parameters(template)
+      arr.should eq %w(node elapse rscgrp mpi_procs stgin)
+    end
   end
 end
