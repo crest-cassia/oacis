@@ -77,7 +77,7 @@ class Run
         path
       end
     end
-    return paths.flatten
+    return paths.flatten.compact
   end
 
   def archived_result_path
