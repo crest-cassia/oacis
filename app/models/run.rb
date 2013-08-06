@@ -14,6 +14,7 @@ class Run
   field :result  # can be any type. it's up to Simulator spec
   field :mpi_procs, type: Integer
   field :omp_threads, type: Integer
+  field :runtime_parameters, type: Hash
   belongs_to :parameter_set
   belongs_to :simulator  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy
