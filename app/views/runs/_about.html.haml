@@ -17,6 +17,14 @@
     %tr
       %th hostname
       %td= @run.hostname
+    - if @run.simulator.support_mpi
+      %tr
+        %th MPI processes
+        %td= @run.mpi_procs ? @run.mpi_procs : "-"
+    - if @run.simulator.support_omp
+      %tr
+        %th OMP threads
+        %td= @run.omp_threads ? @run.omp_threads : "-"
     %tr
       %th CPU time
       %td= formatted_elapsed_time(@run.cpu_time)
