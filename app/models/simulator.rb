@@ -5,6 +5,8 @@ class Simulator
   field :command, type: String
   field :description, type: String
   field :support_input_json, type: Boolean, default: true
+  field :support_mpi, type: Boolean, default: false
+  field :support_omp, type: Boolean, default: false
 
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
