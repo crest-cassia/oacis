@@ -6,9 +6,15 @@ module JobScriptUtil
     cmd, input = run.command_and_input
     cmd.sub!(/;$/, '')  # semi-colon in the last of the command causes bash syntax error
 
+    variables = {}
+    variables = run.runtime_parameters.dup if run.runtime_parameters
+    variables.update({"mpi_procs" => run.mpi_procs}) if run.mpi_procs
+    variables.update({"omp_threads" => run.omp_threads}) if run.omp_threads
+    expanded_header = expand_runtime_parameters(host.script_header_template, variables)
+
     # preprocess
     script = <<-EOS
-#!/bin/bash
+#{expanded_header}
 LANG=C
 # PRE-PROCESS ---------------------
 cd #{host.work_base_dir}
@@ -76,7 +82,7 @@ EOS
   def self.expand_runtime_parameters(header_template, runtime_parameters)
     replaced = header_template.dup
     extract_runtime_parameters(header_template).each do |variable|
-      value = runtime_parameters[variable]
+      value = runtime_parameters[variable].to_s
       pattern = /<%=\s*#{variable}\s*%>/
       replaced.gsub!(pattern, value)
     end

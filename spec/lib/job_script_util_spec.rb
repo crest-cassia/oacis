@@ -56,6 +56,20 @@ describe JobScriptUtil do
         File.exist?(result_file).should be_true
       }
     end
+
+    it "inserts expanded header" do
+      @host.script_header_template = <<EOS
+#!/bin/sh
+# foobar: <%= foobar %>
+# mpi_procs: <%= mpi_procs %>
+EOS
+      @run.mpi_procs = 8
+      @run.runtime_parameters = {"foobar" => "abc"}
+      script = JobScriptUtil.script_for(@run, @host)
+      script.should match(/bin\/sh/)
+      script.should match(/foobar: abc/)
+      script.should match(/mpi_procs: 8/)
+    end
   end
 
   describe ".expand_result_file_and_update_run" do
