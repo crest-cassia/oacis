@@ -30,7 +30,7 @@ class Run
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  attr_accessible :seed
+  attr_accessible :seed, :mpi_procs, :omp_threads, :runtime_parameters
 
   before_save :set_simulator
   after_create :create_run_dir
@@ -129,6 +129,15 @@ class Run
         end
       end
     end
+  end
+
+  def submittable_hosts_and_variables
+    h = {}
+    self.parameter_set.simulator.executable_on.each do |host|
+      extracted_variables = JobScriptUtil.extract_runtime_parameters(host.script_header_template)
+      h[host] = extracted_variables - ["mpi_procs", "omp_threads"]
+    end
+    h
   end
 
   private
