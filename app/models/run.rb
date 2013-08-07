@@ -32,7 +32,7 @@ class Run
 
   attr_accessible :seed, :mpi_procs, :omp_threads, :runtime_parameters, :submitted_to
 
-  before_save :set_simulator
+  before_save :set_simulator, :remove_redundant_runtime_parameters
   after_create :create_run_dir
   before_destroy :delete_run_dir, :delete_archived_result_file
 
@@ -202,6 +202,15 @@ class Run
       parameters -= ["omp_threads"] if self.omp_threads
       if parameters.present?
         self.errors.add(:runtime_parameters, "not given parameters: #{parameters.inspect}")
+      end
+    end
+  end
+
+  def remove_redundant_runtime_parameters
+    if self.submitted_to and self.runtime_parameters
+      self.runtime_parameters.select! do |key,val|
+        template = self.submitted_to.script_header_template
+        JobScriptUtil.extract_runtime_parameters(template).include?(key)
       end
     end
   end

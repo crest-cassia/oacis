@@ -447,4 +447,24 @@ EOS
       end
     end
   end
+
+  describe "#submittable_hosts_and_variables" do
+
+    it "returns Hash of host and its runtime parameters"
+  end
+
+  describe "#remove_redundant_runtime_parameters" do
+
+    it "removes runtime parameters not necessary for the host" do
+      template = <<EOS
+#!/bin/bash
+# foobar: <%= foobar %>
+EOS
+      host = FactoryGirl.create(:host, script_header_template: template)
+      r_params = {"foobar" => 1, "baz" => 2}
+      run = @param_set.runs.build(submitted_to: host, runtime_parameters: r_params)
+      run.save!
+      run.runtime_parameters.should eq ({"foobar" => 1})
+    end
+  end
 end
