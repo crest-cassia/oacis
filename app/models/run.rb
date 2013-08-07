@@ -26,6 +26,7 @@ class Run
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true, allow_nil: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true, allow_nil: true}
+  validate :runtime_parameters_given
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
@@ -181,5 +182,18 @@ class Run
     delete_archived_result_file
     self.parameter_set = nil
     self.save
+  end
+
+  def runtime_parameters_given
+    if self.submitted_to
+      host = self.submitted_to
+      parameters = JobScriptUtil.extract_runtime_parameters(host.script_header_template)
+      parameters -= self.runtime_parameters.keys if self.runtime_parameters
+      parameters -= ["mpi_procs"] if self.mpi_procs
+      parameters -= ["omp_threads"] if self.omp_threads
+      if parameters.present?
+        self.errors.add(:runtime_parameters, "not given parameters: #{parameters.inspect}")
+      end
+    end
   end
 end

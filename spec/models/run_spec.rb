@@ -109,6 +109,43 @@ describe Run do
       run.omp_threads = nil
       run.should be_valid
     end
+
+    describe "'runtime_parameters' field" do
+
+      before(:each) do
+        template = <<-EOS
+#!/bin/bash
+# node:<%= node %>
+# proc:<%= mpi_procs %>
+EOS
+        @host = FactoryGirl.create(:host, script_header_template: template)
+      end
+
+      it "is valid when runtime parameters are properly given" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.runtime_parameters = {"node" => "abc"}
+        run.should be_valid
+      end
+
+      it "is invalid when all the runtime parameters are not specified" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.runtime_parameters = {}
+        run.should_not be_valid
+      end
+
+      it "is valid when runtime parameters have rendundant keys" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.omp_threads = 8
+        run.runtime_parameters = {"node" => "abd", "shape" => "xyz"}
+        run.should be_valid
+      end
+    end
   end
 
   describe "relations" do
