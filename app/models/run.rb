@@ -30,7 +30,7 @@ class Run
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  attr_accessible :seed, :mpi_procs, :omp_threads, :runtime_parameters
+  attr_accessible :seed, :mpi_procs, :omp_threads, :runtime_parameters, :submitted_to
 
   before_save :set_simulator
   after_create :create_run_dir

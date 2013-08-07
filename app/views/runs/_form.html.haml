@@ -16,10 +16,10 @@
     .controls
       = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]))
   .control-group
-    = label_tag('host_id', 'Host', class: 'control-label')
+    = f.label(:submitted_to, class: 'control-label')
     .controls
       - host_names = run.submittable_hosts_and_variables.keys.map {|h| [h.name, h.id.to_s]}
-      = select_tag('host_id', options_for_select(host_names))
+      = f.select(:submitted_to, options_for_select(host_names))
   - run.submittable_hosts_and_variables.each do |host, variables|
     %div{ id: "runtime_parameters_#{host.id}"}
       - variables.each do |var|
@@ -32,11 +32,11 @@
 
 :javascript
   $(function() {
-    $('select#host_id').change(function() {
+    $('select#run_submitted_to').change(function() {
       $('div[id^=runtime_parameters]').hide();
-      var host_id = $("select#host_id option:selected").val();
+      var host_id = $("select#run_submitted_to option:selected").val();
       var selected = $('div#runtime_parameters_' + host_id);
       selected.show();
     });
-    $('select#host_id').trigger('change');
+    $('select#run_submitted_to').trigger('change');
   });
