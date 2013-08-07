@@ -1,7 +1,8 @@
 class RunsListDatatable
 
   HEADER  = ['<th>ID</th>', '<th>status</th>', '<th>submitted_to</th>', '<th>cpu_time</th>',
-             '<th>real_time</th>', '<th>created_at</th>', '<th>submitted_at</th>',
+             '<th>real_time</th>', '<th>MPI</th>', '<th>OMP</th>',
+             '<th>created_at</th>', '<th>submitted_at</th>',
              '<th>started_at</th>', '<th>finished_at</th>', '<th style="min-width: 18px; width: 1%;"></th>']
   SORT_BY = ["id", "status", "submitted_to", "cpu_time",
              "real_time", "created_at", "submitted_at",
@@ -33,6 +34,8 @@ private
       tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "")
       tmp << @view.formatted_elapsed_time(run.cpu_time)
       tmp << @view.formatted_elapsed_time(run.real_time)
+      tmp << run.mpi_procs
+      tmp << run.omp_threads
       tmp << @view.distance_to_now_in_words(run.created_at)
       tmp << @view.distance_to_now_in_words(run.submitted_at)
       tmp << @view.distance_to_now_in_words(run.started_at)
