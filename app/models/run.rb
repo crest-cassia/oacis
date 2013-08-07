@@ -12,8 +12,8 @@ class Run
   field :finished_at, type: DateTime
   field :included_at, type: DateTime
   field :result  # can be any type. it's up to Simulator spec
-  field :mpi_procs, type: Integer
-  field :omp_threads, type: Integer
+  field :mpi_procs, type: Integer, default: 1
+  field :omp_threads, type: Integer, default: 1
   field :runtime_parameters, type: Hash
   belongs_to :parameter_set
   belongs_to :simulator  # for caching. do not edit this field explicitly
@@ -24,8 +24,8 @@ class Run
   validates :status, presence: true,
                      inclusion: {in: [:created,:submitted,:running,:failed,:finished, :cancelled]}
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
-  validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true, allow_nil: true}
-  validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true, allow_nil: true}
+  validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
+  validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validate :runtime_parameters_given
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html

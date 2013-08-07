@@ -78,6 +78,18 @@ describe Run do
       run.should_not be_valid
     end
 
+    it "mpi_procs must be present" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.mpi_procs = nil
+      run.should_not be_valid
+    end
+
+    it "omp_threads must be present" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.omp_threads = nil
+      run.should_not be_valid
+    end
+
     it "mpi_procs must be a positive integer" do
       run = @param_set.runs.build(@valid_attribute)
       run.mpi_procs = 1
@@ -88,12 +100,6 @@ describe Run do
       run.should_not be_valid
     end
 
-    it "mpi_procs can be nil" do
-      run = @param_set.runs.build(@valid_attribute)
-      run.mpi_procs = nil
-      run.should be_valid
-    end
-
     it "omp_threads must be a positive integer" do
       run = @param_set.runs.build(@valid_attribute)
       run.omp_threads = 1
@@ -102,12 +108,6 @@ describe Run do
       run.should be_valid
       run.omp_threads = 0
       run.should_not be_valid
-    end
-
-    it "omp_threads can be nil" do
-      run = @param_set.runs.build(@valid_attribute)
-      run.omp_threads = nil
-      run.should be_valid
     end
 
     describe "'runtime_parameters' field" do
