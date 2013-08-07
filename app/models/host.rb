@@ -100,7 +100,7 @@ class Host
   end
 
   def submittable_runs
-    Run.where(status: :created).in(simulator: executable_simulator_ids)
+    Run.where(status: :created).in(simulator: executable_simulator_ids).in(submitted_to: [self, nil])
   end
 
   def submitted_runs
