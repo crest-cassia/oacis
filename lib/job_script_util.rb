@@ -12,6 +12,9 @@ module JobScriptUtil
     variables.update({"omp_threads" => run.omp_threads}) if run.omp_threads
     expanded_header = expand_runtime_parameters(host.script_header_template, variables)
 
+    mpi_exec_cmd = run.simulator.support_mpi ? "mpiexec -n #{run.mpi_procs}" : ""
+    export_omp_envs = run.simulator.support_omp ? "export OMP_NUM_THREADS=#{run.omp_threads}" : ""
+
     # preprocess
     script = <<-EOS
 #{expanded_header}
@@ -27,7 +30,8 @@ echo "{" > ../#{run.id}_status.json
 echo "  \\"started_at\\": \\"`date`\\"," >> ../#{run.id}_status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> ../#{run.id}_status.json
 # JOB EXECUTION -------------------
-{ time -p { { #{cmd}; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../#{run.id}_time.txt
+#{export_omp_envs}
+{ time -p { { #{mpi_exec_cmd} #{cmd}; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../#{run.id}_time.txt
 echo "  \\"rc\\": $?," >> ../#{run.id}_status.json
 echo "  \\"finished_at\\": \\"`date`\\"" >> ../#{run.id}_status.json
 echo "}" >> ../#{run.id}_status.json
