@@ -24,9 +24,7 @@
       .control-group
         = label_tag(:"run[runtime_parameters][#{var}]", var, class: 'control-label')
         .controls
-          = text_field_tag(:"run[runtime_parameters][#{var}]")
-.form-actions
-  = f.submit(class: 'btn btn-primary')
+          = text_field_tag(:"run[runtime_parameters][#{var}]", run.runtime_parameters[var])
 
 :javascript
   $(function() {
