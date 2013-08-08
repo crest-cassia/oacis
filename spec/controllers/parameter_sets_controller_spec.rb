@@ -43,7 +43,6 @@ describe ParameterSetsController do
     it "assigns instance variables @simulator and @param_set" do
       get 'new', {simulator_id: @sim}, valid_session
       assigns(:param_set).should be_a_new(ParameterSet)
-      assigns(:simulator).should be_a(Simulator)
       assigns(:param_set).should respond_to(:v)
     end
   end
@@ -58,7 +57,6 @@ describe ParameterSetsController do
     it "assigns instance variables @simulator and @param_set with duplicated parameters" do
       get 'duplicate', {id: @ps}, valid_session
       assigns(:param_set).should be_a_new(ParameterSet)
-      assigns(:simulator).should be_a(Simulator)
       assigns(:param_set).should respond_to(:v)
       assigns(:param_set).v.should eq(@ps.v)
     end

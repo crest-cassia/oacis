@@ -1,11 +1,10 @@
-= form_for([@param_set.simulator, @param_set], html: {class: 'form-horizontal'} ) do |f|
-  = render partial: 'shared/error_messages', locals: {error_messages: @param_set.errors.full_messages}
-  - @run ||= @param_set.runs.build
-  = render partial: 'shared/error_messages', locals: {error_messages: @run.errors.full_messages}
-  - @simulator.parameter_definitions.each do |pd|
+= form_for([parameter_set.simulator, parameter_set], html: {class: 'form-horizontal'} ) do |f|
+  = render partial: 'shared/error_messages', locals: {error_messages: parameter_set.errors.full_messages}
+  = render partial: 'shared/error_messages', locals: {error_messages: run.errors.full_messages}
+  - parameter_set.simulator.parameter_definitions.each do |pd|
     - key = pd.key
     - property = :"v[#{key}]"
-    - value = @param_set.v[key]
+    - value = parameter_set.v[key]
     .control-group
       = label_tag(property, "#{key} (#{pd.type})", class: 'control-label')
       .controls
@@ -18,8 +17,8 @@
     = label_tag('num_runs', '# of Runs', class: 'control-label')
     .controls
       = select_tag('num_runs', options_for_select([0,1,2,3,4,5,10,20], selected: @num_runs))
-  = fields_for @run do |builder|
+  = fields_for run do |builder|
     = render 'runs/fields', run: builder.object, f: builder
   .form-actions
     = submit_tag "Create", class: 'btn btn-primary'
-    = link_to "Cancel", simulator_path(@simulator), :class => 'btn'
+    = link_to "Cancel", simulator_path(parameter_set.simulator), :class => 'btn'
