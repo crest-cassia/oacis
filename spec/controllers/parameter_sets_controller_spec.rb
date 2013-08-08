@@ -184,6 +184,22 @@ describe ParameterSetsController do
           response.should render_template("new")
         end
       end
+
+      describe "invalid runtime_parameters" do
+
+        before(:each) do
+          @sim.support_mpi = true
+          @sim.save!
+        end
+
+        it "creates runs with runtime_parameters" do
+          parameters = {"L" => 10, "T" => 2.0}
+          invalid_param = {simulator_id: @sim, v: parameters, num_runs: 1, run: {mpi_procs: -1}}
+          expect {
+            post :create, invalid_param, valid_session
+          }.to_not change { ParameterSet.count }
+        end
+      end
     end
   end
 
