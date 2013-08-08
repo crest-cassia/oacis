@@ -1,0 +1,40 @@
+= render partial: 'shared/error_messages', locals: {error_messages: run.errors.full_messages}
+- if run.parameter_set.simulator.support_mpi
+  .control-group
+    = f.label(:mpi_procs, "MPI procs", class: 'control-label')
+    .controls
+      = f.text_field(:mpi_procs)
+- if run.parameter_set.simulator.support_omp
+  .control-group
+    = f.label(:omp_threads, "OMP threads", class: 'control-label')
+    .controls
+      = f.text_field(:omp_threads)
+.control-group
+  = label_tag('num_runs', '# of Runs', class: 'control-label')
+  .controls
+    = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]))
+.control-group
+  = f.label(:submitted_to, class: 'control-label')
+  .controls
+    - host_names = run.submittable_hosts_and_variables.keys.map {|h| [h.name, h.id.to_s]}
+    = f.select(:submitted_to, options_for_select(host_names))
+- run.submittable_hosts_and_variables.each do |host, variables|
+  %div{ id: "runtime_parameters_#{host.id}"}
+    - variables.each do |var|
+      .control-group
+        = label_tag(:"run[runtime_parameters][#{var}]", var, class: 'control-label')
+        .controls
+          = text_field_tag(:"run[runtime_parameters][#{var}]")
+.form-actions
+  = f.submit(class: 'btn btn-primary')
+
+:javascript
+  $(function() {
+    $('select#run_submitted_to').change(function() {
+      $('div[id^=runtime_parameters]').hide();
+      var host_id = $("select#run_submitted_to option:selected").val();
+      var selected = $('div#runtime_parameters_' + host_id);
+      selected.show();
+    });
+    $('select#run_submitted_to').trigger('change');
+  });

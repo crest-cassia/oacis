@@ -6,7 +6,12 @@
         = raw(header)
   %tbody
 
-= render 'runs/form', parameter_set: @param_set, run: @param_set.runs.build
+%h3 Create New Runs
+- run = @param_set.runs.build
+= form_for( [@param_set, run], html: {class: 'form-horizontal'}) do |f|
+  = render 'runs/fields', run: run, f: f
+  .form-actions
+    = f.submit(class: 'btn btn-primary')
 
 :javascript
   $(function() {
