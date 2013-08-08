@@ -30,8 +30,6 @@ describe ParameterSetsController do
       prm = sim.parameter_sets.first
       get 'show', {id: prm}, valid_session
       assigns(:param_set).should eq(prm)
-      assigns(:simulator).should eq(sim)
-      assigns(:parameter_keys).should eq(["L","T"])
     end
   end
 
