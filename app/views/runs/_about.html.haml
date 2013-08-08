@@ -28,7 +28,7 @@
     %tr
       %th Runtime parameters
       %td
-        - if @run.runtime_parameters
+        - if @run.runtime_parameters.present?
           %pre= @run.runtime_parameters.to_json
     %tr
       %th CPU time

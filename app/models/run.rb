@@ -14,7 +14,7 @@ class Run
   field :result  # can be any type. it's up to Simulator spec
   field :mpi_procs, type: Integer, default: 1
   field :omp_threads, type: Integer, default: 1
-  field :runtime_parameters, type: Hash
+  field :runtime_parameters, type: Hash, default: {}
   belongs_to :parameter_set
   belongs_to :simulator  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy
@@ -197,7 +197,7 @@ class Run
     if self.submitted_to
       host = self.submitted_to
       parameters = JobScriptUtil.extract_runtime_parameters(host.script_header_template)
-      parameters -= self.runtime_parameters.keys if self.runtime_parameters
+      parameters -= self.runtime_parameters.keys
       parameters -= ["mpi_procs"] if self.mpi_procs
       parameters -= ["omp_threads"] if self.omp_threads
       if parameters.present?
@@ -207,7 +207,7 @@ class Run
   end
 
   def remove_redundant_runtime_parameters
-    if self.submitted_to and self.runtime_parameters
+    if self.submitted_to
       self.runtime_parameters.select! do |key,val|
         template = self.submitted_to.script_header_template
         JobScriptUtil.extract_runtime_parameters(template).include?(key)
