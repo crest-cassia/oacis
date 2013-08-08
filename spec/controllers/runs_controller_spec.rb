@@ -62,11 +62,6 @@ describe RunsController do
         }.to change(Run.where(parameter_set_id: @par), :count).by(1)
       end
 
-      it "redirects to ParameterSetController#show page" do
-        post 'create', @req_param, valid_session
-        response.should redirect_to(@par)
-      end
-
       it "assigns seed specified by request parameter" do
         seed_val = 12345
         @req_param.update(run: {seed: seed_val})
@@ -97,13 +92,6 @@ describe RunsController do
         expect {
           post 'create', @req_param, valid_session
         }.to change(Run, :count).by(0)
-      end
-
-      it "redirects to parameter_sets#show path" do
-        seed_val = @par.runs.first.seed
-        @req_param.update(run: {seed: seed_val})
-        post 'create', @req_param, valid_session
-        response.should redirect_to(@par)
       end
     end
   end

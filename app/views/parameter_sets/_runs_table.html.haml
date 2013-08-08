@@ -8,8 +8,8 @@
 
 %h3 Create New Runs
 - run = parameter_set.runs.build
-= form_for( [parameter_set, run], html: {class: 'form-horizontal'}) do |f|
-  = render partial: 'shared/error_messages', locals: {error_messages: run.errors.full_messages}
+= form_for( [parameter_set, run], html: {class: 'form-horizontal', remote: true}) do |f|
+  #run_form_messages
   .control-group
     = label_tag('num_runs', '# of Runs', class: 'control-label')
     .controls
