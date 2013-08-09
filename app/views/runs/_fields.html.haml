@@ -25,10 +25,10 @@
 :javascript
   $(function() {
     $('select#run_submitted_to').change(function() {
-      $('div[id^=runtime_parameters]').hide();
+      $('div[id^=runtime_parameters]').hide("normal");
       var host_id = $("select#run_submitted_to option:selected").val();
       var selected = $('div#runtime_parameters_' + host_id);
-      selected.show();
+      selected.show("normal");
     });
     $('select#run_submitted_to').trigger('change');
   });
