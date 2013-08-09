@@ -7,7 +7,7 @@
 
   .tab-content
     .tab-pane.active#tab-list-runs
-      = render "runs_table"
+      = render "runs_table", parameter_set: parameter_set
     .tab-pane#tab-parameter-analyzers
-      = render "analyses"
+      = render "analyses", parameter_set: parameter_set
 

@@ -84,8 +84,8 @@ class ParameterSetsController < ApplicationController
   end
 
   def _runs_table
-    @param_set = ParameterSet.find(params[:id])
-    render :partial => "inner_table"
+    param_set = ParameterSet.find(params[:id])
+    render partial: "inner_table", locals: {parameter_set: param_set}
   end
 
   def _runs_list
