@@ -313,7 +313,6 @@ describe Host do
       @host.__send__(:remote_status, @run).should eq :running
     end
 
-
     it "returns :includable when compressed result file is found but work_dir is not" do
       FileUtils.touch( @temp_dir.join("#{@run.id.to_s}.tar.bz2") )
       @host.__send__(:remote_status, @run).should eq :includable

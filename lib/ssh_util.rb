@@ -42,8 +42,9 @@ module SSHUtil
   end
 
   def self.exist?(ssh, remote_path)
+    rpath = expand_remote_home_path(ssh, remote_path)
     begin
-      ssh.sftp.stat!(remote_path) do |response|
+      ssh.sftp.stat!(rpath) do |response|
         return true if response.ok?
       end
     rescue Net::SFTP::StatusException => ex

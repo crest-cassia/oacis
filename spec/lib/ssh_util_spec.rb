@@ -139,5 +139,11 @@ describe SSHUtil do
       remote_path = @temp_dir.join('abc').expand_path
       SSHUtil.exist?(@ssh, remote_path).should be_false
     end
+
+    it "returns true if the remote directory exist" do
+      remote_path = @temp_dir.join('abc').expand_path
+      FileUtils.mkdir_p(remote_path)
+      SSHUtil.exist?(@ssh, remote_path).should be_true
+    end
   end
 end
