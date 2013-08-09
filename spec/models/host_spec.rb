@@ -99,88 +99,6 @@ describe Host do
     end
   end
 
-  describe "#download" do
-
-    before(:each) do
-      @host = FactoryGirl.create(:localhost)
-      @temp_dir = Pathname.new('__temp__')
-      FileUtils.mkdir_p(@temp_dir)
-      FileUtils.touch(@temp_dir.join('__abc__'))
-      FileUtils.touch(@temp_dir.join('__def__'))
-      @temp_dir2 = Pathname.new('__temp2__')
-    end
-
-    after(:each) do
-      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
-      FileUtils.rm_r(@temp_dir2) if File.directory?(@temp_dir2)
-    end
-
-    it "downloads files to the specified path and return the paths" do
-      FileUtils.mkdir_p(@temp_dir2)
-      @host.download(@temp_dir.expand_path, @temp_dir2)
-      File.exist?(@temp_dir2.join('__abc__')).should be_true
-      File.exist?(@temp_dir2.join('__def__')).should be_true
-    end
-
-    it "creates local directory if specified directory does not exist" do
-      @host.download(@temp_dir.expand_path, @temp_dir2)
-      File.directory?(@temp_dir2).should be_true
-    end
-
-    it "raises an exception if connection to the remote host failed" do
-      @host.hostname = 'INVALID.HOSTNAME'
-      expect {
-        @host.download(@temp_dir.expand_path, @temp_dir2)
-      }.to raise_error SocketError
-      File.directory?(@temp_dir2).should_not be_true
-    end
-
-    it "creates ssh session once even when #download is called several times" do
-      Net::SSH.should_receive(:start).once.and_call_original
-      @host.__send__(:start_ssh) do |ssh|
-        @host.download(@temp_dir.expand_path, @temp_dir2)
-      end
-    end
-  end
-
-  describe "#rm_r" do
-
-    before(:each) do
-      @host = FactoryGirl.create(:localhost)
-      @temp_dir = Pathname.new('__temp__')
-      FileUtils.mkdir_p(@temp_dir)
-      @temp_file = @temp_dir.join('__abc__')
-      FileUtils.touch(@temp_file)
-    end
-
-    after(:each) do
-      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
-    end
-
-    it "removes specified file" do
-      @host.rm_r(@temp_file.expand_path)
-      File.exist?(@temp_file).should be_false
-    end
-
-    it "removes specified directory even if the directory is not empty" do
-      @host.rm_r(@temp_dir.expand_path)
-      File.directory?(@temp_dir).should be_false
-    end
-  end
-
-  describe "#uname" do
-
-    before(:each) do
-      @host = FactoryGirl.create(:localhost)
-    end
-
-    it "returns the result of 'uname' on the host" do
-      @host.uname.should satisfy {|u|
-        ["Linux", "Darwin"].include?(u)
-      }
-    end
-  end
-
   describe "#connected?" do
 
     before(:each) do
@@ -216,14 +134,6 @@ describe Host do
     end
 
     it "returns status of hosts using show_status_command" do
-      stat = @host.status
-      stat.should match(/PID/)
-      stat.should match(/COMMAND/)
-      stat.should match(/TIME/)
-    end
-
-    it "calls top when show_status_command is not assigned" do
-      @host.show_status_command = nil
       stat = @host.status
       stat.should match(/PID/)
       stat.should match(/COMMAND/)
@@ -369,15 +279,6 @@ describe Host do
       Net::SSH.should_receive(:start).once.and_call_original
       @host.submit(@runs)
     end
-
-    it "submit job to queueing system on the remote host" do
-      pending "test is not prepared yet"
-    end
-  end
-
-  describe "#launch_worker_cmd" do
-
-    pending "specification is subject to change"
   end
 
   describe "#remote_status" do
@@ -452,7 +353,7 @@ describe Host do
 
     it "include remote data and update status to 'finished' or 'failed'" do
       @host.should_receive(:remote_status).and_return(:includable)
-      @host.stub(:download)
+      SSHUtil.stub(:download)
       JobScriptUtil.should_receive(:expand_result_file_and_update_run) do |run|
         run.id.should eq @run.id
       end
@@ -474,13 +375,13 @@ describe Host do
 
       it "does not include remote data even if remote status is 'includable'" do
         @host.stub(:remote_status).and_return(:includable)
-        @host.should_not_receive(:download)
+        SSHUtil.should_not_receive(:download)
         @host.check_submitted_job_status
       end
 
       it "deletes archived reuslt file on the remote host" do
         @host.stub(:remote_status).and_return(:includable)
-        @host.should_receive(:rm_r).exactly(2).times
+        SSHUtil.should_receive(:rm_r).exactly(2).times
         @host.check_submitted_job_status
       end
 
