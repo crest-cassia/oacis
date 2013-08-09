@@ -91,7 +91,7 @@ describe SSHUtil do
   describe ".execute" do
 
     it "executes command and returns its standard output" do
-      SSHUtil.execute(@ssh, 'pwd').should eq ENV['HOME']
+      SSHUtil.execute(@ssh, 'pwd').chomp.should eq ENV['HOME']
     end
   end
 
@@ -124,6 +124,20 @@ describe SSHUtil do
       output_file = @temp_dir.join('abc').expand_path
       SSHUtil.write_remote_file(@ssh, output_file, "foobar")
       File.open(output_file, 'r').read.should eq "foobar"
+    end
+  end
+
+  describe ".exist?" do
+
+    it "returns true when the remote file exists" do
+      remote_path = @temp_dir.join('abc').expand_path
+      FileUtils.touch(remote_path)
+      SSHUtil.exist?(@ssh, remote_path).should be_true
+    end
+
+    it "returns false when the remote file does not exist" do
+      remote_path = @temp_dir.join('abc').expand_path
+      SSHUtil.exist?(@ssh, remote_path).should be_false
     end
   end
 end

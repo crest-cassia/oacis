@@ -25,7 +25,7 @@ module SSHUtil
   end
 
   def self.execute(ssh, command)
-    ssh.exec!(command).chomp
+    ssh.exec!(command)
   end
 
   def self.execute_in_background(ssh, command)
@@ -39,6 +39,17 @@ module SSHUtil
     ssh.sftp.file.open(rpath, 'w') { |f|
       f.print content
     }
+  end
+
+  def self.exist?(ssh, remote_path)
+    begin
+      ssh.sftp.stat!(remote_path) do |response|
+        return true if response.ok?
+      end
+    rescue Net::SFTP::StatusException => ex
+      raise ex unless ex.code == 2  # no such file
+    end
+    return false
   end
 
   private
