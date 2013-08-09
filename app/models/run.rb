@@ -79,13 +79,11 @@ class Run
 
     # traverse sub-directories only for one-level depth
     paths.map! do |path|
-      if File.directory?(path)
-        Dir.glob( path.join('*') ).map {|f| Pathname(f)}
-      else
+      unless File.directory?(path)
         path
       end
     end
-    return paths.flatten
+    return paths.flatten.compact
   end
 
   def archived_result_path
