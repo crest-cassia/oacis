@@ -84,6 +84,6 @@ module ApplicationHelper
       partial ||= association.to_s.singularize + "_fields"
       render(partial, f: builder)
     end
-    link_to(name, '#', class: "btn add_fields", data: {id: id, fields: fields.gsub("\n", "")})
+    link_to(name, '#', class: "add_fields", data: {id: id, fields: fields.gsub("\n", "")})
   end
 end

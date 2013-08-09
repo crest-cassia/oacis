@@ -51,6 +51,8 @@ class SimulatorsController < ApplicationController
   def create
     @simulator = Simulator.new(params[:simulator])
     @simulator.support_input_json = ParametersUtil.boolean(params[:simulator]["support_input_json"])
+    @simulator.support_mpi = ParametersUtil.boolean(params[:simulator]["support_mpi"])
+    @simulator.support_omp = ParametersUtil.boolean(params[:simulator]["support_omp"])
 
     respond_to do |format|
       if @simulator.save
@@ -68,6 +70,8 @@ class SimulatorsController < ApplicationController
   def update
     @simulator = Simulator.find(params[:id])
     @simulator.support_input_json = ParametersUtil.boolean(params[:simulator]["support_input_json"])
+    @simulator.support_mpi = ParametersUtil.boolean(params[:simulator]["support_mpi"])
+    @simulator.support_omp = ParametersUtil.boolean(params[:simulator]["support_omp"])
 
     respond_to do |format|
       if @simulator.update_attributes(params[:simulator])

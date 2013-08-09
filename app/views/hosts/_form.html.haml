@@ -37,6 +37,10 @@
     .controls
       = f.text_field(:max_num_jobs, class: 'text_field')
   .control-group
+    = f.label(:script_header_template, class: 'control-label')
+    .controls
+      = f.text_area(:script_header_template, style: "width: auto", rows: 8)
+  .control-group
     .control-label
       Executable_simulators
     .controls

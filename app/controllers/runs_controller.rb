@@ -37,22 +37,24 @@ class RunsController < ApplicationController
     @runs = []
     num_runs.times do |i|
       run = @param_set.runs.build(params[:run])
-      @runs << run
+      @runs << run if run.save
     end
 
     respond_to do |format|
-      if @runs.all? { |run| run.save }
-        format.html {
-          Resque.enqueue(JobSubmitter)
-          message = "#{@runs.count} run#{@runs.size > 1 ? 's were' : ' was'} successfully created"
-          redirect_to @param_set, notice: message
-        }
+      if @runs.present?
+        Resque.enqueue(JobSubmitter)
+        message = "#{@runs.count} run#{@runs.size > 1 ? 's were' : ' was'} successfully created"
         format.json { render json: @runs, status: :created, location: @param_set}
+        @messages = {success: [message]}
+        format.js
       else
-        format.html { redirect_to @param_set, error: 'Failed to create a run.'}
         format.json {
           render json: @runs.map{ |r| r.errors }, status: :unprocessable_entity
         }
+        run = @param_set.runs.build(params[:run])
+        run.valid?
+        @messages = {error: run.errors.full_messages }
+        format.js
       end
     end
   end

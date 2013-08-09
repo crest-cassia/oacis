@@ -6,7 +6,13 @@
   %tbody
     %tr
       %th Parameter Input Type
-      %td= simulator.support_input_json ? "JSON" : "ARGUMENTS"
+      %td= simulator.support_input_json ? "JSON" : "Arguments"
+    %tr
+      %th Support MPI
+      %td= simulator.support_mpi ? "Yes" : "No"
+    %tr
+      %th Support OMP
+      %td= simulator.support_omp ? "Yes" : "No"
     %tr
       %th Executable On
       %td= raw( simulator.executable_on.map {|host| h(host.name) }.join('<br />') )

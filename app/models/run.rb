@@ -12,6 +12,9 @@ class Run
   field :finished_at, type: DateTime
   field :included_at, type: DateTime
   field :result  # can be any type. it's up to Simulator spec
+  field :mpi_procs, type: Integer, default: 1
+  field :omp_threads, type: Integer, default: 1
+  field :runtime_parameters, type: Hash, default: {}
   belongs_to :parameter_set
   belongs_to :simulator  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy
@@ -21,12 +24,15 @@ class Run
   validates :status, presence: true,
                      inclusion: {in: [:created,:submitted,:running,:failed,:finished, :cancelled]}
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
+  validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
+  validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
+  validate :runtime_parameters_given
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  attr_accessible :seed
+  attr_accessible :seed, :mpi_procs, :omp_threads, :runtime_parameters, :submitted_to
 
-  before_save :set_simulator
+  before_save :set_simulator, :remove_redundant_runtime_parameters
   after_create :create_run_dir
   before_destroy :delete_run_dir, :delete_archived_result_file
 
@@ -73,13 +79,11 @@ class Run
 
     # traverse sub-directories only for one-level depth
     paths.map! do |path|
-      if File.directory?(path)
-        Dir.glob( path.join('*') ).map {|f| Pathname(f)}
-      else
+      unless File.directory?(path)
         path
       end
     end
-    return paths.flatten
+    return paths.flatten.compact
   end
 
   def archived_result_path
@@ -123,6 +127,15 @@ class Run
         end
       end
     end
+  end
+
+  def submittable_hosts_and_variables
+    h = {}
+    self.parameter_set.simulator.executable_on.each do |host|
+      extracted_variables = JobScriptUtil.extract_runtime_parameters(host.script_header_template)
+      h[host] = extracted_variables - ["mpi_procs", "omp_threads"]
+    end
+    h
   end
 
   private
@@ -176,5 +189,27 @@ class Run
     delete_archived_result_file
     self.parameter_set = nil
     self.save
+  end
+
+  def runtime_parameters_given
+    if self.submitted_to
+      host = self.submitted_to
+      parameters = JobScriptUtil.extract_runtime_parameters(host.script_header_template)
+      parameters -= self.runtime_parameters.keys
+      parameters -= ["mpi_procs"] if self.mpi_procs
+      parameters -= ["omp_threads"] if self.omp_threads
+      if parameters.present?
+        self.errors.add(:runtime_parameters, "not given parameters: #{parameters.inspect}")
+      end
+    end
+  end
+
+  def remove_redundant_runtime_parameters
+    if self.submitted_to
+      self.runtime_parameters.select! do |key,val|
+        template = self.submitted_to.script_header_template
+        JobScriptUtil.extract_runtime_parameters(template).include?(key)
+      end
+    end
   end
 end

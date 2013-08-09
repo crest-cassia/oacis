@@ -77,6 +77,75 @@ describe Run do
       run.status = :unknown
       run.should_not be_valid
     end
+
+    it "mpi_procs must be present" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.mpi_procs = nil
+      run.should_not be_valid
+    end
+
+    it "omp_threads must be present" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.omp_threads = nil
+      run.should_not be_valid
+    end
+
+    it "mpi_procs must be a positive integer" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.mpi_procs = 1
+      run.should be_valid
+      run.mpi_procs = 16384
+      run.should be_valid
+      run.mpi_procs = 0
+      run.should_not be_valid
+    end
+
+    it "omp_threads must be a positive integer" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.omp_threads = 1
+      run.should be_valid
+      run.omp_threads = 8
+      run.should be_valid
+      run.omp_threads = 0
+      run.should_not be_valid
+    end
+
+    describe "'runtime_parameters' field" do
+
+      before(:each) do
+        template = <<-EOS
+#!/bin/bash
+# node:<%= node %>
+# proc:<%= mpi_procs %>
+EOS
+        @host = FactoryGirl.create(:host, script_header_template: template)
+      end
+
+      it "is valid when runtime parameters are properly given" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.runtime_parameters = {"node" => "abc"}
+        run.should be_valid
+      end
+
+      it "is invalid when all the runtime parameters are not specified" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.runtime_parameters = {}
+        run.should_not be_valid
+      end
+
+      it "is valid when runtime parameters have rendundant keys" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.omp_threads = 8
+        run.runtime_parameters = {"node" => "abd", "shape" => "xyz"}
+        run.should be_valid
+      end
+    end
   end
 
   describe "relations" do
@@ -376,6 +445,26 @@ describe Run do
         }.to_not change { Run.count }
         @run.status.should eq :cancelled
       end
+    end
+  end
+
+  describe "#submittable_hosts_and_variables" do
+
+    it "returns Hash of host and its runtime parameters"
+  end
+
+  describe "#remove_redundant_runtime_parameters" do
+
+    it "removes runtime parameters not necessary for the host" do
+      template = <<EOS
+#!/bin/bash
+# foobar: <%= foobar %>
+EOS
+      host = FactoryGirl.create(:host, script_header_template: template)
+      r_params = {"foobar" => 1, "baz" => 2}
+      run = @param_set.runs.build(submitted_to: host, runtime_parameters: r_params)
+      run.save!
+      run.runtime_parameters.should eq ({"foobar" => 1})
     end
   end
 end

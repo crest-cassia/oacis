@@ -1,14 +1,22 @@
 %h3 Runs
-%table.table.table-condensed.table-hover.table-striped#runs_list{:'data-source' => "#{_runs_list_parameter_set_path(@param_set.to_param, format: "json")}"}
+%table.table.table-condensed.table-hover.table-striped#runs_list{:'data-source' => "#{_runs_list_parameter_set_path(parameter_set.to_param, format: "json")}"}
   %thead
     %tr
       - RunsListDatatable::HEADER.each do |header|
         = raw(header)
   %tbody
 
-= form_tag(parameter_set_runs_path(@param_set), class: 'form-inline form-actions') do |f|
-  = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]), class: 'input-mini')
-  = submit_tag "Create Runs", :class => 'btn btn-primary'
+%h3 Create New Runs
+- run = parameter_set.runs.build
+= form_for( [parameter_set, run], html: {class: 'form-horizontal', remote: true}) do |f|
+  #run_form_messages
+  .control-group
+    = label_tag('num_runs', '# of Runs', class: 'control-label')
+    .controls
+      = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]))
+  = render 'runs/fields', run: run, f: f
+  .form-actions
+    = f.submit(class: 'btn btn-primary')
 
 :javascript
   $(function() {

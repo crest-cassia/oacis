@@ -18,6 +18,6 @@
       .form-actions
         = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
     .tab-pane.active#tab-list-runs
-      = render "runs_table"
+      = render "runs_table", parameter_set: @param_set
     .tab-pane#tab-analysis
-      = render "analyses"
+      = render "analyses", parameter_set: @param_set

@@ -1,12 +1,23 @@
 module JobScriptUtil
 
+  DEFAULT_HEADER = "#!/bin/bash"
+
   def self.script_for(run, host)
     cmd, input = run.command_and_input
     cmd.sub!(/;$/, '')  # semi-colon in the last of the command causes bash syntax error
 
+    variables = {}
+    variables = run.runtime_parameters.dup if run.runtime_parameters
+    variables.update({"mpi_procs" => run.mpi_procs}) if run.mpi_procs
+    variables.update({"omp_threads" => run.omp_threads}) if run.omp_threads
+    expanded_header = expand_runtime_parameters(host.script_header_template, variables)
+
+    mpi_exec_cmd = run.simulator.support_mpi ? "mpiexec -n #{run.mpi_procs}" : ""
+    export_omp_envs = run.simulator.support_omp ? "export OMP_NUM_THREADS=#{run.omp_threads}" : ""
+
     # preprocess
     script = <<-EOS
-#!/bin/bash
+#{expanded_header}
 LANG=C
 # PRE-PROCESS ---------------------
 cd #{host.work_base_dir}
@@ -19,7 +30,8 @@ echo "{" > ../#{run.id}_status.json
 echo "  \\"started_at\\": \\"`date`\\"," >> ../#{run.id}_status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> ../#{run.id}_status.json
 # JOB EXECUTION -------------------
-{ time -p { { #{cmd}; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../#{run.id}_time.txt
+#{export_omp_envs}
+{ time -p { { #{mpi_exec_cmd} #{cmd}; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../#{run.id}_time.txt
 echo "  \\"rc\\": $?," >> ../#{run.id}_status.json
 echo "  \\"finished_at\\": \\"`date`\\"" >> ../#{run.id}_status.json
 echo "}" >> ../#{run.id}_status.json
@@ -65,5 +77,19 @@ EOS
       run.included_at = DateTime.now
       run.save!
     }
+  end
+
+  def self.extract_runtime_parameters(header_template)
+    header_template.scan(/<%=\s*(\w+)\s*%>/).flatten.uniq
+  end
+
+  def self.expand_runtime_parameters(header_template, runtime_parameters)
+    replaced = header_template.dup
+    extract_runtime_parameters(header_template).each do |variable|
+      value = runtime_parameters[variable].to_s
+      pattern = /<%=\s*#{variable}\s*%>/
+      replaced.gsub!(pattern, value)
+    end
+    replaced
   end
 end

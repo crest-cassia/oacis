@@ -261,6 +261,27 @@ describe Host do
       host2 = FactoryGirl.create(:host)
       host2.submittable_runs.should have(0).items
     end
+
+    it "does not return runs whose submitted_to is not self" do
+      another_host = FactoryGirl.create(:host)
+      @sim.parameter_sets.each do |ps|
+        1.times do |i|
+          run = ps.runs.create!
+          run.submitted_to = @host
+          run.save!
+        end
+        2.times do |i|
+          run = ps.runs.create!
+          run.submitted_to = another_host
+          run.save!
+        end
+      end
+
+      @host.submittable_runs.should have(8).items
+      @host.submittable_runs.each do |run|
+        run.submitted_to.should_not eq another_host
+      end
+    end
   end
 
   describe "#submitted_runs" do
