@@ -136,4 +136,8 @@ class SimulatorsController < ApplicationController
   def _analyses_list
     render json: AnalysesListDatatable.new(view_context)
   end
+
+  def _analyzer_list
+    render json: AnalyzersListDatatable.new(view_context)
+  end
 end

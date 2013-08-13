@@ -192,11 +192,6 @@ describe AnalyzersController do
         delete :destroy, {id: @azr.to_param}, valid_session
       }.to change { @sim.reload.analyzers.count }.by(-1)
     end
-
-    it "redirects to the simulators list" do
-      delete :destroy, {id: @azr.to_param}, valid_session
-      response.should redirect_to( simulator_url(@sim, anchor: '!tab-about') )
-    end
   end
 
   describe "GET '_parameters_form'" do
