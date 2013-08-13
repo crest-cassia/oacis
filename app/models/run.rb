@@ -77,13 +77,8 @@ class Run
     # remove directories of Analysis
     paths -= analyses.map {|x| x.dir}
 
-    # traverse sub-directories only for one-level depth
-    paths.map! do |path|
-      unless File.directory?(path)
-        path
-      end
-    end
-    return paths.flatten.compact
+    # return all files and directories on result path (these do not include sub-dirs and files in sub-dirs)
+    return paths
   end
 
   def archived_result_path

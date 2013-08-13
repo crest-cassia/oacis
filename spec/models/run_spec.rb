@@ -273,10 +273,11 @@ EOS
 
     it "returns list of result files" do
       res = @run.result_paths
-      @temp_files.each do |f|
+      @temp_files[0..1].each do |f|
         res.should include(f)
       end
-      res.should_not include(@temp_dir)
+      res.should include(@temp_dir)
+      res.should_not include(@temp_files[2])
     end
 
     it "does not include directories of analysis" do
