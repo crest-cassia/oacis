@@ -71,6 +71,42 @@ describe AnalyzerRunner do
       end
     end
 
+    describe ".remove_inputs" do
+
+      before(:each) do
+        @work_dir = '__temp__'
+        FileUtils.mkdir_p(@work_dir)
+      end
+
+      after(:each) do
+        FileUtils.rm_r(@work_dir) if File.directory?(@work_dir)
+      end
+
+      it "remove _input.json" do
+        Dir.chdir(@work_dir) {
+          AnalyzerRunner.__send__(:prepare_inputs, @arn)
+          input_json = '_input.json'
+          File.exist?(input_json).should be_true
+          AnalyzerRunner.__send__(:remove_inputs)
+          File.exist?(input_json).should_not be_true
+        }
+      end
+
+      it "writes input directory" do
+        Dir.chdir(@work_dir) {
+          dummy_input = @arn.analyzable.dir.join('dummy.txt')
+          FileUtils.touch(dummy_input)
+          @arn.should_receive(:input_files).and_return({'abc' => [dummy_input]})
+          AnalyzerRunner.__send__(:prepare_inputs, @arn)
+          File.directory?('_input').should be_true
+          File.exist?('_input/abc/dummy.txt').should be_true
+          AnalyzerRunner.__send__(:remove_inputs)
+          File.directory?('_input').should_not be_true
+          File.exist?('_input/abc/dummy.txt').should_not be_true
+        }
+      end
+    end
+
     describe ".run_analysis" do
 
       before(:each) do

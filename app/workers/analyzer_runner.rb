@@ -38,6 +38,7 @@ class AnalyzerRunner
           raise "Rc of the simulator is not 0, but #{$?.to_i}"
         end
         output[:result] = parse_output_json
+        remove_inputs
       }
     }
     output[:cpu_time] = tms.cutime
@@ -59,6 +60,12 @@ class AnalyzerRunner
         FileUtils.cp_r(input, output_dir)
       end
     end
+  end
+
+  # remove input files into the current directory
+  def self.remove_inputs
+    FileUtils.rm(INPUT_JSON_FILENAME) if File.exist?(INPUT_JSON_FILENAME)
+    FileUtils.rm_rf(INPUT_FILES_DIR) if Dir.exist?(INPUT_FILES_DIR)
   end
 
   def self.parse_output_json
