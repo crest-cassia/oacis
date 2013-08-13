@@ -58,8 +58,8 @@ class AnalyzersController < ApplicationController
     analyzer.destroy
 
     respond_to do |format|
-      format.html { redirect_to simulator_url(simulator, anchor: '!tab-about') }
       format.json { head :no_content }
+      format.js
     end
   end
 
@@ -69,5 +69,10 @@ class AnalyzersController < ApplicationController
     param_def = analyzer.parameter_definitions
 
     render partial: 'shared/parameters_form', layout: false, locals: {param_def: param_def}
+  end
+
+  def _inner_show
+    analyzer = Analyzer.find(params[:id])
+    render partial: "inner_show", locals: {analyzer: analyzer}
   end
 end
