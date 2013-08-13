@@ -8,11 +8,11 @@
     %li
       %a{"href"=>"#tab-about", "data-toggle" => "tab"} About
     %li.active
-      %a{"href"=>"#tab-analysis", "data-toggle" => "tab"} Results and Analysis
+      %a{"href"=>"#tab-analyses", "data-toggle" => "tab"} Results and Analyses
 
   %div.tab-content
     %div.tab-pane#tab-about
       = render "about"
-    %div.tab-pane.active#tab-analysis
+    %div.tab-pane.active#tab-analyses
       = render partial: "shared/results", locals: {result: @run.result, result_paths: @run.result_paths, archived_result_path: @run.archived_result_path }
       = render "analyses"

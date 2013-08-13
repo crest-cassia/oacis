@@ -27,7 +27,7 @@ AcmProto::Application.routes.draw do
       member do
         get 'duplicate'
         get "_runs_status_count" # for ajax, progress bar
-        get "_runs_table" # for ajax, get
+        get "_runs_and_analyses" # for ajax, get
         get "_runs_list" # for ajax, datatables
       end
       resources :runs, only: ["show","create", "destroy"] do

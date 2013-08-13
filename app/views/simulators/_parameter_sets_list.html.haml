@@ -91,7 +91,7 @@
   var param_list_table_width;
 
   $(function() {
-    param_list_table_width = $("#param_list").width()
+    param_list_table_width = $("#params_list").width()
   });
 
 :javascript
@@ -126,7 +126,7 @@
         $(this)
           .attr("state", "open")
           .attr("src", "/assets/collapse.png")
-        $.get("/parameter_sets/"+param_id+"/_runs_table", function(data) {
+        $.get("/parameter_sets/"+param_id+"/_runs_and_analyses", function(data) {
           tr_element.after(
             $("<tr>").attr("id", "ps_"+param_id).html(
               $("<td>").attr({colspan: table_cols}).html(
