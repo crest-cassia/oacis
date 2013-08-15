@@ -16,7 +16,14 @@
       = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]))
   = render 'runs/fields', run: run, f: f
   .form-actions
+    = submit_tag 'Preview', name: 'preview_button', class: 'btn'
     = f.submit(class: 'btn btn-primary')
+#script_preview_modal.modal.hide.fade
+  .modal-header
+    %a.close{:'data-dismiss' => "modal"}x</a>
+  .modal-body
+    #script_preview
+
 
 :javascript
   $(function() {

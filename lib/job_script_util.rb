@@ -11,7 +11,6 @@ module JobScriptUtil
     variables.update({"mpi_procs" => run.mpi_procs}) if run.mpi_procs
     variables.update({"omp_threads" => run.omp_threads}) if run.omp_threads
     expanded_header = expand_runtime_parameters(host.script_header_template, variables)
-    expanded_header.gsub!(/(\r\n|\r|\n)/, "\n")
 
     mpi_exec_cmd = run.simulator.support_mpi ? "mpiexec -n #{run.mpi_procs}" : ""
     export_omp_envs = run.simulator.support_omp ? "export OMP_NUM_THREADS=#{run.omp_threads}" : ""
@@ -47,7 +46,8 @@ if test $? -ne 0; then { echo "// Failed to compress for #{run.id}" >> ./_log.tx
 rm -rf #{run.id}
 
 EOS
-    script
+
+    script.gsub(/(\r\n|\r|\n)/, "\n")
   end
 
   def self.expand_result_file_and_update_run(run)

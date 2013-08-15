@@ -1,6 +1,6 @@
 = render partial: "shared/breadcrumb", locals: {links: breadcrumb_links_for(@analyzer)}
 
 .page-header
-  %h1=t '.title', :default => @analyzer.name
+  %h1= @analyzer.name
 
 = render "about", analyzer: @analyzer

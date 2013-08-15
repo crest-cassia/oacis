@@ -57,3 +57,7 @@
 
 %h3 Directory
 %pre= @run.dir
+
+- if @run.submitted_to
+  %h3 Script
+  %pre~ JobScriptUtil.script_for(@run, @run.submitted_to)
