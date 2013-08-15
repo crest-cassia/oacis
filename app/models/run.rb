@@ -40,6 +40,16 @@ class Run
   def initialize(*arg)
     super
     set_unique_seed
+    self
+  end
+
+  def simulator
+    set_simulator if self.simulator_id.nil?
+    if self.simulator_id
+      Simulator.find(self.simulator_id)
+    else
+      nil
+    end
   end
 
   def command

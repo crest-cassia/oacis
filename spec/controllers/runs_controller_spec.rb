@@ -94,6 +94,29 @@ describe RunsController do
         }.to change(Run, :count).by(0)
       end
     end
+
+    describe "when preview button is pressed" do
+
+      before(:each) do
+        @req_param = {parameter_set_id: @par}.merge(preview_button: true)
+      end
+
+      it "calls preview method" do
+        RunsController.any_instance.should_receive(:preview).and_call_original
+        xhr 'post', 'create', @req_param, valid_session
+      end
+
+      it "renders preview" do
+        xhr 'post', 'create', @req_param, valid_session
+        response.should render_template("preview")
+      end
+
+      it "does not create new Run" do
+        expect {
+          xhr 'post', 'create', @req_param, valid_session
+        }.to_not change { Run.count }
+      end
+    end
   end
 
   describe "DELETE destroy" do

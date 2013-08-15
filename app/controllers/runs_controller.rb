@@ -28,6 +28,11 @@ class RunsController < ApplicationController
   end
 
   def create
+    if params[:preview_button]
+      preview
+      return
+    end
+
     @param_set = ParameterSet.find(params[:parameter_set_id])
 
     num_runs = 1
@@ -56,6 +61,18 @@ class RunsController < ApplicationController
         @messages = {error: run.errors.full_messages }
         format.js
       end
+    end
+  end
+
+  def preview
+    param_set = ParameterSet.find(params[:parameter_set_id])
+    run = param_set.runs.build(params[:run])
+    @error_messages = run.valid? ? [] : run.errors.full_messages
+    @script = JobScriptUtil.script_for(run, run.submitted_to) if run.valid? and run.submitted_to?
+    respond_to do |format|
+      format.js {
+        render action: "preview"
+      }
     end
   end
 

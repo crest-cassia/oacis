@@ -163,6 +163,11 @@ EOS
       @run.simulator.should eq(@run.parameter_set.simulator)
     end
 
+    it "returns simulator even when run is not saved" do
+      run = @param_set.runs.build
+      run.simulator.should be_a(Simulator)
+    end
+
     it "destroys including analyses when destroyed" do
       expect {
         @run.destroy
