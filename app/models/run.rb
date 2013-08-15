@@ -40,7 +40,6 @@ class Run
   def initialize(*arg)
     super
     set_unique_seed
-    self
   end
 
   def simulator
