@@ -13,6 +13,8 @@ class SchedulerWrapper
 
   def submit_command(script)
     case @type
+    when "none"
+      "nohup bash #{script} > /dev/null 2>&1 < /dev/null &; basename #{script}"
     when "torque"
       "qsub #{script}"
     else
@@ -22,6 +24,8 @@ class SchedulerWrapper
 
   def all_status_command
     case @type
+    when "none"
+      "ps ux"
     when "torque"
       "qstat; pbsnodes -a"
     else
@@ -31,6 +35,8 @@ class SchedulerWrapper
 
   def status_command(job_id)
     case @type
+    when "none"
+      "ps ux | grep \"[#{job_id[0]}]#{job_id[1..-1]}\""
     when "torque"
       "qstat #{job_id}"
     else
@@ -40,8 +46,11 @@ class SchedulerWrapper
 
   def parse_remote_status(stdout)
     return :unknown if stdout.empty?
-
     case @type
+    when "none"
+      if stdout.present?
+        :running
+      end
     when "torque"
       stat = stdout.lines.to_a.last.split[4]
       case stat
@@ -61,6 +70,8 @@ class SchedulerWrapper
 
   def cancel_command(job_id)
     case @type
+    when "none"
+      "kill -- -`ps ux | grep \"[#{job_id[0]}]#{job_id[1..-1]}\" | awk '{print $2}'`"
     when "torque"
       "qdel #{job_id}"
     else

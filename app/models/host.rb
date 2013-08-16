@@ -194,8 +194,8 @@ class Host
     start_ssh {|ssh|
       scheduler = SchedulerWrapper.new(scheduler_type)
       cmd = scheduler.status_command(run.job_id)
-      stdout = SSHUtil.execute(ssh, cmd)
-      status = scheduler.parse_remote_status(stdout)
+      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+      status = scheduler.parse_remote_status(out) if rc == 0
     }
     status
   end
