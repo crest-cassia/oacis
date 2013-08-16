@@ -29,6 +29,13 @@ FactoryGirl.define do
     end
 
     after(:create) do |simulator, evaluator|
+      if Host.where(name: "localhost").present?
+        h = Host.where(name: "localhost").first
+        h.executable_simulators.push simulator
+        h.save!
+      else
+        h = FactoryGirl.create(:localhost, executable_simulators: [simulator])
+      end
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
                               simulator: simulator,
                               runs_count: evaluator.runs_count,
@@ -66,6 +73,8 @@ FactoryGirl.define do
   end
 
   factory :run do
+
+    submitted_to { self.parameter_set.simulator.executable_on.first }
 
     factory :finished_run do
 

@@ -418,8 +418,6 @@ EOS
 
       before(:each) do
         @run.status = :submitted
-        host = FactoryGirl.create(:localhost)
-        @run.submitted_to = host
       end
 
       it "calls cancel if status is :submitted or :running" do

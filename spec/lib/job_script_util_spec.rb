@@ -7,7 +7,8 @@ describe JobScriptUtil do
     @run = @sim.parameter_sets.first.runs.first
     @temp_dir = Pathname.new('__temp__')
     FileUtils.mkdir_p(@temp_dir)
-    @host = FactoryGirl.create(:localhost, work_base_dir: @temp_dir.expand_path)
+    @host = Host.where(name: "localhost").first
+    @host.work_base_dir = @temp_dir.expand_path
   end
 
   after(:each) do
