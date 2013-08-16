@@ -20,6 +20,15 @@ class SchedulerWrapper
     end
   end
 
+  def all_status_command
+    case @type
+    when "torque"
+      "qstat; pbsnodes -a"
+    else
+      raise "not supported"
+    end
+  end
+
   def status_command(job_id)
     case @type
     when "torque"

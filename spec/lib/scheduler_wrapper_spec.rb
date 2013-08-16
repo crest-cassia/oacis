@@ -29,6 +29,13 @@ describe SchedulerWrapper do
       end
     end
 
+    describe "#all_status_command" do
+
+      it "returns a command to show the status of all the jobs in the host" do
+        @wrapper.all_status_command.should match(/qstat/)
+      end
+    end
+
     describe "#status_command" do
 
       it "returns a command to show the status of the host" do

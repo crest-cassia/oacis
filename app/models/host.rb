@@ -49,8 +49,9 @@ class Host
   def status
     ret = nil
     start_ssh do |ssh|
-      # TODO: implement me
-      # ret = SSHUtil.execute(ssh, self.show_status_command).chomp if self.show_status_command.present?
+      wrapper = SchedulerWrapper.new(self.scheduler_type)
+      cmd = wrapper.all_status_command
+      ret = SSHUtil.execute(ssh, cmd)
     end
     return ret
   end
