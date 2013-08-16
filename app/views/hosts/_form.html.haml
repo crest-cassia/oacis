@@ -23,7 +23,7 @@
   .control-group
     = f.label(:scheduler_type, class: 'control-label')
     .controls
-      = f.text_field(:scheduler_type, class: 'text_field')
+      = f.select(:scheduler_type, SchedulerWrapper::TYPES)
   .control-group
     = f.label(:work_base_dir, class: 'control-label')
     .controls
