@@ -71,14 +71,22 @@ class Host
       # enqueue jobs
       job_script_paths.each do |run_id, path|
         run = Run.find(run_id)
-        SSHUtil.execute(ssh, "chmod +x #{path}")
-        cmd = SchedulerWrapper.new(self.scheduler_type).submit_command(path)
-        stdout = SSHUtil.execute(ssh, cmd)
-        run.status = :submitted
-        run.submitted_to = self
-        run.job_id = stdout.chomp
-        run.submitted_at = DateTime.now
-        run.save!
+        begin
+          out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
+          raise "chmod failed : #{rc}, #{err}" unless rc == 0
+          cmd = SchedulerWrapper.new(self.scheduler_type).submit_command(path)
+          out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+          raise "#{cmd} failed : #{rc}, #{err}" unless rc == 0
+          run.status = :submitted
+          run.submitted_to = self
+          run.job_id = out.chomp
+          run.submitted_at = DateTime.now
+          run.save!
+        rescue => ex
+          run.status = :failed
+          run.save!
+          raise ex
+        end
       end
       job_script_paths
     end
