@@ -15,6 +15,7 @@ class Run
   field :mpi_procs, type: Integer, default: 1
   field :omp_threads, type: Integer, default: 1
   field :runtime_parameters, type: Hash, default: {}
+  field :job_id, type: String
   belongs_to :parameter_set
   belongs_to :simulator  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy

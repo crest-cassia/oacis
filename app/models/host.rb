@@ -6,8 +6,7 @@ class Host
   field :user, type: String
   field :port, type: Integer, default: 22
   field :ssh_key, type: String, default: '~/.ssh/id_rsa'
-  field :show_status_command, type: String, default: 'ps au'
-  field :submission_command, type: String, default: 'nohup'
+  field :scheduler_type, type: String, default: "none"
   field :work_base_dir, type: String, default: '~'
   field :max_num_jobs, type: Integer, default: 1
   field :script_header_template, type: String, default: JobScriptUtil::DEFAULT_HEADER
@@ -50,7 +49,8 @@ class Host
   def status
     ret = nil
     start_ssh do |ssh|
-      ret = SSHUtil.execute(ssh, show_status_command).chomp if show_status_command.present?
+      # TODO: implement me
+      # ret = SSHUtil.execute(ssh, self.show_status_command).chomp if self.show_status_command.present?
     end
     return ret
   end
@@ -72,10 +72,11 @@ class Host
       job_script_paths.each do |run_id, path|
         run = Run.find(run_id)
         SSHUtil.execute(ssh, "chmod +x #{path}")
-        submit_command = "#{submission_command} #{path}"
-        SSHUtil.execute_in_background(ssh, submit_command)
+        cmd = SchedulerWrapper.new(self.scheduler_type).submit_command(path)
+        stdout = SSHUtil.execute(ssh, cmd)
         run.status = :submitted
         run.submitted_to = self
+        run.job_id = stdout.chomp
         run.submitted_at = DateTime.now
         run.save!
       end
@@ -88,6 +89,14 @@ class Host
     start_ssh do |ssh|
       # check if job is finished
       submitted_runs.each do |run|
+        if run.status == :cancelled
+          # cancel_job
+          #   remove remote files
+          #   run.submitted_to = nil
+          #   run.destroy
+          # end
+          next
+        end
         case remote_status(run)
         when :submitted
           # DO NOTHING
@@ -96,21 +105,27 @@ class Host
             run.status = :running
             run.save
           end
-        when :includable
-          unless run.status == :cancelled
-            rpath = result_file_path(run)
-            base = File.basename(rpath)
-            SSHUtil.download(ssh, rpath, run.dir.join('..', base))
+        when :includable, :unknown
+          archive = result_file_path(run)
+          archive_exist = SSHUtil.exist?(ssh, archive)
+          work_dir = work_dir_path(run)
+          work_dir_exist = SSHUtil.exist?(ssh, work_dir_path(run))
+          if archive_exist and !work_dir_exist           # normal case
+            base = File.basename(archive)
+            SSHUtil.download(ssh, archive, run.dir.join('..', base)) # TODO: refactoring
             JobScriptUtil.expand_result_file_and_update_run(run)
             run.reload
             run.enqueue_auto_run_analyzers
+            SSHUtil.rm_r(ssh, archive)
+          else                                           # error case
+            if work_dir_exist
+              SSHUtil.download_recursive(ssh, work_dir, run.dir)
+              SSHUtil.rm_r(ssh, work_dir)
+            end
+            run.status = :failed
+            run.save!
           end
-          SSHUtil.rm_r(ssh, result_file_path(run))
-          SSHUtil.rm_r(ssh, job_script_path(run) ) unless run.status == :failed
-          if run.status == :cancelled
-            run.submitted_to = nil
-            run.destroy
-          end
+          SSHUtil.rm_r(ssh, job_script_path(run)) if SSHUtil.exist?(ssh, job_script_path(run))
         end
       end
     end
@@ -166,13 +181,12 @@ class Host
   end
 
   def remote_status(run)
-    status = :submitted
+    status = :unknown
     start_ssh {|ssh|
-      if SSHUtil.exist?(ssh, work_dir_path(run))
-        status = :running
-      elsif SSHUtil.exist?(ssh, result_file_path(run) )
-        status = :includable
-      end
+      scheduler = SchedulerWrapper.new(scheduler_type)
+      cmd = scheduler.status_command(run.job_id)
+      stdout = SSHUtil.execute(ssh, cmd)
+      status = scheduler.parse_remote_status(stdout)
     }
     status
   end
