@@ -118,6 +118,25 @@ describe SSHUtil do
     end
   end
 
+  describe ".execute2" do
+
+    it "execute command and return outputs and exit_codes" do
+      stdout, stderr, rc, sig = SSHUtil.execute2(@ssh, 'pwd')
+      stdout.chomp.should eq ENV['HOME']
+      stderr.should eq ""
+      rc.should eq 0
+      sig.should be_nil
+    end
+
+    it "for error case" do
+      out, err, rc, sig = SSHUtil.execute2(@ssh, 'foobar')
+      out.should eq ""
+      err.should_not be_empty
+      rc.should_not eq 0
+      sig.should be_nil
+    end
+  end
+
   describe ".write_remote_file" do
 
     it "write contents to remote file" do

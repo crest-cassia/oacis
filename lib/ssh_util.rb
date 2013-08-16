@@ -34,6 +34,37 @@ module SSHUtil
     ssh.exec!("{ #{command} } > /dev/null 2>&1 < /dev/null &")
   end
 
+  def self.execute2(ssh, command)
+    stdout_data = ""
+    stderr_data = ""
+    exit_code = nil
+    exit_signal = nil
+    ssh.open_channel do |channel|
+      channel.exec(command) do |ch, success|
+        unless success
+          abort "FAILED: couldn't execute command (ssh.channel.exec)"
+        end
+        channel.on_data do |ch,data|
+          stdout_data+=data
+        end
+
+        channel.on_extended_data do |ch,type,data|
+          stderr_data+=data
+        end
+
+        channel.on_request("exit-status") do |ch,data|
+          exit_code = data.read_long
+        end
+
+        channel.on_request("exit-signal") do |ch, data|
+          exit_signal = data.read_long
+        end
+      end
+    end
+    ssh.loop
+    [stdout_data, stderr_data, exit_code, exit_signal]
+  end
+
   def self.write_remote_file(ssh, remote_path, content)
     rpath = expand_remote_home_path(ssh, remote_path)
     ssh.sftp.file.open(rpath, 'w') { |f|
