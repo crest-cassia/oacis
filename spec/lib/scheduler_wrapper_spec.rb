@@ -55,7 +55,10 @@ EOS
 
     describe "#cancel_command" do
 
-      it "returns command to cancel a job"
+      it "returns command to cancel a job" do
+        cmd = "kill -- -`ps x -o \"pgid pid command\" | grep \"[j]ob_id\" | awk '{print $1}'`"
+        @wrapper.cancel_command("job_id").should eq cmd
+      end
     end
   end
 
@@ -100,7 +103,9 @@ EOS
 
     describe "#cancel_command" do
 
-      it "returns command to cancel a job" #IMPLEMENT ME
+      it "returns command to cancel a job" do
+        @wrapper.cancel_command("job_id").should eq "qdel job_id"
+      end
     end
   end
 end
