@@ -99,14 +99,13 @@ class Host
       # check if job is finished
       submitted_runs.each do |run|
         if run.status == :cancelled
-          # cancel_job
-          #   remove remote files
-          #   run.submitted_to = nil
-          #   run.destroy
-          # end
+          cancel_job(ssh, run)
+          remove_remote_files(ssh, run)
+          run.submitted_to = nil
+          run.destroy
           next
         end
-        case remote_status(run)
+        case remote_status(ssh, run)
         when :submitted
           # DO NOTHING
         when :running
@@ -170,14 +169,22 @@ class Host
     Pathname.new(work_base_dir).join("#{run.id}.tar.bz2")
   end
 
-  def remote_status(run)
-    status = :unknown
-    start_ssh {|ssh|
+  def cancel_job(ssh, run)
+    stat = remote_status(ssh, run)
+    if stat == :submitted or stat == :running
       scheduler = SchedulerWrapper.new(scheduler_type)
-      cmd = scheduler.status_command(run.job_id)
+      cmd = scheduler.cancel_command(run.job_id)
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      status = scheduler.parse_remote_status(out) if rc == 0
-    }
+      $stderr.puts out, err, rc unless rc == 0
+    end
+  end
+
+  def remote_status(ssh, run)
+    status = :unknown
+    scheduler = SchedulerWrapper.new(scheduler_type)
+    cmd = scheduler.status_command(run.job_id)
+    out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+    status = scheduler.parse_remote_status(out) if rc == 0
     status
   end
 
@@ -201,10 +208,16 @@ class Host
   end
 
   def remove_remote_files(ssh, run)
-    paths = [result_file_path(run), work_dir_path(run), job_script_path(run)]
+    paths = [job_script_path(run),
+             input_json_path(run),
+             work_dir_path(run),
+             result_file_path(run),
+             Pathname.new(work_base_dir).join("#{run.id}_status.json"),
+             Pathname.new(work_base_dir).join("#{run.id}_time.txt"),
+             Pathname.new(work_base_dir).join("#{run.id}.tar")
+            ]
     paths.each do |path|
       SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
     end
   end
-
 end

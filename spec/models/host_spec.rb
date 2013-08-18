@@ -299,13 +299,17 @@ describe Host do
 
     it "returns status parsed by SchedulerWrapper#parse_remote_status" do
       SchedulerWrapper.any_instance.should_receive(:parse_remote_status).and_return(:submitted)
-      @host.__send__(:remote_status, @run).should eq :submitted
+      @host.__send__(:start_ssh) {|ssh|
+        @host.__send__(:remote_status, ssh, @run).should eq :submitted
+      }
     end
 
     it "returns :unknown if remote status is not obtained by SchedulerWrapper" do
       SSHUtil.stub(:execute2).and_return([nil, nil, 1, nil])
       SchedulerWrapper.any_instance.should_not_receive(:parse_remote_status)
-      @host.__send__(:remote_status, @run).should eq :unknown
+      @host.__send__(:start_ssh) {|ssh|
+        @host.__send__(:remote_status, ssh, @run).should eq :unknown
+      }
     end
   end
 
