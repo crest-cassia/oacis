@@ -115,26 +115,7 @@ class Host
             run.save
           end
         when :includable, :unknown
-          archive = result_file_path(run)
-          archive_exist = SSHUtil.exist?(ssh, archive)
-          work_dir = work_dir_path(run)
-          work_dir_exist = SSHUtil.exist?(ssh, work_dir_path(run))
-          if archive_exist and !work_dir_exist           # normal case
-            base = File.basename(archive)
-            SSHUtil.download(ssh, archive, run.dir.join('..', base)) # TODO: refactoring
-            JobScriptUtil.expand_result_file_and_update_run(run)
-            run.reload
-            run.enqueue_auto_run_analyzers
-            SSHUtil.rm_r(ssh, archive)
-          else                                           # error case
-            if work_dir_exist
-              SSHUtil.download_recursive(ssh, work_dir, run.dir)
-              SSHUtil.rm_r(ssh, work_dir)
-            end
-            run.status = :failed
-            run.save!
-          end
-          SSHUtil.rm_r(ssh, job_script_path(run)) if SSHUtil.exist?(ssh, job_script_path(run))
+          include_result(ssh, run)
         end
       end
     end
@@ -199,4 +180,31 @@ class Host
     }
     status
   end
+
+  def include_result(ssh, run)
+    archive = result_file_path(run)
+    archive_exist = SSHUtil.exist?(ssh, archive)
+    work_dir = work_dir_path(run)
+    work_dir_exist = SSHUtil.exist?(ssh, work_dir_path(run))
+    if archive_exist and !work_dir_exist           # normal case
+      base = File.basename(archive)
+      SSHUtil.download(ssh, archive, run.dir.join('..', base))
+      JobScriptUtil.expand_result_file_and_update_run(run)
+    else
+      SSHUtil.download_recursive(ssh, work_dir, run.dir) if work_dir_exist
+      run.status = :failed
+      run.save!
+    end
+
+    remove_remote_files(ssh, run)
+    run.enqueue_auto_run_analyzers
+  end
+
+  def remove_remote_files(ssh, run)
+    paths = [result_file_path(run), work_dir_path(run), job_script_path(run)]
+    paths.each do |path|
+      SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
+    end
+  end
+
 end
