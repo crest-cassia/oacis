@@ -21,13 +21,9 @@
     .controls
       = f.text_field(:ssh_key, class: 'text_field')
   .control-group
-    = f.label(:show_status_command, class: 'control-label')
+    = f.label(:scheduler_type, class: 'control-label')
     .controls
-      = f.text_field(:show_status_command, class: 'text_field')
-  .control-group
-    = f.label(:submission_command, class: 'control-label')
-    .controls
-      = f.text_field(:submission_command, class: 'text_field')
+      = f.select(:scheduler_type, SchedulerWrapper::TYPES)
   .control-group
     = f.label(:work_base_dir, class: 'control-label')
     .controls

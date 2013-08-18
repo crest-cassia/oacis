@@ -11,8 +11,7 @@ describe Host do
         user: ENV['USER'],
         port: 22,
         ssh_key: '~/.ssh/id_rsa',
-        show_status_command: 'ps au',
-        submission_command: 'nohup',
+        scheduler_type: 'none',
         work_base_dir: '~/__cm_work__',
       }
     end
@@ -71,16 +70,6 @@ describe Host do
       Host.new(@valid_attr).ssh_key.should eq('~/.ssh/id_rsa')
     end
 
-    it "default of 'show_status_command is 'ps au'" do
-      @valid_attr.delete(:show_status_command)
-      Host.new(@valid_attr).show_status_command.should eq('ps au')
-    end
-
-    it "default of 'submission_command' is 'nohup'" do
-      @valid_attr.delete(:submission_command)
-      Host.new(@valid_attr).submission_command.should eq('nohup')
-    end
-
     it "default of 'work_base_dir' is '~'" do
       @valid_attr.delete(:work_base_dir)
       Host.new(@valid_attr).work_base_dir.should eq('~')
@@ -130,14 +119,10 @@ describe Host do
 
     before(:each) do
       @host = FactoryGirl.create(:localhost)
-      @host.show_status_command = 'ps u'
     end
 
-    it "returns status of hosts using show_status_command" do
-      stat = @host.status
-      stat.should match(/PID/)
-      stat.should match(/COMMAND/)
-      stat.should match(/TIME/)
+    it "returns status of hosts" do
+      pending "not yet implemented"
     end
   end
 
@@ -226,23 +211,24 @@ describe Host do
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count: 1, runs_count: 2)
+                                command: "ls",
+                                parameter_sets_count: 1, runs_count: 1)
       @runs = @sim.parameter_sets.first.runs
-      @host = FactoryGirl.create(:localhost)
+      @host = @sim.executable_on.where(name: "localhost").first
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
       @host.work_base_dir = @temp_dir.expand_path
-      @host.submission_command = 'ls'
       @host.save!
+      SSHUtil.stub(:execute2).and_return( ["12345", "", 0, nil] )
     end
 
     after(:each) do
-      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+      FileUtils.rm_rf(@temp_dir) if File.directory?(@temp_dir)
     end
 
     it "creates a job script on the remote host" do
       @host.submit(@runs)
-      Dir.glob( @temp_dir.join('*.sh') ).should have(2).items
+      Dir.glob( @temp_dir.join('*.sh') ).should have(1).items
     end
 
     it "returns hash of run_id and path to job script" do
@@ -257,7 +243,7 @@ describe Host do
       @sim.support_input_json = true
       @sim.save!
       @host.submit(@runs)
-      Dir.glob( @temp_dir.join('*_input.json') ).should have(2).items
+      Dir.glob( @temp_dir.join('*_input.json') ).should have(1).items
     end
 
     it "updates status and submitted_to fileds of Run" do
@@ -275,6 +261,17 @@ describe Host do
       }.to change { @runs.first.reload.submitted_at }
     end
 
+    it "updates job_id of Run" do
+      expect {
+        @host.submit(@runs)
+      }.to change { @runs.first.reload.job_id }
+    end
+
+    it "calls SchedulerWrapper#submit_command" do
+      SchedulerWrapper.any_instance.should_receive(:submit_command)
+      @host.submit(@runs)
+    end
+
     it "creates ssh session only once" do
       Net::SSH.should_receive(:start).once.and_call_original
       @host.submit(@runs)
@@ -287,35 +284,32 @@ describe Host do
       @sim = FactoryGirl.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 1)
       @run = @sim.parameter_sets.first.runs.first
-      @host = FactoryGirl.create(:localhost)
+      @run.job_id = "12345"
+      @host = @sim.executable_on.where(name: "localhost").first
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
+      SSHUtil.stub(:execute2).and_return(["out", "err", 0, nil])
     end
 
     after(:each) do
       FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
     end
 
-    it "returns :submitted when neither work_dir nor compressed_result_file is not found" do
-      @host.__send__(:remote_status, @run).should eq :submitted
+    it "returns status parsed by SchedulerWrapper#parse_remote_status" do
+      SchedulerWrapper.any_instance.should_receive(:parse_remote_status).and_return(:submitted)
+      @host.__send__(:start_ssh) {|ssh|
+        @host.__send__(:remote_status, ssh, @run).should eq :submitted
+      }
     end
 
-    it "returns :running when work_dir is found" do
-      FileUtils.mkdir( @temp_dir.join(@run.id.to_s) )
-      @host.__send__(:remote_status, @run).should eq :running
-    end
-
-    it "returns :running when both compressed result file and work_dir are found" do
-      FileUtils.mkdir( @temp_dir.join(@run.id.to_s) )
-      FileUtils.touch( @temp_dir.join("#{@run.id.to_s}.tar.bz2") )
-      @host.__send__(:remote_status, @run).should eq :running
-    end
-
-    it "returns :includable when compressed result file is found but work_dir is not" do
-      FileUtils.touch( @temp_dir.join("#{@run.id.to_s}.tar.bz2") )
-      @host.__send__(:remote_status, @run).should eq :includable
+    it "returns :unknown if remote status is not obtained by SchedulerWrapper" do
+      SSHUtil.stub(:execute2).and_return([nil, nil, 1, nil])
+      SchedulerWrapper.any_instance.should_not_receive(:parse_remote_status)
+      @host.__send__(:start_ssh) {|ssh|
+        @host.__send__(:remote_status, ssh, @run).should eq :unknown
+      }
     end
   end
 
@@ -326,7 +320,9 @@ describe Host do
                                 parameter_sets_count: 1, runs_count: 1)
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
-      @host = FactoryGirl.create(:localhost, work_base_dir: @temp_dir.expand_path)
+      @host = @sim.executable_on.where(name: "localhost").first
+      @host.work_base_dir = @temp_dir.expand_path
+      @host.save!
 
       @run = @sim.parameter_sets.first.runs.first
       @run.status = :submitted
@@ -353,6 +349,7 @@ describe Host do
     it "include remote data and update status to 'finished' or 'failed'" do
       @host.should_receive(:remote_status).and_return(:includable)
       SSHUtil.stub(:download)
+      SSHUtil.stub(:exist?).and_return(true, false)
       JobScriptUtil.should_receive(:expand_result_file_and_update_run) do |run|
         run.id.should eq @run.id
       end
@@ -367,24 +364,28 @@ describe Host do
       end
 
       it "does not update status to 'running' even if remote status is 'running'" do
+        pending "NEED TO UPDATE"
         @host.should_receive(:remote_status).and_return(:running)
         @host.check_submitted_job_status
         @run.reload.status.should eq :cancelled
       end
 
       it "does not include remote data even if remote status is 'includable'" do
+        pending "NEED TO UPDATE"
         @host.stub(:remote_status).and_return(:includable)
         SSHUtil.should_not_receive(:download)
         @host.check_submitted_job_status
       end
 
       it "deletes archived reuslt file on the remote host" do
+        pending "NEED TO UPDATE"
         @host.stub(:remote_status).and_return(:includable)
         SSHUtil.should_receive(:rm_r).exactly(2).times
         @host.check_submitted_job_status
       end
 
       it "destroys run" do
+        pending "NEED TO UPDATE"
         @host.stub(:remote_status).and_return(:includable)
         expect {
           @host.check_submitted_job_status

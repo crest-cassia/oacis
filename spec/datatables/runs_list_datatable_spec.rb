@@ -17,6 +17,8 @@ describe "RunsListDatatable" do
       @context.stub(:raw).and_return("label")
       @context.stub(:status_label).and_return("status_label")
       @context.stub(:shortened_id).and_return("xxxx..yy")
+      @context.stub(:host_path).and_return("/host/xxx")
+      @context.stub(:shortened_job_id).and_return("123456..")
       @rld = RunsListDatatable.new(@runs, @context)
       @rld_json = JSON.parse(@rld.to_json)
     end

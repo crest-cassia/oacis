@@ -60,6 +60,12 @@ module ApplicationHelper
     str[3..6] + ".." + str[-3..-1]
   end
 
+  def shortened_job_id(job_id)
+    short = job_id.to_s
+    short = short[0..5] + ".." if short.length > 6
+    short
+  end
+
   private
   MIN_PERCENT_TO_PRINT = 5
   def progress_bar_tag_for(status, percent)

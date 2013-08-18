@@ -118,10 +118,44 @@ describe SSHUtil do
     end
   end
 
+  describe ".execute2" do
+
+    it "execute command and return outputs and exit_codes" do
+      stdout, stderr, rc, sig = SSHUtil.execute2(@ssh, 'pwd')
+      stdout.chomp.should eq ENV['HOME']
+      stderr.should eq ""
+      rc.should eq 0
+      sig.should be_nil
+    end
+
+    it "for error case" do
+      out, err, rc, sig = SSHUtil.execute2(@ssh, 'foobar')
+      out.should eq ""
+      err.should_not be_empty
+      rc.should_not eq 0
+      sig.should be_nil
+    end
+
+    it "does not freeze if execute2 is called after write_remote_file" do
+      output_file = @temp_dir.join('abc').expand_path
+      SSHUtil.write_remote_file(@ssh, output_file, "foobar")
+      expect {
+        stdout, stderr, rc, sig = SSHUtil.execute2(@ssh, 'pwd')
+      }.to change { Time.now }.by_at_most(1)
+    end
+  end
+
   describe ".write_remote_file" do
 
     it "write contents to remote file" do
       output_file = @temp_dir.join('abc').expand_path
+      SSHUtil.write_remote_file(@ssh, output_file, "foobar")
+      File.open(output_file, 'r').read.should eq "foobar"
+    end
+
+    it "succeeds even when called twice" do
+      output_file = @temp_dir.join('abc').expand_path
+      SSHUtil.write_remote_file(@ssh, output_file, "foobar")
       SSHUtil.write_remote_file(@ssh, output_file, "foobar")
       File.open(output_file, 'r').read.should eq "foobar"
     end

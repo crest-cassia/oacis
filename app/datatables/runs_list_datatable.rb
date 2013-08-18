@@ -1,10 +1,11 @@
 class RunsListDatatable
 
-  HEADER  = ['<th>ID</th>', '<th>status</th>', '<th>submitted_to</th>', '<th>cpu_time</th>',
-             '<th>real_time</th>', '<th>MPI</th>', '<th>OMP</th>',
+  HEADER  = ['<th>ID</th>', '<th>status</th>', '<th>submitted_to</th>', '<th>job_id</th>',
+             '<th>cpu_time</th>', '<th>real_time</th>',
+             '<th>MPI</th>', '<th>OMP</th>',
              '<th>created_at</th>', '<th>submitted_at</th>',
              '<th>started_at</th>', '<th>finished_at</th>', '<th style="min-width: 18px; width: 1%;"></th>']
-  SORT_BY = ["id", "status", "submitted_to", "cpu_time",
+  SORT_BY = ["id", "status", "submitted_to", "job_id", "cpu_time",
              "real_time", "created_at", "submitted_at",
              "started_at", "finished_at", "id"]
 
@@ -32,6 +33,7 @@ private
       tmp << @view.raw( @view.status_label(run.status) )
       host = run.submitted_to
       tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "")
+      tmp << @view.shortened_job_id(run.job_id)
       tmp << @view.formatted_elapsed_time(run.cpu_time)
       tmp << @view.formatted_elapsed_time(run.real_time)
       tmp << run.mpi_procs
