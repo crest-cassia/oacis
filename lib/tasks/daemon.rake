@@ -1,77 +1,67 @@
 namespace :daemon do
-  desc "[:start,:stop,:restart] deaemons"
 
+  SERVER_PID = "tmp/pids/server.pid"
+  RESQUE_PID = "tmp/pids/resque.pid"
+  RESQUE_SCHEDULER_PID = "tmp/pids/resque_scheduler.pid"
+
+  desc "start daemons"
   task :start do
-    CMD="bundle exec rails s -d"
-    puts CMD
-    system(CMD)
+    if File.exist?(SERVER_PID) and File.open(SERVER_PID).gets.present?
+      $stderr.puts "server is already running: #{SERVER_PID}"
+    else
+      cmd = "bundle exec rails s -d"
+      puts cmd
+      system(cmd)
+    end
 
-    CMD="bundle exec rake resque:scheduler PIDFILE=./tmp/pids/resque_scheduler.pid BACKGROUND=yes"
-    puts CMD
-    system(CMD)
+    if File.exist?(RESQUE_SCHEDULER_PID) and File.open(RESQUE_SCHEDULER_PID).gets.present?
+      $stderr.puts "scheduler is already running: #{RESQUE_SCHEDULER_PID}"
+    else
+      cmd = "bundle exec rake resque:scheduler PIDFILE=./tmp/pids/resque_scheduler.pid BACKGROUND=yes"
+      puts cmd
+      system(cmd)
+    end
 
-    CMD="bundle exec rake resque:work QUEUE='*' VERBOSE=1 PIDFILE=./tmp/pids/resque.pid BACKGROUND=yes"
-    puts CMD
-    system(CMD)
+    if File.exist?(RESQUE_PID) and File.open(RESQUE_PID).gets.present?
+      $stderr.puts "resque is already running: #{RESQUE_PID}"
+    else
+      cmd = "bundle exec rake resque:work QUEUE='*' VERBOSE=1 PIDFILE=./tmp/pids/resque.pid BACKGROUND=yes"
+      puts cmd
+      system(cmd)
+    end
   end
 
+  desc "stop daemons"
   task :stop do
-    PID_server=File.open("tmp/pids/server.pid","r").gets
-    PID_resque=File.open("tmp/pids/resque.pid","r").gets
-    PID_resque_scheduler=File.open("tmp/pids/resque_scheduler.pid","r").gets
-
-    if PID_server.present?
-      CMD="kill -INT "+PID_server
-      puts CMD
-      system(CMD)
+    if File.exist?(SERVER_PID)
+      pid = File.open(SERVER_PID, "r").gets
+      if pid.present?
+        cmd = "kill -INT #{pid.chomp}"
+        puts cmd
+        system(cmd)
+      end
+    else
+      $stderr.puts "#{SERVER_PID} is not found"
     end
 
-    if PID_resque.present?
-      CMD="kill -QUIT "+PID_resque
-      puts CMD
-      system(CMD)
-    end
-
-    if PID_resque_scheduler.present?
-      CMD="kill -QUIT "+PID_resque_scheduler
-      puts CMD
-      system(CMD)
+    [RESQUE_PID, RESQUE_SCHEDULER_PID].each do |pidfile|
+      if File.exist?(pidfile)
+        pid = File.open(pidfile, "r").gets
+        if pid.present?
+          cmd = "kill -QUIT #{pid.chomp}"
+          puts cmd
+          system(cmd)
+          FileUtils.rm(pidfile) if $?.to_i == 0
+        end
+      else
+        $stderr.puts "#{pidfile} is not found"
+      end
     end
   end
 
+  desc "restart daemons"
   task :restart do
-    PID_server=File.open("tmp/pids/server.pid","r").gets
-    PID_resque=File.open("tmp/pids/resque.pid","r").gets
-    PID_resque_scheduler=File.open("tmp/pids/resque_scheduler.pid","r").gets
-
-    if PID_server.present?
-      CMD="kill -INT "+PID_server
-      puts CMD
-      system(CMD)
-    end
-
-    if PID_resque.present?
-      CMD="kill -QUIT "+PID_resque
-      puts CMD
-      system(CMD)
-    end
-
-    if PID_resque_scheduler.present?
-      CMD="kill -QUIT "+PID_resque_scheduler
-      puts CMD
-      system(CMD)
-    end
-
-    CMD="bundle exec rails s -d"
-    puts CMD
-    system(CMD)
-
-    CMD="bundle exec rake resque:scheduler PIDFILE=./tmp/pids/resque_scheduler.pid BACKGROUND=yes"
-    puts CMD
-    system(CMD)
-
-    CMD="bundle exec rake resque:work QUEUE='*' VERBOSE=1 PIDFILE=./tmp/pids/resque.pid BACKGROUND=yes"
-    puts CMD
-    system(CMD)
+    Rake::Task['daemon:stop'].invoke
+    Rake::Task['daemon:start'].invoke
   end
 end
