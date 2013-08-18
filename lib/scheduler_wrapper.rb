@@ -71,7 +71,7 @@ class SchedulerWrapper
   def cancel_command(job_id)
     case @type
     when "none"
-      "kill -- -`ps ux | grep \"[#{job_id[0]}]#{job_id[1..-1]}\" | awk '{print $2}'`"
+      "kill -- -`ps x -o \"pgid pid command\" | grep \"[#{job_id[0]}]#{job_id[1..-1]}\" | awk '{print $1}'`"
     when "torque"
       "qdel #{job_id}"
     else
