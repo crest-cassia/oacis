@@ -10,13 +10,15 @@ describe Run do
                                     run_analysis: true
                                     )
     @param_set = @simulator.parameter_sets.first
-    @valid_attribute = {}
+    @valid_attribute = {
+      submitted_to: Host.first
+    }
   end
 
   describe "validations" do
 
     it "creates a Run with a valid attribute" do
-      @param_set.runs.build.should be_valid
+      @param_set.runs.build(@valid_attribute).should be_valid
     end
 
     it "assigns 'created' stauts by default" do

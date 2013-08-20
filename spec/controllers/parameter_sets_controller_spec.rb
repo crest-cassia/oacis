@@ -89,14 +89,14 @@ describe ParameterSetsController do
 
       it "creates runs if num_runs are given" do
         expect {
-          post :create, @valid_param.update(num_runs: 3), valid_session
+          post :create, @valid_param.update(num_runs: 3, run: {submitted_to: Host.first}), valid_session
         }.to change { Run.count }.by(3)
       end
 
       it "creates runs with runtime_parameters" do
         @sim.support_mpi = true
         @sim.save!
-        post :create, @valid_param.update(num_runs: 3, run: {mpi_procs: 8}), valid_session
+        post :create, @valid_param.update(num_runs: 3, run: {submitted_to: Host.first, mpi_procs: 8}), valid_session
         Run.last.mpi_procs.should eq 8
       end
 
@@ -136,7 +136,7 @@ describe ParameterSetsController do
         end
 
         it "creates runs for each created parameter set" do
-          @valid_param.update(v: {"L" => "1", "T" => "1.0, 2.0"}, num_runs: 3)
+          @valid_param.update(v: {"L" => "1", "T" => "1.0, 2.0"}, num_runs: 3, run: {submitted_to: Host.first})
           expect {
             post :create, @valid_param, valid_session
           }.to change { Run.count }.by(6)

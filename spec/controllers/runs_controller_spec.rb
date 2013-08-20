@@ -51,7 +51,7 @@ describe RunsController do
   describe "POST 'create'" do
 
     before(:each) do
-      @req_param = {parameter_set_id: @par}
+      @req_param = { parameter_set_id: @par, run: {submitted_to: Host.first} }
     end
 
     describe "with valid parameters" do
@@ -64,7 +64,7 @@ describe RunsController do
 
       it "assigns seed specified by request parameter" do
         seed_val = 12345
-        @req_param.update(run: {seed: seed_val})
+        @req_param[:run].update({seed: seed_val})
         post 'create', @req_param, valid_session
         Run.where(parameter_set_id: @par).last.seed.should == seed_val
       end
