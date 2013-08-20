@@ -293,13 +293,6 @@ describe Analysis do
         @arn.input[:result][run2.to_param].should eq(run2.result)
       end
     end
-
-    describe "for :on_parameter_set_group type" do
-
-      it "returns an appropriate hash" do
-        pending "not yet implemented"
-      end
-    end
   end
 
   describe "#input_files" do
@@ -366,13 +359,6 @@ describe Analysis do
       it "returns a hash whose values are output paths of runs" do
         paths = @arn2.input_files[@run2.to_param]
         paths.should eq(@run2.result_paths)
-      end
-    end
-
-    describe "for :on_parameter_set_group type" do
-
-      it "returns an appropriate entries" do
-        pending "not yet implemented"
       end
     end
   end

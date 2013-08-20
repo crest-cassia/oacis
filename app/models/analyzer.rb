@@ -14,7 +14,7 @@ class Analyzer
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
   validates :type, presence: true, 
-                   inclusion: {in: [:on_run, :on_parameter_set, :on_parameter_set_group]}
+                   inclusion: {in: [:on_run, :on_parameter_set]}
   validates :command, presence: true
   validates :auto_run, inclusion: {in: [:yes, :no, :first_run_only]}
 

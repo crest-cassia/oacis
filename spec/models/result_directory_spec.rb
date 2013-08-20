@@ -74,11 +74,6 @@ describe ResultDirectory do
     ResultDirectory.analyzable_path(ps).should == ResultDirectory.parameter_set_path(ps)
   end
 
-  it ".analyzable_path returns the path to run for ParameterSetGroup instance" do
-    psg = @simulator.parameter_set_groups.create!( parameter_sets: [@ps] )
-    ResultDirectory.parameter_set_group_path(psg).should == @default_root.join( @simulator.to_param, psg.to_param)
-  end
-
   it ".analysis_path returns the output directory of an Analysis for :on_run type" do
     run = @simulator.parameter_sets.first.runs.first
     arn = run.analyses.first

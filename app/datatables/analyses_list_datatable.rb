@@ -1,10 +1,8 @@
 class AnalysesListDatatable
 
-  def initialize(view_context)
+  def initialize(view_context, analyses)
     @view = view_context
-    @simulator = Simulator.find(@view.params[:id])
-    analyzer_ids = @simulator.analyzers_on_parameter_set_group.only(:id).map {|x| x.id}
-    @analyses = Analysis.in(analyzer: analyzer_ids)
+    @analyses = analyses
   end
 
   def as_json(options = {})

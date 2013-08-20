@@ -11,7 +11,6 @@ class Simulator
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :parameter_set_queries, dependent: :destroy
-  has_many :parameter_set_groups
   has_many :analyzers
   has_and_belongs_to_many :executable_on, class_name: "Host", inverse_of: :executable_simulators
 
@@ -35,19 +34,6 @@ class Simulator
 
   def analyzers_on_parameter_set
     self.analyzers.where(type: :on_parameter_set)
-  end
-
-  def analyzers_on_parameter_set_group
-    self.analyzers.where(type: :on_parameter_set_group)
-  end
-
-  def analyses(analyzer)
-    raise "not supported type" unless analyzer.type == :on_parameter_set_group
-    matched = []
-    parameter_set_groups.each do |psg|
-      matched += psg.analyses.where(analyzer: analyzer).all
-    end
-    matched
   end
 
   def params_key_count

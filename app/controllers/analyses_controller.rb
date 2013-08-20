@@ -50,8 +50,6 @@ class AnalysesController < ApplicationController
       analyzable = Run.find(params[:run_id])
     elsif params[:parameter_set_id]
       analyzable = ParameterSet.find(params[:parameter_set_id])
-    elsif params[:parameter_set_group_id]
-      analyzable = ParameterSetGroup.find(params[:parameter_set_group_id])
     else
       raise "not supported type"
     end
@@ -60,8 +58,6 @@ class AnalysesController < ApplicationController
 
   def after_create_redirect_path(arn)
     case arn.analyzer.type
-    when :on_parameter_set_group
-      analysis_path(arn)
     when :on_parameter_set
       ps = arn.analyzable
       parameter_set_path(ps, anchor: '!tab-analysis')

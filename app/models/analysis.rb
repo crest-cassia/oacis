@@ -99,19 +99,6 @@ class Analysis
       ps.runs.each do |run|
         obj[:result][run.to_param] = run.result
       end
-    when :on_parameter_set_group
-      psg = self.analyzable
-      obj[:simulation_parameters] = {}
-      psg.parameter_sets.each do |ps|
-        obj[:simulation_parameters][ps.id] = ps.v
-      end
-      obj[:result] = {}
-      psg.parameter_sets.each do |ps|
-        obj[:result][ps.id] = {}
-        ps.analyses.each do |arn|
-          obj[:result][ps.id][arn.id] = arn.result
-        end
-      end
     else
       raise "not supported type"
     end
@@ -132,12 +119,6 @@ class Analysis
       ps = self.analyzable
       ps.runs.where(status: :finished).each do |finished_run|
         files[finished_run.to_param] = finished_run.result_paths
-      end
-    when :on_parameter_set_group
-      self.analyzable.parameter_sets.each do |ps|
-        ps.analyses.each do |arn|
-          files[ File.join(ps.to_param, arn.to_param) ] = Dir.glob( arn.dir.join('*') )
-        end
       end
     else
       raise "not supported type"
