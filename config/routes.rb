@@ -16,13 +16,6 @@ AcmProto::Application.routes.draw do
       get "_analyses_list" # for ajax, datatables
       get "_analyzer_list" # for ajax, datatables
     end
-    resources :parameter_set_groups, only: [] do
-      resources :analyses, :only => ["show"] do
-        member do
-          get "_result" # for ajax
-        end
-      end
-    end
     resources :parameter_sets, only: ["show","new","create","destroy"] do
       member do
         get 'duplicate'
@@ -31,7 +24,11 @@ AcmProto::Application.routes.draw do
         get "_runs_list" # for ajax, datatables
       end
       resources :runs, only: ["show","create", "destroy"] do
-        resources :analyses, :only => ["show", "create", "destroy"]
+        resources :analyses, :only => ["show", "create", "destroy"] do
+          member do
+            get "_result" # for ajax
+          end
+        end
       end
       resources :analyses, :only => ["show", "create", "destroy"]
     end
