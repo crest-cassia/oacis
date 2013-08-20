@@ -7,6 +7,8 @@ namespace :db do
     Rake::Task['result_dir:drop'].invoke
     Rake::Task['resque:drop'].invoke
 
+    FactoryGirl.create(:localhost, work_base_dir: "~/__work__")
+
     # create simulators
     sim = FactoryGirl.create(:simulator,
                              parameter_sets_count: 5,
@@ -28,7 +30,7 @@ namespace :db do
     # FactoryGirl.create(:simulator, parameter_sets_count: 30)
     # FactoryGirl.create(:simulator, runs_count: 30)
 
-    FactoryGirl.create(:localhost, work_base_dir: "~/__work__")
+
   end
 end
 
