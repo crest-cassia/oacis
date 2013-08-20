@@ -27,6 +27,7 @@ class Run
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
+  validates :submitted_to, presence: true
   validate :runtime_parameters_given
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html

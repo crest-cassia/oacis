@@ -135,10 +135,10 @@ describe Host do
       @sim.executable_on.push @host
       @sim.parameter_sets.each do |ps|
         3.times do |i|
-          ps.runs.create!
+          ps.runs.create!(submitted_to: @host)
         end
         2.times do |i|
-          run = ps.runs.create!
+          run = ps.runs.create!(submitted_to: @host)
           run.update_attribute(:status, :finished)
         end
       end
@@ -161,12 +161,12 @@ describe Host do
       another_host = FactoryGirl.create(:host)
       @sim.parameter_sets.each do |ps|
         1.times do |i|
-          run = ps.runs.create!
+          run = ps.runs.create!(submitted_to: @host)
           run.submitted_to = @host
           run.save!
         end
         2.times do |i|
-          run = ps.runs.create!
+          run = ps.runs.create!(submitted_to: @host)
           run.submitted_to = another_host
           run.save!
         end
