@@ -86,6 +86,16 @@ describe Host do
       host = Host.new(@valid_attr)
       host.should_not be_valid
     end
+
+    it "cannot change when submitted runs exist" do
+      host = FactoryGirl.create(:host)
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      ps = sim.parameter_sets.first
+      run = ps.runs.create!(submitted_to: host)
+      run.update_attribute(:status, :submitted)
+      host.work_base_dir = "/path/to/another_dir"
+      host.should_not be_valid
+    end
   end
 
   describe "#connected?" do

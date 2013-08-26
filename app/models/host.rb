@@ -22,6 +22,7 @@ class Host
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
+  validate :work_base_dir_is_not_editable_when_submitted_runs_exist
 
   CONNECTION_EXCEPTIONS = [
     Errno::ECONNREFUSED,
@@ -218,6 +219,14 @@ class Host
             ]
     paths.each do |path|
       SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
+    end
+  end
+
+  def work_base_dir_is_not_editable_when_submitted_runs_exist
+    if self.persisted? and self.work_base_dir_changed?
+      if submitted_runs.count > 0
+        errors.add(:work_base_dir, "is not editable when submitted runs exist")
+      end
     end
   end
 end
