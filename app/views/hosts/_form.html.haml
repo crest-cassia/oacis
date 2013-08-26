@@ -27,7 +27,11 @@
   .control-group
     = f.label(:work_base_dir, class: 'control-label')
     .controls
-      = f.text_field(:work_base_dir, class: 'text_field')
+      - if @host.work_base_dir_is_not_editable?
+        = f.text_field(:work_base_dir, class: 'text_field', disabled: true);
+        not editable when a submitted run exists
+      - else
+        = f.text_field(:work_base_dir, class: 'text_field')
   .control-group
     = f.label(:max_num_jobs, class: 'control-label')
     .controls
