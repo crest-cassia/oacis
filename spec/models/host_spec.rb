@@ -166,13 +166,8 @@ describe Host do
       @host.submittable_runs.should be_a(Mongoid::Criteria)
     end
 
-    it "returns runs whose status is created" do
+    it "returns runs whose status is created and submitted_to is self" do
       @host.submittable_runs.should have(6).items
-    end
-
-    it "returns runs of the executable_simultors" do
-      host2 = FactoryGirl.create(:host)
-      host2.submittable_runs.should have(0).items
     end
 
     it "does not return runs whose submitted_to is not self" do
