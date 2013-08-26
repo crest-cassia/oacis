@@ -121,6 +121,10 @@ class Host
     end
   end
 
+  def work_base_dir_is_not_editable?
+    self.persisted? and submitted_runs.any?
+  end
+
   private
   def start_ssh
     if @ssh
@@ -223,10 +227,8 @@ class Host
   end
 
   def work_base_dir_is_not_editable_when_submitted_runs_exist
-    if self.persisted? and self.work_base_dir_changed?
-      if submitted_runs.count > 0
-        errors.add(:work_base_dir, "is not editable when submitted runs exist")
-      end
+    if work_base_dir_is_not_editable? and self.work_base_dir_changed?
+      errors.add(:work_base_dir, "is not editable when submitted runs exist")
     end
   end
 end
