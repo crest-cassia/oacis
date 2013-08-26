@@ -23,7 +23,9 @@
           "Value"
       %tr#queries_form_original
         %td#select_param_form
-          = select_tag "query[][param]", options_for_select(@simulator.parameter_definitions)
+          - prm_def = @simulator.parameter_definitions.map {|x| [x.key, {"type" => x.type, "default" => x.default}] }
+          - prm_def = Hash[*prm_def.flatten]
+          = select_tag "query[][param]", options_for_select(prm_def)
         %td#select_matcher_form
           = select_tag "query[][matcher]", options_for_select({""=>""})
         %td#select_value_form
