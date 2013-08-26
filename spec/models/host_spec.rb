@@ -96,6 +96,14 @@ describe Host do
       host.work_base_dir = "/path/to/another_dir"
       host.should_not be_valid
     end
+
+    it "cannot change when created or submitted runs exist" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      run = sim.parameter_sets.first.runs.first
+      host = run.submitted_to
+      host.script_header_template = "#!/bin/another/bash"
+      host.should_not be_valid
+    end
   end
 
   describe "#connected?" do
@@ -158,13 +166,8 @@ describe Host do
       @host.submittable_runs.should be_a(Mongoid::Criteria)
     end
 
-    it "returns runs whose status is created" do
+    it "returns runs whose status is created and submitted_to is self" do
       @host.submittable_runs.should have(6).items
-    end
-
-    it "returns runs of the executable_simultors" do
-      host2 = FactoryGirl.create(:host)
-      host2.submittable_runs.should have(0).items
     end
 
     it "does not return runs whose submitted_to is not self" do

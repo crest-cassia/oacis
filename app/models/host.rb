@@ -23,6 +23,7 @@ class Host
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
+  validate :template_is_not_editable_when_submittable_runs_exist
 
   CONNECTION_EXCEPTIONS = [
     Errno::ECONNREFUSED,
@@ -58,7 +59,7 @@ class Host
   end
 
   def submittable_runs
-    Run.where(status: :created).in(simulator: executable_simulator_ids).in(submitted_to: [self, nil])
+    Run.where(status: :created, submitted_to: self)
   end
 
   def submitted_runs
@@ -123,6 +124,10 @@ class Host
 
   def work_base_dir_is_not_editable?
     self.persisted? and submitted_runs.any?
+  end
+
+  def template_is_not_editable?
+    self.persisted? and submittable_runs.any?
   end
 
   private
@@ -229,6 +234,12 @@ class Host
   def work_base_dir_is_not_editable_when_submitted_runs_exist
     if work_base_dir_is_not_editable? and self.work_base_dir_changed?
       errors.add(:work_base_dir, "is not editable when submitted runs exist")
+    end
+  end
+
+  def template_is_not_editable_when_submittable_runs_exist
+    if template_is_not_editable? and self.script_header_template_changed?
+      errors.add(:script_header_template, "is not editable when submittable runs exist")
     end
   end
 end

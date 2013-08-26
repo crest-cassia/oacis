@@ -39,7 +39,11 @@
   .control-group
     = f.label(:script_header_template, class: 'control-label')
     .controls
-      = f.text_area(:script_header_template, style: "width: auto", rows: 8)
+      - if @host.template_is_not_editable?
+        = f.text_area(:script_header_template, style: "width: auto", rows: 8, disabled: true)
+        not editable when a created run exists
+      - else
+        = f.text_area(:script_header_template, style: "width: auto", rows: 8)
   .control-group
     .control-label
       Executable_simulators
