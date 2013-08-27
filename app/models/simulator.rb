@@ -15,6 +15,7 @@ class Simulator
   has_and_belongs_to_many :executable_on, class_name: "Host", inverse_of: :executable_simulators
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
+  validate :name_not_changed_after_ps_created
   validates :command, presence: true
   validates :parameter_definitions, presence: true
 
@@ -68,5 +69,11 @@ class Simulator
   private
   def create_simulator_dir
     FileUtils.mkdir_p(ResultDirectory.simulator_path(self))
+  end
+
+  def name_not_changed_after_ps_created
+    if self.persisted? and self.parameter_sets.any? and self.name_changed?
+      errors.add(:name, "is not editable when a parameter set exists")
+    end
   end
 end
