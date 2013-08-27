@@ -28,9 +28,12 @@ class Run
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :submitted_to, presence: true
-  validate :runtime_parameters_given
-  validate :mpi_procs_is_in_range
-  validate :omp_threads_is_in_range
+  validate :runtime_parameters_given, on: :create
+  validate :mpi_procs_is_in_range, on: :create
+  validate :omp_threads_is_in_range, on: :create
+  # validates only for a new_record
+  # because Host#max_mpi_procs, max_omp_threads can change during a job is running
+
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 

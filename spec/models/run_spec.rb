@@ -95,25 +95,41 @@ describe Run do
     it "mpi_procs must between Host#min_mpi_procs and Host#max_mpi_procs" do
       run = @param_set.runs.build(@valid_attribute)
       host = run.submitted_to
-      host.min_mpi_procs = 1
-      host.max_mpi_procs = 256
-      host.save!
+      host.update_attributes(min_mpi_procs: 1, max_mpi_procs: 256)
       run.mpi_procs = 256
       run.should be_valid
       run.mpi_procs = 512
       run.should_not be_valid
     end
 
+    it "skips validation of mpi_procs for a persisted document" do
+      run = @param_set.runs.build(@valid_attribute)
+      host = run.submitted_to
+      host.update_attributes(min_mpi_procs: 1, max_mpi_procs: 256)
+      run.mpi_procs = 256
+      run.save!
+      host.update_attribute(:max_mpi_procs, 128)
+      run.should be_valid
+    end
+
     it "omp_threads must between Host#min_omp_threads and Host#max_omp_threads" do
       run = @param_set.runs.build(@valid_attribute)
       host = run.submitted_to
-      host.min_omp_threads = 1
-      host.max_omp_threads = 256
-      host.save!
+      host.update_attributes(min_omp_threads: 1, max_omp_threads: 256)
       run.omp_threads = 256
       run.should be_valid
       run.omp_threads = 512
       run.should_not be_valid
+    end
+
+    it "skips validation of omp_threads for a persisted document" do
+      run = @param_set.runs.build(@valid_attribute)
+      host = run.submitted_to
+      host.update_attributes(min_omp_threads: 1, max_omp_threads: 256)
+      run.omp_threads = 256
+      run.save!
+      host.update_attribute(:max_omp_threads, 128)
+      run.should be_valid
     end
 
     describe "'runtime_parameters' field" do
@@ -150,6 +166,20 @@ EOS
         run.mpi_procs = 8
         run.omp_threads = 8
         run.runtime_parameters = {"node" => "abd", "shape" => "xyz"}
+        run.should be_valid
+      end
+
+      it "skips validation for a persisted run" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.runtime_parameters = {"node" => "abc"}
+        run.save!
+        new_template = <<-EOS
+#!/bin/bash
+# new_var: <%= new_var %>
+EOS
+        @host.update_attribute(:template, new_template)
         run.should be_valid
       end
     end
