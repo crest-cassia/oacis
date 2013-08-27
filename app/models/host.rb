@@ -9,7 +9,7 @@ class Host
   field :scheduler_type, type: String, default: "none"
   field :work_base_dir, type: String, default: '~'
   field :max_num_jobs, type: Integer, default: 1
-  field :script_header_template, type: String, default: JobScriptUtil::DEFAULT_HEADER
+  field :template, type: String, default: JobScriptUtil::DEFAULT_TEMPLATE
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
 
@@ -238,7 +238,7 @@ class Host
   end
 
   def template_is_not_editable_when_submittable_runs_exist
-    if template_is_not_editable? and self.script_header_template_changed?
+    if template_is_not_editable? and self.template_changed?
       errors.add(:script_header_template, "is not editable when submittable runs exist")
     end
   end

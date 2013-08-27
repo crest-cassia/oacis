@@ -59,6 +59,7 @@ describe JobScriptUtil do
     end
 
     it "inserts expanded header" do
+      pending "not yet implemented"
       @host.script_header_template = <<EOS
 #!/bin/sh
 # foobar: <%= foobar %>
@@ -72,36 +73,29 @@ EOS
       script.should match(/mpi_procs: 8/)
     end
 
-    it "inserts mpiexec when Simulator#support_mpi is true" do
+    it "calls mpiexec when Simulator#support_mpi is true" do
       @sim.support_mpi = true
       @sim.save!
       @run.mpi_procs = 8
       script = JobScriptUtil.script_for(@run, @host)
       script.should match(/mpiexec -n 8/)
+      script.should match(/CM_IS_MPI_JOB=true/)
     end
 
-    it "does not insert mpiexec when Simulator#support_mpi is false" do
+    it "does not call insert mpiexec when Simulator#support_mpi is false" do
       @sim.support_mpi = false
       @sim.save!
       @run.mpi_procs = 8
       script = JobScriptUtil.script_for(@run, @host)
-      script.should_not match(/mpiexec/)
+      script.should match(/CM_IS_MPI_JOB=false/)
     end
 
-    it "sets OMP_NUM_THREADS in the script when Simulator#support_omp is true" do
+    it "sets OMP_NUM_THREADS in the script" do
       @sim.support_omp = true
       @sim.save!
       @run.omp_threads = 8
       script = JobScriptUtil.script_for(@run, @host)
       script.should match(/export OMP_NUM_THREADS=8/)
-    end
-
-    it "does set OMP_NUM_THREADS in the script when Simulator#support_omp is false" do
-      @sim.support_omp = false
-      @sim.save!
-      @run.omp_threads = 8
-      script = JobScriptUtil.script_for(@run, @host)
-      script.should_not match(/OMP_NUM_THREADS/)
     end
   end
 
@@ -194,7 +188,7 @@ EOS
     end
   end
 
-  describe ".expand_runtime_parameters" do
+  describe ".expand_parameters" do
 
     it "returns header expanded by the given runtime parameters" do
       template = <<-EOS
@@ -218,7 +212,7 @@ EOS
                     "mpi_procs" => "128",
                     "stgin" => 'rank=* ./rank%r/* %r:./'
                   }
-      expanded = JobScriptUtil.expand_runtime_parameters(template, variables)
+      expanded = JobScriptUtil.expand_parameters(template, variables)
 
       header = <<-EOS
 #!/bin/bash

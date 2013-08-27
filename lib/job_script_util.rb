@@ -1,53 +1,62 @@
 module JobScriptUtil
 
-  DEFAULT_HEADER = "#!/bin/bash"
+  DEFAULT_TEMPLATE = <<-EOS
+#!/bin/bash
+LANG=C
+CM_RUN_ID=<%= run_id %>
+CM_IS_MPI_JOB=<%= is_mpi_job %>
+CM_WORK_BASE_DIR=<%= work_base_dir %>
+# PRE-PROCESS ---------------------
+mkdir -p ${CM_WORK_BASE_DIR}
+cd ${CM_WORK_BASE_DIR}
+mkdir -p ${CM_RUN_ID}
+cd ${CM_RUN_ID}
+if [ -e ../${CM_RUN_ID}_input.json ]; then
+\\mv ../${CM_RUN_ID}_input.json ./_input.json
+fi
+echo "{" > ../${CM_RUN_ID}_status.json
+echo "  \\"started_at\\": \\"`date`\\"," >> ../${CM_RUN_ID}_status.json
+echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${CM_RUN_ID}_status.json
+# JOB EXECUTION -------------------
+export OMP_NUM_THREADS=<%= omp_threads %>
+if ${CM_IS_MPI_JOB}
+then
+  { time -p { { mpiexec -n <%= mpi_procs %> <%= cmd %>; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../${CM_RUN_ID}_time.txt
+else
+  { time -p { { <%= cmd %>; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../${CM_RUN_ID}_time.txt
+fi
+echo "  \\"rc\\": $?," >> ../${CM_RUN_ID}_status.json
+echo "  \\"finished_at\\": \\"`date`\\"" >> ../${CM_RUN_ID}_status.json
+echo "}" >> ../${CM_RUN_ID}_status.json
+# POST-PROCESS --------------------
+cd ..
+\\mv -f ${CM_RUN_ID}_status.json ${CM_RUN_ID}/_status.json
+\\mv -f ${CM_RUN_ID}_time.txt ${CM_RUN_ID}/_time.txt
+tar cf ${CM_RUN_ID}.tar ${CM_RUN_ID}
+if test $? -ne 0; then { echo "// Failed to make an archive for ${CM_RUN_ID}" >> ./_log.txt; exit; } fi
+bzip2 ${CM_RUN_ID}.tar
+if test $? -ne 0; then { echo "// Failed to compress for ${CM_RUN_ID}" >> ./_log.txt; exit; } fi
+rm -rf ${CM_RUN_ID}
+EOS
 
   def self.script_for(run, host)
-    cmd, input = run.command_and_input
-    cmd.sub!(/;$/, '')  # semi-colon in the last of the command causes bash syntax error
+    default_variables = {
+      "run_id" => run.id.to_s,
+      "is_mpi_job" => run.simulator.support_mpi ? "true" : "false",
+      "work_base_dir" => host.work_base_dir,
+      "omp_threads" => run.omp_threads,
+      "mpi_procs" => run.mpi_procs,
+      "cmd" => run.command_and_input[0].sub(/;$/, '')
+    }
+    # semi-colon in the last of the command causes bash syntax error
 
     variables = {}
     variables = run.runtime_parameters.dup if run.runtime_parameters
-    variables.update({"mpi_procs" => run.mpi_procs}) if run.mpi_procs
-    variables.update({"omp_threads" => run.omp_threads}) if run.omp_threads
-    expanded_header = expand_runtime_parameters(host.script_header_template, variables)
+    variables.update(default_variables)
 
-    mpi_exec_cmd = run.simulator.support_mpi ? "mpiexec -n #{run.mpi_procs}" : ""
-    export_omp_envs = run.simulator.support_omp ? "export OMP_NUM_THREADS=#{run.omp_threads}" : ""
+    expanded_script = expand_parameters(host.template, variables)
 
-    # preprocess
-    script = <<-EOS
-#{expanded_header}
-LANG=C
-# PRE-PROCESS ---------------------
-cd #{host.work_base_dir}
-mkdir -p #{run.id}
-cd #{run.id}
-if [ -e ../#{run.id}_input.json ]; then
-mv ../#{run.id}_input.json ./_input.json
-fi
-echo "{" > ../#{run.id}_status.json
-echo "  \\"started_at\\": \\"`date`\\"," >> ../#{run.id}_status.json
-echo "  \\"hostname\\": \\"`hostname`\\"," >> ../#{run.id}_status.json
-# JOB EXECUTION -------------------
-#{export_omp_envs}
-{ time -p { { #{mpi_exec_cmd} #{cmd}; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../#{run.id}_time.txt
-echo "  \\"rc\\": $?," >> ../#{run.id}_status.json
-echo "  \\"finished_at\\": \\"`date`\\"" >> ../#{run.id}_status.json
-echo "}" >> ../#{run.id}_status.json
-# POST-PROCESS --------------------
-cd ..
-\\mv -f #{run.id}_status.json #{run.id}/_status.json
-\\mv -f #{run.id}_time.txt #{run.id}/_time.txt
-tar cf #{run.id}.tar #{run.id}
-if test $? -ne 0; then { echo "// Failed to make an archive for #{run.id}" >> ./_log.txt; exit; } fi
-bzip2 #{run.id}.tar
-if test $? -ne 0; then { echo "// Failed to compress for #{run.id}" >> ./_log.txt; exit; } fi
-rm -rf #{run.id}
-
-EOS
-
-    script.gsub(/(\r\n|\r|\n)/, "\n")
+    expanded_script.gsub(/(\r\n|\r|\n)/, "\n")
   end
 
   def self.expand_result_file_and_update_run(run)
@@ -84,10 +93,10 @@ EOS
     header_template.scan(/<%=\s*(\w+)\s*%>/).flatten.uniq
   end
 
-  def self.expand_runtime_parameters(header_template, runtime_parameters)
-    replaced = header_template.dup
-    extract_runtime_parameters(header_template).each do |variable|
-      value = runtime_parameters[variable].to_s
+  def self.expand_parameters(template, parameters)
+    replaced = template.dup
+    extract_runtime_parameters(template).each do |variable|
+      value = parameters[variable].to_s
       pattern = /<%=\s*#{variable}\s*%>/
       replaced.gsub!(pattern, value)
     end

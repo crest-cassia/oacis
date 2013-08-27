@@ -115,12 +115,13 @@ describe Run do
     describe "'runtime_parameters' field" do
 
       before(:each) do
-        template = <<-EOS
+        header = <<-EOS
 #!/bin/bash
 # node:<%= node %>
 # proc:<%= mpi_procs %>
 EOS
-        @host = FactoryGirl.create(:host, script_header_template: template)
+        template = JobScriptUtil::DEFAULT_TEMPLATE.sub(/#!\/bin\/bash/, header)
+        @host = FactoryGirl.create(:host, template: template)
       end
 
       it "is valid when runtime parameters are properly given" do
@@ -466,7 +467,7 @@ EOS
 #!/bin/bash
 # foobar: <%= foobar %>
 EOS
-      host = FactoryGirl.create(:host, script_header_template: template)
+      host = FactoryGirl.create(:host, template: template)
       r_params = {"foobar" => 1, "baz" => 2}
       run = @param_set.runs.build(submitted_to: host, runtime_parameters: r_params)
       run.save!
