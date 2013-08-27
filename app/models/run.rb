@@ -29,6 +29,8 @@ class Run
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :submitted_to, presence: true
   validate :runtime_parameters_given
+  validate :mpi_procs_is_in_range
+  validate :omp_threads_is_in_range
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
@@ -214,6 +216,28 @@ class Run
       self.runtime_parameters.select! do |key,val|
         template = self.submitted_to.template
         JobScriptUtil.extract_runtime_parameters(template).include?(key)
+      end
+    end
+  end
+
+  def mpi_procs_is_in_range
+    host = self.submitted_to
+    if host
+      if self.mpi_procs.to_i < host.min_mpi_procs
+        errors.add(:mpi_procs, "must be equal to or larger than #{host.min_mpi_procs}")
+      elsif self.mpi_procs.to_i > host.max_mpi_procs
+        errors.add(:mpi_procs, "must be equal to or smaller than #{host.max_mpi_procs}")
+      end
+    end
+  end
+
+  def omp_threads_is_in_range
+    host = self.submitted_to
+    if host
+      if self.omp_threads.to_i < host.min_omp_threads
+        errors.add(:omp_threads, "must be equal to or larger than #{host.min_mpi_procs}")
+      elsif self.omp_threads.to_i > host.max_omp_threads
+        errors.add(:omp_threads, "must be equal to or smaller than #{host.max_mpi_procs}")
       end
     end
   end

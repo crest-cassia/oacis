@@ -87,6 +87,30 @@ describe Host do
       host.should_not be_valid
     end
 
+    it "min_mpi_procs must be 1 or positive" do
+      @valid_attr.update(min_mpi_procs: 0)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
+    it "max_mpi_procs must be 1 or positive" do
+      @valid_attr.update(max_mpi_procs: 0)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
+    it "min_omp_threads must be 1 or positive" do
+      @valid_attr.update(min_omp_threads: 0)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
+    it "max_omp_threads must be 1 or positive" do
+      @valid_attr.update(max_omp_threads: 0)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
     it "cannot change when submitted runs exist" do
       host = FactoryGirl.create(:host)
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)

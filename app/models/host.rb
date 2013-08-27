@@ -9,6 +9,10 @@ class Host
   field :scheduler_type, type: String, default: "none"
   field :work_base_dir, type: String, default: '~'
   field :max_num_jobs, type: Integer, default: 1
+  field :min_mpi_procs, type: Integer, default: 1
+  field :max_mpi_procs, type: Integer, default: 1
+  field :min_omp_threads, type: Integer, default: 1
+  field :max_omp_threads, type: Integer, default: 1
   field :template, type: String, default: JobScriptUtil::DEFAULT_TEMPLATE
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
@@ -22,6 +26,10 @@ class Host
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
+  validates :min_mpi_procs, numericality: {greater_than_or_equal_to: 1}
+  validates :max_mpi_procs, numericality: {greater_than_or_equal_to: 1}
+  validates :min_omp_threads, numericality: {greater_than_or_equal_to: 1}
+  validates :max_omp_threads, numericality: {greater_than_or_equal_to: 1}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :template_is_not_editable_when_submittable_runs_exist
 

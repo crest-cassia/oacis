@@ -92,23 +92,27 @@ describe Run do
       run.should_not be_valid
     end
 
-    it "mpi_procs must be a positive integer" do
+    it "mpi_procs must between Host#min_mpi_procs and Host#max_mpi_procs" do
       run = @param_set.runs.build(@valid_attribute)
-      run.mpi_procs = 1
+      host = run.submitted_to
+      host.min_mpi_procs = 1
+      host.max_mpi_procs = 256
+      host.save!
+      run.mpi_procs = 256
       run.should be_valid
-      run.mpi_procs = 16384
-      run.should be_valid
-      run.mpi_procs = 0
+      run.mpi_procs = 512
       run.should_not be_valid
     end
 
-    it "omp_threads must be a positive integer" do
+    it "omp_threads must between Host#min_omp_threads and Host#max_omp_threads" do
       run = @param_set.runs.build(@valid_attribute)
-      run.omp_threads = 1
+      host = run.submitted_to
+      host.min_omp_threads = 1
+      host.max_omp_threads = 256
+      host.save!
+      run.omp_threads = 256
       run.should be_valid
-      run.omp_threads = 8
-      run.should be_valid
-      run.omp_threads = 0
+      run.omp_threads = 512
       run.should_not be_valid
     end
 
