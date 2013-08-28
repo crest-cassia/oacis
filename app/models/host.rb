@@ -16,6 +16,8 @@ class Host
   field :template, type: String, default: JobScriptUtil::DEFAULT_TEMPLATE
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
+  embeds_many :host_parameter_definitions
+  accepts_nested_attributes_for :host_parameter_definitions, allow_destroy: true
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
   validates :hostname, presence: true, format: {with: /^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/}
@@ -247,7 +249,7 @@ class Host
 
   def template_is_not_editable_when_submittable_runs_exist
     if template_is_not_editable? and self.template_changed?
-      errors.add(:script_header_template, "is not editable when submittable runs exist")
+      errors.add(:template, "is not editable when submittable runs exist")
     end
   end
 end

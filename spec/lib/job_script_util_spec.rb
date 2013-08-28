@@ -60,7 +60,7 @@ describe JobScriptUtil do
 
     it "inserts expanded header" do
       pending "not yet implemented"
-      @host.script_header_template = <<EOS
+      @host.template = <<EOS
 #!/bin/sh
 # foobar: <%= foobar %>
 # mpi_procs: <%= mpi_procs %>
