@@ -144,7 +144,7 @@ class Run
     h = {}
     self.parameter_set.simulator.executable_on.each do |host|
       extracted_variables = JobScriptUtil.extract_parameters(host.template)
-      h[host] = extracted_variables - ["mpi_procs", "omp_threads"]
+      h[host] = extracted_variables - JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
     end
     h
   end
@@ -207,7 +207,7 @@ class Run
       host = self.submitted_to
       parameters = JobScriptUtil.extract_parameters(host.template)
       parameters -= self.runtime_parameters.keys
-      parameters -= ["mpi_procs", "omp_threads", "run_id", "is_mpi_job", "work_base_dir", "cmd"]
+      parameters -= JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
       if parameters.present?
         self.errors.add(:runtime_parameters, "not given parameters: #{parameters.inspect}")
       end

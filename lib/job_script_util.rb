@@ -46,6 +46,8 @@ if test $? -ne 0; then { echo "// Failed to compress for ${CM_RUN_ID}" >> ./_log
 rm -rf ${CM_RUN_ID}
 EOS
 
+  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "work_base_dir", "omp_threads", "mpi_procs", "cmd"]
+
   def self.script_for(run, host)
     default_variables = {
       "run_id" => run.id.to_s,
