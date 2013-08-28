@@ -492,7 +492,14 @@ EOS
 
   describe "#submittable_hosts_and_variables" do
 
-    it "returns Hash of host and its runtime parameters"
+    it "returns Hash of host and its runtime parameters" do
+      host1 = FactoryGirl.create(:host_with_parameters)
+      sim = FactoryGirl.create(:simulator, executable_on: [host1], parameter_sets_count: 1, runs_count: 0)
+      run = sim.parameter_sets.first.runs.build
+      h = run.submittable_hosts_and_variables
+      h.should be_a(Hash)
+      h[host1].should eq ["param1", "param2"]
+    end
   end
 
   describe "#remove_redundant_runtime_parameters" do

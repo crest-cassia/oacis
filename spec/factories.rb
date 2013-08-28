@@ -150,6 +150,21 @@ FactoryGirl.define do
     min_omp_threads 1
     max_omp_threads 8
     user "login_user"
+
+    factory :host_with_parameters do
+      new_header = <<-EOS
+#!/bin/bash
+# param1:<%= param1 %>
+# param2:<%= param2 %>
+EOS
+      template { JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", new_header) }
+      host_parameter_definitions {
+        [
+          HostParameterDefinition.new(key: "param1"),
+          HostParameterDefinition.new(key: "param2")
+        ]
+      }
+    end
   end
 
   factory :localhost, class: Host do

@@ -143,8 +143,7 @@ class Run
   def submittable_hosts_and_variables
     h = {}
     self.parameter_set.simulator.executable_on.each do |host|
-      extracted_variables = JobScriptUtil.extract_parameters(host.template)
-      h[host] = extracted_variables - JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
+      h[host] = host.host_parameter_definitions.map {|x| x.key}
     end
     h
   end
