@@ -3,9 +3,14 @@ module JobScriptUtil
   DEFAULT_TEMPLATE = <<-EOS
 #!/bin/bash
 LANG=C
+
+# VARIABLE DEFINITIONS ------------
 CM_RUN_ID=<%= run_id %>
 CM_IS_MPI_JOB=<%= is_mpi_job %>
 CM_WORK_BASE_DIR=<%= work_base_dir %>
+CM_MPI_PROCS=<%= mpi_procs %>
+CM_OMP_THREADS=<%= omp_threads %>
+
 # PRE-PROCESS ---------------------
 mkdir -p ${CM_WORK_BASE_DIR}
 cd ${CM_WORK_BASE_DIR}
@@ -17,17 +22,19 @@ fi
 echo "{" > ../${CM_RUN_ID}_status.json
 echo "  \\"started_at\\": \\"`date`\\"," >> ../${CM_RUN_ID}_status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${CM_RUN_ID}_status.json
+
 # JOB EXECUTION -------------------
-export OMP_NUM_THREADS=<%= omp_threads %>
+export OMP_NUM_THREADS=${CM_OMP_THREADS}
 if ${CM_IS_MPI_JOB}
 then
-  { time -p { { mpiexec -n <%= mpi_procs %> <%= cmd %>; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../${CM_RUN_ID}_time.txt
+  { time -p { { mpiexec -n ${CM_MPI_PROCS} <%= cmd %>; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../${CM_RUN_ID}_time.txt
 else
   { time -p { { <%= cmd %>; } 1> _stdout.txt 2> _stderr.txt; } } 2>> ../${CM_RUN_ID}_time.txt
 fi
 echo "  \\"rc\\": $?," >> ../${CM_RUN_ID}_status.json
 echo "  \\"finished_at\\": \\"`date`\\"" >> ../${CM_RUN_ID}_status.json
 echo "}" >> ../${CM_RUN_ID}_status.json
+
 # POST-PROCESS --------------------
 cd ..
 \\mv -f ${CM_RUN_ID}_status.json ${CM_RUN_ID}/_status.json

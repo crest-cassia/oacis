@@ -78,7 +78,7 @@ EOS
       @sim.save!
       @run.mpi_procs = 8
       script = JobScriptUtil.script_for(@run, @host)
-      script.should match(/mpiexec -n 8/)
+      script.should match(/CM_MPI_PROCS=8/)
       script.should match(/CM_IS_MPI_JOB=true/)
     end
 
@@ -95,7 +95,7 @@ EOS
       @sim.save!
       @run.omp_threads = 8
       script = JobScriptUtil.script_for(@run, @host)
-      script.should match(/export OMP_NUM_THREADS=8/)
+      script.should match(/CM_OMP_THREADS=8/)
     end
   end
 
