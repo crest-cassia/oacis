@@ -141,7 +141,7 @@ describe Run do
 # proc:<%= mpi_procs %>
 EOS
         template = JobScriptUtil::DEFAULT_TEMPLATE.sub(/#!\/bin\/bash/, header)
-        hpds = [ HostParameterDefinition.new(key: "node") ]
+        hpds = [ HostParameterDefinition.new(key: "node", default: "x", format: '\w+') ]
         @host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
       end
 
@@ -168,6 +168,13 @@ EOS
         run.omp_threads = 8
         run.host_parameters = {"node" => "abd", "shape" => "xyz"}
         run.should be_valid
+      end
+
+      it "is invalid when host_parameters does not match the defined format" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.host_parameters = {"node" => "!!!"}
+        run.should_not be_valid
       end
 
       it "skips validation for a persisted run" do

@@ -29,6 +29,7 @@ class Run
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :submitted_to, presence: true
   validate :host_parameters_given, on: :create
+  validate :host_parameters_format, on: :create
   validate :mpi_procs_is_in_range, on: :create
   validate :omp_threads_is_in_range, on: :create
   # validates only for a new_record
@@ -210,6 +211,18 @@ class Run
       end
     end
   end
+
+  def host_parameters_format
+    if submitted_to
+      submitted_to.host_parameter_definitions.each do |host_prm|
+        key = host_prm.key
+        unless host_parameters[key].to_s =~ Regexp.new(host_prm.format.to_s)
+          errors.add(:host_parameters, "#{key} must satisfy #{host_prm.format}")
+        end
+      end
+    end
+  end
+
 
   def remove_redundant_host_parameters
     if submitted_to
