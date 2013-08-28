@@ -166,9 +166,9 @@ EOS
     end
   end
 
-  describe ".extract_runtime_parameters" do
+  describe ".extract_parameters" do
 
-    it "returns array of runtime parameters used in the template" do
+    it "returns array of parameters used in the template" do
       template = <<-EOS
 #!/bin/bash
 #
@@ -183,7 +183,7 @@ EOS
 #PJM -s
 #
       EOS
-      arr = JobScriptUtil.extract_runtime_parameters(template)
+      arr = JobScriptUtil.extract_parameters(template)
       arr.should eq %w(node elapse rscgrp mpi_procs stgin)
     end
   end

@@ -143,7 +143,7 @@ class Run
   def submittable_hosts_and_variables
     h = {}
     self.parameter_set.simulator.executable_on.each do |host|
-      extracted_variables = JobScriptUtil.extract_runtime_parameters(host.template)
+      extracted_variables = JobScriptUtil.extract_parameters(host.template)
       h[host] = extracted_variables - ["mpi_procs", "omp_threads"]
     end
     h
@@ -205,7 +205,7 @@ class Run
   def runtime_parameters_given
     if self.submitted_to
       host = self.submitted_to
-      parameters = JobScriptUtil.extract_runtime_parameters(host.template)
+      parameters = JobScriptUtil.extract_parameters(host.template)
       parameters -= self.runtime_parameters.keys
       parameters -= ["mpi_procs", "omp_threads", "run_id", "is_mpi_job", "work_base_dir", "cmd"]
       if parameters.present?
@@ -218,7 +218,7 @@ class Run
     if self.submitted_to
       self.runtime_parameters.select! do |key,val|
         template = self.submitted_to.template
-        JobScriptUtil.extract_runtime_parameters(template).include?(key)
+        JobScriptUtil.extract_parameters(template).include?(key)
       end
     end
   end

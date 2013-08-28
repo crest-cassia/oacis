@@ -89,13 +89,13 @@ EOS
     }
   end
 
-  def self.extract_runtime_parameters(header_template)
-    header_template.scan(/<%=\s*(\w+)\s*%>/).flatten.uniq
+  def self.extract_parameters(template)
+    template.scan(/<%=\s*(\w+)\s*%>/).flatten.uniq
   end
 
   def self.expand_parameters(template, parameters)
     replaced = template.dup
-    extract_runtime_parameters(template).each do |variable|
+    extract_parameters(template).each do |variable|
       value = parameters[variable].to_s
       pattern = /<%=\s*#{variable}\s*%>/
       replaced.gsub!(pattern, value)
