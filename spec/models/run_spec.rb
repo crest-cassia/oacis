@@ -141,7 +141,8 @@ describe Run do
 # proc:<%= mpi_procs %>
 EOS
         template = JobScriptUtil::DEFAULT_TEMPLATE.sub(/#!\/bin\/bash/, header)
-        @host = FactoryGirl.create(:host, template: template)
+        hpds = [ HostParameterDefinition.new(key: "node") ]
+        @host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
       end
 
       it "is valid when runtime parameters are properly given" do
@@ -501,7 +502,8 @@ EOS
 #!/bin/bash
 # foobar: <%= foobar %>
 EOS
-      host = FactoryGirl.create(:host, template: template)
+      hpds = [ HostParameterDefinition.new(key: "foobar") ]
+      host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
       r_params = {"foobar" => 1, "baz" => 2}
       run = @param_set.runs.build(submitted_to: host, runtime_parameters: r_params)
       run.save!

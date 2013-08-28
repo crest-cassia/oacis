@@ -140,6 +140,44 @@ describe Host do
       host.template = host.template.sub("#!/bin/bash", "#!/bin/another/bash")
       host.should_not be_valid
     end
+
+    it "is valid when host_parameter_definitions conform to template" do
+      template_header = <<-EOS
+#!/bin/bash
+#node: <%= node %>
+EOS
+      template = JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", template_header)
+      definitions = [HostParameterDefinition.new(key: "node")]
+      host = FactoryGirl.build(:host, template: template, host_parameter_definitions: definitions)
+      host.should be_valid
+    end
+
+    it "is not valid when host_parameter_definitions does not have sufficient variables" do
+      template_header = <<-EOS
+#!/bin/bash
+#node: <= node %>
+#elapsed: <%= elapsed %>
+EOS
+      template = JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", template_header)
+      definitions = [HostParameterDefinition.new(key: "node")]
+      host = FactoryGirl.build(:host, template: template, host_parameter_definitions: definitions)
+      host.should_not be_valid
+    end
+
+    it "is not valid when there is a host_parameter_definitions which is not found in template" do
+      template_header = <<-EOS
+#!/bin/bash
+#node: <= node %>
+EOS
+      template = JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", template_header)
+      definitions = [
+        HostParameterDefinition.new(key: "node"),
+        HostParameterDefinition.new(key: "elapsed")
+      ]
+      host = FactoryGirl.build(:host, template: template, host_parameter_definitions: definitions)
+      host.should_not be_valid
+    end
+
   end
 
   describe "#connected?" do
