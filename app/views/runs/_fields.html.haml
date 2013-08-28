@@ -11,16 +11,18 @@
 .control-group
   = f.label(:submitted_to, class: 'control-label')
   .controls
-    - host_names = run.submittable_hosts_and_variables.keys.map {|h| [h.name, h.id.to_s]}
+    - host_names = run.simulator.executable_on.map {|h| [h.name, h.id.to_s]}
     - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
     = f.select(:submitted_to, options_for_select(host_names, selected: selected_id) )
-- run.submittable_hosts_and_variables.each do |host, variables|
+- run.simulator.executable_on.each do |host|
   %div{ id: "host_parameters_#{host.id}"}
-    - variables.each do |var|
+    - host.host_parameter_definitions.each do |hpdef|
       .control-group
-        = label_tag(:"run[host_parameters][#{var}]", var, class: 'control-label')
+        = label_tag(:"run[host_parameters][#{hpdef.key}]", hpdef.key, class: 'control-label')
         .controls
-          = text_field_tag(:"run[host_parameters][#{var}]", run.host_parameters[var])
+          - value = run.host_parameters[hpdef.key] || hpdef.default
+          = text_field_tag(:"run[host_parameters][#{hpdef.key}]", value)
+          = "Format: /#{hpdef.format}/"
 
 :javascript
   $(function() {

@@ -141,14 +141,6 @@ class Run
     end
   end
 
-  def submittable_hosts_and_variables
-    h = {}
-    parameter_set.simulator.executable_on.each do |host|
-      h[host] = host.host_parameter_definitions.map {|x| x.key}
-    end
-    h
-  end
-
   private
   def set_simulator
     if parameter_set
