@@ -34,6 +34,7 @@ class Host
   validates :max_omp_threads, numericality: {greater_than_or_equal_to: 1}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :template_is_not_editable_when_submittable_runs_exist
+  validate :min_is_not_larger_than_max
 
   CONNECTION_EXCEPTIONS = [
     Errno::ECONNREFUSED,
@@ -250,6 +251,15 @@ class Host
   def template_is_not_editable_when_submittable_runs_exist
     if template_is_not_editable? and self.template_changed?
       errors.add(:template, "is not editable when submittable runs exist")
+    end
+  end
+
+  def min_is_not_larger_than_max
+    if min_mpi_procs > max_mpi_procs
+      errors.add(:max_mpi_procs, "must be larger than min_mpi_procs")
+    end
+    if min_omp_threads > max_omp_threads
+      errors.add(:max_omp_threads, "must be larger than min_omp_threads")
     end
   end
 end

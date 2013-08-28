@@ -99,6 +99,12 @@ describe Host do
       host.should_not be_valid
     end
 
+    it "max_mpi_procs must be larger than min_mpi_procs" do
+      @valid_attr.update(min_mpi_procs: 2, max_mpi_procs: 1)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
     it "min_omp_threads must be 1 or positive" do
       @valid_attr.update(min_omp_threads: 0)
       host = Host.new(@valid_attr)
@@ -107,6 +113,12 @@ describe Host do
 
     it "max_omp_threads must be 1 or positive" do
       @valid_attr.update(max_omp_threads: 0)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
+    it "max_omp_threads must be larger than min_omp_threads" do
+      @valid_attr.update(min_omp_threads: 2, max_omp_threads: 1)
       host = Host.new(@valid_attr)
       host.should_not be_valid
     end
