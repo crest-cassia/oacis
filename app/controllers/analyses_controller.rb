@@ -29,12 +29,11 @@ class AnalysesController < ApplicationController
 
   def destroy
     anl = Analysis.find(params[:id])
-    redirect_path = after_create_redirect_path(anl)
     anl.destroy
 
     respond_to do |format|
-      format.html { redirect_to redirect_path }
       format.json { head :no_content }
+      format.js
     end
   end
 

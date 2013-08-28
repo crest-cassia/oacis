@@ -13,14 +13,6 @@ class Analysis
   field :result
 
   belongs_to :analyzer
-  def analyzer  # find embedded document
-    unless @analyzer_cache
-      if analyzer_id and analyzable
-        @analyzer_cache = analyzable.simulator.analyzers.find(analyzer_id)
-      end
-    end
-    return @analyzer_cache
-  end
   belongs_to :analyzable, polymorphic: true
 
   before_validation :set_status

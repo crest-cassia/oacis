@@ -22,3 +22,29 @@ $(function () {
     }
   });
 });
+
+$(function() {
+  var datatables_for_analyses_table;
+
+  datatables_for_analyses_table = function() {
+    return $('#analyses_list').dataTable({
+      bProcessing: true,
+      bServerSide: true,
+      bFilter: false,
+      bDestroy: true,
+      sAjaxSource: $('#analyses_list').data('source'),
+      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+      sPaginationType: "bootstrap"
+    });
+  };
+
+  window.datatables_for_analyses_table = datatables_for_analyses_table;
+
+});
+
+var aoAnalysesTables = [];
+function reload_analyses_table() {
+  aoAnalysesTables.forEach( function(oTable) {
+    oTable.fnReloadAjax();
+  });
+}

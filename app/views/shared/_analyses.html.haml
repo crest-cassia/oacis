@@ -1,5 +1,5 @@
 %h3 List of Analyses
-%table.table.table-condensed.analyses_list
+%table.table.table-condensed.analyses_list#analyses_list{:'data-source' => "#{_analyses_list_parameter_set_path(parameter_set.to_param, format: "json")}"}
   %thead
     %tr
       %th{style: "min-width: 18px; width: 1%;"}
@@ -10,13 +10,10 @@
       %th created_at
       %th{style: "min-width: 18px; width: 1%;"}
   %tbody
-    - analyses.each do |anl|
-      %tr
-        %td= image_tag("/assets/expand.png", analysis_id: anl.id.to_s, align: "center", state: "close")
-        %td= link_to( shortened_id(anl.id), analysis_path(anl))
-        - azr = anl.analyzer
-        %td= link_to(azr.name, analyzer_path(azr))
-        %td= anl.parameters.empty? ? '-' : anl.parameters.inspect
-        %td= raw(status_label(anl.status))
-        %td= anl.created_at
-        %td= link_to( raw('<i class="icon-trash">'), anl, method: :delete, data: {confirm: 'Are you sure?'})
+
+:javascript
+  $(function() {
+    var oTable = datatables_for_analyses_table();
+    aoAnalysesTables = [];
+    aoAnalysesTables.push(oTable);
+  })
