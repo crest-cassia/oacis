@@ -215,9 +215,9 @@ class Run
 
   def remove_redundant_runtime_parameters
     if self.submitted_to
+      host_params = self.submitted_to.host_parameter_definitions.map {|x| x.key}
       self.runtime_parameters.select! do |key,val|
-        template = self.submitted_to.template
-        JobScriptUtil.extract_parameters(template).include?(key)
+        host_params.include?(key)
       end
     end
   end
