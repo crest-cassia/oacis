@@ -29,7 +29,7 @@
         %th OMP threads
         %td= @run.omp_threads ? @run.omp_threads : "-"
     %tr
-      %th Runtime parameters
+      %th Host parameters
       %td
         - if @run.host_parameters.present?
           %pre= @run.host_parameters.to_json
