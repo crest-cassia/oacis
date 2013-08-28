@@ -203,12 +203,10 @@ class Run
 
   def host_parameters_given
     if self.submitted_to
-      host = self.submitted_to
-      parameters = JobScriptUtil.extract_parameters(host.template)
-      parameters -= self.host_parameters.keys
-      parameters -= JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
-      if parameters.present?
-        self.errors.add(:host_parameters, "not given parameters: #{parameters.inspect}")
+      keys = submitted_to.host_parameter_definitions.map {|x| x.key}
+      diff = keys - self.host_parameters.keys
+      if diff.any?
+        self.errors.add(:host_parameters, "not given parameters: #{diff.inspect}")
       end
     end
   end
