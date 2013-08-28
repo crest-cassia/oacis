@@ -145,7 +145,7 @@ EOS
         @host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
       end
 
-      it "is valid when runtime parameters are properly given" do
+      it "is valid when host_parameters are properly given" do
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
@@ -153,7 +153,7 @@ EOS
         run.should be_valid
       end
 
-      it "is invalid when all the runtime parameters are not specified" do
+      it "is invalid when all the host_parameters are not specified" do
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
@@ -161,7 +161,7 @@ EOS
         run.should_not be_valid
       end
 
-      it "is valid when runtime parameters have rendundant keys" do
+      it "is valid when host_parameters have rendundant keys" do
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
@@ -492,7 +492,7 @@ EOS
 
   describe "#submittable_hosts_and_variables" do
 
-    it "returns Hash of host and its runtime parameters" do
+    it "returns Hash of host and its host_parameters" do
       host1 = FactoryGirl.create(:host_with_parameters)
       sim = FactoryGirl.create(:simulator, executable_on: [host1], parameter_sets_count: 1, runs_count: 0)
       run = sim.parameter_sets.first.runs.build
@@ -504,7 +504,7 @@ EOS
 
   describe "#remove_redundant_host_parameters" do
 
-    it "removes runtime parameters not necessary for the host" do
+    it "removes host_parameters not necessary for the host" do
       template = <<EOS
 #!/bin/bash
 # foobar: <%= foobar %>
