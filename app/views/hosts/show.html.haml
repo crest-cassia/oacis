@@ -29,6 +29,20 @@
       %th Maximum number of jobs
       %td= @host.max_num_jobs
     %tr
+      %th MPI procs
+      %td
+        - if @host.min_mpi_procs == @host.max_mpi_procs
+          = @host.min_mpi_procs
+        - else
+          = "#{@host.min_mpi_procs} ~ #{@host.max_mpi_procs}"
+    %tr
+      %th OMP threads
+      %td
+        - if @host.min_omp_threads == @host.max_omp_threads
+          = @host.min_omp_threads
+        - else
+          = "#{@host.min_omp_threads} ~ #{@host.max_omp_threads}"
+    %tr
       %th Template
       %td
         %pre= @host.template

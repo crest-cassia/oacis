@@ -37,6 +37,18 @@
     .controls
       = f.text_field(:max_num_jobs, class: 'text_field')
   .control-group
+    = f.label(:min_mpi_procs, 'MPI processes', class: 'control-label')
+    .controls
+      = f.number_field(:min_mpi_procs, class: 'number_field')
+      \~
+      = f.number_field(:max_mpi_procs, class: 'number_field')
+  .control-group
+    = f.label(:min_omp_threads, 'OMP threads', class: 'control-label')
+    .controls
+      = f.number_field(:min_omp_threads, class: 'number_field')
+      \~
+      = f.number_field(:max_omp_threads, class: 'number_field')
+  .control-group
     = f.label(:template, class: 'control-label')
     .controls
       - if @host.template_is_not_editable?
