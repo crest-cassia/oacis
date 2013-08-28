@@ -60,7 +60,7 @@ EOS
     # semi-colon in the last of the command causes bash syntax error
 
     variables = {}
-    variables = run.runtime_parameters.dup if run.runtime_parameters
+    variables = run.host_parameters.dup if run.host_parameters
     variables.update(default_variables)
 
     expanded_script = expand_parameters(host.template, variables)

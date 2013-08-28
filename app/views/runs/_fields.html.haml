@@ -15,19 +15,19 @@
     - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
     = f.select(:submitted_to, options_for_select(host_names, selected: selected_id) )
 - run.submittable_hosts_and_variables.each do |host, variables|
-  %div{ id: "runtime_parameters_#{host.id}"}
+  %div{ id: "host_parameters_#{host.id}"}
     - variables.each do |var|
       .control-group
-        = label_tag(:"run[runtime_parameters][#{var}]", var, class: 'control-label')
+        = label_tag(:"run[host_parameters][#{var}]", var, class: 'control-label')
         .controls
-          = text_field_tag(:"run[runtime_parameters][#{var}]", run.runtime_parameters[var])
+          = text_field_tag(:"run[host_parameters][#{var}]", run.host_parameters[var])
 
 :javascript
   $(function() {
     $('select#run_submitted_to').change(function() {
-      $('div[id^=runtime_parameters]').hide("normal");
+      $('div[id^=host_parameters]').hide("normal");
       var host_id = $("select#run_submitted_to option:selected").val();
-      var selected = $('div#runtime_parameters_' + host_id);
+      var selected = $('div#host_parameters_' + host_id);
       selected.show("normal");
     });
     $('select#run_submitted_to').trigger('change');

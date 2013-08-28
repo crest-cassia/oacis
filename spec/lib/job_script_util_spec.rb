@@ -66,7 +66,7 @@ describe JobScriptUtil do
 # mpi_procs: <%= mpi_procs %>
 EOS
       @run.mpi_procs = 8
-      @run.runtime_parameters = {"foobar" => "abc"}
+      @run.host_parameters = {"foobar" => "abc"}
       script = JobScriptUtil.script_for(@run, @host)
       script.should match(/bin\/sh/)
       script.should match(/foobar: abc/)

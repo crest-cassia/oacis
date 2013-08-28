@@ -31,8 +31,8 @@
     %tr
       %th Runtime parameters
       %td
-        - if @run.runtime_parameters.present?
-          %pre= @run.runtime_parameters.to_json
+        - if @run.host_parameters.present?
+          %pre= @run.host_parameters.to_json
     %tr
       %th CPU time
       %td= formatted_elapsed_time(@run.cpu_time)

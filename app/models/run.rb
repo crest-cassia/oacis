@@ -14,7 +14,7 @@ class Run
   field :result  # can be any type. it's up to Simulator spec
   field :mpi_procs, type: Integer, default: 1
   field :omp_threads, type: Integer, default: 1
-  field :runtime_parameters, type: Hash, default: {}
+  field :host_parameters, type: Hash, default: {}
   field :job_id, type: String
   belongs_to :parameter_set
   belongs_to :simulator  # for caching. do not edit this field explicitly
@@ -28,7 +28,7 @@ class Run
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :submitted_to, presence: true
-  validate :runtime_parameters_given, on: :create
+  validate :host_parameters_given, on: :create
   validate :mpi_procs_is_in_range, on: :create
   validate :omp_threads_is_in_range, on: :create
   # validates only for a new_record
@@ -37,9 +37,9 @@ class Run
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  attr_accessible :seed, :mpi_procs, :omp_threads, :runtime_parameters, :submitted_to
+  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :submitted_to
 
-  before_save :set_simulator, :remove_redundant_runtime_parameters
+  before_save :set_simulator, :remove_redundant_host_parameters
   after_create :create_run_dir
   before_destroy :delete_run_dir, :delete_archived_result_file
 
@@ -201,22 +201,22 @@ class Run
     self.save
   end
 
-  def runtime_parameters_given
+  def host_parameters_given
     if self.submitted_to
       host = self.submitted_to
       parameters = JobScriptUtil.extract_parameters(host.template)
-      parameters -= self.runtime_parameters.keys
+      parameters -= self.host_parameters.keys
       parameters -= JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
       if parameters.present?
-        self.errors.add(:runtime_parameters, "not given parameters: #{parameters.inspect}")
+        self.errors.add(:host_parameters, "not given parameters: #{parameters.inspect}")
       end
     end
   end
 
-  def remove_redundant_runtime_parameters
+  def remove_redundant_host_parameters
     if self.submitted_to
       host_params = self.submitted_to.host_parameter_definitions.map {|x| x.key}
-      self.runtime_parameters.select! do |key,val|
+      self.host_parameters.select! do |key,val|
         host_params.include?(key)
       end
     end

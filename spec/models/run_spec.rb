@@ -132,7 +132,7 @@ describe Run do
       run.should be_valid
     end
 
-    describe "'runtime_parameters' field" do
+    describe "'host_parameters' field" do
 
       before(:each) do
         header = <<-EOS
@@ -149,7 +149,7 @@ EOS
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
-        run.runtime_parameters = {"node" => "abc"}
+        run.host_parameters = {"node" => "abc"}
         run.should be_valid
       end
 
@@ -157,7 +157,7 @@ EOS
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
-        run.runtime_parameters = {}
+        run.host_parameters = {}
         run.should_not be_valid
       end
 
@@ -166,7 +166,7 @@ EOS
         run.submitted_to = @host
         run.mpi_procs = 8
         run.omp_threads = 8
-        run.runtime_parameters = {"node" => "abd", "shape" => "xyz"}
+        run.host_parameters = {"node" => "abd", "shape" => "xyz"}
         run.should be_valid
       end
 
@@ -174,7 +174,7 @@ EOS
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
-        run.runtime_parameters = {"node" => "abc"}
+        run.host_parameters = {"node" => "abc"}
         run.save!
         new_template = <<-EOS
 #!/bin/bash
@@ -502,7 +502,7 @@ EOS
     end
   end
 
-  describe "#remove_redundant_runtime_parameters" do
+  describe "#remove_redundant_host_parameters" do
 
     it "removes runtime parameters not necessary for the host" do
       template = <<EOS
@@ -512,9 +512,9 @@ EOS
       hpds = [ HostParameterDefinition.new(key: "foobar") ]
       host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
       r_params = {"foobar" => 1, "baz" => 2}
-      run = @param_set.runs.build(submitted_to: host, runtime_parameters: r_params)
+      run = @param_set.runs.build(submitted_to: host, host_parameters: r_params)
       run.save!
-      run.runtime_parameters.should eq ({"foobar" => 1})
+      run.host_parameters.should eq ({"foobar" => 1})
     end
   end
 end

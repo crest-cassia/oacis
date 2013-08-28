@@ -93,7 +93,7 @@ describe ParameterSetsController do
         }.to change { Run.count }.by(3)
       end
 
-      it "creates runs with runtime_parameters" do
+      it "creates runs with host_parameters" do
         @sim.support_mpi = true
         @sim.save!
         post :create, @valid_param.update(num_runs: 3, run: {submitted_to: Host.first, mpi_procs: 8}), valid_session
@@ -181,14 +181,14 @@ describe ParameterSetsController do
         end
       end
 
-      describe "invalid runtime_parameters" do
+      describe "invalid host_parameters" do
 
         before(:each) do
           @sim.support_mpi = true
           @sim.save!
         end
 
-        it "creates runs with runtime_parameters" do
+        it "creates runs with host_parameters" do
           parameters = {"L" => 10, "T" => 2.0}
           invalid_param = {simulator_id: @sim, v: parameters, num_runs: 1, run: {mpi_procs: -1}}
           expect {
