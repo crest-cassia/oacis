@@ -18,6 +18,11 @@ describe HostParameterDefinition do
       hpd.should_not be_valid
     end
 
+    it "reserved words can not be used as a key" do
+      hpd = HostParameterDefinition.new(@valid_attr.update(key: "mpi_procs"))
+      hpd.should_not be_valid
+    end
+
     it "default value must conform to the format" do
       updated = @valid_attr.update(default: "10:00:00", format: "\\d\\d:\\d\\d:\\d\\d")
       hpd = HostParameterDefinition.new(updated)
