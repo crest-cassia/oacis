@@ -29,9 +29,23 @@
       %th Maximum number of jobs
       %td= @host.max_num_jobs
     %tr
-      %th Script Header Template
+      %th Template
       %td
-        %pre= @host.script_header_template
+        %pre= @host.template
+    %tr
+      %th Host Parameters
+      %td
+        %table.table.table-striped
+          %thead
+            %th Name
+            %th Default
+            %th Format
+          %tbody
+            - @host.host_parameter_definitions.each do |host_prm|
+              %tr
+                %td= host_prm.key
+                %td= host_prm.default
+                %td= host_prm.format
     %tr
       %th Executable simulators
       %td= raw( @host.executable_simulators.map {|sim| h(sim.name) }.join('<br />') )
