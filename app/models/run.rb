@@ -50,9 +50,9 @@ class Run
   end
 
   def simulator
-    set_simulator if self.simulator_id.nil?
-    if self.simulator_id
-      Simulator.find(self.simulator_id)
+    set_simulator if simulator_id.nil?
+    if simulator_id
+      Simulator.find(simulator_id)
     else
       nil
     end
@@ -63,19 +63,19 @@ class Run
   end
 
   def command_and_input
-    prm = self.parameter_set
+    prm = parameter_set
     sim = prm.simulator
     cmd_array = []
     cmd_array << sim.command
     input = nil
     if sim.support_input_json
       input = prm.v.dup
-      input[:_seed] = self.seed
+      input[:_seed] = seed
     else
       cmd_array += sim.parameter_definitions.map do |pd|
         prm.v[pd.key]
       end
-      cmd_array << self.seed
+      cmd_array << seed
     end
     return cmd_array.join(' '), input
   end
@@ -98,7 +98,7 @@ class Run
   end
 
   def archived_result_path
-    dir.join('..', "#{self.id}.tar.bz2")
+    dir.join('..', "#{id}.tar.bz2")
   end
 
   def destroy
@@ -112,19 +112,19 @@ class Run
   end
 
   def enqueue_auto_run_analyzers
-    ps = self.parameter_set
+    ps = parameter_set
     sim = ps.simulator
 
     if self.status == :finished
       sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
-        anl = self.analyses.build(analyzer: azr)
+        anl = analyses.build(analyzer: azr)
         anl.save and anl.submit
       end
 
       sim.analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
         scope = ps.runs.where(status: :finished)
-        if scope.count == 1 and scope.first.id == self.id
-          anl = self.analyses.build(analyzer: azr)
+        if scope.count == 1 and scope.first.id == id
+          anl = analyses.build(analyzer: azr)
           anl.save and anl.submit
         end
       end
@@ -142,7 +142,7 @@ class Run
 
   def submittable_hosts_and_variables
     h = {}
-    self.parameter_set.simulator.executable_on.each do |host|
+    parameter_set.simulator.executable_on.each do |host|
       h[host] = host.host_parameter_definitions.map {|x| x.key}
     end
     h
@@ -160,7 +160,7 @@ class Run
   SeedMax = 2 ** 31
   SeedIterationLimit = 1024
   def set_unique_seed
-    unless self.seed
+    unless seed
       SeedIterationLimit.times do |i|
         candidate = rand(SeedMax)
         if self.class.where(:parameter_set_id => parameter_set, :seed => candidate).exists? == false
@@ -173,21 +173,21 @@ class Run
   end
 
   def create_run_dir
-    FileUtils.mkdir_p(self.dir)
+    FileUtils.mkdir_p(dir)
   end
 
   def delete_run_dir
     # if self.parameter_set.nil, parent ParameterSet is already destroyed.
     # Therefore, self.dir raises an exception
-    if self.parameter_set and File.directory?(self.dir)
-      FileUtils.rm_r(self.dir)
+    if parameter_set and File.directory?(dir)
+      FileUtils.rm_r(dir)
     end
   end
 
   def delete_archived_result_file
     # if self.parameter_set.nil, parent ParameterSet is already destroyed.
     # Therefore, self.archived_result_path raises an exception
-    if self.parameter_set
+    if parameter_set
       archive = archived_result_path
       FileUtils.rm(archive) if File.exist?(archive)
     end
@@ -198,46 +198,44 @@ class Run
     delete_run_dir
     delete_archived_result_file
     self.parameter_set = nil
-    self.save
+    save
   end
 
   def host_parameters_given
-    if self.submitted_to
+    if submitted_to
       keys = submitted_to.host_parameter_definitions.map {|x| x.key}
-      diff = keys - self.host_parameters.keys
+      diff = keys - host_parameters.keys
       if diff.any?
-        self.errors.add(:host_parameters, "not given parameters: #{diff.inspect}")
+        errors.add(:host_parameters, "not given parameters: #{diff.inspect}")
       end
     end
   end
 
   def remove_redundant_host_parameters
-    if self.submitted_to
-      host_params = self.submitted_to.host_parameter_definitions.map {|x| x.key}
-      self.host_parameters.select! do |key,val|
+    if submitted_to
+      host_params = submitted_to.host_parameter_definitions.map {|x| x.key}
+      host_parameters.select! do |key,val|
         host_params.include?(key)
       end
     end
   end
 
   def mpi_procs_is_in_range
-    host = self.submitted_to
-    if host
-      if self.mpi_procs.to_i < host.min_mpi_procs
-        errors.add(:mpi_procs, "must be equal to or larger than #{host.min_mpi_procs}")
-      elsif self.mpi_procs.to_i > host.max_mpi_procs
-        errors.add(:mpi_procs, "must be equal to or smaller than #{host.max_mpi_procs}")
+    if submitted_to
+      if mpi_procs.to_i < submitted_to.min_mpi_procs
+        errors.add(:mpi_procs, "must be equal to or larger than #{submitted_to.min_mpi_procs}")
+      elsif mpi_procs.to_i > submitted_to.max_mpi_procs
+        errors.add(:mpi_procs, "must be equal to or smaller than #{submitted_to.max_mpi_procs}")
       end
     end
   end
 
   def omp_threads_is_in_range
-    host = self.submitted_to
-    if host
-      if self.omp_threads.to_i < host.min_omp_threads
-        errors.add(:omp_threads, "must be equal to or larger than #{host.min_mpi_procs}")
-      elsif self.omp_threads.to_i > host.max_omp_threads
-        errors.add(:omp_threads, "must be equal to or smaller than #{host.max_mpi_procs}")
+    if submitted_to
+      if omp_threads.to_i < submitted_to.min_omp_threads
+        errors.add(:omp_threads, "must be equal to or larger than #{submitted_to.min_mpi_procs}")
+      elsif omp_threads.to_i > submitted_to.max_omp_threads
+        errors.add(:omp_threads, "must be equal to or smaller than #{submitted_to.max_mpi_procs}")
       end
     end
   end
