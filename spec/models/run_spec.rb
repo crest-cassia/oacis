@@ -92,59 +92,102 @@ describe Run do
       run.should_not be_valid
     end
 
-    it "mpi_procs must be a positive integer" do
+    it "mpi_procs must between Host#min_mpi_procs and Host#max_mpi_procs" do
       run = @param_set.runs.build(@valid_attribute)
-      run.mpi_procs = 1
+      host = run.submitted_to
+      host.update_attributes(min_mpi_procs: 1, max_mpi_procs: 256)
+      run.mpi_procs = 256
       run.should be_valid
-      run.mpi_procs = 16384
-      run.should be_valid
-      run.mpi_procs = 0
+      run.mpi_procs = 512
       run.should_not be_valid
     end
 
-    it "omp_threads must be a positive integer" do
+    it "skips validation of mpi_procs for a persisted document" do
       run = @param_set.runs.build(@valid_attribute)
-      run.omp_threads = 1
+      host = run.submitted_to
+      host.update_attributes(min_mpi_procs: 1, max_mpi_procs: 256)
+      run.mpi_procs = 256
+      run.save!
+      host.update_attribute(:max_mpi_procs, 128)
       run.should be_valid
-      run.omp_threads = 8
+    end
+
+    it "omp_threads must between Host#min_omp_threads and Host#max_omp_threads" do
+      run = @param_set.runs.build(@valid_attribute)
+      host = run.submitted_to
+      host.update_attributes(min_omp_threads: 1, max_omp_threads: 256)
+      run.omp_threads = 256
       run.should be_valid
-      run.omp_threads = 0
+      run.omp_threads = 512
       run.should_not be_valid
     end
 
-    describe "'runtime_parameters' field" do
+    it "skips validation of omp_threads for a persisted document" do
+      run = @param_set.runs.build(@valid_attribute)
+      host = run.submitted_to
+      host.update_attributes(min_omp_threads: 1, max_omp_threads: 256)
+      run.omp_threads = 256
+      run.save!
+      host.update_attribute(:max_omp_threads, 128)
+      run.should be_valid
+    end
+
+    describe "'host_parameters' field" do
 
       before(:each) do
-        template = <<-EOS
+        header = <<-EOS
 #!/bin/bash
 # node:<%= node %>
 # proc:<%= mpi_procs %>
 EOS
-        @host = FactoryGirl.create(:host, script_header_template: template)
+        template = JobScriptUtil::DEFAULT_TEMPLATE.sub(/#!\/bin\/bash/, header)
+        hpds = [ HostParameterDefinition.new(key: "node", default: "x", format: '\w+') ]
+        @host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
       end
 
-      it "is valid when runtime parameters are properly given" do
+      it "is valid when host_parameters are properly given" do
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
-        run.runtime_parameters = {"node" => "abc"}
+        run.host_parameters = {"node" => "abc"}
         run.should be_valid
       end
 
-      it "is invalid when all the runtime parameters are not specified" do
+      it "is invalid when all the host_parameters are not specified" do
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
-        run.runtime_parameters = {}
+        run.host_parameters = {}
         run.should_not be_valid
       end
 
-      it "is valid when runtime parameters have rendundant keys" do
+      it "is valid when host_parameters have rendundant keys" do
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
         run.omp_threads = 8
-        run.runtime_parameters = {"node" => "abd", "shape" => "xyz"}
+        run.host_parameters = {"node" => "abd", "shape" => "xyz"}
+        run.should be_valid
+      end
+
+      it "is invalid when host_parameters does not match the defined format" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.host_parameters = {"node" => "!!!"}
+        run.should_not be_valid
+      end
+
+      it "skips validation for a persisted run" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.host_parameters = {"node" => "abc"}
+        run.save!
+        new_template = <<-EOS
+#!/bin/bash
+# new_var: <%= new_var %>
+EOS
+        @host.update_attribute(:template, new_template)
         run.should be_valid
       end
     end
@@ -454,23 +497,19 @@ EOS
     end
   end
 
-  describe "#submittable_hosts_and_variables" do
+  describe "#remove_redundant_host_parameters" do
 
-    it "returns Hash of host and its runtime parameters"
-  end
-
-  describe "#remove_redundant_runtime_parameters" do
-
-    it "removes runtime parameters not necessary for the host" do
+    it "removes host_parameters not necessary for the host" do
       template = <<EOS
 #!/bin/bash
 # foobar: <%= foobar %>
 EOS
-      host = FactoryGirl.create(:host, script_header_template: template)
+      hpds = [ HostParameterDefinition.new(key: "foobar") ]
+      host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
       r_params = {"foobar" => 1, "baz" => 2}
-      run = @param_set.runs.build(submitted_to: host, runtime_parameters: r_params)
+      run = @param_set.runs.build(submitted_to: host, host_parameters: r_params)
       run.save!
-      run.runtime_parameters.should eq ({"foobar" => 1})
+      run.host_parameters.should eq ({"foobar" => 1})
     end
   end
 end

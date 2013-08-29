@@ -14,7 +14,7 @@ class Run
   field :result  # can be any type. it's up to Simulator spec
   field :mpi_procs, type: Integer, default: 1
   field :omp_threads, type: Integer, default: 1
-  field :runtime_parameters, type: Hash, default: {}
+  field :host_parameters, type: Hash, default: {}
   field :job_id, type: String
   belongs_to :parameter_set
   belongs_to :simulator  # for caching. do not edit this field explicitly
@@ -28,13 +28,19 @@ class Run
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :submitted_to, presence: true
-  validate :runtime_parameters_given
+  validate :host_parameters_given, on: :create
+  validate :host_parameters_format, on: :create
+  validate :mpi_procs_is_in_range, on: :create
+  validate :omp_threads_is_in_range, on: :create
+  # validates only for a new_record
+  # because Host#max_mpi_procs, max_omp_threads can change during a job is running
+
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  attr_accessible :seed, :mpi_procs, :omp_threads, :runtime_parameters, :submitted_to
+  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :submitted_to
 
-  before_save :set_simulator, :remove_redundant_runtime_parameters
+  before_save :set_simulator, :remove_redundant_host_parameters
   after_create :create_run_dir
   before_destroy :delete_run_dir, :delete_archived_result_file
 
@@ -45,9 +51,9 @@ class Run
   end
 
   def simulator
-    set_simulator if self.simulator_id.nil?
-    if self.simulator_id
-      Simulator.find(self.simulator_id)
+    set_simulator if simulator_id.nil?
+    if simulator_id
+      Simulator.find(simulator_id)
     else
       nil
     end
@@ -58,19 +64,19 @@ class Run
   end
 
   def command_and_input
-    prm = self.parameter_set
+    prm = parameter_set
     sim = prm.simulator
     cmd_array = []
     cmd_array << sim.command
     input = nil
     if sim.support_input_json
       input = prm.v.dup
-      input[:_seed] = self.seed
+      input[:_seed] = seed
     else
       cmd_array += sim.parameter_definitions.map do |pd|
         prm.v[pd.key]
       end
-      cmd_array << self.seed
+      cmd_array << seed
     end
     return cmd_array.join(' '), input
   end
@@ -93,7 +99,7 @@ class Run
   end
 
   def archived_result_path
-    dir.join('..', "#{self.id}.tar.bz2")
+    dir.join('..', "#{id}.tar.bz2")
   end
 
   def destroy
@@ -107,19 +113,19 @@ class Run
   end
 
   def enqueue_auto_run_analyzers
-    ps = self.parameter_set
+    ps = parameter_set
     sim = ps.simulator
 
     if self.status == :finished
       sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
-        anl = self.analyses.build(analyzer: azr)
+        anl = analyses.build(analyzer: azr)
         anl.save and anl.submit
       end
 
       sim.analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
         scope = ps.runs.where(status: :finished)
-        if scope.count == 1 and scope.first.id == self.id
-          anl = self.analyses.build(analyzer: azr)
+        if scope.count == 1 and scope.first.id == id
+          anl = analyses.build(analyzer: azr)
           anl.save and anl.submit
         end
       end
@@ -135,15 +141,6 @@ class Run
     end
   end
 
-  def submittable_hosts_and_variables
-    h = {}
-    self.parameter_set.simulator.executable_on.each do |host|
-      extracted_variables = JobScriptUtil.extract_runtime_parameters(host.script_header_template)
-      h[host] = extracted_variables - ["mpi_procs", "omp_threads"]
-    end
-    h
-  end
-
   private
   def set_simulator
     if parameter_set
@@ -156,7 +153,7 @@ class Run
   SeedMax = 2 ** 31
   SeedIterationLimit = 1024
   def set_unique_seed
-    unless self.seed
+    unless seed
       SeedIterationLimit.times do |i|
         candidate = rand(SeedMax)
         if self.class.where(:parameter_set_id => parameter_set, :seed => candidate).exists? == false
@@ -169,21 +166,21 @@ class Run
   end
 
   def create_run_dir
-    FileUtils.mkdir_p(self.dir)
+    FileUtils.mkdir_p(dir)
   end
 
   def delete_run_dir
     # if self.parameter_set.nil, parent ParameterSet is already destroyed.
     # Therefore, self.dir raises an exception
-    if self.parameter_set and File.directory?(self.dir)
-      FileUtils.rm_r(self.dir)
+    if parameter_set and File.directory?(dir)
+      FileUtils.rm_r(dir)
     end
   end
 
   def delete_archived_result_file
     # if self.parameter_set.nil, parent ParameterSet is already destroyed.
     # Therefore, self.archived_result_path raises an exception
-    if self.parameter_set
+    if parameter_set
       archive = archived_result_path
       FileUtils.rm(archive) if File.exist?(archive)
     end
@@ -194,27 +191,56 @@ class Run
     delete_run_dir
     delete_archived_result_file
     self.parameter_set = nil
-    self.save
+    save
   end
 
-  def runtime_parameters_given
-    if self.submitted_to
-      host = self.submitted_to
-      parameters = JobScriptUtil.extract_runtime_parameters(host.script_header_template)
-      parameters -= self.runtime_parameters.keys
-      parameters -= ["mpi_procs"] if self.mpi_procs
-      parameters -= ["omp_threads"] if self.omp_threads
-      if parameters.present?
-        self.errors.add(:runtime_parameters, "not given parameters: #{parameters.inspect}")
+  def host_parameters_given
+    if submitted_to
+      keys = submitted_to.host_parameter_definitions.map {|x| x.key}
+      diff = keys - host_parameters.keys
+      if diff.any?
+        errors.add(:host_parameters, "not given parameters: #{diff.inspect}")
       end
     end
   end
 
-  def remove_redundant_runtime_parameters
-    if self.submitted_to
-      self.runtime_parameters.select! do |key,val|
-        template = self.submitted_to.script_header_template
-        JobScriptUtil.extract_runtime_parameters(template).include?(key)
+  def host_parameters_format
+    if submitted_to
+      submitted_to.host_parameter_definitions.each do |host_prm|
+        key = host_prm.key
+        unless host_parameters[key].to_s =~ Regexp.new(host_prm.format.to_s)
+          errors.add(:host_parameters, "#{key} must satisfy #{host_prm.format}")
+        end
+      end
+    end
+  end
+
+
+  def remove_redundant_host_parameters
+    if submitted_to
+      host_params = submitted_to.host_parameter_definitions.map {|x| x.key}
+      host_parameters.select! do |key,val|
+        host_params.include?(key)
+      end
+    end
+  end
+
+  def mpi_procs_is_in_range
+    if submitted_to
+      if mpi_procs.to_i < submitted_to.min_mpi_procs
+        errors.add(:mpi_procs, "must be equal to or larger than #{submitted_to.min_mpi_procs}")
+      elsif mpi_procs.to_i > submitted_to.max_mpi_procs
+        errors.add(:mpi_procs, "must be equal to or smaller than #{submitted_to.max_mpi_procs}")
+      end
+    end
+  end
+
+  def omp_threads_is_in_range
+    if submitted_to
+      if omp_threads.to_i < submitted_to.min_omp_threads
+        errors.add(:omp_threads, "must be equal to or larger than #{submitted_to.min_mpi_procs}")
+      elsif omp_threads.to_i > submitted_to.max_omp_threads
+        errors.add(:omp_threads, "must be equal to or smaller than #{submitted_to.max_mpi_procs}")
       end
     end
   end

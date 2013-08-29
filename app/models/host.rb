@@ -9,9 +9,15 @@ class Host
   field :scheduler_type, type: String, default: "none"
   field :work_base_dir, type: String, default: '~'
   field :max_num_jobs, type: Integer, default: 1
-  field :script_header_template, type: String, default: JobScriptUtil::DEFAULT_HEADER
+  field :min_mpi_procs, type: Integer, default: 1
+  field :max_mpi_procs, type: Integer, default: 1
+  field :min_omp_threads, type: Integer, default: 1
+  field :max_omp_threads, type: Integer, default: 1
+  field :template, type: String, default: JobScriptUtil::DEFAULT_TEMPLATE
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
+  embeds_many :host_parameter_definitions
+  accepts_nested_attributes_for :host_parameter_definitions, allow_destroy: true
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
   validates :hostname, presence: true, format: {with: /^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/}
@@ -22,8 +28,14 @@ class Host
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
+  validates :min_mpi_procs, numericality: {greater_than_or_equal_to: 1}
+  validates :max_mpi_procs, numericality: {greater_than_or_equal_to: 1}
+  validates :min_omp_threads, numericality: {greater_than_or_equal_to: 1}
+  validates :max_omp_threads, numericality: {greater_than_or_equal_to: 1}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :template_is_not_editable_when_submittable_runs_exist
+  validate :min_is_not_larger_than_max
+  validate :template_conform_to_host_parameter_definitions
 
   CONNECTION_EXCEPTIONS = [
     Errno::ECONNREFUSED,
@@ -238,8 +250,40 @@ class Host
   end
 
   def template_is_not_editable_when_submittable_runs_exist
-    if template_is_not_editable? and self.script_header_template_changed?
-      errors.add(:script_header_template, "is not editable when submittable runs exist")
+    if template_is_not_editable? and self.template_changed?
+      errors.add(:template, "is not editable when submittable runs exist")
+    end
+  end
+
+  def min_is_not_larger_than_max
+    if min_mpi_procs > max_mpi_procs
+      errors.add(:max_mpi_procs, "must be larger than min_mpi_procs")
+    end
+    if min_omp_threads > max_omp_threads
+      errors.add(:max_omp_threads, "must be larger than min_omp_threads")
+    end
+  end
+
+  def template_conform_to_host_parameter_definitions
+    invalid = SafeTemplateEngine.invalid_parameters(template)
+    if invalid.any?
+      errors.add(:template, "invalid parameters #{invalid.inspect}")
+      return
+    end
+    vars = SafeTemplateEngine.extract_parameters(template)
+    vars -= JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
+    keys = host_parameter_definitions.map {|hpdef| hpdef.key }
+    diff = vars.sort - keys.sort
+    if diff.any?
+      diff.each do |var|
+        errors[:base] << "'#{var}' appears in template, but not defined as a host parameter"
+      end
+    end
+    diff = keys.sort - vars.sort
+    if diff.any?
+      diff.each do |var|
+        errors[:base] << "'#{var}' is defined as a host parameter, but does not appear in template"
+      end
     end
   end
 end

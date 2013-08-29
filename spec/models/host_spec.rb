@@ -87,6 +87,42 @@ describe Host do
       host.should_not be_valid
     end
 
+    it "min_mpi_procs must be 1 or positive" do
+      @valid_attr.update(min_mpi_procs: 0)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
+    it "max_mpi_procs must be 1 or positive" do
+      @valid_attr.update(max_mpi_procs: 0)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
+    it "max_mpi_procs must be larger than min_mpi_procs" do
+      @valid_attr.update(min_mpi_procs: 2, max_mpi_procs: 1)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
+    it "min_omp_threads must be 1 or positive" do
+      @valid_attr.update(min_omp_threads: 0)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
+    it "max_omp_threads must be 1 or positive" do
+      @valid_attr.update(max_omp_threads: 0)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
+    it "max_omp_threads must be larger than min_omp_threads" do
+      @valid_attr.update(min_omp_threads: 2, max_omp_threads: 1)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
     it "cannot change when submitted runs exist" do
       host = FactoryGirl.create(:host)
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
@@ -101,9 +137,47 @@ describe Host do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       run = sim.parameter_sets.first.runs.first
       host = run.submitted_to
-      host.script_header_template = "#!/bin/another/bash"
+      host.template = host.template.sub("#!/bin/bash", "#!/bin/another/bash")
       host.should_not be_valid
     end
+
+    it "is valid when host_parameter_definitions conform to template" do
+      template_header = <<-EOS
+#!/bin/bash
+#node: <%= node %>
+EOS
+      template = JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", template_header)
+      definitions = [HostParameterDefinition.new(key: "node")]
+      host = FactoryGirl.build(:host, template: template, host_parameter_definitions: definitions)
+      host.should be_valid
+    end
+
+    it "is not valid when host_parameter_definitions does not have sufficient variables" do
+      template_header = <<-EOS
+#!/bin/bash
+#node: <= node %>
+#elapsed: <%= elapsed %>
+EOS
+      template = JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", template_header)
+      definitions = [HostParameterDefinition.new(key: "node")]
+      host = FactoryGirl.build(:host, template: template, host_parameter_definitions: definitions)
+      host.should_not be_valid
+    end
+
+    it "is not valid when there is a host_parameter_definitions which is not found in template" do
+      template_header = <<-EOS
+#!/bin/bash
+#node: <= node %>
+EOS
+      template = JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", template_header)
+      definitions = [
+        HostParameterDefinition.new(key: "node"),
+        HostParameterDefinition.new(key: "elapsed")
+      ]
+      host = FactoryGirl.build(:host, template: template, host_parameter_definitions: definitions)
+      host.should_not be_valid
+    end
+
   end
 
   describe "#connected?" do
