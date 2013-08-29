@@ -63,9 +63,8 @@ EOS
     variables = run.host_parameters.dup if run.host_parameters
     variables.update(default_variables)
 
-    expanded_script = expand_parameters(host.template, variables)
-
-    expanded_script.gsub(/(\r\n|\r|\n)/, "\n")
+    rendered_script = SafeTemplateEngine.render(host.template, variables)
+    rendered_script.gsub(/(\r\n|\r|\n)/, "\n")
   end
 
   def self.expand_result_file_and_update_run(run)
@@ -96,19 +95,5 @@ EOS
       run.included_at = DateTime.now
       run.save!
     }
-  end
-
-  def self.extract_parameters(template)
-    template.scan(/<%=\s*(\w+)\s*%>/).flatten.uniq
-  end
-
-  def self.expand_parameters(template, parameters)
-    replaced = template.dup
-    extract_parameters(template).each do |variable|
-      value = parameters[variable].to_s
-      pattern = /<%=\s*#{variable}\s*%>/
-      replaced.gsub!(pattern, value)
-    end
-    replaced
   end
 end

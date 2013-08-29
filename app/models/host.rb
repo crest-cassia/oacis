@@ -265,7 +265,12 @@ class Host
   end
 
   def template_conform_to_host_parameter_definitions
-    vars = JobScriptUtil.extract_parameters(template)
+    invalid = SafeTemplateEngine.invalid_parameters(template)
+    if invalid.any?
+      errors.add(:template, "invalid parameters #{invalid.inspect}")
+      return
+    end
+    vars = SafeTemplateEngine.extract_parameters(template)
     vars -= JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
     keys = host_parameter_definitions.map {|hpdef| hpdef.key }
     diff = vars.sort - keys.sort
