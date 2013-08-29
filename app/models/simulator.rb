@@ -7,6 +7,7 @@ class Simulator
   field :support_input_json, type: Boolean, default: true
   field :support_mpi, type: Boolean, default: false
   field :support_omp, type: Boolean, default: false
+  field :pre_process_script, type: String
 
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
@@ -20,7 +21,7 @@ class Simulator
   validates :parameter_definitions, presence: true
 
   accepts_nested_attributes_for :parameter_definitions, allow_destroy: true
-  attr_accessible :name, :command, :description, :parameter_definitions_attributes, :executable_on_ids
+  attr_accessible :name, :pre_process_script, :command, :description, :parameter_definitions_attributes, :executable_on_ids
 
   after_create :create_simulator_dir
 

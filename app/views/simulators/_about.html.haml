@@ -36,6 +36,15 @@
         %td= pd.default || '-'
         %td= pd.description ? pd.description : "-"
 
-%h3 Command
-%pre
-  = simulator.command
+%h3 Commands
+%ul
+  %li
+    Pre-process Script
+    %br
+    %pre
+      = simulator.pre_process_script
+  %li
+    Simulation Command
+    %br
+    %pre
+      = simulator.command
