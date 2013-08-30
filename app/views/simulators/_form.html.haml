@@ -12,6 +12,10 @@
         = render 'parameter_definition_fields', f: builder, disabled: has_ps
       = link_to_add_fields "Add Parameter", f, :parameter_definitions unless has_ps
   .control-group
+    = f.label(:pre_process_script, class: 'control-label')
+    .controls
+      = f.text_area(:pre_process_script, rows: 3)
+  .control-group
     = f.label(:command, class: 'control-label')
     .controls
       = f.text_field(:command)

@@ -298,7 +298,7 @@ EOS
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
-                                command: "ls",
+                                command: "echo",
                                 parameter_sets_count: 1, runs_count: 1)
       @runs = @sim.parameter_sets.first.runs
       @host = @sim.executable_on.where(name: "localhost").first
@@ -306,43 +306,79 @@ EOS
       FileUtils.mkdir_p(@temp_dir)
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
-      SSHUtil.stub(:execute2).and_return( ["12345", "", 0, nil] )
+      SchedulerWrapper.any_instance.stub(:submit_command).and_return("echo")
     end
 
     after(:each) do
       FileUtils.rm_rf(@temp_dir) if File.directory?(@temp_dir)
     end
 
-    it "creates a job script on the remote host" do
+    it "creates a work_dir on remote host" do
       @host.submit(@runs)
-      Dir.glob( @temp_dir.join('*.sh') ).should have(1).items
+      File.directory?( @temp_dir.join(@runs.first.id) ).should be_true
     end
 
-    it "returns hash of run_id and path to job script" do
-      paths = {}
-      @runs.each do |run|
-        paths[run.id] = Pathname.new(@host.work_base_dir).join("#{run.id}.sh")
-      end
-      @host.submit(@runs).should eq paths
-    end
-
-    it "creates _input.json on the remote host if simulator support json_input" do
+    it "creates _input.json on remote host if simulator.support_input_json is true" do
       @sim.support_input_json = true
       @sim.save!
       @host.submit(@runs)
-      Dir.glob( @temp_dir.join('*_input.json') ).should have(1).items
+      File.exist?( @temp_dir.join(@runs.first.id, '_input.json') ).should be_true
     end
 
-    it "updates status and submitted_to fileds of Run" do
+    it "executes pre_process_script if simulator.pre_process_script is not empty" do
+      @sim.pre_process_script = "echo hello > preprocess.txt"
+      @sim.save!
       @host.submit(@runs)
-      @runs.each do |run|
-        run.reload
-        run.status.should eq :submitted
-        run.submitted_to.should eq @host
+      File.exist?( @temp_dir.join(@runs.first.id, 'preprocess.txt')).should be_true
+    end
+
+    it "executes pre_process_script with arguments when support_input_json is false" do
+      @sim.support_input_json = false
+      @sim.pre_process_script = "echo $# > preprocess.txt"
+      @sim.save!
+      @host.submit(@runs)
+      File.open( @temp_dir.join(@runs.first.id, 'preprocess.txt') ).read.chomp.should eq "3"
+    end
+
+    describe "when pre_process_script fails" do
+
+      before(:each) do
+        @sim.pre_process_script = "invalid command"
+        @sim.save!
+      end
+
+      it "sets status of Run to failed" do
+        @host.submit(@runs)
+        @runs.first.reload.status.should eq :failed
+      end
+
+      it "does not enqueue job script" do
+        SchedulerWrapper.any_instance.should_not_receive(:submit_command)
+        @host.submit(@runs)
+      end
+
+      it "removes files on remote host" do
+        @host.submit(@runs)
+        File.directory?( @temp_dir.join(@runs.first.id) ).should be_false
+      end
+
+      it "copies files in the remote work_dir to Run's directory" do
+        @host.submit(@runs)
+        File.exist?( @runs.first.dir.join('_preprocess.sh') ).should be_true
       end
     end
 
-    it "update submitted_at field of Run" do
+    it "creates a job script on remote host" do
+      @host.submit(@runs)
+      File.exist?( @temp_dir.join( @runs.first.id.to_s+'.sh') ).should be_true
+    end
+
+    it "updates status of Run" do
+      @host.submit(@runs)
+      @runs.first.reload.status.should eq :submitted
+    end
+
+    it "updates submitted_at of Run" do
       expect {
         @host.submit(@runs)
       }.to change { @runs.first.reload.submitted_at }

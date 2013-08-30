@@ -60,25 +60,36 @@ class Run
   end
 
   def command
-    command_and_input[0]
+    cmd = simulator.command
+    cmd += " #{args}" if args.length > 0
+    cmd
+  end
+
+  def input
+    if simulator.support_input_json
+      input = parameter_set.v.dup
+      input[:_seed] = seed
+      input
+    else
+      nil
+    end
+  end
+
+  def args
+    if simulator.support_input_json
+      ""
+    else
+      ps = parameter_set
+      params = simulator.parameter_definitions.map do |pd|
+        ps.v[pd.key]
+      end
+      params << seed
+      params.join(' ')
+    end
   end
 
   def command_and_input
-    prm = parameter_set
-    sim = prm.simulator
-    cmd_array = []
-    cmd_array << sim.command
-    input = nil
-    if sim.support_input_json
-      input = prm.v.dup
-      input[:_seed] = seed
-    else
-      cmd_array += sim.parameter_definitions.map do |pd|
-        prm.v[pd.key]
-      end
-      cmd_array << seed
-    end
-    return cmd_array.join(' '), input
+    [command, input]
   end
 
   def dir

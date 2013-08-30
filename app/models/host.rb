@@ -80,30 +80,21 @@ class Host
 
   def submit(runs)
     start_ssh do |ssh|
-      # copy job_script and input_json files
-      job_script_paths = prepare_job_script_for(runs)
-
-      # enqueue jobs
-      job_script_paths.each do |run_id, path|
-        run = Run.find(run_id)
+      runs.each do |run|
         begin
-          out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
-          raise "chmod failed : #{rc}, #{err}" unless rc == 0
-          cmd = SchedulerWrapper.new(self.scheduler_type).submit_command(path)
-          out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-          raise "#{cmd} failed : #{rc}, #{err}" unless rc == 0
-          run.status = :submitted
-          run.submitted_to = self
-          run.job_id = out.chomp
-          run.submitted_at = DateTime.now
-          run.save!
+          create_remote_work_dir(ssh, run)
+          prepare_input_json(ssh, run)
+          execute_pre_process(ssh, run)
+          job_script_path = prepare_job_script(ssh, run)
+          submit_to_scheduler(ssh, run, job_script_path)
         rescue => ex
-          run.status = :failed
-          run.save!
-          raise ex
+          work_dir = work_dir_path(run)
+          SSHUtil.download_recursive(ssh, work_dir, run.dir) if SSHUtil.exist?(ssh, work_dir)
+          remove_remote_files(ssh, run)
+          run.update_attribute(:status, :failed)
+          $stderr.puts ex.inspect
         end
       end
-      job_script_paths
     end
   end
 
@@ -158,29 +149,59 @@ class Host
     end
   end
 
-  def prepare_job_script_for(runs)
-    script_paths = {}
-    start_ssh do |ssh|
-      runs.each do |run|
-        # prepare job script
-        spath = job_script_path(run)
-        SSHUtil.write_remote_file(ssh, spath, JobScriptUtil.script_for(run, self))
-        script_paths[run.id] = spath
+  def create_remote_work_dir(ssh, run)
+    cmd = "mkdir -p #{work_dir_path(run)}"
+    out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+    raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
+  end
 
-        # prepare _input.json
-        input = run.command_and_input[1]
-        SSHUtil.write_remote_file(ssh, input_json_path(run), input.to_json) if input
-      end
+  def prepare_input_json(ssh, run)
+    input = run.input
+    SSHUtil.write_remote_file(ssh, input_json_path(run), input.to_json) if input
+  end
+
+  def execute_pre_process(ssh, run)
+    script = run.simulator.pre_process_script
+    if script.present?
+      path = pre_process_script_path(run)
+      SSHUtil.write_remote_file(ssh, path, script)
+      out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
+      raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
+      binding.pry
+      cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} #{run.args} 1>> _stdout.txt 2>> _stderr.txt"
+      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+      raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
     end
-    script_paths
+  end
+
+  def prepare_job_script(ssh, run)
+    jspath = job_script_path(run)
+    SSHUtil.write_remote_file(ssh, jspath, JobScriptUtil.script_for(run, self))
+    out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{jspath}")
+    raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
+    jspath
+  end
+
+  def submit_to_scheduler(ssh, run, job_script_path)
+    cmd = SchedulerWrapper.new(self.scheduler_type).submit_command(job_script_path)
+    out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+    raise "#{cmd} failed : #{rc}, #{err}" unless rc == 0
+    run.status = :submitted
+    run.job_id = out.chomp
+    run.submitted_at = DateTime.now
+    run.save!
   end
 
   def job_script_path(run)
     Pathname.new(work_base_dir).join("#{run.id}.sh")
   end
 
+  def pre_process_script_path(run)
+    work_dir_path(run).join("_preprocess.sh")
+  end
+
   def input_json_path(run)
-    Pathname.new(work_base_dir).join("#{run.id}_input.json")
+    work_dir_path(run).join('_input.json')
   end
 
   def work_dir_path(run)
