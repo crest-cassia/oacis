@@ -79,7 +79,7 @@ module SSHUtil
     sftp = ssh.sftp
     sftp.connect! if sftp.closed?
     sftp.file.open(rpath, 'w') {|f|
-      f.print content
+      f.print content.gsub(/(\r\n|\r|\n)/, "\n")
     }
   end
 
