@@ -167,7 +167,8 @@ class Host
       SSHUtil.write_remote_file(ssh, path, script)
       out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
       raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
-      cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} 1>> _stdout.txt 2>> _stderr.txt"
+      binding.pry
+      cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} #{run.args} 1>> _stdout.txt 2>> _stderr.txt"
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
       raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
     end

@@ -332,7 +332,13 @@ EOS
       File.exist?( @temp_dir.join(@runs.first.id, 'preprocess.txt')).should be_true
     end
 
-    it "executes pre_process_script with arguments when support_input_json is false"
+    it "executes pre_process_script with arguments when support_input_json is false" do
+      @sim.support_input_json = false
+      @sim.pre_process_script = "echo $# > preprocess.txt"
+      @sim.save!
+      @host.submit(@runs)
+      File.open( @temp_dir.join(@runs.first.id, 'preprocess.txt') ).read.chomp.should eq "3"
+    end
 
     describe "when pre_process_script fails" do
 
