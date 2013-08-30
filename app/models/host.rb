@@ -89,7 +89,7 @@ class Host
           submit_to_scheduler(ssh, run, job_script_path)
         rescue => ex
           run.update_attribute(:status, :failed)
-          # TODO: cleanup_remote_files
+          remove_remote_files(ssh, run)
           $stderr.puts ex.inspect
         end
       end

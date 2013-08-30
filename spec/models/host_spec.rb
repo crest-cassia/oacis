@@ -346,9 +346,15 @@ EOS
         @runs.first.reload.status.should eq :failed
       end
 
-      it "does not enqueue job script"
+      it "does not enqueue job script" do
+        SchedulerWrapper.any_instance.should_not_receive(:submit_command)
+        @host.submit(@runs)
+      end
 
-      it "removes files on remote host"
+      it "removes files on remote host" do
+        @host.submit(@runs)
+        File.directory?( @temp_dir.join(@runs.first.id) ).should be_false
+      end
     end
 
     it "creates a job script on remote host" do
