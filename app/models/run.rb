@@ -63,6 +63,10 @@ class Run
     command_and_input[0]
   end
 
+  def input
+    command_and_input[1]
+  end
+
   def command_and_input
     prm = parameter_set
     sim = prm.simulator
