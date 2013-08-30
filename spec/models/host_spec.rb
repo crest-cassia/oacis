@@ -355,11 +355,16 @@ EOS
         @host.submit(@runs)
         File.directory?( @temp_dir.join(@runs.first.id) ).should be_false
       end
+
+      it "copies files in the remote work_dir to Run's directory" do
+        @host.submit(@runs)
+        File.exist?( @runs.first.dir.join('_preprocess.sh') ).should be_true
+      end
     end
 
     it "creates a job script on remote host" do
       @host.submit(@runs)
-      File.exist?( @temp_dir.join( @runs.first.id, @runs.first.id.to_s+'.sh') ).should be_true
+      File.exist?( @temp_dir.join( @runs.first.id.to_s+'.sh') ).should be_true
     end
 
     it "updates status of Run" do
