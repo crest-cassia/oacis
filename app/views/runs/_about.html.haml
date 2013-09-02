@@ -63,4 +63,4 @@
 
 - if @run.submitted_to
   %h3 Script
-  %pre~ JobScriptUtil.script_for(@run, @run.submitted_to)
+  %pre~ @run.job_script
