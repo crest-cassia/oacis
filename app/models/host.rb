@@ -292,16 +292,19 @@ class Host
     end
     vars = SafeTemplateEngine.extract_parameters(template)
     vars -= JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
-    keys = host_parameter_definitions.map {|hpdef| hpdef.key }
+    # check if definition is marked_for_destruction
+    # since nested_attributes are destructed after validation of host
+    host_params = host_parameter_definitions.reject{ |hpdef| hpdef.marked_for_destruction? }
+    keys = host_params.map {|hpdef| hpdef.key }
     diff = vars.sort - keys.sort
     if diff.any?
       diff.each do |var|
         errors[:base] << "'#{var}' appears in template, but not defined as a host parameter"
       end
     end
-    diff = keys.sort - vars.sort
-    if diff.any?
-      diff.each do |var|
+    diff2 = keys.sort - vars.sort
+    if diff2.any?
+      diff2.each do |var|
         errors[:base] << "'#{var}' is defined as a host parameter, but does not appear in template"
       end
     end
