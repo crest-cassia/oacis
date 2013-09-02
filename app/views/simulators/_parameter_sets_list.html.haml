@@ -36,16 +36,16 @@
     = submit_tag "Save this Filter", :class => 'btn btn-primary'
 
 - if @query_list
-  %h4 Select query
+  %h4 Select Fileter
   = form_for(@simulator, :url=>{:controller=>"simulators", :action=>"show"}, :html => { :method => :get } ) do |f|
     = select_tag "query_id", options_for_select(@query_list, @query_id), :prompt => "all"
     = f.submit "Load Filter", :class => 'btn btn-primary', :name => nil
 
 - unless @query_id.blank?
-  %h4 Delete query
+  %h4 Delete Fileter
   = form_tag( _make_query_simulator_path(@simulator) ) do |f|
     = hidden_field_tag "query_id", @query_id
-    = submit_tag "Delete Filter", :class => 'btn btn-primary', :name => :delete_query
+    = submit_tag "Delete this Filter", :class => 'btn btn-primary', :name => :delete_query, :confirm => 'Are you sure?'
 
 :javascript
   $(function() {
