@@ -1,5 +1,5 @@
 = form_for @host, html: {class: 'form-horizontal'} do |f|
-  - error_messages = @host.errors.full_messages + @host.host_parameter_definitions.map {|pdef| pdef.errors.full_messages }.inject(:+)
+  - error_messages = @host.errors.full_messages + @host.host_parameter_definitions.map {|pdef| pdef.errors.full_messages }.flatten
   = render partial: 'shared/error_messages', locals: {error_messages: error_messages}
   .control-group
     = f.label(:name, class: 'control-label')
