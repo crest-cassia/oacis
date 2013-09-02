@@ -20,7 +20,6 @@ class RunsController < ApplicationController
   def show
     @run = Run.find(params[:id])
     @param_set = @run.parameter_set
-    @analyses = @run.analyses
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @run }
@@ -62,6 +61,11 @@ class RunsController < ApplicationController
         format.js
       end
     end
+  end
+
+  def _analyses_list
+    run = Run.find(params[:id])
+    render json: AnalysesListDatatable.new(view_context, run.analyses)
   end
 
   def preview

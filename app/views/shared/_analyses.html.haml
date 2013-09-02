@@ -1,15 +1,30 @@
 %h3 List of Analyses
-%table.table.table-condensed.analyses_list#analyses_list{:'data-source' => "#{_analyses_list_parameter_set_path(parameter_set.to_param, format: "json")}"}
-  %thead
-    %tr
-      %th{style: "min-width: 18px; width: 1%;"}
-      %th ID
-      %th analyzer
-      %th parameters
-      %th status
-      %th created_at
-      %th{style: "min-width: 18px; width: 1%;"}
-  %tbody
+- parameter_set = parameter_set
+- run = run
+- if parameter_set.present?
+  %table.table.table-condensed.analyses_list#analyses_list{:'data-source' => "#{_analyses_list_parameter_set_path(parameter_set.to_param, format: "json")}"}
+    %thead
+      %tr
+        %th{style: "min-width: 18px; width: 1%;"}
+        %th ID
+        %th analyzer
+        %th parameters
+        %th status
+        %th created_at
+        %th{style: "min-width: 18px; width: 1%;"}
+    %tbody
+- if run.present?
+  %table.table.table-condensed.analyses_list#analyses_list{:'data-source' => "#{_analyses_list_run_path(run.to_param, format: "json")}"}
+    %thead
+      %tr
+        %th{style: "min-width: 18px; width: 1%;"}
+        %th ID
+        %th analyzer
+        %th parameters
+        %th status
+        %th created_at
+        %th{style: "min-width: 18px; width: 1%;"}
+    %tbody
 
 :javascript
   $(function() {

@@ -1,4 +1,4 @@
-= render partial: 'shared/analyses', locals: {parameter_set: @param_set, analyses: @analyses}
+= render partial: 'shared/analyses', locals: {run: run}
 
 - if @run.status == :finished
   %h3 Run analysis
