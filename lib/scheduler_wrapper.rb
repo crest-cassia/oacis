@@ -14,7 +14,7 @@ class SchedulerWrapper
   def submit_command(script)
     case @type
     when "none"
-      "nohup bash #{script} > /dev/null 2>&1 < /dev/null &; basename #{script}"
+      "nohup bash #{script} > /dev/null 2>&1 < /dev/null & basename #{script}"
     when "torque"
       "qsub #{script}"
     when "pjm"
