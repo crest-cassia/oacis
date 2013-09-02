@@ -497,7 +497,7 @@ EOS
     end
   end
 
-  describe "#remove_redundant_host_parameters" do
+  describe "after_create callbacks" do
 
     it "removes host_parameters not necessary for the host" do
       template = <<EOS
@@ -510,6 +510,13 @@ EOS
       run = @param_set.runs.build(submitted_to: host, host_parameters: r_params)
       run.save!
       run.host_parameters.should eq ({"foobar" => 1})
+    end
+
+    it "sets job script" do
+      run = @param_set.runs.build(submitted_to: Host.first)
+      run.job_script.should_not be_present
+      run.save!
+      run.job_script.should be_present
     end
   end
 end

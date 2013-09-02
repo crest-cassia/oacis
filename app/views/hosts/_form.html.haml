@@ -52,11 +52,7 @@
   .control-group
     = f.label(:template, class: 'control-label')
     .controls
-      - if @host.template_is_not_editable?
-        = f.text_area(:template, style: "width: 840px", rows: 20, disabled: true)
-        not editable when a created run exists
-      - else
-        = f.text_area(:template, style: "width: 840px", rows: 20)
+      = f.text_area(:template, style: "width: 840px", rows: 20)
   #host_parameters_definition.control-group
     = label_tag('', 'Definition of Host Parameters', class: 'control-label')
     .controls

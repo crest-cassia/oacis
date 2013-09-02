@@ -16,6 +16,7 @@ class Run
   field :omp_threads, type: Integer, default: 1
   field :host_parameters, type: Hash, default: {}
   field :job_id, type: String
+  field :job_script, type: String
   belongs_to :parameter_set
   belongs_to :simulator  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy
@@ -40,7 +41,7 @@ class Run
 
   attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :submitted_to
 
-  before_save :set_simulator, :remove_redundant_host_parameters
+  before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   after_create :create_run_dir
   before_destroy :delete_run_dir, :delete_archived_result_file
 
@@ -226,7 +227,6 @@ class Run
     end
   end
 
-
   def remove_redundant_host_parameters
     if submitted_to
       host_params = submitted_to.host_parameter_definitions.map {|x| x.key}
@@ -234,6 +234,10 @@ class Run
         host_params.include?(key)
       end
     end
+  end
+
+  def set_job_script
+    self.job_script = JobScriptUtil.script_for(self, self.submitted_to)
   end
 
   def mpi_procs_is_in_range

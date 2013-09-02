@@ -33,7 +33,6 @@ class Host
   validates :min_omp_threads, numericality: {greater_than_or_equal_to: 1}
   validates :max_omp_threads, numericality: {greater_than_or_equal_to: 1}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
-  validate :template_is_not_editable_when_submittable_runs_exist
   validate :min_is_not_larger_than_max
   validate :template_conform_to_host_parameter_definitions
 
@@ -129,10 +128,6 @@ class Host
     self.persisted? and submitted_runs.any?
   end
 
-  def template_is_not_editable?
-    self.persisted? and submittable_runs.any?
-  end
-
   private
   def start_ssh
     if @ssh
@@ -175,7 +170,7 @@ class Host
 
   def prepare_job_script(ssh, run)
     jspath = job_script_path(run)
-    SSHUtil.write_remote_file(ssh, jspath, JobScriptUtil.script_for(run, self))
+    SSHUtil.write_remote_file(ssh, jspath, run.job_script)
     out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{jspath}")
     raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
     jspath
@@ -266,12 +261,6 @@ class Host
   def work_base_dir_is_not_editable_when_submitted_runs_exist
     if work_base_dir_is_not_editable? and self.work_base_dir_changed?
       errors.add(:work_base_dir, "is not editable when submitted runs exist")
-    end
-  end
-
-  def template_is_not_editable_when_submittable_runs_exist
-    if template_is_not_editable? and self.template_changed?
-      errors.add(:template, "is not editable when submittable runs exist")
     end
   end
 
