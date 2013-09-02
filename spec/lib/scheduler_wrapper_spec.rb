@@ -25,7 +25,7 @@ describe SchedulerWrapper do
     describe "#submit_command" do
 
       it "returns a command to submit a job" do
-        @wrapper.submit_command("~/path/to/job.sh").should eq "nohup bash ~/path/to/job.sh > /dev/null 2>&1 < /dev/null &; basename ~/path/to/job.sh"
+        @wrapper.submit_command("~/path/to/job.sh").should eq "nohup bash ~/path/to/job.sh > /dev/null 2>&1 < /dev/null & basename ~/path/to/job.sh"
       end
     end
 
