@@ -59,10 +59,10 @@ class AnalysesController < ApplicationController
     case arn.analyzer.type
     when :on_parameter_set
       ps = arn.analyzable
-      parameter_set_path(ps, anchor: '!tab-analysis')
+      parameter_set_path(ps, anchor: '!tab-analyses')
     when :on_run
       run = arn.analyzable
-      run_path(run, anchor: '!tab-analysis')
+      run_path(run, anchor: '!tab-analyses')
     else
       raise "must not happen"
     end
