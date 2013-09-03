@@ -2,7 +2,7 @@
 - parameter_set = parameter_set
 - run = run
 - path_to_analyses_list = _analyses_list_parameter_set_path(parameter_set.to_param, format: "json") if parameter_set.present?
-- path_to_analyses_list = _analyses_list_parameter_set_path(run.to_param, format: "json") if run.present?
+- path_to_analyses_list = _analyses_list_run_path(run.to_param, format: "json") if run.present?
 
 %table.table.table-condensed.analyses_list#analyses_list{:'data-source' => "#{path_to_analyses_list}"}
   %thead
