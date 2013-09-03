@@ -29,12 +29,11 @@ class AnalysesController < ApplicationController
 
   def destroy
     anl = Analysis.find(params[:id])
-    redirect_path = after_create_redirect_path(anl)
     anl.destroy
 
     respond_to do |format|
-      format.html { redirect_to redirect_path }
       format.json { head :no_content }
+      format.js
     end
   end
 
@@ -60,10 +59,10 @@ class AnalysesController < ApplicationController
     case arn.analyzer.type
     when :on_parameter_set
       ps = arn.analyzable
-      parameter_set_path(ps, anchor: '!tab-analysis')
+      parameter_set_path(ps, anchor: '!tab-analyses')
     when :on_run
       run = arn.analyzable
-      run_path(run, anchor: '!tab-analysis')
+      run_path(run, anchor: '!tab-analyses')
     else
       raise "must not happen"
     end

@@ -92,6 +92,11 @@ class ParameterSetsController < ApplicationController
     render json: RunsListDatatable.new(param_set.runs, view_context)
   end
 
+  def _analyses_list
+    parameter_set = ParameterSet.find(params[:id])
+    render json: AnalysesListDatatable.new(view_context, parameter_set.analyses)
+  end
+
   private
   MAX_CREATION_SIZE = 100
   # return created parameter sets
