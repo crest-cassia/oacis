@@ -104,6 +104,7 @@ EOS
 
     it "expand results and parse _status.json" do
       @sim.command = "echo '[1,2,3]' > _output.json"
+      @sim.support_input_json = true
       @sim.save!
       run_test_script_in_temp_dir
       Dir.chdir(@temp_dir) {
@@ -132,6 +133,7 @@ EOS
 
     it "parse elapsed times" do
       @sim.command = "sleep 1"
+      @sim.support_input_json = true
       @sim.save!
       run_test_script_in_temp_dir
       Dir.chdir(@temp_dir) {
