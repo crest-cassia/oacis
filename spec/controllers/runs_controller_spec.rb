@@ -41,11 +41,6 @@ describe RunsController do
       assigns(:run).should eq(@run)
       assigns(:param_set).should eq(@par)
     end
-
-    it "assigns 'analyses' variable" do
-      get 'show', {id: @run}, valid_session
-      assigns(:analyses).should eq(@run.analyses)
-    end
   end
 
   describe "POST 'create'" do
