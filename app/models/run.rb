@@ -28,7 +28,7 @@ class Run
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
-  validates :submitted_to, presence: true
+  validates :submitted_to, presence: true, on: :create  # submitted_to can be nil because a host may be destroyed
   validate :host_parameters_given, on: :create
   validate :host_parameters_format, on: :create
   validate :mpi_procs_is_in_range, on: :create
