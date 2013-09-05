@@ -20,9 +20,9 @@
     .controls
       = f.text_field(:command)
   .control-group
-    = f.label(:support_input_json, class: 'control-label')
+    = f.label(:support_input_json, "Input type", class: 'control-label')
     .controls
-      = f.check_box(:support_input_json)
+      = f.select(:support_input_json, {"Argument" => false, "JSON" => true} )
   .control-group
     = f.label(:support_mpi, class: 'control-label')
     .controls
