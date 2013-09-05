@@ -36,6 +36,8 @@ class Host
   validate :min_is_not_larger_than_max
   validate :template_conform_to_host_parameter_definitions
 
+  before_destroy :validate_destroyable
+
   CONNECTION_EXCEPTIONS = [
     Errno::ECONNREFUSED,
     Errno::ENETUNREACH,
@@ -126,6 +128,10 @@ class Host
 
   def work_base_dir_is_not_editable?
     self.persisted? and submitted_runs.any?
+  end
+
+  def destroyable?
+    submittable_runs.empty? and submitted_runs.empty?
   end
 
   private
@@ -296,6 +302,15 @@ class Host
       diff2.each do |var|
         errors[:base] << "'#{var}' is defined as a host parameter, but does not appear in template"
       end
+    end
+  end
+
+  def validate_destroyable
+    if destroyable?
+      return true
+    else
+      errors.add(:base, "Created/Submitted Runs exist")
+      return false
     end
   end
 end

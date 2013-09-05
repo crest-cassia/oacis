@@ -24,7 +24,7 @@
       %td= host.work_base_dir
       %td= host.max_num_jobs
       %td
-        = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning'
+        = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if host.destroyable?
 
 .form-actions
   %a.btn.btn-primary{href: new_host_path} New Host

@@ -191,6 +191,13 @@ EOS
         run.should be_valid
       end
     end
+
+    it "skips validation of submitted_to for a persisted document" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.save!
+      run.submitted_to = nil
+      run.should be_valid
+    end
   end
 
   describe "relations" do
