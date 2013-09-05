@@ -133,14 +133,6 @@ describe Host do
       host.should_not be_valid
     end
 
-    it "cannot change when created or submitted runs exist" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-      run = sim.parameter_sets.first.runs.first
-      host = run.submitted_to
-      host.template = host.template.sub("#!/bin/bash", "#!/bin/another/bash")
-      host.should_not be_valid
-    end
-
     it "is valid when host_parameter_definitions conform to template" do
       template_header = <<-EOS
 #!/bin/bash
