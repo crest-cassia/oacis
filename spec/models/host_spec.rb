@@ -178,6 +178,22 @@ EOS
       host.should_not be_valid
     end
 
+    it "can not be destroyed when submittable_runs or submitted_runs exist" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      run = sim.parameter_sets.first.runs.first
+      host = run.submitted_to
+      host.destroy.should be_false
+      host.errors.full_messages.should_not be_empty
+    end
+
+    it "can be destroyed when neither submittable_runs nor submitted_runs exist" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      run = sim.parameter_sets.first.runs.first
+      run.update_attribute(:status, :finished)
+      host = run.submitted_to
+      host.destroy.should be_true
+      host.errors.full_messages.should be_empty
+    end
   end
 
   describe "#connected?" do
