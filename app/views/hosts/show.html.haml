@@ -67,7 +67,7 @@
 .form-actions
   = link_to 'Edit', edit_host_path(@host), class: 'btn btn-info'
   = link_to 'Back to Index', hosts_path, class: 'btn'
-  = link_to 'Destroy', @host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
+  = link_to 'Destroy', @host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @host.destroyable?
 
 %hr
 %h3 Host Status

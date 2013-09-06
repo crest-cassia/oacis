@@ -4,7 +4,7 @@ class Simulator
   field :name, type: String
   field :command, type: String
   field :description, type: String
-  field :support_input_json, type: Boolean, default: true
+  field :support_input_json, type: Boolean, default: false
   field :support_mpi, type: Boolean, default: false
   field :support_omp, type: Boolean, default: false
   field :pre_process_script, type: String

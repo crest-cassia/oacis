@@ -133,6 +133,25 @@ describe HostsController do
       delete :destroy, {id: host.to_param}, valid_session
       response.should redirect_to(hosts_url)
     end
-  end
 
+    context "when submittable or submitted runs exist" do
+
+      before(:each) do
+        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+        run = sim.parameter_sets.first.runs.first
+        @host = run.submitted_to
+      end
+
+      it "does not destroy the host" do
+        expect {
+          delete :destroy, {id: @host.to_param}, valid_session
+        }.to_not change { Host.count }
+      end
+
+      it "renders 'show' template" do
+        delete :destroy, {id: @host.to_param}, valid_session
+        response.should render_template('show')
+      end
+    end
+  end
 end
