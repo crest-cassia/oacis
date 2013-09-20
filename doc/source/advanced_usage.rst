@@ -210,6 +210,4 @@ Description                   Analyzerに対する説明。入力は任意。
   gnuplot ~/path/to/plotfile.plt
 
 | 実行すると同じページに解析の結果が表示される。
-
-
-
+| 結果には、runの結果同様、カレントディレクトリ直下のファイル群が表示される。
