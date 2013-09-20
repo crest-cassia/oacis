@@ -51,7 +51,7 @@ namespace :daemon do
           cmd = "kill -QUIT #{pid.chomp}"
           puts cmd
           system(cmd)
-          FileUtils.rm(pidfile) if $?.to_i == 0
+          FileUtils.rm(pidfile)
         end
       else
         $stderr.puts "#{pidfile} is not found"
