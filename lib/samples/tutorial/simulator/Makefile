@@ -1,4 +1,4 @@
-#This file is written in CASSIYA Project since 2013.
+#This file is written in CASSIA Project since 2013.
 
 CC=g++
 CFLAGS=-c -Wall
