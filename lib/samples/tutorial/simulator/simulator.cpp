@@ -1,13 +1,13 @@
 /*****************************************************/
-/*This file is written in CASSIYA Project since 2013.*/
+/*This file is written in CASSIA Project since 2013.*/
 /*****************************************************/
 
 #include <sstream>
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
 
 using namespace std;
 
@@ -47,11 +47,11 @@ int main(int args, char** argv) {
 	//output time-series
 	ofstream ofs( "time_series.dat" );
 	if (ofs.is_open()) {
-	ofs << "#t y1 y2 dy" << endl;
-	for(int i=0;i<iteration;i++) {
-		ofs << i << " " << result[i][0] << " " << result[i][1] << " " << result[i][2] << endl;
-	}
-	ofs.close();
+		ofs << "#t y1 y2 dy" << endl;
+		for(int i=0;i<iteration;i++) {
+			ofs << i << " " << result[i][0] << " " << result[i][1] << " " << result[i][2] << endl;
+		}
+		ofs.close();
 	} else {
 		cerr << "can not open result file." << endl;
 		return -2;
