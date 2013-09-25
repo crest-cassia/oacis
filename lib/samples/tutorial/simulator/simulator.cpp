@@ -45,7 +45,7 @@ int main(int args, char** argv) {
 	}
 
 	//output time-series
-	ofstream ofs( "result.txt" );
+	ofstream ofs( "time_series.dat" );
 	if (ofs.is_open()) {
 	ofs << "#t y1 y2 dy" << endl;
 	for(int i=0;i<iteration;i++) {
