@@ -16,7 +16,6 @@ Contents:
    installation
    basic_usage
    advanced_usage
-   perspective
 
 Indices and tables
 ==================
