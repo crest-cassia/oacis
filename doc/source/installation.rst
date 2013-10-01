@@ -1,67 +1,98 @@
 ==========================================
-Installation
+インストール
 ==========================================
 
-ここではCASSIA Managerのセットアップ方法について説明する。
+ここではセットアップ方法について説明する。
 
-Supported Platforms
-=================
+サポートされるプラットフォーム
+==================================
 
 サポートされるプラットフォームは以下の通り。
 
-- Linux, Mac OSXなどのUnix系OS
+- サーバー
+    - Linux, Mac OSXなどのUnix系OS
+        - Mac OS 10.8, Ubuntu, CentOSで動作実績あり
+- 計算ホスト
+    - Linux, Mac OSXなどのUnix系OS
+        - Mac OS 10.8, Ubuntu, CentOSで動作実績あり
+        - bash がインストールされていること
+- クライアント
+    - Google Chrome および Firefox でテストされている
+        - (IEでの挙動は未確認)
 
-  - Mac OS 10.8, Ubuntu, CentOSで動作実績あり。
+前提条件
+==================================
 
-- Google Chrome または Firefox
-
-  - (IEでの挙動は未確認)
-
-- bash （計算ホスト側）
-
-Pre-requisites
-===================
-
-CMを動かすサーバーでは事前に以下のものをインストールする必要がある。
+サーバーでは事前に以下のものをインストールする必要がある。
 
 - Ruby 1.9.3
 - bundler (http://bundler.io/)
 - MongoDB 2.4以上 (http://www.mongodb.org/)
 - Redis 2.6以上 (http://redis.io/)
 
+| Mac OS Xの場合、homebrew (http://brew.sh/) を使ってインストールするのが手軽で良い。
+
 以下ではこれらのものがインストールされている前提で説明する。
 
-Installation
-====================
+| CMは各研究者が自分のPCにインストールし、イントラネット内で使用されることを想定している。
+| インターネット上へ公開し不特定多数のアクセスを受け付ける場合は、ここで記述したセットアップに加えてセキュリティーや不可分散の対策を十分に行う必要がある。
+| Railsの知識が十分ある方以外は推奨しない。
 
-まずRailsのインストールを行う。
-CMのソースコードをチェックアウトしたディレクトリで ::
+インストール
+===================================
+
+まず手元にCASSIA Managerのソースコード一式をダウンロードする。
+
+次にRailsおよび関連gemのインストールを行う。ダウンロードしたディレクトリにて、 ::
 
   bundle install --binstubs --path=vendor/bundle
 
-を行う。
-
-ここでRailsを起動してみる ::
+| を実行する。
+| 成功すればこの時点でRailsを起動させることができる。試しに以下のコマンドで起動する。
 
   bundle exec rails s
 
-http://localhost:3000 にアクセスし、ページが適切に表示されればインストールは成功している。
-もし失敗した場合は、MongoDB, Redisが正しく起動しているか、ファイアウォールは3000番に対して開いているか、gemは正しくインストールされたか、などを確認する。
-停止する場合は Ctrl-C を押す。
+| http://localhost:3000 にアクセスし、ページが適切に表示されればインストールは成功している。
+| もし失敗した場合は、MongoDB, Redisが正しく起動しているか、ファイアウォールは3000番に対して開いているか、gemは正しくインストールされたか、などを確認する。
+| 端末で Ctrl-C を押し、Railsを停止させる。
 
-Launch Rails and Workers
-=================
+RailsおよびWorkerの起動
+========================================
 
-Railsおよびworkerの起動は以下のコマンドを実行する。すべてCMのソースのあるディレクトリで行う。 ::
+Railsおよびworkerの起動は以下のコマンドを実行する。 ::
 
-  bundle exec rails s -d
-  bundle exec rake resque:scheduler PIDFILE=./tmp/pids/resque_scheduler.pid BACKGROUND=yes
-  bundle exec rake resque:work QUEUE='*' VERBOSE=1 PIDFILE=./tmp/pids/resque.pid BACKGROUND=yes
+  nohup bundle exec rake daemon:start
 
-Process IDを記述したファイルが、tmp/pids 以下に作成される。
+http://localhost:3000 にアクセスできればRailsの起動が成功している。
+またWorkerプロセスが起動しているかどうかは ::
 
-プロセスの停止は以下のコマンドを実行する ::
+  ps aux | grep "[r]esque"
 
-  kill -INT $(cat tmp/pids/server.pid)
-  kill -QUIT $(cat tmp/pids/resque_scheduler.pid) && rm tmp/pids/resque_scheduler.pid
-  kill -QUIT $(cat tmp/pids/resque.pid) && rm tmp/pids/resque.pid
+を実行すれば確認できる。２つのプロセスが表示されればWorkerは正しく起動している。
+
+これらのプロセスの再起動、および停止は以下のコマンドで実行できる。 ::
+
+  nohup bundle exec rake daemon:restart
+  bundle exec rake daemon:stop
+
+パスワードの設定
+========================================
+
+| Digest認証に使用するパスワードを設定する。この設定を行わなくても使用することはできるが、セキュリティのために設定することを強く勧める。
+| app/controllers/application_controller.rb の８行目を編集する。
+| ８行目の先頭の # を取り除きコメントアウトを解除し、ユーザー名とパスワードをセットする。デフォルトのパスワードは使用しないこと。
+| これでページにアクセスした際にユーザー認証が要求されるようになる。
+
+Firewallの設定
+========================================
+
+| 現状のCASSIA Managerはユーザー管理機能を持っていないため、ネットワーク内の任意のホストからアクセス可能である。
+| 他のホストからのアクセスを制限するためにはファイアウォールを設定するのが最も簡単である。
+| Railsは3000番、MongoDBは27017番、Redisは6379番のポートをそれぞれ使用しているので、これらのポートへのアクセスを限定する。
+| MongoDB, Redisへのアクセスはローカルホストのみ、Railsは使用するユーザーのみに開放するのが望ましい。
+
+データベースの変更
+========================================
+
+デフォルトではローカルのデータベースにアクセスするが、他のホストのデータベースを参照する事も可能である。
+config/mongoid.yml および config/resque.yml の中でMongoDB, Redisへの接続情報を設定しているのでこれらを変更してRailsおよびWorkerを再起動する。

@@ -11,12 +11,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   introduction
    introduction2
-   system_configuration
+   system_overview
    installation
-   simulator_registration
-   usage
+   basic_usage
+   advanced_usage
 
 Indices and tables
 ==================
