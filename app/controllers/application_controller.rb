@@ -3,13 +3,18 @@ class ApplicationController < ActionController::Base
 
   before_filter :authenticate
 
-  # CHANGE THE PASSWORD
-  USERS = {"admin" => "pass"}
+  # CHANGE THE PASSWORD BEFORE YOU USE
+  USERS = {}
+  # USERS = {"admin" => "pass"}
 
   private
   def authenticate
-    authenticate_or_request_with_http_digest do |username|
-      USERS[username]
+    unless USERS.empty?
+      authenticate_or_request_with_http_digest do |username|
+        USERS[username]
+      end
+    else
+      true
     end
   end
 end
