@@ -105,6 +105,22 @@ MPI, OpenMPのジョブ
   #PBS -l walltime=10:00
   ...
 
+結果をMongoDB内に格納する
+==============================================
+
+| 通常シミュレータが出力したファイル群はそのままファイルとしてサーバー上に保存されるが、結果をMongoDB内に保存することもできる。
+| 結果をMongoDB内に保存しておくと後で結果の値に対してクエリをかけることができる。
+| 例えば、様々なジョブを実行したあとに結果がある値近傍のParameterSetを列挙するといったことができる。
+
+| 結果をDB内に保存するためには、保存したいデータをJsonフォーマットでシミュレータから出力すればよい。
+| `_output.json` という名前でカレントディレクトリ直下にJSONを作成すれば、データベースへの格納時にファイルがパースされDB内に保存される。
+
+| 格納された結果は以下のようにブラウザから閲覧可能である。
+
+.. image:: images/run_results.png
+  :width: 40%
+  :align: center
+
 プリプロセスの定義
 ==============================================
 
@@ -154,7 +170,10 @@ Analyzerの登録と実行
 | Analyzerの登録時にパラメータの定義を登録することができる。
 
 | 実行時には新規にそのAnalyzer専用のワーキングディレクトリが作られ、そこでAnalyzerとして定義されたコマンドが実行される。
-| また解析対象となるRunの結果もワーキングディレクトリ以下に配置されるが、解析対象がRunかParameterSetかによって異なるため以下で個別に説明する。
+| Simulatorの場合と同様にワーキングディレクトリ以下のファイルがそのままサーバー上に保存されるため、カレントディレクトリ以下に結果を出力するようにAnalyzerを実装する必要がある。
+| 結果のファイルに `_output.json` というファイルが存在する場合に、パースされてデータベースに格納されるのもSimulatorと同様である。
+
+| 解析対象となるRunの結果もワーキングディレクトリ以下に配置されるが、解析対象がRunかParameterSetかによって異なるため以下で個別に説明する。
 
 Runに対する解析
 ----------------------------------------------
@@ -212,3 +231,93 @@ Description                   Analyzerに対する説明。入力は任意。
 | このようにAnalyzerを登録するとRunの実行後に"plot_timeseries"というAnalyzerを選択して実行できるようになる。
 | 解析の結果は、runの結果同様にブラウザ上で閲覧することができる。
 
+| Auto Runのフラグは yes, no, first_run_onlyから選択できる。
+| 各項目の説明は以下の通り。
+
+    - yes: 各Runが正常終了した場合に自動で解析が実行される。
+    - no : 自動で実行されない。
+    - first_run_only: 各ParameterSet内で最初に正常終了したRunに対してのみ自動実行される。データの可視化など、一つのRunに対してのみ実行したい解析処理に対して使用できる。
+
+| 今回のサンプルでは示されていないが、パラメータを受け付けるAnalyzerの場合には `_input.json` というファイル内に解析のパラメータが記入される。
+| Runに対する解析の場合、 `_input.json` のフォーマットは以下の通りである。
+| "analysis_parameters", "simulation_parameters", "result" はそれぞれ解析パラメータ、シミュレーションパラメータ、Runの結果を表す。
+
+.. code-block:: json
+
+  {
+   "analysis_parameters": {
+     "x": 0.1,
+     "y": 2
+   },
+   "simulation_parameters": {
+     "L": 32,
+     "T": 0.5
+   },
+   "result": {
+     "magnetization": 0.5,
+     "energy": 24.5,
+     "another_analysis": {
+         "maximum_energy": 28.1
+     }
+   }
+  }
+
+ParameterSetに対する解析
+----------------------------------------------
+
+| ParameterSetに対する解析もRunに対する解析とほぼ同様である。
+| ただし、_input/ディレクトリに保存される形式と `_input.json` の形式が異なる。
+
+| `_input/` ディレクトリ内のファイルの構成は以下の通り
+
+.. code-block:: txt
+
+  _input/
+    #{run_id1}/
+      xxx.txt
+      yyy.txt       # run_id1 の結果ファイル
+    #{run_id2}/
+      xxx.txt
+      yyy.txt
+   .....
+
+| `_input.json` の形式は以下の通り
+
+.. code-block:: json
+
+  {
+   "analysis_parameters": {
+     "x": 0.1,
+     "y": 2
+   },
+   "simulation_parameters": {
+     "L": 32,
+     "T": 0.5
+   },
+   "result": {
+     "run_id1": {
+       "magnetization": 0.5,
+       "energy": 24.5,
+       "analysis1": {
+           "maximum_energy": 28.1
+       }
+     },
+     "run_id2": {
+       "magnetization": 0.32,
+       "energy": 25.1,
+       "analysis1": {
+           "maximum_energy": 27.9
+       }
+     },
+     "run_id3": {
+       "magnetization": 0.2,
+       "energy": 20.7,
+       "analysis1": {
+           "maximum_energy": 26.8
+       }
+     }
+   }
+  }
+
+| ParaemterSetに対する解析の場合、Auto Runのフラグはyes, noの２択から選択可能である。
+| yesの場合、ParameterSet内のすべてのRunが :finished または :failed になったときに自動実行される。

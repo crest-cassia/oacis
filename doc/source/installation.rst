@@ -61,7 +61,7 @@ RailsおよびWorkerの起動
 
 Railsおよびworkerの起動は以下のコマンドを実行する。 ::
 
-  bundle exec rake daemon:start
+  nohup bundle exec rake daemon:start
 
 http://localhost:3000 にアクセスできればRailsの起動が成功している。
 またWorkerプロセスが起動しているかどうかは ::
@@ -72,7 +72,7 @@ http://localhost:3000 にアクセスできればRailsの起動が成功して�
 
 これらのプロセスの再起動、および停止は以下のコマンドで実行できる。 ::
 
-  bundle exec rake daemon:restart
+  nohup bundle exec rake daemon:restart
   bundle exec rake daemon:stop
 
 Firewallの設定
