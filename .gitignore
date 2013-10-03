@@ -75,8 +75,12 @@ pickle-email-*.html
 
 # vim artifacts
 **.swp
-
 *~
+
+# sublime porject files
+*.sublime-*
+
+nohup.out
 
 # Result directory
 public/Result_*
