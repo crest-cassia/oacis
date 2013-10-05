@@ -1,0 +1,7 @@
+$('#run_form_messages').empty();
+$('#run_form_messages').append('<%= j render("parameter_sets/messages", success_messages: [], error_messages: @error_messages) %>');
+<% if @script %>
+  $('#script_preview').empty();
+  $('#script_preview').append('<pre><%= j @script %></pre>');
+  $('#script_preview_modal').modal('show');
+<% end %>

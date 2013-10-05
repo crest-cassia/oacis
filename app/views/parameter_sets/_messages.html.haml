@@ -1,0 +1,14 @@
+- if success_messages.present?
+  #success_explanation
+    %ul
+      - success_messages.each do |msg|
+        %li
+          *
+          = msg
+- if error_messages.present?
+  #error_explanation
+    %ul
+      - error_messages.each do |msg|
+        %li
+          *
+          = msg

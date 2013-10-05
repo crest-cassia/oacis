@@ -1,36 +1,40 @@
 source 'https://rubygems.org'
-gem 'rails', '3.2.8'
-group :assets do
-  gem 'sass-rails',   '~> 3.2.3'
-  gem 'coffee-rails', '~> 3.2.1'
-  gem 'uglifier', '>= 1.0.3'
-  gem 'twitter-bootstrap-rails'
-end
+
+gem 'rails', '3.2.13'
 gem 'jquery-rails'
-gem "mongoid", ">= 3.0.9"
-gem "haml", ">= 3.1.7"
-gem "haml-rails", ">= 0.3.5", :group => :development
-gem "hpricot", ">= 0.8.6", :group => :development
-gem "ruby_parser", ">= 2.3.1", :group => :development
-gem "rspec-rails", ">= 2.13", :group => [:development, :test]
-gem "rspec-mocks", ">= 2.13", :group => [:development, :test]
-gem "database_cleaner", ">= 0.9.1", :group => :test
-gem "mongoid-rspec", ">= 1.4.6", :group => :test
-gem "email_spec", ">= 1.2.1", :group => :test
-gem "cucumber-rails", ">= 1.3.0", :group => :test, :require => false
-gem "launchy", ">= 2.1.2", :group => :test
-gem "capybara", ">= 1.1.2", :group => :test
-gem "factory_girl_rails", ">= 4.1.0", :group => [:development, :test]
-gem "devise", ">= 2.1.2"
-gem "quiet_assets", ">= 1.0.1", :group => :development
-gem "faker", :group => :development
-gem "will_paginate_mongoid"
-gem "kaminari"
-gem "simplecov", :require => false, :group => :test
-gem "simplecov-rcov", :require => false, :group => :test
-gem "ci_reporter", :group => :test
+gem "mongoid"
+gem "haml"
 gem "resque"
-gem "pry", :group => :development
-# gem "pry-debugger", :group => :development
-gem "net-ssh", ">= 2.6.5"
-gem "net-sftp", ">= 2.1.2"
+gem "resque-scheduler", :require => 'resque_scheduler'
+gem "net-ssh"
+gem "net-sftp"
+
+group :assets do
+  gem 'sass-rails'
+  gem 'uglifier'
+  gem 'therubyracer'
+  gem "less-rails"
+  gem 'twitter-bootstrap-rails', '2.2.6'
+  gem 'jquery-datatables-rails'
+  gem "haml-rails"
+  gem "factory_girl_rails"
+end
+
+group :development, :test do
+  gem "rspec-rails"
+  gem "pry"
+end
+
+group :development do
+  gem "quiet_assets"
+  gem "faker"
+end
+
+group :test do
+  gem "database_cleaner"
+  gem "mongoid-rspec"
+  gem "simplecov", :require => false
+  gem "simplecov-rcov", :require => false
+  gem "ci_reporter"
+  gem "spork"
+end

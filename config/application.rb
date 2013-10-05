@@ -78,5 +78,8 @@ module AcmProto
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+
+    # disable field_wtih_errors div-tag, because it causes destruction on designs
+    config.action_view.field_error_proc = proc { |input, instance| input}
   end
 end

@@ -74,14 +74,10 @@ describe ResultDirectory do
     ResultDirectory.analyzable_path(ps).should == ResultDirectory.parameter_set_path(ps)
   end
 
-  it ".analyzable_path returns the path to run for ParameterSetsGroup instance" do
-    pending "not yet implemented"
-  end
-
-  it ".analysis_run_path returns the output directory of an AnalysisRun for :on_run type" do
+  it ".analysis_path returns the output directory of an Analysis for :on_run type" do
     run = @simulator.parameter_sets.first.runs.first
-    arn = run.analysis_runs.first
-    ResultDirectory.analysis_run_path(arn).should ==
+    arn = run.analyses.first
+    ResultDirectory.analysis_path(arn).should ==
       ResultDirectory.run_path(run).join(arn.to_param)
   end
 end

@@ -9,12 +9,32 @@ describe AnalyzerRunner do
                               )
     @prm = @sim.parameter_sets.first
     @run = @prm.runs.first
-    @arn = @run.analysis_runs.first
+    @arn = @run.analyses.first
     @azr = @arn.analyzer
     @azr.update_attribute(:command, 'echo hello')
   end
 
   describe ".perform" do
+
+    context "when the status is :cancelled" do
+
+      before(:each) do
+        @arn.update_attribute(:status, :cancelled)
+        @arn.save!
+      end
+
+      it "calls Analysis#destroy when status is cancelled" do
+        expect {
+          AnalyzerRunner.perform(@arn.id)
+        }.to change { Analysis.count }.by(-1)
+      end
+
+      it "does not call run_analysis nor include_data methods when cancelled" do
+        AnalyzerRunner.should_not_receive(:run_analysis)
+        AnalyzerRunner.should_not_receive(:include_data)
+        AnalyzerRunner.perform(@arn.id)
+      end
+    end
 
     describe ".prepare_inputs" do
 
@@ -47,6 +67,42 @@ describe AnalyzerRunner do
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
           File.directory?('_input').should be_true
           File.exist?('_input/abc/dummy.txt').should be_true
+        }
+      end
+    end
+
+    describe ".remove_inputs" do
+
+      before(:each) do
+        @work_dir = '__temp__'
+        FileUtils.mkdir_p(@work_dir)
+      end
+
+      after(:each) do
+        FileUtils.rm_r(@work_dir) if File.directory?(@work_dir)
+      end
+
+      it "remove _input.json" do
+        Dir.chdir(@work_dir) {
+          AnalyzerRunner.__send__(:prepare_inputs, @arn)
+          input_json = '_input.json'
+          File.exist?(input_json).should be_true
+          AnalyzerRunner.__send__(:remove_inputs)
+          File.exist?(input_json).should_not be_true
+        }
+      end
+
+      it "writes input directory" do
+        Dir.chdir(@work_dir) {
+          dummy_input = @arn.analyzable.dir.join('dummy.txt')
+          FileUtils.touch(dummy_input)
+          @arn.should_receive(:input_files).and_return({'abc' => [dummy_input]})
+          AnalyzerRunner.__send__(:prepare_inputs, @arn)
+          File.directory?('_input').should be_true
+          File.exist?('_input/abc/dummy.txt').should be_true
+          AnalyzerRunner.__send__(:remove_inputs)
+          File.directory?('_input').should_not be_true
+          File.exist?('_input/abc/dummy.txt').should_not be_true
         }
       end
     end
@@ -93,24 +149,21 @@ describe AnalyzerRunner do
         }.should raise_error
       end
 
-      it "updates status to 'including' and sets elapsed times" do
+      it "returns status of analysis" do
         @azr.update_attribute(:command, 'sleep 1')
         @azr.save
-        AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        @arn.reload
-        @arn.status.should eq(:including)
-        @arn.cpu_time.should be_within(0.1).of(0.0)
-        @arn.real_time.should be_within(0.1).of(1.0)
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:cpu_time].should be_within(0.1).of(0.0)
+        status[:real_time].should be_within(0.1).of(1.0)
       end
 
-      it "updates result of AnalysisRun" do
+      it "updates result of Analysis" do
         result = {xxx: 0.1, yyy:12345}
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts result.to_json}
-        AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        @arn.reload
-        @arn.result["xxx"].should eq(0.1)
-        @arn.result["yyy"].should eq(12345)
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:result]["xxx"].should eq(0.1)
+        status[:result]["yyy"].should eq(12345)
       end
     end
 
@@ -156,9 +209,16 @@ describe AnalyzerRunner do
       end
 
       it "updates status to 'finished'" do
-        AnalyzerRunner.__send__(:include_data, @arn, @work_dir)
-        @arn.reload
-        @arn.status.should eq(:finished)
+        @arn.should_receive(:update_status_finished)
+        AnalyzerRunner.__send__(:include_data, @arn, @work_dir, {})
+      end
+
+      it "destroys analysis when its status is :cancelled" do
+        @arn.update_attribute(:status, :cancelled)
+        @arn.save!
+        expect {
+          AnalyzerRunner.__send__(:include_data, @arn, @work_dir, {})
+        }.to change { Analysis.count }.by(-1)
       end
     end
 
@@ -176,7 +236,7 @@ describe AnalyzerRunner do
 
       it "raises an exception if the return code of the command is not zero" do
         lambda {
-          AnalyzerRunner.perform(@azr.type, @run.to_param, @arn.to_param)
+          AnalyzerRunner.perform(@arn.to_param)
         }.should raise_error
       end
     end
@@ -184,11 +244,18 @@ describe AnalyzerRunner do
 
   describe ".on_failure" do
 
-
-    it "sets status of AnalysisRun to failed" do
-      AnalyzerRunner.__send__(:on_failure, StandardError.new, @azr.type, @run.to_param, @arn.to_param)
+    it "sets status of Analysis to failed" do
+      AnalyzerRunner.__send__(:on_failure, StandardError.new, @arn.to_param)
       @arn.reload
       @arn.status.should eq(:failed)
+    end
+
+    it "destroys analysis when its status is cancelled" do
+      @arn.update_attribute(:status, :cancelled)
+      @arn.save!
+      expect {
+        AnalyzerRunner.__send__(:on_failure, StandardError.new, @arn.id)
+      }.to change { Analysis.count }.by(-1)
     end
   end
 end

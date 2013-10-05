@@ -5,16 +5,24 @@ class AnalyzerRunner
   INPUT_FILES_DIR = '_input'
   OUTPUT_JSON_FILENAME = '_output.json'
 
-  def self.perform(type, analyzable_id, arn_id)
-    arn = AnalysisRun.find_by_type_and_ids(type, analyzable_id, arn_id)
-    work_dir = arn.dir  # UPDATE ME: a tentative implementation
-    run_analysis(arn, work_dir)
-    include_data(arn, work_dir)
+  def self.perform(arn_id)
+    arn = Analysis.find(arn_id)
+    if arn.status == :cancelled
+      arn.destroy(true)
+    else
+      work_dir = arn.dir  # UPDATE ME: a tentative implementation
+      output = run_analysis(arn, work_dir)
+      include_data(arn, work_dir, output)
+    end
   end
 
-  def self.on_failure(exception, type, analyzable_id, arn_id)
-    arn = AnalysisRun.find_by_type_and_ids(type, analyzable_id, arn_id)
-    arn.update_status_failed
+  def self.on_failure(exception, arn_id)
+    arn = Analysis.find(arn_id)
+    if arn.status == :cancelled
+      arn.destroy(true)
+    else
+      arn.update_status_failed
+    end
   end
 
   private
@@ -30,11 +38,12 @@ class AnalyzerRunner
           raise "Rc of the simulator is not 0, but #{$?.to_i}"
         end
         output[:result] = parse_output_json
+        remove_inputs
       }
     }
     output[:cpu_time] = tms.cutime
     output[:real_time] = tms.real
-    arn.update_status_including(output)
+    output
   end
 
   # prepare input files into the current directory
@@ -53,6 +62,12 @@ class AnalyzerRunner
     end
   end
 
+  # remove input files into the current directory
+  def self.remove_inputs
+    FileUtils.rm(INPUT_JSON_FILENAME) if File.exist?(INPUT_JSON_FILENAME)
+    FileUtils.rm_rf(INPUT_FILES_DIR) if Dir.exist?(INPUT_FILES_DIR)
+  end
+
   def self.parse_output_json
     jpath = OUTPUT_JSON_FILENAME
     if File.exist?(jpath)
@@ -62,8 +77,12 @@ class AnalyzerRunner
     end
   end
 
-  def self.include_data(arn, work_dir)
-    # do NOT copy _input/ and _input.json
-    arn.update_status_finished
+  def self.include_data(arn, work_dir, output)
+    if arn.status == :cancelled
+      arn.destroy(true)
+    else
+      # do NOT copy _input/ and _input.json
+      arn.update_status_finished(output)
+    end
   end
 end

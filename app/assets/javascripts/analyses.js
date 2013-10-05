@@ -1,0 +1,50 @@
+$(function () {
+  $('body').on("click", 'img[analysis_id]', function() {
+    if( $(this).attr("state") === "close" ) {
+      var tr_element = $(this).closest("tr");
+      var analysis_id = $(this).attr("analysis_id");
+      var table_cols = tr_element.children("td").length
+      $(this).attr("state", "open").attr("src", "/assets/collapse.png")
+      $.get("/analyses/" + analysis_id + "/_result", {}, function(data) {
+        tr_element.after(
+          $("<tr>").attr("id", "result_" + analysis_id).html(
+            $("<td>").attr({colspan: table_cols}).html(
+              $("<div>").attr("class", "well").html(data)
+            )
+          )
+        );
+      });
+    }
+    else {  // state === "open"
+      $(this).attr("state", "close").attr("src", "/assets/expand.png")
+      var result_id = "result_" + $(this).attr("analysis_id")
+      $(this).closest("tr").siblings("tr#" + result_id).remove()
+    }
+  });
+});
+
+$(function() {
+  var datatables_for_analyses_table;
+
+  datatables_for_analyses_table = function() {
+    return $('#analyses_list').dataTable({
+      bProcessing: true,
+      bServerSide: true,
+      bFilter: false,
+      bDestroy: true,
+      sAjaxSource: $('#analyses_list').data('source'),
+      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+      sPaginationType: "bootstrap"
+    });
+  };
+
+  window.datatables_for_analyses_table = datatables_for_analyses_table;
+
+});
+
+var aoAnalysesTables = [];
+function reload_analyses_table() {
+  aoAnalysesTables.forEach( function(oTable) {
+    oTable.fnReloadAjax();
+  });
+}

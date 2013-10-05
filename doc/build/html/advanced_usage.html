@@ -1,0 +1,505 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>高度な使い方 &mdash; CASSIA Manager 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="CASSIA Manager 0.0.1 documentation" href="index.html" />
+    <link rel="prev" title="基本的な使い方" href="basic_usage.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="basic_usage.html" title="基本的な使い方"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>高度な使い方<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id2">
+<h2>スケジューラを経由してジョブを実行する<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">ジョブスケジューラー（Torqueなど）を経由してジョブを実行する方法について説明する。</div>
+<div class="line">Host登録時にジョブスケジューラを指定する事にって、スケジューラのジョブ投入コマンド経由でジョブが実行されるようになる。</div>
+<div class="line">現在サポートされているスケジューラはTorqueとPJM(Fujitsu FX10で採用されているジョブスケジューラ)のみである。</div>
+<div class="line">以降ではTorqueにジョブを投げるケースを想定して説明する。</div>
+</div>
+<div class="section" id="id3">
+<h3>ジョブスクリプトのヘッダに特別な指定がいらないケース<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">シングルスレッド、シングルプロセスのジョブでジョブスクリプトのヘッダに特別な記述が必要ない場合は、Hostの登録時にスケジューラタイプとして <em>Torque</em> を選択するだけでよい。</div>
+<div class="line">このようにセットしておけば、workerがジョブスクリプトをqsubコマンドで実行し、その際に取得したTorqueのジョブIDはRunと紐付けて記録される。</div>
+<div class="line">workerは定期的に qstat コマンドで得られた結果をパースしてジョブの状態をモニターし、ジョブの完了後に計算結果を取得する。</div>
+<div class="line">実行中に異常終了した場合、途中までの結果をサーバーにダウンロードしRunのステータスを <em>failed</em> として記録する。</div>
+<div class="line">実行中にユーザーによってRunが削除された場合は、qdelコマンドを使用してジョブを停止させる。</div>
+</div>
+<div class="line-block">
+<div class="line">PJMの場合には pjsub, pjstat, pjdel コマンドを使用してジョブの管理を行う。</div>
+</div>
+</div>
+<div class="section" id="id4">
+<h3>ジョブスクリプトのヘッダに変数を指定するケース<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">ジョブスクリプトのヘッダにスケジューラのパラメータ（使用時間、占有するノード数、使用メモリ量など）を指定する必要があるケースについて説明する。</div>
+<div class="line">ここでは例としてMPIで並列化しているシミュレータを、Torqueのスケジューラを使って占有時間を指定して実行することを考える。</div>
+</div>
+<div class="line-block">
+<div class="line">ジョブスクリプトのヘッダに指定する変数は以下のようになる。</div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<span class="c">#PBS -l nodes=2:ppn=4</span>
+<span class="c">#PBS -l walltime=10:00</span>
+...
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">ここでnodesが使用するノード数、ppnは各ノード内のプロセス数、walltimeが実行制限時間である。</div>
+<div class="line">各ジョブによってこれらの値が異なるため、Runの作成時にこれらの値を指定できるようにする。</div>
+</div>
+<div class="line-block">
+<div class="line">そのためにはホストパラメータと呼ぶ仕組みを使用する。</div>
+<div class="line">ホストパラメータとして指定した変数は各Runの作成時に個別に入力することができ、その変数がホストのテンプレート部分に展開される。</div>
+</div>
+<div class="line-block">
+<div class="line">具体的には以下の手順でHostの &#8220;template&#8221;, &#8220;Definition of Host Parameters&#8221; というフィールドを設定する。</div>
+</div>
+<ol class="arabic simple">
+<li>templateの変数展開をしたい部分を <em>&lt;%= ... %&gt;</em> という記号で囲む。今回の例ではヘッダ部分を以下のように編集する。</li>
+</ol>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<span class="c">#PBS -l nodes=&lt;%= nodes %&gt;:ppn=&lt;%= ppn %&gt;</span>
+<span class="c">#PBS -l walltime=&lt;%= walltime %&gt;</span>
+...
+</pre></div>
+</div>
+</div></blockquote>
+<p>2. &#8220;Definition of Host Parameter&#8221;の部分に展開したい変数の変数名、デフォルト値、フォーマット（入力可能な形式を正規表現で指定）を入力する。
+今回の場合、以下のように設定する。（formatの部分は空でもよいが、設定しておくとRunの作成時に不正な値を入れるとエラーになるのでミスに気づきやすくなる。）</p>
+<blockquote>
+<div><ul class="simple">
+<li>Name: nodes,    Default: 1, format: ^d+$</li>
+<li>Name: ppn,      Default: 1, format: ^d+$</li>
+<li>Name: walltime, Default: 10:00, format: ^(dd:)?dd:dd$</li>
+</ul>
+<a class="reference internal image-reference" href="_images/edit_host_template.png"><img alt="_images/edit_host_template.png" class="align-center" src="_images/edit_host_template.png" style="width: 50%;" /></a>
+<div class="line-block">
+<div class="line">この際、テンプレートとホストパラメータ定義が整合していないとエラーとなる。</div>
+<div class="line">テンプレートで展開する変数は必ずホストパラメータとして定義されている必要があり、ホストパラメータとして定義された変数はテンプレート中に現れなくてはならない。</div>
+</div>
+</div></blockquote>
+<div class="line-block">
+<div class="line">以上でホストの設定は完了である。</div>
+<div class="line">この設定後、Runの作成時に以下のようにホストパラメータを入力する箇所が現れる。</div>
+<div class="line">適切な値を入れて [Preview] ボタンをクリックするとジョブスクリプトのプレビューが表示される。</div>
+<div class="line">[Create Run]をクリックするとRunが作成され、順番にジョブが投入される。</div>
+</div>
+<a class="reference internal image-reference" href="_images/new_run_with_host_params.png"><img alt="_images/new_run_with_host_params.png" class="align-center" src="_images/new_run_with_host_params.png" style="width: 30%;" /></a>
+</div>
+<div class="section" id="mpi-openmp">
+<h3>MPI, OpenMPのジョブ<a class="headerlink" href="#mpi-openmp" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">MPI, OpenMPで並列化されたシミュレータの場合、実行時にMPIのプロセス数、OpenMPのスレッド数を指定することが必要となる。</div>
+<div class="line">Simulator登録時に、 <em>Suppot MPI</em>, <em>Support OMP</em> のチェックを入れると、Runの作成時にプロセス数とスレッド数を指定するフィールドが表示されるようになる。</div>
+</div>
+<a class="reference internal image-reference" href="_images/new_run_mpi_omp_support.png"><img alt="_images/new_run_mpi_omp_support.png" class="align-center" src="_images/new_run_mpi_omp_support.png" style="width: 30%;" /></a>
+<div class="line-block">
+<div class="line">ここで指定したプロセス数・スレッド数はテンプレートの中でそれぞれ <em>&lt;%= mpi_procs %&gt;</em>, <em>&lt;%= omp_threads %&gt;</em> という変数に展開される。</div>
+<div class="line">Hostのテンプレートを確認すれば分かるとおり、OpenMPのスレッド数はジョブスクリプトの中で環境変数 <em>OMP_NUM_THREADS</em> に代入される。</div>
+<div class="line">同様にMPIのプロセス数は、mpiexec コマンドの -n オプションの引数に展開される。</div>
+<div class="line">これによりシミュレータが指定したプロセス数・スレッド数で実行されるようにしている。</div>
+</div>
+<div class="line-block">
+<div class="line">つまりOpenMPで並列化しているシミュレータはOMP_NUM_THREADS環境変数を参照してスレッド数を決めるように実装されていなければならない。</div>
+<div class="line">（ プログラム内で <em>omp_set_num_threads()</em> 関数で別途指定している場合は、当然ながらここで指定したスレッド数は適用されない）</div>
+</div>
+<div class="line-block">
+<div class="line">MPIで並列化している場合、プロセス数は <em>mpiexec</em> コマンドの引数で渡されるが、 <em>mpiexec</em> コマンド以外のMPIプロセス実行コマンドを指定したい場合はHostのテンプレートを編集すればよい。</div>
+</div>
+<div class="line-block">
+<div class="line">ジョブスクリプトのヘッダ部分でも &lt;%= mpi_procs %&gt;, &lt;%= omp_threads %&gt; 変数を展開することができる。</div>
+<div class="line">これを利用するとMPIプロセス数に応じて確保するノード数を自動的に決めたりすることができる。</div>
+<div class="line">例として、Flat MPIのプログラムを、１ノードあたり８コアのマシンで実行することを考える。</div>
+<div class="line">Hostのテンプレートに以下のように書くことで、ノード数が自動的に指定されるようになる。（ただし、プロセス数は８の倍数にする必要がある）</div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<span class="c">#PBS -l nodes=&lt;%= mpi_procs / 8 %&gt;:ppn=8</span>
+<span class="c">#PBS -l walltime=10:00</span>
+...
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="mongodb">
+<h2>結果をMongoDB内に格納する<a class="headerlink" href="#mongodb" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">通常シミュレータが出力したファイル群はそのままファイルとしてサーバー上に保存されるが、結果をMongoDB内に保存することもできる。</div>
+<div class="line">結果をMongoDB内に保存しておくと後で結果の値に対してクエリをかけることができる。</div>
+<div class="line">例えば、様々なジョブを実行したあとに結果がある値近傍のParameterSetを列挙するといったことができる。</div>
+</div>
+<div class="line-block">
+<div class="line">結果をDB内に保存するためには、保存したいデータをJsonフォーマットでシミュレータから出力すればよい。</div>
+<div class="line"><cite>_output.json</cite> という名前でカレントディレクトリ直下にJSONを作成すれば、データベースへの格納時にファイルがパースされDB内に保存される。</div>
+</div>
+<div class="line-block">
+<div class="line">格納された結果は以下のようにブラウザから閲覧可能である。</div>
+</div>
+<a class="reference internal image-reference" href="_images/run_results.png"><img alt="_images/run_results.png" class="align-center" src="_images/run_results.png" style="width: 40%;" /></a>
+</div>
+<div class="section" id="id5">
+<h2>プリプロセスの定義<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">シミュレータによっては実際にシミュレーションジョブを開始する前に、入力ファイルを準備したりフォーマットを調整したりするプリプロセスが必要な場合がしばしばある。</div>
+<div class="line">しかしプリプロセスを計算ジョブの中で行おうとすると以下のようなケースで問題になる。</div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li>スクリプト言語など入力ファイルの準備に使うプログラムが計算ノードにインストールされていないケース</li>
+<li>外部へのネットワークが遮断され入力用ファイルを準備するために外部からファイルを転送することができないケース</li>
+<li>ファイルのステージングの都合により、ジョブの実行前にファイルをすべて用意する必要があるケース</li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line">そこで、CMにはジョブの実行前にプリプロセスを個別に実行する仕組みを用意してある。</div>
+<div class="line">このプリプロセスはジョブの投入前にログインノードで実行されるため上記の問題は起きない。</div>
+<div class="line">ここではプリプロセスの仕様と設定方法を説明する。</div>
+</div>
+<div class="line-block">
+<div class="line">プリプロセスはジョブの投入前にworkerによってssh経由で実行される。</div>
+<div class="line">workerの実行手順は</div>
+</div>
+<blockquote>
+<div><ol class="arabic simple">
+<li>各Runごとにワークディレクトリを作成する</li>
+<li>SimulatorがJSON入力の場合、_input.jsonを配置する。</li>
+<li>Simulatorの <em>pre_process_script</em> フィールドに記載されたジョブスクリプトをワークディレクトリに配置し実行権限をつける。(_preprocess.sh というファイル名で配置される)</li>
+<li>_preprocess.sh をワークディレクトリをカレントディレクトリとして実行する。</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>この際Simulatorが引数形式ならば、同様の引数を与えて _preprocess.sh を実行する。この引数から実行パラメータを取得することができる。</li>
+<li>標準出力、標準エラー出力は _stdout.txt, _stderr.txt にそれぞれリダイレクトされる。</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li>_preprocess.sh のリターンコードがノンゼロの場合には、SSHのセッションを切断しRunをfailedとする。</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>failedの時には、ワークディレクトリの内容をサーバーにコピーし、リモートサーバー上のファイルは削除する。</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="6">
+<li>_preprocess.sh を削除する</li>
+<li>シミュレーションジョブをサブミットする。</li>
+</ol>
+</div></blockquote>
+<div class="line-block">
+<div class="line">ただし、 Simulatorの pre_process_script のフィールドが空の場合には、上記3~6の手順は実行されない。</div>
+</div>
+</div>
+<div class="section" id="analyzer">
+<h2>Analyzerの登録と実行<a class="headerlink" href="#analyzer" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">ジョブの実行後、実行結果に対してポストプロセス（Analyzer）を定義することができる。</div>
+<div class="line">CMで定義できるAnalyzerには２種類存在する。</div>
+<div class="line">一つは各個別のRunに対して実行されるもの、もう一つはParameterSet内のすべてのRunに対して行われるものである。</div>
+<div class="line">前者の例としては、シミュレーションのスナップショットデータから可視化を行う、時系列のシミュレーション結果に対してフーリエ変換する、などがあげられる。</div>
+<div class="line">後者の例は、複数のRunの統計平均と誤差を計算することなどがあげられる。</div>
+<div class="line">CMの用語として、Analyzerによって得られた結果はAnalysisと呼ばれる。AnalyzerとAnalysisの関係は、SimulatorとRunの関係のようなものである。</div>
+</div>
+<div class="line-block">
+<div class="line">Analyzerはサーバー上でバックグラウンドプロセスとして実行される。よってサーバー上でanalyzerが適切に動くように事前にセットアップする必要がある。</div>
+<div class="line">ユーザーはAnalyzerの登録時に実行されるコマンドを入力する。そのコマンドがバックグラウンドで呼ばれて解析が実行されることになる。</div>
+<div class="line">Simulatorの場合と同じように、実行日時や実行時間などの情報が保存され、結果はブラウザ経由で確認できる。</div>
+</div>
+<div class="line-block">
+<div class="line">またAnalyzer実行時に解析用のパラメータを指定して実行することもできる。</div>
+<div class="line">例えば、時系列データを解析するときに最初の何ステップを除外するか指定したい場合などに使える。</div>
+<div class="line">Analyzerの登録時にパラメータの定義を登録することができる。</div>
+</div>
+<div class="line-block">
+<div class="line">実行時には新規にそのAnalyzer専用のワーキングディレクトリが作られ、そこでAnalyzerとして定義されたコマンドが実行される。</div>
+<div class="line">Simulatorの場合と同様にワーキングディレクトリ以下のファイルがそのままサーバー上に保存されるため、カレントディレクトリ以下に結果を出力するようにAnalyzerを実装する必要がある。</div>
+<div class="line">結果のファイルに <cite>_output.json</cite> というファイルが存在する場合に、パースされてデータベースに格納されるのもSimulatorと同様である。</div>
+</div>
+<div class="line-block">
+<div class="line">解析対象となるRunの結果もワーキングディレクトリ以下に配置されるが、解析対象がRunかParameterSetかによって異なるため以下で個別に説明する。</div>
+</div>
+<div class="section" id="run">
+<h3>Runに対する解析<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">ここではRunに対する解析の例として、時系列データを出すシミュレーションのanalyzerとして、時系列をグラフにプロットすることを考える。</div>
+<div class="line">シミュレータが以下の形式のファイルをsample.datというファイル名で出力することとする。１列目が時刻、２列目がプロットするデータを表す。</div>
+</div>
+<div class="highlight-none"><div class="highlight"><pre>1 0.25
+2 0.3
+3 0.4
+...
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">Analyzerの実行時には、Runの結果は <em>_input/</em> というディレクトリに保存される。</div>
+<div class="line">Analyzerはそのディレクトリにあるファイルを解析できるように実装する。</div>
+</div>
+<div class="line-block">
+<div class="line">例として、入力の時系列をgnuplotでプロットする。</div>
+<div class="line">次に示すようなgnuplot入力ファイルを作成し、どこかのパス（例として ~/path/to/plotfile.pltというパスにする）に保存する。</div>
+</div>
+<div class="highlight-none"><div class="highlight"><pre>set term postscript eps
+set output &quot;sample.eps&quot;
+plot &quot;_input/time_series.dat&quot; w l
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">これでAnalyzerの準備ができたので、CMに登録する</div>
+<div class="line">Simulatorの画面を開き、[About]タブをクリックするとAnalyzerを新規登録するためのリンク[New Analyzer]が表示される。</div>
+<div class="line">そのリンクをクリックすると下図のような登録画面が現れる。</div>
+</div>
+<a class="reference internal image-reference" href="_images/new_analyzer.png"><img alt="_images/new_analyzer.png" class="align-center" src="_images/new_analyzer.png" style="width: 30%;" /></a>
+<div class="line-block">
+<div class="line">このページの入力フィールドにAnalyzerの情報を登録する。入力する項目は以下の通り。</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">フィールド</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Name</td>
+<td>CMの中で使われるAnalyzerの名前。任意の名前を指定できる。各Simulator内で一意でなくてはならない。</td>
+</tr>
+<tr class="row-odd"><td>Type</td>
+<td>Runに対する解析(on_run)、ParameterSetに対する解析(on_parameter_set)のどちらかから選ぶ</td>
+</tr>
+<tr class="row-even"><td>Definition of Parameters</td>
+<td>解析時に指定するパラメータがあれば登録する。空でもよい。</td>
+</tr>
+<tr class="row-odd"><td>Command</td>
+<td>実行するコマンド</td>
+</tr>
+<tr class="row-even"><td>Auto Run</td>
+<td>Runの終了後に解析が自動実行されるか指定する。</td>
+</tr>
+<tr class="row-odd"><td>Description</td>
+<td>Analyzerに対する説明。入力は任意。</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line">ここでは、Nameを&#8221;plot_timeseries&#8221;、Typeをon_run、Definition of Parametersは空のまま、Auto Runはnoを指定する。</div>
+<div class="line">コマンドには以下を入力する。</div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre>gnuplot ~/path/to/plotfile.plt
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">このようにAnalyzerを登録するとRunの実行後に&#8221;plot_timeseries&#8221;というAnalyzerを選択して実行できるようになる。</div>
+<div class="line">解析の結果は、runの結果同様にブラウザ上で閲覧することができる。</div>
+</div>
+<div class="line-block">
+<div class="line">Auto Runのフラグは yes, no, first_run_onlyから選択できる。</div>
+<div class="line">各項目の説明は以下の通り。</div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li>yes: 各Runが正常終了した場合に自動で解析が実行される。</li>
+<li>no : 自動で実行されない。</li>
+<li>first_run_only: 各ParameterSet内で最初に正常終了したRunに対してのみ自動実行される。データの可視化など、一つのRunに対してのみ実行したい解析処理に対して使用できる。</li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line">今回のサンプルでは示されていないが、パラメータを受け付けるAnalyzerの場合には <cite>_input.json</cite> というファイル内に解析のパラメータが記入される。</div>
+<div class="line">Runに対する解析の場合、 <cite>_input.json</cite> のフォーマットは以下の通りである。</div>
+<div class="line">&#8220;analysis_parameters&#8221;, &#8220;simulation_parameters&#8221;, &#8220;result&#8221; はそれぞれ解析パラメータ、シミュレーションパラメータ、Runの結果を表す。</div>
+</div>
+<div class="highlight-json"><div class="highlight"><pre><span class="p">{</span>
+ <span class="nt">&quot;analysis_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+   <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+   <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mi">2</span>
+ <span class="p">},</span>
+ <span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+   <span class="nt">&quot;L&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
+   <span class="nt">&quot;T&quot;</span><span class="p">:</span> <span class="mf">0.5</span>
+ <span class="p">},</span>
+ <span class="nt">&quot;result&quot;</span><span class="p">:</span> <span class="p">{</span>
+   <span class="nt">&quot;magnetization&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+   <span class="nt">&quot;energy&quot;</span><span class="p">:</span> <span class="mf">24.5</span><span class="p">,</span>
+   <span class="nt">&quot;another_analysis&quot;</span><span class="p">:</span> <span class="p">{</span>
+       <span class="nt">&quot;maximum_energy&quot;</span><span class="p">:</span> <span class="mf">28.1</span>
+   <span class="p">}</span>
+ <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="parameterset">
+<h3>ParameterSetに対する解析<a class="headerlink" href="#parameterset" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">ParameterSetに対する解析もRunに対する解析とほぼ同様である。</div>
+<div class="line">ただし、_input/ディレクトリに保存される形式と <cite>_input.json</cite> の形式が異なる。</div>
+</div>
+<div class="line-block">
+<div class="line"><cite>_input/</cite> ディレクトリ内のファイルの構成は以下の通り</div>
+</div>
+<div class="highlight-none"><div class="highlight"><pre>_input/
+  #{run_id1}/
+    xxx.txt
+    yyy.txt       # run_id1 の結果ファイル
+  #{run_id2}/
+    xxx.txt
+    yyy.txt
+ .....
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><cite>_input.json</cite> の形式は以下の通り</div>
+</div>
+<div class="highlight-json"><div class="highlight"><pre><span class="p">{</span>
+ <span class="nt">&quot;analysis_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+   <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+   <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mi">2</span>
+ <span class="p">},</span>
+ <span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+   <span class="nt">&quot;L&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
+   <span class="nt">&quot;T&quot;</span><span class="p">:</span> <span class="mf">0.5</span>
+ <span class="p">},</span>
+ <span class="nt">&quot;result&quot;</span><span class="p">:</span> <span class="p">{</span>
+   <span class="nt">&quot;run_id1&quot;</span><span class="p">:</span> <span class="p">{</span>
+     <span class="nt">&quot;magnetization&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+     <span class="nt">&quot;energy&quot;</span><span class="p">:</span> <span class="mf">24.5</span><span class="p">,</span>
+     <span class="nt">&quot;analysis1&quot;</span><span class="p">:</span> <span class="p">{</span>
+         <span class="nt">&quot;maximum_energy&quot;</span><span class="p">:</span> <span class="mf">28.1</span>
+     <span class="p">}</span>
+   <span class="p">},</span>
+   <span class="nt">&quot;run_id2&quot;</span><span class="p">:</span> <span class="p">{</span>
+     <span class="nt">&quot;magnetization&quot;</span><span class="p">:</span> <span class="mf">0.32</span><span class="p">,</span>
+     <span class="nt">&quot;energy&quot;</span><span class="p">:</span> <span class="mf">25.1</span><span class="p">,</span>
+     <span class="nt">&quot;analysis1&quot;</span><span class="p">:</span> <span class="p">{</span>
+         <span class="nt">&quot;maximum_energy&quot;</span><span class="p">:</span> <span class="mf">27.9</span>
+     <span class="p">}</span>
+   <span class="p">},</span>
+   <span class="nt">&quot;run_id3&quot;</span><span class="p">:</span> <span class="p">{</span>
+     <span class="nt">&quot;magnetization&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+     <span class="nt">&quot;energy&quot;</span><span class="p">:</span> <span class="mf">20.7</span><span class="p">,</span>
+     <span class="nt">&quot;analysis1&quot;</span><span class="p">:</span> <span class="p">{</span>
+         <span class="nt">&quot;maximum_energy&quot;</span><span class="p">:</span> <span class="mf">26.8</span>
+     <span class="p">}</span>
+   <span class="p">}</span>
+ <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">ParaemterSetに対する解析の場合、Auto Runのフラグはyes, noの２択から選択可能である。</div>
+<div class="line">yesの場合、ParameterSet内のすべてのRunが :finished または :failed になったときに自動実行される。</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">高度な使い方</a><ul>
+<li><a class="reference internal" href="#id2">スケジューラを経由してジョブを実行する</a><ul>
+<li><a class="reference internal" href="#id3">ジョブスクリプトのヘッダに特別な指定がいらないケース</a></li>
+<li><a class="reference internal" href="#id4">ジョブスクリプトのヘッダに変数を指定するケース</a></li>
+<li><a class="reference internal" href="#mpi-openmp">MPI, OpenMPのジョブ</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mongodb">結果をMongoDB内に格納する</a></li>
+<li><a class="reference internal" href="#id5">プリプロセスの定義</a></li>
+<li><a class="reference internal" href="#analyzer">Analyzerの登録と実行</a><ul>
+<li><a class="reference internal" href="#run">Runに対する解析</a></li>
+<li><a class="reference internal" href="#parameterset">ParameterSetに対する解析</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="basic_usage.html"
+                        title="previous chapter">基本的な使い方</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/advanced_usage.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="basic_usage.html" title="基本的な使い方"
+             >previous</a> |</li>
+        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

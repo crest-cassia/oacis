@@ -1,0 +1,36 @@
+- if run.parameter_set.simulator.support_mpi
+  .control-group
+    = f.label(:mpi_procs, "MPI procs", class: 'control-label')
+    .controls
+      = f.text_field(:mpi_procs)
+- if run.parameter_set.simulator.support_omp
+  .control-group
+    = f.label(:omp_threads, "OMP threads", class: 'control-label')
+    .controls
+      = f.text_field(:omp_threads)
+.control-group
+  = f.label(:submitted_to, class: 'control-label')
+  .controls
+    - host_names = run.simulator.executable_on.map {|h| [h.name, h.id.to_s]}
+    - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
+    = f.select(:submitted_to, options_for_select(host_names, selected: selected_id) )
+- run.simulator.executable_on.each do |host|
+  %div{ id: "host_parameters_#{host.id}"}
+    - host.host_parameter_definitions.each do |hpdef|
+      .control-group
+        = label_tag(:"run[host_parameters][#{hpdef.key}]", hpdef.key, class: 'control-label')
+        .controls
+          - value = run.host_parameters[hpdef.key] || hpdef.default
+          = text_field_tag(:"run[host_parameters][#{hpdef.key}]", value)
+          = "Format: /#{hpdef.format}/"
+
+:javascript
+  $(function() {
+    $('select#run_submitted_to').change(function() {
+      $('div[id^=host_parameters]').hide("normal");
+      var host_id = $("select#run_submitted_to option:selected").val();
+      var selected = $('div#host_parameters_' + host_id);
+      selected.show("normal");
+    });
+    $('select#run_submitted_to').trigger('change');
+  });

@@ -26,11 +26,11 @@ describe SimulatorsController do
   def valid_attributes
     {
       name:"simulator_A",
-      parameter_definitions: {
-        "L" => {"type" => "Integer"},
-        "T" => {"type" => "Float"}
-      },
-      command: "~/path_to_simulator_A",
+      parameter_definitions_attributes: [
+        { key: "L", type: "Integer"},
+        { key: "T", type: "Float"}
+      ],
+      command: "~/path_to_simulator_A"
     }
   end
 
@@ -54,7 +54,7 @@ describe SimulatorsController do
 
     before(:each) do
       @simulator = FactoryGirl.create(:simulator,
-                                      parameter_sets_count: 30, runs_count: 0,
+                                      parameter_sets_count: 5, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
                                       parameter_set_queries_count: 5
                                       )
@@ -64,47 +64,9 @@ describe SimulatorsController do
       get :show, {id: @simulator.to_param}, valid_session
       response.should be_success
       assigns(:simulator).should eq(@simulator)
-      assigns(:param_sets).should eq(@simulator.parameter_sets.limit(assigns(:param_sets).to_a.size).to_a)
       assigns(:analyzers).should eq(@simulator.analyzers)
       assigns(:query_id).should be_nil
       assigns(:query_list).should have(5).items
-    end
-
-    it "paginates the list of parameters" do
-      get :show, {id: @simulator.to_param, page: 1}
-      response.should be_success
-      assigns(:param_sets).to_a.size.should == 25  # to_a is necessary since #count ignores the limit
-    end
-
-    context "when 'query_id' parameter is given" do
-
-      before(:each) do
-        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
-        10.times do |i|
-          FactoryGirl.create(:parameter_set,
-                             simulator: @simulator,
-                             runs_count: 0,
-                             v: {"L" => i, "T" => i*2.0}
-                             )
-        end
-        @query = FactoryGirl.create(:parameter_set_query,
-                                    simulator: @simulator,
-                                    query: {"L" => {"gte" => 5}})
-
-        params = {id: @simulator.to_param, query_id: @query.id}
-        get :show, params, valid_session
-      end
-
-      it "show the list of filtered ParameterSets" do
-        assigns(:param_sets).to_a.should have(5).items
-        assigns(:param_sets).each do |ps|
-          ps.v["L"].should >= 5
-        end
-      end
-
-      it "assigns 'query_id' variable" do
-        assigns(:query_id).should eq(@query.id.to_s)
-      end
     end
   end
 
@@ -115,30 +77,46 @@ describe SimulatorsController do
     end
   end
 
-  # describe "GET edit" do
-  #   it "assigns the requested simulator as @simulator" do
-  #     simulator = Simulator.create! valid_attributes
-  #     get :edit, {:id => simulator.to_param}, valid_session
-  #     assigns(:simulator).should eq(simulator)
-  #   end
-  # end
+  describe "GET edit" do
+    it "assigns the requested simulator as @simulator" do
+      simulator = Simulator.create! valid_attributes
+      get :edit, {:id => simulator.to_param}, valid_session
+      assigns(:simulator).should eq(simulator)
+    end
+  end
 
   describe "POST create" do
     describe "with valid params" do
 
       before(:each) do
         definitions = [
-          {"name" => "param1", "type" => "Integer"},
-          {"name" => "param2", "type" => "Float"}
+          {key: "param1", type: "Integer"},
+          {key: "param2", type: "Float"}
         ]
-        simulator = {name: "simulatorA", command: "echo"}
-        @valid_post_parameter = {simulator: simulator, definitions: definitions}
+        simulator = {
+          name: "simulatorA", command: "echo", support_input_json: "0",
+          support_mpi: "0", support_omp: "1",
+          parameter_definitions_attributes: definitions
+        }
+        @valid_post_parameter = {simulator: simulator}
       end
 
       it "creates a new Simulator" do
         expect {
           post :create, @valid_post_parameter, valid_session
         }.to change(Simulator, :count).by(1)
+      end
+
+      it "assigns attributes of newly created Simulator" do
+        post :create, @valid_post_parameter, valid_session
+        sim = Simulator.last
+        sim.name.should eq "simulatorA"
+        sim.command.should eq "echo"
+        sim.support_input_json.should be_false
+        sim.parameter_definition_for("param1").type.should eq "Integer"
+        sim.parameter_definition_for("param2").type.should eq "Float"
+        sim.support_mpi.should be_false
+        sim.support_omp.should be_true
       end
 
       it "assigns a newly created simulator as @simulator" do
@@ -170,64 +148,75 @@ describe SimulatorsController do
     end
   end
 
-  # describe "PUT update" do
-  #   describe "with valid params" do
-  #     it "updates the requested simulator" do
-  #       simulator = Simulator.create! valid_attributes
-  #       # Assuming there are no other simulators in the database, this
-  #       # specifies that the Simulator created on the previous line
-  #       # receives the :update_attributes message with whatever params are
-  #       # submitted in the request.
-  #       Simulator.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
-  #       put :update, {:id => simulator.to_param, :simulator => {'these' => 'params'}}, valid_session
-  #     end
+  describe "PUT update" do
+    describe "with valid params" do
 
-  #     it "assigns the requested simulator as @simulator" do
-  #       simulator = Simulator.create! valid_attributes
-  #       put :update, {:id => simulator.to_param, :simulator => valid_attributes}, valid_session
-  #       assigns(:simulator).should eq(simulator)
-  #     end
+      before(:each) do
+        definitions = [
+          {key: "param1", type: "Integer"},
+          {key: "param2", type: "Float"}
+        ]
+        simulator = {
+          name: "simulatorA", command: "echo", support_input_json: "0",
+          support_mpi: "0", support_omp: "1",
+          parameter_definitions_attributes: definitions
+        }
+        @valid_post_parameter = {simulator: simulator}
+      end
 
-  #     it "redirects to the simulator" do
-  #       simulator = Simulator.create! valid_attributes
-  #       put :update, {:id => simulator.to_param, :simulator => valid_attributes}, valid_session
-  #       response.should redirect_to(simulator)
-  #     end
-  #   end
+      it "updates the requested simulator" do
+        simulator = Simulator.create! valid_attributes
+        Simulator.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
+        put :update, {:id => simulator.to_param, :simulator => {'these' => 'params'}}, valid_session
+      end
 
-  #   describe "with invalid params" do
-  #     it "assigns the simulator as @simulator" do
-  #       simulator = Simulator.create! valid_attributes
-  #       # Trigger the behavior that occurs when invalid params are submitted
-  #       Simulator.any_instance.stub(:save).and_return(false)
-  #       put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
-  #       assigns(:simulator).should eq(simulator)
-  #     end
+      it "assigns the requested simulator as @simulator" do
+        simulator = Simulator.create! valid_attributes
+        put :update, {:id => simulator.to_param, :simulator => @valid_post_parameter}, valid_session
+        assigns(:simulator).should eq(simulator)
+      end
 
-  #     it "re-renders the 'edit' template" do
-  #       simulator = Simulator.create! valid_attributes
-  #       # Trigger the behavior that occurs when invalid params are submitted
-  #       Simulator.any_instance.stub(:save).and_return(false)
-  #       put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
-  #       response.should render_template("edit")
-  #     end
-  #   end
-  # end
+      it "redirects to the simulator" do
+        simulator = Simulator.create! valid_attributes
+        put :update, {:id => simulator.to_param, :simulator => @valid_post_parameter}, valid_session
+        response.should redirect_to(simulator)
+      end
+    end
 
-  # describe "DELETE destroy" do
-  #   it "destroys the requested simulator" do
-  #     simulator = Simulator.create! valid_attributes
-  #     expect {
-  #       delete :destroy, {:id => simulator.to_param}, valid_session
-  #     }.to change(Simulator, :count).by(-1)
-  #   end
+    describe "with invalid params" do
+      it "assigns the simulator as @simulator" do
+        simulator = Simulator.create! valid_attributes
+        Simulator.any_instance.stub(:save).and_return(false)
+        put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
+        assigns(:simulator).should eq(simulator)
+      end
 
-  #   it "redirects to the simulators list" do
-  #     simulator = Simulator.create! valid_attributes
-  #     delete :destroy, {:id => simulator.to_param}, valid_session
-  #     response.should redirect_to(simulators_url)
-  #   end
-  # end
+      it "re-renders the 'edit' template" do
+        simulator = Simulator.create! valid_attributes
+        Simulator.any_instance.stub(:save).and_return(false)
+        put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
+        response.should render_template("edit")
+      end
+    end
+  end
+
+  describe "DELETE destroy" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+    end
+
+    it "destroys the requested simulator" do
+      expect {
+        delete :destroy, {id: @sim.to_param}, valid_session
+      }.to change(Simulator, :count).by(-1)
+    end
+
+    it "redirects to the simulators list" do
+      delete :destroy, {id: @sim.to_param}, valid_session
+      response.should redirect_to(simulators_url)
+    end
+  end
 
   describe "POST _make_query" do
     before(:each) do
@@ -287,6 +276,56 @@ describe SimulatorsController do
       it "redirect to show with nonmodified query_id" do
         post :_make_query, {:id => @simulator.to_param, params: {}, query_id: ""}, valid_session
         response.should redirect_to( simulator_path(@simulator, query_id: "") )
+      end
+    end
+  end
+
+  describe "GET _parameters_list" do
+    before(:each) do
+      @simulator = FactoryGirl.create(:simulator,
+                                      parameter_sets_count: 30, runs_count: 0,
+                                      analyzers_count: 3, run_analysis: false,
+                                      parameter_set_queries_count: 5
+                                      )
+      get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      @parsed_body = JSON.parse(response.body)
+    end
+
+    it "return json format" do
+      response.header['Content-Type'].should include 'application/json'
+      @parsed_body["iTotalRecords"].should == 30
+      @parsed_body["iTotalDisplayRecords"].should == 30
+    end
+
+    it "paginates the list of parameters" do
+      @parsed_body["aaData"].size.should == 25
+    end
+
+    context "when 'query_id' parameter is given" do
+
+      before(:each) do
+        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+        10.times do |i|
+          FactoryGirl.create(:parameter_set,
+                             simulator: @simulator,
+                             runs_count: 0,
+                             v: {"L" => i, "T" => i*2.0}
+                             )
+        end
+        @query = FactoryGirl.create(:parameter_set_query,
+                                    simulator: @simulator,
+                                    query: {"L" => {"gte" => 5}})
+
+        get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 1, sSortDir_0: "desc", query_id: @query.id}, :format => :json
+        @parsed_body = JSON.parse(response.body)
+      end
+
+      it "show the list of filtered ParameterSets" do
+        @parsed_body["aaData"].size.should == 5
+        @parsed_body["aaData"].each do |ps|
+          ps[4].to_i.should >= 5 #ps[3].to_i is qeual to v.L(ps[img, id, id, updated_at, [keys]])
+        end
+        @parsed_body["aaData"].first[4].to_i.should == @query.parameter_sets.max("v.L")
       end
     end
   end

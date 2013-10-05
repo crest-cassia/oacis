@@ -6,10 +6,18 @@ class Host
   field :user, type: String
   field :port, type: Integer, default: 22
   field :ssh_key, type: String, default: '~/.ssh/id_rsa'
-  field :show_status_command, type: String, default: 'ps au'
-  field :submission_command, type: String, default: 'nohup'
+  field :scheduler_type, type: String, default: "none"
   field :work_base_dir, type: String, default: '~'
-  field :simulator_base_dir, type: String, default: '~'
+  field :max_num_jobs, type: Integer, default: 1
+  field :min_mpi_procs, type: Integer, default: 1
+  field :max_mpi_procs, type: Integer, default: 1
+  field :min_omp_threads, type: Integer, default: 1
+  field :max_omp_threads, type: Integer, default: 1
+  field :template, type: String, default: JobScriptUtil::DEFAULT_TEMPLATE
+
+  has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
+  embeds_many :host_parameter_definitions
+  accepts_nested_attributes_for :host_parameter_definitions, allow_destroy: true
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
   validates :hostname, presence: true, format: {with: /^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/}
@@ -19,6 +27,16 @@ class Host
   # See http://stackoverflow.com/questions/1221985/how-to-validate-a-user-name-with-regex
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
+  validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
+  validates :min_mpi_procs, numericality: {greater_than_or_equal_to: 1}
+  validates :max_mpi_procs, numericality: {greater_than_or_equal_to: 1}
+  validates :min_omp_threads, numericality: {greater_than_or_equal_to: 1}
+  validates :max_omp_threads, numericality: {greater_than_or_equal_to: 1}
+  validate :work_base_dir_is_not_editable_when_submitted_runs_exist
+  validate :min_is_not_larger_than_max
+  validate :template_conform_to_host_parameter_definitions
+
+  before_destroy :validate_destroyable
 
   CONNECTION_EXCEPTIONS = [
     Errno::ECONNREFUSED,
@@ -33,7 +51,7 @@ class Host
   # return false otherwise
   # connection exception is stored in @connection_error
   def connected?
-    Net::SSH.start(hostname, user, password: "")  # disabled password authentication
+    start_ssh {|ssh| } # do nothing
   rescue *CONNECTION_EXCEPTIONS => ex
     @connection_error = ex
     return false
@@ -43,101 +61,256 @@ class Host
 
   attr_reader :connection_error
 
-  def download(remote_path, local_path)
-    raise "Not an absolute path: #{remote_path}" unless Pathname.new(remote_path).absolute?
-    start_sftp do |sftp|
-      sftp.download!(remote_path, local_path, recursive: true)
-    end
-  end
-
-  def rm_r(remote_path)
-    raise "Not an abosolute path:#{remote_path}" unless Pathname.new(remote_path).absolute?
-    start_ssh do |ssh|
-      ssh.exec!("rm -r #{remote_path}")
-    end
-  end
-
-  def uname
-    uname = nil
-    start_ssh do |ssh|
-      uname = ssh.exec!("uname").chomp
-    end
-    return uname
-  end
-
   def status
     ret = nil
     start_ssh do |ssh|
-      unless show_status_command.blank?
-        ret = ssh.exec!(show_status_command)
-      else
-        ps = ssh.exec!('ps au')
-        ret = ps.lines.first
-        ret += ps.lines.find_all {|l| l =~ /resque-\d/}.map{|l| l.chomp.strip }.join("\n")
-        ret += "\n------------------\n\n"
-
-        uname = ssh.exec!("uname").chomp
-        cmd = "top -b -n 1"
-        cmd = "top -l 1 -o cpu" if uname =~ /Darwin/
-        cmd += " | head -n 20"
-        ret += ssh.exec!(cmd)
-      end
+      wrapper = SchedulerWrapper.new(self.scheduler_type)
+      cmd = wrapper.all_status_command
+      ret = SSHUtil.execute(ssh, cmd)
     end
     return ret
   end
 
-  def launch_worker_cmd
-    exe = './bin/rake'
-    args = ['resque:workers',
-            'QUEUE=simulator_queue',
-            'LOAD_RAILS=false',
-            'VERBOSE=1',
-            "CM_HOST_ID=#{id}",
-            "CM_WORK_DIR=#{work_base_dir}",
-            "CM_SIMULATOR_DIR=#{simulator_base_dir}",
-            'COUNT=1'
-          ]
-    return "cd #{work_base_dir} && nohup #{exe} #{args.join(' ')} &"
+  def submittable_runs
+    Run.where(status: :created, submitted_to: self)
+  end
+
+  def submitted_runs
+    Run.where(submitted_to: self).in(status: [:submitted, :running, :cancelled])
+  end
+
+  def submit(runs)
+    start_ssh do |ssh|
+      runs.each do |run|
+        begin
+          create_remote_work_dir(ssh, run)
+          prepare_input_json(ssh, run)
+          execute_pre_process(ssh, run)
+          job_script_path = prepare_job_script(ssh, run)
+          submit_to_scheduler(ssh, run, job_script_path)
+        rescue => ex
+          work_dir = work_dir_path(run)
+          SSHUtil.download_recursive(ssh, work_dir, run.dir) if SSHUtil.exist?(ssh, work_dir)
+          remove_remote_files(ssh, run)
+          run.update_attribute(:status, :failed)
+          $stderr.puts ex.inspect
+        end
+      end
+    end
+  end
+
+  def check_submitted_job_status
+    return if submitted_runs.count == 0
+    start_ssh do |ssh|
+      # check if job is finished
+      submitted_runs.each do |run|
+        if run.status == :cancelled
+          cancel_job(ssh, run)
+          remove_remote_files(ssh, run)
+          run.submitted_to = nil
+          run.destroy
+          next
+        end
+        case remote_status(ssh, run)
+        when :submitted
+          # DO NOTHING
+        when :running
+          if run.status == :submitted
+            run.status = :running
+            run.save
+          end
+        when :includable, :unknown
+          include_result(ssh, run)
+        end
+      end
+    end
+  end
+
+  def work_base_dir_is_not_editable?
+    self.persisted? and submitted_runs.any?
+  end
+
+  def destroyable?
+    submittable_runs.empty? and submitted_runs.empty?
   end
 
   private
   def start_ssh
-    Net::SSH.start(hostname, user, password: "", timeout: 1) do |ssh|
-      yield ssh
-    end
-  end
-
-  def start_sftp
-    Net::SFTP.start(hostname, user, password: "", timeout: 1) do |sftp|
-      yield sftp
-    end
-  end
-
-  def ssh_exec!(ssh, command)
-    # Originally submitted by 'flitzwald' over here: http://stackoverflow.com/a/3386375
-    stdout_data = ""
-    stderr_data = ""
-    exit_code = nil
-
-    ssh.open_channel do |channel|
-      channel.exec(command) do |ch, success|
-        unless success
-          abort "FAILED: couldn't execute command (ssh.channel.exec)"
-        end
-        channel.on_data do |ch,data|
-          stdout_data+=data
-        end
-
-        channel.on_extended_data do |ch,type,data|
-          stderr_data+=data
-        end
-
-        channel.on_request("exit-status") do |ch,data|
-          exit_code = data.read_long
+    if @ssh
+      yield @ssh
+    else
+      Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port) do |ssh|
+        @ssh = ssh
+        begin
+          yield ssh
+        ensure
+          @ssh = nil
         end
       end
     end
-    ssh.loop
-    [stdout_data, stderr_data, exit_code]
+  end
+
+  def create_remote_work_dir(ssh, run)
+    cmd = "mkdir -p #{work_dir_path(run)}"
+    out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+    raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
+  end
+
+  def prepare_input_json(ssh, run)
+    input = run.input
+    SSHUtil.write_remote_file(ssh, input_json_path(run), input.to_json) if input
+  end
+
+  def execute_pre_process(ssh, run)
+    script = run.simulator.pre_process_script
+    if script.present?
+      path = pre_process_script_path(run)
+      SSHUtil.write_remote_file(ssh, path, script)
+      out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
+      raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
+      cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} #{run.args} 1>> _stdout.txt 2>> _stderr.txt"
+      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+      raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
+    end
+  end
+
+  def prepare_job_script(ssh, run)
+    jspath = job_script_path(run)
+    SSHUtil.write_remote_file(ssh, jspath, run.job_script)
+    out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{jspath}")
+    raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
+    jspath
+  end
+
+  def submit_to_scheduler(ssh, run, job_script_path)
+    cmd = SchedulerWrapper.new(self.scheduler_type).submit_command(job_script_path)
+    out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+    raise "#{cmd} failed : #{rc}, #{err}" unless rc == 0
+    run.status = :submitted
+    run.job_id = out.chomp
+    run.submitted_at = DateTime.now
+    run.save!
+  end
+
+  def job_script_path(run)
+    Pathname.new(work_base_dir).join("#{run.id}.sh")
+  end
+
+  def pre_process_script_path(run)
+    work_dir_path(run).join("_preprocess.sh")
+  end
+
+  def input_json_path(run)
+    work_dir_path(run).join('_input.json')
+  end
+
+  def work_dir_path(run)
+    Pathname.new(work_base_dir).join("#{run.id}")
+  end
+
+  def result_file_path(run)
+    Pathname.new(work_base_dir).join("#{run.id}.tar.bz2")
+  end
+
+  def cancel_job(ssh, run)
+    stat = remote_status(ssh, run)
+    if stat == :submitted or stat == :running
+      scheduler = SchedulerWrapper.new(scheduler_type)
+      cmd = scheduler.cancel_command(run.job_id)
+      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+      $stderr.puts out, err, rc unless rc == 0
+    end
+  end
+
+  def remote_status(ssh, run)
+    status = :unknown
+    scheduler = SchedulerWrapper.new(scheduler_type)
+    cmd = scheduler.status_command(run.job_id)
+    out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+    status = scheduler.parse_remote_status(out) if rc == 0
+    status
+  end
+
+  def include_result(ssh, run)
+    archive = result_file_path(run)
+    archive_exist = SSHUtil.exist?(ssh, archive)
+    work_dir = work_dir_path(run)
+    work_dir_exist = SSHUtil.exist?(ssh, work_dir_path(run))
+    if archive_exist and !work_dir_exist           # normal case
+      base = File.basename(archive)
+      SSHUtil.download(ssh, archive, run.dir.join('..', base))
+      JobScriptUtil.expand_result_file_and_update_run(run)
+    else
+      SSHUtil.download_recursive(ssh, work_dir, run.dir) if work_dir_exist
+      run.status = :failed
+      run.save!
+    end
+
+    remove_remote_files(ssh, run)
+    run.enqueue_auto_run_analyzers
+  end
+
+  def remove_remote_files(ssh, run)
+    paths = [job_script_path(run),
+             input_json_path(run),
+             work_dir_path(run),
+             result_file_path(run),
+             Pathname.new(work_base_dir).join("#{run.id}_status.json"),
+             Pathname.new(work_base_dir).join("#{run.id}_time.txt"),
+             Pathname.new(work_base_dir).join("#{run.id}.tar")
+            ]
+    paths.each do |path|
+      SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
+    end
+  end
+
+  def work_base_dir_is_not_editable_when_submitted_runs_exist
+    if work_base_dir_is_not_editable? and self.work_base_dir_changed?
+      errors.add(:work_base_dir, "is not editable when submitted runs exist")
+    end
+  end
+
+  def min_is_not_larger_than_max
+    if min_mpi_procs > max_mpi_procs
+      errors.add(:max_mpi_procs, "must be larger than min_mpi_procs")
+    end
+    if min_omp_threads > max_omp_threads
+      errors.add(:max_omp_threads, "must be larger than min_omp_threads")
+    end
+  end
+
+  def template_conform_to_host_parameter_definitions
+    invalid = SafeTemplateEngine.invalid_parameters(template)
+    if invalid.any?
+      errors.add(:template, "invalid parameters #{invalid.inspect}")
+      return
+    end
+    vars = SafeTemplateEngine.extract_parameters(template)
+    vars -= JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
+    # check if definition is marked_for_destruction
+    # since nested_attributes are destructed after validation of host
+    host_params = host_parameter_definitions.reject{ |hpdef| hpdef.marked_for_destruction? }
+    keys = host_params.map {|hpdef| hpdef.key }
+    diff = vars.sort - keys.sort
+    if diff.any?
+      diff.each do |var|
+        errors[:base] << "'#{var}' appears in template, but not defined as a host parameter"
+      end
+    end
+    diff2 = keys.sort - vars.sort
+    if diff2.any?
+      diff2.each do |var|
+        errors[:base] << "'#{var}' is defined as a host parameter, but does not appear in template"
+      end
+    end
+  end
+
+  def validate_destroyable
+    if destroyable?
+      return true
+    else
+      errors.add(:base, "Created/Submitted Runs exist")
+      return false
+    end
   end
 end

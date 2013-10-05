@@ -1,0 +1,52 @@
+.page-header
+  %h1 Jobs
+
+%h3 Running Jobs
+%table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "running")}"}
+  %thead
+    %tr
+      - RunsListDatatable::HEADER.each do |header|
+        = raw(header)
+  %tbody
+
+%hr
+%h3 Submitted Jobs
+%table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "submitted")}"}
+  %thead
+    %tr
+      - RunsListDatatable::HEADER.each do |header|
+        = raw(header)
+  %tbody
+
+%hr
+%h3 Created Jobs
+%table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "created")}"}
+  %thead
+    %tr
+      - RunsListDatatable::HEADER.each do |header|
+        = raw(header)
+  %tbody
+
+.form-actions
+  %a.btn.btn-primary#check_server_stat Update
+
+:javascript
+  $(function() {
+    $('.jobs_datatable').each( function() {
+      var source = $(this).attr("data-source");
+      var oTable = $(this).dataTable({
+        bProcessing: true,
+        bServerSide: true,
+        bFilter: false,
+        sAjaxSource: source,
+        sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+        sPaginationType: "bootstrap"
+      });
+      aoRunsTables.push(oTable);
+    });
+
+    $('#check_server_stat').click( function() {
+      $.get("#{check_server_status_runs_path}");
+      reload_runs_table();
+    });
+  });

@@ -37,11 +37,10 @@ describe ParameterSet do
       }.should raise_error
     end
 
-    it "should not be valid when keys of v are not consistent its Simulator" do
-      h = @sim.parameter_definitions
-      h["T"].delete("default")
-      @sim.parameter_definitions = h
-      built_param = @sim.parameter_sets.build(@valid_attr.update({:v => {"L"=>32}}))
+    it "should not be valid when keys of v are not consistent with its Simulator" do
+      pd = @sim.parameter_definitions.first
+      pd.default = nil
+      built_param = @sim.parameter_sets.build(@valid_attr.update({:v => {}}))
       built_param.should_not be_valid
     end
 
@@ -75,8 +74,8 @@ describe ParameterSet do
 
     it "uses default values if a parameter value is not given" do
       updated_attr = @valid_attr.update(v: {})
-      @sim.parameter_definitions["L"]["default"] = 30
-      @sim.parameter_definitions["T"]["default"] = 2.0
+      @sim.parameter_definition_for("L").default = 30
+      @sim.parameter_definition_for("T").default = 2.0
       built = @sim.parameter_sets.build(updated_attr)
       built.should be_valid
       built[:v]["L"].should == 30
@@ -92,15 +91,38 @@ describe ParameterSet do
   describe "relations" do
 
     before(:each) do
-      @parameter = @sim.parameter_sets.first
+      @ps = @sim.parameter_sets.first
     end
 
     it "has simulator method" do
-      @parameter.should respond_to(:simulator)
+      @ps.should respond_to(:simulator)
     end
 
     it "has runs method" do
-      @parameter.should respond_to(:runs)
+      @ps.should respond_to(:runs)
+    end
+
+    it "calls destroy of dependent runs when destroyed" do
+      run = @ps.runs.first
+      run.should_receive(:destroy)
+      @ps.destroy
+    end
+
+    it "calls destroy of dependent analyses when destroyed" do
+      azr = FactoryGirl.create(:analyzer,
+                         simulator: @sim,
+                         type: :on_parameter_set
+                         )
+      anl = @ps.analyses.build(analyzable: @ps, analyzer: azr)
+      anl.should_receive(:destroy)
+      @ps.destroy
+    end
+
+    it "calls cancel of dependent runs whose status is submitted or running when destroyed" do
+      run = @ps.runs.first
+      run.status = :submitted
+      run.should_receive(:cancel)
+      @ps.destroy
     end
   end
 
@@ -124,10 +146,9 @@ describe ParameterSet do
 
     it "is not created when validation fails" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
-      h = sim.parameter_definitions
-      h["T"].delete("default")
-      sim.parameter_definitions = h
-      sim.save
+      h = sim.parameter_definition_for("T")
+      h.default = nil
+      h.save!
 
       prm = sim.parameter_sets.create(@valid_attr.update({:v => {"L"=>"abc"}}))
       (Dir.entries(ResultDirectory.simulator_path(sim)) - ['.','..']).should be_empty
@@ -146,11 +167,15 @@ describe ParameterSet do
   describe "#parameters_with_different" do
 
     before(:each) do
-      h = { "L"=>{"type"=>"Integer", "default" => 50, "description" => "First parameter"},
-            "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Second parameter"},
-            "P"=>{"type"=>"Float", "default" => 1.0, "description" => "Third parameter"}
-      }
-      sim = FactoryGirl.create(:simulator, parameter_definitions: h, parameter_sets_count: 0)
+      pds = [
+        ParameterDefinition.new(
+          {key: "L", type: "Integer", default: 50, description: "First parameter"}),
+        ParameterDefinition.new(
+          {key: "T", type: "Float", default: 1.0, description: "Second parameter"}),
+        ParameterDefinition.new(
+          {key: "P", type: "Float", default: 1.0, description: "Third parameter"})
+      ]
+      sim = FactoryGirl.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
       5.times do |n|
         val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
         sim.parameter_sets.create( v: val )
@@ -183,6 +208,28 @@ describe ParameterSet do
     it "includes self" do
       found = @prm.parameter_sets_with_different("L").find(@prm)
       found.should be_a(ParameterSet)
+    end
+  end
+
+  describe "#runs_status_count" do
+
+    it "returns the runs count" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 10)
+      prm = sim.parameter_sets.first
+      prm.runs_status_count[:total] = prm.runs.count
+      prm.runs_status_count[:finished].should == prm.runs.where(status: :finished).count
+      prm.runs_status_count[:running].should == prm.runs.where(status: :running).count
+      prm.runs_status_count[:failed].should == prm.runs.where(status: :failed).count
+    end
+  end
+
+  describe "#destroy" do
+
+    it "deletes result_directory" do
+      ps = @sim.parameter_sets.first
+      dir = ps.dir
+      ps.destroy
+      File.directory?(dir).should be_false
     end
   end
 end

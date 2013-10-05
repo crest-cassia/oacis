@@ -2,22 +2,19 @@
 require 'faker'
 
 FactoryGirl.define do
-  factory :user do
-    name 'Test User'
-    email 'example@example.com'
-    password 'please'
-    password_confirmation 'please'
-    # required if the Devise Confirmable module is used
-    # confirmed_at Time.now
-  end
 
   factory :simulator do
     sequence(:name, 'A') {|n| "simulator#{n}"}
     command "echo"
-    h = { "L"=>{"type"=>"Integer", "default" => 50, "description" => "System size"},
-          "T"=>{"type"=>"Float", "default" => 1.0, "description" => "Temperature"}
-        }
-    parameter_definitions h
+
+    parameter_definitions {
+      [
+      ParameterDefinition.new(
+        { key: "L", type: "Integer", default: 50, description: "System size"}),
+      ParameterDefinition.new(
+        { key: "T", type: "Float", default: 1.0, description: "Temperature" })
+      ]
+    }
     description { Faker::Lorem.paragraphs.join("\n") }
 
     ignore do
@@ -30,7 +27,15 @@ FactoryGirl.define do
       run_analysis_on_parameter_set true
       parameter_set_queries_count 0
     end
+
     after(:create) do |simulator, evaluator|
+      if Host.where(name: "localhost").present?
+        h = Host.where(name: "localhost").first
+        h.executable_simulators.push simulator
+        h.save!
+      else
+        h = FactoryGirl.create(:localhost, executable_simulators: [simulator])
+      end
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
                               simulator: simulator,
                               runs_count: evaluator.runs_count,
@@ -69,6 +74,8 @@ FactoryGirl.define do
 
   factory :run do
 
+    submitted_to { self.parameter_set.simulator.executable_on.first }
+
     factory :finished_run do
 
       after(:create) do |run, evaluator|
@@ -86,18 +93,14 @@ FactoryGirl.define do
     sequence(:name, 'A') {|n| "analyzer_#{n}"}
     type { :on_run }
     command { "cat _input.json" }
-
-    sequence(:parameter_definitions, 0) do |n|
-      h = {}
-      types = ["Integer","Float","String","Boolean"]
-      defaults = [1, 2.0, "abc", true]
-      types.size.times do |i|
-        next if n == i
-        h["param#{i}"] = {"type" => types[i], "default" => defaults[i], "description" => "description for param#{i}"}
-      end
-      h
-    end
-    # parameter_definitions h
+    parameter_definitions {
+      [
+      ParameterDefinition.new(
+        { key: "param1", type: "Integer", default: 50, description: "param1 desc"}),
+      ParameterDefinition.new(
+        { key: "param2", type: "Float", default: 1.0, description: "param2 desc" })
+      ]
+    }
     description { Faker::Lorem.paragraphs.join("\n") }
 
     ignore do
@@ -106,30 +109,71 @@ FactoryGirl.define do
 
     after(:create) do |analyzer, evaluator|
       if evaluator.run_analysis
-        sim = analyzer.simulator.parameter_sets.each do |ps|
-          case analyzer.type
-          when :on_parameter_set
-            FactoryGirl.create(:analysis_run, analyzable: ps, analyzer: analyzer, parameters: {})
-          when :on_run
+        case analyzer.type
+        when :on_run
+          analyzer.simulator.parameter_sets.each do |ps|
             ps.runs.each do |run|
-              FactoryGirl.create(:analysis_run, analyzable: run, analyzer: analyzer, parameters: {})
+              FactoryGirl.create(:analysis, analyzable: run, analyzer: analyzer, parameters: {})
             end
-          else
-            raise "not supported type"
           end
+        when :on_parameter_set
+          analyzer.simulator.parameter_sets.each do |ps|
+            FactoryGirl.create(:analysis, analyzable: ps, analyzer: analyzer, parameters: {})
+          end
+        else
+          raise "not supported type"
         end
       end
     end
   end
 
-  factory :analysis_run do
+  factory :analysis do
     h = {"param1" => 1, "param2" => 2.0}
     parameters h
+    status :finished
+    sequence(:result) do |n|
+      {"XXX" => n + 1, "YYY" => n*3.0}
+    end
   end
 
   factory :parameter_set_query do
     sequence(:query) do |n|
       {"T" => {"gte" => n*2.0}, "L"=> {"lte" => n}}
     end
+  end
+
+  factory :host do
+    sequence(:name, 'A') {|n| "Host_#{n}"}
+    sequence(:hostname, 'A') {|n| "hostname.#{n}"}
+    min_mpi_procs 1
+    max_mpi_procs 8
+    min_omp_threads 1
+    max_omp_threads 8
+    user "login_user"
+
+    factory :host_with_parameters do
+      new_header = <<-EOS
+#!/bin/bash
+# param1:<%= param1 %>
+# param2:<%= param2 %>
+EOS
+      template { JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", new_header) }
+      host_parameter_definitions {
+        [
+          HostParameterDefinition.new(key: "param1"),
+          HostParameterDefinition.new(key: "param2")
+        ]
+      }
+    end
+  end
+
+  factory :localhost, class: Host do
+    name "localhost"
+    hostname { `hostname`.chomp }
+    min_mpi_procs 1
+    max_mpi_procs 8
+    min_omp_threads 1
+    max_omp_threads 8
+    user {ENV['USER']}
   end
 end

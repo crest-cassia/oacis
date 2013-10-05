@@ -5,16 +5,20 @@ describe Run do
   before(:each) do
     @simulator = FactoryGirl.create(:simulator,
                                     parameter_sets_count: 1,
-                                    runs_count: 1
+                                    runs_count: 1,
+                                    analyzers_count: 2,
+                                    run_analysis: true
                                     )
     @param_set = @simulator.parameter_sets.first
-    @valid_attribute = {}
+    @valid_attribute = {
+      submitted_to: Host.first
+    }
   end
 
   describe "validations" do
 
     it "creates a Run with a valid attribute" do
-      @param_set.runs.build.should be_valid
+      @param_set.runs.build(@valid_attribute).should be_valid
     end
 
     it "assigns 'created' stauts by default" do
@@ -37,10 +41,6 @@ describe Run do
       seeds.uniq.size.should == n
     end
 
-    it "is invalid if parameter set is not related" do
-      Run.new(@valid_attribute).should_not be_valid
-    end
-
     it "seed is an accessible attribute" do
       seed_val = 12345
       @valid_attribute.update(seed: seed_val)
@@ -56,7 +56,7 @@ describe Run do
 
     it "the attributes other than seed are not accessible" do
       @valid_attribute.update(
-        status: :canceled,
+        status: :cancelled,
         hostname: "host",
         cpu_time: 123.0,
         real_time: 456.0,
@@ -65,13 +65,138 @@ describe Run do
         included_at: DateTime.now
       )
       run = @param_set.runs.build(@valid_attribute)
-      run.status.should_not == :canceled
+      run.status.should_not == :cancelled
       run.hostname.should be_nil
       run.cpu_time.should be_nil
       run.real_time.should be_nil
       run.started_at.should be_nil
       run.finished_at.should be_nil
       run.included_at.should be_nil
+    end
+
+    it "status must be either :created, :submitted, :running, :failed, :finished, or :cancelled" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.status = :unknown
+      run.should_not be_valid
+    end
+
+    it "mpi_procs must be present" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.mpi_procs = nil
+      run.should_not be_valid
+    end
+
+    it "omp_threads must be present" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.omp_threads = nil
+      run.should_not be_valid
+    end
+
+    it "mpi_procs must between Host#min_mpi_procs and Host#max_mpi_procs" do
+      run = @param_set.runs.build(@valid_attribute)
+      host = run.submitted_to
+      host.update_attributes(min_mpi_procs: 1, max_mpi_procs: 256)
+      run.mpi_procs = 256
+      run.should be_valid
+      run.mpi_procs = 512
+      run.should_not be_valid
+    end
+
+    it "skips validation of mpi_procs for a persisted document" do
+      run = @param_set.runs.build(@valid_attribute)
+      host = run.submitted_to
+      host.update_attributes(min_mpi_procs: 1, max_mpi_procs: 256)
+      run.mpi_procs = 256
+      run.save!
+      host.update_attribute(:max_mpi_procs, 128)
+      run.should be_valid
+    end
+
+    it "omp_threads must between Host#min_omp_threads and Host#max_omp_threads" do
+      run = @param_set.runs.build(@valid_attribute)
+      host = run.submitted_to
+      host.update_attributes(min_omp_threads: 1, max_omp_threads: 256)
+      run.omp_threads = 256
+      run.should be_valid
+      run.omp_threads = 512
+      run.should_not be_valid
+    end
+
+    it "skips validation of omp_threads for a persisted document" do
+      run = @param_set.runs.build(@valid_attribute)
+      host = run.submitted_to
+      host.update_attributes(min_omp_threads: 1, max_omp_threads: 256)
+      run.omp_threads = 256
+      run.save!
+      host.update_attribute(:max_omp_threads, 128)
+      run.should be_valid
+    end
+
+    describe "'host_parameters' field" do
+
+      before(:each) do
+        header = <<-EOS
+#!/bin/bash
+# node:<%= node %>
+# proc:<%= mpi_procs %>
+EOS
+        template = JobScriptUtil::DEFAULT_TEMPLATE.sub(/#!\/bin\/bash/, header)
+        hpds = [ HostParameterDefinition.new(key: "node", default: "x", format: '\w+') ]
+        @host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
+      end
+
+      it "is valid when host_parameters are properly given" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.host_parameters = {"node" => "abc"}
+        run.should be_valid
+      end
+
+      it "is invalid when all the host_parameters are not specified" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.host_parameters = {}
+        run.should_not be_valid
+      end
+
+      it "is valid when host_parameters have rendundant keys" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.omp_threads = 8
+        run.host_parameters = {"node" => "abd", "shape" => "xyz"}
+        run.should be_valid
+      end
+
+      it "is invalid when host_parameters does not match the defined format" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.host_parameters = {"node" => "!!!"}
+        run.should_not be_valid
+      end
+
+      it "skips validation for a persisted run" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.host_parameters = {"node" => "abc"}
+        run.save!
+        new_template = <<-EOS
+#!/bin/bash
+# new_var: <%= new_var %>
+EOS
+        @host.update_attribute(:template, new_template)
+        run.should be_valid
+      end
+    end
+
+    it "skips validation of submitted_to for a persisted document" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.save!
+      run.submitted_to = nil
+      run.should be_valid
     end
   end
 
@@ -88,6 +213,17 @@ describe Run do
     it "responds to simulator" do
       @run.should respond_to(:simulator)
       @run.simulator.should eq(@run.parameter_set.simulator)
+    end
+
+    it "returns simulator even when run is not saved" do
+      run = @param_set.runs.build
+      run.simulator.should be_a(Simulator)
+    end
+
+    it "destroys including analyses when destroyed" do
+      expect {
+        @run.destroy
+      }.to change { Analysis.all.count }.by(-2)
     end
   end
 
@@ -120,27 +256,43 @@ describe Run do
       run = prm.runs.create(@valid_attribute)
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size.should == prev_count
     end
-  end
 
-  describe "#submit" do
-
-    it "submits a run to Resque" do
+    it "is removed when the item is destroyed" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-      prm = sim.parameter_sets.first
-      run = prm.runs.first
-      arg = {id: run.id, command: run.command}
-      Resque.should_receive(:enqueue).with(SimulatorRunner, arg)
-      run.submit
+      run = sim.parameter_sets.first.runs.first
+      dir_path = run.dir
+      run.destroy
+      FileTest.directory?(dir_path).should be_false
     end
   end
 
-  describe "#command" do
+  describe "#command_and_input" do
 
-    it "returns a shell command to run simulation" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-      prm = sim.parameter_sets.first
-      run = prm.runs.first
-      run.command.should == "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
+    context "for simulators which receives parameters as arguments" do
+
+      it "returns a shell command to run simulation" do
+        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: false)
+        prm = sim.parameter_sets.first
+        run = prm.runs.first
+        command, input = run.command_and_input
+        command.should eq "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
+        input.should be_nil
+      end
+    end
+
+    context "for simulators which receives parameters as _input.json" do
+
+      it "returns a shell command to run simulation" do
+        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: true)
+        prm = sim.parameter_sets.first
+        run = prm.runs.first
+        command, input = run.command_and_input
+        command.should eq "#{sim.command}"
+        prm.v.each do |key, val|
+          input[key].should eq val
+        end
+        input[:_seed].should eq run.seed
+      end
     end
   end
 
@@ -163,10 +315,12 @@ describe Run do
       prm = sim.parameter_sets.first
       @run = prm.runs.first
       @run.status = :finished
-      @temp_files = [@run.dir.join('result1.txt'), @run.dir.join('result2.txt')]
-      @temp_files.each {|f| FileUtils.touch(f) }
       @temp_dir = @run.dir.join('result_dir')
       FileUtils.mkdir_p(@temp_dir)
+      @temp_files = [@run.dir.join('result1.txt'),
+                     @run.dir.join('result2.txt'),
+                     @temp_dir.join('result3.txt')]
+      @temp_files.each {|f| FileUtils.touch(f) }
     end
 
     after(:each) do
@@ -176,18 +330,200 @@ describe Run do
 
     it "returns list of result files" do
       res = @run.result_paths
-      @temp_files.each do |f|
+      @temp_files[0..1].each do |f|
         res.should include(f)
       end
       res.should include(@temp_dir)
+      res.should_not include(@temp_files[2])
     end
 
-    it "does not include directories of analysis_run" do
+    it "does not include directories of analysis" do
       entries_in_run_dir = Dir.glob(@run.dir.join('*'))
       entries_in_run_dir.size.should eq(4)
       @run.result_paths.size.should eq(3)
-      arn_dir = @run.analysis_runs.first.dir
+      arn_dir = @run.analyses.first.dir
       @run.result_paths.should_not include(arn_dir)
+    end
+  end
+
+  describe "#archived_result_path" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @run = sim.parameter_sets.first.runs.first
+    end
+
+    it "returns path to archived file" do
+      @run.archived_result_path.should eq @run.dir.join("../#{@run.id}.tar.bz2")
+    end
+
+    it "is deleted when the run is destroyed" do
+      FileUtils.touch( @run.archived_result_path )
+      archive = @run.archived_result_path
+      expect {
+        @run.destroy
+      }.to change { File.exist?(archive) }.from(true).to(false)
+    end
+  end
+
+  describe "#enqueue_auto_run_analyzers" do
+
+    describe "auto run of analyzers for on_run type" do
+
+      before(:each) do
+        @run = @simulator.parameter_sets.first.runs.first
+        # @run.update_attributes!(status: :finished)
+        @run.status = :finished
+        @run.save!
+        @azr = FactoryGirl.create(:analyzer, simulator: @simulator, type: :on_run, auto_run: :yes)
+      end
+
+      context "when Analyzer#auto_run is :yes" do
+
+        it "creates analysis if status is 'finished'" do
+          expect {
+            @run.enqueue_auto_run_analyzers
+          }.to change { @run.reload.analyses.count }.by(1)
+        end
+
+        it "do not create analysis if status is not 'finished'" do
+          @run.status = :failed
+          @run.save!
+          expect {
+            @run.enqueue_auto_run_analyzers
+          }.to_not change { @run.reload.analyses.count }
+        end
+      end
+
+      context "when Analyzer#auto_run is :no" do
+
+        it "does not create analysis if Anaylzer#auto_run is :no" do
+          @azr.update_attributes!(auto_run: :no)
+          expect {
+            @run.enqueue_auto_run_analyzers
+          }.to_not change { @run.reload.analyses.count }
+        end
+      end
+
+      context "when Analyzer#auto_run is :first_run_only" do
+
+        before(:each) do
+          @azr.update_attributes!(auto_run: :first_run_only)
+        end
+
+        it "creates analysis if the run is the first 'finished' run within the parameter set" do
+          expect {
+            @run.enqueue_auto_run_analyzers
+          }.to change { @run.reload.analyses.count }.by(1)
+        end
+
+        it "does not create analysis if 'finished' run already exists within the paramter set" do
+          FactoryGirl.create(:run, parameter_set: @param_set, status: :finished)
+          expect {
+            @run.enqueue_auto_run_analyzers
+          }.to_not change { @run.reload.analyses.count }
+        end
+      end
+    end
+
+    describe "auto run of analyzers for on_parameter_set type" do
+
+      before(:each) do
+        @run = @simulator.parameter_sets.first.runs.first
+        @run.status = :finished
+        @run.save!
+        @azr = FactoryGirl.create(:analyzer,
+                                  simulator: @simulator, type: :on_parameter_set, auto_run: :yes)
+      end
+
+      it "creates analysis if all the other runs within the parameter set are 'finished' or 'failed'" do
+        FactoryGirl.create(:run, parameter_set: @param_set, status: :failed)
+        FactoryGirl.create(:run, parameter_set: @param_set, status: :finished)
+        expect {
+          @run.enqueue_auto_run_analyzers
+        }.to change { @param_set.reload.analyses.count }.by(1)
+      end
+
+      it "does not create analysis if any of runs within the parameter set is not 'finished' or 'failed'" do
+        FactoryGirl.create(:run, parameter_set: @param_set, status: :submitted)
+        expect {
+          @run.enqueue_auto_run_analyzers
+        }.to_not change { @param_set.reload.analyses.count }
+      end
+    end
+  end
+
+  describe "#destroy" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @run = sim.parameter_sets.first.runs.first
+    end
+
+    it "calls destroy if status is either :created, :failed, or :finished" do
+      expect {
+        @run.destroy
+      }.to change { Run.count }.by(-1)
+    end
+
+    context "when status is :submitted or :running" do
+
+      before(:each) do
+        @run.status = :submitted
+      end
+
+      it "calls cancel if status is :submitted or :running" do
+        @run.should_receive(:cancel)
+        @run.destroy
+      end
+
+      it "does not destroy run if status is :submitted or :running" do
+        expect {
+          @run.destroy
+        }.to_not change { Run.count }
+        @run.status.should eq :cancelled
+        @run.parameter_set.should be_nil
+      end
+
+      it "deletes run_directory and archived_result_file when cancel is called" do
+        run_dir = @run.dir
+        archive = @run.archived_result_path
+        FileUtils.touch(archive)
+        @run.destroy
+        File.exist?(run_dir).should be_false
+        File.exist?(archive).should be_false
+      end
+
+      it "does not destroy run even if #destroy is called twice" do
+        expect {
+          @run.destroy
+          @run.destroy
+        }.to_not change { Run.count }
+        @run.status.should eq :cancelled
+      end
+    end
+  end
+
+  describe "after_create callbacks" do
+
+    it "removes host_parameters not necessary for the host" do
+      template = <<EOS
+#!/bin/bash
+# foobar: <%= foobar %>
+EOS
+      hpds = [ HostParameterDefinition.new(key: "foobar") ]
+      host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
+      r_params = {"foobar" => 1, "baz" => 2}
+      run = @param_set.runs.build(submitted_to: host, host_parameters: r_params)
+      run.save!
+      run.host_parameters.should eq ({"foobar" => 1})
+    end
+
+    it "sets job script" do
+      run = @param_set.runs.build(submitted_to: Host.first)
+      run.job_script.should_not be_present
+      run.save!
+      run.job_script.should be_present
     end
   end
 end

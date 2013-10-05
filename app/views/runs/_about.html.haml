@@ -11,8 +11,28 @@
       %th seed
       %td= @run.seed
     %tr
+      %th submitted_to
+      - host = @run.submitted_to
+      %td= (host ? link_to( host.name, host_path(host) ) : "")
+    %tr
+      %th job_id
+      %td= @run.job_id
+    %tr
       %th hostname
       %td= @run.hostname
+    - if @run.simulator.support_mpi
+      %tr
+        %th MPI processes
+        %td= @run.mpi_procs ? @run.mpi_procs : "-"
+    - if @run.simulator.support_omp
+      %tr
+        %th OMP threads
+        %td= @run.omp_threads ? @run.omp_threads : "-"
+    %tr
+      %th Host parameters
+      %td
+        - if @run.host_parameters.present?
+          %pre= @run.host_parameters.to_json
     %tr
       %th CPU time
       %td= formatted_elapsed_time(@run.cpu_time)
@@ -23,8 +43,8 @@
       %th created at
       %td= @run.created_at
     %tr
-      %th updated at
-      %td= @run.updated_at
+      %th submitted at
+      %td= @run.submitted_at
     %tr
       %th started at
       %td= @run.started_at
@@ -34,6 +54,13 @@
     %tr
       %th included at
       %td= @run.included_at
+    %tr
+      %th updated at
+      %td= @run.updated_at
 
 %h3 Directory
 %pre= @run.dir
+
+- if @run.submitted_to
+  %h3 Script
+  %pre~ @run.job_script

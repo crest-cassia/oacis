@@ -8,10 +8,9 @@
     %th User
     %th Port
     %th Ssh key
-    %th Show status command
-    %th Submission command
+    %th Scheduler type
     %th Work base dir
-    %th Simulator base dir
+    %th Max number of jobs
     %th
 
   - @hosts.each do |host|
@@ -21,14 +20,12 @@
       %td= host.user
       %td= host.port
       %td= host.ssh_key
-      %td= host.show_status_command
-      %td= host.submission_command
+      %td= host.scheduler_type
       %td= host.work_base_dir
-      %td= host.simulator_base_dir
+      %td= host.max_num_jobs
       %td
-        = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning'
+        = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if host.destroyable?
 
-%br
-
-%a.btn.btn-primary{href: new_host_path} New Host
+.form-actions
+  %a.btn.btn-primary{href: new_host_path} New Host
 

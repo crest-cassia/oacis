@@ -1,12 +1,15 @@
 module ParametersUtil
 
+  TYPES = ["Integer","Float","String","Boolean"]
+
   def self.cast_parameter_values(parameters, definitions, errors = nil)
     casted = {}
     parameters ||= {}
-    definitions.each do |key,defn|
 
-      type = defn["type"]
-      val = parameters[key] || defn["default"]
+    definitions.each do |pdef|
+      key = pdef.key
+      type = pdef.type
+      val = parameters[key] || pdef.default
 
       # neither parameter and defualt value is specified
       if val.nil?
@@ -53,7 +56,6 @@ module ParametersUtil
     end
   end
 
-  private
   def self.boolean(val)
     compare_value = val.is_a?(String) ? val.downcase : val
     case compare_value

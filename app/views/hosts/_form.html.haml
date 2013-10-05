@@ -1,5 +1,6 @@
 = form_for @host, html: {class: 'form-horizontal'} do |f|
-  = render partial: 'shared/error_messages', locals: {error_messages: @host.errors.full_messages}
+  - error_messages = @host.errors.full_messages + @host.host_parameter_definitions.map {|pdef| pdef.errors.full_messages }.flatten
+  = render partial: 'shared/error_messages', locals: {error_messages: error_messages}
   .control-group
     = f.label(:name, class: 'control-label')
     .controls
@@ -21,21 +22,53 @@
     .controls
       = f.text_field(:ssh_key, class: 'text_field')
   .control-group
-    = f.label(:show_status_command, class: 'control-label')
+    = f.label(:scheduler_type, class: 'control-label')
     .controls
-      = f.text_field(:show_status_command, class: 'text_field')
-  .control-group
-    = f.label(:submission_command, class: 'control-label')
-    .controls
-      = f.text_field(:submission_command, class: 'text_field')
+      = f.select(:scheduler_type, SchedulerWrapper::TYPES)
   .control-group
     = f.label(:work_base_dir, class: 'control-label')
     .controls
-      = f.text_field(:work_base_dir, class: 'text_field')
+      - if @host.work_base_dir_is_not_editable?
+        = f.text_field(:work_base_dir, class: 'text_field', disabled: true);
+        not editable when a submitted run exists
+      - else
+        = f.text_field(:work_base_dir, class: 'text_field')
   .control-group
-    = f.label(:simulator_base_dir, class: 'control-label')
+    = f.label(:max_num_jobs, class: 'control-label')
     .controls
-      = f.text_field(:simulator_base_dir, class: 'text_field')
+      = f.text_field(:max_num_jobs, class: 'text_field')
+  .control-group
+    = f.label(:min_mpi_procs, 'MPI processes', class: 'control-label')
+    .controls
+      = f.number_field(:min_mpi_procs, class: 'number_field')
+      \~
+      = f.number_field(:max_mpi_procs, class: 'number_field')
+  .control-group
+    = f.label(:min_omp_threads, 'OMP threads', class: 'control-label')
+    .controls
+      = f.number_field(:min_omp_threads, class: 'number_field')
+      \~
+      = f.number_field(:max_omp_threads, class: 'number_field')
+  .control-group
+    = f.label(:template, class: 'control-label')
+    .controls
+      = f.text_area(:template, style: "width: 840px", rows: 20)
+  #host_parameters_definition.control-group
+    = label_tag('', 'Definition of Host Parameters', class: 'control-label')
+    .controls
+      = f.fields_for :host_parameter_definitions do |builder|
+        = render 'host_parameter_definition_fields', f: builder
+      = link_to_add_fields "Add Parameter", f, :host_parameter_definitions
+  .control-group
+    .control-label
+      Executable_simulators
+    .controls
+      = hidden_field_tag "host[executable_simulator_ids][]", nil
+      - Simulator.all.each do |sim|
+        %label{ for: dom_id(sim) }
+          = check_box_tag "host[executable_simulator_ids][]", sim.id, @host.executable_simulator_ids.include?(sim.id), id: dom_id(sim)
+          = sim.name
+
   .form-actions
     = f.submit('Save', class: 'btn btn-primary')
     = link_to('Cancel', (@host.persisted? ? @host : hosts_path), class: 'btn')

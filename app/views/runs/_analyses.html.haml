@@ -1,40 +1,21 @@
-%h3 List of Analysis
-%table.table.table-condensed
-  %thead
-    %tr
-      %th ID
-      %th analyzer
-      %th parameters
-      %th status
-      %th created_at
-  %tbody
-    - @analysis_runs.each do |arn|
-      %tr
-        %td= link_to(arn.id, run_analysis_run_path(@run, arn))
-        - azr = arn.analyzer
-        %td= link_to(azr.name, simulator_analyzer_path(azr.simulator, azr))
-        %td= arn.parameters.empty? ? '-' : arn.parameters.inspect
-        %td= arn.status
-        %td= arn.created_at
-
-- @analysis_runs.each do |arn|
-  = render partial: "shared/results", locals: {result: arn.result, result_paths: arn.result_paths, title: "Results for Analysis: #{arn.to_param}"}
+= render partial: 'shared/analyses', locals: {run: run}
 
 - if @run.status == :finished
-  %h5 Run analysis
+  %h3 Run analysis
   - @sim = @param_set.simulator
   - unless @sim.analyzers_on_run.empty?
-    = form_for( @run.analysis_runs.build, :url => run_analysis_runs_path(@run) ) do |f|
+    = form_for( @run.analyses.build, :url => run_analyses_path(@run) ) do |f|
       = f.label :analyzer
       = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }
       %div#parameters_form
         = render 'shared/parameters_form', param_def: @sim.analyzers_on_run.first.parameter_definitions
-      = f.submit "Analyze", :class => 'btn btn-primary'
+      .form-actions
+        = f.submit "Analyze", :class => 'btn btn-primary'
 
   :javascript
     $(function() {
-      $('#analysis_run_analyzer').change(function(){
-        $.get("#{_parameters_form_simulator_analyzer_path(@sim,':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
+      $('#analysis_analyzer').change(function(){
+        $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
           $('#parameters_form').html(data)
         });
       });

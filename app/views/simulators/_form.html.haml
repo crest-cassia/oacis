@@ -1,38 +1,49 @@
 = form_for @simulator, html: {class: 'form-horizontal'} do |f|
   = render partial: 'shared/error_messages', locals: {error_messages: @simulator.errors.full_messages}
+  - has_ps = @simulator.parameter_sets.present?
   .control-group
     = f.label(:name, class: 'control-label')
     .controls
-      = f.text_field(:name, class: 'text_field')
+      = f.text_field(:name, class: 'text_field', disabled: has_ps)
   #parameters_form.control-group
-    = label_tag('definitions[][name]', 'Definition of Parameters', class: 'control-label')
-    #parameter_form_original
-      .controls.controls-row
-        = text_field_tag('definitions[][name]', "", placeholder: "Name")
-        = select_tag('definitions[][type]', options_for_select(Simulator::ParameterTypes))
-        = text_field_tag('definitions[][default]', "", placeholder: "Default value")
-        %br
-        = text_area_tag('definitions[][description]', "", placeholder: "Description", rows: 3)
-    .controls#add_parameters_ctrl
-      .btn#add_parameters_btn Add parameter
+    = label_tag('', 'Definition of Parameters', class: 'control-label')
+    .controls
+      = f.fields_for :parameter_definitions do |builder|
+        = render 'parameter_definition_fields', f: builder, disabled: has_ps
+      = link_to_add_fields "Add Parameter", f, :parameter_definitions unless has_ps
+  .control-group
+    = f.label(:pre_process_script, class: 'control-label')
+    .controls
+      = f.text_area(:pre_process_script, rows: 3)
   .control-group
     = f.label(:command, class: 'control-label')
     .controls
       = f.text_field(:command)
   .control-group
+    = f.label(:support_input_json, "Input type", class: 'control-label')
+    .controls
+      = f.select(:support_input_json, {"Argument" => false, "JSON" => true} )
+  .control-group
+    = f.label(:support_mpi, class: 'control-label')
+    .controls
+      = f.check_box(:support_mpi)
+  .control-group
+    = f.label(:support_omp, class: 'control-label')
+    .controls
+      = f.check_box(:support_omp)
+  .control-group
     = f.label(:description, class: 'control-label')
     .controls
       = f.text_area(:description, rows: 5)
+  .control-group
+    .control-label
+      Executable_on
+    .controls
+      = hidden_field_tag "simulator[executable_on_ids][]", nil
+      - Host.all.each do |host|
+        %label{ for: dom_id(host) }
+          = check_box_tag "simulator[executable_on_ids][]", host.id, @simulator.executable_on_ids.include?(host.id), id: dom_id(host)
+          = host.name
   .form-actions
     = f.submit(class: 'btn btn-primary')
     = link_to('Cancel', simulators_path, class: 'btn')
-
-:javascript
-  $(function() {
-    $('#add_parameters_btn').click(function() {
-      var cloned = $('#parameter_form_original').clone();
-      $('#add_parameters_ctrl').before(cloned);
-      $(cloned).removeAttr("id");
-      $(cloned).find('input').val('');
-    });
-  });

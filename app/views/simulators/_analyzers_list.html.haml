@@ -1,12 +1,27 @@
 %h3 List of Analyzers
-%table.table.table-condensed.table-striped
+%table.table.table-condensed.table-striped#analyzers_list{:'data-source' => "#{_analyzer_list_simulator_path(@simulator.to_param, format: "json")}"}
   %thead
     %tr
-      %th.span1 ID
-      %th Name
-      %th Description
-      - @analyzers.each do |azr|
-        %tr
-          %td= link_to( azr.id, simulator_analyzer_path(@simulator.id, azr.id))
-          %td= azr.name
-          %td= azr.description
+      - AnalyzersListDatatable.header(@simulator).each do |th_element|
+        = raw(th_element)
+  %tbody
+.form-actions
+  = link_to 'New Analyzer', new_simulator_analyzer_path(@simulator), class: 'btn btn-primary'
+
+:javascript
+  var oAzrTable;
+  function reload_analyzers_table() {
+    oAzrTable.fnReloadAjax();
+  }
+
+  $(function() {
+    oAzrTable = $('#analyzers_list').dataTable({
+      bProcessing: true,
+      bServerSide: true,
+      bFilter: false,
+      iDisplayLength: 10,
+      sAjaxSource: $('#analyzers_list').data('source'),
+      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+      sPaginationType: "bootstrap"
+    });
+  })

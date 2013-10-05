@@ -18,7 +18,15 @@ describe RunsController do
       )
     @par = @sim.parameter_sets.first
     @run = @par.runs.first
-    @arn = @run.analysis_runs
+    @arn = @run.analyses
+  end
+
+  describe "GET 'index'" do
+
+    it "returns http success" do
+      get 'index', {}, valid_session
+      response.should be_success
+    end
   end
 
   describe "GET 'show'" do
@@ -33,17 +41,12 @@ describe RunsController do
       assigns(:run).should eq(@run)
       assigns(:param_set).should eq(@par)
     end
-
-    it "assigns 'analysis_runs' variable" do
-      get 'show', {id: @run}, valid_session
-      assigns(:analysis_runs).should eq(@run.analysis_runs)
-    end
   end
 
   describe "POST 'create'" do
 
     before(:each) do
-      @req_param = {parameter_set_id: @par}
+      @req_param = { parameter_set_id: @par, run: {submitted_to: Host.first} }
     end
 
     describe "with valid parameters" do
@@ -54,14 +57,9 @@ describe RunsController do
         }.to change(Run.where(parameter_set_id: @par), :count).by(1)
       end
 
-      it "redirects to ParameterSetController#show page" do
-        post 'create', @req_param, valid_session
-        response.should redirect_to(@par)
-      end
-
       it "assigns seed specified by request parameter" do
         seed_val = 12345
-        @req_param.update(run: {seed: seed_val})
+        @req_param[:run].update({seed: seed_val})
         post 'create', @req_param, valid_session
         Run.where(parameter_set_id: @par).last.seed.should == seed_val
       end
@@ -90,13 +88,46 @@ describe RunsController do
           post 'create', @req_param, valid_session
         }.to change(Run, :count).by(0)
       end
+    end
 
-      it "redirects to parameter_sets#show path" do
-        seed_val = @par.runs.first.seed
-        @req_param.update(run: {seed: seed_val})
-        post 'create', @req_param, valid_session
-        response.should redirect_to(@par)
+    describe "when preview button is pressed" do
+
+      before(:each) do
+        @req_param = {parameter_set_id: @par}.merge(preview_button: true)
       end
+
+      it "calls preview method" do
+        RunsController.any_instance.should_receive(:preview).and_call_original
+        xhr 'post', 'create', @req_param, valid_session
+      end
+
+      it "renders preview" do
+        xhr 'post', 'create', @req_param, valid_session
+        response.should render_template("preview")
+      end
+
+      it "does not create new Run" do
+        expect {
+          xhr 'post', 'create', @req_param, valid_session
+        }.to_not change { Run.count }
+      end
+    end
+  end
+
+  describe "DELETE destroy" do
+
+    it "destroys the run when status is neither submitted nor running" do
+      expect {
+        delete :destroy, {id: @run.to_param}, valid_session
+      }.to change(Run, :count).by(-1)
+    end
+
+    it "cancels the run when status is either submitted or running" do
+      @run.status = :running
+      @run.save!
+      expect {
+        delete :destroy, {id: @run.to_param}, valid_session
+      }.to change { Run.where(status: :cancelled).count }.by(1)
     end
   end
 end

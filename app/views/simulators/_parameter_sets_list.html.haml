@@ -1,28 +1,16 @@
 %h3 List of Parameter Sets
-%table.table.table-condensed.table-striped.table-hover
+%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr
-      %th.span1 ID
-      - @simulator.parameter_definitions.each do |key,key_def|
-        %th.span1= key
+      - ParameterSetsListDatatable.header(@simulator).each do |th_element|
+        = raw(th_element)
   %tbody
-  - @param_sets.each_with_index do |param_set,idx|
-    %tr
-      %td= link_to( param_set.id, parameter_set_path(param_set) )
-      - @simulator.parameter_definitions.each do |key,key_def|
-        %td= param_set.v[key]
-= paginate @param_sets
 
-%a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
-  New Parameter Set
+.form-actions
+  %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
+    New Parameter Set
   
-- if @query_list
-  %h4 Select query
-  = form_for(@simulator, :url=>{:controller=>"simulators", :action=>"show"}, :html => { :method => :get } ) do |f|
-    = select_tag "query_id", options_for_select(@query_list, @query_id), :prompt => "all"
-    = f.submit "Apply query", :class => 'btn btn-primary', :name => nil
-
-%h4 Make query
+%h3 Parameter Filter
 = form_tag( _make_query_simulator_path(@simulator) ) do |f|
   %table
     %tbody
@@ -35,22 +23,30 @@
           "Value"
       %tr#queries_form_original
         %td#select_param_form
-          = select_tag "query[][param]", options_for_select(@simulator.parameter_definitions)
+          - prm_def = @simulator.parameter_definitions.map {|x| [x.key, {"type" => x.type, "default" => x.default}] }
+          - prm_def = Hash[*prm_def.flatten]
+          = select_tag "query[][param]", options_for_select(prm_def)
         %td#select_matcher_form
           = select_tag "query[][matcher]", options_for_select({""=>""})
         %td#select_value_form
           = text_field_tag "query[][value]"
   .controls
-    .btn#add_queries_form Add more query
-  = hidden_field_tag "query_id", @query_id
-  = submit_tag "Make query", :class => 'btn btn-primary'
+    .btn#add_queries_form Add more filters
+    = hidden_field_tag "query_id", @query_id
+    = submit_tag "Save this Filter", :class => 'btn btn-primary'
+
+- if @query_list
+  %h4 Select Fileter
+  = form_for(@simulator, :url=>{:controller=>"simulators", :action=>"show"}, :html => { :method => :get } ) do |f|
+    = select_tag "query_id", options_for_select(@query_list, @query_id), :prompt => "all"
+    = f.submit "Load Filter", :class => 'btn btn-primary', :name => nil
 
 - unless @query_id.blank?
-  %h4 Delete query
+  %h4 Delete Fileter
   = form_tag( _make_query_simulator_path(@simulator) ) do |f|
     = hidden_field_tag "query_id", @query_id
-    = submit_tag "Delete query", :class => 'btn btn-primary', :name => :delete_query
-  
+    = submit_tag "Delete this Filter", :class => 'btn btn-primary', :name => :delete_query, :confirm => 'Are you sure?'
+
 :javascript
   $(function() {
     $('#add_queries_form').click(function() {
@@ -87,9 +83,79 @@
       value_form_selector.append("<input id=\"query__value\" name=\"query[][value]\" type=\"text\" value="+ $(":selected",this).attr('default') +">")
     });
   });
-  
+
   $(function() {
     var parameter_form_selector = $("#select_param_form select")
-    parameter_form_selector.val("#{@simulator.parameter_definitions.keys[0]}");
+    parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
     parameter_form_selector.trigger("change");
   });
+
+  var param_list_table_width;
+
+  $(function() {
+    param_list_table_width = $("#params_list").width()
+  });
+
+:javascript
+  var oPsTable;
+  function reload_parameter_sets_table() {
+    oPsTable.fnReloadAjax();
+  }
+
+  $(function() {
+    oPsTable = $('#params_list').dataTable({
+      bProcessing: true,
+      bServerSide: true,
+      bFilter: false,
+      aaSorting: [[ 3, "desc" ]],
+      bAutoWidth: false,
+      iDisplayLength: 100,
+      sAjaxSource: $('#params_list').data('source'),
+      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+      sPaginationType: "bootstrap"
+    });
+  })
+
+  $(function() {
+    $("#params_list").on("click", "img.treebtn[parameter_set_id]", function() {
+      if ($(this).attr("state") == "close") {
+        $("img.treebtn[state='open']", $(this).closest("tbody") ).each(function(){
+          $(this).trigger("click");
+        });
+        var td_element = $(this).closest("td");
+        var tr_element = $(this).closest("tr");
+        var param_id = $(this).attr("parameter_set_id");
+        var table_cols = tr_element.children("td").length;
+        $(this)
+          .attr("state", "open")
+          .attr("src", "/assets/collapse.png")
+        $.get("/parameter_sets/"+param_id+"/_runs_and_analyses", function(data) {
+          tr_element.after(
+            $("<tr>").attr("id", "ps_"+param_id).html(
+              $("<td>").attr({colspan: table_cols}).html(
+                $("<div>").attr("class", "well").html(data)
+              )
+            )
+          );
+          $("#runs_list" ,tr_element.next()).trigger("change");
+        });
+      } else {
+        $(this)
+          .attr("state", "close")
+          .attr("src", "/assets/expand.png")
+        var td_element = $(this).closest("td")
+        var param_id = $(this).attr("parameter_set_id")
+        var run_list = $(this).closest("tr").siblings("tr#ps_"+param_id)
+        run_list.remove()
+      }
+    });
+  })
+
+:javascript
+  $(function() {
+    $("body").on("change", "#runs_list", function() {
+      var oTable = datatables_for_runs_table();
+      aoRunsTables = [];
+      aoRunsTables.push(oTable);
+    })
+  })

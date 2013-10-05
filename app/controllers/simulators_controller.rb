@@ -15,12 +15,6 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
     @query_id = params[:query_id]
-    if @query_id.blank?
-      @param_sets = ParameterSet.where(:simulator_id => @simulator).page(params[:page])
-    else
-      psq = ParameterSetQuery.find(@query_id)
-      @param_sets = psq.parameter_sets.page(params[:page])
-    end
 
     if @simulator.parameter_set_queries.present?
       @query_list = {}
@@ -47,26 +41,14 @@ class SimulatorsController < ApplicationController
   end
 
   # GET /simulators/1/edit
-  # def edit
-  #   @simulator = Simulator.find(params[:id])
-  # end
+  def edit
+    @simulator = Simulator.find(params[:id])
+  end
 
   # POST /simulators
   # POST /simulators.json
   def create
-    param_def = {}
-    if params.has_key?(:definitions)
-      params[:definitions].each do |defn|
-        name = defn[:name]
-        next if name.empty?
-        param_def[name] = {}
-        param_def[name]["type"] = defn["type"]
-        param_def[name]["default"] = defn["default"]
-        param_def[name]["description"] = defn["description"]
-      end
-    end
     @simulator = Simulator.new(params[:simulator])
-    @simulator.parameter_definitions = param_def
 
     respond_to do |format|
       if @simulator.save
@@ -81,31 +63,31 @@ class SimulatorsController < ApplicationController
 
   # PUT /simulators/1
   # PUT /simulators/1.json
-  # def update
-  #   @simulator = Simulator.find(params[:id])
+  def update
+    @simulator = Simulator.find(params[:id])
 
-  #   respond_to do |format|
-  #     if @simulator.update_attributes(params[:simulator])
-  #       format.html { redirect_to @simulator, notice: 'Simulator was successfully updated.' }
-  #       format.json { head :no_content }
-  #     else
-  #       format.html { render action: "edit" }
-  #       format.json { render json: @simulator.errors, status: :unprocessable_entity }
-  #     end
-  #   end
-  # end
+    respond_to do |format|
+      if @simulator.update_attributes(params[:simulator])
+        format.html { redirect_to @simulator, notice: 'Simulator was successfully updated.' }
+        format.json { head :no_content }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @simulator.errors, status: :unprocessable_entity }
+      end
+    end
+  end
 
   # DELETE /simulators/1
   # DELETE /simulators/1.json
-  # def destroy
-  #   @simulator = Simulator.find(params[:id])
-  #   @simulator.destroy
+  def destroy
+    @simulator = Simulator.find(params[:id])
+    @simulator.destroy
 
-  #   respond_to do |format|
-  #     format.html { redirect_to simulators_url }
-  #     format.json { head :no_content }
-  #   end
-  # end
+    respond_to do |format|
+      format.html { redirect_to simulators_url }
+      format.json { head :no_content }
+    end
+  end
 
   # POST /simulators/:_id/_make_query redirect_to simulators#show
   def _make_query
@@ -127,5 +109,24 @@ class SimulatorsController < ApplicationController
     end
 
     redirect_to  :action => "show", :query_id => @query_id
+  end
+
+  def _parameters_list
+    simulator = Simulator.find(params[:id])
+    parameter_sets = simulator.parameter_sets
+    if params[:query_id].present?
+      q = ParameterSetQuery.find(params[:query_id])
+      parameter_sets = q.parameter_sets
+    end
+    keys = simulator.parameter_definitions.map {|pd| pd.key }
+    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context)
+  end
+
+  def _parameter_sets_status_count
+    render json: Simulator.only("parameter_sets.runs.status").find(params[:id]).parameter_sets_status_count.to_json
+  end
+
+  def _analyzer_list
+    render json: AnalyzersListDatatable.new(view_context)
   end
 end

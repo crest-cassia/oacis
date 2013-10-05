@@ -14,6 +14,10 @@
 //= require jquery_ujs
 //= require twitter/bootstrap
 //= require_tree .
+//= require dataTables/jquery.dataTables
+//= require dataTables/jquery.dataTables.bootstrap
+//= require dataTables/jquery.dataTables.api.fnReloadAjax
+//= require datatables_extends
 
 // Handle back button issues with Twitter Bootstrap's tab component.
 // Based on: http://stackoverflow.com/a/10120221/81769
@@ -32,4 +36,19 @@ $(document).ready(function () {
             location.replace("#!" + hash.substr(1));
         }
     });
+});
+
+// add/remove nested forms
+$(document).ready( function() {
+  $('form').on('click', '.remove_fields', function() {
+    $(this).prev('input[type=hidden]').val('1');
+    $(this).closest('fieldset').hide();
+    event.preventDefault();
+  });
+  $('form').on('click', '.add_fields', function() {
+      var time = new Date().getTime();
+      var regexp = new RegExp($(this).data('id'), 'g');
+      $(this).before($(this).data('fields').replace(regexp, time));
+      event.preventDefault();
+  });
 });

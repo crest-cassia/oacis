@@ -1,0 +1,434 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>基本的な使い方 &mdash; CASSIA Manager 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="CASSIA Manager 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="高度な使い方" href="advanced_usage.html" />
+    <link rel="prev" title="インストール" href="installation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="advanced_usage.html" title="高度な使い方"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="インストール"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>基本的な使い方<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>簡単なシミュレータを実際に実行し、結果を参照するまでの最小の手順をここで示す。</p>
+<div class="section" id="id2">
+<h2>手順<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple" start="0">
+<li>ここで扱うシミュレータについて</li>
+<li>ホスト登録</li>
+<li>シミュレータ登録</li>
+<li>パラメータセット登録</li>
+<li>ジョブ投入</li>
+<li>実行中のジョブの確認</li>
+<li>結果の確認</li>
+</ol>
+<div class="section" id="id3">
+<h3>ここで扱うシミュレータについて<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">このチュートリアルでは、２つの浮動小数点型のパラメータ&#8221;p1&#8221;, &#8220;p2&#8221;を持つとする。</div>
+<div class="line">このシミュレータは以下の様にパラメータと乱数の種を引数で受け取り実行できるように、各実行ホストでビルドをしておく。</div>
+</div>
+<div class="highlight-python"><pre>~/path/to/simulator.out {p1} {p2} {seed}</pre>
+</div>
+<p>パラメータをシミュレータに渡す方法として、JSONで渡す方法もある。シミュレータ登録の項目を参照の事。</p>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>ホスト登録<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">シミュレータを実行するためのホストを登録する。</div>
+<div class="line">前提条件として、サーバーからシミュレータを実行するホストに鍵認証を使用してパスワード無しでSSHログインできるようにしておかなくてはいけない。</div>
+<div class="line">ここでは鍵認証でリモートホストにSSHログインできるという前提で話を進める。</div>
+</div>
+<div class="line-block">
+<div class="line">ナビゲーションバーの[Hosts]をクリックし、[New Hosts]のボタンを押すと新規ホスト登録画面が表示される。</div>
+</div>
+<a class="reference internal image-reference" href="_images/hosts.png"><img alt="_images/hosts.png" class="align-center" src="_images/hosts.png" style="width: 30%;" /></a>
+<div class="line-block">
+<div class="line">このページの入力フィールドにホストの情報を登録する。登録する項目は以下の通り。</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="82%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">フィールド</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Name</td>
+<td>CMの中で使われるHostの名前。任意の名前を指定できる。一意でなくてはならない。</td>
+</tr>
+<tr class="row-odd"><td>Hostname</td>
+<td>ssh接続先のhostnameまたはIPアドレス</td>
+</tr>
+<tr class="row-even"><td>User</td>
+<td>ssh接続時に使用するユーザー名</td>
+</tr>
+<tr class="row-odd"><td>Port</td>
+<td>ssh接続先のポート番号。デフォルトは22。</td>
+</tr>
+<tr class="row-even"><td>SSH key</td>
+<td>ssh接続時の鍵認証で使用する秘密鍵ファイルへのパス。デフォルトは <em>~/.ssh/id_rsa</em></td>
+</tr>
+<tr class="row-odd"><td>Scheduler Type</td>
+<td>ジョブスケジューラのタイプを指定する。スケジューラ無し、Torque、PJMの３種類から選択できる。</td>
+</tr>
+<tr class="row-even"><td>Work base dir</td>
+<td>ジョブが実行されるワークディレクトリが作られるパスを指定する。ここで指定したパス以下でジョブが実行される。</td>
+</tr>
+<tr class="row-odd"><td>Max num jobs</td>
+<td>このホストに投入可能なジョブの最大数</td>
+</tr>
+<tr class="row-even"><td>MPI processes</td>
+<td>MPIプロセス数の最小値と最大値。Runを作成するときにここで指定した範囲外の値を指定しようとするとエラーになる。</td>
+</tr>
+<tr class="row-odd"><td>OMP threads</td>
+<td>OMPスレッド数の最小値と最大値。Runを作成するときにここで指定した範囲外の値を指定しようとするとエラーになる。</td>
+</tr>
+<tr class="row-even"><td>Template</td>
+<td>ジョブ実行時に作成されるスクリプト（ジョブスクリプトと呼ぶ）のテンプレート。&lt;%= ... %&gt; の部分が変数展開される。</td>
+</tr>
+<tr class="row-odd"><td>Definition of Host Parameters</td>
+<td>テンプレートで使用される変数（ホストパラメータと呼ぶ）の定義。変数名とデフォルト値、入力フォーマット（正規表現で指定）を指定する。</td>
+</tr>
+<tr class="row-even"><td>Executable simulators</td>
+<td>実行可能なシミュレータをチェックボックスで指定する。</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line">本チュートリアルでは以下のように設定する。その他はデフォルト。</div>
+<div class="line">Work base dir は任意のディレクトリで良いが、新規作成した（他のファイルが無い）ディレクトリを指定する事。</div>
+</div>
+<ul class="simple">
+<li>Name: localhost</li>
+<li>Hostname: localhost</li>
+<li>User: &lt;自分のユーザー名&gt;</li>
+<li>Work base dir: &lt;任意の新規作成したパス&gt;</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h2>シミュレータ登録<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">扱うシミュレータは、言語やマシンを問わず自由に作成できる。（CMは登録されたコマンドを実行するだけなので、どの言語で実装されているかは関係ない。）</div>
+<div class="line">ただし、以下の要件を満たす必要がある。</div>
+</div>
+<ul>
+<li><dl class="first docutils">
+<dt>出力ファイルがカレントディレクトリ以下に作成される事</dt>
+<dd><ul class="first last simple">
+<li>CMは実行時にディレクトリを作り、その中でジョブを実行する。完了後、そのディレクトリ内のファイルすべてを出力結果として取り込む。</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>パラメータの入力を引数またはJSONで受け付ける事</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>引数渡しの場合はパラメータが定義された順番に引数で渡されて、最後の引数として乱数の種が渡される。</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>例えば、param1=100, param2=3.0, seed(乱数の種)=12345 の場合、以下のコマンドが実行される</dt>
+<dd><div class="first last highlight-sh"><div class="highlight"><pre>~/path/to/simulator.out 100 3.0 12345
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>JSON形式の場合、実行時に次のような形式のJSONファイルを <em>_input.json</em> というファイル名でCMが実行時に配置する。シミュレータはカレントディレクトリの <em>_input.json</em> パースするように実装する必要がある。</dt>
+<dd><div class="first highlight-json"><div class="highlight"><pre><span class="p">{</span><span class="nt">&quot;param1&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span><span class="nt">&quot;param2&quot;</span><span class="p">:</span><span class="mf">3.0</span><span class="p">,</span><span class="nt">&quot;_seed&quot;</span><span class="p">:</span><span class="mi">12345</span><span class="p">}</span>
+</pre></div>
+</div>
+<ul class="last">
+<li><p class="first">乱数の種は _seed というキーで指定される。</p>
+</li>
+<li><dl class="first docutils">
+<dt>実行コマンドは以下のように引数なしで実行される。</dt>
+<dd><div class="first last highlight-sh"><div class="highlight"><pre>~/path/to/simulator.out
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>以下の名前のファイルがカレントディレクトリにあっても問題なく動作し、これらのファイルを上書きしたりしないこと</dt>
+<dd><ul class="first last simple">
+<li><em>_input.json</em> , <em>_output.json</em> , <em>_status.json</em> , <em>_time.txt</em></li>
+<li>これらのファイルはCMが使用するファイル名であるため干渉しないようにする必要がある</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>正常終了時にリターンコード０、エラー発生時に０以外を返す事</dt>
+<dd><ul class="first last simple">
+<li>リターンコードによってシミュレーションの正常終了/異常終了が判定される。</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="line-block">
+<div class="line">シミュレータはあらかじめ実行ホスト上でビルドしておき実行可能な状態で配置しておく必要がある。</div>
+<div class="line">また複数のホストで実行する場合、シミュレータを同一のパスに配置する必要がある。</div>
+<div class="line">絶対パスで指定するよりもホームディレクトリからの相対パスで指定した方がホスト間の差異を吸収しやすい。</div>
+</div>
+<div class="line-block">
+<div class="line">Simulator一覧ページ(/simulators)で[New Simulator]ボタンをクリックすると新規シミュレータ登録画面が表示される。</div>
+</div>
+<a class="reference internal image-reference" href="_images/new_simulator.png"><img alt="_images/new_simulator.png" class="align-center" src="_images/new_simulator.png" style="width: 30%;" /></a>
+<div class="line-block">
+<div class="line">このページの入力フィールドにシミュレータの情報を登録する。登録する項目は以下の通り。</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">フィールド</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Name</td>
+<td>シミュレータの名前。Ascii文字、数字、アンダースコアのみ使用可。一意でなくてはならない。</td>
+</tr>
+<tr class="row-odd"><td>Definition of Parameters</td>
+<td>シミュレータの入力パラメータの定義。パラメータの名前、型(Integer, Float, String, Boolean)、デフォルト値、パラメータの説明（任意）を入力する。</td>
+</tr>
+<tr class="row-even"><td>Preprocess Script</td>
+<td>ジョブの前に実行されるプリプロセスを記述するスクリプト。空の場合はプリプロセスは実行されない。</td>
+</tr>
+<tr class="row-odd"><td>Command</td>
+<td>シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. <em>~/path/to/simulator.out</em>）</td>
+</tr>
+<tr class="row-even"><td>Input type</td>
+<td>パラメータを引数で渡すか、JSONで渡すか指定する</td>
+</tr>
+<tr class="row-odd"><td>Support mpi</td>
+<td>シミュレータがMPIで実行されるか。チェックを入れた場合、mpiexecコマンド付きで実行される。</td>
+</tr>
+<tr class="row-even"><td>Support omp</td>
+<td>シミュレータがOpenMPで並列化されているか。チェックを入れた場合、環境変数OMP_NUM_THREADSで並列数を指定して実行される。</td>
+</tr>
+<tr class="row-odd"><td>Description</td>
+<td>シミュレータの説明を入力する。（任意）</td>
+</tr>
+<tr class="row-even"><td>Executable_on</td>
+<td>実行可能ホストを指定する。</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line">本チュートリアルでは以下のように設定する。その他はデフォルト。</div>
+</div>
+<ul class="simple">
+<li>Name: a_sample_simulator</li>
+<li>Definition of Parameters: [[param1, Integer, 0], [param2, Float, 5.0]]</li>
+<li>Command: ~/path/to/simulator.out</li>
+<li>Executable_on: localhostにチェック</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h2>パラメータセット登録<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">Simulator一覧ページで登録したシミュレータ名のリンクをクリックすると、ParameterSet一覧画面が出る。</div>
+<div class="line">現時点では、ParameterSetが何も作られていないので空のテーブルが表示されるだけだが、ParameterSetを作成して行くと下図のように一覧で表示される。</div>
+</div>
+<a class="reference internal image-reference" href="_images/parameter_sets.png"><img alt="_images/parameter_sets.png" class="align-center" src="_images/parameter_sets.png" style="width: 30%;" /></a>
+<div class="line-block">
+<div class="line">ParameterSetを新規作成するために[New Parameter Set]のボタンをクリックする。</div>
+</div>
+<a class="reference internal image-reference" href="_images/new_parameter_set.png"><img alt="_images/new_parameter_set.png" class="align-center" src="_images/new_parameter_set.png" style="width: 30%;" /></a>
+<div class="line-block">
+<div class="line">上の様に登録フォームが現れるので、シミュレーションを実行したいパラメータを入力して[Create]をクリックする。</div>
+<div class="line">（この画面からRunも作成する事ができるが、今回は「# of Runs」のフィールドは０のままにしておく。</div>
+</div>
+<div class="line-block">
+<div class="line">ちなみにこのときにコンマで区切って複数の値を入力すると、複数のParameterSetを同時に作成する事ができる。</div>
+<div class="line">ただし同時に作ることができるParameterSetの数は100以下に制限しており、それを超えるとエラーになる。</div>
+<div class="line">既に存在するパラメータセットと同じものを作ろうとすると、エラーとなりエラーメッセージが表示される。</div>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>ジョブ投入<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">Runを作成してシミュレーションを実行する。</div>
+<div class="line">Create New Runsと書かれている箇所でRunの数と投入ホスト（Simulator登録時に実行可能ホストとして指定されたホストしか選択できない）を選択して[Create Run]ボタンを押す。</div>
+<div class="line">実行可能ホストが一つも表示されない場合は、Simulatorの登録時に実行可能ホストを指定し忘れたと考えられるので確認すること。</div>
+</div>
+<a class="reference internal image-reference" href="_images/new_run.png"><img alt="_images/new_run.png" class="align-center" src="_images/new_run.png" style="width: 30%;" /></a>
+<div class="line-block">
+<div class="line">SimulatorがMPI, OpenMPに対応している場合にはここでMPIプロセス数、OpenMPスレッド数を入力するためのフィールドも表示される。</div>
+<div class="line">ホストに登録したMPIプロセス数、OpenMPスレッド数の最小値・最大値と整合しない場合はRunの作成時にエラーになる。</div>
+</div>
+<div class="line-block">
+<div class="line">投入するホストがホストパラメータを定義したホストの場合も、ここでホストパラメータの入力が要求される。（ホストパラメータについての詳細は次章）</div>
+</div>
+<div class="line-block">
+<div class="line">また[Preview]ボタンをクリックすると、実際に投入されるジョブスクリプトをプレビューできる。</div>
+<div class="line">ジョブがうまく実行できない場合はこちらを確認すると良い</div>
+</div>
+<div class="line-block">
+<div class="line">Runを作成するとバックグラウンドでリモートホストにジョブが投入される。</div>
+<div class="line">ただしHostで指定された max_num_jobs がジョブの上限数で、それ以上のジョブは投入されない。実行中のジョブが完了し次第、順次ジョブ投入される。</div>
+</div>
+</div>
+<div class="section" id="id8">
+<h2>実行中のジョブの確認<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">Navigationバーの[Jobs]をクリックすると、実行中(running)、スケジューラに投入済み(submitted)、実行待ち（created）のジョブの一覧を確認できる。</div>
+<div class="line">この情報はバックグラウンドプロセスが１分ごとにリモートホストをポーリングして取得しているのでタイムラグがある場合がある。</div>
+<div class="line">[Update]ボタンをクリックすると最新の情報に更新される。</div>
+</div>
+<a class="reference internal image-reference" href="_images/jobs.png"><img alt="_images/jobs.png" class="align-center" src="_images/jobs.png" style="width: 30%;" /></a>
+</div>
+<div class="section" id="id9">
+<h2>結果の確認<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">ジョブの実行が完了すると自動的に結果がサーバー内のデータベースに取り込まれる。</div>
+<div class="line">Runの作成時のページにいくとRunの一覧が表示され、そのRunのステータスが <em>finished</em> になっている事が確認できる。</div>
+<div class="line">(実行に失敗した場合、 <em>failed</em> というステータスになる。その際も結果のファイルはデータベースに格納されるので、そこからエラーの発生原因を調査できる。）</div>
+</div>
+<div class="line-block">
+<div class="line">各RunをクリックするとRunの結果のファイルをブラウザから確認できる。</div>
+<div class="line">カレントディレクトリ直下に作成されたファイルは、ブラウザが対応していれば直接参照できる。</div>
+<div class="line">（シミュレータによって作成されたディレクトリやその中身については、Download Archiveボタンをクリックしダウンロードできる。）</div>
+<div class="line">Aboutタブをクリックすると、実行日時・CPU時間などの詳細な情報を取得できる。</div>
+<div class="line">データが格納されたパスも表示されるため、ブラウザ経由だけではなく直接そのパスから結果を取得する事もできる。</div>
+</div>
+<a class="reference internal image-reference" href="_images/show_run.png"><img alt="_images/show_run.png" class="align-center" src="_images/show_run.png" style="width: 30%;" /></a>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">基本的な使い方</a><ul>
+<li><a class="reference internal" href="#id2">手順</a><ul>
+<li><a class="reference internal" href="#id3">ここで扱うシミュレータについて</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id4">ホスト登録</a></li>
+<li><a class="reference internal" href="#id5">シミュレータ登録</a></li>
+<li><a class="reference internal" href="#id6">パラメータセット登録</a></li>
+<li><a class="reference internal" href="#id7">ジョブ投入</a></li>
+<li><a class="reference internal" href="#id8">実行中のジョブの確認</a></li>
+<li><a class="reference internal" href="#id9">結果の確認</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">インストール</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="advanced_usage.html"
+                        title="next chapter">高度な使い方</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/basic_usage.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="advanced_usage.html" title="高度な使い方"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="インストール"
+             >previous</a> |</li>
+        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

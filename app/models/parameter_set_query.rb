@@ -30,7 +30,8 @@ class ParameterSetQuery
     end
 
     self.query.each do |key,criteria|
-      unless simulator.parameter_definitions.has_key?(key)
+      pd = simulator.parameter_definition_for(key)
+      unless pd
         self.errors.add(:query, "defined keys and/or values are not exist in parametr_definitions")
         return
       end
@@ -42,7 +43,7 @@ class ParameterSetQuery
 
       # validate format of a matcher
       criteria.each do |matcher, value|
-        type = self.simulator.parameter_definitions[key]["type"]
+        type = pd.type
         unless supported_matchers(type).include?(matcher)
           self.errors.add(:set_query, "unknown matcher : #{matcher}")
           return false
@@ -64,7 +65,7 @@ class ParameterSetQuery
     q = ParameterSet.where(simulator: simulator)
     self.query.each do |key,criteria|
       h = {}
-      type = self.simulator.parameter_definitions[key]["type"]
+      type = self.simulator.parameter_definition_for(key).type
       criteria.each do |matcher,value|
         unless supported_matchers(type).include?(matcher)
           raise "undefined matcher #{matcher} for #{type}"
@@ -123,7 +124,8 @@ class ParameterSetQuery
     h = {}
     settings.each do |para|
       parameter = para['param']
-      type = self.simulator.parameter_definitions[parameter]['type']
+      defn = simulator.parameter_definition_for(parameter)
+      type = defn.type
       value = para['value']
       matcher = para['matcher']
 
