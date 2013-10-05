@@ -79,8 +79,8 @@ EOS
       @sim.save!
       @run.mpi_procs = 8
       script = JobScriptUtil.script_for(@run, @host)
-      script.should match(/CM_MPI_PROCS=8/)
-      script.should match(/CM_IS_MPI_JOB=true/)
+      script.should match(/OACIS_MPI_PROCS=8/)
+      script.should match(/OACIS_IS_MPI_JOB=true/)
     end
 
     it "does not call insert mpiexec when Simulator#support_mpi is false" do
@@ -88,7 +88,7 @@ EOS
       @sim.save!
       @run.mpi_procs = 8
       script = JobScriptUtil.script_for(@run, @host)
-      script.should match(/CM_IS_MPI_JOB=false/)
+      script.should match(/OACIS_IS_MPI_JOB=false/)
     end
 
     it "sets OMP_NUM_THREADS in the script" do
@@ -96,7 +96,7 @@ EOS
       @sim.save!
       @run.omp_threads = 8
       script = JobScriptUtil.script_for(@run, @host)
-      script.should match(/CM_OMP_THREADS=8/)
+      script.should match(/OACIS_OMP_THREADS=8/)
     end
   end
 

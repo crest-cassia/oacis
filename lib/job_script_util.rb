@@ -5,45 +5,45 @@ module JobScriptUtil
 LANG=C
 
 # VARIABLE DEFINITIONS ------------
-CM_RUN_ID=<%= run_id %>
-CM_IS_MPI_JOB=<%= is_mpi_job %>
-CM_WORK_BASE_DIR=<%= work_base_dir %>
-CM_MPI_PROCS=<%= mpi_procs %>
-CM_OMP_THREADS=<%= omp_threads %>
+OACIS_RUN_ID=<%= run_id %>
+OACIS_IS_MPI_JOB=<%= is_mpi_job %>
+OACIS_WORK_BASE_DIR=<%= work_base_dir %>
+OACIS_MPI_PROCS=<%= mpi_procs %>
+OACIS_OMP_THREADS=<%= omp_threads %>
 
 # PRE-PROCESS ---------------------
-mkdir -p ${CM_WORK_BASE_DIR}
-cd ${CM_WORK_BASE_DIR}
-mkdir -p ${CM_RUN_ID}
-cd ${CM_RUN_ID}
-if [ -e ../${CM_RUN_ID}_input.json ]; then
-\\mv ../${CM_RUN_ID}_input.json ./_input.json
+mkdir -p ${OACIS_WORK_BASE_DIR}
+cd ${OACIS_WORK_BASE_DIR}
+mkdir -p ${OACIS_RUN_ID}
+cd ${OACIS_RUN_ID}
+if [ -e ../${OACIS_RUN_ID}_input.json ]; then
+\\mv ../${OACIS_RUN_ID}_input.json ./_input.json
 fi
-echo "{" > ../${CM_RUN_ID}_status.json
-echo "  \\"started_at\\": \\"`date`\\"," >> ../${CM_RUN_ID}_status.json
-echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${CM_RUN_ID}_status.json
+echo "{" > ../${OACIS_RUN_ID}_status.json
+echo "  \\"started_at\\": \\"`date`\\"," >> ../${OACIS_RUN_ID}_status.json
+echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${OACIS_RUN_ID}_status.json
 
 # JOB EXECUTION -------------------
-export OMP_NUM_THREADS=${CM_OMP_THREADS}
-if ${CM_IS_MPI_JOB}
+export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
+if ${OACIS_IS_MPI_JOB}
 then
-  { time -p { { mpiexec -n ${CM_MPI_PROCS} <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${CM_RUN_ID}_time.txt
+  { time -p { { mpiexec -n ${OACIS_MPI_PROCS} <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
 else
-  { time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${CM_RUN_ID}_time.txt
+  { time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
 fi
-echo "  \\"rc\\": $?," >> ../${CM_RUN_ID}_status.json
-echo "  \\"finished_at\\": \\"`date`\\"" >> ../${CM_RUN_ID}_status.json
-echo "}" >> ../${CM_RUN_ID}_status.json
+echo "  \\"rc\\": $?," >> ../${OACIS_RUN_ID}_status.json
+echo "  \\"finished_at\\": \\"`date`\\"" >> ../${OACIS_RUN_ID}_status.json
+echo "}" >> ../${OACIS_RUN_ID}_status.json
 
 # POST-PROCESS --------------------
 cd ..
-\\mv -f ${CM_RUN_ID}_status.json ${CM_RUN_ID}/_status.json
-\\mv -f ${CM_RUN_ID}_time.txt ${CM_RUN_ID}/_time.txt
-tar cf ${CM_RUN_ID}.tar ${CM_RUN_ID}
-if test $? -ne 0; then { echo "// Failed to make an archive for ${CM_RUN_ID}" >> ./_log.txt; exit; } fi
-bzip2 ${CM_RUN_ID}.tar
-if test $? -ne 0; then { echo "// Failed to compress for ${CM_RUN_ID}" >> ./_log.txt; exit; } fi
-rm -rf ${CM_RUN_ID}
+\\mv -f ${OACIS_RUN_ID}_status.json ${OACIS_RUN_ID}/_status.json
+\\mv -f ${OACIS_RUN_ID}_time.txt ${OACIS_RUN_ID}/_time.txt
+tar cf ${OACIS_RUN_ID}.tar ${OACIS_RUN_ID}
+if test $? -ne 0; then { echo "// Failed to make an archive for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
+bzip2 ${OACIS_RUN_ID}.tar
+if test $? -ne 0; then { echo "// Failed to compress for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
+rm -rf ${OACIS_RUN_ID}
 EOS
 
   DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "work_base_dir", "omp_threads", "mpi_procs", "cmd"]
