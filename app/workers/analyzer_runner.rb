@@ -12,8 +12,13 @@ class AnalyzerRunner
     Analysis.where(status: :created).each do |anl|
       logger.info("Analyzing #{anl.id}")
       work_dir = anl.dir  # UPDATE ME: a tentative implementation
-      output = run_analysis(anl, work_dir)
-      include_data(anl, work_dir, output)
+      begin
+        output = run_analysis(anl, work_dir)
+        include_data(anl, work_dir, output)
+      rescue => ex
+        logger.error("Error while analyzing #{anl.id}: #{ex.inspect}")
+        anl.update_status_failed
+      end
     end
   rescue => ex
     logger.error("Error in AnalyzerRunner: #{ex.inspect}")
