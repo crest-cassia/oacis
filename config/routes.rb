@@ -42,8 +42,6 @@ AcmProto::Application.routes.draw do
     end
   end
 
-  mount Resque::Server, :at => '/resque'
-
   resources :hosts
 
   root :to => "simulators#index"

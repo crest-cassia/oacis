@@ -5,7 +5,6 @@ namespace :db do
   task :populate => :environment do
     Rake::Task['db:mongoid:drop'].invoke
     Rake::Task['result_dir:drop'].invoke
-    Rake::Task['resque:drop'].invoke
 
     FactoryGirl.create(:localhost, work_base_dir: "~/__work__")
 
