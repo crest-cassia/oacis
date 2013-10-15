@@ -3,7 +3,7 @@ class Worker < DaemonSpawn::Base
   INTERVAL = 5
 
   def start(args)
-    @logger = Logger.new(STDOUT)
+    @logger = Logger.new(STDOUT, 7)
     @logger.level = Logger::INFO
     @logger.info("starting")
 
