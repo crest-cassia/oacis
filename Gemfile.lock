@@ -34,6 +34,7 @@ GEM
       builder (>= 2.1.2)
     coderay (1.0.9)
     commonjs (0.2.6)
+    daemon-spawn (0.4.2)
     database_cleaner (1.0.1)
     diff-lcs (1.2.4)
     erubis (2.7.0)
@@ -200,6 +201,7 @@ PLATFORMS
 
 DEPENDENCIES
   ci_reporter
+  daemon-spawn
   database_cleaner
   factory_girl_rails
   faker

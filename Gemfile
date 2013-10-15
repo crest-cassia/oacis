@@ -8,6 +8,7 @@ gem "resque"
 gem "resque-scheduler", :require => 'resque_scheduler'
 gem "net-ssh"
 gem "net-sftp"
+gem 'daemon-spawn', :require => 'daemon_spawn'
 
 group :assets do
   gem 'sass-rails'
