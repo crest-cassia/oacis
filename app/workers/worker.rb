@@ -25,5 +25,6 @@ if $0 == __FILE__
                 pid_file: Rails.root.join('tmp', 'pids', "worker_#{Rails.env}.pid"),
                 sync_log: true,
                 working_dir: Rails.root
+                singleton: true
                 )
 end
