@@ -28,7 +28,6 @@
 - Ruby 1.9.3
 - bundler (http://bundler.io/)
 - MongoDB 2.4以上 (http://www.mongodb.org/)
-- Redis 2.6以上 (http://redis.io/)
 
 | Mac OS Xの場合、homebrew (http://brew.sh/) を使ってインストールするのが手軽で良い。
 
@@ -53,7 +52,7 @@
   bundle exec rails s
 
 | http://localhost:3000 にアクセスし、ページが適切に表示されればインストールは成功している。
-| もし失敗した場合は、MongoDB, Redisが正しく起動しているか、ファイアウォールは3000番に対して開いているか、gemは正しくインストールされたか、などを確認する。
+| もし失敗した場合は、MongoDBが正しく起動しているか、ファイアウォールは3000番に対して開いているか、gemは正しくインストールされたか、などを確認する。
 | 端末で Ctrl-C を押し、Railsを停止させる。
 
 RailsおよびWorkerの起動
@@ -61,18 +60,18 @@ RailsおよびWorkerの起動
 
 Railsおよびworkerの起動は以下のコマンドを実行する。 ::
 
-  nohup bundle exec rake daemon:start
+  bundle exec rake daemon:start
 
 http://localhost:3000 にアクセスできればRailsの起動が成功している。
 またWorkerプロセスが起動しているかどうかは ::
 
-  ps aux | grep "[r]esque"
+  ps aux | grep "[w]orker.rb"
 
-を実行すれば確認できる。２つのプロセスが表示されればWorkerは正しく起動している。
+を実行すれば確認できる。プロセスが表示されればWorkerは正しく起動している。
 
 これらのプロセスの再起動、および停止は以下のコマンドで実行できる。 ::
 
-  nohup bundle exec rake daemon:restart
+  bundle exec rake daemon:restart
   bundle exec rake daemon:stop
 
 パスワードの設定
@@ -88,11 +87,11 @@ Firewallの設定
 
 | 現状のCASSIA Managerはユーザー管理機能を持っていないため、ネットワーク内の任意のホストからアクセス可能である。
 | 他のホストからのアクセスを制限するためにはファイアウォールを設定するのが最も簡単である。
-| Railsは3000番、MongoDBは27017番、Redisは6379番のポートをそれぞれ使用しているので、これらのポートへのアクセスを限定する。
-| MongoDB, Redisへのアクセスはローカルホストのみ、Railsは使用するユーザーのみに開放するのが望ましい。
+| Railsは3000番、MongoDBは27017番のポートをそれぞれ使用しているので、これらのポートへのアクセスを限定する。
+| MongoDBへのアクセスはローカルホストのみ、Railsは使用するユーザーのみに開放するのが望ましい。
 
 データベースの変更
 ========================================
 
 デフォルトではローカルのデータベースにアクセスするが、他のホストのデータベースを参照する事も可能である。
-config/mongoid.yml および config/resque.yml の中でMongoDB, Redisへの接続情報を設定しているのでこれらを変更してRailsおよびWorkerを再起動する。
+config/mongoid.yml の中でMongoDBへの接続情報を設定しているので、これを変更してRailsおよびWorkerを再起動する。

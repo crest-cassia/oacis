@@ -11,12 +11,6 @@ class RunsController < ApplicationController
     render json: RunsListDatatable.new(Run.where(status: stat), view_context)
   end
 
-  def check_server_status
-    Resque.enqueue(JobObserver)
-    Resque.enqueue(JobSubmitter)
-    render nothing: true
-  end
-
   def show
     @run = Run.find(params[:id])
     @param_set = @run.parameter_set
@@ -46,7 +40,6 @@ class RunsController < ApplicationController
 
     respond_to do |format|
       if @runs.present?
-        Resque.enqueue(JobSubmitter)
         message = "#{@runs.count} run#{@runs.size > 1 ? 's were' : ' was'} successfully created"
         format.json { render json: @runs, status: :created, location: @param_set}
         @messages = {success: [message]}
