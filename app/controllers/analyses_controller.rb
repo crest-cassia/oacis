@@ -15,7 +15,7 @@ class AnalysesController < ApplicationController
     arn = analyzable.analyses.build(analyzer: azr, parameters: params[:parameters])
 
     respond_to do |format|
-      if arn.save and arn.submit
+      if arn.save
         format.html { redirect_to after_create_redirect_path(arn),
                       notice: "Analysis was successfully created."}
         format.json { render json: arn, status: :created, location: arn}

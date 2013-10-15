@@ -8,13 +8,12 @@ See docs (doc/build/html/index.html) for the sequence of installation and usage.
 This is a minimal procedure to try OACIS.
 For the detailed installation process, please refer to the document.
 
-- install [MongoDB](http://www.mongodb.org/) and [Redis](http://redis.io/) on your system.
+- install [MongoDB](http://www.mongodb.org/) on your system.
     - using package management system such as yum or [homebrew](http://brew.sh/) will be easy for you.
-    - check if MongoDB and Redis is running
+    - check if MongoDB is running
 
         ```sh:check_db_daemons.sh
 ps aux | grep "mongod"
-ps aux | grep "redis-server"
 ```
 
 - install ruby1.9.3 and [bundler](http://bundler.io/)
@@ -41,7 +40,7 @@ git clone https://github.com/noda50/cassia.git
     - at the root directory, run the following command
 
     ```sh:start_daemon.sh
-nohup bundle exec rake daemon:start
+bundle exec rake daemon:start
 ```
 
     - to stop the daemons,
