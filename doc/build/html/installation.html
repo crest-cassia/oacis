@@ -111,7 +111,6 @@
 <li>Ruby 1.9.3</li>
 <li>bundler (<a class="reference external" href="http://bundler.io/">http://bundler.io/</a>)</li>
 <li>MongoDB 2.4以上 (<a class="reference external" href="http://www.mongodb.org/">http://www.mongodb.org/</a>)</li>
-<li>Redis 2.6以上 (<a class="reference external" href="http://redis.io/">http://redis.io/</a>)</li>
 </ul>
 <div class="line-block">
 <div class="line">Mac OS Xの場合、homebrew (<a class="reference external" href="http://brew.sh/">http://brew.sh/</a>) を使ってインストールするのが手軽で良い。</div>
@@ -137,22 +136,22 @@
 <div>bundle exec rails s</div></blockquote>
 <div class="line-block">
 <div class="line"><a class="reference external" href="http://localhost:3000">http://localhost:3000</a> にアクセスし、ページが適切に表示されればインストールは成功している。</div>
-<div class="line">もし失敗した場合は、MongoDB, Redisが正しく起動しているか、ファイアウォールは3000番に対して開いているか、gemは正しくインストールされたか、などを確認する。</div>
+<div class="line">もし失敗した場合は、MongoDBが正しく起動しているか、ファイアウォールは3000番に対して開いているか、gemは正しくインストールされたか、などを確認する。</div>
 <div class="line">端末で Ctrl-C を押し、Railsを停止させる。</div>
 </div>
 </div>
 <div class="section" id="railsworker">
 <h2>RailsおよびWorkerの起動<a class="headerlink" href="#railsworker" title="Permalink to this headline">¶</a></h2>
 <p>Railsおよびworkerの起動は以下のコマンドを実行する。</p>
-<div class="highlight-python"><pre>nohup bundle exec rake daemon:start</pre>
+<div class="highlight-python"><pre>bundle exec rake daemon:start</pre>
 </div>
 <p><a class="reference external" href="http://localhost:3000">http://localhost:3000</a> にアクセスできればRailsの起動が成功している。
 またWorkerプロセスが起動しているかどうかは</p>
-<div class="highlight-python"><pre>ps aux | grep "[r]esque"</pre>
+<div class="highlight-python"><pre>ps aux | grep "[w]orker.rb"</pre>
 </div>
-<p>を実行すれば確認できる。２つのプロセスが表示されればWorkerは正しく起動している。</p>
+<p>を実行すれば確認できる。プロセスが表示されればWorkerは正しく起動している。</p>
 <p>これらのプロセスの再起動、および停止は以下のコマンドで実行できる。</p>
-<div class="highlight-python"><pre>nohup bundle exec rake daemon:restart
+<div class="highlight-python"><pre>bundle exec rake daemon:restart
 bundle exec rake daemon:stop</pre>
 </div>
 </div>
@@ -170,14 +169,14 @@ bundle exec rake daemon:stop</pre>
 <div class="line-block">
 <div class="line">現状のCASSIA Managerはユーザー管理機能を持っていないため、ネットワーク内の任意のホストからアクセス可能である。</div>
 <div class="line">他のホストからのアクセスを制限するためにはファイアウォールを設定するのが最も簡単である。</div>
-<div class="line">Railsは3000番、MongoDBは27017番、Redisは6379番のポートをそれぞれ使用しているので、これらのポートへのアクセスを限定する。</div>
-<div class="line">MongoDB, Redisへのアクセスはローカルホストのみ、Railsは使用するユーザーのみに開放するのが望ましい。</div>
+<div class="line">Railsは3000番、MongoDBは27017番のポートをそれぞれ使用しているので、これらのポートへのアクセスを限定する。</div>
+<div class="line">MongoDBへのアクセスはローカルホストのみ、Railsは使用するユーザーのみに開放するのが望ましい。</div>
 </div>
 </div>
 <div class="section" id="id6">
 <h2>データベースの変更<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <p>デフォルトではローカルのデータベースにアクセスするが、他のホストのデータベースを参照する事も可能である。
-config/mongoid.yml および config/resque.yml の中でMongoDB, Redisへの接続情報を設定しているのでこれらを変更してRailsおよびWorkerを再起動する。</p>
+config/mongoid.yml の中でMongoDBへの接続情報を設定しているので、これを変更してRailsおよびWorkerを再起動する。</p>
 </div>
 </div>
 
