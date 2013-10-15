@@ -4,8 +4,6 @@ gem 'rails', '3.2.13'
 gem 'jquery-rails'
 gem "mongoid"
 gem "haml"
-gem "resque"
-gem "resque-scheduler", :require => 'resque_scheduler'
 gem "net-ssh"
 gem "net-sftp"
 gem 'daemon-spawn', :require => 'daemon_spawn'
