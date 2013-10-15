@@ -10,6 +10,7 @@ class Worker < DaemonSpawn::Base
     loop do
       JobSubmitter.perform(@logger)
       JobObserver.perform(@logger)
+      AnalyzerRunner.perform(@logger)
       sleep INTERVAL
     end
   end
