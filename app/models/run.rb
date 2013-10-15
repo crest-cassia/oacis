@@ -131,14 +131,14 @@ class Run
     if self.status == :finished
       sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
         anl = analyses.build(analyzer: azr)
-        anl.save and anl.submit
+        anl.save
       end
 
       sim.analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
         scope = ps.runs.where(status: :finished)
         if scope.count == 1 and scope.first.id == id
           anl = analyses.build(analyzer: azr)
-          anl.save and anl.submit
+          anl.save
         end
       end
     end
@@ -147,7 +147,7 @@ class Run
       sim.analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
         unless ps.runs.nin(status: [:finished, :failed]).exists?
           anl = ps.analyses.build(analyzer: azr)
-          anl.save and anl.submit
+          anl.save
         end
       end
     end
