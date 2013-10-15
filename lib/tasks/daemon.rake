@@ -17,7 +17,7 @@ namespace :daemon do
   end
 
   desc "stop daemons"
-  task :stop => :environment do
+  task :stop do
     if File.exist?(SERVER_PID)
       pid = File.open(SERVER_PID, "r").gets
       if pid.present?
