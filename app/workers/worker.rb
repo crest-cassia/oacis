@@ -20,8 +20,10 @@ class Worker < DaemonSpawn::Base
   end
 end
 
-Worker.spawn!(log_file: Rails.root.join('log', "worker_#{Rails.env}.log"),
-              pid_file: Rails.root.join('tmp', 'pids', "worker_#{Rails.env}.pid"),
-              sync_log: true,
-              working_dir: Rails.root
-              )
+if $0 == __FILE__
+  Worker.spawn!(log_file: Rails.root.join('log', "worker_#{Rails.env}.log"),
+                pid_file: Rails.root.join('tmp', 'pids', "worker_#{Rails.env}.pid"),
+                sync_log: true,
+                working_dir: Rails.root
+                )
+end
