@@ -1,6 +1,6 @@
 class JobSubmitter
 
-  def self.perform(logger = nil)
+  def self.perform(logger)
     Host.all.each do |host|
       num = host.max_num_jobs - host.submitted_runs.count
       if num > 0
