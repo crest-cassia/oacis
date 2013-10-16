@@ -1,6 +1,13 @@
 class RunsController < ApplicationController
 
   def index
+    # check if worker is alive
+    if Worker.alive?
+      flash.now[:notice] = "Worker process is running"
+    else
+      flash.now[:alert] = "Worker process is not running"
+    end
+
     respond_to do |format|
       format.html
     end
