@@ -181,7 +181,7 @@ describe ParameterSet do
         sim.parameter_sets.create( v: val )
       end
       4.times do |n|
-        val = {"L" => n+2, "T" => 1.0, "P" => 1.0}
+        val = {"L" => 5-n, "T" => 1.0, "P" => 1.0}
         sim.parameter_sets.create( v: val )
       end
       4.times do |n|
@@ -208,6 +208,11 @@ describe ParameterSet do
     it "includes self" do
       found = @prm.parameter_sets_with_different("L").find(@prm)
       found.should be_a(ParameterSet)
+    end
+
+    it "returns parameter_sets sorted by the given key" do
+      prms_L = @prm.parameter_sets_with_different("L")
+      prms_L.map {|x| x.v["L"]}.should eq [1,2,3,4,5]
     end
   end
 

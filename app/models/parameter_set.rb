@@ -25,7 +25,7 @@ class ParameterSet
       next if prm_key == key.to_s
       query_param["v.#{prm_key}"] = prm_val
     end
-    self.class.where(query_param)
+    self.class.where(query_param).asc("v.#{key}")
   end
 
   def runs_status_count
