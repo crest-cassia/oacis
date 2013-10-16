@@ -42,6 +42,16 @@ class Worker < DaemonSpawn::Base
       false
     end
   end
+
+  # return true if the time stamp of the log file is updated within five minutes
+  LOG_UPDATE_THRESHOLD = 60 * 5 # 5 minutes
+  def self.log_recently_updated?
+    if File.file?(WORKER_LOG_FILE)
+      s = File.stat(WORKER_LOG_FILE)
+      return true if Time.now - s.mtime < LOG_UPDATE_THRESHOLD
+    end
+    false
+  end
 end
 
 if $0 == __FILE__
