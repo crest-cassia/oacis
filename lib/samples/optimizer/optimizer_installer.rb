@@ -1,4 +1,5 @@
 require 'pp'
+require 'json'
 
 class TermColor
   class << self
@@ -59,8 +60,11 @@ class Selector
 end
 
 class OptimizerSelect
+  @@optimizer_types=["GA"]#["GA","UNDX","PSO","DE"]
+  @@optimizer_desctiptions={"GA"=>"default GA"}
+
   def init(target_sim)
-    @@steps=["init","set_name","select_analyzer","select_managed_parameters","set_managed_parameters","finish"]
+    @@steps=["init","set_name","set_type","select_analyzer","select_managed_parameters","set_managed_parameters","finish"]
     @@sim=target_sim
     @@name=nil
     @@anz=nil
@@ -75,6 +79,8 @@ class OptimizerSelect
     case @@steps[@@step_counter]
       when "set_name"
         set_name(str)
+      when "set_type"
+        set_type(str)
       when "select_analyzer"
         select_analyzer(str)
       when "select_managed_parameters"
@@ -88,6 +94,21 @@ class OptimizerSelect
   end
 
   def finalize
+    opt = Simulator.new
+    opt.name = @@name
+    opt.parameter_definitions = opt_parameter_definitions
+    opt.command = "ruby -r "+Rails.root.to_s+"/config/environment "+Rails.root.to_s+"/lib/samples/optimizer/optimizer.rb"
+    opt.support_input_json = true
+    opt.support_mpi = false
+    opt.support_omp = false
+    opt.description = "A sample optimizer."
+    pp opt
+    opt.save
+    host = Host.where({name: "localhost"}).first
+    if host.present?
+      host.executable_simulator_ids.push(opt.to_param).uniq!
+      host.save
+    end
     return @@managed_params
   end
 
@@ -95,6 +116,20 @@ class OptimizerSelect
   def set_name(str)
     @@name=str
     puts "new optimizer name is "+TermColor.blue_i+"\""+@@name+"\""+TermColor.reset_i
+  end
+
+  def set_type(str)
+    if @@optimizer_types.include?(str)
+      @@type=str
+      puts "new optimizer type is "+TermColor.blue_i+"\""+@@type+"\""+TermColor.reset_i
+    else
+      TermColor.red
+      puts "*****************************************"
+      puts "***ERROR:enter a type of optimizer from "+@@optimizer_types+")***"
+      puts "*****************************************"
+      TermColor.reset
+      @@step_counter -=1
+    end
   end
   
   def select_analyzer(str)
@@ -148,6 +183,14 @@ class OptimizerSelect
     puts "Input optimizer name:"
   end
 
+  def type_list
+    TermColor.green
+    puts "install stage: "+@@steps[@@step_counter+1]
+    TermColor.reset
+    pp @@optimizer_types
+    puts "Input optimizer type:"
+  end
+
   def analyzer_list
     TermColor.green
     puts "install stage: "+@@steps[@@step_counter+1]
@@ -193,6 +236,8 @@ class OptimizerSelect
     when "init"
       input_name
     when "set_name"
+      type_list
+    when "set_type"
       analyzer_list
     when "select_analyzer"
       parameter_list
@@ -201,6 +246,18 @@ class OptimizerSelect
     when "set_managed_parameters"
       show_result
     end
+  end
+
+  def opt_parameter_definitions
+    a = []
+    a.push(ParameterDefinition.new({"key"=>"target", "type"=>"String", "default" => {"Simulator"=>@@sim.to_param,"Analyzer"=>@@anz.to_param}.to_json.to_s, "description" => "targets for operation"}))
+    h = {"module"=>"optimization","type"=>@@type,"settings"=>{"iteration"=>100,"population"=>32,"maximize"=>true,"seed"=>0}}
+    h["settings"]["managed_parameters"]=[]
+    @@managed_params.each do |mpara|
+      h["settings"]["managed_parameters"].push(mpara)
+    end
+    a.push(ParameterDefinition.new({"key"=>"operation", "type"=>"String", "default" => h.to_json.to_s, "description" => @@optimizer_desctiptions[@@type]}))
+    return a
   end
 end
 
