@@ -45,5 +45,7 @@ AcmProto::Application.routes.draw do
 
   resources :hosts
 
+  get "plots/data"
+
   root :to => "simulators#index"
 end
