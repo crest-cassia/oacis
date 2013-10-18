@@ -11,15 +11,14 @@ def fetch_target_simulator
 end
 
 def load_target_simulator
-  Simulator.find(input_data["target_sim"])
+  Simulator.find(input_data["target"]["Simulator"])
 end
 
-def managed_parameter
+def managed_parameters
   parameter_definitions = target_simulator.parameter_definitions
-  opt = Simulator.find(input_data["my_id"])
-  parameter_definitions.where({"key"=>input_data[]})
-  parameter_definitions["dt_1"]["range"]=[-60, 180]
-  parameter_definitions["dt_2"]["range"]=[-60, 180]
+  input_data["operation"]["settings"]["managed_parameters"].each do |mpara|
+    parameter_definitions.where({"key"=>mpara["key"]}).first["range"]=mpara["range"]
+  end
   parameter_definitions
 end
 
@@ -27,7 +26,7 @@ def optimizer_data
   @optimizer_data ||= fetch_optimizer_data
 end
 
-def fetch_target_simulator
+def fetch_optimizer_data
   optimizer_data = create_optimizer_data
   optimizer_data
 end
@@ -35,22 +34,25 @@ end
 def create_optimizer_data
   h={}
   h["data"]={"iteration"=>0,
-            "max_optimizer_iteration"=>input_data["iteration"],
-            "population_num"=>input_data["population"],
-            "maximize"=>input_data["maximize"],
-            "seed"=>input_data["seed"],
+            "max_optimizer_iteration"=>input_data["operation"]["settings"]["iteration"],
+            "population_num"=>input_data["operation"]["settings"]["population"],
+            "maximize"=>input_data["operation"]["settings"]["maximize"],
+            "seed"=>input_data["operation"]["settings"]["seed"],
             "ga"=>{"operation"=>[{"crossover"=>{"count"=>32,"type"=>"1point","selection"=>{"tournament"=>{"tournament_size"=>4}}}},{"mutation"=>{"count"=>32,"type"=>"uniform_distribution","range"=>{"dt_1"=>[-10,10],"dt_2"=>[-10,10]}}}],
                    "selection"=>"ranking"
                   }
             }
-  h["result"]=[{}]
-              {"best"=>{},
-               "population"=>[], #[{"ps_v"=>{"dt_1"=>0,"dt_2"=>0},"val"=>0}, ..., {"ps_v"=>{"dt_1"=>100,"dt_2"=>100},"val"=>100}]
-               "children"=>[]
-              }
+  h["result"]=[]
 
   File.open("_output.json", 'w') {|io| io.print h["result"].to_json }
   h
+end
+
+def template_result
+{"best"=>{},
+ "population"=>[], #[{"ps_v"=>{"dt_1"=>0,"dt_2"=>0},"val"=>0}, ..., {"ps_v"=>{"dt_1"=>100,"dt_2"=>100},"val"=>100}]
+ "children"=>[]
+}
 end
 
 def input_data
@@ -65,7 +67,10 @@ end
 def load_input_data
   if File.exist?("_input.json")
     io = File.open('_input.json', 'r')
-    return JSON.load(io)
+    parsed = JSON.load(io)
+    parsed["target"]=JSON.parse(parsed["target"])
+    parsed["operation"]=JSON.parse(parsed["operation"])
+    return parsed
   end
 end
 
@@ -152,12 +157,29 @@ end
 
 def create_children_ga(optimizer_data)
   children = []
-  mpara = managed_parameter
+  mpara = managed_parameters
   begin
     h = {}
-    mpara.each do |key, val|
+    mpara.each do |val|
       if val["range"].present?
-        h[key] = @prng.rand(val["range"][1] - val["range"][0]) + val["range"][0]
+        case val["type"]
+        when "Integer"
+          if val["range"].length == 3 and val["range"][2] != 0
+            h[val["key"]] = (Rational((@prng.rand((val["range"][1] - val["range"][0]).to_i) * 1/val["range"][2]).to_i,1/val["range"][2])).to_i + val["range"][0].to_i
+          else
+            h[val["key"]] = @prng.rand((val["range"][1] - val["range"][0]).to_i) + val["range"][0].to_i
+          end
+        when "Float"
+          if val["range"].length == 3 and val["range"][2] != 0
+            h[val["key"]] = ((Rational((@prng.rand((val["range"][1] - val["range"][0]).to_f) * 1.0/val["range"][2]).to_i,1.0/val["range"][2])).to_f + val["range"][0].to_f).round(6)
+          else
+            h[val["key"]] = @prng.rand((val["range"][1] - val["range"][0]).to_f) + val["range"][0].to_f
+          end
+        when "String"
+          h[val["key"]] = val["range"][@prng.rand(val["range"].length)]
+        when "Boolean"
+          h[val["key"]] = val["range"][@prng.rand(val["range"].length)]
+        end
       end
     end
     children.push(h)
@@ -166,6 +188,7 @@ def create_children_ga(optimizer_data)
 end
 
 def generate_parameters_and_submit_runs(optimizer_data)
+  optimizer_data["result"].push(template_result)
   if optimizer_data["data"]["iteration"] == 0
     create_children_ga(optimizer_data).each_with_index do |child, i|
       optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"][i] = {"ps_v"=>child}
@@ -178,20 +201,24 @@ def generate_parameters_and_submit_runs(optimizer_data)
   optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].each do |child|
     ps = target_simulator.parameter_sets.build
     ps.v = {}
-    managed_parameter.each do |key, val|
-      if child["ps_v"][key].present?
-        ps.v[key] = child["ps_v"][key]
+    managed_parameters.each do |val|
+      if child["ps_v"][val["key"]].present?
+        ps.v[val["key"]] = child["ps_v"][val["key"]]
       else
-        ps.v[key] = val["default"]
+        ps.v[val["key"]] = val["default"]
       end
     end
+    pp ps
     if ps.save
       run = ps.runs.build
+      run.submitted_to_id=input_data["target"]["Host"].first
       run.save
     else
+      #if this parameter set has been saved in OACIS, optimizer tries to make one run on the parameter set.
       ps = target_simulator.parameter_sets.where(v: ps.v).first
       if ps.runs.count == 0
         run = ps.runs.build
+        run.submitted_to_id=input_data["target"]["Host"].first
         run.save
       end
     end
@@ -204,11 +231,11 @@ def evaluate_results(optimizer_data)
     optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].each do |child|
       if child["val"].blank?
         h = {}
-        managed_parameter.each do |key, val|
-          if child["ps_v"][key].present?
-            h["v."+key] = child["ps_v"][key]
+        managed_parameters.each do |val|
+          if child["ps_v"][val["key"]].present?
+            h["v."+val["key"]] = child["ps_v"][val["key"]]
           else
-            h["v."+key] = val["default"]
+            h["v."+val["key"]] = val["default"]
           end
         end
         ps = target_simulator.parameter_sets.where(h).first
@@ -256,31 +283,29 @@ def iterate_run(count)
   end
   count.times do |i|
     generate_parameters_and_submit_runs(optimizer_data)
-    evaluate_results(optimizer_data)
-    select_population(optimizer_data)
-    optimizer_data["data"]["iteration"] += 1
-    optimizer_data["data"]["seed"] = @prng.marshal_dump
-    save_optimizer_data(optimizer_data)
-    if optimization_is_finished(optimizer_data)
-      break
-    end
+    #evaluate_results(optimizer_data)
+    #select_population(optimizer_data)
+    #optimizer_data["data"]["iteration"] += 1
+    #optimizer_data["data"]["seed"] = @prng.marshal_dump
+    #save_optimizer_data(optimizer_data)
+    #if optimization_is_finished(optimizer_data)
+    #  break
+    #end
   end
 end
 
 
 #--Unit tests--
-pp input_data
-#@prng = Random.new(optimizer_data["data"]["seed"])
+#pp input_data
+#@prng = Random.new(input_data["operation"]["settings"]["seed"])
 #pp target_simulator
-#pp managed_parameter
+#pp managed_parameters
 #pp create_children_ga(optimizer_data)
+#optimizer_data["result"].push(template_result)
 #create_children_ga(optimizer_data).each_with_index do |child, i|
 #  optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"][i] = {"ps_v"=>child}
 #end
 #pp optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"]
-#optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"].each do |child|
-#  pp child
-#end
 #pp n_point_crossover(1, get_parents(optimizer_data, 2))
 #generate_parameters_and_submit_runs(optimizer_data)
 #pp optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"]
@@ -300,5 +325,5 @@ if target_simulator.blank?
   puts "Target simulator is missing."
   exit(-1)
 end
-#iterate_run(input_data["iteration"])
+iterate_run(input_data["operation"]["settings"]["iteration"])
 #--end --

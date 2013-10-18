@@ -65,7 +65,8 @@ class OptimizerSelect
 
   def init(target_sim)
     @@steps=["init","set_name","set_type","select_analyzer","select_managed_parameters","set_managed_parameters","finish"]
-    @@sim=target_sim
+    @@sim=target_sim[0]
+    @@host=target_sim[1]
     @@name=nil
     @@anz=nil
     @@managed_params=[]
@@ -250,8 +251,8 @@ class OptimizerSelect
 
   def opt_parameter_definitions
     a = []
-    a.push(ParameterDefinition.new({"key"=>"target", "type"=>"String", "default" => {"Simulator"=>@@sim.to_param,"Analyzer"=>@@anz.to_param}.to_json.to_s, "description" => "targets for operation"}))
-    h = {"module"=>"optimization","type"=>@@type,"settings"=>{"iteration"=>100,"population"=>32,"maximize"=>true,"seed"=>0}}
+    a.push(ParameterDefinition.new({"key"=>"target", "type"=>"String", "default" => {"Simulator"=>@@sim.to_param,"Analyzer"=>@@anz.to_param,"Host"=>@@host.map{|h| h.to_param}}.to_json.to_s, "description" => "targets for operation"}))
+    h = {"module"=>"optimization","type"=>@@type,"settings"=>{"iteration"=>1,"population"=>32,"maximize"=>true,"seed"=>0}}
     h["settings"]["managed_parameters"]=[]
     @@managed_params.each do |mpara|
       h["settings"]["managed_parameters"].push(mpara)
@@ -261,14 +262,15 @@ class OptimizerSelect
   end
 end
 
-class SimulationSelect
+class SimulatorSelect
   def init(target_sims)
-    @@steps=["init","select_simulator","finish"]
+    @@steps=["init","select_simulator","select_host","finish"]
     @@target_sims=target_sims
     @@sim=nil
     @@step_counter=0
     message
     @@step_counter += 1
+    @@host=[]
   end
 
   def run(str)
@@ -276,19 +278,36 @@ class SimulationSelect
     when "select_simulator"
       select_simulator(str)
       message
+    when "select_host"
+      select_host(str)
+      message
     end
     @@step_counter += 1
     return true if @@step_counter == @@steps.length-1
   end
 
   def finalize
-    return @@sim
+    return [@@sim,@@host]
   end
 
   private
   def select_simulator(str)
     if (str == "0" or str.to_i > 0) and (@@target_sims.count > str.to_i)
       @@sim=@@target_sims.to_a[str.to_i]
+    else
+      TermColor.red
+      puts "*****************************************"
+      puts "***ERROR:enter a number(Integer less than "+@@target_sims.count.to_s+")***"
+      puts "*****************************************"
+      TermColor.reset
+      @@step_counter -=1
+    end
+  end
+
+  def select_host(str)
+    hosts = Host.all.select{|h| h.executable_simulator_ids.include?(@@sim.to_param)}
+    if (str == "0" or str.to_i > 0) and (@@target_sims.count > str.to_i)
+      @@host.push(hosts[str.to_i])
     else
       TermColor.red
       puts "*****************************************"
@@ -307,6 +326,23 @@ class SimulationSelect
     puts "select num:"
   end
 
+  def host_list
+    TermColor.green
+    puts "install stage: "+@@steps[@@step_counter+1]
+    TermColor.reset
+    hosts = Host.all.select{|h| h.executable_simulator_ids.include?(@@sim.to_param)}
+    if hosts.length == 0
+      TermColor.red
+      puts "*****************************************"
+      puts "***ERROR:There is no host to execute the selected simulator.)***"
+      puts "*****************************************"
+      TermColor.reset
+      exit(-1)
+    end
+    pp hosts.each_with_index.map{ |s,i| i.to_s+":"+s.name }.join(",")
+    puts "select num:"
+  end
+
   def show_result
     puts "selected simulator is "+TermColor.blue_i+"\""+@@sim.name+"\""+TermColor.reset_i
   end
@@ -316,6 +352,8 @@ class SimulationSelect
     when "init"
       simulator_list
     when "select_simulator"
+      host_list
+    when "select_host"
       show_result
     end
   end
@@ -341,5 +379,5 @@ puts "          exit    (discard settings and exit.)"
 puts ""
 TermColor.reset
 
-selector = Selector.new([SimulationSelect.new,OptimizerSelect.new],target_simulators)
+selector = Selector.new([SimulatorSelect.new,OptimizerSelect.new],target_simulators)
 selector.run
