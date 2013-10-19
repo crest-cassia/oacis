@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>はじめに &mdash; CASSIA Manager 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="CASSIA Manager 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="システム概要" href="system_overview.html" />
+    <link rel="prev" title="Welcome to CASSIA Manager’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="system_overview.html" title="システム概要"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to CASSIA Manager’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>はじめに<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="cassia-manager">
+<h2>CASSIA Managerとは？<a class="headerlink" href="#cassia-manager" title="Permalink to this headline">¶</a></h2>
+<p>CASSIA Manager (CM) とはシミュレーションのジョブおよび結果を効率的に管理するためのミドルウェアである。</p>
+<div class="line-block">
+<div class="line">近年の計算機および計算科学の発展により、様々な問題に対してシミュレーションを行うための計算リソースは容易に手に入るようになった。</div>
+<div class="line">一方で、数百のモデル、数千のパラメータセットに対してシミュレーションを行うだけの計算リソースを持っていたとしても、その多岐にわたるシミュレーションを手動で複数のホストで効率的に実行し、計算結果を管理し、意味のある結果を取り出す事は容易ではない。</div>
+<div class="line">CMはその様な状況の解決を目的として開発されている。</div>
+</div>
+<div class="line-block">
+<div class="line">手動でシミュレーションを実行する場合の典型的な手順は以下のようになるであろう。</div>
+</div>
+<ol class="arabic simple">
+<li>リモートホストにログイン</li>
+<li>実行用ディレクトリを作成</li>
+<li>ジョブ実行用スクリプト（ジョブスクリプトと呼ぶ）を作成。実行時のパラメータを記入</li>
+<li>スケジューラにサブミット</li>
+<li>ジョブ実行完了まで待つ</li>
+<li>結果をローカルホストに転送</li>
+<li>結果の解析</li>
+<li>（他のパラメータでの計算が必要であれば）最初に戻る</li>
+</ol>
+<div class="line-block">
+<div class="line">CASSIA Managerは上記の手順の大部分を自動化し、「パラメータ選択→シミュレーション→解析」のループを効率的にまわす事ができる。</div>
+</div>
+<div class="line-block">
+<div class="line">ユーザーは登録したシミュレータをの実行をウェブブラウザから指示することができ、</div>
+</div>
+<p>実行されたシミュレーションジョブは完了後に自動的にローカルホスト内のデータベースに格納される。
+この際、</p>
+<ul class="simple">
+<li>シミュレーションを実行したパラメータ</li>
+<li>実行日時</li>
+<li>実行ホスト</li>
+<li>要した時間</li>
+<li>乱数の種</li>
+</ul>
+<div class="line-block">
+<div class="line">などの情報も後に追跡可能な状態で保存され、これらはブラウザから容易にアクセス可能である。</div>
+<div class="line">またAPIを使用することにより、パラメータ選択や解析の実行を自動化することもできる。</div>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>本ドキュメントの構成<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">本ドキュメントの構成は以下のようになっている。</div>
+</div>
+<ul>
+<li><p class="first">システム概要</p>
+</li>
+<li><p class="first">インストール方法</p>
+</li>
+<li><p class="first">基本的な使い方</p>
+</li>
+<li><p class="first">高度な使い方</p>
+</li>
+<li><dl class="first docutils">
+<dt>APIの使い方</dt>
+<dd><ul class="first last simple">
+<li>（準備中）</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="line-block">
+<div class="line">とりあえず使ってみたい場合は「基本的な使い方」の章までを見れば使い始められるようになっている。</div>
+<div class="line">それ以降の章は必要に応じて読めばよい。</div>
+</div>
+</div>
+<div class="section" id="infomation">
+<h2>Infomation<a class="headerlink" href="#infomation" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>CASSIA project since 2013</li>
+<li>ソースリポジトリ: <a class="reference external" href="https://bitbucket.org/yohm/acm2">https://bitbucket.org/yohm/acm2</a> (privete repository)</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">はじめに</a><ul>
+<li><a class="reference internal" href="#cassia-manager">CASSIA Managerとは？</a></li>
+<li><a class="reference internal" href="#id2">本ドキュメントの構成</a></li>
+<li><a class="reference internal" href="#infomation">Infomation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to CASSIA Manager&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="system_overview.html"
+                        title="next chapter">システム概要</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/introduction.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="system_overview.html" title="システム概要"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to CASSIA Manager’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

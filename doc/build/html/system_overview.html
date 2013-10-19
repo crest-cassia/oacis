@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>システム概要 &mdash; CASSIA Manager 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="CASSIA Manager 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="インストール" href="installation.html" />
+    <link rel="prev" title="はじめに" href="introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="installation.html" title="インストール"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="はじめに"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>システム概要<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>この章では、CASSIA Managerの全体像の理解のために、システム構成とデータ構造について説明する。</p>
+<div class="section" id="id2">
+<h2>システム構成<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">CASSIA Manager (CM) は、Ruby on Railsフレームワークを用いて構築されており、ユーザーはウェブブラウザを用いて実行したシミュレーション結果などにアクセスすることができる。</div>
+<div class="line">内部のデータベースとしてMongoDBを使用しており、シミュレーション実行時の情報、パラメータについての情報、ホストについての情報などが格納される。</div>
+<div class="line">シミュレータが出力したファイルやディレクトリについては、ファイルシステム上に保存される。</div>
+<div class="line">システム構成の概要は下図のようになる。</div>
+</div>
+<a class="reference internal image-reference" href="_images/system_configuration_num.png"><img alt="_images/system_configuration_num.png" class="align-center" src="_images/system_configuration_num.png" style="width: 30%;" /></a>
+<div class="line-block">
+<div class="line">ユーザーがシミュレーション実行をリクエストしてから、シミュレーション結果をCMに保存するまでの処理の流れに沿ってシステムの概要を説明する。</div>
+</div>
+<ol class="arabic simple">
+<li>まずユーザーがウェブブラウザ（①）上で実行したいシミュレーションを指定する。</li>
+<li>リクエストはウェブサーバー上（②）で処理され、Workerと呼ばれるデーモンプロセス（③）に処理を依頼する。</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Workerとはバックグラウンドで、リモートホストへのSSH接続やファイル転送などの時間がかかる処理を担当するプロセスである。</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Workerはユーザーによって指定されたシミュレーションをリモートホスト（④）で実行する。</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Host登録時にTorqueなどのジョブスケジューラを指定すれば、ジョブスケジューラ経由でジョブが実行される。</li>
+<li>シミュレータは事前にユーザーが各ホスト上でビルドして実行可能な状態になっている必要がある。
+* 事前にシミュレータのパスをCMに登録し、Workerがそのコマンドをリモートホストで実行する。</li>
+<li>各ジョブごとにディレクトリを作成し、その中でジョブが実行される。</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>リモートホストでの実行が完了後、Workerが実行結果をCM実行サーバーにSFTPでダウンロードする。</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Workerが定期的にリモートホストをポーリングし、ジョブが完了したかどうか確認する。</li>
+<li>結果はファイルストレージ（⑤）およびDB（⑥）に格納される。</li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line">格納された結果はブラウザからアクセス可能となる。</div>
+</div>
+<a class="reference internal image-reference" href="_images/ss_output_files.png"><img alt="_images/ss_output_files.png" class="align-center" src="_images/ss_output_files.png" style="width: 30%;" /></a>
+</div>
+<div class="section" id="id3">
+<h2>データ構造の概略<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">CMではシミュレーション結果は図の様なSimulator, ParameterSet, Runの３層構造に分けて保存される。</div>
+</div>
+<a class="reference internal image-reference" href="_images/data_structure.png"><img alt="_images/data_structure.png" class="align-center" src="_images/data_structure.png" style="width: 30%;" /></a>
+<div class="line-block">
+<div class="line">Simulatorは複数のParameterSetを持ち、ParameterSetは複数のRunを持っている。</div>
+<div class="line">ParameterSetとはあるシミュレータを実行するのに必要なパラメータの値の組をさす概念で、Runとは独立なモンテカルロランの一つをさす概念である。</div>
+</div>
+<div class="line-block">
+<div class="line">例として、単純な交通流シミュレータを考えよう。</div>
+<div class="line">この交通流シミュレータは、道路の長さL、信号周期T、車の台数Nを入力パラメータに持つシミュレータだとする。</div>
+<div class="line">ParameterSetとは、{L=100, T=10, N=10} などのパラメータの組み合わせのことをさす。</div>
+<div class="line">このパラメータセットで乱数の種を変えて５回シミュレーションを行うとすると、５つのRunが作成されることになる。</div>
+</div>
+<div class="line-block">
+<div class="line">またそれぞれの結果に対して解析を実施する事もできる。</div>
+<div class="line">その際には図のように解析対象（ParameterSet または Run）の配下に解析結果が格納される。</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">システム概要</a><ul>
+<li><a class="reference internal" href="#id2">システム構成</a></li>
+<li><a class="reference internal" href="#id3">データ構造の概略</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">はじめに</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="next chapter">インストール</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/system_overview.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="installation.html" title="インストール"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="はじめに"
+             >previous</a> |</li>
+        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

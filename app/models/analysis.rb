@@ -39,13 +39,9 @@ class Analysis
     return paths
   end
 
-  def submit
-    Resque.enqueue(AnalyzerRunner, self.to_param)
-  end
-
-  def destroy( call_super = false )
+  def destroy( called_by_worker = false )
     s = self.status
-    if s == :failed or s == :finished or call_super
+    if s == :failed or s == :finished or called_by_worker
       super
     else
       cancel

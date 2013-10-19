@@ -11,7 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   introduction2
+   introduction
    system_overview
    installation
    basic_usage

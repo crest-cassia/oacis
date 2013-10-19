@@ -34,8 +34,9 @@ db/*.sqlite3
 /coverage/
 /db/*.javadb/
 /db/*.sqlite3
-/doc/build/
 /doc/Gemfile.lock
+/doc/build/doctrees
+/doc/build/html/_sources
 /public/cache
 /public/stylesheets/compiled
 /public/system/*
@@ -75,8 +76,12 @@ pickle-email-*.html
 
 # vim artifacts
 **.swp
-
 *~
+
+# sublime porject files
+*.sublime-*
+
+nohup.out
 
 # Result directory
 public/Result_*
