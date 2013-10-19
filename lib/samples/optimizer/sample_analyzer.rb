@@ -1,4 +1,5 @@
 require 'json'
+require 'pp'
 
 def load_data
   if File.exist?('_input.json')
@@ -14,8 +15,7 @@ def save_data(h)
 end
 
 result = load_data
-pp result
-unless result.blank?
+unless result.nil?
   h={"Fitness"=>result["result"]["Fitness"].first}
   save_data(h)
 end

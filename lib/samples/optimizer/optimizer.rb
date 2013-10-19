@@ -14,6 +14,19 @@ def load_target_simulator
   Simulator.find(input_data["target"]["Simulator"])
 end
 
+def target_analzer
+  @target_analyzer ||= fetch_target_analyzer
+end
+
+def fetch_target_analyzer
+  target_analyser = load_target_analyzer
+  target_analyser
+end
+
+def load_target_analyzer
+  Analyzer.find(input_data["target"]["Analyzer"])
+end
+
 def managed_parameters
   parameter_definitions = target_simulator.parameter_definitions
   input_data["operation"]["settings"]["managed_parameters"].each do |mpara|
@@ -38,7 +51,7 @@ def create_optimizer_data
             "population_num"=>input_data["operation"]["settings"]["population"],
             "maximize"=>input_data["operation"]["settings"]["maximize"],
             "seed"=>input_data["operation"]["settings"]["seed"],
-            "ga"=>{"operation"=>[{"crossover"=>{"count"=>32,"type"=>"1point","selection"=>{"tournament"=>{"tournament_size"=>4}}}},{"mutation"=>{"count"=>32,"type"=>"uniform_distribution","range"=>{"dt_1"=>[-10,10],"dt_2"=>[-10,10]}}}],
+            "ga"=>{"operation"=>[{"crossover"=>{"count"=>(input_data["operation"]["settings"]["population"]/2).to_i,"type"=>"1point","selection"=>{"tournament"=>{"tournament_size"=>4}}}},{"mutation"=>{"count"=>input_data["operation"]["settings"]["population"]-(input_data["operation"]["settings"]["population"]/2).to_i,"type"=>"uniform_distribution","range"=>{"dt_1"=>[-10,10],"dt_2"=>[-10,10]}}}],
                    "selection"=>"ranking"
                   }
             }
@@ -225,8 +238,22 @@ def generate_parameters_and_submit_runs(optimizer_data)
   end
 end
 
+def target_field(ps)
+  b = ps.runs.first
+  return nil if b.blank?
+  b = b.analyses
+  return nil if b.blank?
+  b = b.where(analyzer_id: target_analzer.to_param).last
+  return nil if b.blank?
+  b = b.result
+  return nil if b.blank?
+  b = b["Fitness"]
+  return nil if b.blank?
+  b
+end
+
 def evaluate_results(optimizer_data)
-  target_field = "Average_TripTime"
+  target_field = "Fitness"
   begin
     optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].each do |child|
       if child["val"].blank?
@@ -239,11 +266,11 @@ def evaluate_results(optimizer_data)
           end
         end
         ps = target_simulator.parameter_sets.where(h).first
-        if ps.runs.first.result.present? and ps.runs.first.result["Vehicle"][target_field].present?
-          child["val"] = ps.runs.first.result["Vehicle"][target_field]
+        val = target_field(ps)
+        if val.present?
+          child["val"] = val
         end
       end
-      #child["val"] = Math::exp(-((child["ps_v"]["T1"]+10)**2)/10000.0) + Math::exp(-((child["ps_v"]["T2"]-100)**2)/10000.0) + 2.0*Math::exp(-((child["ps_v"]["T1"]-50)**2)/10000.0) + 2.0*Math::exp(-((child["ps_v"]["T2"]-80)**2)/10000.0)
     end
     pp optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length
     sleep 5
@@ -251,7 +278,7 @@ def evaluate_results(optimizer_data)
 end
 
 def select_population(optimizer_data)
-  case optimizer_data["result"][optimizer_data["data"]["iteration"]]["selection"]
+  case optimizer_data["data"]["ga"]["selection"]
   when "ranking"
     all_members = (optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"] + optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"]).uniq
     if optimizer_data["data"]["maximize"]
@@ -264,15 +291,13 @@ def select_population(optimizer_data)
 end
 
 def save_optimizer_data(optimizer_data)
-  File.open("_optimizer_data.json", 'w') {|io| io.print optimizer_data.to_json }
+  File.open("_output.json", 'w') {|io| io.print optimizer_data.to_json }
 end
 
 def optimization_is_finished(optimizer_data)
-  if optimizer_data["data"]["iteration"] < optimizer_data["data"]["max_optimizer_iteration"]
-    return false
-  else
-    return true
-  end
+  b=[]
+  b.push(optimizer_data["data"]["iteration"] <= optimizer_data["data"]["max_optimizer_iteration"])
+  return b.any?
 end
 
 def iterate_run(count)
@@ -282,15 +307,22 @@ def iterate_run(count)
     @prng = Random.new(optimizer_data["data"]["seed"])
   end
   count.times do |i|
+    pp "1"
     generate_parameters_and_submit_runs(optimizer_data)
-    #evaluate_results(optimizer_data)
-    #select_population(optimizer_data)
-    #optimizer_data["data"]["iteration"] += 1
-    #optimizer_data["data"]["seed"] = @prng.marshal_dump
-    #save_optimizer_data(optimizer_data)
-    #if optimization_is_finished(optimizer_data)
-    #  break
-    #end
+    pp "2"
+    evaluate_results(optimizer_data)
+    pp "3"
+    select_population(optimizer_data)
+    pp "4"
+    optimizer_data["data"]["iteration"] += 1
+    pp "5"
+    optimizer_data["data"]["seed"] = @prng.marshal_dump
+    pp "6"
+    save_optimizer_data(optimizer_data)
+    if optimization_is_finished(optimizer_data)
+      pp "7"
+      break
+    end
   end
 end
 
@@ -327,3 +359,4 @@ if target_simulator.blank?
 end
 iterate_run(input_data["operation"]["settings"]["iteration"])
 #--end --
+pp "8"

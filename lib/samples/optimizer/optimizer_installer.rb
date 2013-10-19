@@ -305,7 +305,7 @@ class SimulatorSelect
   end
 
   def select_host(str)
-    hosts = Host.all.select{|h| h.executable_simulator_ids.include?(@@sim.to_param)}
+    hosts = Host.all.select{|h| h if h.executable_simulator_ids.map{|id| id.to_s}.include?(@@sim.to_param)}.compact
     if (str == "0" or str.to_i > 0) and (@@target_sims.count > str.to_i)
       @@host.push(hosts[str.to_i])
     else
@@ -330,7 +330,7 @@ class SimulatorSelect
     TermColor.green
     puts "install stage: "+@@steps[@@step_counter+1]
     TermColor.reset
-    hosts = Host.all.select{|h| h.executable_simulator_ids.include?(@@sim.to_param)}
+    hosts = Host.all.select{|h| h if h.executable_simulator_ids.map{|id| id.to_s}.include?(@@sim.to_param)}.compact
     if hosts.length == 0
       TermColor.red
       puts "*****************************************"
