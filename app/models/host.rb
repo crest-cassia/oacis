@@ -99,28 +99,38 @@ class Host
     end
   end
 
-  def check_submitted_job_status
+  def check_submitted_job_status(logger)
     return if submitted_runs.count == 0
     start_ssh do |ssh|
       # check if job is finished
       submitted_runs.each do |run|
-        if run.status == :cancelled
-          cancel_job(ssh, run)
-          remove_remote_files(ssh, run)
-          run.submitted_to = nil
-          run.destroy
-          next
-        end
-        case remote_status(ssh, run)
-        when :submitted
-          # DO NOTHING
-        when :running
-          if run.status == :submitted
-            run.status = :running
-            run.save
+        begin
+          if run.status == :cancelled
+            cancel_job(ssh, run)
+            remove_remote_files(ssh, run)
+            run.submitted_to = nil
+            run.destroy
+            next
           end
-        when :includable, :unknown
-          include_result(ssh, run)
+          case remote_status(ssh, run)
+          when :submitted
+            # DO NOTHING
+          when :running
+            if run.status == :submitted
+              run.status = :running
+              run.save
+            end
+          when :includable, :unknown
+            include_result(ssh, run)
+          end
+        rescue => ex
+          logger.error("Error in Host#check_submitted_job_status: #{ex.inspect}")
+          logger.error("run:\"#{run.to_param.to_s}\" is failed")
+          if run.result.present?
+            run.result = "System_message:_output.json is not stored. More detail is written in log files."
+          end
+          run.status = :failed
+          run.save!
         end
       end
     end
