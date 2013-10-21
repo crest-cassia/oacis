@@ -33,6 +33,34 @@ describe ParameterSetsController do
     end
   end
 
+  describe "GET neighbor" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 0)
+      @base_ps = sim.parameter_sets.create!( {v: { "L" => 30, "T" => 2.0}} )
+      @ps1 = sim.parameter_sets.create!( {v: { "L" => 40, "T" => 2.0}} )
+      @ps2 = sim.parameter_sets.create!( {v: { "L" => 30, "T" => 1.5}} )
+
+      get 'neighbor', {id: @base_ps, format: :json}, valid_session
+    end
+
+    it "returns http success" do
+      response.should be_success
+    end
+
+    it "returns neighbor parameter sets in JSON" do
+      body = JSON.parse(response.body)
+      body.should be_a(Hash)
+      expected = { "L" => [nil, JSON.parse(@ps1.to_json)], "T" => [JSON.parse(@ps2.to_json), nil] }
+      body.should eq expected
+    end
+
+    it "returns upper neighbor parameter_set when 'increment_key' is specified"
+
+    it "returns lower neighbor parameter_set when 'decrement_key' is specified"
+  end
+
   describe "GET new" do
 
     before(:each) do

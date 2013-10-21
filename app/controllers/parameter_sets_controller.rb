@@ -8,6 +8,22 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  def neighbor
+    @param_set = ParameterSet.find(params[:id])
+    neighbor = nil
+    if params[:increment_key]
+      neighbor = @param_set.neighbor_parameter_sets[ params[:increment_key] ][1]
+    elsif params[:decrement_key]
+      neighbor = @param_set.neighbor_parameter_sets[ params[:decrement_key] ][0]
+    else
+      neighbor = @param_set.neighbor_parameter_sets
+    end
+
+    respond_to do |format|
+      format.json { render json: neighbor}
+    end
+  end
+
   def new
     simulator = Simulator.find(params[:simulator_id])
     v = {}

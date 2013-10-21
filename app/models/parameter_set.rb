@@ -40,7 +40,7 @@ class ParameterSet
     h = {}
     simulator.parameter_definitions.map(&:key).each do |key|
       similar = parameter_sets_with_different(key)
-      idx = similar.distinct("v.#{key}").index(v[key])
+      idx = similar.map{|ps| ps.v[key]}.index(v[key])
       neighbors = Array.new(2)
       neighbors[0] = similar[idx-1] if idx > 0
       neighbors[1] = similar[idx+1] if idx + 1 < similar.count
