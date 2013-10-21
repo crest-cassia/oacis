@@ -131,7 +131,6 @@ class Host
           end
           run.status = :failed
           run.save!
-          next
         end
       end
     end
