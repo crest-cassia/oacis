@@ -137,7 +137,7 @@ class Analysis
   def delete_dir
     # if self.analyzable_id.nil, parent Analyzable item is already destroyed.
     # Therefore, self.dir raises an exception
-    if self.analyzable and File.directory?(self.dir)
+    if self.analyzable && !self.analyzable.destroyed? && File.directory?(self.dir)
       FileUtils.rm_r(self.dir)
     end
   end
