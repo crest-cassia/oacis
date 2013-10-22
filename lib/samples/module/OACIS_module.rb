@@ -1,7 +1,7 @@
 require 'pp'
 require 'json'
 
-require Rails.root.to_s+'/lib/samples/optimizer/optimizer.rb'
+require Rails.root.to_s+'/lib/samples/module/optimizer/optimizer.rb'
 
 def input_data
   @input_data ||= fetch_input_data
