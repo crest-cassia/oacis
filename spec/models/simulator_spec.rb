@@ -100,7 +100,11 @@ describe Simulator do
   describe "#destroy" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1
+                                )
     end
 
     it "calls destroy of dependent parameter_sets when destroyed" do
@@ -113,6 +117,12 @@ describe Simulator do
       expect {
         @sim.destroy
       }.to change { Run.count }.by(-1)
+    end
+
+    it "calls destroy of dependent analyses when destroyed" do
+      expect {
+        @sim.destroy
+      }.to change { Analyzer.count }.by(-1)
     end
   end
 
