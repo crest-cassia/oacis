@@ -40,7 +40,7 @@ class Selector
       current_step.init(@data_cash)
       while str = STDIN.gets
         exit(0) if ["exit","quit","bye"].include?(str.chomp)
-        if str.chomp == ""
+        if str.chomp == "" or /^\s*#/ =~ str.chomp
           next
         end
         if ["reset","restart"].include?(str.chomp)
