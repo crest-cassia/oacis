@@ -26,14 +26,14 @@ sim.support_omp = false
 sim.description = "A toy problem for the optimizer."
 pp sim
 sim.save!
-anz = Analyzer.where(name: "Sample_Analyzer_for_optimizer").first
+anz = Analyzer.where(name: "Sample_Analyzer_for_toy_problem01").first
 if anz.blank?
   anz = Analyzer.new
   anz.simulator_id=sim.to_param
   anz.auto_run = :yes
   anz.type = :on_run
-  anz.name = "Sample_Analyzer_for_optimizer"
-  anz.command = "ruby "+Rails.root.to_s+"/lib/samples/optimizer/sample_analyzer.rb"
+  anz.name = "Sample_Analyzer_for_toy_problem01"
+  anz.command = "ruby "+Rails.root.to_s+"/lib/samples/optimizer/toy_problem01_analyzer.rb"
   anz.description = "get Fitness from a result on run."
   anz.save!
 else
