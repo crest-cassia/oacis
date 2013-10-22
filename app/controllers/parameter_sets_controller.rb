@@ -103,7 +103,7 @@ class ParameterSetsController < ApplicationController
   def create_multiple(simulator, parameters)
     mapped = simulator.parameter_definitions.map do |defn|
       key = defn.key
-      if parameters[key] and JSON.is_not_json?(parameters[key])
+      if parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
         casted = parameters[key].split(',').map {|x|
           ParametersUtil.cast_value( x.strip, defn["type"] )
         }

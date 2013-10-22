@@ -88,7 +88,8 @@ module JSON
   def self.is_json?(foo)
     begin
       return false unless foo.is_a?(String)
-      JSON.parse(foo).all?
+      JSON.parse(foo)
+      true
     rescue JSON::ParserError
       false
     end
