@@ -166,14 +166,6 @@ class SimulatorsController < ApplicationController
     render json: progress_overview
   end
 
-  def analyzers
-    simulator = Simulator.find(params[:id])
-    analyzers = simulator.analyzers
-    respond_to do |format|
-      format.json { render json: analyzers }
-    end
-  end
-
   def plottable
     simulator = Simulator.find(params[:id])
 

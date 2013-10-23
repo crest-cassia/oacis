@@ -14,7 +14,6 @@ AcmProto::Application.routes.draw do
       get "_parameter_sets_status_count" # for ajax, progress bar
       get "_analyzer_list" # for ajax, datatables
       get "_progress" # for progress table
-      get "analyzers" # for plotting tool , DELETE ME LATER
       get "plottable" # for plotting tool
       get "distinct" # for plotting tool, returns parameter keys and distinct values
     end
