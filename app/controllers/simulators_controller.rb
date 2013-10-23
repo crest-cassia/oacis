@@ -207,4 +207,19 @@ class SimulatorsController < ApplicationController
     end
     ret
   end
+
+  public
+  def distinct
+    simulator = Simulator.find(params[:id])
+    distinct_parameters = {}
+    simulator.parameter_definitions.each do |pd|
+      key = pd.key
+      values = simulator.parameter_sets.distinct("v.#{key}").sort
+      distinct_parameters[key] = values
+    end
+
+    respond_to do |format|
+      format.json { render json: distinct_parameters}
+    end
+  end
 end
