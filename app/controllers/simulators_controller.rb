@@ -173,4 +173,38 @@ class SimulatorsController < ApplicationController
       format.json { render json: analyzers }
     end
   end
+
+  def plottable
+    simulator = Simulator.find(params[:id])
+
+    run = Run.where(simulator: simulator, status: :finished).first
+    list = plottable_keys(run.try(:result)).map {|key| ".#{key}" }
+
+    simulator.analyzers.each do |azr|
+      anl = azr.analyses.where(status: :finished).first
+      keys = plottable_keys(anl.try(:result)).map do |key|
+        "#{azr.name}.#{key}"
+      end
+      list += keys
+    end
+
+    respond_to do |format|
+      format.json { render json: list }
+    end
+  end
+
+  private
+  def plottable_keys(result)
+    ret = []
+    if result.is_a?(Hash)
+      result.each_pair do |key, val|
+        if val.is_a?(Numeric)
+          ret << key
+        elsif val.is_a?(Hash)
+          ret += plottable_keys(val).map {|x| "#{key}.#{x}" }
+        end
+      end
+    end
+    ret
+  end
 end

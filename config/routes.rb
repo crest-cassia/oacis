@@ -15,6 +15,7 @@ AcmProto::Application.routes.draw do
       get "_analyzer_list" # for ajax, datatables
       get "_progress" # for progress table
       get "analyzers" # for plotting tool
+      get "plottable" # for plotting tool
     end
     resources :parameter_sets, only: ["show","new","create","destroy"] do
       member do
