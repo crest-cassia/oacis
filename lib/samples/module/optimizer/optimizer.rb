@@ -60,14 +60,17 @@ class Optimizer
 
   def create_optimizer_data
     h={}
+    mutation_target_parameters=@input_data["operation"]["settings"]["managed_parameters"].map{|mpara| mpara["key"]}
+    default_number_of_individuals_crossover=(@input_data["population"]/2).to_i
+    default_number_of_individuals_mutation=@input_data["population"]-default_number_of_individuals_crossover
     h["data"]={"iteration"=>0,
               "max_optimizer_iteration"=>@input_data["iteration"],
               "population_num"=>@input_data["population"],
               "maximize"=>@input_data["operation"]["settings"]["maximize"],
               "seed"=>@input_data["seed"],
               "type"=>"GA",
-              "operation"=>[{"crossover"=>{"count"=>(@input_data["population"]/2).to_i,"type"=>"1point","selection"=>{"tournament"=>{"tournament_size"=>4}}}},
-                            {"mutation"=>{"count"=>@input_data["population"]-(@input_data["population"]/2).to_i,"type"=>"uniform_distribution","target_parameters"=>["p1","p2"]}}
+              "operation"=>[{"crossover"=>{"count"=>default_number_of_individuals_crossover,"type"=>"1point","selection"=>{"tournament"=>{"tournament_size"=>4}}}},
+                            {"mutation"=>{"count"=>default_number_of_individuals_mutation,"type"=>"uniform_distribution","target_parameters"=>mutation_target_parameters}}
                            ],
                "selection"=>"ranking"
               }
@@ -287,7 +290,7 @@ class Optimizer
 
   def evaluate_results
     target_field = "Fitness"
-    begin
+    while true do
       optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].each do |child|
         if child["val"].blank?
           h = {}
@@ -305,9 +308,10 @@ class Optimizer
           end
         end
       end
-      pp optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length
+      pp "finished_run_count:"+optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length.to_s
+      break if optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length >= optimizer_data["data"]["population_num"]
       sleep 5
-    end while optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length < optimizer_data["data"]["population_num"]
+    end
   end
 
   def select_population
@@ -357,26 +361,3 @@ class Optimizer
     end
   end
 end
-
-#--Unit tests--
-#_input="{\"target\":\"{\\\"Simulator\\\":\\\"526224564e59813f40000001\\\",\\\"Analyzer\\\":\\\"526224564e59813f40000004\\\",\\\"Host\\\":[\\\"526224e24e5981050c000001\\\"]}\",\"operation\":\"{\\\"module\\\":\\\"optimization\\\",\\\"type\\\":\\\"GA\\\",\\\"settings\\\":{\\\"iteration\\\":2,\\\"population\\\":32,\\\"maximize\\\":true,\\\"seed\\\":0,\\\"managed_parameters\\\":[{\\\"key\\\":\\\"p1\\\",\\\"type\\\":\\\"Float\\\",\\\"default\\\":0.0,\\\"descritption\\\":null,\\\"range\\\":[-5.0,5.0,0.1]},{\\\"key\\\":\\\"p2\\\",\\\"type\\\":\\\"Float\\\",\\\"default\\\":0.0,\\\"descritption\\\":null,\\\"range\\\":[-5.0,5.0,0.1]}]}}\",\"_seed\":1348280022}"
-#input_data=JSON.parse(_input) #input_data={"target"=>"{\"Simulator\":\"526224564e59813f40000001\",\"Analyzer\":\"526224564e59813f40000004\",\"Host\":[\"526224e24e5981050c000001\"]}", "operation"=>"{\"module\":\"optimization\",\"type\":\"GA\",\"settings\":{\"iteration\":2,\"population\":32,\"maximize\":true,\"seed\":0,\"managed_parameters\":[{\"key\":\"p1\",\"type\":\"Float\",\"default\":0.0,\"descritption\":null,\"range\":[-5.0,5.0,0.1]},{\"key\":\"p2\",\"type\":\"Float\",\"default\":0.0,\"descritption\":null,\"range\":[-5.0,5.0,0.1]}]}}", "_seed"=>1348280022}
-#opt = Optimizer.new(input_data)
-#pp input_data
-#@prng = Random.new(input_data["operation"]["settings"]["seed"])
-#pp target_simulator
-#pp managed_parameters
-#pp create_children_ga(optimizer_data)
-#optimizer_data["result"].push(template_result)
-#create_children_ga(optimizer_data).each_with_index do |child, i|
-#  optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"][i] = {"ps_v"=>child}
-#end
-#pp optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"]
-#pp n_point_crossover(1, get_parents(optimizer_data, 2))
-#generate_parameters_and_submit_runs(optimizer_data)
-#pp optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"]
-#evaluate_results(optimizer_data)
-#pp optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"]
-#optimizer_data["data"]["iteration"] += 1
-#save_optimizer_data(optimizer_data)
-#--Unit tests--
