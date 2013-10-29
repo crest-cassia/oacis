@@ -22,7 +22,7 @@ def load_input_data
 end
 
 if input_data.blank?
-  puts "_input.json is missing."
+  STDERR.puts "_input.json is missing."
   exit(-1)
 end
 

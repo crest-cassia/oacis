@@ -63,20 +63,14 @@ class Optimizer
 
   def create_optimizer_data
     h={}
-    mutation_target_parameters=@input_data["operation"]["settings"]["managed_parameters"].map{|mpara| mpara["key"]}
-    default_number_of_individuals_crossover=(@input_data["population"]/2).to_i
-    default_number_of_individuals_mutation=@input_data["population"]-default_number_of_individuals_crossover
-    h["data"]={"iteration"=>0,
-              "max_optimizer_iteration"=>@input_data["iteration"],
-              "population_num"=>@input_data["population"],
-              "maximize"=>@input_data["operation"]["settings"]["maximize"],
-              "seed"=>@input_data["seed"],
-              "type"=>@input_data["operation"]["type"],
-              "operation"=>[{"crossover"=>{"count"=>default_number_of_individuals_crossover,"type"=>"1point","selection"=>{"tournament"=>{"tournament_size"=>4}}}},
-                            {"mutation"=>{"count"=>default_number_of_individuals_mutation,"type"=>"uniform_distribution","target_parameters"=>mutation_target_parameters}}
-                           ],
-               "selection"=>"ranking"
-              }
+
+    if optimizer_types.include?(@input_data["operation"]["type"])
+      h["data"]=opt_data[optimizer_types.index(@input_data["operation"]["type"])]
+    else
+      STDERR.puts "optimuzer_type:"+@input_data["operation"]["type"]+" is not supported."
+      exit(-1)
+    end
+
     h["result"]=[]
 
     File.open("_output.json", 'w') {|io| io.print h["result"].to_json }
@@ -84,10 +78,27 @@ class Optimizer
   end
 
   def template_result
-  {"best"=>{},
-   "population"=>[], #[{"ps_v"=>{"dt_1"=>0,"dt_2"=>0},"val"=>0}, ..., {"ps_v"=>{"dt_1"=>100,"dt_2"=>100},"val"=>100}]
-   "children"=>[]
-  }
+    {"best"=>{},
+     "population"=>[], #[{"ps_v"=>{"dt_1"=>0,"dt_2"=>0},"val"=>0}, ..., {"ps_v"=>{"dt_1"=>100,"dt_2"=>100},"val"=>100}]
+     "children"=>[]
+    }
+  end
+
+  def opt_data
+    default_number_of_individuals_crossover=(@input_data["population"]/2).to_i
+    default_number_of_individuals_mutation=@input_data["population"]-default_number_of_individuals_crossover
+    mutation_target_parameters=@input_data["operation"]["settings"]["managed_parameters"].map{|mpara| mpara["key"]}
+    {"iteration"=>0,
+     "max_optimizer_iteration"=>@input_data["iteration"],
+     "population_num"=>@input_data["population"],
+     "maximize"=>@input_data["operation"]["settings"]["maximize"],
+     "seed"=>@input_data["seed"],
+     "type"=>@input_data["operation"]["type"],
+     "operation"=>[{"crossover"=>{"count"=>default_number_of_individuals_crossover,"type"=>"1point","selection"=>{"tournament"=>{"tournament_size"=>4}}}},
+                   {"mutation"=>{"count"=>default_number_of_individuals_mutation,"type"=>"uniform_distribution","target_parameters"=>mutation_target_parameters}}
+                  ],
+     "selection"=>"ranking"
+    }
   end
 
   def get_parents(optimizer_data, count)
@@ -136,7 +147,7 @@ class Optimizer
       mutation["target_parameters"].each do |key|
         mpara = managed_parameters.where({key: key}).first
         unless mpara["type"] == "Integer" or mpara["type"] == "Float"
-          puts mpara["type"].to_s+" is not supported in uniform_distribution_mutation."
+          STDERR.puts mpara["type"].to_s+" is not supported in uniform_distribution_mutation."
           exit(-1)
         end
 
@@ -194,7 +205,7 @@ class Optimizer
             end
             children+=op_children[0..op["crossover"]["count"]-1]
           else
-            puts op["crossover"]["type"].to_s+" is not defined in crossover operations."
+            STDERR.puts op["crossover"]["type"].to_s+" is not defined in crossover operations."
             exit(-1)
           end
         when "mutation"
@@ -208,11 +219,11 @@ class Optimizer
             end
             children+=op_children[0..op["mutation"]["count"]-1]
           else
-            puts op["mutation"]["type"].to_s+" is not defined in mutation operations."
+            STDERR.puts op["mutation"]["type"].to_s+" is not defined in mutation operations."
             exit(-1)
           end
         else
-          puts key.to_s+" is not defined as operations."
+          STDERR.puts key.to_s+" is not defined as operations."
           exit(-1)
         end
       end

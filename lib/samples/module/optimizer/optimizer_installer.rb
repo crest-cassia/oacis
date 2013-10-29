@@ -386,7 +386,7 @@ TermColor.green
 puts "This installer regits an optimizer to OACIS."
 
 if target_simulators.count == 0
-  puts "There are no optimization target(simulator) in OACIS."
+  STDERR.puts "There are no optimization target(simulator) in OACIS."
   exit(-1)
 end
 
