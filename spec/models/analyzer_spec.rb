@@ -39,6 +39,13 @@ describe Analyzer do
         analyzer.should_not be_valid
       end
 
+      it "must be unique within simulator" do
+        @sim.analyzers.create(@valid_fields)
+        another_sim = FactoryGirl.create(:simulator, parameter_sets_count:0, runs_count: 0)
+        another_sim.analyzers.build(@valid_fields)
+        another_sim.should be_valid
+      end
+
       it "must be organized with letters, numbers, and underscores" do
         analyzer = @sim.analyzers.build(@valid_fields.update({name:"b l a n k"}))
         analyzer.should_not be_valid

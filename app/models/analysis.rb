@@ -39,13 +39,9 @@ class Analysis
     return paths
   end
 
-  def submit
-    Resque.enqueue(AnalyzerRunner, self.to_param)
-  end
-
-  def destroy( call_super = false )
+  def destroy( called_by_worker = false )
     s = self.status
-    if s == :failed or s == :finished or call_super
+    if s == :failed or s == :finished or called_by_worker
       super
     else
       cancel
@@ -141,7 +137,7 @@ class Analysis
   def delete_dir
     # if self.analyzable_id.nil, parent Analyzable item is already destroyed.
     # Therefore, self.dir raises an exception
-    if self.analyzable and File.directory?(self.dir)
+    if self.analyzable && !self.analyzable.destroyed? && File.directory?(self.dir)
       FileUtils.rm_r(self.dir)
     end
   end

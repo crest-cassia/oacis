@@ -12,7 +12,7 @@ class Analyzer
   belongs_to :simulator
   has_many :analyses, dependent: :destroy
 
-  validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
+  validates :name, presence: true, uniqueness: {scope: :simulator}, format: {with: /\A\w+\z/}
   validates :type, presence: true, 
                    inclusion: {in: [:on_run, :on_parameter_set]}
   validates :command, presence: true

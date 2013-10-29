@@ -12,6 +12,8 @@ describe AnalyzerRunner do
     @arn = @run.analyses.first
     @azr = @arn.analyzer
     @azr.update_attribute(:command, 'echo hello')
+
+    @logger = Logger.new(STDERR)
   end
 
   describe ".perform" do
@@ -25,14 +27,14 @@ describe AnalyzerRunner do
 
       it "calls Analysis#destroy when status is cancelled" do
         expect {
-          AnalyzerRunner.perform(@arn.id)
+          AnalyzerRunner.perform(@logger)
         }.to change { Analysis.count }.by(-1)
       end
 
       it "does not call run_analysis nor include_data methods when cancelled" do
         AnalyzerRunner.should_not_receive(:run_analysis)
         AnalyzerRunner.should_not_receive(:include_data)
-        AnalyzerRunner.perform(@arn.id)
+        AnalyzerRunner.perform(@logger)
       end
     end
 
@@ -234,28 +236,12 @@ describe AnalyzerRunner do
         FileUtils.rm_r(@work_dir) if File.directory?(@work_dir)
       end
 
-      it "raises an exception if the return code of the command is not zero" do
-        lambda {
-          AnalyzerRunner.perform(@arn.to_param)
-        }.should raise_error
+      it "sets status of Analysis to failed when the return code of the command is not zero" do
+        @arn.update_attribute(:status, :created)
+        expect {
+          AnalyzerRunner.perform(@logger)
+        }.to change { @arn.reload.status }.to(:failed)
       end
-    end
-  end
-
-  describe ".on_failure" do
-
-    it "sets status of Analysis to failed" do
-      AnalyzerRunner.__send__(:on_failure, StandardError.new, @arn.to_param)
-      @arn.reload
-      @arn.status.should eq(:failed)
-    end
-
-    it "destroys analysis when its status is cancelled" do
-      @arn.update_attribute(:status, :cancelled)
-      @arn.save!
-      expect {
-        AnalyzerRunner.__send__(:on_failure, StandardError.new, @arn.id)
-      }.to change { Analysis.count }.by(-1)
     end
   end
 end

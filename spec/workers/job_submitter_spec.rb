@@ -10,6 +10,8 @@ describe JobSubmitter do
       FileUtils.mkdir_p(@temp_dir)
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
+
+      @logger = Logger.new(STDERR)
     end
 
     after(:each) do
@@ -21,14 +23,14 @@ describe JobSubmitter do
       @sim.executable_on.push @host
       @sim.save!
       expect {
-        JobSubmitter.perform
+        JobSubmitter.perform(@logger)
       }.to change { Run.where(status: :submitted).count }.by(1)
     end
 
     it "do nothing if there is no 'created' jobs" do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       expect {
-        JobSubmitter.perform
+        JobSubmitter.perform(@logger)
       }.to_not raise_error
     end
   end
