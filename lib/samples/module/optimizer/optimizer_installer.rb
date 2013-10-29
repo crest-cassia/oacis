@@ -1,5 +1,6 @@
 require 'pp'
 require 'json'
+require Rails.root.to_s+'/lib/samples/module/optimizer/optimizer.rb'
 
 class TermColor
   class << self
@@ -76,7 +77,7 @@ class OptimizerSelect
     message
     @step_counter += 1
     @opt_param_counter=0
-    @optimizer_types=["GA"]#["GA","UNDX","PSO","DE"]
+    @optimizer_types=optimizer_types
     @optimizer_desctiptions={"GA"=>"default GA"}
   end
 
@@ -307,6 +308,8 @@ class SimulatorSelect
   def select_simulator(str)
     if (str == "0" or str.to_i > 0) and (@target_sims.count > str.to_i)
       @sim=@target_sims.to_a[str.to_i]
+    elsif @target_sims.map{|sim| sim.name}.include?(str)
+      @sim=@target_sims.map{|sim| sim if sim.name == str}.compact.first
     else
       TermColor.red
       puts "*****************************************"
@@ -380,10 +383,10 @@ def target_simulators
 end
 
 TermColor.green
-puts "This installer regits an optimizer to CM."
+puts "This installer regits an optimizer to OACIS."
 
 if target_simulators.count == 0
-  puts "There are no simulators to optimize in CM."
+  puts "There are no optimization target(simulator) in OACIS."
   exit(-1)
 end
 

@@ -1,5 +1,8 @@
-require 'pp'
 require 'json'
+
+def optimizer_types
+  ["GA"]
+end
 
 class Optimizer
   def initialize(data)
@@ -68,7 +71,7 @@ class Optimizer
               "population_num"=>@input_data["population"],
               "maximize"=>@input_data["operation"]["settings"]["maximize"],
               "seed"=>@input_data["seed"],
-              "type"=>"GA",
+              "type"=>@input_data["operation"]["type"],
               "operation"=>[{"crossover"=>{"count"=>default_number_of_individuals_crossover,"type"=>"1point","selection"=>{"tournament"=>{"tournament_size"=>4}}}},
                             {"mutation"=>{"count"=>default_number_of_individuals_mutation,"type"=>"uniform_distribution","target_parameters"=>mutation_target_parameters}}
                            ],
@@ -181,27 +184,40 @@ class Optimizer
       op.keys.each do |key|
         case key
         when "crossover"
-          (op["crossover"]["count"]/2).times do |i|
-            case op["crossover"]["type"]
-            when "1point"
+          case op["crossover"]["type"]
+          when "1point"
+            op_children=[]
+            while op_children.length <= op["crossover"]["count"]
               n_point_crossover(1, get_parents(optimizer_data, 2)).each do |child|
-                children.push(child)
+                op_children.push(child)
               end
             end
+            children+=op_children[0..op["crossover"]["count"]-1]
+          else
+            puts op["crossover"]["type"].to_s+" is not defined in crossover operations."
+            exit(-1)
           end
         when "mutation"
-          op["mutation"]["count"].times do |i|
-            case op["mutation"]["type"]
-            when "uniform_distribution"
+          case op["mutation"]["type"]
+          when "uniform_distribution"
+            op_children=[]
+            while op_children.length <= op["mutation"]["count"]
               uniform_distribution_mutation(get_parents(optimizer_data, 1)).each do |child|
-                children.push(child)
+                op_children.push(child)
               end
             end
+            children+=op_children[0..op["mutation"]["count"]-1]
+          else
+            puts op["mutation"]["type"].to_s+" is not defined in mutation operations."
+            exit(-1)
           end
+        else
+          puts key.to_s+" is not defined as operations."
+          exit(-1)
         end
       end
-   end
-   children
+    end
+    children
   end
 
   def create_children_ga
@@ -257,7 +273,6 @@ class Optimizer
           ps.v[val["key"]] = val["default"]
         end
       end
-      pp ps
       if ps.save
         run = ps.runs.build
         run.submitted_to_id=@input_data["target"]["Host"].first
@@ -308,7 +323,7 @@ class Optimizer
           end
         end
       end
-      pp "finished_run_count:"+optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length.to_s
+      puts "finished_run_count:"+optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length.to_s
       break if optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length >= optimizer_data["data"]["population_num"]
       sleep 5
     end

@@ -1,4 +1,3 @@
-require 'pp'
 require 'json'
 
 require Rails.root.to_s+'/lib/samples/module/optimizer/optimizer.rb'
@@ -29,9 +28,7 @@ end
 
 case input_data["operation"]["module"]
 when "optimization"
-  case input_data["operation"]["type"]
-  when "GA"
-    opt = Optimizer.new(input_data)
-    opt.run
-  end
+  opt = Optimizer.new(input_data)
+  puts "run optimization prosses"
+  opt.run
 end
