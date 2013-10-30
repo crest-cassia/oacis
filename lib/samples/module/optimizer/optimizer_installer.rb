@@ -77,7 +77,7 @@ class OptimizerSelect
     message
     @step_counter += 1
     @opt_param_counter=0
-    @optimizer_types=optimizer_types
+    @optimizer_types = Optimizer::OPTIMIZER_TYPES
     @optimizer_desctiptions={"GA"=>"default GA"}
   end
 
@@ -104,7 +104,7 @@ class OptimizerSelect
     opt = Simulator.new
     opt.name = @name
     opt.parameter_definitions = opt_parameter_definitions
-    opt.command = "ruby -r "+Rails.root.to_s+"/config/environment "+Rails.root.to_s+"/lib/samples/module/OACIS_module.rb"
+    opt.command = "ruby -r "+Rails.root.to_s+"/config/environment "+Rails.root.to_s+"/lib/samples/module/run_OACIS_module.rb"
     opt.support_input_json = true
     opt.support_mpi = false
     opt.support_omp = false
