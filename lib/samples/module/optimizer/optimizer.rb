@@ -88,7 +88,7 @@ class Optimizer
     default_number_of_individuals_crossover=(@input_data["population"]/2).to_i
     default_number_of_individuals_mutation=@input_data["population"]-default_number_of_individuals_crossover
     mutation_target_parameters=@input_data["operation"]["settings"]["managed_parameters"].map{|mpara| mpara["key"]}
-    {"iteration"=>0,
+    [{"iteration"=>0,
      "max_optimizer_iteration"=>@input_data["iteration"],
      "population_num"=>@input_data["population"],
      "maximize"=>@input_data["operation"]["settings"]["maximize"],
@@ -98,7 +98,7 @@ class Optimizer
                    {"mutation"=>{"count"=>default_number_of_individuals_mutation,"type"=>"uniform_distribution","target_parameters"=>mutation_target_parameters}}
                   ],
      "selection"=>"ranking"
-    }
+    }]
   end
 
   def get_parents(optimizer_data, count)
