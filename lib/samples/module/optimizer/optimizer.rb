@@ -1,22 +1,36 @@
 require 'json'
+require_relative '../OACIS_module.rb'
 
-class Optimizer
+class Optimizer < OacisModule
 
   OPTIMIZER_TYPES = ["GA"]
 
   def initialize(data)
     @input_data = data
-  end
 
-  def run
     if target_simulator.blank?
       puts "Target simulator is missing."
       exit(-1)
     end
-    iterate_run(optimizer_data["data"]["max_optimizer_iteration"])
+
+    if optimizer_data["data"]["seed"].class == String
+      @prng = Random.new.marshal_load(JSON.parse(optimizer_data["data"]["seed"]))
+    else
+      @prng = Random.new(optimizer_data["data"]["seed"])
+    end
   end
 
   private
+  def finished?
+    if @num_iterations >= optimizer_data["data"]["max_optimizer_iteration"]
+      return true
+    end
+
+    b=[]
+    b.push(optimizer_data["data"]["iteration"] > optimizer_data["data"]["max_optimizer_iteration"])
+    return b.any?
+  end
+
   def target_simulator
     @target_simulator ||= Simulator.find(@input_data["target"]["Simulator"])
   end
@@ -239,7 +253,13 @@ class Optimizer
     children
   end
 
+  def generate_runs
+    generate_parameters_and_submit_runs
+  end
+
   def generate_parameters_and_submit_runs
+    generated = []
+
     optimizer_data["result"].push(template_result)
     if optimizer_data["data"]["iteration"] == 0
       create_children_ga.each_with_index do |child, i|
@@ -264,6 +284,7 @@ class Optimizer
         run = ps.runs.build
         run.submitted_to_id=@input_data["target"]["Host"].first
         run.save
+        generated << run
       else
         #if this parameter set has been saved in OACIS, optimizer tries to make one run on the parameter set.
         ps = target_simulator.parameter_sets.where(v: ps.v).first
@@ -271,9 +292,11 @@ class Optimizer
           run = ps.runs.build
           run.submitted_to_id=@input_data["target"]["Host"].first
           run.save
+          generated << run
         end
       end
     end
+    generated
   end
 
   def target_field(ps)
@@ -292,28 +315,26 @@ class Optimizer
 
   def evaluate_results
     target_field = "Fitness"
-    while true do
-      optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].each do |child|
-        if child["val"].blank?
-          h = {}
-          managed_parameters.each do |val|
-            if child["ps_v"][val["key"]].present?
-              h["v."+val["key"]] = child["ps_v"][val["key"]]
-            else
-              h["v."+val["key"]] = val["default"]
-            end
-          end
-          ps = target_simulator.parameter_sets.where(h).first
-          val = target_field(ps)
-          if val.present?
-            child["val"] = val
+
+    optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].each do |child|
+      if child["val"].blank?
+        h = {}
+        managed_parameters.each do |val|
+          if child["ps_v"][val["key"]].present?
+            h["v."+val["key"]] = child["ps_v"][val["key"]]
+          else
+            h["v."+val["key"]] = val["default"]
           end
         end
+        ps = target_simulator.parameter_sets.where(h).first
+        val = target_field(ps)
+        if val.present?
+          child["val"] = val
+        end
       end
-      puts "finished_run_count:"+optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length.to_s
-      break if optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length >= optimizer_data["data"]["population_num"]
-      sleep 5
     end
+    puts "finished_run_count:"+optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length.to_s
+    raise "error in evaluate_results" unless optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].map{|x| x["val"] if x["val"].present?}.compact.length >= optimizer_data["data"]["population_num"]
   end
 
   def select_population
@@ -333,33 +354,14 @@ class Optimizer
     end
   end
 
-  def save_optimizer_data
-    File.open("_output.json", 'w') {|io| io.print optimizer_data.to_json }
+  def dump_serialized_data( output_file = "_output.json" )
+    optimizer_data["data"]["iteration"] = @num_iterations
+    optimizer_data["data"]["seed"] = @prng.marshal_dump.to_json
+    File.open(output_file, 'w') {|io| io.print optimizer_data.to_json }
   end
 
-  def optimization_is_finished
-    b=[]
-    b.push(optimizer_data["data"]["iteration"] > optimizer_data["data"]["max_optimizer_iteration"])
-    return b.any?
-  end
-
-  def iterate_run(count)
-    if optimizer_data["data"]["seed"].class == String
-      @prng = Random.new.marshal_load(JSON.parse(optimizer_data["data"]["seed"]))
-    else
-      @prng = Random.new(optimizer_data["data"]["seed"])
-    end
-    count.times do |i|
-      puts "iteration:"+optimizer_data["data"]["iteration"].to_s
-      generate_parameters_and_submit_runs
-      evaluate_results
-      select_population
-      optimizer_data["data"]["seed"] = @prng.marshal_dump.to_json
-      save_optimizer_data
-      optimizer_data["data"]["iteration"] += 1
-      if optimization_is_finished
-        break
-      end
-    end
+  def evaluate_runs
+    evaluate_results
+    select_population
   end
 end
