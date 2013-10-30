@@ -18,29 +18,11 @@ class Optimizer
 
   private
   def target_simulator
-    @target_simulator ||= fetch_target_simulator
-  end
-
-  def fetch_target_simulator
-    target_simulator = load_target_simulator
-    target_simulator
-  end
-
-  def load_target_simulator
-    Simulator.find(@input_data["target"]["Simulator"])
+    @target_simulator ||= Simulator.find(@input_data["target"]["Simulator"])
   end
 
   def target_analzer
-    @target_analyzer ||= fetch_target_analyzer
-  end
-
-  def fetch_target_analyzer
-    target_analyser = load_target_analyzer
-    target_analyser
-  end
-
-  def load_target_analyzer
-    Analyzer.find(@input_data["target"]["Analyzer"])
+    @target_analyzer ||= Analyzer.find(@input_data["target"]["Analyzer"])
   end
 
   def managed_parameters
@@ -52,12 +34,7 @@ class Optimizer
   end
 
   def optimizer_data
-    @optimizer_data ||= fetch_optimizer_data
-  end
-
-  def fetch_optimizer_data
-    optimizer_data = create_optimizer_data
-    optimizer_data
+    @optimizer_data ||= create_optimizer_data
   end
 
   def create_optimizer_data
