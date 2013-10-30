@@ -150,10 +150,12 @@ class OptimizerSelect
   def select_analyzer(str)
     if (str == "0" or str.to_i > 0) and (@sim.analyzers.count > str.to_i)
       @anz=@sim.analyzers.to_a[str.to_i]
+    elsif @sim.analyzers.map{|anz| anz.name}.include?(str)
+      @anz=@sim.analyzers.map{|anz| anz if anz.name == str}.compact.first
     else
       TermColor.red
       puts "*****************************************"
-      puts "***ERROR:enter a number(Integer less than "+@sim.analyzers.count.to_s+")***"
+      puts "***ERROR:enter a name of analyzers or a number(Integer less than "+@sim.analyzers.count.to_s+")***"
       puts "*****************************************"
       TermColor.reset
       @step_counter -=1
@@ -313,7 +315,7 @@ class SimulatorSelect
     else
       TermColor.red
       puts "*****************************************"
-      puts "***ERROR:enter a number(Integer less than "+@target_sims.count.to_s+")***"
+      puts "***ERROR:enter a name of simulators or a number(Integer less than "+@target_sims.count.to_s+")***"
       puts "*****************************************"
       TermColor.reset
       @step_counter -=1
@@ -322,12 +324,14 @@ class SimulatorSelect
 
   def select_host(str)
     hosts = Host.all.select{|h| h if h.executable_simulator_ids.map{|id| id.to_s}.include?(@sim.to_param)}.compact
-    if (str == "0" or str.to_i > 0) and (@target_sims.count > str.to_i)
+    if (str == "0" or str.to_i > 0) and (hosts.count > str.to_i)
       @host.push(hosts[str.to_i])
+    elsif hosts.map{|host| host.name}.include?(str)
+      @host.push(hosts.map{|host| host if host.name == str}.compact.first)
     else
       TermColor.red
       puts "*****************************************"
-      puts "***ERROR:enter a number(Integer less than "+@target_sims.count.to_s+")***"
+      puts "***ERROR:enter a name of executable hosts or a number(Integer less than "+@target_sims.count.to_s+")***"
       puts "*****************************************"
       TermColor.reset
       @step_counter -=1
