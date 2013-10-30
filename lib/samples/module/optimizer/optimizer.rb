@@ -21,13 +21,28 @@ class Optimizer < OacisModule
   end
 
   private
-  def finished?
-    if @num_iterations >= optimizer_data["data"]["max_optimizer_iteration"]
-      return true
-    end
+  #override
+  def generate_runs
+    generate_parameters_and_submit_runs
+  end
 
+  #override
+  def evaluate_runs
+    evaluate_results
+    select_population
+  end
+
+  #override
+  def dump_serialized_data( output_file = "_output.json" )
+    optimizer_data["data"]["iteration"] = @num_iterations
+    optimizer_data["data"]["seed"] = @prng.marshal_dump.to_json
+    File.open(output_file, 'w') {|io| io.print optimizer_data.to_json }
+  end
+
+  #override
+  def finished?
     b=[]
-    b.push(optimizer_data["data"]["iteration"] > optimizer_data["data"]["max_optimizer_iteration"])
+    b.push(@num_iterations >= optimizer_data["data"]["max_optimizer_iteration"])
     return b.any?
   end
 
@@ -253,10 +268,6 @@ class Optimizer < OacisModule
     children
   end
 
-  def generate_runs
-    generate_parameters_and_submit_runs
-  end
-
   def generate_parameters_and_submit_runs
     generated = []
 
@@ -352,16 +363,5 @@ class Optimizer < OacisModule
       end
       optimizer_data["result"][optimizer_data["data"]["iteration"]]["best"] = optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"][0]
     end
-  end
-
-  def dump_serialized_data( output_file = "_output.json" )
-    optimizer_data["data"]["iteration"] = @num_iterations
-    optimizer_data["data"]["seed"] = @prng.marshal_dump.to_json
-    File.open(output_file, 'w') {|io| io.print optimizer_data.to_json }
-  end
-
-  def evaluate_runs
-    evaluate_results
-    select_population
   end
 end
