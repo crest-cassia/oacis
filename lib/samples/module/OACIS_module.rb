@@ -2,15 +2,6 @@ require 'json'
 
 require_relative 'optimizer/optimizer.rb'
 
-def input_data
-  @input_data ||= fetch_input_data
-end
-
-def fetch_input_data
-  input_data = load_input_data
-  input_data
-end
-
 def load_input_data
   if File.exist?("_input.json")
     io = File.open('_input.json', 'r')
@@ -20,6 +11,8 @@ def load_input_data
     return parsed
   end
 end
+
+input_data = load_input_data
 
 if input_data.blank?
   STDERR.puts "_input.json is missing."
