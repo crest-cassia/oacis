@@ -77,7 +77,7 @@ class OptimizerSelect
     message
     @step_counter += 1
     @opt_param_counter=0
-    @optimizer_types=optimizer_types
+    @optimizer_types = Optimizer::OPTIMIZER_TYPES
     @optimizer_desctiptions={"GA"=>"default GA"}
   end
 

@@ -1,10 +1,9 @@
 require 'json'
 
-def optimizer_types
-  ["GA"]
-end
-
 class Optimizer
+
+  OPTIMIZER_TYPES = ["GA"]
+
   def initialize(data)
     @input_data = data
   end
@@ -64,8 +63,8 @@ class Optimizer
   def create_optimizer_data
     h={}
 
-    if optimizer_types.include?(@input_data["operation"]["type"])
-      h["data"]=opt_data[optimizer_types.index(@input_data["operation"]["type"])]
+    if OPTIMIZER_TYPES.include?(@input_data["operation"]["type"])
+      h["data"]=opt_data[OPTIMIZER_TYPES.index(@input_data["operation"]["type"])]
     else
       STDERR.puts "optimuzer_type:"+@input_data["operation"]["type"]+" is not supported."
       exit(-1)
