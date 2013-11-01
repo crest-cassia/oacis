@@ -33,7 +33,8 @@ class Optimizer < OacisModule
   end
 
   #override
-  def dump_serialized_data( output_file = "_output.json" )
+  def dump_serialized_data
+    output_file = "_output.json"
     optimizer_data["data"]["iteration"] = @num_iterations
     optimizer_data["data"]["seed"] = @prng.marshal_dump.to_json
     File.open(output_file, 'w') {|io| io.print optimizer_data.to_json }

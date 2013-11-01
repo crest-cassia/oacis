@@ -2,6 +2,8 @@ require 'json'
 
 class OacisModule
 
+  WAIT_INTERVAL = 5
+
   def initialize(input_data)
     raise "IMPLEMENT ME"
   end
@@ -14,7 +16,7 @@ class OacisModule
       wait_runs( generated_runs )
       evaluate_runs
       @num_iterations += 1
-      dump_serialized_data( "_output.json" )
+      dump_serialized_data
       break if finished?
     end
   end
@@ -24,27 +26,30 @@ class OacisModule
   end
 
   def wait_runs( generated_runs )
-    auto_run_analyzers = Analyzer.where(type: :on_run, auto_run: :yes)
     loop do
-      finished = generated_runs.all? {|run|
+      runs_finished = generated_runs.all? {|run|
         run.reload unless run.status == :finished or run.status == :failed
         if run.status == :failed
           raise "Run #{run} failed"
         elsif run.status == :finished
-          all_analyzer_finished = auto_run_analyzers.all? do |azr|
-            anl = run.analyses.where(analyzer: azr).first
-            if anl and anl.status == :failed
-              raise "Analysis #{anl} failed" if anl.status == :failed
-            end
-            anl and anl.status == :finished
-          end
-          all_analyzer_finished
+          all_analyzer_finished( run )
         else
           false
         end
       }
-      break if finished
-      sleep 5
+      break if runs_finished
+      sleep WAIT_INTERVAL
+    end
+  end
+
+  def all_analyzer_finished( run )
+    auto_run_analyzers = run.simulator.analyzers.where(type: :on_run, auto_run: :yes)
+    auto_run_analyzers.all? do |azr|
+      anl = run.analyses.where(analyzer: azr).last
+      if anl and anl.status == :failed
+        raise "Analysis #{anl} failed" if anl.status == :failed
+      end
+      anl and anl.status == :finished
     end
   end
 
@@ -56,7 +61,7 @@ class OacisModule
     raise "IMPLEMENT ME"
   end
 
-  def dump_serialized_data( output_file )
+  def dump_serialized_data
     raise "IMPLEMENT ME"
   end
 end
