@@ -7,6 +7,9 @@ class Optimizer < OacisModule
 
   def initialize(data)
     @input_data = data
+    @input_data["target"]=JSON.parse(@input_data["target"])
+    @input_data["operation"]=JSON.parse(@input_data["operation"])
+
 
     if target_simulator.blank?
       puts "Target simulator is missing."
