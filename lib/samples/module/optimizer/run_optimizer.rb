@@ -1,6 +1,6 @@
 require 'json'
 
-require_relative 'optimizer/optimizer.rb'
+require_relative 'optimizer.rb'
 
 def load_input_data
   if File.exist?("_input.json")
