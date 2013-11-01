@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>parameter progress overview</title>
+<style>
+
+@import url(css/parameter-progress/style.css);
+
+.background {
+  fill: #eee;
+}
+
+line {
+  stroke: #fff;
+}
+
+text.active {
+  fill: red;
+}
+
+div#pop-up {
+  display: none;
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  border: 1px solid #bbbbbb;
+  background: rgba(0,0,0,0.5);
+  padding: 5px 10px 5px 10px;
+  -moz-border-radius: 5px 5px;
+  border-radius: 5px 5px;
+}
+
+div#pop-up-title {
+  font-size: 15px;
+  width: 200px;
+  margin-bottom: 4px;
+  font-weight: bolder;
+}
+
+aside {
+  /*font-size: small;*/
+  right: 0;
+  position: absolute;
+  /*width: 180px;*/
+}
+
+div#pop-up-content {
+  font-size: 12px;
+}
+
+div#pop-up-desc {
+  width: 100px;
+}
+
+div#pop-up-img {
+  font-size: 30px;
+  font-weight: bolder;
+}
+
+</style>
+<script src="js/d3.v3.js"></script>
+
+<header>
+</header>
+
+<aside style="margin-top:80px;">
+<p id="total-parameters">Total parameters value sets: </p>
+<p id="finished-parameters">Finished parameters value sets: </p>
+<p>Progress each parameter set:<br>0%-----100%<div id="color-map"></div></p>
+<p>Column Parameter: <select id="column-parameter"></select></p>
+<p>Row Parameter: <select id="row-parameter"></select></p>
+</aside>
+
+<script src="js/parameter-progress-overview.js"></script>
+<!--script>
+var url = "data/parameter-progress-sample.json";
+load_parameter_progress(url);
+</script-->

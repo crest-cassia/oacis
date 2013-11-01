@@ -129,4 +129,13 @@ class SimulatorsController < ApplicationController
   def _analyzer_list
     render json: AnalyzersListDatatable.new(view_context)
   end
+
+  def _progress
+    sample = <<EOS
+{"total_parameters":25,"finished_parameters":23,"progress":[{"parameter_pair":["b","a"],"total":1,"each_finish":[{"value":[-2.0,-2.0],"finish":0.0},{"value":[-2.0,-1.0],"finish":1.0},{"value":[-2.0,0.0],"finish":1.0},{"value":[-2.0,1.0],"finish":1.0},{"value":[-2.0,2.0],"finish":1.0},{"value":[-1.0,-2.0],"finish":1.0},{"value":[-1.0,-1.0],"finish":1.0},{"value":[-1.0,0.0],"finish":1.0},{"value":[-1.0,1.0],"finish":1.0},{"value":[-1.0,2.0],"finish":1.0},{"value":[0.0,-2.0],"finish":1.0},{"value":[0.0,-1.0],"finish":1.0},{"value":[0.0,0.0],"finish":1.0},{"value":[0.0,1.0],"finish":1.0},{"value":[0.0,2.0],"finish":0.0},{"value":[1.0,-2.0],"finish":1.0},{"value":[1.0,-1.0],"finish":1.0},{"value":[1.0,0.0],"finish":1.0},{"value":[1.0,1.0],"finish":1.0},{"value":[1.0,2.0],"finish":1.0},{"value":[2.0,-2.0],"finish":1.0},{"value":[2.0,-1.0],"finish":1.0},{"value":[2.0,0.0],"finish":1.0},{"value":[2.0,1.0],"finish":1.0},{"value":[2.0,2.0],"finish":1.0}]}],"parameters":[{"name":"a","values":[-2.0,-1.0,0.0,1.0,2.0]},{"name":"b","values":[-2.0,-1.0,0.0,1.0,2.0]}]}
+EOS
+    parsed = JSON.parse(sample)
+    render json: parsed
+  end
+
 end
