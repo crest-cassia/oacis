@@ -19,11 +19,7 @@ class OacisModule
     end
   end
 
-  def select_next_parameter_sets
-    raise "IMPLEMENT ME"
-  end
-
-  def generate_parameter_sets_and_runs( next_jobs )
+  def generate_runs
     raise "IMPLEMENT ME"
   end
 
