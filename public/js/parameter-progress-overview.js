@@ -53,16 +53,16 @@ function pcolormap(v) {
 }
 
 var cmap = d3.select('#color-map').append("svg")
-    .attr("id", "color-map")
-    .attr("width", 70)
-    .attr("height", 7);
+    .attr("id", "color-map-svg")
+    .attr("width", 200)
+    .attr("height", 20);
 for (var i = 0.0; i < 10.0; i += 1.0) {
     cmap.append("rect")
         .attr("class", "cell")
-        .attr("x", i * 7.0)
+        .attr("x", i * 20.0)
         .attr("y", 0.0)
-        .attr("width", 6)
-        .attr("height", 6)
+        .attr("width", 19)
+        .attr("height", 19)
         .style("fill", function(d) {
           return pcolormap(i / 10.0);});
           //return d3.hsl(i * 360.0 / 10.0, 0.8, 0.5).toString();});
