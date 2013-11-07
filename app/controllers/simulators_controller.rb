@@ -131,11 +131,49 @@ class SimulatorsController < ApplicationController
   end
 
   def _progress
+    sim = Simulator.find(params[:id])
+    total_runs = Run.where(simulator: sim).count
+    finished_runs = Run.where(simulator: sim, status: :finished).count
+    parameter_pair = ["beta", "h"]
+    each_finish = ParameterSet.where(simulator: sim).map do |ps|
+      total = ps.runs.count
+      finished = ps.runs.where(status: :finished).count
+      {"value" => [ ps.v["beta"], ps.v["h"] ], "finish" => finished.to_f / total }
+    end
+    parameters = [
+      {"name" => "h", "values" => sim.parameter_sets.distinct("v.h").sort},
+      {"name" => "beta", "values" => sim.parameter_sets.distinct("v.beta").sort}
+    ]
+
+    progress_overview = {
+      "total_parameters" => total_runs,
+      "finished_parameters" => finished_runs,
+      "progress" => [
+        { "parameter_pair" => parameter_pair,
+          "total" => 1,
+          "each_finish" => each_finish
+        }
+      ],
+      "parameters" => parameters
+    }
+
     sample = <<EOS
-{"total_parameters":25,"finished_parameters":23,"progress":[{"parameter_pair":["b","a"],"total":1,"each_finish":[{"value":[-2.0,-2.0],"finish":0.0},{"value":[-2.0,-1.0],"finish":1.0},{"value":[-2.0,0.0],"finish":1.0},{"value":[-2.0,1.0],"finish":1.0},{"value":[-2.0,2.0],"finish":1.0},{"value":[-1.0,-2.0],"finish":1.0},{"value":[-1.0,-1.0],"finish":1.0},{"value":[-1.0,0.0],"finish":1.0},{"value":[-1.0,1.0],"finish":1.0},{"value":[-1.0,2.0],"finish":1.0},{"value":[0.0,-2.0],"finish":1.0},{"value":[0.0,-1.0],"finish":1.0},{"value":[0.0,0.0],"finish":1.0},{"value":[0.0,1.0],"finish":1.0},{"value":[0.0,2.0],"finish":0.0},{"value":[1.0,-2.0],"finish":1.0},{"value":[1.0,-1.0],"finish":1.0},{"value":[1.0,0.0],"finish":1.0},{"value":[1.0,1.0],"finish":1.0},{"value":[1.0,2.0],"finish":1.0},{"value":[2.0,-2.0],"finish":1.0},{"value":[2.0,-1.0],"finish":1.0},{"value":[2.0,0.0],"finish":1.0},{"value":[2.0,1.0],"finish":1.0},{"value":[2.0,2.0],"finish":1.0}]}],"parameters":[{"name":"a","values":[-2.0,-1.0,0.0,1.0,2.0]},{"name":"b","values":[-2.0,-1.0,0.0,1.0,2.0]}]}
+{ "total_parameters":25,
+  "finished_parameters":23,
+  "progress":[
+    { "parameter_pair":["b","a"],
+      "total":1,
+      "each_finish":[
+        {"value":[-2.0,-2.0],"finish":0.0},{"value":[-2.0,-1.0],"finish":1.0},{"value":[-2.0,0.0],"finish":1.0},{"value":[-2.0,1.0],"finish":1.0},{"value":[-2.0,2.0],"finish":1.0},{"value":[-1.0,-2.0],"finish":1.0},{"value":[-1.0,-1.0],"finish":1.0},{"value":[-1.0,0.0],"finish":1.0},{"value":[-1.0,1.0],"finish":1.0},{"value":[-1.0,2.0],"finish":1.0},{"value":[0.0,-2.0],"finish":1.0},{"value":[0.0,-1.0],"finish":1.0},{"value":[0.0,0.0],"finish":1.0},{"value":[0.0,1.0],"finish":1.0},{"value":[0.0,2.0],"finish":0.0},{"value":[1.0,-2.0],"finish":1.0},{"value":[1.0,-1.0],"finish":1.0},{"value":[1.0,0.0],"finish":1.0},{"value":[1.0,1.0],"finish":1.0},{"value":[1.0,2.0],"finish":1.0},{"value":[2.0,-2.0],"finish":1.0},{"value":[2.0,-1.0],"finish":1.0},{"value":[2.0,0.0],"finish":1.0},{"value":[2.0,1.0],"finish":1.0},{"value":[2.0,2.0],"finish":1.0}]
+      }],
+  "parameters":[
+    {"name":"a","values":[0.0]},
+    {"name":"b","values":[-2.0,-1.0,0.0,1.0,2.0]}
+  ]
+}
 EOS
     parsed = JSON.parse(sample)
-    render json: parsed
+    render json: progress_overview
   end
 
 end
