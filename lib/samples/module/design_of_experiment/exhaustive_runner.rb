@@ -3,6 +3,8 @@ require_relative '../OACIS_module.rb'
 
 class ExhaustiveRunner < OacisModule
 
+  NUM_RUNS = 5
+
   def initialize(input_data)
     @sim = Simulator.find("527b26188d57221193000003")
     @host = Host.find("527b17848d5722765a000001")
@@ -16,10 +18,20 @@ class ExhaustiveRunner < OacisModule
       num_games_array.each do |num_games|
         ps = @sim.parameter_sets.build({"v" => {"noise" => noise, "num_games" => num_games}})
         if ps.save
-          run = ps.runs.build
-          run.submitted_to = @host
-          run.save!
-          created_runs << run
+          (NUM_RUNS - ps.runs.count).times do |i|
+            run = ps.runs.build
+            run.submitted_to = @host
+            run.save!
+            created_runs << run
+          end
+        else
+          ps = @sim.parameter_sets.where( "v.noise" => noise, "v.num_games" => num_games).first
+          (NUM_RUNS - ps.runs.count).times do |i|
+            run = ps.runs.build
+            run.submitted_to = @host
+            run.save!
+            created_runs << run
+          end
         end
       end
     end
