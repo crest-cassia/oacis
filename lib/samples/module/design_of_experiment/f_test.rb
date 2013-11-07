@@ -36,8 +36,6 @@ module FTest
       effFact
     end
 
-    # pp effFacts
-
     @s_e = @ss - (@ct + effFacts.inject(0) {|sum,ef| sum + ef[:effect]})
     @e_f = @count - 1
     effFacts.each do |ef|
@@ -65,11 +63,13 @@ module FTest
 
 end
 
-ps_array = [
-    ParameterSet.where("v.noise" => 0.5, "v.num_games" => 10).first,
-    ParameterSet.where("v.noise" => 0.5, "v.num_games" => 9).first,
-    ParameterSet.where("v.noise" => 0.0, "v.num_games" => 10).first,
-    ParameterSet.where("v.noise" => 0.0, "v.num_games" => 9).first
-  ]
+if $0 == __FILE__
+  ps_array = [
+      ParameterSet.where("v.noise" => 0.5, "v.num_games" => 10).first,
+      ParameterSet.where("v.noise" => 0.5, "v.num_games" => 9).first,
+      ParameterSet.where("v.noise" => 0.0, "v.num_games" => 10).first,
+      ParameterSet.where("v.noise" => 0.0, "v.num_games" => 9).first
+    ]
 
-pp FTest.eff_facts(ps_array)
+  pp FTest.eff_facts(ps_array)
+end
