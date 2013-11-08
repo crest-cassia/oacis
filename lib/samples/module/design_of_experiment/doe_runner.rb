@@ -75,26 +75,18 @@ class DOERunner < OacisModule
   def new_range_hashes(range_hash, relevant_factors)
     new_ranges = []
 
-    noise_ranges = []
-    if relevant_factors.include?("noise")
-      range = range_hash["noise"]
-      half = range.inject(:+) / 2
-      noise_ranges = [ [range.first, half], [half, range.last] ]
-    else
-      noise_ranges = [ range_hash["noise"] ]
+    ranges_array = ["noise", "num_games"].map do |key|
+      ranges = [ range_hash[key] ]
+      if relevant_factors.include?(key)
+        range = range_hash[key]
+        half = range.inject(:+) / 2
+        ranges = [ [range.first, half], [half, range.last] ]
+      end
+      ranges
     end
 
-    num_games_ranges = []
-    if relevant_factors.include?("num_games")
-      range = range_hash["num_games"]
-      half = range.inject(:+) / 2
-      num_games_ranges = [ [range.first, half], [half, range.last] ]
-    else
-      num_games_ranges = [ range_hash["num_games"] ]
-    end
-
-    noise_ranges.product(num_games_ranges).each do |noise_range, num_games_range|
-      h = { "noise" => noise_range, "num_games" => num_games_range}
+    ranges_array.first.product( *(ranges_array[1..-1]) ).each do |a|
+      h = { "noise" => a[0], "num_games" => a[1]}
       new_ranges << h
     end
 
