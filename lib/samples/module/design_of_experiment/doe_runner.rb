@@ -72,52 +72,46 @@ class DOERunner < OacisModule
     created_runs
   end
 
+  def new_range_hashes(range_hash, relevant_factors)
+    new_ranges = []
+
+    noise_ranges = []
+    if relevant_factors.include?("noise")
+      range = range_hash[:noise_array]
+      half = range.inject(:+) / 2
+      noise_ranges = [ [range.first, half], [half, range.last] ]
+    else
+      noise_ranges = [ range_hash[:noise_array] ]
+    end
+
+    num_games_ranges = []
+    if relevant_factors.include?("num_games")
+      range = range_hash[:num_games_array]
+      half = range.inject(:+) / 2
+      num_games_ranges = [ [range.first, half], [half, range.last] ]
+    else
+      num_games_ranges = [ range_hash[:num_games_array] ]
+    end
+
+    noise_ranges.product(num_games_ranges).each do |noise_range, num_games_range|
+      h = { noise_array: noise_range, num_games_array: num_games_range}
+      new_ranges << h
+    end
+
+    new_ranges
+  end
+
+
   def evaluate_runs
 
     new_gen_range_hashes = []
     @range_hashes.each do |range_hash|
-      noise_array = range_hash[:noise_array]
-      num_games_array = range_hash[:num_games_array]
+      ps_array = get_parameter_sets_from_range_hash(range_hash)
 
-      ps_array = []
-      noise_array.each do |noise|
-        num_games_array.each do |num_games|
-          ps = ParameterSet.where("v.noise" => noise, "v.num_games" => num_games).first
-          raise "ps not found" unless ps
-          ps_array << ps
-        end
-      end
-    
       ef = FTest.eff_facts(ps_array)
 
       if ef["noise"][:f_value] > 10.0 && ef["num_games"][:f_value] > 10.0
-        noise_half = noise_array.inject(:+) / 2.0
-        num_games_half = num_games_array.inject(:+) / 2
-        
-        range_hash = {
-          noise_array: [noise_half, noise_array.last],
-          num_games_array: [num_games_half, num_games_array.last]
-        }
-        new_gen_range_hashes << range_hash
-
-        range_hash = {
-          noise_array: [noise_array.first, noise_half],
-          num_games_array: [num_games_array.first, num_games_half]
-        }
-        new_gen_range_hashes << range_hash
-
-        range_hash = {
-          noise_array: [noise_array.first, noise_half],
-          num_games_array: [num_games_half, num_games_array.last]
-        }
-        new_gen_range_hashes << range_hash
-
-        range_hash = {
-          noise_array: [noise_half, noise_array.last],
-          num_games_array: [num_games_array.first, num_games_half]
-        }
-        new_gen_range_hashes << range_hash
-
+        new_gen_range_hashes += new_range_hashes(range_hash, ["noise", "num_games"])
       end
     end
 
