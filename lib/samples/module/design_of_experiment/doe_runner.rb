@@ -8,6 +8,7 @@ class DOERunner < OacisModule
   NUM_RUNS = 5
   PS_COUNT_MAX = 80
   RANGE_COUNT_MAX = 30
+  F_VALUE_THRESHOLD = 10.0
 
   def initialize(input_data = nil)
     @sim = Simulator.where(name: "dilemma_game").first
@@ -117,7 +118,7 @@ class DOERunner < OacisModule
       ef = FTest.eff_facts(ps_array)
 
       relevant_factors = ["noise", "num_games"].select do |key|
-        ef[key][:f_value] > 10.0
+        ef[key][:f_value] > F_VALUE_THRESHOLD
       end
 
       new_gen_range_hashes += new_range_hashes(range_hash, relevant_factors)
