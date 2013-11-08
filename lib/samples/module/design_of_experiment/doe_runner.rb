@@ -1,6 +1,7 @@
 require 'json'
 require_relative '../OACIS_module.rb'
 require_relative 'f_test.rb'
+require_relative 'orthogonal_array'
 
 class DOERunner < OacisModule
 
@@ -44,11 +45,19 @@ class DOERunner < OacisModule
     noise_array = range_hash["noise"]
     num_games_array = range_hash["num_games"]
 
-    noise_array.each do |noise|
-      num_games_array.each do |num_games|
-        parameter_sets << get_parameter_set(noise, num_games)
-      end
+    oa_param = []
+    oa_param.push( {name: "noise", paramDefs: noise_array })
+    oa_param.push( {name: "num_games", paramDefs: num_games_array })
+    @orthogonal_array = OrthogonalArray.new(oa_param)
+
+    @orthogonal_array.table.transpose.each do |row|
+      noise_index = row.first.to_i
+      num_games_index = row[1].to_i
+      noise = noise_array[noise_index]
+      num_games = num_games_array[num_games_index]
+      parameter_sets << get_parameter_set(noise, num_games)
     end
+
     parameter_sets
   end
 
@@ -79,9 +88,13 @@ class DOERunner < OacisModule
       ranges = [ range_hash[key] ]
       if relevant_factors.include?(key)
         range = range_hash[key]
-        half = range.inject(:+) / 2
-        half = half.round(6) if half.is_a?(Float)
-        ranges = [ [range.first, half], [half, range.last] ]
+        one_third = range.inject(:+) / 3
+        two_third = range.inject(:+) * 2 / 3
+        one_third = one_third.round(6) if one_third.is_a?(Float)
+        two_third = two_third.round(6) if two_third.is_a?(Float)
+        ranges = [
+          [range.first, one_third], [one_third, two_third], [two_third, range.last]
+        ]
       end
       ranges
     end
