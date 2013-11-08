@@ -64,13 +64,13 @@ class DOERunner < OacisModule
   end
 
   def evaluate_runs
-    ps_array = []
 
     new_gen_range_hashes = []
     @range_hashes.each do |range_hash|
       noise_array = range_hash[:noise_array]
       num_games_array = range_hash[:num_games_array]
 
+      ps_array = []
       noise_array.each do |noise|
         num_games_array.each do |num_games|
           ps = ParameterSet.where("v.noise" => noise, "v.num_games" => num_games).first
