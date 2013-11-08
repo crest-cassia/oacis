@@ -80,6 +80,7 @@ class DOERunner < OacisModule
       if relevant_factors.include?(key)
         range = range_hash[key]
         half = range.inject(:+) / 2
+        half = half.round(6) if half.is_a?(Float)
         ranges = [ [range.first, half], [half, range.last] ]
       end
       ranges
