@@ -18,13 +18,13 @@ class DOERunner < OacisModule
     num_games_array = [10, 100]
 
     if input_data
-      noise_array = input_data[:noise_array]
-      num_games_array = input_data[:num_games_array]
+      noise_array = input_data["noise"]
+      num_games_array = input_data["num_games"]
     end
 
     @ranges_count = 0
 
-    @range_hashes = [ {noise_array: noise_array, num_games_array: num_games_array} ]
+    @range_hashes = [ {"noise" => noise_array, "num_games" => num_games_array} ]
   end
 
   def generate_runs
@@ -41,8 +41,8 @@ class DOERunner < OacisModule
   private
   def get_parameter_sets_from_range_hash(range_hash)
     parameter_sets = []
-    noise_array = range_hash[:noise_array]
-    num_games_array = range_hash[:num_games_array]
+    noise_array = range_hash["noise"]
+    num_games_array = range_hash["num_games"]
 
     noise_array.each do |noise|
       num_games_array.each do |num_games|
@@ -77,24 +77,24 @@ class DOERunner < OacisModule
 
     noise_ranges = []
     if relevant_factors.include?("noise")
-      range = range_hash[:noise_array]
+      range = range_hash["noise"]
       half = range.inject(:+) / 2
       noise_ranges = [ [range.first, half], [half, range.last] ]
     else
-      noise_ranges = [ range_hash[:noise_array] ]
+      noise_ranges = [ range_hash["noise"] ]
     end
 
     num_games_ranges = []
     if relevant_factors.include?("num_games")
-      range = range_hash[:num_games_array]
+      range = range_hash["num_games"]
       half = range.inject(:+) / 2
       num_games_ranges = [ [range.first, half], [half, range.last] ]
     else
-      num_games_ranges = [ range_hash[:num_games_array] ]
+      num_games_ranges = [ range_hash["num_games"] ]
     end
 
     noise_ranges.product(num_games_ranges).each do |noise_range, num_games_range|
-      h = { noise_array: noise_range, num_games_array: num_games_range}
+      h = { "noise" => noise_range, "num_games" => num_games_range}
       new_ranges << h
     end
 
