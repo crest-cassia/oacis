@@ -6,11 +6,13 @@ class DOERunner < OacisModule
 
   NUM_RUNS = 5
   PS_COUNT_MAX = 80
-  RANGE_COUNT_MAX = 50
+  RANGE_COUNT_MAX = 30
 
   def initialize(input_data = nil)
-    @sim = Simulator.find("527b26188d57221193000003")
-    @host = Host.find("527b17848d5722765a000001")
+    @sim = Simulator.where(name: "dilemma_game").first
+    raise "Simulator 'dilemma_game' is not found" unless @sim
+    @host = Host.where(name: "localhost").first
+    raise "Host 'localhost' is not found" unless @host
 
     noise_array = [0, 0.05]
     num_games_array = [10, 100]
