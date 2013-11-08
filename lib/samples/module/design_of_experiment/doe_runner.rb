@@ -28,8 +28,6 @@ class DOERunner < OacisModule
   end
 
   def generate_runs
-    # noise_array = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
-    # num_games_array = [5,6,7,8,9,10,11]
     created_runs = []
     pp @range_hashes
     @range_hashes.each do |range_hash|
@@ -38,28 +36,31 @@ class DOERunner < OacisModule
 
       noise_array.each do |noise|
         num_games_array.each do |num_games|
-          ps = @sim.parameter_sets.build({"v" => {"noise" => noise, "num_games" => num_games}})
-          if ps.save
-            pp ps.v
-            (NUM_RUNS - ps.runs.count).times do |i|
-              run = ps.runs.build
-              run.submitted_to = @host
-              run.save!
-              created_runs << run
-            end
-          else
-            ps = @sim.parameter_sets.where( "v.noise" => noise, "v.num_games" => num_games).first
-            (NUM_RUNS - ps.runs.count).times do |i|
-              run = ps.runs.build
-              run.submitted_to = @host
-              run.save!
-              created_runs << run
-            end
-          end
+          ps = get_parameter_set(noise, num_games)
+          create_runs_for(ps)
         end
       end
     end
     created_runs
+  end
+
+  private
+  def get_parameter_set(noise, num_games)
+    ps = @sim.parameter_sets.where( "v.noise" => noise, "v.num_games" => num_games).first
+    unless ps
+      ps = @sim.parameter_sets.build({"v" => {"noise" => noise, "num_games" => num_games}})
+      ps.save!
+    end
+    ps
+  end
+
+  def create_runs_for(parameter_set)
+    (NUM_RUNS - parameter_set.runs.count).times do |i|
+      run = parameter_set.runs.build
+      run.submitted_to = @host
+      run.save!
+      created_runs << run
+    end
   end
 
   def evaluate_runs
