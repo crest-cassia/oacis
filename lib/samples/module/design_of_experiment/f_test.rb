@@ -58,7 +58,7 @@ module FTest
 
   private
   def self.cycles(ps)
-    ps.runs.map {|run| run.analyses.first.result["Cycles"]}
+    ps.runs.map {|run| run.analyses.only("result").first.result["Cycles"]}
   end
 
 end
