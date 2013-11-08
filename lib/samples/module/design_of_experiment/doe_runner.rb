@@ -16,17 +16,19 @@ class DOERunner < OacisModule
     @host = Host.where(name: "localhost").first
     raise "Host 'localhost' is not found" unless @host
 
+    @param_names = @sim.parameter_definitions.map {|definition| definition.key }
+
     noise_array = [0, 0.05]
     num_games_array = [10, 100]
 
     if input_data
-      noise_array = input_data["noise"]
-      num_games_array = input_data["num_games"]
+      noise_array = input_data[@param_names[0]]
+      num_games_array = input_data[@param_names[1]]
     end
 
     @ranges_count = 0
 
-    @range_hashes = [ {"noise" => noise_array, "num_games" => num_games_array} ]
+    @range_hashes = [ {@param_names[0] => noise_array, @param_names[1] => num_games_array} ]
   end
 
   def generate_runs
@@ -43,29 +45,31 @@ class DOERunner < OacisModule
   private
   def get_parameter_sets_from_range_hash(range_hash)
     parameter_sets = []
-    noise_array = range_hash["noise"]
-    num_games_array = range_hash["num_games"]
 
-    oa_param = []
-    oa_param.push( {name: "noise", paramDefs: noise_array })
-    oa_param.push( {name: "num_games", paramDefs: num_games_array })
+    oa_param = @param_names.map do |name|
+      {name: name, paramDefs: [0, 1]}
+    end
     @orthogonal_array = OrthogonalArray.new(oa_param)
 
     @orthogonal_array.table.transpose.each do |row|
-      noise_index = row.first.to_i
-      num_games_index = row[1].to_i
-      noise = noise_array[noise_index]
-      num_games = num_games_array[num_games_index]
-      parameter_sets << get_parameter_set(noise, num_games)
+      parameter_hash = {}
+      @param_names.each_with_index do |name, idx|
+        range = range_hash[name]
+        parameter_value = range[ row[idx].to_i ]
+        parameter_hash[name] = parameter_value
+      end
+      parameter_sets << get_parameter_set(parameter_hash)
     end
 
     parameter_sets
   end
 
-  def get_parameter_set(noise, num_games)
-    ps = @sim.parameter_sets.where( "v.noise" => noise, "v.num_games" => num_games).first
+  def get_parameter_set(parameter_hash)
+    h = {}
+    parameter_hash.each {|key,val| h["v.#{key}"] = val }
+    ps = @sim.parameter_sets.where(h).first
     unless ps
-      ps = @sim.parameter_sets.build({"v" => {"noise" => noise, "num_games" => num_games}})
+      ps = @sim.parameter_sets.build({"v" => parameter_hash})
       ps.save!
     end
     ps
@@ -85,7 +89,7 @@ class DOERunner < OacisModule
   def new_range_hashes(range_hash, relevant_factors)
     new_ranges = []
 
-    ranges_array = ["noise", "num_games"].map do |key|
+    ranges_array = [@param_names[0], @param_names[1]].map do |key|
       ranges = [ range_hash[key] ]
       if relevant_factors.include?(key)
         range = range_hash[key]
@@ -101,7 +105,7 @@ class DOERunner < OacisModule
     end
 
     ranges_array.first.product( *(ranges_array[1..-1]) ).each do |a|
-      h = { "noise" => a[0], "num_games" => a[1]}
+      h = { @param_names[0] => a[0], @param_names[1] => a[1]}
       new_ranges << h
     end
 
@@ -115,9 +119,9 @@ class DOERunner < OacisModule
     @range_hashes.each do |range_hash|
       ps_array = get_parameter_sets_from_range_hash(range_hash)
 
-      ef = FTest.eff_facts(ps_array)
+      ef = FTest.eff_facts(ps_array, @param_names)
 
-      relevant_factors = ["noise", "num_games"].select do |key|
+      relevant_factors = @param_names.select do |key|
         ef[key][:f_value] > F_VALUE_THRESHOLD
       end
 

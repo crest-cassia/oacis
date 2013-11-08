@@ -2,7 +2,7 @@ require 'pp'
 
 module FTest
 
-  def self.eff_facts(ps_array)
+  def self.eff_facts(ps_array, parameter_keys)
 
     @mean = 0
     @ss = 0
@@ -18,7 +18,7 @@ module FTest
     @ct = @mean * @mean / @count.to_f
     @mean /= @count.to_f
 
-    effFacts = ["noise", "num_games"].map do |parameter_key|
+    effFacts = parameter_keys.map do |parameter_key|
       effFact ={}
       effFact[:name] = parameter_key
       effFact[:results] = {}
@@ -71,5 +71,5 @@ if $0 == __FILE__
       ParameterSet.where("v.noise" => 0.0, "v.num_games" => 9).first
     ]
 
-  pp FTest.eff_facts(ps_array)
+  pp FTest.eff_facts(ps_array, ["noise", "num_games"])
 end
