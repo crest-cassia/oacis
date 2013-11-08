@@ -102,9 +102,11 @@ class DOERunner < OacisModule
 
       ef = FTest.eff_facts(ps_array)
 
-      if ef["noise"][:f_value] > 10.0 && ef["num_games"][:f_value] > 10.0
-        new_gen_range_hashes += new_range_hashes(range_hash, ["noise", "num_games"])
+      relevant_factors = ["noise", "num_games"].select do |key|
+        ef[key][:f_value] > 10.0
       end
+
+      new_gen_range_hashes += new_range_hashes(range_hash, relevant_factors)
     end
 
     @range_hashes = new_gen_range_hashes
