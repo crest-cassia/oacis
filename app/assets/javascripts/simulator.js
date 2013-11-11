@@ -62,7 +62,7 @@ function show_parameter_progress(url) {
           rx: 5,
           ry: 5,
           fill: function(d) {
-            if( d != null ) { return colorScale(d[0]/d[1]); }
+            if( d[1] > 0.0 ) { return colorScale(d[0]/d[1]); }
             else { return "white"; }
           },
           stroke: "white",
@@ -70,7 +70,7 @@ function show_parameter_progress(url) {
           "opacity": 0
         })
         .on("mouseover", function(d) {
-          if( d != null ) {
+          if( d[1] > 0.0 ) {
             toolTip.transition()
               .duration(200)
               .style("opacity", .8);
@@ -93,7 +93,7 @@ function show_parameter_progress(url) {
         .delay( function(d,i) {return i*100;} )
         .attr({
           "opacity": function(d) {
-            if( d != null ) { return 1.0; }
+            if( d[1] > 0.0 ) { return 1.0; }
             else { return 0.0; }
           }
         });
