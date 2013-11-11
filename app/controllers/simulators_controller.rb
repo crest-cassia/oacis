@@ -134,27 +134,32 @@ class SimulatorsController < ApplicationController
     sim = Simulator.find(params[:id])
     total_runs = Run.where(simulator: sim).count
     finished_runs = Run.where(simulator: sim, status: :finished).count
-    parameter_pair = ["beta", "h"]
-    each_finish = ParameterSet.where(simulator: sim).map do |ps|
-      total = ps.runs.count
-      finished = ps.runs.where(status: :finished).count
-      {"value" => [ ps.v["beta"], ps.v["h"] ], "finish" => finished.to_f / total }
-    end
-    parameters = [
-      {"name" => "h", "values" => sim.parameter_sets.distinct("v.h").sort},
-      {"name" => "beta", "values" => sim.parameter_sets.distinct("v.beta").sort}
+    parameters = ["h", "beta"]
+    parameter_values = [
+      sim.parameter_sets.distinct("v.h").sort,
+      sim.parameter_sets.distinct("v.beta").sort
     ]
+    num_runs = parameter_values[1].map do |p2|
+      parameter_values[0].map do |p1|
+        parameter_sets = ParameterSet.where({
+          :simulator => sim,
+          "v.#{parameters[0]}" => p1,
+          "v.#{parameters[1]}" => p2
+        })
+        parameter_sets.inject([0,0]) do |sum, ps|
+          sum[0] += ps.runs.where(status: :finished).count
+          sum[1] += ps.runs.count
+          sum
+        end
+      end
+    end
 
     progress_overview = {
-      "total_parameters" => total_runs,
-      "finished_parameters" => finished_runs,
-      "progress" => [
-        { "parameter_pair" => parameter_pair,
-          "total" => 1,
-          "each_finish" => each_finish
-        }
-      ],
-      "parameters" => parameters
+      num_total_runs: total_runs,
+      num_finished_runs: finished_runs,
+      parameters: parameters,
+      parameter_values: parameter_values,
+      num_runs: num_runs
     }
 
     sample = <<EOS

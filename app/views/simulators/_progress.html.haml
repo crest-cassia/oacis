@@ -1,3 +1,34 @@
 %h3 Progress overview
 
-%iframe{src: "/parameter-progress-overview.html", width: "100%", seamless: ""}
+%div#progress-overview
+  %aside{style: "margin-top:80px; right: 0; position: absolute;"}
+    %p#total-parameters Total parameters value sets:
+    %p#finished-parameters Finished parameters value sets:
+    %p
+      Progress each parameter set:
+      %br>/
+      0%-----100%
+    #color-map
+    %p
+      Column Parameter:
+      %select#column-parameter
+    %p
+      Row Parameter:
+      %select#row-parameter
+  %script{charset: "utf-8", src: "http://d3js.org/d3.v3.min.js"}
+  :css
+    div.progress-tooltip {
+      position: absolute;
+      text-align: center;
+      width: 160px;
+      height: 40px;
+      padding: 2px;
+      font: 12px sans-serif;
+      background: black;
+      color: white;
+      border: 0px;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+  :javascript
+    show_parameter_progress("http://localhost:3000/simulators/522d751f899e533149000002/_progress.json")
