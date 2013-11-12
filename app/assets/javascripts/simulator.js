@@ -37,6 +37,21 @@ function show_parameter_progress(url) {
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    svg.append("line")
+      .attr({
+        x1: 0, y1: columnLabelMargin - 2,
+        x2: width, y2: columnLabelMargin - 2,
+        stroke: "black",
+        "stroke-width": 1
+      });
+    svg.append("line")
+      .attr({
+        x1: rowLabelMargin-2, y1: 0,
+        x2: rowLabelMargin-2, y2: height,
+        stroke: "black",
+        "stroke-width": 1
+      });
     
     var rectRegion = svg.append("g")
       .attr("transform", "translate(" + rowLabelMargin + "," + columnLabelMargin + ")");
@@ -114,7 +129,7 @@ function show_parameter_progress(url) {
     rowLabelRegion.append("text")
       .attr({
         x: rowLabelMargin / 2,
-        y: -5,
+        y: -7,
         "text-anchor": "middle"
       })
       .text(dat.parameters[1]);
@@ -137,7 +152,7 @@ function show_parameter_progress(url) {
     columnLabelRegion.append("text")
       .attr({
         x: columnLabelMargin / 2,
-        y: -5,
+        y: -7,
         "text-anchor": "middle"
       })
       .text(dat.parameters[0]);
