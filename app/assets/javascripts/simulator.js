@@ -106,8 +106,19 @@ function show_parameter_progress(url) {
       .attr("y", function(d,i) {
         return (i + 0.5) * rectSizeY;
       })
+      .attr("dx", "-10")
+      .attr("dy", "5")
       .attr("text-anchor", "end")
-      .text(function(d) { return dat.parameters[1] + " : " + d; });
+      .text(function(d) { return d;});
+
+    rowLabelRegion.append("text")
+      .attr({
+        x: rowLabelMargin / 2,
+        y: -5,
+        "text-anchor": "middle"
+      })
+      .text(dat.parameters[1]);
+
 
     var columnLabelRegion = svg.append("g")
       .attr("transform", "translate(" + rowLabelMargin + "," + columnLabelMargin + ") rotate(-90)");
@@ -119,7 +130,17 @@ function show_parameter_progress(url) {
         return (i+0.5) * rectSizeX;
       })
       .attr("dx", "10")
+      .attr("dy", "5")
       .attr("text-anchor", "start")
-      .text(function(d) { return dat.parameters[0] + " : " + d; });
+      .text(function(d) { return d; });
+
+    columnLabelRegion.append("text")
+      .attr({
+        x: columnLabelMargin / 2,
+        y: -5,
+        "text-anchor": "middle"
+      })
+      .text(dat.parameters[0]);
+
   })
 };
