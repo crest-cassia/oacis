@@ -8,8 +8,7 @@ function show_parameter_progress(url) {
   var colorScale = d3.scale.linear().domain([0.0,1.0])
     .range(["#dddddd", "#62c462"]);
 
-  var cmap = d3.select('#color-map').append("svg")
-    .attr("id", "color-map-svg")
+  var cmap = d3.select('svg#colormap-svg')
     .attr("width", 200)
     .attr("height", 20);
   cmap.selectAll("rect")
@@ -32,7 +31,7 @@ function show_parameter_progress(url) {
     var rectSizeX = (width - rowLabelMargin) / dat.parameter_values[0].length;
     var rectSizeY = (height - columnLabelMargin) / dat.parameter_values[1].length;
 
-    var svg = d3.select("div#progress-overview").append("svg")
+    var svg = d3.select("svg#progress-overview")
       .attr("id", "canvas")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)

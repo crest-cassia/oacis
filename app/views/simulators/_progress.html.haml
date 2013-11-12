@@ -1,20 +1,29 @@
 %h3 Progress overview
 
-%div#progress-overview
-  %aside{style: "float:right;"}
-    %p#total-parameters Total parameters value sets:
-    %p#finished-parameters Finished parameters value sets:
-    %p
-      Progress each parameter set:
-      %br>/
-      0%-----100%
-    #color-map
-    %p
-      Column Parameter:
-      %select#column-parameter
-    %p
-      Row Parameter:
-      %select#row-parameter
+%div
+  .row
+    .span8
+      %svg#progress-overview
+    .span4
+      %aside
+        %p#total-parameters Total parameters value sets:
+        %p#finished-parameters Finished parameters value sets:
+        %p
+          Progress each parameter set:
+          %br
+          0%-------------100%
+          %br
+          %svg#colormap-svg
+        #color-map
+        %form.form-horizontal
+        .control-group
+          %label Column Parameter:
+          .controls
+            %select#column-parameter
+        .control-group
+          %label Row Parameter:
+          .controls
+            %select#row-parameter
   %script{charset: "utf-8", src: "http://d3js.org/d3.v3.min.js"}
   :css
     div.progress-tooltip {
