@@ -2,8 +2,8 @@
 
 %div
   .row
-    .span8
-      %svg#progress-overview
+    .span8#progress-overview
+      %svg
       #progress-tooltip.progress-tooltip
     .span4
       %aside
@@ -41,5 +41,6 @@
       pointer-events: none;
     }
   :javascript
-    var url = "#{_progress_simulator_path}" + ".json"
-    show_parameter_progress(url)
+    var url = "#{_progress_simulator_path}" + ".json";
+    draw_color_map();
+    draw_progress_overview(url);

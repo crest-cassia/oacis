@@ -1,13 +1,6 @@
-function show_parameter_progress(url) {
-  var margin = {top: 10, right: 0, bottom: 10, left: 0},
-      width = 720,
-      height = 720;
-  var rowLabelMargin = 100;
-  var columnLabelMargin = 100;
-
+function draw_color_map() {
   var colorScale = d3.scale.linear().domain([0.0,1.0])
     .range(["#dddddd", "#62c462"]);
-
   var cmap = d3.select('svg#colormap-svg')
     .attr("width", 200)
     .attr("height", 20);
@@ -21,16 +14,29 @@ function show_parameter_progress(url) {
       height: 19,
       fill: function(d) { return colorScale(d); }
     });
+}
+
+function draw_progress_overview(url) {
+  var colorScale = d3.scale.linear().domain([0.0,1.0])
+    .range(["#dddddd", "#62c462"]);
+
+  var margin = {top: 10, right: 0, bottom: 10, left: 0},
+      width = 720,
+      height = 720;
+  var rowLabelMargin = 100;
+  var columnLabelMargin = 100;
 
   var toolTip = d3.select("#progress-tooltip")
     .style("opacity", 0);
 
   d3.json(url, function(dat) {
-
     var rectSizeX = (width - rowLabelMargin) / dat.parameter_values[0].length;
     var rectSizeY = (height - columnLabelMargin) / dat.parameter_values[1].length;
 
-    var svg = d3.select("svg#progress-overview")
+    var progress_overview = d3.select("#progress-overview");
+    progress_overview.select("svg").remove();
+
+    var svg = progress_overview.append("svg")
       .attr("id", "canvas")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -155,6 +161,5 @@ function show_parameter_progress(url) {
         "text-anchor": "middle"
       })
       .text(dat.parameters[0]);
-
-  })
+  });
 };
