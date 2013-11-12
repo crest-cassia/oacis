@@ -134,8 +134,6 @@ class SimulatorsController < ApplicationController
     sim = Simulator.find(params[:id])
     column_parameter = params[:column_parameter]
     row_parameter = params[:row_parameter]
-    total_runs = Run.where(simulator: sim).count
-    finished_runs = Run.where(simulator: sim, status: :finished).count
     parameters = [column_parameter, row_parameter]
     parameter_values = [
       sim.parameter_sets.distinct("v.#{column_parameter}").sort,
@@ -161,29 +159,10 @@ class SimulatorsController < ApplicationController
     end
 
     progress_overview = {
-      num_total_runs: total_runs,
-      num_finished_runs: finished_runs,
       parameters: parameters,
       parameter_values: parameter_values,
       num_runs: num_runs
     }
-
-    sample = <<EOS
-{ "total_parameters":25,
-  "finished_parameters":23,
-  "progress":[
-    { "parameter_pair":["b","a"],
-      "total":1,
-      "each_finish":[
-        {"value":[-2.0,-2.0],"finish":0.0},{"value":[-2.0,-1.0],"finish":1.0},{"value":[-2.0,0.0],"finish":1.0},{"value":[-2.0,1.0],"finish":1.0},{"value":[-2.0,2.0],"finish":1.0},{"value":[-1.0,-2.0],"finish":1.0},{"value":[-1.0,-1.0],"finish":1.0},{"value":[-1.0,0.0],"finish":1.0},{"value":[-1.0,1.0],"finish":1.0},{"value":[-1.0,2.0],"finish":1.0},{"value":[0.0,-2.0],"finish":1.0},{"value":[0.0,-1.0],"finish":1.0},{"value":[0.0,0.0],"finish":1.0},{"value":[0.0,1.0],"finish":1.0},{"value":[0.0,2.0],"finish":0.0},{"value":[1.0,-2.0],"finish":1.0},{"value":[1.0,-1.0],"finish":1.0},{"value":[1.0,0.0],"finish":1.0},{"value":[1.0,1.0],"finish":1.0},{"value":[1.0,2.0],"finish":1.0},{"value":[2.0,-2.0],"finish":1.0},{"value":[2.0,-1.0],"finish":1.0},{"value":[2.0,0.0],"finish":1.0},{"value":[2.0,1.0],"finish":1.0},{"value":[2.0,2.0],"finish":1.0}]
-      }],
-  "parameters":[
-    {"name":"a","values":[0.0]},
-    {"name":"b","values":[-2.0,-1.0,0.0,1.0,2.0]}
-  ]
-}
-EOS
-    parsed = JSON.parse(sample)
     render json: progress_overview
   end
 

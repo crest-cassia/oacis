@@ -9,8 +9,6 @@
       #progress-tooltip.progress-tooltip{style: "opacity: 0;"}
     .span4
       %aside
-        %p#total-parameters # of Runs:
-        %p#finished-parameters # of Finished or Failed Runs:
         %p
           Progress each parameter set:
           %br
@@ -31,26 +29,11 @@
           .controls
             = select_tag 'row_parameter', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'row_parameter'
         = submit_tag 'Show', name: 'show_progress_button', class: 'btn btn-primary', id: 'show_progress_button'
-
-  :css
-    div.progress-tooltip {
-      position: absolute;
-      text-align: center;
-      width: 160px;
-      height: 40px;
-      padding: 2px;
-      font: 12px sans-serif;
-      background: black;
-      color: white;
-      border: 0px;
-      border-radius: 8px;
-      pointer-events: none;
-    }
-  :javascript
-    var url = "#{_progress_simulator_path}" + ".json";
-    $('#show_progress_button').on('click', function () {
-      var cp = $('#column_parameter option:selected').val();
-      var rp = $('#row_parameter option:selected').val();
-      var url_with_param = url + "?row_parameter=" + rp + "&column_parameter=" + cp;
-      draw_progress_overview(url_with_param);
-    })
+:javascript
+  var url = "#{_progress_simulator_path}" + ".json";
+  $('#show_progress_button').on('click', function () {
+    var cp = $('#column_parameter option:selected').val();
+    var rp = $('#row_parameter option:selected').val();
+    var url_with_param = url + "?row_parameter=" + rp + "&column_parameter=" + cp;
+    draw_progress_overview(url_with_param);
+  })
