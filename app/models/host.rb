@@ -99,7 +99,7 @@ class Host
     end
   end
 
-  def check_submitted_job_status(logger)
+  def check_submitted_job_status(logger = Logger.new($stderr))
     return if submitted_runs.count == 0
     start_ssh do |ssh|
       # check if job is finished
