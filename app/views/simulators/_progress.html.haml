@@ -1,5 +1,7 @@
 %h3 Progress overview
 
+%script{charset: "utf-8", src: "http://d3js.org/d3.v3.min.js"}
+
 %div
   .row
     .span8#progress-overview
@@ -16,16 +18,20 @@
           %br
           %svg#colormap-svg
         #color-map
+        :javascript
+          draw_color_map();
         %form.form-horizontal
+        - parameter_keys = @simulator.parameter_definitions.map(&:key)
         .control-group
           %label Column Parameter:
           .controls
-            %select#column-parameter
+            = select_tag 'column_parameter', options_for_select(parameter_keys, selected: parameter_keys[0]);
         .control-group
           %label Row Parameter:
           .controls
-            %select#row-parameter
-  %script{charset: "utf-8", src: "http://d3js.org/d3.v3.min.js"}
+            = select_tag 'row_parameter', options_for_select(parameter_keys, selected: parameter_keys[1])
+        = submit_tag 'Show', name: 'show_progress_button', class: 'btn btn-primary'
+
   :css
     div.progress-tooltip {
       position: absolute;
@@ -42,5 +48,4 @@
     }
   :javascript
     var url = "#{_progress_simulator_path}" + ".json";
-    draw_color_map();
     draw_progress_overview(url);
