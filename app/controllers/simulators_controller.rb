@@ -132,24 +132,30 @@ class SimulatorsController < ApplicationController
 
   def _progress
     sim = Simulator.find(params[:id])
+    column_parameter = params[:column_parameter]
+    row_parameter = params[:row_parameter]
     total_runs = Run.where(simulator: sim).count
     finished_runs = Run.where(simulator: sim, status: :finished).count
-    parameters = ["h", "beta"]
+    parameters = [column_parameter, row_parameter]
     parameter_values = [
-      sim.parameter_sets.distinct("v.h").sort,
-      sim.parameter_sets.distinct("v.beta").sort
+      sim.parameter_sets.distinct("v.#{column_parameter}").sort,
+      sim.parameter_sets.distinct("v.#{row_parameter}").sort
     ]
     num_runs = parameter_values[1].map do |p2|
       parameter_values[0].map do |p1|
-        parameter_sets = ParameterSet.where({
-          :simulator => sim,
-          "v.#{parameters[0]}" => p1,
-          "v.#{parameters[1]}" => p2
-        })
-        parameter_sets.inject([0,0]) do |sum, ps|
-          sum[0] += ps.runs.where(status: :finished).count
-          sum[1] += ps.runs.count
-          sum
+        if row_parameter == column_parameter and p1 != p2
+          [0,0]
+        else
+          parameter_sets = ParameterSet.where({
+            :simulator => sim,
+            "v.#{column_parameter}" => p1,
+            "v.#{row_parameter}" => p2
+          })
+          parameter_sets.inject([0,0]) do |sum, ps|
+            sum[0] += ps.runs.where(status: :finished).count
+            sum[1] += ps.runs.count
+            sum
+          end
         end
       end
     end

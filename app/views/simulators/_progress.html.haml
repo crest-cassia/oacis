@@ -25,11 +25,11 @@
         .control-group
           %label Column Parameter:
           .controls
-            = select_tag 'column_parameter', options_for_select(parameter_keys, selected: parameter_keys[0]);
+            = select_tag 'column_parameter', options_for_select(parameter_keys, selected: parameter_keys[0]), id: 'column_parameter';
         .control-group
           %label Row Parameter:
           .controls
-            = select_tag 'row_parameter', options_for_select(parameter_keys, selected: parameter_keys[1])
+            = select_tag 'row_parameter', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'row_parameter'
         = submit_tag 'Show', name: 'show_progress_button', class: 'btn btn-primary', id: 'show_progress_button'
 
   :css
@@ -49,5 +49,8 @@
   :javascript
     var url = "#{_progress_simulator_path}" + ".json";
     $('#show_progress_button').on('click', function () {
-      draw_progress_overview(url);
+      var cp = $('#column_parameter option:selected').val();
+      var rp = $('#row_parameter option:selected').val();
+      var url_with_param = url + "?row_parameter=" + rp + "&column_parameter=" + cp;
+      draw_progress_overview(url_with_param);
     })
