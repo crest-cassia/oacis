@@ -22,8 +22,7 @@ function show_parameter_progress(url) {
       fill: function(d) { return colorScale(d); }
     });
 
-  var toolTip = d3.select("div#progress-overview").append("div")
-    .attr("class", "progress-tooltip")
+  var toolTip = d3.select("#progress-tooltip")
     .style("opacity", 0);
 
   d3.json(url, function(dat) {
