@@ -31,4 +31,5 @@
       pointer-events: none;
     }
   :javascript
-    show_parameter_progress("http://localhost:3000/simulators/522d751f899e533149000002/_progress.json")
+    var url = "#{_progress_simulator_path}" + ".json"
+    show_parameter_progress(url)
