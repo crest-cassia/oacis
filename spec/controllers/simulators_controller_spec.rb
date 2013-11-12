@@ -329,4 +329,22 @@ describe SimulatorsController do
       end
     end
   end
+
+  describe "GET _progress" do
+    before(:each) do
+      @simulator = FactoryGirl.create(:simulator,
+                                      parameter_sets_count: 30, runs_count: 3
+                                      )
+      get :_progress, {id: @simulator.to_param, column_parameter: 'L', row_parameter: 'T'}, :format => :json
+      @parsed_body = JSON.parse(response.body)
+    end
+
+    it "return json format" do
+      response.should be_success
+      response.header['Content-Type'].should include 'application/json'
+      @parsed_body["parameters"].should eq ["L", "T"]
+      @parsed_body["parameter_values"].should be_a(Array)
+      @parsed_body["num_runs"].should be_a(Array)
+    end
+  end
 end
