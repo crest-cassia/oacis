@@ -6,7 +6,7 @@
   .row
     .span8#progress-overview
       %svg
-      #progress-tooltip.progress-tooltip
+      #progress-tooltip.progress-tooltip{style: "opacity: 0;"}
     .span4
       %aside
         %p#total-parameters # of Runs:
@@ -30,7 +30,7 @@
           %label Row Parameter:
           .controls
             = select_tag 'row_parameter', options_for_select(parameter_keys, selected: parameter_keys[1])
-        = submit_tag 'Show', name: 'show_progress_button', class: 'btn btn-primary'
+        = submit_tag 'Show', name: 'show_progress_button', class: 'btn btn-primary', id: 'show_progress_button'
 
   :css
     div.progress-tooltip {
@@ -48,4 +48,6 @@
     }
   :javascript
     var url = "#{_progress_simulator_path}" + ".json";
-    draw_progress_overview(url);
+    $('#show_progress_button').on('click', function () {
+      draw_progress_overview(url);
+    })

@@ -26,8 +26,7 @@ function draw_progress_overview(url) {
   var rowLabelMargin = 100;
   var columnLabelMargin = 100;
 
-  var toolTip = d3.select("#progress-tooltip")
-    .style("opacity", 0);
+  var toolTip = d3.select("#progress-tooltip");
 
   d3.json(url, function(dat) {
     var rectSizeX = (width - rowLabelMargin) / dat.parameter_values[0].length;
