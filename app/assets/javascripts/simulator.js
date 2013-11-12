@@ -6,7 +6,7 @@ function show_parameter_progress(url) {
   var columnLabelMargin = 100;
 
   var colorScale = d3.scale.linear().domain([0.0,1.0])
-    .range(["#eeeeee", "#62c462"]);
+    .range(["#dddddd", "#62c462"]);
 
   var cmap = d3.select('#color-map').append("svg")
     .attr("id", "color-map-svg")
