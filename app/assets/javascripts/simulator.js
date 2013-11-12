@@ -122,13 +122,13 @@ function draw_progress_overview(url) {
     rowLabelRegion.selectAll("text")
       .data(dat.parameter_values[1])
       .enter().append("text")
-      .attr("x", rowLabelMargin)
-      .attr("y", function(d,i) {
-        return (i + 0.5) * rectSizeY;
+      .attr({
+        "x": rowLabelMargin,
+        "y": function(d,i) { return (i + 0.5) * rectSizeY; },
+        "dx": "-10",
+        "dy": "5",
+        "text-anchor": "end"
       })
-      .attr("dx", "-10")
-      .attr("dy", "5")
-      .attr("text-anchor", "end")
       .text(function(d) { return d;});
 
     rowLabelRegion.append("text")
@@ -145,13 +145,13 @@ function draw_progress_overview(url) {
     columnLabelRegion.selectAll("text")
       .data(dat.parameter_values[0])
       .enter().append("text")
-      .attr("x", 0)
-      .attr("y", function(d,i) {
-        return (i+0.5) * rectSizeX;
+      .attr({
+        "x": 0,
+        "y": function(d,i) { return (i+0.5) * rectSizeX;},
+        "dx": "10",
+        "dy": "5",
+        "text-anchor": "start"
       })
-      .attr("dx", "10")
-      .attr("dy", "5")
-      .attr("text-anchor", "start")
       .text(function(d) { return d; });
 
     columnLabelRegion.append("text")
