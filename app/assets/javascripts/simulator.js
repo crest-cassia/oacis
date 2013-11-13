@@ -116,6 +116,9 @@ function draw_progress_overview(url) {
           }
         });
 
+    var tickTextOffset = [10, 5];
+    var labelTextOffset = -7;
+
     var rowLabelRegion = svg.append("g")
       .attr("transform", "translate(" + 0 + "," + columnLabelMargin + ")");
     rowLabelRegion.selectAll("text")
@@ -124,8 +127,8 @@ function draw_progress_overview(url) {
       .attr({
         "x": rowLabelMargin,
         "y": function(d,i) { return (i + 0.5) * rectSizeY; },
-        "dx": "-10",
-        "dy": "5",
+        "dx": -tickTextOffset[0],
+        "dy": tickTextOffset[1],
         "text-anchor": "end"
       })
       .text(function(d) { return d;});
@@ -133,7 +136,7 @@ function draw_progress_overview(url) {
     rowLabelRegion.append("text")
       .attr({
         x: rowLabelMargin / 2,
-        y: -7,
+        y: labelTextOffset,
         "text-anchor": "middle"
       })
       .text(dat.parameters[1]);
@@ -147,8 +150,8 @@ function draw_progress_overview(url) {
       .attr({
         "x": 0,
         "y": function(d,i) { return (i+0.5) * rectSizeX;},
-        "dx": "10",
-        "dy": "5",
+        "dx": tickTextOffset[0],
+        "dy": tickTextOffset[1],
         "text-anchor": "start"
       })
       .text(function(d) { return d; });
@@ -156,7 +159,7 @@ function draw_progress_overview(url) {
     columnLabelRegion.append("text")
       .attr({
         x: columnLabelMargin / 2,
-        y: -7,
+        y: labelTextOffset,
         "text-anchor": "middle"
       })
       .text(dat.parameters[0]);
