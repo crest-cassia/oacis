@@ -1,0 +1,39 @@
+%h3 Progress overview
+
+%script{charset: "utf-8", src: "http://d3js.org/d3.v3.min.js"}
+
+%div
+  .row
+    .span8#progress-overview
+      %svg
+      #progress-tooltip.progress-tooltip{style: "opacity: 0;"}
+    .span4
+      %aside
+        %p
+          Progress each parameter set:
+          %br
+          0%-------------100%
+          %br
+          %svg#colormap-svg
+        #color-map
+        :javascript
+          draw_color_map();
+        %form.form-horizontal
+        - parameter_keys = @simulator.parameter_definitions.map(&:key)
+        .control-group
+          %label Column Parameter:
+          .controls
+            = select_tag 'column_parameter', options_for_select(parameter_keys, selected: parameter_keys[0]), id: 'column_parameter';
+        .control-group
+          %label Row Parameter:
+          .controls
+            = select_tag 'row_parameter', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'row_parameter'
+        = submit_tag 'Show', name: 'show_progress_button', class: 'btn btn-primary', id: 'show_progress_button'
+:javascript
+  var url = "#{_progress_simulator_path}" + ".json";
+  $('#show_progress_button').on('click', function () {
+    var cp = $('#column_parameter option:selected').val();
+    var rp = $('#row_parameter option:selected').val();
+    var url_with_param = url + "?row_parameter=" + rp + "&column_parameter=" + cp;
+    draw_progress_overview(url_with_param);
+  })
