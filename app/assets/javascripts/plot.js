@@ -39,7 +39,6 @@ function draw_plot(url) {
 
   d3.json(url, function(dat) {
 
-
     xScale.domain([
       d3.min( dat.data, function(row) { return d3.min(row, function(v) { return v[0];})}),
       d3.max( dat.data, function(row) { return d3.max(row, function(v) { return v[0];})})
@@ -101,15 +100,17 @@ function draw_plot(url) {
           tooltip.transition()
             .duration(200)
             .style("opacity", .8);
-          toolTip.html("(" + d.x + ", " + d.y + ", " + d.z + ")");
+          tooltip.html("(" + d.x + ", " + d.y + ", " + d.z + ")");
         })
         .on("mousemove", function() {
-          return tooltip
+          tooltip
             .style("top", (d3.event.pageY-10) + "px")
             .style("left", (d3.event.pageX+10) + "px");
         })
         .on("mouseout", function() {
-          return tooltip.style("visibility", "hidden");
+          tooltip.transition()
+            .duration(300)
+            .style("opacity", 0);
         });
 
     var legend = svg.append("g")
