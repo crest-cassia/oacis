@@ -113,6 +113,24 @@ class ParameterSetsController < ApplicationController
     render json: AnalysesListDatatable.new(view_context, parameter_set.analyses)
   end
 
+  def _plot
+    parameter_set = ParameterSet.find(params[:id])
+    simulator = parameter_set.simulator
+
+    xlabel = simulator.parameter_definitions.first.key
+    ylabel = "Result"
+    series = ""
+    series_values = []
+    data = [
+      [[0, 1], [1, 2], [2, 4], [3, 8], [4, 16]],
+      [[0, 2], [1, 4], [2, 6], [3, 5], [5, 4]],
+      [[0, 2], [1, -5], [2, 7], [3, 9], [3.5, 3]]
+    ]
+
+    h = {xlabel: xlabel, ylabel: ylabel, series: series, series_values: series_values, data: data}
+    render json: h
+  end
+
   private
   MAX_CREATION_SIZE = 100
   # return created parameter sets

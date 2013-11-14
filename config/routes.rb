@@ -24,6 +24,7 @@ AcmProto::Application.routes.draw do
         get "_runs_and_analyses" # for ajax, get
         get "_runs_list" # for ajax, datatables
         get "_analyses_list" # for ajax, datatables
+        get "_plot" # for plotting tool
         get "neighbor" # for plotting tool
       end
       resources :runs, only: ["show","create", "destroy"] do

@@ -1,0 +1,25 @@
+%h3 Plot
+
+%script{charset: "utf-8", src: "http://d3js.org/d3.v3.min.js"}
+
+.row
+  .span8#plot
+    #plot-tooltip.progress-tooltip{style: "opacity: 0;"}
+  .span4
+
+:css
+  .line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+  }
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+
+:javascript
+  var url = "#{_plot_parameter_set_path(@param_set)}" + ".json";
+  draw_plot(url);
