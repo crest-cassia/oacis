@@ -126,7 +126,31 @@ class ParameterSetsController < ApplicationController
     end
 
     plot_data = []
-    parameter_set.parameter_sets_with_different(x_axis_key).each do |ps|
+    series_values = []
+    series = params[:series]
+    if series.present?
+      parameter_set.parameter_sets_with_different(series).each do |base_ps|
+        plot_data << collect_data(base_ps, x_axis_key, analyzer, y_axis_keys)
+        series_values << base_ps.v[series]
+      end
+    else
+      plot_data << collect_data(parameter_set, x_axis_key, analyzer, y_axis_keys)
+    end
+
+    xlabel = x_axis_key
+    ylabel = y_axis_keys.last
+    series = ""
+    series_values = []
+    data = plot_data
+
+    h = {xlabel: xlabel, ylabel: ylabel, series: series, series_values: series_values, data: data}
+    render json: h
+  end
+
+  private
+  def collect_data(base_ps, x_axis_key, analyzer, y_axis_keys)
+    plot_data = []
+    base_ps.parameter_sets_with_different(x_axis_key).each do |ps|
       if analyzer.nil?
         run = ps.runs.where(status: :finished).first
         result = run.result
@@ -149,17 +173,7 @@ class ParameterSetsController < ApplicationController
         plot_data << [x, y]
       end
     end
-
-    xlabel = x_axis_key
-    ylabel = y_axis_keys.last
-    series = ""
-    series_values = []
-    data = [
-      plot_data
-    ]
-
-    h = {xlabel: xlabel, ylabel: ylabel, series: series, series_values: series_values, data: data}
-    render json: h
+    plot_data
   end
 
   private

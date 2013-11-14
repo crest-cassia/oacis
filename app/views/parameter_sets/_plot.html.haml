@@ -18,6 +18,10 @@
       %label Y-Axis:
       .controls
         = select_tag 'y_axis_key', options_for_select(plottable, selected: plottable[0]), id: 'y_axis_key'
+    .control-group
+      %label Series:
+      .controls
+        = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
 
 :css
   .line {
@@ -37,12 +41,19 @@
   function update_plot() {
     var x = $('#x_axis_key').val();
     var y = $('#y_axis_key').val();
-    var url_with_param = url + "?x_axis_key=" + encodeURIComponent(x) + "&y_axis_key=" + encodeURIComponent(y);
+    var series = $('#series').val();
+    var url_with_param = url + "?x_axis_key=" + encodeURIComponent(x) + "&y_axis_key=" + encodeURIComponent(y) + "&series=" + encodeURIComponent(series);
     draw_plot(url_with_param);
   }
   $('#x_axis_key').on('change', function() {
     update_plot();
-  })
+  });
   $('#y_axis_key').on('change', function() {
     update_plot();
-  })
+  });
+  $('#series').on('change', function() {
+    update_plot();
+  });
+  $(function() {
+    // update_plot();
+  });
