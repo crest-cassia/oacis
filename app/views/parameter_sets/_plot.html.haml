@@ -37,13 +37,15 @@
   }
 
 :javascript
-  var url = "#{_plot_parameter_set_path(@param_set)}" + ".json";
   function update_plot() {
+    var url = "#{_plot_parameter_set_path(@param_set)}" + ".json";
     var x = $('#x_axis_key').val();
     var y = $('#y_axis_key').val();
     var series = $('#series').val();
     var url_with_param = url + "?x_axis_key=" + encodeURIComponent(x) + "&y_axis_key=" + encodeURIComponent(y) + "&series=" + encodeURIComponent(series);
-    draw_plot(url_with_param);
+
+    var ps_base_url = "#{parameter_set_path('')}";
+    draw_plot(url_with_param, ps_base_url);
   }
   $('#x_axis_key').on('change', function() {
     update_plot();

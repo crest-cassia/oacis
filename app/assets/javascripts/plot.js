@@ -1,4 +1,4 @@
-function draw_plot(url) {
+function draw_plot(url, parameter_set_base_url) {
 
   var margin = {top: 10, right: 100, bottom: 100, left: 100},
     width = 560;
@@ -89,7 +89,7 @@ function draw_plot(url) {
     series.selectAll("circle")
       .data(function(d,i) {
         return d.map(function(v) {
-          return { x: v[0], y:v[1], series_index: i, series_value: dat.series_values[i]};
+          return { x: v[0], y:v[1], series_index: i, series_value: dat.series_values[i], psid: v[3]};
         });
       })
       .enter().append("circle")
@@ -101,7 +101,8 @@ function draw_plot(url) {
           tooltip.transition()
             .duration(200)
             .style("opacity", .8);
-          tooltip.html("(" + d.x + ", " + d.y + ", " + d.series_value + ")");
+          tooltip.html(
+            "(" + d.x + ", " + d.y + ", " + d.series_value + ")<br/>" + d.psid);
         })
         .on("mousemove", function() {
           tooltip
@@ -112,6 +113,11 @@ function draw_plot(url) {
           tooltip.transition()
             .duration(300)
             .style("opacity", 0);
+        })
+        .on("dblclick", function(d) {
+          console.log(parameter_set_base_url);
+          console.log(d.psid);
+          window.location.href = parameter_set_base_url + d.psid;
         });
 
     var legend = svg.append("g")
