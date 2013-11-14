@@ -117,9 +117,9 @@ class ParameterSetsController < ApplicationController
     parameter_set = ParameterSet.find(params[:id])
     simulator = parameter_set.simulator
 
-    x_axis_key = "beta" # params[:x_axis]
+    x_axis_key = params[:x_axis_key]
     analyzer = nil
-    y_axis_keys = ["", "energy"] # params[:y_axis].split('.')
+    y_axis_keys = params[:y_axis_key].split('.')
     analyzer_name = y_axis_keys.shift
     if analyzer_name.present?
       analyzer = simulator.analyzers.where(name: analyzer_name).first
