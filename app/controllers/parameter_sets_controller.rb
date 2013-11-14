@@ -117,14 +117,45 @@ class ParameterSetsController < ApplicationController
     parameter_set = ParameterSet.find(params[:id])
     simulator = parameter_set.simulator
 
-    xlabel = simulator.parameter_definitions.first.key
-    ylabel = "Result"
+    x_axis_key = "beta" # params[:x_axis]
+    analyzer = nil
+    y_axis_keys = ["", "energy"] # params[:y_axis].split('.')
+    analyzer_name = y_axis_keys.shift
+    if analyzer_name.present?
+      analyzer = simulator.analyzers.where(name: analyzer_name).first
+    end
+
+    plot_data = []
+    parameter_set.parameter_sets_with_different(x_axis_key).each do |ps|
+      if analyzer.nil?
+        run = ps.runs.where(status: :finished).first
+        result = run.result
+        x = ps.v[x_axis_key]
+        y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
+        plot_data << [x, y]
+      elsif analyzer.type == :on_parameter_set
+        analysis = analyzer.analyses.where(analyzable: ps, status: :finished).first
+        result = analysis.result
+        # analysis = ps.analyses.where(analyzer: analyzer, status: :finished).first
+        x = ps.v[x_axis_key]
+        y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
+        plot_data << [x, y]
+      elsif analyzer.type == :on_run
+        run_ids = ps.runs.where(status: :finished).map(&:id)
+        analysis = analyzer.analyses.in(analyzable_id: run_ids).where(status: :finished).first
+        result = analysis.result
+        x = ps.v[x_axis_key]
+        y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
+        plot_data << [x, y]
+      end
+    end
+
+    xlabel = x_axis_key
+    ylabel = y_axis_keys.last
     series = ""
     series_values = []
     data = [
-      [[0, 1], [1, 2], [2, 4], [3, 8], [4, 16]],
-      [[0, 2], [1, 4], [2, 6], [3, 5], [5, 4]],
-      [[0, 2], [1, -5], [2, 7], [3, 9], [3.5, 3]]
+      plot_data
     ]
 
     h = {xlabel: xlabel, ylabel: ylabel, series: series, series_values: series_values, data: data}
