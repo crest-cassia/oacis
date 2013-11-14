@@ -9,7 +9,7 @@
   .span4
     %form.form-horizontal
     - parameter_keys = @param_set.simulator.parameter_definitions.map(&:key)
-    - plottables = [".energy", ".order_parameter"]
+    - plottable = @param_set.simulator.plottable
     .control-group
       %label X-Axis:
       .controls
@@ -17,8 +17,7 @@
     .control-group
       %label Y-Axis:
       .controls
-        = select_tag 'y_axis_key', options_for_select(plottables, selected: plottables[0]), id: 'y_axis_key'
-
+        = select_tag 'y_axis_key', options_for_select(plottable, selected: plottable[0]), id: 'y_axis_key'
 
 :css
   .line {
