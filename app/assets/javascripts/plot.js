@@ -1,8 +1,8 @@
 function draw_plot(url) {
 
   var margin = {top: 10, right: 100, bottom: 100, left: 100},
-    width = 640;
-    height = 560;
+    width = 560;
+    height = 460;
 
   var xScale = d3.scale.linear()
     .range([0, width]);
@@ -101,7 +101,7 @@ function draw_plot(url) {
           tooltip.transition()
             .duration(200)
             .style("opacity", .8);
-          tooltip.html("(" + d.x + ", " + d.y + ", " + d.z + ")");
+          tooltip.html("(" + d.x + ", " + d.y + ", " + d.series_value + ")");
         })
         .on("mousemove", function() {
           tooltip

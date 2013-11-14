@@ -139,9 +139,8 @@ class ParameterSetsController < ApplicationController
 
     xlabel = x_axis_key
     ylabel = y_axis_keys.last
-    series = ""
-    series_values = []
-    data = plot_data
+    data = plot_data.reverse
+    series_values = series_values.reverse
 
     h = {xlabel: xlabel, ylabel: ylabel, series: series, series_values: series_values, data: data}
     render json: h
