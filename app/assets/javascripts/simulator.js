@@ -45,8 +45,8 @@ function draw_progress_overview(url) {
     var mousedragY = 0
     var vbox_x = 0;
     var vbox_y = 0;
-    var vbox_default_width = vbox_width = width;
-    var vbox_default_height = vbox_height = height;
+    var vbox_default_width = vbox_width = width - columnLabelMargin;
+    var vbox_default_height = vbox_height = height - rowLabelMargin;
     var zoom_scale=1.0;
 
     var svg = progress_overview.append("svg")
@@ -55,11 +55,12 @@ function draw_progress_overview(url) {
       .attr("height", height + margin.top + margin.bottom);
 
     var inner_svg = svg.append("svg")
+      .attr("transform", "translate("+margin.left+" "+margin.top+")")
       .attr("id", "inner_canvas")
-      .attr("x", rowLabelMargin+margin.left)
-      .attr("y", columnLabelMargin+margin.top)
-      .attr("width", width)
-      .attr("height", height)
+      .attr("x", rowLabelMargin)
+      .attr("y", columnLabelMargin)
+      .attr("width", width - rowLabelMargin)
+      .attr("height", height - columnLabelMargin)
       .attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height)
       .append("g")
       .on("mouseup", function() {
@@ -117,10 +118,10 @@ function draw_progress_overview(url) {
             vbox_y=0;
         }
         if (vbox_x + vbox_width > vbox_default_width) {
-            vbox_x=0;
+            vbox_x=vbox_default_width-vbox_width;
         }
         if (vbox_y + vbox_height > vbox_default_height) {
-            vbox_y=0;
+            vbox_y=vbox_default_width-vbox_width;
         }
         d3.select('svg#inner_canvas').attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);
         d3.select('svg#rowLabel_canvas').attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
@@ -214,11 +215,12 @@ function draw_progress_overview(url) {
       .text(dat.parameters[1]);
 
     var rowLabelsvg = svg.append("svg")
+      .attr("transform", "translate("+margin.left+" "+margin.top+")")
       .attr("id", "rowLabel_canvas")
-      .attr("x", margin.left)
-      .attr("y", columnLabelMargin+margin.top)
+      .attr("x", 0)
+      .attr("y", columnLabelMargin)
       .attr("width", rowLabelMargin-tickTextOffset[0])
-      .attr("height", height)
+      .attr("height", height - columnLabelMargin)
       .attr("preserveAspectRatio", "none")
       .attr("viewBox", "" + 0 + " " + vbox_y + " " + rowLabelMargin-tickTextOffset[0] + " " + vbox_height);
 
@@ -252,10 +254,11 @@ function draw_progress_overview(url) {
       .text(dat.parameters[0]);
 
     var columnLabelsvg = svg.append("svg")
+      .attr("transform", "translate("+margin.left+" "+margin.top+")")
       .attr("id", "columnLabel_canvas")
-      .attr("x", rowLabelMargin+margin.left)
-      .attr("y", margin.top)
-      .attr("width", width)
+      .attr("x", rowLabelMargin)
+      .attr("y", 0)
+      .attr("width", width - rowLabelMargin)
       .attr("height", columnLabelMargin-tickTextOffset[1])
       .attr("preserveAspectRatio", "none")
       .attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + columnLabelMargin-tickTextOffset[1]);
