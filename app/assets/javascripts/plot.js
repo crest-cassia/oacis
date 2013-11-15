@@ -119,9 +119,17 @@ function draw_plot(url, parameter_set_base_url) {
           window.location.href = parameter_set_base_url + d.psid;
         });
 
+    svg.append("text")
+      .attr({
+        x: width,
+        y: 0,
+        dx: ".8em",
+        dy: ".8em"
+      })
+      .text(dat.series);
     var legend = svg.append("g")
       .attr("class", "legend")
-      .attr("transform", "translate(" + width + ",0)");
+      .attr("transform", "translate(" + width + "," + 20 + ")");
 
     var legendItem = legend.selectAll("g")
       .data(dat.series_values)
@@ -129,7 +137,7 @@ function draw_plot(url, parameter_set_base_url) {
       .attr("class", "legend-item")
       .attr("transform", function(d,i) {
         return "translate(10," + (i*20) + ")";
-      })
+      });
     legendItem.append("rect")
       .attr("width", 15)
       .attr("height", 15)
