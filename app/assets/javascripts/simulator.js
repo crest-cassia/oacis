@@ -26,7 +26,7 @@ function draw_progress_overview(url) {
   var rowLabelMargin = 100;
   var columnLabelMargin = 100;
   var tickTextOffset = [10, 5];
-  var labelTextOffset = -7;
+  var labelTextOffset = {column: -7, row: 2};
   var fontsize =12;
 
   var toolTip = d3.select("#progress-tooltip");
@@ -55,10 +55,9 @@ function draw_progress_overview(url) {
       .attr("height", height + margin.top + margin.bottom);
 
     var inner_svg = svg.append("svg")
-      .attr("transform", "translate("+margin.left+" "+margin.top+")")
       .attr("id", "inner_canvas")
-      .attr("x", rowLabelMargin)
-      .attr("y", columnLabelMargin)
+      .attr("x", margin.left + rowLabelMargin)
+      .attr("y", margin.top + columnLabelMargin)
       .attr("width", width - rowLabelMargin)
       .attr("height", height - columnLabelMargin)
       .attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height)
@@ -244,16 +243,15 @@ function draw_progress_overview(url) {
     rowLabelKeyRegion.append("text")
       .attr({
         x: rowLabelMargin / 2,
-        y: 2,
+        y: labelTextOffset.row,
         "text-anchor": "middle"
       })
       .text(dat.parameters[1]);
 
     var rowLabelsvg = svg.append("svg")
-      .attr("transform", "translate("+margin.left+" "+margin.top+")")
       .attr("id", "rowLabel_canvas")
-      .attr("x", 0)
-      .attr("y", columnLabelMargin)
+      .attr("x", margin.left)
+      .attr("y", margin.top + columnLabelMargin)
       .attr("width", rowLabelMargin-tickTextOffset[0])
       .attr("height", height - columnLabelMargin)
       .attr("preserveAspectRatio", "none")
@@ -275,24 +273,21 @@ function draw_progress_overview(url) {
       })
       .text(function(d) { return d;});
 
-
-
     var columnLabelKeyRegion = svg.append("g")
       .attr("transform", "translate(" + rowLabelMargin + "," + columnLabelMargin + ") rotate(-90)");
 
     columnLabelKeyRegion.append("text")
       .attr({
         x: columnLabelMargin / 2,
-        y: labelTextOffset,
+        y: labelTextOffset.column,
         "text-anchor": "middle"
       })
       .text(dat.parameters[0]);
 
     var columnLabelsvg = svg.append("svg")
-      .attr("transform", "translate("+margin.left+" "+margin.top+")")
       .attr("id", "columnLabel_canvas")
-      .attr("x", rowLabelMargin)
-      .attr("y", 0)
+      .attr("x", margin.left + rowLabelMargin)
+      .attr("y", margin.top)
       .attr("width", width - rowLabelMargin)
       .attr("height", columnLabelMargin-tickTextOffset[1])
       .attr("preserveAspectRatio", "none")
