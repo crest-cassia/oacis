@@ -5,8 +5,8 @@
 %form.form-inline
   - parameter_keys = @param_set.simulator.parameter_definitions.map(&:key)
   - plottable = @param_set.simulator.plottable
-  = select_tag 'x_axis_key', options_for_select(parameter_keys, selected: parameter_keys[0]), id: 'x_axis_key';
-  = select_tag 'y_axis_key', options_for_select(plottable, selected: plottable[0]), id: 'y_axis_key'
+  = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', prompt: "[Plot All]";
+  = select_tag 'y_axis_key', options_for_select(plottable), id: 'y_axis_key', prompt: "[Plot All]"
   = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
   %a.btn.btn-primary#add_plot_button Add Plot
 
@@ -29,16 +29,42 @@
   }
 
 :javascript
-  function update_plot() {
+  function add_plot(x, y, series) {
     var url = "#{_plot_parameter_set_path(@param_set)}" + ".json";
-    var x = $('#x_axis_key').val();
-    var y = $('#y_axis_key').val();
-    var series = $('#series').val();
     var url_with_param = url + "?x_axis_key=" + encodeURIComponent(x) + "&y_axis_key=" + encodeURIComponent(y) + "&series=" + encodeURIComponent(series);
-
     var ps_base_url = "#{parameter_set_path('')}";
     draw_plot(url_with_param, ps_base_url);
   }
   $('#add_plot_button').on('click', function() {
-    update_plot();
+    var x = $('#x_axis_key').val();
+    var y = $('#y_axis_key').val();
+    var series = $('#series').val();
+    if( x == "" ) {
+      x = new Array();
+      $('#x_axis_key').children('option').each(function() {
+        if( $(this).val() != "" ) {
+          x.push( $(this).val() );
+        }
+      });
+    }
+    else {
+      x = new Array(x);
+    }
+    if( y == "" ) {
+      y = new Array();
+      $('#y_axis_key').children('option').each(function() {
+        if( $(this).val() != "" ) {
+          y.push( $(this).val() );
+        }
+      });
+    }
+    else {
+      y = new Array(y);
+    }
+
+    x.forEach(function(xval) {
+      y.forEach(function(yval) {
+        add_plot(xval, yval, series);
+      })
+    })
   });
