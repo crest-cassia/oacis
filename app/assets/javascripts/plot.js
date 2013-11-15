@@ -101,7 +101,7 @@ function draw_plot(url, parameter_set_base_url) {
             .duration(200)
             .style("opacity", .8);
           tooltip.html(
-            "(" + d.x + ", " + d.y + ", " + d.series_value + ")<br/>" + d.psid);
+            "(" + d.x + ", " + d.y + ")<br/>" + dat.series + " : " + d.series_value + "<br/>" + d.psid);
         })
         .on("mousemove", function() {
           tooltip
