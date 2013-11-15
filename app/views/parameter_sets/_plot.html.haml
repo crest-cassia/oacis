@@ -2,26 +2,19 @@
 
 %script{charset: "utf-8", src: "http://d3js.org/d3.v3.min.js"}
 
+%form.form-inline
+  - parameter_keys = @param_set.simulator.parameter_definitions.map(&:key)
+  - plottable = @param_set.simulator.plottable
+  = select_tag 'x_axis_key', options_for_select(parameter_keys, selected: parameter_keys[0]), id: 'x_axis_key';
+  = select_tag 'y_axis_key', options_for_select(plottable, selected: plottable[0]), id: 'y_axis_key'
+  = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
+  %a.btn.btn-primary#add_plot_button Add Plot
+
 .row
   .span8#plot
     %svg
     #plot-tooltip.progress-tooltip{style: "opacity: 0;"}
   .span4
-    %form.form-horizontal
-    - parameter_keys = @param_set.simulator.parameter_definitions.map(&:key)
-    - plottable = @param_set.simulator.plottable
-    .control-group
-      %label X-Axis:
-      .controls
-        = select_tag 'x_axis_key', options_for_select(parameter_keys, selected: parameter_keys[0]), id: 'x_axis_key';
-    .control-group
-      %label Y-Axis:
-      .controls
-        = select_tag 'y_axis_key', options_for_select(plottable, selected: plottable[0]), id: 'y_axis_key'
-    .control-group
-      %label Series:
-      .controls
-        = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
 
 :css
   .line {
@@ -47,15 +40,6 @@
     var ps_base_url = "#{parameter_set_path('')}";
     draw_plot(url_with_param, ps_base_url);
   }
-  $('#x_axis_key').on('change', function() {
+  $('#add_plot_button').on('click', function() {
     update_plot();
-  });
-  $('#y_axis_key').on('change', function() {
-    update_plot();
-  });
-  $('#series').on('change', function() {
-    update_plot();
-  });
-  $(function() {
-    // update_plot();
   });
