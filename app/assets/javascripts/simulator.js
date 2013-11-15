@@ -1,6 +1,6 @@
 function draw_color_map() {
   var colorScale = d3.scale.linear().domain([0.0,1.0])
-    .range(["#dddddd", "#62c462"]);
+    .range(["#dddddd", "#0041ff"]);
   var cmap = d3.select('svg#colormap-svg')
     .attr("width", 200)
     .attr("height", 20);
@@ -18,7 +18,7 @@ function draw_color_map() {
 
 function draw_progress_overview(url) {
   var colorScale = d3.scale.linear().domain([0.0,1.0])
-    .range(["#dddddd", "#62c462"]);
+    .range(["#dddddd", "#0041ff"]);
 
   var margin = {top: 10, right: 0, bottom: 10, left: 0},
       width = 720,
