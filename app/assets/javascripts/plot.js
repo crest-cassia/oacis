@@ -29,8 +29,7 @@ function draw_plot(url, parameter_set_base_url) {
     .style("z-index", "10")
     .text("a simple tooltip");
 
-  d3.select("#plot").select("svg").remove();
-  var svg = d3.select("#plot").append("svg")
+  var svg = d3.select("#plot").insert("svg", "svg")
     .attr({
       "width": width + margin.left + margin.right,
       "height": height + margin.top + margin.bottom
