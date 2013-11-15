@@ -94,6 +94,41 @@ function draw_progress_overview(url) {
           mousedownX = d3.event.clientX;
           mousedownY = d3.event.clientY;
       })
+      .on("mousewheel", function() {
+        var center = d3.mouse(this);
+        var befere_vbox_width, before_vbox_height, d_x, d_y;
+        if (d3.event.wheelDelta==120) {
+          zoom_scale *= 0.75;
+        } else if (d3.event.wheelDelta==-120) {
+          zoom_scale /= 0.75;
+          if (zoom_scale>=1) {
+              zoom_scale=1;
+          }
+        }
+        befere_vbox_width = vbox_width;
+        before_vbox_height = vbox_height;
+        vbox_width = vbox_default_width * zoom_scale;
+        vbox_height = vbox_default_height * zoom_scale;
+        vbox_x = center[0] - vbox_width /2;
+        vbox_y = center[1] - vbox_height/2;
+        if (vbox_x < 0) {
+            vbox_x=0;
+        }
+        if (vbox_y < 0) {
+            vbox_y=0;
+        }
+        if (vbox_x + vbox_width > vbox_default_width) {
+            vbox_x=vbox_default_width-vbox_width;
+        }
+        if (vbox_y + vbox_height > vbox_default_height) {
+            vbox_y=vbox_default_width-vbox_width;
+        }
+        d3.select('svg#inner_canvas').attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);
+        d3.select('svg#rowLabel_canvas').attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
+        d3.select('svg#columnLabel_canvas').attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
+        d3.select('g#rowLabelRegion').attr("font-size",fontsize*Math.sqrt(zoom_scale));
+        d3.select('g#columnLabelRegion').attr("font-size",fontsize*Math.sqrt(zoom_scale));
+      })
       .on("DOMMouseScroll", function() {
         var center = d3.mouse(this);
         var befere_vbox_width, before_vbox_height, d_x, d_y;
