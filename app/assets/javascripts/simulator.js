@@ -14,7 +14,7 @@ function draw_color_map() {
       height: 19,
       fill: function(d) { return colorScale(d); }
     });
-}
+};
 
 function draw_progress_overview(url) {
   var colorScale = d3.scale.linear().domain([0.0,1.0])
@@ -38,16 +38,32 @@ function draw_progress_overview(url) {
     var progress_overview = d3.select("#progress-overview");
     progress_overview.select("svg").remove();
 
-    var drag_flag = 0
-    var mousedownX = 0
-    var mousedownY = 0
-    var mousedragX = 0
-    var mousedragY = 0
+    var drag_flag = 0;
+    var mousedownX = 0;
+    var mousedownY = 0;
+    var mousedragX = 0;
+    var mousedragY = 0;
     var vbox_x = 0;
     var vbox_y = 0;
     var vbox_default_width = vbox_width = width - columnLabelMargin;
     var vbox_default_height = vbox_height = height - rowLabelMargin;
     var zoom_scale=1.0;
+
+    function set_edge_conditions(x, y) {
+      if (x < 0) {
+        x=0;
+      }
+      if (y < 0) {
+        y=0;
+      }
+      if (x + vbox_width > vbox_default_width) {
+        x=vbox_default_width-vbox_width;
+      }
+      if (y + vbox_height > vbox_default_height) {
+        y=vbox_default_height-vbox_height;
+      }
+      return [x,y];
+    };
 
     var svg = progress_overview.append("svg")
       .attr("id", "canvas")
@@ -68,18 +84,7 @@ function draw_progress_overview(url) {
           mousedragY = d3.event.pageY - mousedownY;
           vbox_x -= mousedragX * zoom_scale;
           vbox_y -= mousedragY * zoom_scale;
-          if (vbox_x < 0) {
-              vbox_x=0;
-          }
-          if (vbox_y < 0) {
-              vbox_y=0;
-          }
-          if (vbox_x + vbox_width > vbox_default_width) {
-              vbox_x=vbox_default_width-vbox_width;
-          }
-          if (vbox_y + vbox_height > vbox_default_height) {
-              vbox_y=vbox_default_height-vbox_height;
-          }
+          [vbox_x,vbox_y]=set_edge_conditions(vbox_x, vbox_y);
           d3.select('svg#inner_canvas').attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);
           d3.select('svg#rowLabel_canvas').attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
           d3.select('svg#columnLabel_canvas').attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
@@ -95,33 +100,20 @@ function draw_progress_overview(url) {
       })
       .on("mousewheel", function() {
         var center = d3.mouse(this);
-        var befere_vbox_width, before_vbox_height, d_x, d_y;
+        var d_x, d_y;
         if (d3.event.wheelDelta==120) {
           zoom_scale *= 0.75;
         } else if (d3.event.wheelDelta==-120) {
           zoom_scale /= 0.75;
           if (zoom_scale>=1) {
-              zoom_scale=1;
+            zoom_scale=1;
           }
         }
-        befere_vbox_width = vbox_width;
-        before_vbox_height = vbox_height;
         vbox_width = vbox_default_width * zoom_scale;
         vbox_height = vbox_default_height * zoom_scale;
         vbox_x = center[0] - vbox_width /2;
         vbox_y = center[1] - vbox_height/2;
-        if (vbox_x < 0) {
-            vbox_x=0;
-        }
-        if (vbox_y < 0) {
-            vbox_y=0;
-        }
-        if (vbox_x + vbox_width > vbox_default_width) {
-            vbox_x=vbox_default_width-vbox_width;
-        }
-        if (vbox_y + vbox_height > vbox_default_height) {
-            vbox_y=vbox_default_width-vbox_width;
-        }
+        [vbox_x,vbox_y]=set_edge_conditions(vbox_x, vbox_y);
         d3.select('svg#inner_canvas').attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);
         d3.select('svg#rowLabel_canvas').attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
         d3.select('svg#columnLabel_canvas').attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
@@ -130,33 +122,20 @@ function draw_progress_overview(url) {
       })
       .on("DOMMouseScroll", function() {
         var center = d3.mouse(this);
-        var befere_vbox_width, before_vbox_height, d_x, d_y;
+        var d_x, d_y;
         if (d3.event.detail==-3) {
           zoom_scale *= 0.75;
         } else if (d3.event.detail==3) {
           zoom_scale /= 0.75;
           if (zoom_scale>=1) {
-              zoom_scale=1;
+            zoom_scale=1;
           }
         }
-        befere_vbox_width = vbox_width;
-        before_vbox_height = vbox_height;
         vbox_width = vbox_default_width * zoom_scale;
         vbox_height = vbox_default_height * zoom_scale;
         vbox_x = center[0] - vbox_width /2;
         vbox_y = center[1] - vbox_height/2;
-        if (vbox_x < 0) {
-            vbox_x=0;
-        }
-        if (vbox_y < 0) {
-            vbox_y=0;
-        }
-        if (vbox_x + vbox_width > vbox_default_width) {
-            vbox_x=vbox_default_width-vbox_width;
-        }
-        if (vbox_y + vbox_height > vbox_default_height) {
-            vbox_y=vbox_default_width-vbox_width;
-        }
+        [vbox_x,vbox_y]=set_edge_conditions(vbox_x, vbox_y);
         d3.select('svg#inner_canvas').attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);
         d3.select('svg#rowLabel_canvas').attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
         d3.select('svg#columnLabel_canvas').attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
@@ -309,6 +288,5 @@ function draw_progress_overview(url) {
         "text-anchor": "start"
       })
       .text(function(d) { return d; });
-
   });
 };
