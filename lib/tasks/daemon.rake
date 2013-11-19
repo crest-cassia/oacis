@@ -6,7 +6,7 @@ namespace :daemon do
   task :start do
     if File.exist?(SERVER_PID) and File.open(SERVER_PID).gets.present?
       pid=File.open(SERVER_PID).gets.chomp
-      pname="ruby script/rails s -d"
+      pname="rails s -d"
     end
 
     if is_process_running?(pid,pname)
