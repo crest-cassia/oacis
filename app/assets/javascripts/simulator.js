@@ -49,7 +49,7 @@ function draw_progress_overview(url) {
     var vbox_default_height = vbox_height = height - rowLabelMargin;
     var zoom_scale=1.0;
 
-    function set_edge_conditions(x, y) {
+    function adjust_boundary_conditions(x, y) {
       if (x < 0) {
         x=0;
       }
@@ -63,6 +63,29 @@ function draw_progress_overview(url) {
         y=vbox_default_height-vbox_height;
       }
       return [x,y];
+    };
+
+    function set_view_box(x, y) {
+      d3.select('svg#inner_canvas')
+        .attr("viewBox", "" + x + " " + y + " " + vbox_width + " " + vbox_height);
+      d3.select('svg#rowLabel_canvas')
+        .attr("viewBox", "" + 0 + " " + y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
+      d3.select('svg#columnLabel_canvas')
+        .attr("viewBox", "" + x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
+    };
+
+    function mouse_zoom(eventObject) {
+      var center = d3.mouse(eventObject);
+      vbox_width = vbox_default_width * zoom_scale;
+      vbox_height = vbox_default_height * zoom_scale;
+      vbox_x = center[0] - vbox_width/2;
+      vbox_y = center[1] - vbox_height/2;
+      [vbox_x,vbox_y]=adjust_boundary_conditions(vbox_x, vbox_y);
+      set_view_box(vbox_x,vbox_y);
+      d3.select('g#rowLabelRegion')
+        .attr("font-size",fontsize*Math.sqrt(zoom_scale));
+      d3.select('g#columnLabelRegion')
+        .attr("font-size",fontsize*Math.sqrt(zoom_scale));
     };
 
     var svg = progress_overview.append("svg")
@@ -84,10 +107,8 @@ function draw_progress_overview(url) {
           mousedragY = d3.event.pageY - mousedownY;
           vbox_x -= mousedragX * zoom_scale;
           vbox_y -= mousedragY * zoom_scale;
-          [vbox_x,vbox_y]=set_edge_conditions(vbox_x, vbox_y);
-          d3.select('svg#inner_canvas').attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);
-          d3.select('svg#rowLabel_canvas').attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
-          d3.select('svg#columnLabel_canvas').attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
+          [vbox_x,vbox_y]=adjust_boundary_conditions(vbox_x, vbox_y);
+          set_view_box(vbox_x,vbox_y);
         }
       })
       .on("mousemove", function() {
@@ -99,8 +120,6 @@ function draw_progress_overview(url) {
           mousedownY = d3.event.clientY;
       })
       .on("mousewheel", function() {
-        var center = d3.mouse(this);
-        var d_x, d_y;
         if (d3.event.wheelDelta==120) {
           zoom_scale *= 0.75;
         } else if (d3.event.wheelDelta==-120) {
@@ -109,20 +128,9 @@ function draw_progress_overview(url) {
             zoom_scale=1;
           }
         }
-        vbox_width = vbox_default_width * zoom_scale;
-        vbox_height = vbox_default_height * zoom_scale;
-        vbox_x = center[0] - vbox_width /2;
-        vbox_y = center[1] - vbox_height/2;
-        [vbox_x,vbox_y]=set_edge_conditions(vbox_x, vbox_y);
-        d3.select('svg#inner_canvas').attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);
-        d3.select('svg#rowLabel_canvas').attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
-        d3.select('svg#columnLabel_canvas').attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
-        d3.select('g#rowLabelRegion').attr("font-size",fontsize*Math.sqrt(zoom_scale));
-        d3.select('g#columnLabelRegion').attr("font-size",fontsize*Math.sqrt(zoom_scale));
+        mouse_zoom(this);
       })
       .on("DOMMouseScroll", function() {
-        var center = d3.mouse(this);
-        var d_x, d_y;
         if (d3.event.detail==-3) {
           zoom_scale *= 0.75;
         } else if (d3.event.detail==3) {
@@ -131,16 +139,7 @@ function draw_progress_overview(url) {
             zoom_scale=1;
           }
         }
-        vbox_width = vbox_default_width * zoom_scale;
-        vbox_height = vbox_default_height * zoom_scale;
-        vbox_x = center[0] - vbox_width /2;
-        vbox_y = center[1] - vbox_height/2;
-        [vbox_x,vbox_y]=set_edge_conditions(vbox_x, vbox_y);
-        d3.select('svg#inner_canvas').attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);
-        d3.select('svg#rowLabel_canvas').attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
-        d3.select('svg#columnLabel_canvas').attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
-        d3.select('g#rowLabelRegion').attr("font-size",fontsize*Math.sqrt(zoom_scale));
-        d3.select('g#columnLabelRegion').attr("font-size",fontsize*Math.sqrt(zoom_scale));
+        mouse_zoom(this);
       });
 
     svg.append("line")
