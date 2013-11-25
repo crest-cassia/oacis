@@ -84,8 +84,8 @@ function draw_plot(url, parameter_set_base_url) {
       d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
     ]).nice();
     yScale.domain([
-      d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1];}) }),
-      d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1];}) })
+      d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2]/2;}) }),
+      d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2]/2;}) })
     ]).nice();
 
     // X-Axis
@@ -128,39 +128,68 @@ function draw_plot(url, parameter_set_base_url) {
       });
 
     // draw scatter plot
-    series.selectAll("circle")
+    var point = series.selectAll("circle")
       .data(function(d,i) {
         return d.map(function(v) {
-          return { x: v[0], y:v[1], series_index: i, series_value: dat.series_values[i], psid: v[3]};
+          return {
+            x: v[0], y: v[1], yerror: v[2],
+            series_index: i, series_value: dat.series_values[i], psid: v[3]
+          };
         });
+      }).enter();
+    point.append("circle")
+      .attr("cx", function(d) { return xScale(d.x);})
+      .attr("cy", function(d) { return yScale(d.y);})
+      .style("fill", function(d) { return colorScale(d.series_index);})
+      .attr("r", 3)
+      .on("mouseover", function(d) {
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", .8);
+        tooltip.html(
+          "[" + d.x + ", " + d.y + " (" + d.yerror + ")]<br/>" + dat.series + " : " + d.series_value + "<br/>" + d.psid);
       })
-      .enter().append("circle")
-        .attr("cx", function(d) { return xScale(d.x);})
-        .attr("cy", function(d) { return yScale(d.y);})
-        .style("fill", function(d) { return colorScale(d.series_index);})
-        .attr("r", 3)
-        .on("mouseover", function(d) {
-          tooltip.transition()
-            .duration(200)
-            .style("opacity", .8);
-          tooltip.html(
-            "(" + d.x + ", " + d.y + ")<br/>" + dat.series + " : " + d.series_value + "<br/>" + d.psid);
-        })
-        .on("mousemove", function() {
-          tooltip
-            .style("top", (d3.event.pageY-10) + "px")
-            .style("left", (d3.event.pageX+10) + "px");
-        })
-        .on("mouseout", function() {
-          tooltip.transition()
-            .duration(300)
-            .style("opacity", 0);
-        })
-        .on("dblclick", function(d) {
-          console.log(parameter_set_base_url);
-          console.log(d.psid);
-          window.location.href = parameter_set_base_url + d.psid;
-        });
+      .on("mousemove", function() {
+        tooltip
+          .style("top", (d3.event.pageY-10) + "px")
+          .style("left", (d3.event.pageX+10) + "px");
+      })
+      .on("mouseout", function() {
+        tooltip.transition()
+          .duration(300)
+          .style("opacity", 0);
+      })
+      .on("dblclick", function(d) {
+        console.log(parameter_set_base_url);
+        console.log(d.psid);
+        window.location.href = parameter_set_base_url + d.psid;
+      });
+
+    // Error bar
+    point.insert("line", "circle")
+      .attr({
+        x1: function(d) { return xScale(d.x);},
+        x2: function(d) { return xScale(d.x);},
+        y1: function(d) { return yScale(d.y - d.yerror/2);},
+        y2: function(d) { return yScale(d.y + d.yerror/2);},
+        stroke: function(d) { return colorScale(d.series_index); }
+      });
+    point.insert("line", "circle")
+      .attr({
+        x1: function(d) { return xScale(d.x) - 10;},
+        x2: function(d) { return xScale(d.x) + 10;},
+        y1: function(d) { return yScale(d.y - d.yerror/2);},
+        y2: function(d) { return yScale(d.y - d.yerror/2);},
+        stroke: function(d) { return colorScale(d.series_index); }
+      });
+    point.insert("line", "circle")
+      .attr({
+        x1: function(d) { return xScale(d.x) - 10;},
+        x2: function(d) { return xScale(d.x) + 10;},
+        y1: function(d) { return yScale(d.y + d.yerror/2);},
+        y2: function(d) { return yScale(d.y + d.yerror/2);},
+        stroke: function(d) { return colorScale(d.series_index); }
+      });
 
     // draw legend title
     svg.append("text")
