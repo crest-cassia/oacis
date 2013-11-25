@@ -123,6 +123,7 @@ class ParameterSetsController < ApplicationController
     plot_data = []
     series_values = []
     series = params[:series]
+    series = nil if series == x_axis_key
     if series.present?
       parameter_set.parameter_sets_with_different(series).each do |base_ps|
         plot_data << collect_data(base_ps, x_axis_key, y_axis_keys)
