@@ -3,12 +3,16 @@
 %script{charset: "utf-8", src: "http://d3js.org/d3.v3.min.js"}
 
 %form.form-inline
+  %label X-Axis
   - parameter_keys = @param_set.simulator.parameter_definitions.map(&:key)
-  - plottable = @param_set.simulator.plottable
   = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', prompt: "[Plot All]";
+  %label Y-Axis
+  - plottable = @param_set.simulator.plottable
   = select_tag 'y_axis_key', options_for_select(plottable), id: 'y_axis_key', prompt: "[Plot All]"
+  %label Series
   = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
   %a.btn.btn-primary#add_plot_button Add Plot
+%hr
 
 #plot
   #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
