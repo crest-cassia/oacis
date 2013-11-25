@@ -10,10 +10,8 @@
   = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
   %a.btn.btn-primary#add_plot_button Add Plot
 
-.row
-  .span8#plot
-    #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
-  .span4
+#plot
+  #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
 
 :css
   .line {

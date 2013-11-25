@@ -29,7 +29,11 @@ function draw_plot(url, parameter_set_base_url) {
     .style("z-index", "10")
     .text("a simple tooltip");
 
-  var svg = d3.select("#plot").insert("svg", "svg")
+  var row = d3.select("#plot").insert("div","div").attr("class", "row");
+  var plot_region = row.append("div").attr("class", "span8");
+  var description = row.append("div").attr("class", "span4");
+
+  var svg = plot_region.insert("svg")
     .attr({
       "width": width + margin.left + margin.right,
       "height": height + margin.top + margin.bottom
@@ -40,12 +44,12 @@ function draw_plot(url, parameter_set_base_url) {
   d3.json(url, function(dat) {
 
     xScale.domain([
-      d3.min( dat.data, function(row) { return d3.min(row, function(v) { return v[0];})}),
-      d3.max( dat.data, function(row) { return d3.max(row, function(v) { return v[0];})})
+      d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
+      d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
     ]).nice();
     yScale.domain([
-      d3.min( dat.data, function(row) { return d3.min(row, function(v) { return v[1];}) }),
-      d3.max( dat.data, function(row) { return d3.max(row, function(v) { return v[1];}) })
+      d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1];}) }),
+      d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1];}) })
     ]).nice();
 
     // X-Axis
@@ -147,6 +151,17 @@ function draw_plot(url, parameter_set_base_url) {
       .attr("y", 7.5)
       .attr("dy", "0.3em")
       .text( function(d,i) { return d; });
+
+    var dl = description.append("dl");
+    dl.append("dt").text("X-Axis");
+    dl.append("dd").text(dat.xlabel);
+    dl.append("dt").text("Y-Axis");
+    dl.append("dd").text(dat.ylabel);
+    if(dat.series) {
+      dl.append("dt").text("Series");
+      dl.append("dd").text(dat.series);
+    }
+    dl.append("a").attr({target: "_blank", href: url}).text("show data");
   });
 }
 
