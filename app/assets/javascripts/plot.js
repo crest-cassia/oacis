@@ -41,7 +41,43 @@ function draw_plot(url, parameter_set_base_url) {
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+  function show_spin_arc() {
+    var progress = svg.append("g")
+      .attr("transform", "translate(" + width/2 + "," + height/2 + ")")
+      .attr("id", "progress-spin");
+    var radius = Math.min(width, height) / 2;
+    var arc = d3.svg.arc()
+      .innerRadius(radius*0.5)
+      .outerRadius(radius*0.9)
+      .startAngle(0);
+    progress.append("path")
+      .datum({endAngle: 0.66*Math.PI})
+      .style("fill", "#4D4D4D")
+      .attr("d", arc)
+      .call(spin, 1500);
+    progress.append("text")
+      .style({
+        "text-anchor": "middle",
+        "font-size": radius*0.1
+      })
+      .text("LOADING");
+
+    function spin(selection, duration) {
+      selection.transition()
+        .ease("linear")
+        .duration(duration)
+        .attrTween("transform", function() {
+          return d3.interpolateString("rotate(0)", "rotate(360)");
+        });
+      setTimeout( function() { spin(selection, duration); }, duration);
+    };
+    return progress;
+  }
+
+  var progress = show_spin_arc();
+
   d3.json(url, function(dat) {
+    progress.remove();
 
     xScale.domain([
       d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
