@@ -154,24 +154,29 @@ class ParameterSetsController < ApplicationController
     base_ps.parameter_sets_with_different(x_axis_key).each do |ps|
       if analyzer.nil?
         run = ps.runs.where(status: :finished).first
-        result = run.result
-        x = ps.v[x_axis_key]
-        y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
-        plot_data << [x, y, 0, ps.id]
+        if run
+          result = run.result
+          x = ps.v[x_axis_key]
+          y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
+          plot_data << [x, y, 0, ps.id]
+        end
       elsif analyzer.type == :on_parameter_set
         analysis = analyzer.analyses.where(analyzable: ps, status: :finished).first
-        result = analysis.result
-        # analysis = ps.analyses.where(analyzer: analyzer, status: :finished).first
-        x = ps.v[x_axis_key]
-        y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
-        plot_data << [x, y, 0, ps.id]
+        if analysis
+          result = analysis.result
+          x = ps.v[x_axis_key]
+          y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
+          plot_data << [x, y, 0, ps.id]
+        end
       elsif analyzer.type == :on_run
         run_ids = ps.runs.where(status: :finished).map(&:id)
         analysis = analyzer.analyses.in(analyzable_id: run_ids).where(status: :finished).first
-        result = analysis.result
-        x = ps.v[x_axis_key]
-        y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
-        plot_data << [x, y, 0, ps.id]
+        if analysis
+          result = analysis.result
+          x = ps.v[x_axis_key]
+          y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
+          plot_data << [x, y, 0, ps.id]
+        end
       end
     end
     plot_data
