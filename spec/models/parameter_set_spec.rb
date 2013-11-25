@@ -216,6 +216,34 @@ describe ParameterSet do
     end
   end
 
+  describe "#parameters_with_different" do
+
+    before(:each) do
+      pds = [
+        ParameterDefinition.new(
+          {key: "L", type: "Integer", default: 50, description: "First parameter"}),
+        ParameterDefinition.new(
+          {key: "T", type: "Float", default: 1.0, description: "Second parameter"}),
+        ParameterDefinition.new(
+          {key: "P", type: "Float", default: 1.0, description: "Third parameter"})
+      ]
+      sim = FactoryGirl.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
+      5.times do |n|
+        val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
+        sim.parameter_sets.create( v: val )
+      end
+      4.times do |n|
+        val = {"L" => 5-n, "T" => 1.0, "P" => 1.0}
+        sim.parameter_sets.create( v: val )
+      end
+      @prm = sim.parameter_sets.first
+    end
+
+    it "returns array of parameter keys which have distinct parameter values" do
+      @prm.parameter_keys_having_distinct.should eq ["L", "T"]
+    end
+  end
+
   describe "#runs_status_count" do
 
     it "returns the runs count" do

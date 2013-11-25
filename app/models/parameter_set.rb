@@ -28,6 +28,13 @@ class ParameterSet
     self.class.where(query_param).asc("v.#{key}")
   end
 
+  def parameter_keys_having_distinct
+    simulator.parameter_definitions.map(&:key).select do |key|
+      parameter_sets_with_different(key).count > 1
+    end
+  end
+
+
   def similar_parameter_sets
     h = {}
     simulator.parameter_definitions.map(&:key).each do |key|

@@ -4,7 +4,7 @@
 
 %form.form-inline
   %label X-Axis
-  - parameter_keys = @param_set.simulator.parameter_definitions.map(&:key)
+  - parameter_keys = @param_set.parameter_keys_having_distinct
   = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', prompt: "[Plot All]";
   %label Y-Axis
   - plottable = @param_set.simulator.plottable
