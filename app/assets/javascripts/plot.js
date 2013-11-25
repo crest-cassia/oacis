@@ -74,12 +74,14 @@ function draw_plot(url, parameter_set_base_url) {
         .style("text-anchor", "middle")
         .text(dat.ylabel);
 
+    // group for each series
     var series = svg
       .selectAll(".series")
       .data(dat.data)
       .enter().append("g")
         .attr("class", "series");
 
+    // draw line plot
     series.append("path")
       .attr("class", "line")
       .attr("d", function(d) { return line(d);} )
@@ -89,6 +91,7 @@ function draw_plot(url, parameter_set_base_url) {
         "stroke-width": "1.5px"
       });
 
+    // draw scatter plot
     series.selectAll("circle")
       .data(function(d,i) {
         return d.map(function(v) {
@@ -123,6 +126,7 @@ function draw_plot(url, parameter_set_base_url) {
           window.location.href = parameter_set_base_url + d.psid;
         });
 
+    // draw legend title
     svg.append("text")
       .attr({
         x: width,
@@ -131,10 +135,11 @@ function draw_plot(url, parameter_set_base_url) {
         dy: ".8em"
       })
       .text(dat.series);
+
+    // draw legend
     var legend = svg.append("g")
       .attr("class", "legend")
       .attr("transform", "translate(" + width + "," + 20 + ")");
-
     var legendItem = legend.selectAll("g")
       .data(dat.series_values)
       .enter().append("g")
@@ -152,6 +157,7 @@ function draw_plot(url, parameter_set_base_url) {
       .attr("dy", "0.3em")
       .text( function(d,i) { return d; });
 
+    // description for the specification of the plot
     var dl = description.append("dl");
     dl.append("dt").text("X-Axis");
     dl.append("dd").text(dat.xlabel);
