@@ -347,21 +347,4 @@ describe SimulatorsController do
       @parsed_body["num_runs"].should be_a(Array)
     end
   end
-
-  describe "GET analyzers" do
-
-    before(:each) do
-      @simulator = FactoryGirl.create(:simulator,
-                                      parameter_sets_count: 0, runs_count: 0,
-                                      analyzers_count: 3, run_analysis: false
-                                      )
-    end
-
-    it "show the list of analyzers in json" do
-      get :analyzers, {id: @simulator.to_param, format: :json}, valid_session
-      response.should be_success
-      body = JSON.parse(response.body)
-      body.should have(3).items
-    end
-  end
 end
