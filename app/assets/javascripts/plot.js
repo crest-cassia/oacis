@@ -4,30 +4,6 @@ function draw_plot(url, parameter_set_base_url) {
     width = 560;
     height = 460;
 
-  var xScale = d3.scale.linear()
-    .range([0, width]);
-
-  var yScale = d3.scale.linear()
-    .range([height, 0]);
-
-  var xAxis = d3.svg.axis()
-    .scale(xScale)
-    .orient("bottom");
-
-  var yAxis = d3.svg.axis()
-    .scale(yScale)
-    .orient("left");
-
-  var colorScale = d3.scale.category10();
-
-  var line = d3.svg.line()
-    .x( function(d) { return xScale(d[0]);} )
-    .y( function(d) { return yScale(d[1]);} );
-
-  var tooltip = d3.select("#plot-tooltip")
-    .style("position", "absolute")
-    .style("z-index", "10");
-
   var row = d3.select("#plot").insert("div","div").attr("class", "row");
   var plot_region = row.append("div").attr("class", "span8");
   var description = row.append("div").attr("class", "span4");
@@ -78,6 +54,9 @@ function draw_plot(url, parameter_set_base_url) {
   d3.json(url, function(dat) {
     progress.remove();
 
+    var xScale = d3.scale.linear().range([0, width]);
+    var yScale = d3.scale.linear().range([height, 0]);
+
     xScale.domain([
       d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
       d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
@@ -88,6 +67,9 @@ function draw_plot(url, parameter_set_base_url) {
     ]).nice();
 
     // X-Axis
+    var xAxis = d3.svg.axis()
+      .scale(xScale)
+      .orient("bottom");
     svg.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
@@ -99,6 +81,9 @@ function draw_plot(url, parameter_set_base_url) {
         .text(dat.xlabel);
 
     // Y-Axis
+    var yAxis = d3.svg.axis()
+      .scale(yScale)
+      .orient("left");
     svg.append("g")
         .attr("class", "y axis")
         .call(yAxis)
@@ -117,6 +102,10 @@ function draw_plot(url, parameter_set_base_url) {
         .attr("class", "series");
 
     // draw line plot
+    var colorScale = d3.scale.category10();
+    var line = d3.svg.line()
+      .x( function(d) { return xScale(d[0]);} )
+      .y( function(d) { return yScale(d[1]);} );
     series.append("path")
       .attr("class", "line")
       .attr("d", function(d) { return line(d);} )
@@ -126,7 +115,8 @@ function draw_plot(url, parameter_set_base_url) {
         "stroke-width": "1.5px"
       });
 
-    // draw scatter plot
+    // draw circles
+    var tooltip = d3.select("#plot-tooltip");
     var point = series.selectAll("circle")
       .data(function(d,i) {
         return d.map(function(v) {
@@ -167,7 +157,7 @@ function draw_plot(url, parameter_set_base_url) {
         window.open(parameter_set_base_url + d.psid, '_blank');
       });
 
-    // Error bar
+    // draw error bar
     point.insert("line", "circle")
       .filter(function(d) { return d.yerror;})
       .attr({
