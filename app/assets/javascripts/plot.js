@@ -235,7 +235,11 @@ function draw_plot(url, parameter_set_base_url) {
       dl.append("dt").text("Series");
       dl.append("dd").text(dat.series);
     }
-    dl.append("a").attr({target: "_blank", href: url}).text("show data");
+    description.append("a").attr({target: "_blank", href: url}).text("show data");
+    description.append("br");
+    description.append("a").text("delete plot").on("click", function() {
+      row.remove();
+    });
   });
 }
 
