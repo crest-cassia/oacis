@@ -154,33 +154,45 @@ class ParameterSetsController < ApplicationController
     plot_data = []
     base_ps.parameter_sets_with_different(x_axis_key).each do |ps|
       if analyzer.nil?
-        run = ps.runs.where(status: :finished).first
-        if run
-          result = run.result
+        runs = ps.runs.where(status: :finished)
+        if runs.present?
           x = ps.v[x_axis_key]
-          y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
-          plot_data << [x, y, 0, ps.id]
+          results = runs.map(&:result).map do |result|
+            y_axis_keys.inject(result) {|y, y_key| y.try(:[], y_key) }
+          end
+          y, yerror = error_analysis(results.compact)
+          plot_data << [x, y, yerror, ps.id]
         end
       elsif analyzer.type == :on_parameter_set
         analysis = analyzer.analyses.where(analyzable: ps, status: :finished).first
         if analysis
-          result = analysis.result
           x = ps.v[x_axis_key]
-          y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
-          plot_data << [x, y, 0, ps.id]
+          result = analysis.result
+          y = y_axis_keys.inject(result) {|y, y_key| y.try(:[], y_key) }
+          plot_data << [x, y, nil, ps.id]
         end
       elsif analyzer.type == :on_run
         run_ids = ps.runs.where(status: :finished).map(&:id)
-        analysis = analyzer.analyses.in(analyzable_id: run_ids).where(status: :finished).first
-        if analysis
-          result = analysis.result
+        analyses = analyzer.analyses.in(analyzable_id: run_ids).where(status: :finished)
+        if analyses.present?
           x = ps.v[x_axis_key]
-          y = y_axis_keys.inject(result) {|y, y_key| y[y_key] }
-          plot_data << [x, y, 0, ps.id]
+          results = analyses.map(&:result).map do |result|
+            y_axis_keys.inject(result) {|y, y_key| y.try(:[], y_key) }
+          end
+          y, yerror = error_analysis(results.compact)
+          plot_data << [x, y, yerror, ps.id]
         end
       end
     end
     plot_data
+  end
+
+  def error_analysis(data)
+    n = data.size
+    ave = data.inject(:+).to_f / n
+    err = nil
+    err = Math.sqrt( data.map {|x| (x-ave)*(x-ave) }.inject(:+) / (n*(n-1)) ) if n > 1
+    return ave, err
   end
 
   private
