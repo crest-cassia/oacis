@@ -167,6 +167,7 @@ function draw_plot(url, parameter_set_base_url) {
 
     // Error bar
     point.insert("line", "circle")
+      .filter(function(d) { return d.yerror;})
       .attr({
         x1: function(d) { return xScale(d.x);},
         x2: function(d) { return xScale(d.x);},
@@ -175,6 +176,7 @@ function draw_plot(url, parameter_set_base_url) {
         stroke: function(d) { return colorScale(d.series_index); }
       });
     point.insert("line", "circle")
+      .filter(function(d) { return d.yerror;})
       .attr({
         x1: function(d) { return xScale(d.x) - 3;},
         x2: function(d) { return xScale(d.x) + 3;},
@@ -183,6 +185,7 @@ function draw_plot(url, parameter_set_base_url) {
         stroke: function(d) { return colorScale(d.series_index); }
       });
     point.insert("line", "circle")
+      .filter(function(d) { return d.yerror;})
       .attr({
         x1: function(d) { return xScale(d.x) - 3;},
         x2: function(d) { return xScale(d.x) + 3;},
