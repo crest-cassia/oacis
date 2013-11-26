@@ -33,6 +33,17 @@
     stroke: #000;
     shape-rendering: crispEdges;
   }
+  div.plot-tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: black;
+    color: white;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+  }
 
 :javascript
   function add_plot(x, y, series, irrelevants) {
