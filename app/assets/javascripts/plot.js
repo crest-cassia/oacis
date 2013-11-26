@@ -26,8 +26,7 @@ function draw_plot(url, parameter_set_base_url) {
 
   var tooltip = d3.select("#plot-tooltip")
     .style("position", "absolute")
-    .style("z-index", "10")
-    .text("a simple tooltip");
+    .style("z-index", "10");
 
   var row = d3.select("#plot").insert("div","div").attr("class", "row");
   var plot_region = row.append("div").attr("class", "span8");
@@ -147,7 +146,11 @@ function draw_plot(url, parameter_set_base_url) {
           .duration(200)
           .style("opacity", .8);
         tooltip.html(
-          "[" + d.x + ", " + d.y + " (" + d.yerror + ")]<br/>" + dat.series + " : " + d.series_value + "<br/>" + d.psid);
+          dat.xlabel + " : " + d.x + "<br/>" +
+          dat.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
+          " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
+          (dat.series ? (dat.series + " : " + d.series_value + "<br/>") : "") +
+          "ID: " + d.psid);
       })
       .on("mousemove", function() {
         tooltip
@@ -160,9 +163,8 @@ function draw_plot(url, parameter_set_base_url) {
           .style("opacity", 0);
       })
       .on("dblclick", function(d) {
-        console.log(parameter_set_base_url);
-        console.log(d.psid);
-        window.location.href = parameter_set_base_url + d.psid;
+        // open a link in a background window
+        window.open(parameter_set_base_url + d.psid, '_blank');
       });
 
     // Error bar
