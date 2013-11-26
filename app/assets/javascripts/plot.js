@@ -176,16 +176,16 @@ function draw_plot(url, parameter_set_base_url) {
       });
     point.insert("line", "circle")
       .attr({
-        x1: function(d) { return xScale(d.x) - 10;},
-        x2: function(d) { return xScale(d.x) + 10;},
+        x1: function(d) { return xScale(d.x) - 3;},
+        x2: function(d) { return xScale(d.x) + 3;},
         y1: function(d) { return yScale(d.y - d.yerror/2);},
         y2: function(d) { return yScale(d.y - d.yerror/2);},
         stroke: function(d) { return colorScale(d.series_index); }
       });
     point.insert("line", "circle")
       .attr({
-        x1: function(d) { return xScale(d.x) - 10;},
-        x2: function(d) { return xScale(d.x) + 10;},
+        x1: function(d) { return xScale(d.x) - 3;},
+        x2: function(d) { return xScale(d.x) + 3;},
         y1: function(d) { return yScale(d.y + d.yerror/2);},
         y2: function(d) { return yScale(d.y + d.yerror/2);},
         stroke: function(d) { return colorScale(d.series_index); }
