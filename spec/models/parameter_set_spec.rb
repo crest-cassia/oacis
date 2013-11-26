@@ -188,6 +188,7 @@ describe ParameterSet do
         val = {"L" => 1, "T" => 1.0, "P" => (n+2)*1.0}
         sim.parameter_sets.create( v: val )
       end
+      sim.parameter_sets.create(v: {"L" => 3, "T" => 1.0, "P" => 3.0})
       @prm = sim.parameter_sets.first
     end
 
@@ -213,6 +214,14 @@ describe ParameterSet do
     it "returns parameter_sets sorted by the given key" do
       prms_L = @prm.parameter_sets_with_different("L")
       prms_L.map {|x| x.v["L"]}.should eq [1,2,3,4,5]
+    end
+
+    context "when irrelevant keys are given" do
+
+      it "ignores irrelevant keys when searching parameter sets" do
+        prms_L = @prm.parameter_sets_with_different("L", ["P"])
+        prms_L.map {|x| x.v["L"]}.should eq [1,1,1,1,1,2,3,3,4,5]
+      end
     end
   end
 

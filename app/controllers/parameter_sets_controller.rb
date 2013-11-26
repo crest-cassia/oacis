@@ -119,18 +119,20 @@ class ParameterSetsController < ApplicationController
 
     x_axis_key = params[:x_axis_key]
     y_axis_keys = params[:y_axis_key].split('.')
+    irrelevant_keys = params[:irrelevants].split(',')
 
     plot_data = []
     series_values = []
     series = params[:series]
     series = nil if series == x_axis_key
     if series.present?
-      parameter_set.parameter_sets_with_different(series).each do |base_ps|
-        plot_data << collect_data(base_ps, x_axis_key, y_axis_keys)
+      base_ps_array = parameter_set.parameter_sets_with_different(series, irrelevant_keys)
+      base_ps_array.uniq {|ps| ps.v[series]}.each do |base_ps|
+        plot_data << collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
         series_values << base_ps.v[series]
       end
     else
-      plot_data << collect_data(parameter_set, x_axis_key, y_axis_keys)
+      plot_data << collect_data(parameter_set, x_axis_key, y_axis_keys, irrelevant_keys)
     end
 
     xlabel = x_axis_key
@@ -143,7 +145,7 @@ class ParameterSetsController < ApplicationController
   end
 
   private
-  def collect_data(base_ps, x_axis_key, y_axis_keys)
+  def collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
     analyzer = nil
     y_axis_keys = y_axis_keys.dup
     analyzer_name = y_axis_keys.shift
@@ -152,7 +154,7 @@ class ParameterSetsController < ApplicationController
     end
 
     plot_data = []
-    base_ps.parameter_sets_with_different(x_axis_key).each do |ps|
+    base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).each do |ps|
       if analyzer.nil?
         runs = ps.runs.where(status: :finished)
         if runs.present?

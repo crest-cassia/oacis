@@ -2,16 +2,25 @@
 
 %script{charset: "utf-8", src: "http://d3js.org/d3.v3.min.js"}
 
-%form.form-inline
-  %label X-Axis
-  - parameter_keys = @param_set.parameter_keys_having_distinct
-  = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', prompt: "[Plot All]";
-  %label Y-Axis
-  - plottable = @param_set.simulator.plottable
-  = select_tag 'y_axis_key', options_for_select(plottable), id: 'y_axis_key', prompt: "[Plot All]"
-  %label Series
-  = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
-  %a.btn.btn-primary#add_plot_button Add Plot
+%form
+  .form-inline
+    = label_tag 'x_axis_key', "X-Axis"
+    - parameter_keys = @param_set.parameter_keys_having_distinct
+    = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', prompt: "[Plot All]";
+    = label_tag 'y_axis_key', "Y-Axis"
+    - plottable = @param_set.simulator.plottable
+    = select_tag 'y_axis_key', options_for_select(plottable), id: 'y_axis_key', prompt: "[Plot All]"
+    = label_tag 'series', "Series"
+    = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
+    %a.btn.btn-primary#add_plot_button Add Plot
+  .form-inline#irrelevant-params
+    %br
+    Irrelevant parameters :
+    %br
+    - @param_set.simulator.parameter_definitions.map(&:key).each do |key|
+      = label_tag key, key
+      = check_box_tag key
+
 %hr
 
 #plot
@@ -31,9 +40,9 @@
   }
 
 :javascript
-  function add_plot(x, y, series) {
+  function add_plot(x, y, series, irrelevants) {
     var url = "#{_plot_parameter_set_path(@param_set)}" + ".json";
-    var url_with_param = url + "?x_axis_key=" + encodeURIComponent(x) + "&y_axis_key=" + encodeURIComponent(y) + "&series=" + encodeURIComponent(series);
+    var url_with_param = url + "?x_axis_key=" + encodeURIComponent(x) + "&y_axis_key=" + encodeURIComponent(y) + "&series=" + encodeURIComponent(series) + "&irrelevants=" + encodeURIComponent(irrelevants);
     var ps_base_url = "#{parameter_set_path('')}";
     draw_plot(url_with_param, ps_base_url);
   }
@@ -41,6 +50,9 @@
     var x = $('#x_axis_key').val();
     var y = $('#y_axis_key').val();
     var series = $('#series').val();
+    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
+      return this.id;
+      }).get().join(',');
     if( x == "" ) {
       x = new Array();
       $('#x_axis_key').children('option').each(function() {
@@ -66,7 +78,7 @@
 
     x.forEach(function(xval) {
       y.forEach(function(yval) {
-        add_plot(xval, yval, series);
+        add_plot(xval, yval, series, irrelevants);
       })
     })
   });

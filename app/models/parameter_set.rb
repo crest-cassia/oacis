@@ -19,10 +19,10 @@ class ParameterSet
     ResultDirectory.parameter_set_path(self)
   end
 
-  def parameter_sets_with_different(key)
+  def parameter_sets_with_different(key, irrelevant_keys = [])
     query_param = { simulator: self.simulator }
     v.each_pair do |prm_key,prm_val|
-      next if prm_key == key.to_s
+      next if prm_key == key.to_s or irrelevant_keys.include?(prm_key)
       query_param["v.#{prm_key}"] = prm_val
     end
     self.class.where(query_param).asc("v.#{key}")
