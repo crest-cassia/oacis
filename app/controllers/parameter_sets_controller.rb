@@ -98,33 +98,33 @@ class ParameterSetsController < ApplicationController
   end
 
   def _plot
-    parameter_set = ParameterSet.find(params[:id])
-    simulator = parameter_set.simulator
+    ps = ParameterSet.find(params[:id])
 
     x_axis_key = params[:x_axis_key]
     y_axis_keys = params[:y_axis_key].split('.')
     irrelevant_keys = params[:irrelevants].split(',')
 
-    plot_data = []
-    series_values = []
-    series = params[:series]
-    series = nil if series == x_axis_key
-    if series.present?
-      base_ps_array = parameter_set.parameter_sets_with_different(series, irrelevant_keys)
-      base_ps_array.uniq {|ps| ps.v[series]}.each do |base_ps|
-        plot_data << collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
-        series_values << base_ps.v[series]
-      end
+    series = (params[:series] != x_axis_key) ? params[:series] : nil
+    if series
+      ps_array = ps.parameter_sets_with_different(series, irrelevant_keys)
+        .uniq {|ps| ps.v[series] }
+        .reverse # reverse the order so that the series are displayed in descending order
+      series_values = ps_array.map {|base_ps| base_ps.v[series] }
     else
-      plot_data << collect_data(parameter_set, x_axis_key, y_axis_keys, irrelevant_keys)
+      ps_array = [ps]
+      series_values = []
+    end
+    data = ps_array.map do |base_ps|
+      collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
     end
 
-    xlabel = x_axis_key
-    ylabel = y_axis_keys.last
-    data = plot_data.reverse
-    series_values = series_values.reverse
-
-    h = {xlabel: xlabel, ylabel: ylabel, series: series, series_values: series_values, data: data}
+    h = {
+      xlabel: x_axis_key,
+      ylabel: y_axis_keys.last,
+      series: series,
+      series_values: series_values,
+      data: data
+    }
     render json: h
   end
 
@@ -133,53 +133,37 @@ class ParameterSetsController < ApplicationController
     analyzer = nil
     y_axis_keys = y_axis_keys.dup
     analyzer_name = y_axis_keys.shift
-    if analyzer_name.present?
-      analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
+
+    query_result_value = lambda {|result|
+      y_axis_keys.inject(result) {|y, y_key| y.try(:[], y_key) }
+    }
+
+    analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
+    if analyzer.nil?
+      get_result_values = lambda {|ps|
+        ps.runs.where(status: :finished).map(&:result).map(&query_result_value).compact
+      }
+    elsif analyzer.type == :on_run
+      get_result_values = lambda {|ps|
+        results = ps.runs.where(status: :finished).map do |run|
+          run.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
+        end
+        results.map(&query_result_value).compact
+      }
+    elsif analyzer.type == :on_parameter_set
+      get_result_values = lambda {|ps|
+        result = ps.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
+        [result].map(&query_result_value).compact
+      }
     end
 
-    plot_data = []
-    base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).each do |ps|
-      if analyzer.nil?
-        runs = ps.runs.where(status: :finished)
-        if runs.present?
-          x = ps.v[x_axis_key]
-          results = runs.map(&:result).map do |result|
-            y_axis_keys.inject(result) {|y, y_key| y.try(:[], y_key) }
-          end
-          y, yerror = error_analysis(results.compact)
-          plot_data << [x, y, yerror, ps.id]
-        end
-      elsif analyzer.type == :on_parameter_set
-        analysis = analyzer.analyses.where(analyzable: ps, status: :finished).first
-        if analysis
-          x = ps.v[x_axis_key]
-          result = analysis.result
-          y = y_axis_keys.inject(result) {|y, y_key| y.try(:[], y_key) }
-          plot_data << [x, y, nil, ps.id]
-        end
-      elsif analyzer.type == :on_run
-        analyses = ps.runs.where(status: :finished).map do |run|
-          run.analyses.where(analyzer: analyzer, status: :finished).first
-        end.compact
-        if analyses.present?
-          x = ps.v[x_axis_key]
-          results = analyses.map(&:result).map do |result|
-            y_axis_keys.inject(result) {|y, y_key| y.try(:[], y_key) }
-          end
-          y, yerror = error_analysis(results.compact)
-          plot_data << [x, y, yerror, ps.id]
-        end
-      end
+    plot_data = base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).map do |ps|
+      x = ps.v[x_axis_key]
+      values = get_result_values.call(ps)
+      y, yerror, num_data = AnalysisUtil.error_analysis(values)
+      [x, y, yerror, ps.id]
     end
-    plot_data
-  end
-
-  def error_analysis(data)
-    n = data.size
-    ave = data.inject(:+).to_f / n
-    err = nil
-    err = Math.sqrt( data.map {|x| (x-ave)*(x-ave) }.inject(:+) / (n*(n-1)) ) if n > 1
-    return ave, err
+    plot_data.reject {|dat| dat[1].nil? }
   end
 
   private
