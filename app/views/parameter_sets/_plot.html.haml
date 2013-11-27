@@ -13,13 +13,13 @@
     = label_tag 'series', "Series"
     = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
     %a.btn.btn-primary#add_plot_button Add Plot
-  .form-inline#irrelevant-params
-    %br
-    Irrelevant parameters :
-    %br
-    - @param_set.simulator.parameter_definitions.map(&:key).each do |key|
-      = label_tag key, key
-      = check_box_tag key
+    #irrelevant-params
+      %br
+      Irrelevant parameters :
+      %br
+      - @param_set.simulator.parameter_definitions.map(&:key).each do |key|
+        = label_tag key, key
+        = check_box_tag key
 
 %hr
 
