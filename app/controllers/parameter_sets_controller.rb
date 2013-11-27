@@ -158,8 +158,9 @@ class ParameterSetsController < ApplicationController
           plot_data << [x, y, nil, ps.id]
         end
       elsif analyzer.type == :on_run
-        run_ids = ps.runs.where(status: :finished).map(&:id)
-        analyses = analyzer.analyses.in(analyzable_id: run_ids).where(status: :finished)
+        analyses = ps.runs.where(status: :finished).map do |run|
+          run.analyses.where(analyzer: analyzer, status: :finished).first
+        end.compact
         if analyses.present?
           x = ps.v[x_axis_key]
           results = analyses.map(&:result).map do |result|
