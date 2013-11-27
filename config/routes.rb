@@ -14,8 +14,6 @@ AcmProto::Application.routes.draw do
       get "_parameter_sets_status_count" # for ajax, progress bar
       get "_analyzer_list" # for ajax, datatables
       get "_progress" # for progress table
-      get "plottable" # for plotting tool
-      get "distinct" # for plotting tool, returns parameter keys and distinct values
     end
     resources :parameter_sets, only: ["show","new","create","destroy"] do
       member do
@@ -25,7 +23,6 @@ AcmProto::Application.routes.draw do
         get "_runs_list" # for ajax, datatables
         get "_analyses_list" # for ajax, datatables
         get "_plot" # for plotting tool
-        get "neighbor" # for plotting tool
       end
       resources :runs, only: ["show","create", "destroy"] do
         member do
@@ -48,8 +45,6 @@ AcmProto::Application.routes.draw do
   end
 
   resources :hosts
-
-  get "plots/data"
 
   root :to => "simulators#index"
 end

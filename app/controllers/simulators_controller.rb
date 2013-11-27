@@ -165,27 +165,4 @@ class SimulatorsController < ApplicationController
     }
     render json: progress_overview
   end
-
-  def plottable
-    simulator = Simulator.find(params[:id])
-
-    respond_to do |format|
-      format.json { render json: simulator.plottable }
-    end
-  end
-
-  public
-  def distinct
-    simulator = Simulator.find(params[:id])
-    distinct_parameters = {}
-    simulator.parameter_definitions.each do |pd|
-      key = pd.key
-      values = simulator.parameter_sets.distinct("v.#{key}").sort
-      distinct_parameters[key] = values
-    end
-
-    respond_to do |format|
-      format.json { render json: distinct_parameters}
-    end
-  end
 end

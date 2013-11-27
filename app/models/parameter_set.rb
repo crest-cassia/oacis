@@ -34,28 +34,6 @@ class ParameterSet
     end
   end
 
-
-  def similar_parameter_sets
-    h = {}
-    simulator.parameter_definitions.map(&:key).each do |key|
-      h[key] = parameter_sets_with_different(key)
-    end
-    h
-  end
-
-  def neighbor_parameter_sets
-    h = {}
-    simulator.parameter_definitions.map(&:key).each do |key|
-      similar = parameter_sets_with_different(key)
-      idx = similar.map{|ps| ps.v[key]}.index(v[key])
-      neighbors = Array.new(2)
-      neighbors[0] = similar[idx-1] if idx > 0
-      neighbors[1] = similar[idx+1] if idx + 1 < similar.count
-      h[key] = neighbors
-    end
-    h
-  end
-
   def runs_status_count
     counts = {}
     counts[:total] = runs.count

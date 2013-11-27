@@ -225,7 +225,7 @@ describe ParameterSet do
     end
   end
 
-  describe "#parameters_with_different" do
+  describe "#parameter_keys_having_distinct" do
 
     before(:each) do
       pds = [
@@ -248,7 +248,7 @@ describe ParameterSet do
       @prm = sim.parameter_sets.first
     end
 
-    it "returns array of parameter keys which have distinct parameter values" do
+    it "returns array of parameter keys which have multiple distinct parameter values" do
       @prm.parameter_keys_having_distinct.should eq ["L", "T"]
     end
   end
@@ -272,91 +272,6 @@ describe ParameterSet do
       dir = ps.dir
       ps.destroy
       File.directory?(dir).should be_false
-    end
-  end
-
-  describe "#similar_parameter_sets" do
-
-    before(:each) do
-      pds = [
-        ParameterDefinition.new(
-          {key: "L", type: "Integer", default: 50, description: "First parameter"}),
-        ParameterDefinition.new(
-          {key: "T", type: "Float", default: 1.0, description: "Second parameter"}),
-        ParameterDefinition.new(
-          {key: "P", type: "Float", default: 1.0, description: "Third parameter"})
-      ]
-      @sim = FactoryGirl.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
-      5.times do |n|
-        val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
-        @sim.parameter_sets.create( v: val )
-      end
-      4.times do |n|
-        val = {"L" => 5-n, "T" => 1.0, "P" => 1.0}
-        @sim.parameter_sets.create( v: val )
-      end
-      4.times do |n|
-        val = {"L" => 1, "T" => 1.0, "P" => (n+2)*1.0}
-        @sim.parameter_sets.create( v: val )
-      end
-    end
-
-    it "returns parameter_sets whose parameter is different by 1 key" do
-      similar = @sim.parameter_sets.first.similar_parameter_sets
-      similar["L"].should have(5).items
-      similar["T"].should have(5).items
-      similar["P"].should have(5).items
-
-      similar2 = @sim.parameter_sets.where({"v.L" => 3}).first.similar_parameter_sets
-      similar2["L"].should have(5).items
-      similar2["T"].should have(1).items
-      similar2["P"].should have(1).items
-    end
-  end
-
-  describe "#neighbor_parameter_sets" do
-
-    before(:each) do
-      pds = [
-        ParameterDefinition.new(
-          {key: "L", type: "Integer", default: 50, description: "First parameter"}),
-        ParameterDefinition.new(
-          {key: "T", type: "Float", default: 1.0, description: "Second parameter"}),
-        ParameterDefinition.new(
-          {key: "P", type: "Float", default: 1.0, description: "Third parameter"})
-      ]
-      @sim = FactoryGirl.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
-      5.times do |n|
-        val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
-        @sim.parameter_sets.create( v: val )
-      end
-      4.times do |n|
-        val = {"L" => 5-n, "T" => 1.0, "P" => 1.0}
-        @sim.parameter_sets.create( v: val )
-      end
-      4.times do |n|
-        val = {"L" => 1, "T" => 1.0, "P" => (n+2)*1.0}
-        @sim.parameter_sets.create( v: val )
-      end
-    end
-
-    it "returns parameter_sets which is similar and nearest neighbor" do
-      neighbor = @sim.parameter_sets.first.neighbor_parameter_sets
-      neighbor["L"][0].should be_nil
-      neighbor["L"][1].v["L"].should eq 2
-      neighbor["T"].compact.should have(1).items
-      neighbor["P"].compact.should have(1).items
-
-      neighbor2 = @sim.parameter_sets.where({"v.L" => 3}).first.neighbor_parameter_sets
-      neighbor2["L"].compact.should have(2).items
-      neighbor2["T"].should eq [nil, nil]
-      neighbor2["P"].should eq [nil, nil]
-    end
-
-    it "does not include self" do
-      prm = @sim.parameter_sets.first
-      neighbor = prm.neighbor_parameter_sets
-      neighbor.should_not include(prm)
     end
   end
 end
