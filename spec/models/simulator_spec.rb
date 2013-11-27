@@ -177,4 +177,32 @@ describe Simulator do
       sim.analyzers_on_parameter_set.count.should eq(2)
     end
   end
+
+  describe "#plottable" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1,
+                               runs_count: 1,
+                               analyzers_count: 1,
+                               run_analysis: true)
+      run = @sim.parameter_sets.first.runs.first
+      run.status = :finished
+      run.result = { r1: 1, r2: { r3: 3, r4: 4}, r5: [1,2,3] }
+      run.save!
+
+      anl = @sim.analyzers.first.analyses.first
+      anl.status = :finished
+      anl.result = { a1: 1, a2: { a3: 3, a4: 4}, a5: [1,2,3] }
+      anl.save!
+    end
+
+    it "return array of plottable keys" do
+      analyzer_name = @sim.analyzers.first.name
+      @sim.plottable.should eq [
+        ".r1", ".r2.r3", ".r2.r4",
+        "#{analyzer_name}.a1", "#{analyzer_name}.a2.a3", "#{analyzer_name}.a2.a4"
+      ]
+    end
+  end
 end
