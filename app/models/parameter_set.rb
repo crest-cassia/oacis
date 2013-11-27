@@ -28,7 +28,7 @@ class ParameterSet
     self.class.where(query_param).asc("v.#{key}")
   end
 
-  def parameter_keys_having_distinct
+  def parameter_keys_having_distinct_values
     simulator.parameter_definitions.map(&:key).select do |key|
       parameter_sets_with_different(key).count > 1
     end

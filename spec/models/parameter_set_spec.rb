@@ -225,7 +225,7 @@ describe ParameterSet do
     end
   end
 
-  describe "#parameter_keys_having_distinct" do
+  describe "#parameter_keys_having_distinct_values" do
 
     before(:each) do
       pds = [
@@ -249,7 +249,7 @@ describe ParameterSet do
     end
 
     it "returns array of parameter keys which have multiple distinct parameter values" do
-      @prm.parameter_keys_having_distinct.should eq ["L", "T"]
+      @prm.parameter_keys_having_distinct_values.should eq ["L", "T"]
     end
   end
 
