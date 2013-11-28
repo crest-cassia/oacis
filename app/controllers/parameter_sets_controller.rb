@@ -97,6 +97,74 @@ class ParameterSetsController < ApplicationController
     render json: AnalysesListDatatable.new(view_context, parameter_set.analyses)
   end
 
+  def _plot
+    ps = ParameterSet.find(params[:id])
+
+    x_axis_key = params[:x_axis_key]
+    y_axis_keys = params[:y_axis_key].split('.')
+    irrelevant_keys = params[:irrelevants].split(',')
+
+    series = (params[:series] != x_axis_key) ? params[:series] : nil
+    if series.present?
+      ps_array = ps.parameter_sets_with_different(series, irrelevant_keys)
+        .uniq {|ps| ps.v[series] }
+        .reverse # reverse the order so that the series are displayed in descending order
+      series_values = ps_array.map {|base_ps| base_ps.v[series] }
+    else
+      ps_array = [ps]
+      series_values = []
+    end
+    data = ps_array.map do |base_ps|
+      collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
+    end
+
+    h = {
+      xlabel: x_axis_key,
+      ylabel: y_axis_keys.last,
+      series: series,
+      series_values: series_values,
+      data: data
+    }
+    render json: h
+  end
+
+  private
+  def collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
+    y_axis_keys = y_axis_keys.dup
+    analyzer_name = y_axis_keys.shift
+
+    query_result_value = lambda {|result|
+      y_axis_keys.inject(result) {|y, y_key| y.try(:[], y_key) }
+    }
+
+    analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
+    if analyzer.nil?
+      get_result_values = lambda {|ps|
+        ps.runs.where(status: :finished).map(&:result).map(&query_result_value).compact
+      }
+    elsif analyzer.type == :on_run
+      get_result_values = lambda {|ps|
+        results = ps.runs.where(status: :finished).map do |run|
+          run.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
+        end
+        results.map(&query_result_value).compact
+      }
+    elsif analyzer.type == :on_parameter_set
+      get_result_values = lambda {|ps|
+        result = ps.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
+        [result].map(&query_result_value).compact
+      }
+    end
+
+    plot_data = base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).map do |ps|
+      x = ps.v[x_axis_key]
+      values = get_result_values.call(ps)
+      y, yerror, num_data = AnalysisUtil.error_analysis(values)
+      [x, y, yerror, ps.id]
+    end
+    plot_data.reject {|dat| dat[1].nil? }
+  end
+
   private
   MAX_CREATION_SIZE = 100
   # return created parameter sets

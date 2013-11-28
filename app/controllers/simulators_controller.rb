@@ -165,5 +165,4 @@ class SimulatorsController < ApplicationController
     }
     render json: progress_overview
   end
-
 end

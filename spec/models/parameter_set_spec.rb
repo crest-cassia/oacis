@@ -181,13 +181,14 @@ describe ParameterSet do
         sim.parameter_sets.create( v: val )
       end
       4.times do |n|
-        val = {"L" => n+2, "T" => 1.0, "P" => 1.0}
+        val = {"L" => 5-n, "T" => 1.0, "P" => 1.0}
         sim.parameter_sets.create( v: val )
       end
       4.times do |n|
         val = {"L" => 1, "T" => 1.0, "P" => (n+2)*1.0}
         sim.parameter_sets.create( v: val )
       end
+      sim.parameter_sets.create(v: {"L" => 3, "T" => 1.0, "P" => 3.0})
       @prm = sim.parameter_sets.first
     end
 
@@ -208,6 +209,47 @@ describe ParameterSet do
     it "includes self" do
       found = @prm.parameter_sets_with_different("L").find(@prm)
       found.should be_a(ParameterSet)
+    end
+
+    it "returns parameter_sets sorted by the given key" do
+      prms_L = @prm.parameter_sets_with_different("L")
+      prms_L.map {|x| x.v["L"]}.should eq [1,2,3,4,5]
+    end
+
+    context "when irrelevant keys are given" do
+
+      it "ignores irrelevant keys when searching parameter sets" do
+        prms_L = @prm.parameter_sets_with_different("L", ["P"])
+        prms_L.map {|x| x.v["L"]}.should eq [1,1,1,1,1,2,3,3,4,5]
+      end
+    end
+  end
+
+  describe "#parameter_keys_having_distinct_values" do
+
+    before(:each) do
+      pds = [
+        ParameterDefinition.new(
+          {key: "L", type: "Integer", default: 50, description: "First parameter"}),
+        ParameterDefinition.new(
+          {key: "T", type: "Float", default: 1.0, description: "Second parameter"}),
+        ParameterDefinition.new(
+          {key: "P", type: "Float", default: 1.0, description: "Third parameter"})
+      ]
+      sim = FactoryGirl.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
+      5.times do |n|
+        val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
+        sim.parameter_sets.create( v: val )
+      end
+      4.times do |n|
+        val = {"L" => 5-n, "T" => 1.0, "P" => 1.0}
+        sim.parameter_sets.create( v: val )
+      end
+      @prm = sim.parameter_sets.first
+    end
+
+    it "returns array of parameter keys which have multiple distinct parameter values" do
+      @prm.parameter_keys_having_distinct_values.should eq ["L", "T"]
     end
   end
 
