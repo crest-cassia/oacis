@@ -21,7 +21,7 @@ plot '-' u 1:2 w linespoints
     script
   end
 
-  def self.script_for_multiple_data_set(data_arr, xlabel = nil, ylabel = nil, error_bar = false,
+  def self.script_for_multi_line_plot(data_arr, xlabel = nil, ylabel = nil, error_bar = false,
                                         series = nil, series_values = [])
     script = series.present? ? "set key\n" : "unset key\n"
     script += "set xlabel \"#{xlabel}\"\n" if xlabel

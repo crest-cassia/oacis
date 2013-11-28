@@ -36,7 +36,7 @@ EOS
     end
   end
 
-  describe ".script_for_multiple_data_set" do
+  describe ".script_for_multi_line_plot" do
 
     it "returns a gnuplot script to draw a series of plots" do
       data_arr = [
@@ -55,7 +55,7 @@ e
 1 4 0.4
 e
       EOS
-      GnuplotUtil.script_for_multiple_data_set(data_arr, "XXX", "YYY", false, "ZZZ", [5, 4]).should eq expected
+      GnuplotUtil.script_for_multi_line_plot(data_arr, "XXX", "YYY", false, "ZZZ", [5, 4]).should eq expected
     end
 
     it "returns a gnuplot script to draw a series of plots with errorbars when option is given" do
@@ -81,7 +81,7 @@ e
 1 4 0.4
 e
       EOS
-      GnuplotUtil.script_for_multiple_data_set(data_arr, "XXX", "YYY", true, "ZZZ", [5, 4]).should eq expected
+      GnuplotUtil.script_for_multi_line_plot(data_arr, "XXX", "YYY", true, "ZZZ", [5, 4]).should eq expected
     end
   end
 end
