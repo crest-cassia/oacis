@@ -105,7 +105,7 @@ class ParameterSetsController < ApplicationController
     irrelevant_keys = params[:irrelevants].split(',')
 
     series = (params[:series] != x_axis_key) ? params[:series] : nil
-    if series
+    if series.present?
       ps_array = ps.parameter_sets_with_different(series, irrelevant_keys)
         .uniq {|ps| ps.v[series] }
         .reverse # reverse the order so that the series are displayed in descending order
