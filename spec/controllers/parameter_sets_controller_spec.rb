@@ -339,7 +339,4 @@ describe ParameterSetsController do
       end
     end
   end
-
-  describe "GET _runs_status_count" do
-  end
 end

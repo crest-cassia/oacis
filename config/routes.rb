@@ -11,14 +11,12 @@ AcmProto::Application.routes.draw do
     member do
       post "_make_query" # for ajax
       get "_parameters_list" # for ajax, datatables
-      get "_parameter_sets_status_count" # for ajax, progress bar
       get "_analyzer_list" # for ajax, datatables
       get "_progress" # for progress table
     end
     resources :parameter_sets, only: ["show","new","create","destroy"] do
       member do
         get 'duplicate'
-        get "_runs_status_count" # for ajax, progress bar
         get "_runs_and_analyses" # for ajax, get
         get "_runs_list" # for ajax, datatables
         get "_analyses_list" # for ajax, datatables

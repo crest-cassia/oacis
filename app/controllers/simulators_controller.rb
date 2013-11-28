@@ -122,10 +122,6 @@ class SimulatorsController < ApplicationController
     render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context)
   end
 
-  def _parameter_sets_status_count
-    render json: Simulator.only("parameter_sets.runs.status").find(params[:id]).parameter_sets_status_count.to_json
-  end
-
   def _analyzer_list
     render json: AnalyzersListDatatable.new(view_context)
   end
