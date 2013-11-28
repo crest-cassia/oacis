@@ -130,7 +130,6 @@ class ParameterSetsController < ApplicationController
 
   private
   def collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
-    analyzer = nil
     y_axis_keys = y_axis_keys.dup
     analyzer_name = y_axis_keys.shift
 
