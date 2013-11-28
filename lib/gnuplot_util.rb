@@ -1,11 +1,9 @@
 module GnuplotUtil
 
   def self.script_for_single_line_plot(data, xlabel = nil, ylabel = nil, error_bar = false)
-    script = <<-EOS
-set xlabel "#{xlabel}"
-set ylabel "#{ylabel}"
-unset key
-    EOS
+    script = "unset key\n"
+    script += "set xlabel \"#{xlabel}\"\n" if xlabel
+    script += "set ylabel \"#{ylabel}\"\n" if ylabel
 
     if error_bar
       script += <<-EOS
