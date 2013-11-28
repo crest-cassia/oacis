@@ -62,8 +62,8 @@ function draw_plot(url, parameter_set_base_url) {
       d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
     ]).nice();
     yScale.domain([
-      d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2]/2;}) }),
-      d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2]/2;}) })
+      d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) }),
+      d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
     ]).nice();
 
     // X-Axis
@@ -163,8 +163,8 @@ function draw_plot(url, parameter_set_base_url) {
       .attr({
         x1: function(d) { return xScale(d.x);},
         x2: function(d) { return xScale(d.x);},
-        y1: function(d) { return yScale(d.y - d.yerror/2);},
-        y2: function(d) { return yScale(d.y + d.yerror/2);},
+        y1: function(d) { return yScale(d.y - d.yerror);},
+        y2: function(d) { return yScale(d.y + d.yerror);},
         stroke: function(d) { return colorScale(d.series_index); }
       });
     point.insert("line", "circle")
@@ -172,8 +172,8 @@ function draw_plot(url, parameter_set_base_url) {
       .attr({
         x1: function(d) { return xScale(d.x) - 3;},
         x2: function(d) { return xScale(d.x) + 3;},
-        y1: function(d) { return yScale(d.y - d.yerror/2);},
-        y2: function(d) { return yScale(d.y - d.yerror/2);},
+        y1: function(d) { return yScale(d.y - d.yerror);},
+        y2: function(d) { return yScale(d.y - d.yerror);},
         stroke: function(d) { return colorScale(d.series_index); }
       });
     point.insert("line", "circle")
@@ -181,8 +181,8 @@ function draw_plot(url, parameter_set_base_url) {
       .attr({
         x1: function(d) { return xScale(d.x) - 3;},
         x2: function(d) { return xScale(d.x) + 3;},
-        y1: function(d) { return yScale(d.y + d.yerror/2);},
-        y2: function(d) { return yScale(d.y + d.yerror/2);},
+        y1: function(d) { return yScale(d.y + d.yerror);},
+        y2: function(d) { return yScale(d.y + d.yerror);},
         stroke: function(d) { return colorScale(d.series_index); }
       });
 
