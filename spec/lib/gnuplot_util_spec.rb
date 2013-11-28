@@ -35,4 +35,53 @@ EOS
       GnuplotUtil.script_for_single_line_plot(data, "XXX", "YYY", true).should eq expected
     end
   end
+
+  describe ".script_for_multiple_data_set" do
+
+    it "returns a gnuplot script to draw a series of plots" do
+      data_arr = [
+        [[0,1,0.1], [1,2,0.2]],
+        [[0,3,0.3], [1,4,0.4]]
+      ]
+      expected = <<-EOS
+set key
+set xlabel "XXX"
+set ylabel "YYY"
+plot '-' u 1:2 w linespoints title 'ZZZ = 5', '-' u 1:2 w linespoints title '4'
+0 1 0.1
+1 2 0.2
+e
+0 3 0.3
+1 4 0.4
+e
+      EOS
+      GnuplotUtil.script_for_multiple_data_set(data_arr, "XXX", "YYY", false, "ZZZ", [5, 4]).should eq expected
+    end
+
+    it "returns a gnuplot script to draw a series of plots with errorbars when option is given" do
+      data_arr = [
+        [[0,1,0.1], [1,2,0.2]],
+        [[0,3,0.3], [1,4,0.4]]
+      ]
+      expected = <<-EOS
+set key
+set xlabel "XXX"
+set ylabel "YYY"
+plot '-' u 1:2:3 w yerrorbars ls 1 title 'ZZZ = 5', '-' u 1:2 w lines ls 1 notitle, '-' u 1:2:3 w yerrorbars ls 2 title '4', '-' u 1:2 w lines ls 2 notitle
+0 1 0.1
+1 2 0.2
+e
+0 1 0.1
+1 2 0.2
+e
+0 3 0.3
+1 4 0.4
+e
+0 3 0.3
+1 4 0.4
+e
+      EOS
+      GnuplotUtil.script_for_multiple_data_set(data_arr, "XXX", "YYY", true, "ZZZ", [5, 4]).should eq expected
+    end
+  end
 end
