@@ -34,6 +34,23 @@ e
 EOS
       GnuplotUtil.script_for_single_line_plot(data, "XXX", "YYY", true).should eq expected
     end
+
+    it "plots correctly even when third column is nil" do
+      data = [[0,1,0.1,"aaa"], [1,2,nil,"bbb"]]
+      expected = <<-EOS
+unset key
+set xlabel "XXX"
+set ylabel "YYY"
+plot '-' u 1:2:3 w yerrorbars ls 1, '-' u 1:2 w lines ls 1
+0 1 0.1 aaa
+1 2 0 bbb
+e
+0 1 0.1 aaa
+1 2 0 bbb
+e
+EOS
+      GnuplotUtil.script_for_single_line_plot(data, "XXX", "YYY", true).should eq expected
+    end
   end
 
   describe ".script_for_multi_line_plot" do

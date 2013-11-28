@@ -9,15 +9,13 @@ module GnuplotUtil
       script += <<-EOS
 plot '-' u 1:2:3 w yerrorbars ls 1, '-' u 1:2 w lines ls 1
       EOS
-      script += data.map {|row| row.join(' ') }.join("\n") + "\ne\n"
-      script += data.map {|row| row.join(' ') }.join("\n") + "\ne\n" # need to be written twice
+      script += convert_to_csv(data) * 2 # need to be written twice
     else
       script += <<-EOS
 plot '-' u 1:2 w linespoints
       EOS
-      script += data.map {|row| row.join(' ') }.join("\n") + "\ne\n"
+      script += convert_to_csv(data)
     end
-
     script
   end
 
@@ -36,14 +34,20 @@ plot '-' u 1:2 w linespoints
       if error_bar
         commands += ["'-' u 1:2:3 w yerrorbars ls #{ls_idx} title '#{title}'",
                      "'-' u 1:2 w lines ls #{ls_idx} notitle"]
-        data_string += data.map {|row| row.join(' ') }.join("\n") + "\ne\n"
-        data_string += data.map {|row| row.join(' ') }.join("\n") + "\ne\n" # need to be written twice
+        data_string += convert_to_csv(data) * 2 # need to be written twice
       else
         commands += ["'-' u 1:2 w linespoints title '#{title}'"]
-        data_string += data.map {|row| row.join(' ') }.join("\n") + "\ne\n"
+        data_string += convert_to_csv(data)
       end
     end
     script += "plot " + commands.join(', ') + "\n"
     script + data_string
+  end
+
+  private
+  def self.convert_to_csv(data)
+    data.map do |row|
+      row.map {|val| val ? val : 0}.join(' ')
+    end.join("\n") + "\ne\n"
   end
 end
