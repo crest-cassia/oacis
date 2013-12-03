@@ -77,6 +77,22 @@ describe SimulatorsController do
     end
   end
 
+  describe "GET duplicate" do
+
+    before(:each) do
+      @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+    end
+
+    it "assigns a new simulator as @simulator" do
+      get :duplicate, {id: @simulator}, valid_session
+      assigns(:simulator).should be_a_new(Simulator)
+      assigns(:simulator).name.should eq @simulator.name
+      assigns(:simulator).command.should eq @simulator.command
+      keys = @simulator.parameter_definitions.map(&:key)
+      assigns(:simulator).parameter_definitions.map(&:key).should eq keys
+    end
+  end
+
   describe "GET edit" do
     it "assigns the requested simulator as @simulator" do
       simulator = Simulator.create! valid_attributes

@@ -40,6 +40,12 @@ class SimulatorsController < ApplicationController
     end
   end
 
+  # GET /simulators/1/duplicate
+  def duplicate
+    @simulator = Simulator.find(params[:id]).clone
+    render :new
+  end
+
   # GET /simulators/1/edit
   def edit
     @simulator = Simulator.find(params[:id])
