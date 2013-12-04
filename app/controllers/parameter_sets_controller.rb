@@ -121,7 +121,18 @@ class ParameterSetsController < ApplicationController
       series_values: series_values,
       data: data
     }
-    render json: h
+    respond_to do |format|
+      format.json { render json: h }
+      format.plt {
+        if series.blank?
+          script = GnuplotUtil.script_for_single_line_plot(data[0], x_axis_key, y_axis_keys.last, true)
+        else
+          script = GnuplotUtil.script_for_multi_line_plot(data, x_axis_key, y_axis_keys.last, true,
+                                                            series, series_values)
+        end
+        render text: script
+      }
+    end
   end
 
   private

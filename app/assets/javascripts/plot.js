@@ -227,8 +227,11 @@ function draw_plot(url, parameter_set_base_url) {
       dl.append("dt").text("Series");
       dl.append("dd").text(dat.series);
     }
-    description.append("a").attr({target: "_blank", href: url}).text("show data");
+    description.append("a").attr({target: "_blank", href: url}).text("show data in json");
     description.append("br");
+    plt_url = url.replace(/\.json/, '.plt')
+    description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
+    description.append("br")
     description.append("a").text("delete plot").on("click", function() {
       row.remove();
     });
