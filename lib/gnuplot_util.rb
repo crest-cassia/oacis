@@ -5,18 +5,19 @@ module GnuplotUtil
     script += "set xlabel \"#{xlabel}\"\n" if xlabel
     script += "set ylabel \"#{ylabel}\"\n" if ylabel
 
+    data_string = ""
+    commands = []
+
     if error_bar
-      script += <<-EOS
-plot '-' u 1:2:3 w yerrorbars ls 1, '-' u 1:2 w lines ls 1
-      EOS
-      script += convert_to_csv(data) * 2 # need to be written twice
+      commands += ["'-' u 1:2:3 w yerrorbars ls 1",
+                   "'-' u 1:2 w lines ls 1"]
+      data_string += convert_to_csv(data) * 2 # need to be written twice
     else
-      script += <<-EOS
-plot '-' u 1:2 w linespoints
-      EOS
-      script += convert_to_csv(data)
+      commands += ["'-' u 1:2 w linespoints"]
+      data_string += convert_to_csv(data)
     end
-    script
+    script += "plot " + commands.join(', ') + "\n"
+    script + data_string
   end
 
   def self.script_for_multi_line_plot(data_arr, xlabel = nil, ylabel = nil, error_bar = false,
