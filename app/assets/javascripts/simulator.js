@@ -183,8 +183,7 @@ function draw_progress_overview(url) {
             else { return "white"; }
           },
           stroke: "white",
-          "stroke-width": 2,
-          "opacity": 0
+          "stroke-width": 2
         })
         .on("mouseover", function(d) {
           if( d[1] > 0.0 ) {
@@ -204,15 +203,6 @@ function draw_progress_overview(url) {
           toolTip.transition()
             .duration(500)
             .style("opacity", 0);
-        })
-        .transition()
-        .duration(1000)
-        .delay( function(d,i) {return i*100;} )
-        .attr({
-          "opacity": function(d) {
-            if( d[1] > 0.0 ) { return 1.0; }
-            else { return 0.0; }
-          }
         });
 
     var rowLabelKeyRegion = svg.append("g")
