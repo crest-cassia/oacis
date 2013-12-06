@@ -16,6 +16,39 @@ function draw_color_map() {
     });
 };
 
+function show_loading_spin_arc(svg, width, height) {
+  var loading_spin = svg.append("g")
+    .attr("transform", "translate(" + width/2 + "," + height/2 + ")")
+    .attr("id", "loading-spin");
+  var radius = Math.min(width, height) / 2;
+  var arc = d3.svg.arc()
+    .innerRadius(radius*0.5)
+    .outerRadius(radius*0.9)
+    .startAngle(0);
+  loading_spin.append("path")
+    .datum({endAngle: 0.66*Math.PI})
+    .style("fill", "#4D4D4D")
+    .attr("d", arc)
+    .call(spin, 1500);
+  loading_spin.append("text")
+    .style({
+      "text-anchor": "middle",
+      "font-size": radius*0.1
+    })
+    .text("LOADING");
+
+  function spin(selection, duration) {
+    selection.transition()
+      .ease("linear")
+      .duration(duration)
+      .attrTween("transform", function() {
+        return d3.interpolateString("rotate(0)", "rotate(360)");
+      });
+    setTimeout( function() { spin(selection, duration); }, duration);
+  };
+  return loading_spin;
+}
+
 function draw_progress_overview(url) {
   var colorScale = d3.scale.linear().domain([0.0,1.0])
     .range(["#dddddd", "#0041ff"]);
@@ -31,12 +64,19 @@ function draw_progress_overview(url) {
 
   var toolTip = d3.select("#progress-tooltip");
 
+  var progress_overview = d3.select("#progress-overview");
+  progress_overview.select("svg").remove();
+  var svg = progress_overview.append("svg")
+    .attr("id", "canvas")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom);
+  var loading = show_loading_spin_arc(svg, svg.attr("width"), svg.attr("height"));
+
   d3.json(url, function(dat) {
+    loading.remove();
+
     var rectSizeX = (width - rowLabelMargin) / dat.parameter_values[0].length;
     var rectSizeY = (height - columnLabelMargin) / dat.parameter_values[1].length;
-
-    var progress_overview = d3.select("#progress-overview");
-    progress_overview.select("svg").remove();
 
     var drag_flag = 0;
     var mousedownX = 0;
@@ -88,10 +128,7 @@ function draw_progress_overview(url) {
         .attr("font-size",fontsize*Math.sqrt(zoom_scale));
     };
 
-    var svg = progress_overview.append("svg")
-      .attr("id", "canvas")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom);
+
 
     var inner_svg = svg.append("svg")
       .attr("id", "inner_canvas")
