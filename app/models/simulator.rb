@@ -67,7 +67,35 @@ class Simulator
     found
   end
 
+  def plottable
+    run = Run.where(simulator: self, status: :finished).first
+    list = plottable_keys(run.try(:result)).map {|key| ".#{key}" }
+
+    analyzers.each do |azr|
+      anl = azr.analyses.where(status: :finished).first
+      keys = plottable_keys(anl.try(:result)).map do |key|
+        "#{azr.name}.#{key}"
+      end
+      list += keys
+    end
+    list
+  end
+
   private
+  def plottable_keys(result)
+    ret = []
+    if result.is_a?(Hash)
+      result.each_pair do |key, val|
+        if val.is_a?(Numeric)
+          ret << key
+        elsif val.is_a?(Hash)
+          ret += plottable_keys(val).map {|x| "#{key}.#{x}" }
+        end
+      end
+    end
+    ret
+  end
+
   def create_simulator_dir
     FileUtils.mkdir_p(ResultDirectory.simulator_path(self))
   end

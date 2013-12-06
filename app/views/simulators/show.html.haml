@@ -10,6 +10,8 @@
       %a{"href"=>"#tab-about", "data-toggle" => "tab"} About
     %li.active
       %a{"href"=>"#tab-list-parameters", "data-toggle" => "tab"} Parameter Sets
+    %li
+      %a{"href"=>"#tab-progress", "data-toggle" => "tab"} Progress
 
   %div.tab-content
     %div.tab-pane#tab-about
@@ -17,3 +19,5 @@
       = render "analyzers_list"
     %div.tab-pane.active#tab-list-parameters
       = render "parameter_sets_list"
+    %div.tab-pane#tab-progress
+      = render "progress"

@@ -40,6 +40,12 @@ class SimulatorsController < ApplicationController
     end
   end
 
+  # GET /simulators/1/duplicate
+  def duplicate
+    @simulator = Simulator.find(params[:id]).clone
+    render :new
+  end
+
   # GET /simulators/1/edit
   def edit
     @simulator = Simulator.find(params[:id])
@@ -122,11 +128,43 @@ class SimulatorsController < ApplicationController
     render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context)
   end
 
-  def _parameter_sets_status_count
-    render json: Simulator.only("parameter_sets.runs.status").find(params[:id]).parameter_sets_status_count.to_json
-  end
-
   def _analyzer_list
     render json: AnalyzersListDatatable.new(view_context)
+  end
+
+  def _progress
+    sim = Simulator.find(params[:id])
+    column_parameter = params[:column_parameter]
+    row_parameter = params[:row_parameter]
+    parameters = [column_parameter, row_parameter]
+    parameter_values = [
+      sim.parameter_sets.distinct("v.#{column_parameter}").sort,
+      sim.parameter_sets.distinct("v.#{row_parameter}").sort
+    ]
+    num_runs = parameter_values[1].map do |p2|
+      parameter_values[0].map do |p1|
+        if row_parameter == column_parameter and p1 != p2
+          [0,0]
+        else
+          parameter_sets = ParameterSet.where({
+            :simulator => sim,
+            "v.#{column_parameter}" => p1,
+            "v.#{row_parameter}" => p2
+          })
+          parameter_sets.inject([0,0]) do |sum, ps|
+            sum[0] += ps.runs.where(status: :finished).count
+            sum[1] += ps.runs.count
+            sum
+          end
+        end
+      end
+    end
+
+    progress_overview = {
+      parameters: parameters,
+      parameter_values: parameter_values,
+      num_runs: num_runs
+    }
+    render json: progress_overview
   end
 end
