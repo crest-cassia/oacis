@@ -236,7 +236,7 @@ describe ParameterSetsController do
     end
   end
 
-  describe "GET _plot" do
+  describe "GET _line_plot" do
 
     before(:each) do
       pds = [ {key: "L", type: "Integer", default: 50, description: "First parameter"},
@@ -267,14 +267,14 @@ describe ParameterSetsController do
     end
 
     it "returns in json format" do
-      get :_plot,
+      get :_line_plot,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: ""},
         format: :json
       response.header['Content-Type'].should include 'application/json'
     end
 
     it "returns valid json" do
-      get :_plot,
+      get :_line_plot,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: ""},
         format: :json
       expected = {
@@ -293,7 +293,7 @@ describe ParameterSetsController do
     context "when parameter 'series' is given" do
 
       it "returns series of data when parameter 'series' is given" do
-        get :_plot,
+        get :_line_plot,
           {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: ""},
           format: :json
         expected = {
@@ -317,7 +317,7 @@ describe ParameterSetsController do
     context "when 'irrelevants' are given" do
 
       it "data includes parameter sets having different irrelevant parameters " do
-        get :_plot,
+        get :_line_plot,
           {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "P"},
           format: :json
         expected = {

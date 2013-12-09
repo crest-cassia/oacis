@@ -1,4 +1,4 @@
-function draw_plot(url, parameter_set_base_url) {
+function draw_line_plot(url, parameter_set_base_url) {
 
   var margin = {top: 10, right: 100, bottom: 100, left: 100},
     width = 560;

@@ -93,7 +93,7 @@ class ParameterSetsController < ApplicationController
     render json: AnalysesListDatatable.new(view_context, parameter_set.analyses)
   end
 
-  def _plot
+  def _line_plot
     ps = ParameterSet.find(params[:id])
 
     x_axis_key = params[:x_axis_key]

@@ -78,10 +78,10 @@
   $('#line-or-scatter').change(show_form_for_plots);
 
   function add_line_plot(x, y, series, irrelevants) {
-    var url = "#{_plot_parameter_set_path(@param_set)}" + ".json";
+    var url = "#{_line_plot_parameter_set_path(@param_set)}" + ".json";
     var url_with_param = url + "?x_axis_key=" + encodeURIComponent(x) + "&y_axis_key=" + encodeURIComponent(y) + "&series=" + encodeURIComponent(series) + "&irrelevants=" + encodeURIComponent(irrelevants);
     var ps_base_url = "#{parameter_set_path('')}";
-    draw_plot(url_with_param, ps_base_url);
+    draw_line_plot(url_with_param, ps_base_url);
   }
   $('#add_line_plot_button').on('click', function() {
     var x = $('#x_axis_key').val();
