@@ -119,3 +119,23 @@
       })
     })
   });
+
+  function add_scatter_plot(x, y, result, irrelevants) {
+    var url = "#{_scatter_plot_parameter_set_path(@param_set)}" + ".json";
+    var url_with_param = url +
+      "?x_axis_key=" + encodeURIComponent(x) +
+      "&y_axis_key=" + encodeURIComponent(y) +
+      "&result=" + encodeURIComponent(result) +
+      "&irrelevants=" + encodeURIComponent(irrelevants);
+    var ps_base_url = "#{parameter_set_path('')}";
+    draw_scatter_plot(url_with_param, ps_base_url);
+  }
+  $('#add_scatter_plot_button').on('click', function() {
+    var x = $('#x_axis_key').val();
+    var y = $('#y_axis_key').val();
+    var result = $('#result').val();
+    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
+      return this.id;
+      }).get().join(',');
+    add_scatter_plot(x, y, result, irrelevants);
+  });

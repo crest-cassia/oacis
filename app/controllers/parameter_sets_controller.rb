@@ -207,4 +207,8 @@ class ParameterSetsController < ApplicationController
     end
     created
   end
+
+  public
+  def _scatter_plot
+  end
 end

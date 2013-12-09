@@ -205,3 +205,6 @@ function draw_plot(url, parameter_set_base_url) {
   });
 }
 
+function draw_scatter_plot(url, parameter_set_base_url) {
+  console.log("draw_scatter_plot");
+}
