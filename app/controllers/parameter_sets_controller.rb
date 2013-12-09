@@ -139,37 +139,65 @@ class ParameterSetsController < ApplicationController
   def collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
     y_axis_keys = y_axis_keys.dup
     analyzer_name = y_axis_keys.shift
-
-    query_result_value = lambda {|result|
-      y_axis_keys.inject(result) {|y, y_key| y.try(:[], y_key) }
-    }
-
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
-    if analyzer.nil?
-      get_result_values = lambda {|ps|
-        ps.runs.where(status: :finished).map(&:result).map(&query_result_value).compact
-      }
-    elsif analyzer.type == :on_run
-      get_result_values = lambda {|ps|
-        results = ps.runs.where(status: :finished).map do |run|
-          run.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
-        end
-        results.map(&query_result_value).compact
-      }
-    elsif analyzer.type == :on_parameter_set
-      get_result_values = lambda {|ps|
-        result = ps.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
-        [result].map(&query_result_value).compact
-      }
-    end
 
     plot_data = base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).map do |ps|
       x = ps.v[x_axis_key]
-      values = get_result_values.call(ps)
+      values = collect_result_values(ps, analyzer, y_axis_keys)
       y, yerror, num_data = AnalysisUtil.error_analysis(values)
       [x, y, yerror, ps.id]
     end
     plot_data.reject {|dat| dat[1].nil? }
+  end
+
+  def collect_result_values(ps, analyzer, result_keys)
+    results = []
+    if analyzer.nil?
+      results = ps.runs.where(status: :finished).map(&:result)
+    elsif analyzer.type == :on_run
+      results = ps.runs.where(status: :finished).map do |run|
+        run.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
+      end
+    elsif analyzer.type == :on_parameter_set
+      r = ps.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
+      results = [r]
+    end
+
+    results.map do |result|
+      result_keys.inject(result) {|r, key| r.try(:[], key)}
+    end.compact
+  end
+
+  public
+  def _scatter_plot
+    base_ps = ParameterSet.find(params[:id])
+
+    x_axis_key = params[:x_axis_key]
+    y_axis_key = params[:y_axis_key]
+    result_keys = params[:result].split('.')[1..-1]
+    analyzer_name = params[:result].split('.')[0]
+    analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
+    irrelevant_keys = params[:irrelevants].split(',')
+
+    ps_array = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
+    data = ps_array.map do |ps|
+      values = collect_result_values(ps, analyzer, result_keys)
+      ave, err, num_data = AnalysisUtil.error_analysis(values)
+      x = ps.v[x_axis_key]
+      y = ps.v[y_axis_key]
+      [x, y, ave, err, ps.id]
+    end
+    data.reject! {|dat| dat[2].nil? }
+    h = {
+      xlabel: x_axis_key,
+      ylabel: y_axis_key,
+      result: result_keys.last,
+      data: data
+    }
+
+    respond_to do |format|
+      format.json { render json: h }
+    end
   end
 
   private
@@ -206,9 +234,5 @@ class ParameterSetsController < ApplicationController
       end
     end
     created
-  end
-
-  public
-  def _scatter_plot
   end
 end
