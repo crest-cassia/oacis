@@ -28,7 +28,7 @@
       = label_tag 'y_axis_key', "Y-Axis"
       = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
       = label_tag 'result', "Result"
-      = select_tag 'Result', options_for_select(plottable), id: 'result'
+      = select_tag 'result', options_for_select(plottable), id: 'result'
       %a.btn.btn-primary#add_scatter_plot_button Add Scatter Plot
     #irrelevant-params
       %br
@@ -84,9 +84,9 @@
     draw_line_plot(url_with_param, ps_base_url);
   }
   $('#add_line_plot_button').on('click', function() {
-    var x = $('#x_axis_key').val();
-    var y = $('#y_axis_key').val();
-    var series = $('#series').val();
+    var x = $('#line-plot-form #x_axis_key').val();
+    var y = $('#line-plot-form #y_axis_key').val();
+    var series = $('#line-plot-form #series').val();
     var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
       return this.id;
       }).get().join(',');
@@ -131,9 +131,9 @@
     draw_scatter_plot(url_with_param, ps_base_url);
   }
   $('#add_scatter_plot_button').on('click', function() {
-    var x = $('#x_axis_key').val();
-    var y = $('#y_axis_key').val();
-    var result = $('#result').val();
+    var x = $('#scatter-plot-form #x_axis_key').val();
+    var y = $('#scatter-plot-form #y_axis_key').val();
+    var result = $('#scatter-plot-form #result').val();
     var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
       return this.id;
       }).get().join(',');
