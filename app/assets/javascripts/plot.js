@@ -218,9 +218,11 @@ function draw_scatter_plot(url, parameter_set_base_url) {
     .attr({
       "width": width + margin.left + margin.right,
       "height": height + margin.top + margin.bottom
-    })
-    .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    });
+  var colorMapG = svg.append("g")
+    .attr("transform", "translate(" + (margin.left + width) + "," + margin.top + ")");
+  var svg = svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   var progress = show_loading_spin_arc(svg, width, height);
 
@@ -244,7 +246,29 @@ function draw_scatter_plot(url, parameter_set_base_url) {
       d3.max( dat.data, function(d) { return d[2];})
     ]).nice();
 
-    console.log(xScale.domain);
+    function draw_color_map(g, min, max) {
+      var scale = d3.scale.linear().range(["blue", "red"]).domain([0.0, 1.0]);
+      g.selectAll("rect")
+        .data([1.0, 0.8, 0.6, 0.4, 0.2, 0.0])
+        .enter().append("rect")
+        .attr({
+          x: 80.0,
+          y: function(d,i) { return i * 20.0; },
+          width: 19,
+          height: 19,
+          fill: function(d) { return scale(d); }
+        });
+      g.append("text")
+        .attr({x: 75.0, y: 20.0, dy: "-0.4em"})
+        .style("text-anchor", "end")
+        .text(max);
+      g.append("text")
+        .attr({x: 75.0, y: 120.0, dy: "-0.4em"})
+        .style("text-anchor", "end")
+        .text(min);
+    }
+
+    draw_color_map(colorMapG, colorScale.domain()[0], colorScale.domain()[1]);
 
     // X-Axis
     var xAxis = d3.svg.axis()
@@ -282,7 +306,6 @@ function draw_scatter_plot(url, parameter_set_base_url) {
         average: v[2], error: v[3], psid: v[4]
       };
     });
-    console.log(mapped);
     var point = svg.selectAll("circle")
       .data(mapped).enter();
     point.append("circle")
