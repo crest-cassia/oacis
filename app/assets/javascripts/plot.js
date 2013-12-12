@@ -342,5 +342,22 @@ function draw_scatter_plot(url, parameter_set_base_url) {
         // open a link in a background window
         window.open(parameter_set_base_url + d.psid, '_blank');
       });
+
+    function add_description() {
+      // description for the specification of the plot
+      var dl = description.append("dl");
+      dl.append("dt").text("X-Axis");
+      dl.append("dd").text(dat.xlabel);
+      dl.append("dt").text("Y-Axis");
+      dl.append("dd").text(dat.ylabel);
+      dl.append("dt").text("Result");
+      dl.append("dd").text(dat.result);
+      description.append("a").attr({target: "_blank", href: url}).text("show data in json");
+      description.append("br");
+      description.append("a").text("delete plot").on("click", function() {
+        row.remove();
+      });
+    }
+    add_description();
   });
 }
