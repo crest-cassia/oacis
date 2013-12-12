@@ -231,7 +231,7 @@ function draw_scatter_plot(url, parameter_set_base_url) {
 
     var xScale = d3.scale.linear().range([0, width]);
     var yScale = d3.scale.linear().range([height, 0]);
-    var colorScale = d3.scale.linear().range(["blue", "red"])
+    var colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"])
 
     xScale.domain([
       d3.min( dat.data, function(d) { return d[0];}),
@@ -246,29 +246,33 @@ function draw_scatter_plot(url, parameter_set_base_url) {
       d3.max( dat.data, function(d) { return d[2];})
     ]).nice();
 
-    function draw_color_map(g, min, max) {
-      var scale = d3.scale.linear().range(["blue", "red"]).domain([0.0, 1.0]);
+    function draw_color_map(g, range) {
+      var scale = d3.scale.linear().range(["#0041ff", "#ff2800"]).domain([0.0, 1.0]);
+      g.append("text")
+        .attr({x: 10.0, y: 20.0, dx: "0.1em", dy: "-0.4em"})
+        .style("text-anchor", "begin")
+        .text("Result");
       g.selectAll("rect")
         .data([1.0, 0.8, 0.6, 0.4, 0.2, 0.0])
         .enter().append("rect")
         .attr({
-          x: 80.0,
-          y: function(d,i) { return i * 20.0; },
+          x: 10.0,
+          y: function(d,i) { return i * 20.0 + 20.0; },
           width: 19,
           height: 19,
           fill: function(d) { return scale(d); }
         });
       g.append("text")
-        .attr({x: 75.0, y: 20.0, dy: "-0.4em"})
-        .style("text-anchor", "end")
-        .text(max);
+        .attr({x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
+        .style("text-anchor", "begin")
+        .text(range[1]);
       g.append("text")
-        .attr({x: 75.0, y: 120.0, dy: "-0.4em"})
-        .style("text-anchor", "end")
-        .text(min);
+        .attr({x: 30.0, y: 140.0, dx: "0.2em", dy: "-0.3em"})
+        .style("text-anchor", "begin")
+        .text(range[0]);
     }
 
-    draw_color_map(colorMapG, colorScale.domain()[0], colorScale.domain()[1]);
+    draw_color_map(colorMapG, colorScale.domain());
 
     // X-Axis
     var xAxis = d3.svg.axis()
