@@ -274,33 +274,36 @@ function draw_scatter_plot(url, parameter_set_base_url) {
 
     draw_color_map(colorMapG, colorScale.domain());
 
-    // X-Axis
-    var xAxis = d3.svg.axis()
-      .scale(xScale)
-      .orient("bottom");
-    svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
-      .append("text")
-        .style("text-anchor", "middle")
-        .attr("x", width / 2.0)
-        .attr("y", 50.0)
-        .text(dat.xlabel);
+    function draw_axes(xlabel, ylabel) {
+      // X-Axis
+      var xAxis = d3.svg.axis()
+        .scale(xScale)
+        .orient("bottom");
+      svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+        .append("text")
+          .style("text-anchor", "middle")
+          .attr("x", width / 2.0)
+          .attr("y", 50.0)
+          .text(xlabel);
 
-    // Y-Axis
-    var yAxis = d3.svg.axis()
-      .scale(yScale)
-      .orient("left");
-    svg.append("g")
+      // Y-Axis
+      var yAxis = d3.svg.axis()
+        .scale(yScale)
+        .orient("left");
+      svg.append("g")
         .attr("class", "y axis")
         .call(yAxis)
-      .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -height/2)
-        .attr("y", -50.0)
-        .style("text-anchor", "middle")
-        .text(dat.ylabel);
+        .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("x", -height/2)
+          .attr("y", -50.0)
+          .style("text-anchor", "middle")
+          .text(ylabel);
+    }
+    draw_axes(dat.xlabel, dat.ylabel);
 
     // draw circles
     var tooltip = d3.select("#plot-tooltip");
