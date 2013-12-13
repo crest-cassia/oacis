@@ -2,7 +2,8 @@ class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
   field :v, type: Hash
-  belongs_to :simulator
+  index({ v: 1 }, { unique: true, name: "v_index" })
+  belongs_to :simulator, autosave: false
   has_many :runs, dependent: :destroy
   has_many :analyses, as: :analyzable, dependent: :destroy
 
