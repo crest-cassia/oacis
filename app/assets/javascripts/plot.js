@@ -305,6 +305,20 @@ function draw_scatter_plot(url, parameter_set_base_url) {
     }
     draw_axes(dat.xlabel, dat.ylabel);
 
+    function draw_voronoi_heat_map() {
+      var vertices = dat.data.map(function(v) { return [xScale(v[0]), yScale(v[1])]; })
+      var voronoi = d3.geom.voronoi()
+        .clipExtent([[0, 0], [width, height]]);
+      var path = svg.append("g").selectAll("path")
+        .data(voronoi(vertices));
+      path.enter().append("path")
+        .style("fill", function(d, i) { return colorScale(dat.data[i][2]);})
+        .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
+        .style("fill-opacity", 0.7)
+        .style("stroke", "none");
+    }
+    draw_voronoi_heat_map();
+
     // draw circles
     var tooltip = d3.select("#plot-tooltip");
     var mapped = dat.data.map(function(v) {
@@ -362,21 +376,5 @@ function draw_scatter_plot(url, parameter_set_base_url) {
       });
     }
     add_description();
-
-    function draw_voronoi_heat_map() {
-      var vertices = dat.data.map(function(v) { return [xScale(v[0]), yScale(v[1])]; })
-      var voronoi = d3.geom.voronoi()
-        .clipExtent([[0, 0], [width, height]]);
-      var path = svg.append("g").selectAll("path")
-        .data(voronoi(vertices));
-      path.enter().append("path")
-        .style("fill", function(d, i) {
-          return colorScale(dat.data[i][2]); })
-        .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
-        .style("fill-opacity", 0.8)
-        .style("stroke", "black");
-    }
-
-    draw_voronoi_heat_map();
   });
 }
