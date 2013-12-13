@@ -320,45 +320,48 @@ function draw_scatter_plot(url, parameter_set_base_url) {
     draw_voronoi_heat_map();
 
     // draw circles
-    var tooltip = d3.select("#plot-tooltip");
-    var mapped = dat.data.map(function(v) {
-      return {
-        x: v[0], y: v[1],
-        average: v[2], error: v[3], psid: v[4]
-      };
-    });
-    var point = svg.selectAll("circle")
-      .data(mapped).enter();
-    point.append("circle")
-      .attr("cx", function(d) { return xScale(d.x);})
-      .attr("cy", function(d) { return yScale(d.y);})
-      .style("fill", function(d) { return colorScale(d.average);})
-      .attr("r", 3)
-      .on("mouseover", function(d) {
-        tooltip.transition()
-          .duration(200)
-          .style("opacity", .8);
-        tooltip.html(
-          dat.xlabel + " : " + d.x + "<br/>" +
-          dat.ylabel + " : " + d.y + "<br/>" +
-          "Result : " + Math.round(d.average*1000000)/1000000 +
-          " (" + Math.round(d.error*1000000)/1000000 + ")<br/>" +
-          "ID: " + d.psid);
-      })
-      .on("mousemove", function() {
-        tooltip
-          .style("top", (d3.event.pageY-10) + "px")
-          .style("left", (d3.event.pageX+10) + "px");
-      })
-      .on("mouseout", function() {
-        tooltip.transition()
-          .duration(300)
-          .style("opacity", 0);
-      })
-      .on("dblclick", function(d) {
-        // open a link in a background window
-        window.open(parameter_set_base_url + d.psid, '_blank');
+    function draw_points() {
+      var tooltip = d3.select("#plot-tooltip");
+      var mapped = dat.data.map(function(v) {
+        return {
+          x: v[0], y: v[1],
+          average: v[2], error: v[3], psid: v[4]
+        };
       });
+      var point = svg.selectAll("circle")
+        .data(mapped).enter();
+      point.append("circle")
+        .attr("cx", function(d) { return xScale(d.x);})
+        .attr("cy", function(d) { return yScale(d.y);})
+        .style("fill", function(d) { return colorScale(d.average);})
+        .attr("r", 3)
+        .on("mouseover", function(d) {
+          tooltip.transition()
+            .duration(200)
+            .style("opacity", .8);
+          tooltip.html(
+            dat.xlabel + " : " + d.x + "<br/>" +
+            dat.ylabel + " : " + d.y + "<br/>" +
+            "Result : " + Math.round(d.average*1000000)/1000000 +
+            " (" + Math.round(d.error*1000000)/1000000 + ")<br/>" +
+            "ID: " + d.psid);
+        })
+        .on("mousemove", function() {
+          tooltip
+            .style("top", (d3.event.pageY-10) + "px")
+            .style("left", (d3.event.pageX+10) + "px");
+        })
+        .on("mouseout", function() {
+          tooltip.transition()
+            .duration(300)
+            .style("opacity", 0);
+        })
+        .on("dblclick", function(d) {
+          // open a link in a background window
+          window.open(parameter_set_base_url + d.psid, '_blank');
+        });
+    }
+    draw_points();
 
     function add_description() {
       // description for the specification of the plot
