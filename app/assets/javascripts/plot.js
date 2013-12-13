@@ -318,7 +318,6 @@ function draw_scatter_plot(url, parameter_set_base_url) {
     }
     draw_voronoi_heat_map();
 
-    // draw circles
     function draw_points() {
       var tooltip = d3.select("#plot-tooltip");
       var mapped = dat.data.map(function(v) {
