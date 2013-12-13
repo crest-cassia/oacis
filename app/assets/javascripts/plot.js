@@ -246,8 +246,8 @@ function draw_scatter_plot(url, parameter_set_base_url) {
       d3.max( dat.data, function(d) { return d[2];})
     ]).nice();
 
-    function draw_color_map(g, range) {
-      var scale = d3.scale.linear().range(["#0041ff", "#ff2800"]).domain([0.0, 1.0]);
+    function draw_color_map(g) {
+      var scale = d3.scale.linear().domain([0.0, 1.0]).range(colorScale.range());
       g.append("text")
         .attr({x: 10.0, y: 20.0, dx: "0.1em", dy: "-0.4em"})
         .style("text-anchor", "begin")
@@ -265,14 +265,13 @@ function draw_scatter_plot(url, parameter_set_base_url) {
       g.append("text")
         .attr({x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
         .style("text-anchor", "begin")
-        .text(range[1]);
+        .text( colorScale.domain()[1] );
       g.append("text")
         .attr({x: 30.0, y: 140.0, dx: "0.2em", dy: "-0.3em"})
         .style("text-anchor", "begin")
-        .text(range[0]);
+        .text( colorScale.domain()[0] );
     }
-
-    draw_color_map(colorMapG, colorScale.domain());
+    draw_color_map(colorMapG);
 
     function draw_axes(xlabel, ylabel) {
       // X-Axis
