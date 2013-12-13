@@ -335,4 +335,57 @@ describe ParameterSetsController do
       end
     end
   end
+
+  describe "GET _scatter_plot" do
+
+    before(:each) do
+      pds = [ {key: "L", type: "Integer", default: 50, description: "First parameter"},
+              {key: "T", type: "Float", default: 1.0, description: "Second parameter"},
+              {key: "P", type: "Float", default: 1.0, description: "Third parameter"}]
+      pds.map! {|h| ParameterDefinition.new(h) }
+      @sim = FactoryGirl.create(:simulator,
+                               parameter_definitions: pds,
+                               parameter_sets_count: 0,
+                               analyzers_count: 0)
+      param_values = [ {"L" => 1, "T" => 1.0, "P" => 1.0},
+                       {"L" => 2, "T" => 1.0, "P" => 1.0},
+                       {"L" => 3, "T" => 1.0, "P" => 1.0},
+                       {"L" => 1, "T" => 2.0, "P" => 1.0},
+                       {"L" => 2, "T" => 2.0, "P" => 1.0},
+                       {"L" => 3, "T" => 2.0, "P" => 2.0}  # P is different from others
+                     ]
+      host = FactoryGirl.create(:host)
+      @ps_array = param_values.map do |v|
+        ps = @sim.parameter_sets.create(v: v)
+        run = ps.runs.create
+        run.status = :finished
+        run.submitted_to = host
+        run.result = {"ResultKey1" => 99}
+        run.save!
+        ps
+      end
+    end
+
+    it "returns in json format" do
+      get :_scatter_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", format: :json}
+      response.header['Content-Type'].should include 'application/json'
+    end
+
+    it "returns valid json" do
+      get :_scatter_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", format: :json}
+      expected = {
+        xlabel: "L", ylabel: "T", result: "ResultKey1",
+        data: [
+          [1, 1.0, 99.0, nil, @ps_array[0].id],
+          [1, 2.0, 99.0, nil, @ps_array[3].id],
+          [2, 1.0, 99.0, nil, @ps_array[1].id],
+          [2, 2.0, 99.0, nil, @ps_array[4].id],
+          [3, 1.0, 99.0, nil, @ps_array[2].id]
+        ]
+      }.to_json
+      response.body.should eq expected
+    end
+  end
 end
