@@ -5,7 +5,8 @@ require_relative '../../config/environment'
 
 class OacisCli < Thor
 
-  MESSAGE={"greeting"=>"input data with json format"}
+  class_option :dry_run, type: :boolean, aliases: '-d', desc: 'dry run'
+  class_option :verbose, type: :boolean, aliases: '-v', desc: 'verbose mode'
 
   USAGE = <<"EOS"
 usage:
@@ -79,14 +80,6 @@ EOS
 
   public
   desc 'create_simulator', "create_simulator"
-  method_option :dry_run,
-    :type     => :boolean,
-    :aliases  => '-d',
-    :desc     => 'dry_run (validation only)'
-  method_option :verbose,
-    :type     => :boolean,
-    :aliases  => '-v',
-    :desc     => 'show detail messages'
   method_option :host,
     :type     => :string,
     :aliases  => '-h',
@@ -160,14 +153,6 @@ EOS
   end
 
   desc 'create_parameter_sets', "create parameter_sets"
-  method_option :dry_run,
-    :type     => :boolean,
-    :aliases  => '-d',
-    :desc     => 'dry_run (validation only)'
-  method_option :verbose,
-    :type     => :boolean,
-    :aliases  => '-v',
-    :desc     => 'show detail messages'
   method_option :simulator,
     :type     => :string,
     :aliases  => '-s',
@@ -244,14 +229,6 @@ EOS
   end
 
   desc 'create_runs', "create runs"
-  method_option :dry_run,
-    :type     => :boolean,
-    :aliases  => '-d',
-    :desc     => 'dry_run (validation only)'
-  method_option :verbose,
-    :type     => :boolean,
-    :aliases  => '-v',
-    :desc     => 'show detail messages'
   method_option :parameter_sets,
     :type     => :string,
     :aliases  => '-p',
