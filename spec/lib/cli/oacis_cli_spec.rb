@@ -161,4 +161,29 @@ describe OacisCli do
       end
     end
   end
+
+  describe "#parameter_sets_template" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+    end
+
+    def create_simulator_id_json(path)
+      File.open(path, 'w') {|io|
+        io.puts( {"simulator_id" => @sim.id.to_s}.to_json )
+      }
+    end
+
+    it "prints a template of parameter_sets.json" do
+      at_temp_dir {
+        create_simulator_id_json('simulator_id.json')
+        option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
+        OacisCli.new.invoke(:parameter_sets_template, [], option)
+        File.exist?('parameter_sets.json').should be_true
+        expect {
+          JSON.load(File.read('parameter_sets.json'))
+        }.not_to raise_error
+      }
+    end
+  end
 end

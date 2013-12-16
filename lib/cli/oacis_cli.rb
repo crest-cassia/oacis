@@ -139,11 +139,14 @@ EOS
     required: true
   def parameter_sets_template
     sim = get_simulator(options[:simulator])
-    h = {}
-    ps = sim.parameter_definitions.map {|ps_def| h[ps_def["key"]]=ps_def["default"]}
-    puts "["
-    puts "  "+h.to_json
-    puts "]"
+    mapped = sim.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
+    parameter_set = Hash[mapped]
+
+    File.open(options[:output], 'w') do |io|
+      # for visibility, manually print the json object as follows
+      io.puts "[", "  #{parameter_set.to_json}", "]"
+      io.flush
+    end
   end
 
   desc 'create_parameter_sets', "create parameter_sets"
@@ -195,12 +198,12 @@ EOS
     type:     :string,
     aliases:  '-p',
     desc:     'target parameter_set',
-    :required true
+    required: true
   method_option :host,
     type:     :string,
     aliases:  '-h',
     desc:     'executable hosts (the first host is abailable)',
-    :required true
+    required: true
   method_option :times,
     type:     :numeric,
     aliases:  '-t',
@@ -379,21 +382,13 @@ EOS
   end
 
   def get_simulator(file)
-    if File.exist?(file)
-      io = File.open(file,"r")
-      parsed = JSON.load(io)
-      simulator_id=parsed["simulator_id"]
-    else
-      $stderr.puts "simulator file '#{file}' is not exist"
-      exit(-1)
+    unless File.exist?(file)
+      $stderr.puts "simulator file '#{file}' is not found"
+      raise "File #{file} is not found"
     end
-    if simulator_id
-      sim = Simulator.find(simulator_id)
-    else
-      $stderr.puts "simulator_id is not existed"
-      exit(-1)
-    end
-    sim
+
+    simulator_id = JSON.load( File.read(file) )["simulator_id"]
+    Simulator.find(simulator_id)
   end
 
   def get_parameter_sets(file)
