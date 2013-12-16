@@ -56,7 +56,10 @@ EOS
     required: true
   def show_host
     hosts = Host.all.to_a.map{|host| {"id"=>host.to_param,"name"=>host.name,"hostname"=>host.hostname,"user"=>host.user}}
-    puts JSON.pretty_generate(hosts)
+    File.open(options[:output], 'w') {|io|
+      io.puts JSON.pretty_generate(hosts)
+      io.flush
+    }
   end
 
   desc 'simulator_template', "print simulator template"
