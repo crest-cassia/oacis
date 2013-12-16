@@ -55,7 +55,9 @@ EOS
     desc:     'output file',
     required: true
   def show_host
-    hosts = Host.all.to_a.map{|host| {"id"=>host.to_param,"name"=>host.name,"hostname"=>host.hostname,"user"=>host.user}}
+    hosts = Host.all.map do |host|
+      {id: host.id.to_s, name: host.name, hostname: host.hostname, user: host.user}
+    end
     File.open(options[:output], 'w') {|io|
       io.puts JSON.pretty_generate(hosts)
       io.flush
