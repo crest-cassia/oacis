@@ -62,8 +62,8 @@ describe OacisCli do
         {
           "name": "a_sample_simulator",
           "command": "/path/to/simulator.out",
-          "support_input_json": false,
-          "support_mpi": false,
+          "support_input_json": true,
+          "support_mpi": true,
           "support_omp": false,
           "pre_process_script": null,
           "executable_on_ids": [],
@@ -76,13 +76,42 @@ describe OacisCli do
       io.flush
     end
 
-    it "creates Simulator" do
+    it "creates a Simulator" do
       at_temp_dir {
         create_simulator_json('simulator.json')
         option = {input: 'simulator.json', output: 'simulator_id.json'}
         expect {
           OacisCli.new.invoke(:create_simulator, [], option)
         }.to change { Simulator.count }.by(1)
+      }
+    end
+
+    it "creates a Simulator having correct attributes" do
+      at_temp_dir {
+        create_simulator_json('simulator.json')
+        option = {input: 'simulator.json', output: 'simulator_id.json'}
+        OacisCli.new.invoke(:create_simulator, [], option)
+
+        sim = Simulator.first
+        sim.name.should eq "a_sample_simulator"
+        sim.support_input_json.should be_true
+        sim.pre_process_script.should be_nil
+      }
+    end
+
+    it "creates a Simulator having correct parameter_definitions" do
+      at_temp_dir {
+        create_simulator_json('simulator.json')
+        option = {input: 'simulator.json', output: 'simulator_id.json'}
+        OacisCli.new.invoke(:create_simulator, [], option)
+
+        expected = [
+          ["p1", "Integer", 0, "parameter1"],
+          ["p2", "Float", 5.0, "parameter2"]
+        ]
+        Simulator.first.parameter_definitions.map { |pd|
+          [pd.key, pd.type, pd.default, pd.description]
+        }.should eq expected
       }
     end
 

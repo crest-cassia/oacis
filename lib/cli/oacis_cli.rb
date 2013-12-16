@@ -77,6 +77,7 @@ EOS
     }
   end
 
+  public
   desc 'create_simulator', "create_simulator"
   method_option :dry_run,
     :type     => :boolean,
@@ -101,40 +102,43 @@ EOS
     desc:     'output file',
     required: true
   def create_simulator
-    puts MESSAGE["greeting"] if options[:verbose]
-    data = JSON.load(File.read(options[:input]))
-    unless data
-      $stderr.puts "ERROR:data is not json format"
-      exit(-1)
+    input = JSON.load(File.read(options[:input]))
+
+    # create a simulator
+    sim = Simulator.new(input)
+    input["parameter_definitions"].each do |param_def|
+      sim.parameter_definitions.build(param_def)
+    end
+    if options[:host]
+      hosts = get_host(options[:host])
+      sim.executable_on += hosts
     end
 
     if options[:verbose]
-      puts "data = "
-      puts JSON.pretty_generate(data)
+      $stderr.puts "created_simulator :", JSON.pretty_generate(sim), ""
+      $stderr.puts "parameter_definitions :", JSON.pretty_generate(sim.parameter_definitions)
     end
 
-    if create_simulator_data_is_valid?(data)
-      puts  "data is valid" if options[:verbose]
-    else
-      puts  "data is not valid" if options[:verbose]
-        exit(-1)
-    end
+    return if options[:dry_run]
 
-    unless options[:dry_run]
-      sim = create_simulator_do(data)
-      if options[:host]
-        hosts = get_host(options[:host])
-        sim.executable_on += hosts
-        sim.save!
-      end
+    # save the created simulator
+    if sim.save
       h = {simulator_id: sim.id.to_s}
       File.open(options[:output], 'w') {|io|
         io.puts JSON.pretty_generate(h)
         io.flush
       }
+    else
+      $stderr.puts sim.errors.full_messages
+      raise "Failed to create a simulator"
     end
   end
 
+  private
+  def validate_simulator_json(input)
+  end
+
+  public
   desc 'parameter_sets_template', "print parameter_sets template"
   method_option :simulator,
     :type     => :string,
@@ -317,35 +321,6 @@ EOS
   end
 
   private
-  def create_simulator_from_data(data)
-    sim = Simulator.new
-    sim.name = data["name"]
-    sim.command = data["command"]
-    data["parameter_definitions"].each do |pd|
-      ps = sim.parameter_definitions.build
-      ps.key = pd["key"]
-      ps.type = pd["type"]
-      val = pd["default"]
-      val = val.to_i if pd["type"] == "Integer"
-      val = val.to_f if pd["type"] == "Float"
-      val = val.to_b if pd["type"] == "Boolean"
-      ps.default = val
-      ps.description = pd["descriotion"]
-    end
-    sim
-  end
-
-  def create_simulator_data_is_valid?(data)
-    sim = create_simulator_from_data(data)
-    sim.valid?
-  end
-
-  def create_simulator_do(data)
-    sim = create_simulator_from_data(data)
-    sim.save!
-    sim
-  end
-
   def create_parameter_sets_from_data(data, sim)
     ps = []
     data.each do |ps_def|
