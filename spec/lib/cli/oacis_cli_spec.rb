@@ -144,5 +144,21 @@ describe OacisCli do
         }
       end
     end
+
+    context "when invalid json is given" do
+
+      it "raises an exception" do
+        at_temp_dir {
+          File.open('simulator.json', 'w') {|io|
+            io.puts "{\"name\": \"invalid simulator\" }"
+            io.flush
+          }
+          option = {input: 'simulator.json', output: 'simulator_id.json'}
+          expect {
+            OacisCli.new.invoke(:create_simulator, [], option)
+          }.to raise_error
+        }
+      end
+    end
   end
 end
