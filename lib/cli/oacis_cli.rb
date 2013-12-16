@@ -78,12 +78,11 @@ EOS
     }
   end
 
-  public
   desc 'create_simulator', "create_simulator"
   method_option :host,
-    :type     => :string,
-    :aliases  => '-h',
-    :desc     => 'executable hosts'
+    type:     :string,
+    aliases:  '-h',
+    desc:     'executable hosts'
   method_option :input,
     type:     :string,
     aliases:  '-i',
@@ -127,17 +126,12 @@ EOS
     end
   end
 
-  private
-  def validate_simulator_json(input)
-  end
-
-  public
   desc 'parameter_sets_template', "print parameter_sets template"
   method_option :simulator,
-    :type     => :string,
-    :aliases  => '-s',
-    :desc     => 'target simulator',
-    :required => true
+    type:     :string,
+    aliases:  '-s',
+    desc:     'target simulator',
+    required: true
   method_option :output,
     type:     :string,
     aliases:  '-o',
@@ -154,10 +148,10 @@ EOS
 
   desc 'create_parameter_sets', "create parameter_sets"
   method_option :simulator,
-    :type     => :string,
-    :aliases  => '-s',
-    :desc     => 'target simulator',
-    :required => true
+    type:     :string,
+    aliases:  '-s',
+    desc:     'target simulator',
+    required: true
     method_option :input,
     type:     :string,
     aliases:  '-i',
@@ -198,19 +192,19 @@ EOS
 
   desc 'runs_template', "print runs template"
   method_option :parameter_sets,
-    :type     => :string,
-    :aliases  => '-p',
-    :desc     => 'target parameter_set',
-    :required => true
+    type:     :string,
+    aliases:  '-p',
+    desc:     'target parameter_set',
+    :required true
   method_option :host,
-    :type     => :string,
-    :aliases  => '-h',
-    :desc     => 'executable hosts (the first host is abailable)',
-    :required => true
+    type:     :string,
+    aliases:  '-h',
+    desc:     'executable hosts (the first host is abailable)',
+    :required true
   method_option :times,
-    :type     => :numeric,
-    :aliases  => '-t',
-    :desc     => 'num of creating runs'
+    type:     :numeric,
+    aliases:  '-t',
+    desc:     'num of creating runs'
   method_option :output,
     type:     :string,
     aliases:  '-o',
@@ -230,15 +224,15 @@ EOS
 
   desc 'create_runs', "create runs"
   method_option :parameter_sets,
-    :type     => :string,
-    :aliases  => '-p',
-    :desc     => 'target parameter_sets',
-    :required => true
+    type:     :string,
+    aliases:  '-p',
+    desc:     'target parameter_sets',
+    required: true
   method_option :host,
-    :type     => :string,
-    :aliases  => '-h',
-    :desc     => 'executable hosts (the first host is abailable)',
-    :required => true
+    type:     :string,
+    aliases:  '-h',
+    desc:     'executable hosts (the first host is abailable)',
+    required: true
   method_option :input,
     type:     :string,
     aliases:  '-i',
@@ -279,10 +273,10 @@ EOS
 
   desc 'run_status', "print run status"
   method_option :run,
-    :type     => :string,
-    :aliases  => '-r',
-    :desc     => 'target runs',
-    :required => true
+    type:     :string,
+    aliases:  '-r',
+    desc:     'target runs',
+    required: true
   def run_status
     count=0
     while true
