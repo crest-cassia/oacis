@@ -171,10 +171,11 @@ describe OacisCli do
     def create_simulator_id_json(path)
       File.open(path, 'w') {|io|
         io.puts( {"simulator_id" => @sim.id.to_s}.to_json )
+        io.flush
       }
     end
 
-    it "prints a template of parameter_sets.json" do
+    it "outputs a template of parameter_sets.json" do
       at_temp_dir {
         create_simulator_id_json('simulator_id.json')
         option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
@@ -184,6 +185,37 @@ describe OacisCli do
           JSON.load(File.read('parameter_sets.json'))
         }.not_to raise_error
       }
+    end
+
+    it "outputs a template of parameters having default values" do
+      at_temp_dir {
+        create_simulator_id_json('simulator_id.json')
+        option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
+        OacisCli.new.invoke(:parameter_sets_template, [], option)
+
+        parameters = Hash[ @sim.parameter_definitions.map {|pd| [pd.key, pd.default]} ]
+        loaded = JSON.load(File.read('parameter_sets.json')).should eq [parameters]
+      }
+    end
+
+    context "when simulator_id.json is invalid" do
+
+      def create_invalid_simulator_id_json(path)
+        File.open(path, 'w') {|io|
+          io.puts( {"simulator_id" => "INVALID"}.to_json )
+          io.flush
+        }
+      end
+
+      it "raises an exception" do
+        at_temp_dir {
+          create_invalid_simulator_id_json('simulator_id.json')
+          option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
+          expect {
+            OacisCli.new.invoke(:parameter_sets_template, [], option)
+          }.to raise_error
+        }
+      end
     end
   end
 end
