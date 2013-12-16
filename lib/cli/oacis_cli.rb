@@ -10,19 +10,19 @@ class OacisCli < Thor
   USAGE = <<"EOS"
 usage:
 #1 make host.json file
-  ruby oacis_cli.rb show_host > host.json
+  ruby oacis_cli.rb show_host -o host.json
   #check or edit host.json
 #2 create simulator
-  ruby oacis_cli.rb create_simulator -h host.json < simulator.json > simulator_id.json
-  #you can get simulator.json template file "ruby oacis_cli.rb simulator_template > simulator.json"
+  ruby oacis_cli.rb create_simulator -h host.json -i simulator.json -o simulator_id.json
+  #you can get simulator.json template file "ruby oacis_cli.rb simulator_template -o simulator.json"
   #edit simulator.json (at least following fields, "name", "command", "parameter_definitions")
 #3 create parameter_set
-  ruby oacis_cli.rb create_parameter_sets -s simulator_id.json < parameter_sets.json > parameter_set_ids.json
-  #you can get parameter_sets.json template file "ruby oacis_cli.rb parameter_sets_template -s simulator_id.json > parameter_sets.json"
+  ruby oacis_cli.rb create_parameter_sets -s simulator_id.json -i parameter_sets.json -o parameter_set_ids.json
+  #you can get parameter_sets.json template file "ruby oacis_cli.rb parameter_sets_template -s simulator_id.json -o parameter_sets.json"
 #4 create run template
-  ruby oacis_cli.rb runs_template -p parameter_set_ids.json -h host.json -t 1 > runs.json
+  ruby oacis_cli.rb runs_template -p parameter_set_ids.json -h host.json -t 1 -o runs.json
 #5 create run
-  ruby oacis_cli.rb create_run -p parameter_set_ids.json -h host.json < runs.json > run_ids.json
+  ruby oacis_cli.rb create_runs -p parameter_set_ids.json -h host.json -i runs.json -o run_ids.json
 #6 check run status
   ruby oacis_cli.rb run_status -r run_ids.json
 EOS
@@ -49,12 +49,22 @@ EOS
   end
 
   desc 'show_host', "show_host"
+  method_option :output,
+    type:     :string,
+    aliases:  '-o',
+    desc:     'output file',
+    required: true
   def show_host
     hosts = Host.all.to_a.map{|host| {"id"=>host.to_param,"name"=>host.name,"hostname"=>host.hostname,"user"=>host.user}}
     puts JSON.pretty_generate(hosts)
   end
 
   desc 'simulator_template', "print simulator template"
+  method_option :output,
+    type:     :string,
+    aliases:  '-o',
+    desc:     'output file',
+    required: true
   def simulator_template
     puts SIMULATOR_TEMPLATE
   end
@@ -72,6 +82,16 @@ EOS
     :type     => :string,
     :aliases  => '-h',
     :desc     => 'executable hosts'
+  method_option :input,
+    type:     :string,
+    aliases:  '-i',
+    desc:     'input file',
+    required: true
+  method_option :output,
+    type:     :string,
+    aliases:  '-o',
+    desc:     'output file',
+    required: true
   def create_simulator
     puts MESSAGE["greeting"] if options[:verbose]
     stdin = STDIN
@@ -107,6 +127,11 @@ EOS
     :aliases  => '-s',
     :desc     => 'target simulator',
     :required => true
+  method_option :output,
+    type:     :string,
+    aliases:  '-o',
+    desc:     'output file',
+    required: true
   def parameter_sets_template
     sim = get_simulator(options[:simulator])
     h = {}
@@ -130,6 +155,16 @@ EOS
     :aliases  => '-s',
     :desc     => 'target simulator',
     :required => true
+    method_option :input,
+    type:     :string,
+    aliases:  '-i',
+    desc:     'input file',
+    required: true
+  method_option :output,
+    type:     :string,
+    aliases:  '-o',
+    desc:     'output file',
+    required: true
   def create_parameter_sets
     puts MESSAGE["greeting"] if options[:verbose]
     stdin = STDIN
@@ -173,6 +208,11 @@ EOS
     :type     => :numeric,
     :aliases  => '-t',
     :desc     => 'num of creating runs'
+  method_option :output,
+    type:     :string,
+    aliases:  '-o',
+    desc:     'output file',
+    required: true
   def runs_template
     ps = get_parameter_sets(options[:parameter_sets])
     host = get_host(options[:host]).first
@@ -204,6 +244,16 @@ EOS
     :aliases  => '-h',
     :desc     => 'executable hosts (the first host is abailable)',
     :required => true
+  method_option :input,
+    type:     :string,
+    aliases:  '-i',
+    desc:     'input file',
+    required: true
+  method_option :output,
+    type:     :string,
+    aliases:  '-o',
+    desc:     'output file',
+    required: true
   def create_runs
     puts MESSAGE["greeting"] if options[:verbose]
     stdin = STDIN
