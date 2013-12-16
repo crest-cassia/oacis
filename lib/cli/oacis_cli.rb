@@ -102,15 +102,11 @@ EOS
     required: true
   def create_simulator
     puts MESSAGE["greeting"] if options[:verbose]
-    stdin = STDIN
-    data = JSON.load(stdin)
+    data = JSON.load(File.read(options[:input]))
     unless data
       $stderr.puts "ERROR:data is not json format"
       exit(-1)
     end
-
-    hosts = get_host(options[:host])
-    data["executable_on_ids"]=hosts.map{|host| host.to_param}
 
     if options[:verbose]
       puts "data = "
@@ -125,7 +121,17 @@ EOS
     end
 
     unless options[:dry_run]
-      create_simulator_do(data)
+      sim = create_simulator_do(data)
+      if options[:host]
+        hosts = get_host(options[:host])
+        sim.executable_on += hosts
+        sim.save!
+      end
+      h = {simulator_id: sim.id.to_s}
+      File.open(options[:output], 'w') {|io|
+        io.puts JSON.pretty_generate(h)
+        io.flush
+      }
     end
   end
 
@@ -337,8 +343,7 @@ EOS
   def create_simulator_do(data)
     sim = create_simulator_from_data(data)
     sim.save!
-    h = {"simulator_id"=>sim.to_param}
-    puts h.to_json
+    sim
   end
 
   def create_parameter_sets_from_data(data, sim)

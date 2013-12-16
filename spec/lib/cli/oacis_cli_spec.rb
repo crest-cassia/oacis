@@ -53,4 +53,67 @@ describe OacisCli do
       }
     end
   end
+
+  describe "#create_simulator" do
+
+    def create_simulator_json(path)
+      io = File.open(path, 'w')
+      io.puts <<-EOS
+        {
+          "name": "a_sample_simulator",
+          "command": "/path/to/simulator.out",
+          "support_input_json": false,
+          "support_mpi": false,
+          "support_omp": false,
+          "pre_process_script": null,
+          "executable_on_ids": [],
+          "parameter_definitions": [
+            {"key": "p1","type": "Integer","default": 0,"description": "parameter1"},
+            {"key": "p2","type": "Float","default": 5.0,"description": "parameter2"}
+          ]
+        }
+      EOS
+      io.flush
+    end
+
+    it "creates Simulator" do
+      at_temp_dir {
+        create_simulator_json('simulator.json')
+        option = {input: 'simulator.json', output: 'simulator_id.json'}
+        expect {
+          OacisCli.new.invoke(:create_simulator, [], option)
+        }.to change { Simulator.count }.by(1)
+      }
+    end
+
+    it "outputs created simulator id in json" do
+      at_temp_dir {
+        create_simulator_json('simulator.json')
+        option = {input: 'simulator.json', output: 'simulator_id.json'}
+        OacisCli.new.invoke(:create_simulator, [], option)
+
+        expected = { "simulator_id" => Simulator.first.id.to_s }
+        output = JSON.parse(File.read('simulator_id.json'))
+        output.should eq expected
+      }
+    end
+
+    context "when host.json is specified" do
+
+      before(:each) do
+        @host = FactoryGirl.create(:host)
+      end
+
+      it "sets executable_on_ids when host.json is specified" do
+        at_temp_dir {
+          OacisCli.new.invoke(:show_host, [], {output: 'host.json'})
+          create_simulator_json('simulator.json')
+          option = {input: 'simulator.json', output: 'simulator_id.json', host: 'host.json'}
+          OacisCli.new.invoke(:create_simulator, [], option)
+
+          Simulator.first.executable_on.should eq [@host]
+        }
+      end
+    end
+  end
 end
