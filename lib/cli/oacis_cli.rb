@@ -30,7 +30,7 @@ EOS
   SIMULATOR_TEMPLATE=<<"EOS"
 {
   "name": "a_sample_simulator",
-  "command": File.expand_path("../lib/samples/tutorial/simulator/simulator.out", File.dirname(__FILE__))
+  "command": "#{File.expand_path("../lib/samples/tutorial/simulator/simulator.out", File.dirname(__FILE__))}",
   "support_input_json": false,
   "support_mpi": false,
   "support_omp": false,
@@ -71,7 +71,10 @@ EOS
     desc:     'output file',
     required: true
   def simulator_template
-    puts SIMULATOR_TEMPLATE
+    File.open(options[:output], 'w') {|io|
+      io.puts SIMULATOR_TEMPLATE
+      io.flush
+    }
   end
 
   desc 'create_simulator', "create_simulator"

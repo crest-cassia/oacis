@@ -40,4 +40,17 @@ describe OacisCli do
       }
     end
   end
+
+  describe "#simulator_template" do
+
+    it "prints a template of simulator.json" do
+      at_temp_dir {
+        OacisCli.new.invoke(:simulator_template, [], {output: 'simulator.json'})
+        File.exist?('simulator.json').should be_true
+        expect {
+          loaded = JSON.load(File.read('simulator.json'))
+        }.not_to raise_error
+      }
+    end
+  end
 end
