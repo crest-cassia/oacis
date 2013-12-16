@@ -166,30 +166,19 @@ EOS
     desc:     'output file',
     required: true
   def create_parameter_sets
-    puts MESSAGE["greeting"] if options[:verbose]
-    stdin = STDIN
-    data = JSON.load(stdin)
-    unless data
-      $stderr.puts "ERROR:data is not json format"
-      exit(-1)
-    end
-
-    sim = get_simulator(options[:simulator])
+    input = JSON.load(File.read(options[:input]))
+    simulator = get_simulator(options[:simulator])
 
     if options[:verbose]
-      puts "data = "
-      puts JSON.pretty_generate(data)
+      $stderr.puts "input parameter_sets :", JSON.pretty_generate(input)
+      $stderr.puts "simulator :", JSON.pretty_generate(simulator)
     end
 
-    if create_parameter_sets_data_is_valid?(data, sim)
-      puts  "data is valid" if options[:verbose]
-    else
-      puts  "data is not valid" if options[:verbose]
-        exit(-1)
-    end
+    return if options[:dry_run]
 
-    unless options[:dry_run]
-      create_parameter_sets_do(data, sim)
+    input.each do |ps_value|
+      param_set = simulator.parameter_sets.build({v: ps_value})
+      param_set.save!
     end
   end
 

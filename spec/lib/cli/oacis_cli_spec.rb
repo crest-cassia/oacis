@@ -11,6 +11,13 @@ describe OacisCli do
     }
   end
 
+  def create_simulator_id_json(path)
+    File.open(path, 'w') {|io|
+      io.puts( {"simulator_id" => @sim.id.to_s}.to_json )
+      io.flush
+    }
+  end
+
   describe "#usage" do
 
     it "prints usage" do
@@ -168,13 +175,6 @@ describe OacisCli do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
     end
 
-    def create_simulator_id_json(path)
-      File.open(path, 'w') {|io|
-        io.puts( {"simulator_id" => @sim.id.to_s}.to_json )
-        io.flush
-      }
-    end
-
     it "outputs a template of parameter_sets.json" do
       at_temp_dir {
         create_simulator_id_json('simulator_id.json')
@@ -216,6 +216,38 @@ describe OacisCli do
           }.to raise_error
         }
       end
+    end
+  end
+
+  describe "#create_parameter_sets" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+    end
+
+    def create_parameter_sets_json(path)
+      File.open(path, 'w') {|io|
+        parameters = [
+          {"L" => 10, "T" => 0.1},
+          {"L" => 20, "T" => 0.1},
+          {"L" => 30, "T" => 0.1},
+          {"L" => 10, "T" => 0.2},
+          {"L" => 20, "T" => 0.2},
+          {"L" => 30, "T" => 0.2}
+        ]
+        io.puts parameters.to_json
+      }
+    end
+
+    it "creates a ParameterSet" do
+      at_temp_dir {
+        create_simulator_id_json('simulator_id.json')
+        create_parameter_sets_json('parameter_sets.json')
+        option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
+        expect {
+          OacisCli.new.invoke(:create_parameter_sets, [], option)
+        }.to change { ParameterSet.count }.by(6)
+      }
     end
   end
 end
