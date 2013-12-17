@@ -309,13 +309,52 @@ describe OacisCli do
       end
     end
 
-    it "skips creation when an identical parameter_set exists"
+    context "when simulator.json is invalid" do
 
-    context "when host.json is specified" do
-      it "sets executable_on_ids when host.json is specified"
+      it "raises an exception when simulator.json is not found" do
+        at_temp_dir {
+          create_parameter_sets_json('parameter_sets.json')
+          option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
+          expect {
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+          }.to raise_error
+        }
+      end
+
+      def create_invalid_simulator_json(simulator, path)
+        File.open(path, 'w') {|io|
+          io.puts( {"simulator_id" => "DO_NOT_EXIST"}.to_json )
+          io.flush
+        }
+      end
+
+      it "raises an exception when the format of simulator.json is invalid" do
+        at_temp_dir {
+          create_invalid_simulator_json(@sim, 'simulator_id.json')
+          create_parameter_sets_json('parameter_sets.json')
+          option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
+          expect {
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+          }.to raise_error
+        }
+      end
     end
-    context "when invalid json is given" do
-      it "raises an exception"
+
+    context "when invalid parameter_sets.json is invalid" do
+
+      it "raises an exception" do
+        at_temp_dir {
+          create_simulator_id_json(@sim, 'simulator_id.json')
+          File.open('parameter_sets.json', 'w') {|io|
+            io.puts [ {"L" => 10, "T" => "XXX"} ].to_json
+            io.flush
+          }
+          option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
+          expect {
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+          }.to raise_error
+        }
+      end
     end
   end
 end
