@@ -140,14 +140,24 @@ describe OacisCli do
         @host = FactoryGirl.create(:host)
       end
 
+      def create_simulator_with_host_json
+        OacisCli.new.invoke(:show_host, [], {output: 'host.json'})
+        create_simulator_json('simulator.json')
+        option = {input: 'simulator.json', output: 'simulator_id.json', host: 'host.json'}
+        OacisCli.new.invoke(:create_simulator, [], option)
+      end
+
       it "sets executable_on_ids when host.json is specified" do
         at_temp_dir {
-          OacisCli.new.invoke(:show_host, [], {output: 'host.json'})
-          create_simulator_json('simulator.json')
-          option = {input: 'simulator.json', output: 'simulator_id.json', host: 'host.json'}
-          OacisCli.new.invoke(:create_simulator, [], option)
-
+          create_simulator_with_host_json
           Simulator.first.executable_on.should eq [@host]
+        }
+      end
+
+      it "sets Host#executable_simulators field" do
+        at_temp_dir {
+          create_simulator_with_host_json
+          @host.reload.executable_simulators.should eq [Simulator.first]
         }
       end
     end
