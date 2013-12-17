@@ -4,8 +4,8 @@
 
 %form
   .form-inline
-    %label{for: 'line-or-scatter'} Plot type
-    %select#line-or-scatter
+    %label{for: 'plot-type'} Plot type
+    %select#plot-type
       %option{value: 'line'} line plot
       %option{value: 'scatter'} scatter plot
   %br
@@ -65,7 +65,7 @@
 
 :javascript
   function show_form_for_plots() {
-    if( $('#line-or-scatter').val() == 'line' ) {
+    if( $('#plot-type').val() == 'line' ) {
       $('#line-plot-form').show();
       $('#scatter-plot-form').hide();
     }
@@ -75,7 +75,7 @@
     }
   }
   $(show_form_for_plots);
-  $('#line-or-scatter').change(show_form_for_plots);
+  $('#plot-type').change(show_form_for_plots);
 
   function add_line_plot(x, y, series, irrelevants) {
     var url = "#{_line_plot_parameter_set_path(@param_set)}" + ".json";
