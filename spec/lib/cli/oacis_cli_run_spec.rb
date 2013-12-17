@@ -3,40 +3,35 @@ require File.join(Rails.root, 'lib/cli/oacis_cli')
 
 describe OacisCli do
 
-  describe "#host_parameter_template" do
+  describe "#job_parameter_template" do
 
     before(:each) do
       @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count: 0, support_mpi: true, support_omp: true)
-      @sim.executable_on.push @host
-      @sim.save!
     end
 
-
-    it "outputs a template of host_parameters" do
+    it "outputs a template of job_parameters" do
       at_temp_dir {
-        options = { host_id: @host.id.to_s, output: 'host_parameters.json'}
-        OacisCli.new.invoke(:host_parameter_template, [], options)
-        File.exist?('host_parameters.json').should be_true
+        options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
+        OacisCli.new.invoke(:job_parameter_template, [], options)
+        File.exist?('job_parameters.json').should be_true
         expect {
-          JSON.load(File.read('host_parameters.json'))
+          JSON.load(File.read('job_parameters.json'))
         }.not_to raise_error
       }
     end
 
-    it "outputs a template having default host_parameters" do
+    it "outputs a template having default job_parameters" do
       at_temp_dir {
-        options = { host_id: @host.id.to_s, output: 'host_parameters.json'}
-        OacisCli.new.invoke(:host_parameter_template, [], options)
+        options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
+        OacisCli.new.invoke(:job_parameter_template, [], options)
 
         expected = {
           "host_id" => @host.id.to_s,
-          "host_parameters" => {"param1" => nil, "param2" => "XXX"},
+          "job_parameters" => {"param1" => nil, "param2" => "XXX"},
           "mpi_procs" => 1,
           "omp_threads" => 1
         }
-        JSON.load(File.read('host_parameters.json')).should eq expected
+        JSON.load(File.read('job_parameters.json')).should eq expected
       }
     end
 
@@ -44,9 +39,9 @@ describe OacisCli do
 
       it "raises an exception" do
         at_temp_dir {
-          options = { host_id: "DO_NOT_EXIST", output: 'host_parameters.json'}
+          options = { host_id: "DO_NOT_EXIST", output: 'job_parameters.json'}
           expect {
-            OacisCli.new.invoke(:host_parameter_template, [], options)
+            OacisCli.new.invoke(:job_parameter_template, [], options)
           }.to raise_error
         }
       end

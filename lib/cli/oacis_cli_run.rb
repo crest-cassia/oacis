@@ -1,6 +1,6 @@
 class OacisCli < Thor
 
-  desc 'host_parameter_template', "print template of host parameters"
+  desc 'job_parameter_template', "print template of job parameters"
   method_option :host_id,
     type:     :string,
     aliases:  '-h',
@@ -11,7 +11,7 @@ class OacisCli < Thor
     aliases:  '-o',
     desc:     'output json file (run_ids.json)',
     required: true
-  def host_parameter_template
+  def job_parameter_template
     host = Host.find(options[:host_id])
     host_parameters = {}
     host.host_parameter_definitions.each do |param_def|
@@ -19,13 +19,13 @@ class OacisCli < Thor
     end
 
     File.open(options[:output], 'w') do |io|
-      output = {
+      job_parameters = {
         "host_id" => host.id.to_s,
         "host_parameters" => host_parameters,
         "mpi_procs" => 1,
         "omp_threads" => 1
       }
-      io.puts JSON.pretty_generate(output)
+      io.puts JSON.pretty_generate(job_parameters)
     end
   end
 
