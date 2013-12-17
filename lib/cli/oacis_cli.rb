@@ -31,58 +31,6 @@ class OacisCli < Thor
   end
 
   private
-  def create_parameter_sets_from_data(data, sim)
-    ps = []
-    data.each do |ps_def|
-      temp_ps = sim.parameter_sets.build
-      temp_ps.v = {}
-      ps_def.each do |key, val|
-        temp_ps.v[key] = val
-      end
-      ps.push temp_ps
-    end
-    ps
-  end
-
-  def create_parameter_sets_data_is_valid?(data, sim)
-    ps = create_parameter_sets_from_data(data, sim)
-    ps.map {|p| p.valid?}.all?
-  end
-
-  def create_runs_from_data(data, parameter_sets, host)
-    run = []
-    parameter_sets.each do |ps|
-      run_count = ps.runs.where({:status=>:finished}).count
-      create_run_count = data.select {|conf| conf["parameter_set_id"]==ps.to_param}.first["times"] - run_count
-      if create_run_count > 0
-        create_run_count.times do |i|
-          temp_run = ps.runs.build
-          temp_run.submitted_to_id=host.to_param
-          run.push temp_run
-        end
-      end
-    end
-    run
-  end
-
-  def create_runs_data_is_valid?(data, parameter_sets, host)
-    run = create_runs_from_data(data, parameter_sets, host)
-    run.map {|r| r.valid?}.all?
-  end
-
-  def create_runs_do(data, parameter_sets, host)
-    run = create_runs_from_data(data, parameter_sets, host)
-    run.each do |r|
-      r.save!
-    end
-    puts "["
-    run.each do |r|
-    h = {"run_id"=>r.to_param}
-    puts r==run.last ? "  "+h.to_json : "  "+h.to_json+","
-    end
-    puts "]"
-  end
-
   def get_host(file)
     if File.exist?(file)
       io = File.open(file,"r")
