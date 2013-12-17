@@ -33,47 +33,61 @@ class OacisCli < Thor
   method_option :parameter_sets,
     type:     :string,
     aliases:  '-p',
-    desc:     'target parameter_sets',
+    desc:     'path to parameter_set_ids.json',
+    required: true
+  method_option :job_parameters,
+    type:     :string,
+    aliases:  '-j',
+    desc:     'path to job_parameters.json',
     required: true
   method_option :number_of_runs,
     type:     :numeric,
     aliases:  '-n',
     desc:     'runs are created up to this number',
     default:  1
-  method_option :host_parameters,
-    type:     :string,
-    aliases:  '-h',
-    desc:     'json file of host parameters',
-    required: true
   method_option :output,
     type:     :string,
     aliases:  '-o',
-    desc:     'output file',
+    desc:     'output file (run_ids.json)',
     required: true
   def create_runs
-    puts MESSAGE["greeting"] if options[:verbose]
-    stdin = STDIN
-    data = JSON.load(stdin)
-    unless data
-      $stderr.puts "ERROR:data is not json format"
-      exit(-1)
-    end
-    ps = get_parameter_sets(options[:parameter_sets])
-    host = get_host(options[:host]).first
+    parameter_sets = get_parameter_sets(options[:parameter_sets])
+    job_parameters = JSON.load( File.read(options[:job_parameters]) )
+    submitted_to = Host.find(job_parameters["host_id"])
+    host_parameters = job_parameters["host_parameters"].to_hash
+
     if options[:verbose]
-      puts "data = "
-      puts JSON.pretty_generate(data)
+      $stderr.puts "Number of parameter_sets : #{parameter_sets.count}"
     end
 
-    if create_runs_data_is_valid?(data, ps, host)
-      puts  "data is valid" if options[:verbose]
-    else
-      puts  "data is not valid" if options[:verbose]
-      exit(-1)
+    created_runs = []
+    parameter_sets.each_with_index do |ps, idx|
+      $stderr.puts "Creating Runs : #{idx} / #{parameter_sets.count}"
+      sim = ps.simulator
+      mpi_procs = sim.support_mpi ? job_parameters["mpi_procs"] : 1
+      omp_threads = sim.support_omp ? job_parameters["omp_threads"] : 1
+      (options[:number_of_runs] - ps.runs.count).times do |i|
+        run = ps.runs.build(submitted_to: submitted_to,
+                            mpi_procs: mpi_procs,
+                            omp_threads: omp_threads,
+                            host_parameters: host_parameters)
+        if run.valid?
+          run.save! unless options[:dry_run]
+          created_runs << run
+        else
+          $stderr.puts "Failed to create a Run for ParameterSet #{ps.id}"
+          $stderr.puts run.errors.full_messages
+          raise "failed to create a Run"
+        end
+      end
     end
 
-    unless options[:dry_run]
-      create_runs_do(data, ps, host)
-    end
+    return if options[:dry_run]
+    # output run_ids.json
+    File.open(options[:output], 'w') {|io|
+      ids = created_runs.map {|run| "  #{{'run_id' => run.id.to_s}.to_json}"}
+      io.puts "[", ids.join(",\n"), "]"
+      io.flush
+    }
   end
 end
