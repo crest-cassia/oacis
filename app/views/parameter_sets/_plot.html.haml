@@ -4,20 +4,37 @@
 
 %form
   .form-inline
-    = label_tag 'x_axis_key', "X-Axis"
-    - parameter_keys = @param_set.parameter_keys_having_distinct_values
-    = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', prompt: "[Plot All]";
-    = label_tag 'y_axis_key', "Y-Axis"
-    - plottable = @param_set.simulator.plottable
-    = select_tag 'y_axis_key', options_for_select(plottable), id: 'y_axis_key', prompt: "[Plot All]"
-    = label_tag 'series', "Series"
-    = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
-    %a.btn.btn-primary#add_plot_button Add Plot
+    %label{for: 'plot-type'} Plot type
+    %select#plot-type
+      %option{value: 'line'} line plot
+      %option{value: 'scatter'} scatter plot
+  %br
+  .form-inline
+    - simulator = @param_set.simulator
+    - plottable = simulator.plottable
+    #line-plot-form
+      - parameter_keys = @param_set.parameter_keys_having_distinct_values
+      = label_tag 'x_axis_key', "X-Axis"
+      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', prompt: "[Plot All]";
+      = label_tag 'y_axis_key', "Y-Axis"
+      = select_tag 'y_axis_key', options_for_select(plottable), id: 'y_axis_key', prompt: "[Plot All]"
+      = label_tag 'series', "Series"
+      = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
+      %a.btn.btn-primary#add_line_plot_button Add Line Plot
+    #scatter-plot-form
+      - parameter_keys = simulator.parameter_definitions.map(&:key)
+      = label_tag 'x_axis_key', "X-Axis"
+      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key'
+      = label_tag 'y_axis_key', "Y-Axis"
+      = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
+      = label_tag 'result', "Result"
+      = select_tag 'result', options_for_select(plottable), id: 'result'
+      %a.btn.btn-primary#add_scatter_plot_button Add Scatter Plot
     #irrelevant-params
       %br
       Irrelevant parameters :
       %br
-      - @param_set.simulator.parameter_definitions.map(&:key).each do |key|
+      - simulator.parameter_definitions.map(&:key).each do |key|
         = label_tag key, key
         = check_box_tag key
 
@@ -47,16 +64,29 @@
   }
 
 :javascript
-  function add_plot(x, y, series, irrelevants) {
-    var url = "#{_plot_parameter_set_path(@param_set)}" + ".json";
+  function show_form_for_plots() {
+    if( $('#plot-type').val() == 'line' ) {
+      $('#line-plot-form').show();
+      $('#scatter-plot-form').hide();
+    }
+    else {
+      $('#line-plot-form').hide();
+      $('#scatter-plot-form').show();
+    }
+  }
+  $(show_form_for_plots);
+  $('#plot-type').change(show_form_for_plots);
+
+  function add_line_plot(x, y, series, irrelevants) {
+    var url = "#{_line_plot_parameter_set_path(@param_set)}" + ".json";
     var url_with_param = url + "?x_axis_key=" + encodeURIComponent(x) + "&y_axis_key=" + encodeURIComponent(y) + "&series=" + encodeURIComponent(series) + "&irrelevants=" + encodeURIComponent(irrelevants);
     var ps_base_url = "#{parameter_set_path('')}";
-    draw_plot(url_with_param, ps_base_url);
+    draw_line_plot(url_with_param, ps_base_url);
   }
-  $('#add_plot_button').on('click', function() {
-    var x = $('#x_axis_key').val();
-    var y = $('#y_axis_key').val();
-    var series = $('#series').val();
+  $('#add_line_plot_button').on('click', function() {
+    var x = $('#line-plot-form #x_axis_key').val();
+    var y = $('#line-plot-form #y_axis_key').val();
+    var series = $('#line-plot-form #series').val();
     var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
       return this.id;
       }).get().join(',');
@@ -85,7 +115,27 @@
 
     x.forEach(function(xval) {
       y.forEach(function(yval) {
-        add_plot(xval, yval, series, irrelevants);
+        add_line_plot(xval, yval, series, irrelevants);
       })
     })
+  });
+
+  function add_scatter_plot(x, y, result, irrelevants) {
+    var url = "#{_scatter_plot_parameter_set_path(@param_set)}" + ".json";
+    var url_with_param = url +
+      "?x_axis_key=" + encodeURIComponent(x) +
+      "&y_axis_key=" + encodeURIComponent(y) +
+      "&result=" + encodeURIComponent(result) +
+      "&irrelevants=" + encodeURIComponent(irrelevants);
+    var ps_base_url = "#{parameter_set_path('')}";
+    draw_scatter_plot(url_with_param, ps_base_url);
+  }
+  $('#add_scatter_plot_button').on('click', function() {
+    var x = $('#scatter-plot-form #x_axis_key').val();
+    var y = $('#scatter-plot-form #y_axis_key').val();
+    var result = $('#scatter-plot-form #result').val();
+    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
+      return this.id;
+      }).get().join(',');
+    add_scatter_plot(x, y, result, irrelevants);
   });
