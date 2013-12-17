@@ -10,26 +10,6 @@ require_relative 'oacis_cli_run'
 
 class OacisCli < Thor
 
-  desc 'run_status', "print run status"
-  method_option :run,
-    type:     :string,
-    aliases:  '-r',
-    desc:     'target runs',
-    required: true
-  def run_status
-    count=0
-    while true
-      run = get_runs(options[:run])
-      total=run.count
-      finished=run.select {|r| r.status==:finished}.size
-      show_status(total, finished, count)
-      sleep 1
-      count+=1
-      count-=6 if count > 5
-      break if total > 0 and total == finished
-    end
-  end
-
   private
   def get_host(file)
     if File.exist?(file)
@@ -106,28 +86,5 @@ class OacisCli < Thor
       exit(-1)
     end
     run
-  end
-
-  def show_status(total, current, count)
-    if total>0
-    rate = current.to_f/total.to_f
-    str = "progress:["
-    20.times do |i|
-    str += i < (20*rate).to_i ? "#" : "."
-    end
-    str += "]"
-    0.upto(4) do |i|
-      str += i < count ? ">" : "<"
-    end
-    str += "(#{current}/#{total})"
-    4.downto(0) do |i|
-      str += i < count ? "<" : ">"
-    end
-    str += total==current ? "\n" : "\r"
-    print str
-    else
-      str = "No such run_ids"
-      puts str
-    end
   end
 end

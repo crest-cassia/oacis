@@ -90,4 +90,19 @@ class OacisCli < Thor
       io.flush
     }
   end
+
+  desc 'run_status', "print run status"
+  method_option :run_ids,
+    type:     :string,
+    aliases:  '-r',
+    desc:     'target runs',
+    required: true
+  def run_status
+    runs = get_runs(options[:run_ids])
+    counts = {total: runs.count}
+    [:created,:submitted,:running,:failed,:finished].each do |status|
+      counts[status] = runs.count {|run| run.status == status}
+    end
+    $stdout.puts JSON.pretty_generate(counts)
+  end
 end

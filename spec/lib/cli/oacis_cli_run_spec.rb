@@ -199,4 +199,34 @@ describe OacisCli do
       end
     end
   end
+
+  describe "#run_status" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 2, runs_count: 3)
+    end
+
+    def create_run_ids_json(runs, path)
+      File.open(path, 'w') do |io|
+        run_ids = runs.map {|run| {"run_id" => run.id.to_s} }
+        io.puts run_ids.to_json
+        io.flush
+      end
+    end
+
+    it "shows number of runs for each status in json" do
+      at_temp_dir {
+        create_run_ids_json(Run.all, 'run_ids.json')
+        options = {run_ids: 'run_ids.json'}
+        captured = capture(:stdout) {
+          OacisCli.new.invoke(:run_status, [], options)
+        }
+
+        loaded = JSON.load(captured)
+        loaded["total"].should eq 6
+        loaded["created"].should eq 6
+        loaded["finished"].should eq 0
+      }
+    end
+  end
 end
