@@ -6,89 +6,9 @@ require_relative '../../config/environment'
 require_relative 'oacis_cli_common'
 require_relative 'oacis_cli_simulator'
 require_relative 'oacis_cli_parameter_set'
+require_relative 'oacis_cli_run'
 
 class OacisCli < Thor
-
-  desc 'runs_template', "print runs template"
-  method_option :parameter_sets,
-    type:     :string,
-    aliases:  '-p',
-    desc:     'target parameter_set',
-    required: true
-  method_option :host,
-    type:     :string,
-    aliases:  '-h',
-    desc:     'executable hosts (the first host is abailable)',
-    required: true
-  method_option :times,
-    type:     :numeric,
-    aliases:  '-t',
-    desc:     'num of creating runs'
-  method_option :output,
-    type:     :string,
-    aliases:  '-o',
-    desc:     'output file',
-    required: true
-  def runs_template
-    ps = get_parameter_sets(options[:parameter_sets])
-    host = get_host(options[:host]).first
-    puts "["
-    ps.each do |p|
-      run_count = options[:times] ? options[:times] : 1
-      h = {"parameter_set_id"=>p.to_param,"submitted_to_id"=>host.to_param,"times"=>run_count}
-    puts p==ps.last ? "  "+h.to_json : "  "+h.to_json+","
-    end
-    puts "]"
-  end
-
-  desc 'create_runs', "create runs"
-  method_option :parameter_sets,
-    type:     :string,
-    aliases:  '-p',
-    desc:     'target parameter_sets',
-    required: true
-  method_option :host,
-    type:     :string,
-    aliases:  '-h',
-    desc:     'executable hosts (the first host is abailable)',
-    required: true
-  method_option :input,
-    type:     :string,
-    aliases:  '-i',
-    desc:     'input file',
-    required: true
-  method_option :output,
-    type:     :string,
-    aliases:  '-o',
-    desc:     'output file',
-    required: true
-  def create_runs
-    puts MESSAGE["greeting"] if options[:verbose]
-    stdin = STDIN
-    data = JSON.load(stdin)
-    unless data
-      $stderr.puts "ERROR:data is not json format"
-      exit(-1)
-    end
-
-    ps = get_parameter_sets(options[:parameter_sets])
-    host = get_host(options[:host]).first
-    if options[:verbose]
-      puts "data = "
-      puts JSON.pretty_generate(data)
-    end
-
-    if create_runs_data_is_valid?(data, ps, host)
-      puts  "data is valid" if options[:verbose]
-    else
-      puts  "data is not valid" if options[:verbose]
-      exit(-1)
-    end
-
-    unless options[:dry_run]
-      create_runs_do(data, ps, host)
-    end
-  end
 
   desc 'run_status', "print run status"
   method_option :run,
