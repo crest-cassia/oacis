@@ -174,11 +174,35 @@ EOS
       $stderr.puts "simulator :", JSON.pretty_generate(simulator)
     end
 
+    created = input.each_with_index.map do |ps_value, idx|
+      $stderr.puts "creating parameter_set : #{idx} / #{input.size}"
+      $stderr.puts "  parameter values : #{ps_value.inspect}" if options[:verbose]
+      param_set = simulator.parameter_sets.build({v: ps_value})
+      if param_set.valid?
+        param_set.save! unless options[:dry_run]
+      elsif param_set.errors.keys == [:parameters] # An identical parameter_set is found
+        $stderr.puts "  An identical parameter_set already exists. Skipping..."
+        param_set = simulator.parameter_sets.where(v: ps_value).first
+      else
+        $stderr.puts param_set.inspect
+        $stderr.puts param_set.errors.full_messages
+        raise "validation of parameter_set failed"
+      end
+      param_set
+    end
+
     return if options[:dry_run]
 
-    input.each do |ps_value|
-      param_set = simulator.parameter_sets.build({v: ps_value})
-      param_set.save!
+    # print json
+    File.open(options[:output], 'w') do |io|
+      io.puts "["
+      rows = created.map do |ps|
+        h = {"parameter_set_id" => ps.id.to_s}
+        "  #{h.to_json}"
+      end
+      io.puts rows.join(",\n")
+      io.puts "]"
+      io.flush
     end
   end
 
@@ -300,19 +324,6 @@ EOS
   def create_parameter_sets_data_is_valid?(data, sim)
     ps = create_parameter_sets_from_data(data, sim)
     ps.map {|p| p.valid?}.all?
-  end
-
-  def create_parameter_sets_do(data, sim)
-    ps = create_parameter_sets_from_data(data, sim)
-    ps.each do |p|
-      p.save!
-    end
-    puts "["
-    ps.each do |p|
-    h = {"parameter_set_id"=>p.to_param}
-    puts p==ps.last ? "  "+h.to_json : "  "+h.to_json+","
-    end
-    puts "]"
   end
 
   def create_runs_from_data(data, parameter_sets, host)

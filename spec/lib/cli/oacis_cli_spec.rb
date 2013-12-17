@@ -11,9 +11,9 @@ describe OacisCli do
     }
   end
 
-  def create_simulator_id_json(path)
+  def create_simulator_id_json(simulator, path)
     File.open(path, 'w') {|io|
-      io.puts( {"simulator_id" => @sim.id.to_s}.to_json )
+      io.puts( {"simulator_id" => simulator.id.to_s}.to_json )
       io.flush
     }
   end
@@ -187,7 +187,7 @@ describe OacisCli do
 
     it "outputs a template of parameter_sets.json" do
       at_temp_dir {
-        create_simulator_id_json('simulator_id.json')
+        create_simulator_id_json(@sim, 'simulator_id.json')
         option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
         OacisCli.new.invoke(:parameter_sets_template, [], option)
         File.exist?('parameter_sets.json').should be_true
@@ -199,7 +199,7 @@ describe OacisCli do
 
     it "outputs a template of parameters having default values" do
       at_temp_dir {
-        create_simulator_id_json('simulator_id.json')
+        create_simulator_id_json(@sim, 'simulator_id.json')
         option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
         OacisCli.new.invoke(:parameter_sets_template, [], option)
 
@@ -249,15 +249,73 @@ describe OacisCli do
       }
     end
 
+    def invoke_create_parameter_sets
+      create_simulator_id_json(@sim, 'simulator_id.json')
+      create_parameter_sets_json('parameter_sets.json')
+      option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
+      OacisCli.new.invoke(:create_parameter_sets, [], option)
+    end
+
     it "creates a ParameterSet" do
       at_temp_dir {
-        create_simulator_id_json('simulator_id.json')
-        create_parameter_sets_json('parameter_sets.json')
-        option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
         expect {
-          OacisCli.new.invoke(:create_parameter_sets, [], option)
+          invoke_create_parameter_sets
         }.to change { ParameterSet.count }.by(6)
       }
+    end
+
+    it "creates a ParameterSet having correct values" do
+      at_temp_dir {
+        invoke_create_parameter_sets
+        mapped = @sim.reload.parameter_sets.map {|ps| [ps.v["L"], ps.v["T"]] }
+        mapped.should eq [ [10, 0.1], [20, 0.1], [30, 0.1], [10, 0.2], [20, 0.2], [30, 0.2]]
+      }
+    end
+
+    it "outputs ids of parameter_sets in json" do
+      at_temp_dir {
+        invoke_create_parameter_sets
+        File.exist?('parameter_set_ids.json').should be_true
+
+        expected = @sim.reload.parameter_sets.map {|ps| {"parameter_set_id" => ps.id.to_s} }
+        JSON.load(File.read('parameter_set_ids.json')).should eq expected
+      }
+    end
+
+    context "when an identical parameter_set already exists" do
+
+      before(:each) do
+        @sim.parameter_sets.create(v: {"L" => 10, "T" => 0.1})
+      end
+
+      it "skips creation of duplicated parameter_set" do
+        at_temp_dir {
+          expect {
+            invoke_create_parameter_sets
+          }.to change { ParameterSet.count }.by(5)
+        }
+      end
+
+      it "list of parameter_set_ids include ids of duplicated parameter_sets" do
+        at_temp_dir {
+          ps = @sim.parameter_sets.first
+          invoke_create_parameter_sets
+
+          duplicated = {"parameter_set_id" => ps.id.to_s}
+          loaded = JSON.load(File.read('parameter_set_ids.json'))
+          loaded.should include(duplicated)
+          loaded.should have(6).items
+        }
+      end
+    end
+
+    it "skips creation when an identical parameter_set exists"
+
+    context "when host.json is specified" do
+      it "sets executable_on_ids when host.json is specified"
+    end
+    context "when invalid json is given" do
+      it "raises an exception"
     end
   end
 end
