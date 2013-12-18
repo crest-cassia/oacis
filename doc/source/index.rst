@@ -16,6 +16,7 @@ Contents:
    installation
    basic_usage
    advanced_usage
+   cli
 
 Indices and tables
 ==================
