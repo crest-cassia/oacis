@@ -33,58 +33,44 @@ class OacisCli < Thor
   end
 
   def get_simulator(file)
-    unless File.exist?(file)
-      $stderr.puts "simulator file '#{file}' is not found"
-      raise "File #{file} is not found"
-    end
+    parsed = JSON.load( File.read(file) )
+    validate_simulator_id(parsed)
+    Simulator.find(parsed["simulator_id"])
+  end
 
-    simulator_id = JSON.load( File.read(file) )["simulator_id"]
-    Simulator.find(simulator_id)
+  def validate_simulator_id(parsed)
+    unless parsed.is_a?(Hash) and parsed.has_key?("simulator_id")
+      raise "Invalid json format. Must be a Hash having 'simulator_id' key."
+    end
   end
 
   def get_parameter_sets(file)
-    ps=[]
-    if File.exist?(file)
-      io = File.open(file,"r")
-      parsed = JSON.load(io)
-      if parsed.is_a? Array
-        parsed.map{|p| p["parameter_set_id"]}.each do |parameter_set_id|
-          if parameter_set_id
-            temp_ps = ParameterSet.find(parameter_set_id)
-          else
-            $stderr.puts "parameter_set_id is not existed"
-            exit(-1)
-          end
-          ps.push temp_ps
-        end
-      end
-    else
-      $stderr.puts "simulator file '#{file}' is not exist"
-      exit(-1)
+    parsed = JSON.load( File.read(file) )
+    validate_parameter_set_ids(parsed)
+    parsed.map {|h| ParameterSet.find( h["parameter_set_id"] ) }
+  end
+
+  def validate_parameter_set_ids(parsed)
+    unless parsed.is_a?(Array)
+      raise "Invalid json format. Must be an Array"
     end
-    ps
+    unless parsed.all? {|h| h.has_key?("parameter_set_id") }
+      raise "Invalid json format. Key 'parameter_set_id' is necessary."
+    end
   end
 
   def get_runs(file)
-    run=[]
-    if File.exist?(file)
-      io = File.open(file,"r")
-      parsed = JSON.load(io)
-      if parsed.is_a? Array
-        parsed.map{|p| p["run_id"]}.each do |run_id|
-          if run_id
-            temp_run = Run.find(run_id)
-          else
-            $stderr.puts "parameter_set_id is not existed"
-            exit(-1)
-          end
-          run.push temp_run
-        end
-      end
-    else
-      $stderr.puts "simulator file '#{file}' is not exist"
-      exit(-1)
+    parsed = JSON.load( File.read(file) )
+    validate_run_ids(parsed)
+    parsed.map {|h| Run.find(h["run_id"]) }
+  end
+
+  def validate_run_ids(parsed)
+    unless parsed.is_a?(Array)
+      raise "Invalid json format. Must be an Array"
     end
-    run
+    unless parsed.all? {|h| h.has_key?("run_id") }
+      raise "Invalid json format. Key 'run_id' is necessary."
+    end
   end
 end
