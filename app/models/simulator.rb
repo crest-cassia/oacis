@@ -53,10 +53,11 @@ class Simulator
 
   def parameter_sets_status_count
     counts = {}
-    counts[:total] = Run.where(simulator_id: self.id).count
+    counts[:total] = Run.where(simulator_id: self.id, status: :created).count
     counts[:finished] = Run.where(simulator_id: self.id, status: :finished).count
     counts[:running] = Run.where(simulator_id: self.id, status: :running).count
     counts[:failed] = Run.where(simulator_id: self.id, status: :failed).count
+    counts[:total] += counts[:finished]+counts[:running]+counts[:failed]
     counts
   end
 
