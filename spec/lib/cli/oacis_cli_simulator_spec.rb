@@ -14,6 +14,16 @@ describe OacisCli do
         }.not_to raise_error
       }
     end
+
+    context "when dry_run option is specified" do
+
+      it "does not create output file" do
+        at_temp_dir {
+          OacisCli.new.invoke(:simulator_template, [], {output: 'simulator.json', dry_run: true})
+          File.exist?('simulator.json').should be_false
+        }
+      end
+    end
   end
 
   describe "#create_simulator" do
@@ -129,6 +139,30 @@ describe OacisCli do
           expect {
             OacisCli.new.invoke(:create_simulator, [], option)
           }.to raise_error
+        }
+      end
+    end
+
+    context "when dry_run option is specified" do
+
+      def invoke_create_simulator_with_dry_run
+        create_simulator_json('simulator.json')
+        option = {input: 'simulator.json', output: 'simulator_id.json', dry_run: true}
+        OacisCli.new.invoke(:create_simulator, [], option)
+      end
+
+      it "does not create Simulator" do
+        at_temp_dir {
+          expect {
+            invoke_create_simulator_with_dry_run
+          }.not_to change { Simulator.count }
+        }
+      end
+
+      it "does not create output file" do
+        at_temp_dir {
+          invoke_create_simulator_with_dry_run
+          File.exist?('simulator_id.json').should be_false
         }
       end
     end

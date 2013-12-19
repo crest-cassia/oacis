@@ -24,6 +24,7 @@ EOS
     desc:     'output file',
     required: true
   def simulator_template
+    return if options[:dry_run]
     File.open(options[:output], 'w') {|io|
       io.puts SIMULATOR_TEMPLATE
       io.flush
@@ -63,18 +64,24 @@ EOS
       $stderr.puts "parameter_definitions :", JSON.pretty_generate(sim.parameter_definitions)
     end
 
-    return if options[:dry_run]
-
-    # save the created simulator
-    if sim.save
-      h = {simulator_id: sim.id.to_s}
-      File.open(options[:output], 'w') {|io|
-        io.puts JSON.pretty_generate(h)
-        io.flush
-      }
+    if sim.valid?
+      unless options[:dry_run]
+        sim.save!
+        write_simulator_id_to_file(options[:output], sim)
+      end
     else
+      $stderr.puts sim.inspect
       $stderr.puts sim.errors.full_messages
-      raise "Failed to create a simulator"
+      raise "validation of simulator failed"
     end
+  end
+
+  private
+  def write_simulator_id_to_file(path, simulator)
+    h = {"simulator_id" => simulator.id.to_s}
+    File.open(path, 'w') {|io|
+      io.puts JSON.pretty_generate(h)
+      io.flush
+    }
   end
 end
