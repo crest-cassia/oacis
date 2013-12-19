@@ -80,12 +80,12 @@ class OacisCli < Thor
         else
           $stderr.puts "Failed to create a Run for ParameterSet #{ps.id}"
           $stderr.puts run.errors.full_messages
-          write_run_ids_to_file(options[:output], runs) unless options[:dry_run]
           raise "failed to create a Run"
         end
       end
     end
 
+  ensure
     write_run_ids_to_file(options[:output], runs) unless options[:dry_run]
   end
 
