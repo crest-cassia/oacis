@@ -35,7 +35,7 @@ function show_loading_spin_arc(svg, width, height) {
       "text-anchor": "middle",
       "font-size": radius*0.1
     })
-    .text("LOADING");
+    .text("LOADING: click here to cancel");
 
   function spin(selection, duration) {
     selection.transition()
