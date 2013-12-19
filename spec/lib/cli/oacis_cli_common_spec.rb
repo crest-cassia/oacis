@@ -31,5 +31,15 @@ describe OacisCli do
         JSON.load( File.read('host.json') ).should eq expected
       }
     end
+
+    context "when dry_run option is specified" do
+
+      it "does not create output file" do
+        at_temp_dir {
+          OacisCli.new.invoke(:show_host, [], {output: 'host.json', dry_run: true})
+          File.exist?('host.json').should be_false
+        }
+      end
+    end
   end
 end
