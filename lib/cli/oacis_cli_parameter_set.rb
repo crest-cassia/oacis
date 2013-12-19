@@ -16,6 +16,7 @@ class OacisCli < Thor
     mapped = sim.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
     parameter_set = Hash[mapped]
 
+    return if options[:dry_run]
     File.open(options[:output], 'w') do |io|
       # for visibility, manually print the json object as follows
       io.puts "[", "  #{parameter_set.to_json}", "]"

@@ -58,6 +58,18 @@ describe OacisCli do
         }
       end
     end
+
+    context "when dry_run option is specified" do
+
+      it "does not create output file" do
+        at_temp_dir {
+          create_simulator_id_json(@sim, 'simulator_id.json')
+          option = {simulator: 'simulator_id.json', output: 'parameter_sets.json', dry_run: true}
+          OacisCli.new.invoke(:parameter_sets_template, [], option)
+          File.exist?('parameter_sets.json').should be_false
+        }
+      end
+    end
   end
 
   describe "#create_parameter_sets" do
