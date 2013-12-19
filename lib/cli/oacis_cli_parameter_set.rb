@@ -49,29 +49,34 @@ class OacisCli < Thor
       $stderr.puts "simulator :", JSON.pretty_generate(simulator)
     end
 
-    created = input.each_with_index.map do |ps_value, idx|
+    parameter_sets = []
+    input.each_with_index.map do |ps_value, idx|
       $stderr.puts "creating parameter_set : #{idx} / #{input.size}"
       $stderr.puts "  parameter values : #{ps_value.inspect}" if options[:verbose]
       param_set = simulator.parameter_sets.build({v: ps_value})
       if param_set.valid?
         param_set.save! unless options[:dry_run]
+        parameter_sets << param_set
       elsif param_set.errors.keys == [:parameters] # An identical parameter_set is found
         $stderr.puts "  An identical parameter_set already exists. Skipping..."
-        param_set = simulator.parameter_sets.where(v: ps_value).first
+        parameter_sets << simulator.parameter_sets.where(v: ps_value).first
       else
         $stderr.puts param_set.inspect
         $stderr.puts param_set.errors.full_messages
         raise "validation of parameter_set failed"
       end
-      param_set
     end
 
-    return if options[:dry_run]
+  ensure
+    write_parameter_set_ids_to_file(options[:output], parameter_sets) unless options[:dry_run]
+  end
 
-    # print json
-    File.open(options[:output], 'w') do |io|
+  private
+  def write_parameter_set_ids_to_file(path, parameter_sets)
+    return unless parameter_sets.present?
+    File.open(path, 'w') do |io|
       io.puts "["
-      rows = created.map do |ps|
+      rows = parameter_sets.map do |ps|
         h = {"parameter_set_id" => ps.id.to_s}
         "  #{h.to_json}"
       end

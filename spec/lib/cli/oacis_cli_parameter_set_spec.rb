@@ -185,17 +185,71 @@ describe OacisCli do
 
     context "when invalid parameter_sets.json is invalid" do
 
+      def create_invalid_parameter_sets_json(path)
+        File.open(path, 'w') {|io|
+          parameter_set_values = [
+            {"L" => 10, "T" => 0.1},
+            {"L" => 20, "T" => 0.1},
+            {"L" => 10, "T" => "XXX"}
+          ]
+          io.puts parameter_set_values.to_json
+          io.flush
+        }
+      end
+
+      def invoke_create_parameter_sets_with_invalid_parameter_sets_json
+          create_simulator_id_json(@sim, 'simulator_id.json')
+          create_invalid_parameter_sets_json('parameter_sets.json')
+          option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
+          OacisCli.new.invoke(:create_parameter_sets, [], option)
+        end
+
       it "raises an exception" do
         at_temp_dir {
-          create_simulator_id_json(@sim, 'simulator_id.json')
-          File.open('parameter_sets.json', 'w') {|io|
-            io.puts [ {"L" => 10, "T" => "XXX"} ].to_json
-            io.flush
-          }
-          option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
           expect {
-            OacisCli.new.invoke(:create_parameter_sets, [], option)
+            invoke_create_parameter_sets_with_invalid_parameter_sets_json
           }.to raise_error
+        }
+      end
+
+      it "outputs json if any ParameterSet is created" do
+        at_temp_dir {
+          begin
+            invoke_create_parameter_sets_with_invalid_parameter_sets_json
+          rescue
+          end
+          expected = @sim.reload.parameter_sets.map {|ps| {"parameter_set_id" => ps.id.to_s} }
+          JSON.load(File.read('parameter_set_ids.json')).should =~ expected
+        }
+      end
+    end
+
+    context "when dry_run option is specified" do
+
+      def invoke_create_parameter_sets_with_dry_run
+        create_simulator_id_json(@sim, 'simulator_id.json')
+        create_parameter_sets_json('parameter_sets.json')
+        option = {
+          simulator: 'simulator_id.json',
+          input: 'parameter_sets.json',
+          output: "parameter_set_ids.json",
+          dry_run: true
+        }
+        OacisCli.new.invoke(:create_parameter_sets, [], option)
+      end
+
+      it "does not create ParameterSet" do
+        at_temp_dir {
+          expect {
+            invoke_create_parameter_sets_with_dry_run
+          }.not_to change { ParameterSet.count }
+        }
+      end
+
+      it "does not create output file" do
+        at_temp_dir {
+          invoke_create_parameter_sets_with_dry_run
+          File.exist?('parameter_set_ids.json').should be_false
         }
       end
     end
