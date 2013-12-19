@@ -9,12 +9,12 @@ class ApplicationController < ActionController::Base
 
   private
   def authenticate
-    unless USERS.empty?
+    if Rails.env.test? or USERS.empty?
+      true
+    else
       authenticate_or_request_with_http_digest do |username|
         USERS[username]
       end
-    else
-      true
     end
   end
 end
