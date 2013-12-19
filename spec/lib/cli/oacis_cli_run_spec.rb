@@ -46,6 +46,21 @@ describe OacisCli do
         }
       end
     end
+
+    context "when dry_run option is specified" do
+
+      it "does not create output file" do
+        at_temp_dir {
+          options = {
+            host_id: @host.id.to_s,
+            output: 'job_parameters.json',
+            dry_run: true
+          }
+          OacisCli.new.invoke(:job_parameter_template, [], options)
+          File.exist?('job_parameters.json').should be_false
+        }
+      end
+    end
   end
 
   describe "#create_runs" do

@@ -18,6 +18,7 @@ class OacisCli < Thor
       host_parameters[param_def.key] = param_def.default
     end
 
+    return if options[:dry_run]
     File.open(options[:output], 'w') do |io|
       job_parameters = {
         "host_id" => host.id.to_s,
