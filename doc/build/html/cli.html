@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Command Line Interfaceの使い方 &mdash; CASSIA Manager 0.0.1 documentation</title>
+    <title>Command Line Interface(CLI)の使い方 &mdash; CASSIA Manager 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -45,8 +45,84 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="command-line-interface">
-<h1>Command Line Interfaceの使い方<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="command-line-interface-cli">
+<h1>Command Line Interface(CLI)の使い方<a class="headerlink" href="#command-line-interface-cli" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line">Web browser経由で対話的な操作に加え、コマンドライン経由でSimulator, ParameterSet, Runの作成をするためのプログラム(CLI)が用意されている。</div>
+<div class="line">対話的な操作ではできないような多数のParameterSetやRunを一度に作成したい場合に有効であるだけでなく、他のプログラムからOACISを操作する用途にも利用可能である。</div>
+<div class="line">ここではCLIの基本的な使い方を説明する。</div>
+</div>
+<div class="section" id="cli">
+<h2>CLIで利用可能な操作一覧<a class="headerlink" href="#cli" title="Permalink to this headline">¶</a></h2>
+<p>CLIで利用可能な操作は以下の通りである。</p>
+<ul class="simple">
+<li>登録済みHost一覧の取得 (show_host)</li>
+<li>Simulator作成 (create_simulator)</li>
+<li>Simulator作成用テンプレート作成 (simulator_template)</li>
+<li>ParameterSet作成 (create_parameter_sets)</li>
+<li>ParameterSet作成用テンプレート作成 (parameter_sets_template)</li>
+<li>ジョブパラメータ指定用テンプレート作成 (job_parameter_template)</li>
+<li>Run作成 (create_runs)</li>
+<li>作成済みRunのステータス確認 (run_status)</li>
+</ul>
+<p>OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行するアクションを指定する。
+例えば</p>
+<div class="highlight-python"><pre>./bin/oacis_cli usage</pre>
+</div>
+<p>このドキュメント内ではOACISのチェックアウトディレクトリから実行することを想定してコマンド例を示すが、どのディレクトリから実行しても良い。</p>
+<div class="section" id="usage">
+<h3>usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
+<p>CLIの各コマンドの使用方法を表示する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli usage
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="show-host">
+<h3>show_host<a class="headerlink" href="#show-host" title="Permalink to this headline">¶</a></h3>
+<p>登録済みHost一覧の情報を取得する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli show_host -o host.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="16%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;output</p>
+</td>
+<td><p class="first last">-o</p>
+</td>
+<td><p class="first last">output file path</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="id1">
+<h2>実行例<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 
 
@@ -55,6 +131,19 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Command Line Interface(CLI)の使い方</a><ul>
+<li><a class="reference internal" href="#cli">CLIで利用可能な操作一覧</a><ul>
+<li><a class="reference internal" href="#usage">usage</a></li>
+<li><a class="reference internal" href="#show-host">show_host</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id1">実行例</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="advanced_usage.html"
                         title="previous chapter">高度な使い方</a></p>
