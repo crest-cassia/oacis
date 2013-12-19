@@ -90,6 +90,7 @@ class OacisCli < Thor
 
   private
   def write_run_ids_to_file(path, runs)
+    return unless runs.present?
     File.open(path, 'w') {|io|
       ids = runs.map {|run| "  #{{'run_id' => run.id.to_s}.to_json}"}
       io.puts "[", ids.join(",\n"), "]"
