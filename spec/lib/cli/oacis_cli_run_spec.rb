@@ -117,7 +117,7 @@ describe OacisCli do
 
         File.exist?('run_ids.json').should be_true
         expected = Run.all.map {|run| {"run_id" => run.id.to_s} }.sort_by {|h| h["run_id"]}
-        JSON.load(File.read('run_ids.json')).sort_by {|h| h["run_id"] }.should eq expected
+        JSON.load(File.read('run_ids.json')).should =~ expected
       }
     end
 
@@ -125,7 +125,7 @@ describe OacisCli do
 
       before(:each) do
         @ps1 = @sim.parameter_sets.first
-        FactoryGirl.create_list(:run, 3, parameter_set: @ps1)
+        FactoryGirl.create_list(:run, 5, parameter_set: @ps1)
         @ps2 = @sim.parameter_sets[1]
         FactoryGirl.create_list(:run, 1, parameter_set: @ps2)
       end
@@ -135,6 +135,17 @@ describe OacisCli do
           expect {
             invoke_create_runs
           }.to change { Run.count }.by(2)
+        }
+      end
+
+      it "outputs ids of created and existing runs up to the specified number" do
+        at_temp_dir {
+          invoke_create_runs
+
+          File.exist?('run_ids.json').should be_true
+          runs = @ps1.reload.runs.limit(3).to_a + @ps2.reload.runs.limit(3)
+          expected = runs.map {|run| {"run_id" => run.id.to_s} }.sort_by {|h| h["run_id"]}
+          JSON.load(File.read('run_ids.json')).should =~ expected
         }
       end
     end

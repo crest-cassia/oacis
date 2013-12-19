@@ -60,37 +60,44 @@ class OacisCli < Thor
       $stderr.puts "Number of parameter_sets : #{parameter_sets.count}"
     end
 
-    created_runs = []
-    parameter_sets.each_with_index do |ps, idx|
+    runs = []
+    parameter_sets.each_with_index.map do |ps, idx|
       $stderr.puts "Creating Runs : #{idx} / #{parameter_sets.count}"
       sim = ps.simulator
       mpi_procs = sim.support_mpi ? job_parameters["mpi_procs"] : 1
       omp_threads = sim.support_omp ? job_parameters["omp_threads"] : 1
-      (options[:number_of_runs] - ps.runs.count).times do |i|
+      existing_runs = ps.runs.limit(options[:number_of_runs]).to_a
+      runs += existing_runs
+      (options[:number_of_runs] - existing_runs.count).times do |i|
         run = ps.runs.build(submitted_to: submitted_to,
                             mpi_procs: mpi_procs,
                             omp_threads: omp_threads,
                             host_parameters: host_parameters)
         if run.valid?
           run.save! unless options[:dry_run]
-          created_runs << run
+          runs << run
         else
           $stderr.puts "Failed to create a Run for ParameterSet #{ps.id}"
           $stderr.puts run.errors.full_messages
+          write_run_ids_to_file(options[:output], runs) unless options[:dry_run]
           raise "failed to create a Run"
         end
       end
     end
 
-    return if options[:dry_run]
-    # output run_ids.json
-    File.open(options[:output], 'w') {|io|
-      ids = created_runs.map {|run| "  #{{'run_id' => run.id.to_s}.to_json}"}
+    write_run_ids_to_file(options[:output], runs) unless options[:dry_run]
+  end
+
+  private
+  def write_run_ids_to_file(path, runs)
+    File.open(path, 'w') {|io|
+      ids = runs.map {|run| "  #{{'run_id' => run.id.to_s}.to_json}"}
       io.puts "[", ids.join(",\n"), "]"
       io.flush
     }
   end
 
+  public
   desc 'run_status', "print run status"
   method_option :run_ids,
     type:     :string,
