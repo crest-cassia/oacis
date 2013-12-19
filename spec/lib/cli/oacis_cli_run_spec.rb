@@ -193,19 +193,65 @@ describe OacisCli do
         }
       end
 
+      def invoke_create_runs_with_invalid_parameter_set_ids
+        create_invalid_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
+        create_job_parameters_json('job_parameters.json')
+        options = {
+          parameter_sets: 'parameter_set_ids.json',
+          job_parameters: 'job_parameters.json',
+          number_of_runs: 3,
+          output: 'run_ids.json'
+        }
+        OacisCli.new.invoke(:create_runs, [], options)
+      end
+
       it "raises an exception" do
         at_temp_dir {
-          create_invalid_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
-          create_job_parameters_json('job_parameters.json')
-          options = {
-            parameter_sets: 'parameter_set_ids.json',
-            job_parameters: 'job_parameters.json',
-            number_of_runs: 3,
-            output: 'run_ids.json'
-          }
           expect {
-            OacisCli.new.invoke(:create_runs, [], options)
+            invoke_create_runs_with_invalid_parameter_set_ids
           }.to raise_error
+        }
+      end
+
+      it "outputs run_ids if successfully created runs exist" do
+        at_temp_dir {
+          begin
+            invoke_create_runs_with_invalid_parameter_set_ids
+          rescue
+          end
+          File.exist?('parameter_set_ids.json').should be_true
+        }
+      end
+
+    end
+
+    context "when dry_run option is given" do
+
+      def invoke_create_runs_with_dry_run
+        create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
+        create_job_parameters_json('job_parameters.json')
+        options = {
+          parameter_sets: 'parameter_set_ids.json',
+          job_parameters: 'job_parameters.json',
+          number_of_runs: 3,
+          output: 'run_ids.json',
+          dry_run: true
+        }
+        OacisCli.new.invoke(:create_runs, [], options)
+      end
+
+      it "does not save Runs" do
+        at_temp_dir {
+          expect {
+            invoke_create_runs_with_dry_run
+          }.to_not change { Run.count }
+        }
+      end
+
+      it "does not create output file" do
+        at_temp_dir {
+          invoke_create_runs_with_dry_run
+          File.exist?('run_ids.json').should be_false
         }
       end
     end
