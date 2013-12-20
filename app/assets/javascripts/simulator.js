@@ -72,7 +72,8 @@ function draw_progress_overview(url) {
     .attr("height", height + margin.top + margin.bottom);
   var loading = show_loading_spin_arc(svg, svg.attr("width"), svg.attr("height"));
 
-  d3.json(url, function(dat) {
+  var xhr = d3.json(url)
+    .on("load", function(dat) {
     loading.remove();
 
     var rectSizeX = (width - rowLabelMargin) / dat.parameter_values[0].length;
@@ -314,5 +315,12 @@ function draw_progress_overview(url) {
         "text-anchor": "start"
       })
       .text(function(d) { return d; });
-  });
+  })
+  .on("error", function() { loading.remove(); })
+  .get();
+
+  loading.on("mousedown", function() {
+    xhr.abort();
+    loading.remove();
+  })
 };
