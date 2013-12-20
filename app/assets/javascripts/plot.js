@@ -18,7 +18,8 @@ function draw_line_plot(url, parameter_set_base_url) {
 
   var progress = show_loading_spin_arc(svg, width, height);
 
-  d3.json(url, function(dat) {
+  var xhr = d3.json(url)
+    .on("load", function(dat) {
     progress.remove();
 
     var xScale = d3.scale.linear().range([0, width]);
@@ -202,6 +203,12 @@ function draw_line_plot(url, parameter_set_base_url) {
     description.append("a").text("delete plot").on("click", function() {
       row.remove();
     });
+  })
+  .on("error", function() {progress.remove();})
+  .get();
+  progress.on("mousedown", function(){
+    xhr.abort();
+    row.remove();
   });
 }
 
@@ -226,7 +233,8 @@ function draw_scatter_plot(url, parameter_set_base_url) {
 
   var progress = show_loading_spin_arc(svg, width, height);
 
-  d3.json(url, function(dat) {
+  var xhr = d3.json(url)
+    .on("load", function(dat) {
     progress.remove();
 
     var xScale = d3.scale.linear().range([0, width]);
@@ -377,5 +385,11 @@ function draw_scatter_plot(url, parameter_set_base_url) {
       });
     }
     add_description();
+  })
+  .on("error", function() {progress.remove();})
+  .get();
+  progress.on("mousedown", function(){
+    xhr.abort();
+    row.remove();
   });
 }
