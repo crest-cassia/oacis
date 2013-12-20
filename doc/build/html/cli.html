@@ -57,10 +57,10 @@
 <p>CLIで利用可能な操作は以下の通りである。</p>
 <ul class="simple">
 <li>登録済みHost一覧の取得 (show_host)</li>
-<li>Simulator作成 (create_simulator)</li>
 <li>Simulator作成用テンプレート作成 (simulator_template)</li>
-<li>ParameterSet作成 (create_parameter_sets)</li>
+<li>Simulator作成 (create_simulator)</li>
 <li>ParameterSet作成用テンプレート作成 (parameter_sets_template)</li>
+<li>ParameterSet作成 (create_parameter_sets)</li>
 <li>ジョブパラメータ指定用テンプレート作成 (job_parameter_template)</li>
 <li>Run作成 (create_runs)</li>
 <li>作成済みRunのステータス確認 (run_status)</li>
@@ -117,11 +117,470 @@
 </tbody>
 </table>
 </li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>以下の様に、登録済みhostの情報をObjectの配列としてJSON形式で出力する。</li>
+<li>hostにはid, name, hostname, userの情報のみ出力される</li>
+</ul>
+<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;522fe89a899e53ec05000005&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;hostname&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;user&quot;</span><span class="p">:</span> <span class="s2">&quot;murase&quot;</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
 </ul>
 </div>
+<div class="section" id="simulator-template">
+<h3>simulator_template<a class="headerlink" href="#simulator-template" title="Permalink to this headline">¶</a></h3>
+<p>create_simulatorの時に使用するsimulator.jsonファイルのテンプレートを作成する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli simulator_template -o simulator.json
+</pre></div>
 </div>
-<div class="section" id="id1">
-<h2>実行例<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="16%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;output</p>
+</td>
+<td><p class="first last">-o</p>
+</td>
+<td><p class="first last">output file path</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>Simulatorの属性情報のテンプレートを出力する</li>
+</ul>
+<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;b_sample_simulator&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/murase/program/oacis/lib/lib/samples/tutorial/simulator/simulator.out&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;support_input_json&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&quot;support_mpi&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&quot;support_omp&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&quot;pre_process_script&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+  <span class="nt">&quot;executable_on_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+  <span class="nt">&quot;parameter_definitions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;p1&quot;</span><span class="p">,</span><span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Integer&quot;</span><span class="p">,</span><span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span><span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;parameter1&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;p2&quot;</span><span class="p">,</span><span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Float&quot;</span><span class="p">,</span><span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span><span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;parameter2&quot;</span><span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="create-simulator">
+<h3>create_simulator<a class="headerlink" href="#create-simulator" title="Permalink to this headline">¶</a></h3>
+<p>Simulatorを新規作成する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli create_simulator -h host.json -i simulator.json -o simulator_id.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="16%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;host</p>
+</td>
+<td><p class="first last">-h</p>
+</td>
+<td><p class="first last">executable hosts</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;input</p>
+</td>
+<td><p class="first last">-i</p>
+</td>
+<td><p class="first last">input file path</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">&#8211;output</p>
+</td>
+<td><p class="first last">-o</p>
+</td>
+<td><p class="first last">output file path</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力ファイル</p>
+<blockquote>
+<div><ul class="simple">
+<li>hostファイルは show_host で出力されるJSON形式のファイルを指定する</li>
+<li>inputファイルは simulator_template で出力されるJSON形式のファイルを指定する</li>
+</ul>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>新規作成されたsimulatorのIDをObjectとしてJSON形式で出力する。</li>
+</ul>
+<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nt">&quot;simulator_id&quot;</span><span class="p">:</span> <span class="s2">&quot;52b3bcd7b93f964178000001&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="parameter-sets-template">
+<h3>parameter_sets_template<a class="headerlink" href="#parameter-sets-template" title="Permalink to this headline">¶</a></h3>
+<p>create_parameter_setsの時に使用するparameter_sets.jsonファイルのテンプレートを作成する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli simulator_template -o simulator.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="16%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;output</p>
+</td>
+<td><p class="first last">-o</p>
+</td>
+<td><p class="first last">output file path</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>ParameterSet作成時に使用するパラメータ指定ファイルのテンプレートを出力する</li>
+</ul>
+<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span><span class="nt">&quot;p1&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="nt">&quot;p2&quot;</span><span class="p">:</span><span class="mf">5.0</span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="create-parameter-sets">
+<h3>create_parameter_sets<a class="headerlink" href="#create-parameter-sets" title="Permalink to this headline">¶</a></h3>
+<p>ParameterSetを新規作成する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli create_parameter_sets -s simulator_id.json -i parameter_sets.json -o parameter_set_ids.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="16%" />
+<col width="63%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;simulator</p>
+</td>
+<td><p class="first last">-s</p>
+</td>
+<td><p class="first last">simulator file</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;input</p>
+</td>
+<td><p class="first last">-i</p>
+</td>
+<td><p class="first last">input file path</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">&#8211;output</p>
+</td>
+<td><p class="first last">-o</p>
+</td>
+<td><p class="first last">output file path</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力ファイル</p>
+<blockquote>
+<div><ul class="simple">
+<li>simulatorファイルは create_simulator で出力されるJSON形式のファイルを指定する</li>
+<li>inputファイルは parameter_sets_template で出力されるJSON形式のファイルを指定する</li>
+</ul>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>新規作成されたParameterSetのIDをObjectの配列としてJSON形式で出力する。</li>
+</ul>
+<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span><span class="nt">&quot;parameter_set_id&quot;</span><span class="p">:</span><span class="s2">&quot;52b3ddc7b93f969b8c000001&quot;</span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="job-parameter-template">
+<h3>job_parameter_template<a class="headerlink" href="#job-parameter-template" title="Permalink to this headline">¶</a></h3>
+<p>create_runsの時に使用するjob_parameter.jsonファイルのテンプレートを作成する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli job_parameter_template -h host_id -o job_parameter.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="16%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;host_id</p>
+</td>
+<td><p class="first last">-h</p>
+</td>
+<td><p class="first last">host id</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;output</p>
+</td>
+<td><p class="first last">-o</p>
+</td>
+<td><p class="first last">output file path</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>Run作成時に使用するジョブパラメータ指定ファイルのテンプレートを出力する</li>
+</ul>
+<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nt">&quot;host_id&quot;</span><span class="p">:</span> <span class="s2">&quot;522fe89a899e53ec05000005&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;host_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;nodes&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;ppn&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;walltime&quot;</span><span class="p">:</span> <span class="s2">&quot;10:00&quot;</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;mpi_procs&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="nt">&quot;omp_threads&quot;</span><span class="p">:</span> <span class="mi">1</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="create-runs">
+<h3>create_runs<a class="headerlink" href="#create-runs" title="Permalink to this headline">¶</a></h3>
+<p>Runを新規作成する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli create_runs -p parameter_set_ids.json -j job_parameter.json -n 1 -o run_ids.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="14%" />
+<col width="57%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;parameter_sets</p>
+</td>
+<td><p class="first last">-p</p>
+</td>
+<td><p class="first last">parameter set id file</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;job_parameters</p>
+</td>
+<td><p class="first last">-j</p>
+</td>
+<td><p class="first last">job parameter file</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">&#8211;number_of_runs</p>
+</td>
+<td><p class="first last">-n</p>
+</td>
+<td><p class="first last">number of runs</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;output</p>
+</td>
+<td><p class="first last">-o</p>
+</td>
+<td><p class="first last">output file path</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力ファイル</p>
+<blockquote>
+<div><ul class="simple">
+<li>parameter_setsファイルは create_parameter_sets で出力されるJSON形式のファイルを指定する</li>
+<li>job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルを指定する</li>
+<li>number_of_runs はRunの数を数値で指定する。各ParameterSetごとに、ここで指定された数になるまでRunが作られる</li>
+</ul>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>RunのIDをObjectの配列としてJSON形式で出力する。</li>
+<li>新規作成されていないRunについても、各ParameterSetごとにnで指定された数の分だけRunのIDを出力する</li>
+</ul>
+<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span><span class="nt">&quot;run_id&quot;</span><span class="p">:</span><span class="s2">&quot;52b3eaebb93f96933f000001&quot;</span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="run-status">
+<h3>run_status<a class="headerlink" href="#run-status" title="Permalink to this headline">¶</a></h3>
+<p>Runの実行状況を確認する</p>
+<ul>
+<li><p class="first">実効方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli run_status -r run_ids.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+</li>
+<li><p class="first">入力ファイル</p>
+<blockquote>
+<div><ul class="simple">
+<li>run_idsファイルは create_runs で出力されるJSON形式のファイルを指定する</li>
+</ul>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>指定されたRunのステータスを集計し、標準出力に表示する</li>
+</ul>
+<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nt">&quot;total&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="nt">&quot;created&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;submitted&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;running&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;failed&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="nt">&quot;finished&quot;</span><span class="p">:</span> <span class="mi">0</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
 </div>
 </div>
 
@@ -137,9 +596,15 @@
 <li><a class="reference internal" href="#cli">CLIで利用可能な操作一覧</a><ul>
 <li><a class="reference internal" href="#usage">usage</a></li>
 <li><a class="reference internal" href="#show-host">show_host</a></li>
+<li><a class="reference internal" href="#simulator-template">simulator_template</a></li>
+<li><a class="reference internal" href="#create-simulator">create_simulator</a></li>
+<li><a class="reference internal" href="#parameter-sets-template">parameter_sets_template</a></li>
+<li><a class="reference internal" href="#create-parameter-sets">create_parameter_sets</a></li>
+<li><a class="reference internal" href="#job-parameter-template">job_parameter_template</a></li>
+<li><a class="reference internal" href="#create-runs">create_runs</a></li>
+<li><a class="reference internal" href="#run-status">run_status</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id1">実行例</a></li>
 </ul>
 </li>
 </ul>
