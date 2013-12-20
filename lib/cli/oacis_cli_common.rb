@@ -16,9 +16,9 @@ usage:
   ./bin/oacis_cli create_parameter_sets -s simulator_id.json -i parameter_sets.json -o parameter_set_ids.json
   #you can get parameter_sets.json template file "./bin/oacis_cli parameter_sets_template -s simulator_id.json -o parameter_sets.json"
 #4 create job parameter template
-  ./bin/oacis_cli job_parameter_template -h host_id -o job_parameters.json
+  ./bin/oacis_cli job_parameter_template -h ${host_id} -o job_parameter.json
 #5 edit job_parameters.json. Then create run
-  ./bin/oacis_cli create_runs -p parameter_set_ids.json -j job_parameters.json -n 1 -o run_ids.json
+  ./bin/oacis_cli create_runs -p parameter_set_ids.json -j job_parameter.json -n 1 -o run_ids.json
 #6 check run status
   ./bin/oacis_cli run_status -r run_ids.json
 EOS
