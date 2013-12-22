@@ -526,4 +526,37 @@ EOS
       run.job_script.should be_present
     end
   end
+
+  describe "removing runs_status_count_cache" do
+
+    before(:each) do
+      @param_set.runs_status_count
+      @param_set.reload.runs_status_count_cache.should_not be_nil
+    end
+
+    it "removes runs_status_count_cache when a new Run is created" do
+      @param_set.runs.create!(@valid_attribute)
+      @param_set.reload.runs_status_count_cache.should be_nil
+    end
+
+    it "removes runs_status_count_cache when status is changed" do
+      run = @param_set.runs.first
+      run.status = :finished
+      run.save!
+      @param_set.reload.runs_status_count_cache.should be_nil
+    end
+
+    it "removes runs_status_count_cache when destroyed" do
+      run = @param_set.runs.first
+      run.destroy
+      @param_set.reload.runs_status_count_cache.should be_nil
+    end
+
+    it "does not change runs_status_count_cache when status is not changed" do
+      run = @param_set.runs.first
+      run.updated_at = DateTime.now
+      run.save!
+      @param_set.reload.runs_status_count_cache.should_not be_nil
+    end
+  end
 end

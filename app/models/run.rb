@@ -43,8 +43,9 @@ class Run
   attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :submitted_to
 
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
+  before_save :remove_runs_status_count_cache, :if => :status_changed?
   after_create :create_run_dir
-  before_destroy :delete_run_dir, :delete_archived_result_file
+  before_destroy :delete_run_dir, :delete_archived_result_file , :remove_runs_status_count_cache
 
   public
   def initialize(*arg)
@@ -196,6 +197,12 @@ class Run
     if parameter_set
       archive = archived_result_path
       FileUtils.rm(archive) if File.exist?(archive)
+    end
+  end
+
+  def remove_runs_status_count_cache
+    if parameter_set and parameter_set.reload.runs_status_count_cache
+      parameter_set.update_attribute(:runs_status_count_cache, nil)
     end
   end
 
