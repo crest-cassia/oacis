@@ -34,7 +34,6 @@ private
   end
 
   def data
-    a = []
     parameter_sets_lists.map do |param|
       tmp = []
       tmp << @view.image_tag("/assets/expand.png", parameter_set_id: param.id.to_s, align: "center", state: "close", class: "treebtn")
@@ -47,9 +46,8 @@ private
         tmp <<  ERB::Util.html_escape(param.v[key])
       end
       tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
-      a << tmp
+      tmp
     end
-    a
   end
 
   def parameter_sets_lists
