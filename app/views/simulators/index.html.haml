@@ -13,6 +13,7 @@
         %td= link_to h(simulator.name), simulator_path(simulator)
         %td= distance_of_time_in_words_to_now(simulator.updated_at)
         - counts = simulator.runs_status_count
+        - counts.delete(:cancelled)
         %td#progress= progress_bar(counts.values.inject(:+), counts[:finished], counts[:running], counts[:failed])
 
 .form-actions

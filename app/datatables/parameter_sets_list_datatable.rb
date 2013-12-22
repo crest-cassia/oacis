@@ -38,6 +38,7 @@ private
       tmp = []
       tmp << @view.image_tag("/assets/expand.png", parameter_set_id: param.id.to_s, align: "center", state: "close", class: "treebtn")
       counts = param.runs_status_count
+      counts.delete(:cancelled)
       progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:running], counts[:failed] )
       tmp << @view.raw(progress)
       tmp << "<tt>"+@view.link_to( @view.shortened_id(param.id), @view.parameter_set_path(param) )+"</tt>"
