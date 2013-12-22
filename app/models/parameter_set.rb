@@ -56,8 +56,12 @@ class ParameterSet
     default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0, cancelled: 0}
     counts.merge!(default) {|key, self_val, other_val| self_val }
 
+    # disable automatical timestamp updating
+    self.timestamping = false
     # skip validation using update_attribute method in order to improve performance
     update_attribute(:runs_status_count_cache, counts)
+    # enable automatical timestamp updating, again
+    self.timestamping = true
     counts
   end
 
