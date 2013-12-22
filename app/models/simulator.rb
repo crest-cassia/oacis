@@ -61,6 +61,21 @@ class Simulator
     counts
   end
 
+  def runs_status_count
+    # use aggregate function of MongoDB.
+    # See http://blog.joshsoftware.com/2013/09/05/mongoid-and-the-mongodb-aggregation-framework/
+    aggregated = Run.collection.aggregate(
+      { '$match' => Run.where(simulator_id: id).selector },
+      { '$group' => {'_id' => '$status', count: { '$sum' => 1}} }
+      )
+    # aggregated is an Array like [ {"_id" => :created, "count" => 3}, ...]
+    counts = Hash[ aggregated.map {|d| [d["_id"], d["count"]] } ]
+
+    # merge default value because some 'counts' do not have keys whose count is zero.
+    default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0, cancelled: 0}
+    counts.merge!(default) {|key, self_val, other_val| self_val }
+  end
+
   def parameter_definition_for(key)
     found = self.parameter_definitions.detect do |pd|
       pd.key == key
