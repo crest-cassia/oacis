@@ -255,13 +255,25 @@ describe ParameterSet do
 
   describe "#runs_status_count" do
 
-    it "returns the runs count" do
+    def prepare_runs
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 10)
       prm = sim.parameter_sets.first
-      prm.runs_status_count[:total] = prm.runs.count
-      prm.runs_status_count[:finished].should == prm.runs.where(status: :finished).count
-      prm.runs_status_count[:running].should == prm.runs.where(status: :running).count
-      prm.runs_status_count[:failed].should == prm.runs.where(status: :failed).count
+      prm.runs[0].update_attribute(:status, :submitted)
+      (prm.runs[1..2]).each {|r| r.update_attribute(:status, :running) }
+      (prm.runs[3..5]).each {|r| r.update_attribute(:status, :failed) }
+      (prm.runs[6..9]).each {|r| r.update_attribute(:status, :finished) }
+      prm
+    end
+
+    it "returns the runs count" do
+      prm = prepare_runs
+      prm.runs_status_count.values.inject(:+).should eq prm.runs.count
+      prm.runs_status_count[:created].to_i.should eq prm.runs.where(status: :created).count
+      prm.runs_status_count[:submitted].to_i.should eq prm.runs.where(status: :submitted).count
+      prm.runs_status_count[:running].should eq prm.runs.where(status: :running).count
+      prm.runs_status_count[:finished].should eq prm.runs.where(status: :finished).count
+      prm.runs_status_count[:failed].should eq prm.runs.where(status: :failed).count
+      prm.runs_status_count[:cancelled].should eq prm.runs.where(status: :cancelled).count
     end
   end
 

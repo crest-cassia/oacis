@@ -38,8 +38,8 @@ private
     parameter_sets_lists.map do |param|
       tmp = []
       tmp << @view.image_tag("/assets/expand.png", parameter_set_id: param.id.to_s, align: "center", state: "close", class: "treebtn")
-      count = param.runs_status_count
-      progress = @view.progress_bar( count[:total], count[:finished], count[:running], count[:failed] )
+      counts = param.runs_status_count
+      progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:running], counts[:failed] )
       tmp << @view.raw(progress)
       tmp << "<tt>"+@view.link_to( @view.shortened_id(param.id), @view.parameter_set_path(param) )+"</tt>"
       tmp << @view.distance_to_now_in_words(param.updated_at)
