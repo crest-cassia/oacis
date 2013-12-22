@@ -51,16 +51,6 @@ class Simulator
     counts
   end
 
-  def parameter_sets_status_count
-    counts = {}
-    counts[:total] = Run.where(simulator_id: self.id, status: :created).count
-    counts[:finished] = Run.where(simulator_id: self.id, status: :finished).count
-    counts[:running] = Run.where(simulator_id: self.id, status: :running).count
-    counts[:failed] = Run.where(simulator_id: self.id, status: :failed).count
-    counts[:total] += counts[:finished]+counts[:running]+counts[:failed]
-    counts
-  end
-
   def runs_status_count
     # use aggregate function of MongoDB.
     # See http://blog.joshsoftware.com/2013/09/05/mongoid-and-the-mongodb-aggregation-framework/
