@@ -275,6 +275,18 @@ describe ParameterSet do
       prm.runs_status_count[:failed].should eq prm.runs.where(status: :failed).count
       prm.runs_status_count[:cancelled].should eq prm.runs.where(status: :cancelled).count
     end
+
+    it "save the result into runs_status_count_cache field" do
+      prm = prepare_runs
+      prm.runs_status_count_cache.should be_nil
+
+      Run.should_receive(:collection).and_call_original
+      prm.runs_status_count
+      prm.runs_status_count_cache.should be_a(Hash)
+
+      Run.should_not_receive(:collection)
+      prm.runs_status_count
+    end
   end
 
   describe "#destroy" do

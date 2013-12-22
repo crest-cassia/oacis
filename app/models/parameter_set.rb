@@ -2,13 +2,14 @@ class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
   field :v, type: Hash
+  field :runs_status_count_cache, type: Hash
   index({ v: 1 }, { unique: true, name: "v_index" })
   belongs_to :simulator, autosave: false
   has_many :runs, dependent: :destroy
   has_many :analyses, as: :analyzable, dependent: :destroy
 
   validates :simulator, :presence => true
-  validate :cast_and_validate_parameter_values
+  validate :cast_and_validate_parameter_values, on: :create
 
   after_create :create_parameter_set_dir
   before_destroy :delete_parameter_set_dir
@@ -36,6 +37,12 @@ class ParameterSet
   end
 
   def runs_status_count
+    # I do not know why but reload is necessary. Otherwise, _cache is always nil.
+    reload
+    if runs_status_count_cache
+      return Hash[ runs_status_count_cache.map {|key,val| [key.to_sym, val]} ]
+    end
+
     # use aggregate function of MongoDB.
     # See http://blog.joshsoftware.com/2013/09/05/mongoid-and-the-mongodb-aggregation-framework/
     aggregated = Run.collection.aggregate(
@@ -47,7 +54,11 @@ class ParameterSet
 
     # merge default value because some 'counts' do not have keys whose count is zero.
     default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0, cancelled: 0}
-    counts.merge(default) {|key, self_val, other_val| self_val }
+    counts.merge!(default) {|key, self_val, other_val| self_val }
+
+    # skip validation using update_attribute method in order to improve performance
+    update_attribute(:runs_status_count_cache, counts)
+    counts
   end
 
   private
