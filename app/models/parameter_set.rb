@@ -58,6 +58,7 @@ class ParameterSet
 
     # skip validation using update_attribute method in order to improve performance
     # disable automatic time-stamp update when updating cache
+    # See http://mongoid.org/en/mongoid/docs/extras.html#timestamps
     timeless.update_attribute(:runs_status_count_cache, counts)
     counts
   end
