@@ -81,7 +81,7 @@
     var url = "#{_line_plot_parameter_set_path(@param_set)}" + ".json";
     var url_with_param = url + "?x_axis_key=" + encodeURIComponent(x) + "&y_axis_key=" + encodeURIComponent(y) + "&series=" + encodeURIComponent(series) + "&irrelevants=" + encodeURIComponent(irrelevants);
     var ps_base_url = "#{parameter_set_path('')}";
-    draw_line_plot(url_with_param, ps_base_url);
+    draw_line_plot(url_with_param, ps_base_url, "#{@param_set.id.to_s}");
   }
   $('#add_line_plot_button').on('click', function() {
     var x = $('#line-plot-form #x_axis_key').val();

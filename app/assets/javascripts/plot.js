@@ -1,4 +1,4 @@
-function draw_line_plot(url, parameter_set_base_url) {
+function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
 
   var margin = {top: 10, right: 100, bottom: 100, left: 100},
     width = 560;
@@ -98,7 +98,7 @@ function draw_line_plot(url, parameter_set_base_url) {
       .attr("cx", function(d) { return xScale(d.x);})
       .attr("cy", function(d) { return yScale(d.y);})
       .style("fill", function(d) { return colorScale(d.series_index);})
-      .attr("r", 3)
+      .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;})
       .on("mouseover", function(d) {
         tooltip.transition()
           .duration(200)
