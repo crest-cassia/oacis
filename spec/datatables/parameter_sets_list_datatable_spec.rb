@@ -32,7 +32,7 @@ describe "ParameterSetsListDatatable" do
       end
 
       it "is initialized" do
-        @psld.instance_variable_get(:@param_sets).should eq(ParameterSet.where(:simulator_id => @simulator.to_param))
+        @psld.instance_variable_get(:@param_sets).should eq @simulator.parameter_sets
       end
       
       it "return json" do
