@@ -128,7 +128,7 @@
       "&result=" + encodeURIComponent(result) +
       "&irrelevants=" + encodeURIComponent(irrelevants);
     var ps_base_url = "#{parameter_set_path('')}";
-    draw_scatter_plot(url_with_param, ps_base_url);
+    draw_scatter_plot(url_with_param, ps_base_url, "#{@param_set.id.to_s}");
   }
   $('#add_scatter_plot_button').on('click', function() {
     var x = $('#scatter-plot-form #x_axis_key').val();
