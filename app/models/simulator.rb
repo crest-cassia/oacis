@@ -87,6 +87,36 @@ class Simulator
     list
   end
 
+  def progress_overview_data(parameter_key1, parameter_key2)
+    parameter_values = [
+      parameter_sets.distinct("v.#{parameter_key1}").sort,
+      parameter_sets.distinct("v.#{parameter_key2}").sort
+    ]
+    num_runs = parameter_values[1].map do |p2|
+      parameter_values[0].map do |p1|
+        if parameter_key2 == parameter_key1 and p1 != p2
+          [0,0]
+        else
+          filtered = parameter_sets.where({
+            "v.#{parameter_key1}" => p1,
+            "v.#{parameter_key2}" => p2
+          })
+          filtered.inject([0,0]) do |sum, ps|
+            sum[0] += ps.runs.where(status: :finished).count
+            sum[1] += ps.runs.count
+            sum
+          end
+        end
+      end
+    end
+
+    progress_overview = {
+      parameters: [parameter_key1, parameter_key2],
+      parameter_values: parameter_values,
+      num_runs: num_runs
+    }
+  end
+
   private
   def plottable_keys(result)
     ret = []
