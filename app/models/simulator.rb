@@ -92,6 +92,45 @@ class Simulator
       parameter_sets.distinct("v.#{parameter_key1}").sort,
       parameter_sets.distinct("v.#{parameter_key2}").sort
     ]
+
+    # warm up cache
+    # parameter_sets.each {|ps| ps.runs_status_count }
+
+    map = <<-EOS
+function() {
+  var key = {param1: this.v["#{parameter_key1}"], param2: this.v["#{parameter_key2}"] };
+  if( this.runs_status_count_cache ) {
+    var cache = this.runs_status_count_cache;
+    var total_runs = 0;
+    for(var stat in cache) {
+      if (stat == "cancelled") continue;
+      total_runs += cache[stat];
+    }
+    var val = {finished: cache["finished"], total: total_runs };
+    emit(key, val);
+  }
+  else {
+    emit(key, { ids: [this._id]} );
+  }
+}
+EOS
+
+    reduce = <<-EOS
+function(key,values) {
+  var reduced = {finished: 0, total: 0};
+  values.forEach( function(v){
+    reduced.finished += v.finished;
+    reduced.total += v.total;
+    reduced.ids += v.ids;
+  });
+  return reduced;
+}
+EOS
+    parameter_sets.map_reduce(map, reduce).out(inline: true).to_a
+      # pp doc
+    # end
+
+=begin
     num_runs = parameter_values[1].map do |p2|
       parameter_values[0].map do |p1|
         if parameter_key2 == parameter_key1 and p1 != p2
@@ -115,6 +154,7 @@ class Simulator
       parameter_values: parameter_values,
       num_runs: num_runs
     }
+=end
   end
 
   private
