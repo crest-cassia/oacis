@@ -65,7 +65,7 @@
 <li>Run作成 (create_runs)</li>
 <li>作成済みRunのステータス確認 (run_status)</li>
 </ul>
-<p>OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行するアクションを指定する。
+<p>OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行する操作を指定する。
 例えば</p>
 <div class="highlight-python"><pre>./bin/oacis_cli usage</pre>
 </div>
@@ -93,9 +93,10 @@
 <li><p class="first">オプション</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="20%" />
 <col width="16%" />
-<col width="64%" />
+<col width="13%" />
+<col width="52%" />
+<col width="18%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><p class="first last">Option</p>
@@ -103,6 +104,8 @@
 <th class="head"><p class="first last">alias</p>
 </th>
 <th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
 </th>
 </tr>
 </thead>
@@ -112,6 +115,8 @@
 <td><p class="first last">-o</p>
 </td>
 <td><p class="first last">output file path</p>
+</td>
+<td><p class="first last">yes</p>
 </td>
 </tr>
 </tbody>
@@ -150,9 +155,10 @@
 <li><p class="first">オプション</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="20%" />
 <col width="16%" />
-<col width="64%" />
+<col width="13%" />
+<col width="52%" />
+<col width="18%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><p class="first last">Option</p>
@@ -160,6 +166,8 @@
 <th class="head"><p class="first last">alias</p>
 </th>
 <th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
 </th>
 </tr>
 </thead>
@@ -169,6 +177,8 @@
 <td><p class="first last">-o</p>
 </td>
 <td><p class="first last">output file path</p>
+</td>
+<td><p class="first last">yes</p>
 </td>
 </tr>
 </tbody>
@@ -211,9 +221,10 @@
 <li><p class="first">オプション</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="20%" />
 <col width="16%" />
-<col width="64%" />
+<col width="13%" />
+<col width="52%" />
+<col width="18%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><p class="first last">Option</p>
@@ -221,6 +232,8 @@
 <th class="head"><p class="first last">alias</p>
 </th>
 <th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
 </th>
 </tr>
 </thead>
@@ -231,6 +244,8 @@
 </td>
 <td><p class="first last">executable hosts</p>
 </td>
+<td><p class="first last">no</p>
+</td>
 </tr>
 <tr class="row-odd"><td><p class="first last">&#8211;input</p>
 </td>
@@ -238,12 +253,16 @@
 </td>
 <td><p class="first last">input file path</p>
 </td>
+<td><p class="first last">yes</p>
+</td>
 </tr>
 <tr class="row-even"><td><p class="first last">&#8211;output</p>
 </td>
 <td><p class="first last">-o</p>
 </td>
 <td><p class="first last">output file path</p>
+</td>
+<td><p class="first last">yes</p>
 </td>
 </tr>
 </tbody>
@@ -260,7 +279,7 @@
 <li><dl class="first docutils">
 <dt>出力</dt>
 <dd><ul class="first simple">
-<li>新規作成されたsimulatorのIDをObjectとしてJSON形式で出力する。</li>
+<li>新規作成されたsimulatorのidをObjectとしてJSON形式で出力する。</li>
 </ul>
 <div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
   <span class="nt">&quot;simulator_id&quot;</span><span class="p">:</span> <span class="s2">&quot;52b3bcd7b93f964178000001&quot;</span>
@@ -277,16 +296,17 @@
 <p>create_parameter_setsの時に使用するparameter_sets.jsonファイルのテンプレートを作成する</p>
 <ul>
 <li><p class="first">実行方法</p>
-<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli simulator_template -o simulator.json
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli parameter_sets_template -o simulator.json
 </pre></div>
 </div>
 </li>
 <li><p class="first">オプション</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="20%" />
-<col width="16%" />
-<col width="64%" />
+<col width="18%" />
+<col width="13%" />
+<col width="52%" />
+<col width="18%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><p class="first last">Option</p>
@@ -295,18 +315,38 @@
 </th>
 <th class="head"><p class="first last">description</p>
 </th>
+<th class="head"><p class="first last">required?</p>
+</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><p class="first last">&#8211;output</p>
+<tr class="row-even"><td><p class="first last">&#8211;simulator</p>
+</td>
+<td><p class="first last">-s</p>
+</td>
+<td><p class="first last">simulator file</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;output</p>
 </td>
 <td><p class="first last">-o</p>
 </td>
 <td><p class="first last">output file path</p>
 </td>
+<td><p class="first last">yes</p>
+</td>
 </tr>
 </tbody>
 </table>
+</li>
+<li><p class="first">入力ファイル</p>
+<blockquote>
+<div><ul class="simple">
+<li>simulatorファイルは create_simulator で出力されるJSON形式のファイルを指定する</li>
+</ul>
+</div></blockquote>
 </li>
 <li><dl class="first docutils">
 <dt>出力</dt>
@@ -335,9 +375,10 @@
 <li><p class="first">オプション</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="22%" />
-<col width="16%" />
-<col width="63%" />
+<col width="18%" />
+<col width="13%" />
+<col width="52%" />
+<col width="18%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><p class="first last">Option</p>
@@ -345,6 +386,8 @@
 <th class="head"><p class="first last">alias</p>
 </th>
 <th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
 </th>
 </tr>
 </thead>
@@ -355,6 +398,8 @@
 </td>
 <td><p class="first last">simulator file</p>
 </td>
+<td><p class="first last">yes</p>
+</td>
 </tr>
 <tr class="row-odd"><td><p class="first last">&#8211;input</p>
 </td>
@@ -362,12 +407,16 @@
 </td>
 <td><p class="first last">input file path</p>
 </td>
+<td><p class="first last">yes</p>
+</td>
 </tr>
 <tr class="row-even"><td><p class="first last">&#8211;output</p>
 </td>
 <td><p class="first last">-o</p>
 </td>
 <td><p class="first last">output file path</p>
+</td>
+<td><p class="first last">yes</p>
 </td>
 </tr>
 </tbody>
@@ -384,13 +433,21 @@
 <li><dl class="first docutils">
 <dt>出力</dt>
 <dd><ul class="first simple">
-<li>新規作成されたParameterSetのIDをObjectの配列としてJSON形式で出力する。</li>
+<li>新規作成されたParameterSetのidをObjectの配列としてJSON形式で出力する。</li>
 </ul>
 <div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
   <span class="p">{</span><span class="nt">&quot;parameter_set_id&quot;</span><span class="p">:</span><span class="s2">&quot;52b3ddc7b93f969b8c000001&quot;</span><span class="p">}</span>
 <span class="p">]</span>
 </pre></div>
 </div>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>その他</dt>
+<dd><ul class="first last simple">
+<li>同じParameterの値を持つParameterSetが既に存在する場合には、新規にParameterSetを作成せずに既存のParameterSetのidを出力として返す。エラーにはならない。</li>
+</ul>
 </dd>
 </dl>
 </li>
@@ -408,9 +465,10 @@
 <li><p class="first">オプション</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="20%" />
 <col width="16%" />
-<col width="64%" />
+<col width="13%" />
+<col width="52%" />
+<col width="18%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><p class="first last">Option</p>
@@ -419,6 +477,8 @@
 </th>
 <th class="head"><p class="first last">description</p>
 </th>
+<th class="head"><p class="first last">required?</p>
+</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -426,7 +486,9 @@
 </td>
 <td><p class="first last">-h</p>
 </td>
-<td><p class="first last">host id</p>
+<td><p class="first last">host id (string)</p>
+</td>
+<td><p class="first last">yes</p>
 </td>
 </tr>
 <tr class="row-odd"><td><p class="first last">&#8211;output</p>
@@ -435,9 +497,19 @@
 </td>
 <td><p class="first last">output file path</p>
 </td>
+<td><p class="first last">yes</p>
+</td>
 </tr>
 </tbody>
 </table>
+</li>
+<li><dl class="first docutils">
+<dt>入力</dt>
+<dd><ul class="first last simple">
+<li>host idはHostのidを文字列で指定する</li>
+</ul>
+</dd>
+</dl>
 </li>
 <li><dl class="first docutils">
 <dt>出力</dt>
@@ -473,9 +545,10 @@
 <li><p class="first">オプション</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="29%" />
-<col width="14%" />
-<col width="57%" />
+<col width="24%" />
+<col width="12%" />
+<col width="48%" />
+<col width="16%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><p class="first last">Option</p>
@@ -483,6 +556,8 @@
 <th class="head"><p class="first last">alias</p>
 </th>
 <th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
 </th>
 </tr>
 </thead>
@@ -493,6 +568,8 @@
 </td>
 <td><p class="first last">parameter set id file</p>
 </td>
+<td><p class="first last">yes</p>
+</td>
 </tr>
 <tr class="row-odd"><td><p class="first last">&#8211;job_parameters</p>
 </td>
@@ -500,12 +577,16 @@
 </td>
 <td><p class="first last">job parameter file</p>
 </td>
+<td><p class="first last">yes</p>
+</td>
 </tr>
 <tr class="row-even"><td><p class="first last">&#8211;number_of_runs</p>
 </td>
 <td><p class="first last">-n</p>
 </td>
-<td><p class="first last">number of runs</p>
+<td><p class="first last">number of runs (Integer)</p>
+</td>
+<td><p class="first last">no</p>
 </td>
 </tr>
 <tr class="row-odd"><td><p class="first last">&#8211;output</p>
@@ -513,6 +594,8 @@
 <td><p class="first last">-o</p>
 </td>
 <td><p class="first last">output file path</p>
+</td>
+<td><p class="first last">yes</p>
 </td>
 </tr>
 </tbody>
@@ -523,21 +606,29 @@
 <div><ul class="simple">
 <li>parameter_setsファイルは create_parameter_sets で出力されるJSON形式のファイルを指定する</li>
 <li>job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルを指定する</li>
-<li>number_of_runs はRunの数を数値で指定する。各ParameterSetごとに、ここで指定された数になるまでRunが作られる</li>
+<li>number_of_runs はRunの数を数値で指定する。各ParameterSetごとに、ここで指定された数になるまでRunが作られる。デフォルトは1。</li>
 </ul>
 </div></blockquote>
 </li>
 <li><dl class="first docutils">
 <dt>出力</dt>
 <dd><ul class="first simple">
-<li>RunのIDをObjectの配列としてJSON形式で出力する。</li>
-<li>新規作成されていないRunについても、各ParameterSetごとにnで指定された数の分だけRunのIDを出力する</li>
+<li>RunのidをObjectの配列としてJSON形式で出力する。</li>
+<li>新規作成されていないRunについても、各ParameterSetごとにnで指定された数の分だけRunのidを出力する</li>
 </ul>
 <div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
   <span class="p">{</span><span class="nt">&quot;run_id&quot;</span><span class="p">:</span><span class="s2">&quot;52b3eaebb93f96933f000001&quot;</span><span class="p">}</span>
 <span class="p">]</span>
 </pre></div>
 </div>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>その他</dt>
+<dd><ul class="first last simple">
+<li>既に指定された数のRunが存在する場合には、新規にRunを作成せずに既存のRunのidを出力として返す。エラーにはならない。</li>
+</ul>
 </dd>
 </dl>
 </li>
@@ -555,9 +646,10 @@
 <li><p class="first">オプション</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="29%" />
-<col width="14%" />
-<col width="57%" />
+<col width="24%" />
+<col width="12%" />
+<col width="48%" />
+<col width="16%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><p class="first last">Option</p>
@@ -565,6 +657,8 @@
 <th class="head"><p class="first last">alias</p>
 </th>
 <th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
 </th>
 </tr>
 </thead>
@@ -574,6 +668,8 @@
 <td><p class="first last">-r</p>
 </td>
 <td><p class="first last">run id file</p>
+</td>
+<td><p class="first last">yes</p>
 </td>
 </tr>
 </tbody>
