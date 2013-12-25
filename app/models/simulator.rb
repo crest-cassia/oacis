@@ -94,11 +94,10 @@ class Simulator
     ]
 
     # warm up cache
-    # parameter_sets.each {|ps| ps.runs_status_count }
-
+    # parameter_sets.each {|ps| ps.runs_status_count(false); ps.reload }
     map = <<-EOS
 function() {
-  var key = {param1: this.v["#{parameter_key1}"], param2: this.v["#{parameter_key2}"] };
+  var key = [ this.v["#{parameter_key1}"], this.v["#{parameter_key2}"] ];
   if( this.runs_status_count_cache ) {
     var cache = this.runs_status_count_cache;
     var total_runs = 0;
@@ -117,35 +116,39 @@ EOS
 
     reduce = <<-EOS
 function(key,values) {
-  var reduced = {finished: 0, total: 0};
+  var reduced = {finished: 0, total: 0, ids: []};
   values.forEach( function(v){
-    reduced.finished += v.finished;
-    reduced.total += v.total;
-    reduced.ids += v.ids;
+    if( v.finished ) { reduced.finished += v.finished; }
+    if( v.total ) { reduced.total += v.total; }
+    if( v.ids ) { reduced.ids = reduced.ids.concat(v.ids); }
   });
   return reduced;
 }
 EOS
-    parameter_sets.map_reduce(map, reduce).out(inline: true).to_a
-      # pp doc
-    # end
 
-=begin
+    parameters_to_runs_count = {}
+    parameter_sets.map_reduce(map, reduce).out(inline: true).each do |d|
+      # type casting is necessary because numeric data are treated as a Number
+      # http://stackoverflow.com/questions/3732161/does-mongodbs-map-reduce-always-return-results-in-floats
+      casted_parameters = [parameter_key1, parameter_key2].each_with_index.map do |key,idx|
+        type = parameter_definition_for(key).type
+        ParametersUtil.cast_value(d["_id"][idx], type)
+      end
+      runs_count = [ d["value"]["finished"].to_i, d["value"]["total"].to_i ]
+
+      # count for not cached parameter sets
+      if d["value"]["ids"].present?
+        target_runs = Run.in(parameter_set_id: d["value"]["ids"])
+        runs_count[0] += target_runs.where(status: :finished).count
+        runs_count[1] += target_runs.ne(status: :cancelled).count
+      end
+
+      parameters_to_runs_count[ casted_parameters ] = runs_count
+    end
+
     num_runs = parameter_values[1].map do |p2|
       parameter_values[0].map do |p1|
-        if parameter_key2 == parameter_key1 and p1 != p2
-          [0,0]
-        else
-          filtered = parameter_sets.where({
-            "v.#{parameter_key1}" => p1,
-            "v.#{parameter_key2}" => p2
-          })
-          filtered.inject([0,0]) do |sum, ps|
-            sum[0] += ps.runs.where(status: :finished).count
-            sum[1] += ps.runs.count
-            sum
-          end
-        end
+        parameters_to_runs_count[ [p1,p2] ] or [0, 0]
       end
     end
 
@@ -154,7 +157,6 @@ EOS
       parameter_values: parameter_values,
       num_runs: num_runs
     }
-=end
   end
 
   private
