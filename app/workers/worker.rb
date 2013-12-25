@@ -23,6 +23,8 @@ class Worker < DaemonSpawn::Base
       break if @term_received
       AnalyzerRunner.perform(@logger)
       break if @term_received
+      CacheUpdater.perform(@logger)
+      break if @term_received
       sleep INTERVAL
       break if @term_received
     end
