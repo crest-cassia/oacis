@@ -269,6 +269,7 @@ describe Simulator do
     context "when some parameter_sets have runs_status_count_cache field" do
 
       before(:each) do
+        # set cache for some of the parameter sets
         @sim.parameter_sets[0].runs_status_count
         @sim.parameter_sets[2].runs_status_count
         @sim.parameter_sets[-1].runs_status_count

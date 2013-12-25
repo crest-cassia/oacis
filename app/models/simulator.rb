@@ -93,8 +93,6 @@ class Simulator
       parameter_sets.distinct("v.#{parameter_key2}").sort
     ]
 
-    # warm up cache
-    # parameter_sets.each {|ps| ps.runs_status_count(false); ps.reload }
     map = <<-EOS
 function() {
   var key = [ this.v["#{parameter_key1}"], this.v["#{parameter_key2}"] ];
