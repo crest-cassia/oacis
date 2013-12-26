@@ -11,6 +11,7 @@ class Analysis
   field :finished_at, type: DateTime
   field :included_at, type: DateTime
   field :result
+  index({ status: 1 }, { name: "analysis_status_index" })
 
   belongs_to :analyzer
   belongs_to :analyzable, polymorphic: true

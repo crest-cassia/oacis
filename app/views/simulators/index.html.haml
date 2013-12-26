@@ -12,8 +12,9 @@
       %tr
         %td= link_to h(simulator.name), simulator_path(simulator)
         %td= distance_of_time_in_words_to_now(simulator.updated_at)
-        - counts = simulator.parameter_sets_status_count
-        %td#progress= progress_bar(counts[:total], counts[:finished], counts[:running], counts[:failed])
+        - counts = simulator.runs_status_count
+        - counts.delete(:cancelled)
+        %td#progress= progress_bar(counts.values.inject(:+), counts[:finished], counts[:running], counts[:failed])
 
 .form-actions
   %a.btn.btn-primary{href: new_simulator_path} New Simulator

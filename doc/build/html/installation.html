@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>インストール &mdash; CASSIA Manager 0.0.1 documentation</title>
+    <title>インストール &mdash; OACIS 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="CASSIA Manager 0.0.1 documentation" href="index.html" />
+    <link rel="top" title="OACIS 0.0.1 documentation" href="index.html" />
     <link rel="next" title="基本的な使い方" href="basic_usage.html" />
     <link rel="prev" title="システム概要" href="system_overview.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="system_overview.html" title="システム概要"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -124,9 +124,9 @@
 </div>
 <div class="section" id="id4">
 <h2>インストール<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
-<p>まず手元にCASSIA Managerのソースコード一式をダウンロードする。</p>
+<p>まず手元にOACISのソースコード一式をダウンロードする。</p>
 <p>次にRailsおよび関連gemのインストールを行う。ダウンロードしたディレクトリにて、</p>
-<div class="highlight-python"><pre>bundle install --binstubs --path=vendor/bundle</pre>
+<div class="highlight-python"><pre>bundle install --path=vendor/bundle</pre>
 </div>
 <div class="line-block">
 <div class="line">を実行する。</div>
@@ -167,7 +167,7 @@ bundle exec rake daemon:stop</pre>
 <div class="section" id="firewall">
 <h2>Firewallの設定<a class="headerlink" href="#firewall" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
-<div class="line">現状のCASSIA Managerはユーザー管理機能を持っていないため、ネットワーク内の任意のホストからアクセス可能である。</div>
+<div class="line">現状のOACISはユーザー管理機能を持っていないため、ネットワーク内の任意のホストからアクセス可能である。</div>
 <div class="line">他のホストからのアクセスを制限するためにはファイアウォールを設定するのが最も簡単である。</div>
 <div class="line">Railsは3000番、MongoDBは27017番のポートをそれぞれ使用しているので、これらのポートへのアクセスを限定する。</div>
 <div class="line">MongoDBへのアクセスはローカルホストのみ、Railsは使用するユーザーのみに開放するのが望ましい。</div>
@@ -240,7 +240,7 @@ config/mongoid.yml の中でMongoDBへの接続情報を設定しているので
         <li class="right" >
           <a href="system_overview.html" title="システム概要"
              >previous</a> |</li>
-        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
