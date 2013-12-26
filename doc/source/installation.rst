@@ -44,7 +44,7 @@
 
 次にRailsおよび関連gemのインストールを行う。ダウンロードしたディレクトリにて、 ::
 
-  bundle install --binstubs --path=vendor/bundle
+  bundle install --path=vendor/bundle
 
 | を実行する。
 | 成功すればこの時点でRailsを起動させることができる。試しに以下のコマンドで起動する。

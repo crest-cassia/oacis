@@ -161,7 +161,7 @@ EOS
       host_parameter_definitions {
         [
           HostParameterDefinition.new(key: "param1"),
-          HostParameterDefinition.new(key: "param2")
+          HostParameterDefinition.new(key: "param2", default: "XXX")
         ]
       }
     end
