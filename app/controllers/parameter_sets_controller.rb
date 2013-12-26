@@ -266,7 +266,7 @@ class ParameterSetsController < ApplicationController
       x = found_pv["x"]
       y = found_pv["y"]
       average = avg["average"]
-      error = 0
+      error = nil
       if avg["count"] > 1
         err_sq = (avg["square_average"] - avg["average"]**2) / (avg["count"] - 1)
         error = Math.sqrt(err_sq)
