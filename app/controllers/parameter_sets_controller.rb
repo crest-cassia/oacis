@@ -150,23 +150,50 @@ class ParameterSetsController < ApplicationController
     plot_data.reject {|dat| dat[1].nil? }
   end
 
-  def collect_result_values(ps, analyzer, result_keys)
-    results = []
+  # return an array like follows
+  # [{"_id"=>"52bba7bab93f969a7900000f",
+  #   "average"=>99.0, "square_average"=>9801.0, "count"=>1},
+  #  {...}, {...}, ... ]
+  def collect_result_values(ps_ids, analyzer, result_keys)
     if analyzer.nil?
-      results = ps.runs.where(status: :finished).map(&:result)
+      Run.collection.aggregate(
+        { '$match' => Run.in(parameter_set_id: ps_ids)
+                         .where(status: :finished)
+                         .exists("result.#{result_keys.join('.')}" => true)
+                         .selector },
+        { '$project' => { parameter_set_id: 1,
+                          result_val: "$result.#{result_keys.join('.')}"
+                        }},
+        { '$group' => { _id: '$parameter_set_id',
+                        average: {'$avg' => '$result_val'},
+                        square_average: {'$avg' => {'$multiply' =>['$result_val', '$result_val']} },
+                        count: {'$sum' => 1}
+                      }}
+        )
     elsif analyzer.type == :on_run
       results = ps.runs.where(status: :finished).map do |run|
         run.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
       end
     elsif analyzer.type == :on_parameter_set
-      r = ps.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
-      results = [r]
+      Analysis.collection.aggregate(
+        { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
+                              .in(analyzable_id: ps_ids)
+                              .exists("result.#{result_keys.join('.')}" => true)
+                              .selector },
+        { '$sort' => {'updated_at' => -1} }, # get the latest analysis
+        { '$project' => { parameter_set_id: '$analyzable_id',
+                          result_val: "$result.#{result_keys.join('.')}"
+                        }},
+        { '$group' => { _id: '$parameter_set_id',
+                        average: {'$first' => '$result_val'},
+                        square_average: {'$first' => {'$multiply' =>['$result_val', '$result_val']}},
+                        count: {'$first' => 1}
+                      }}
+        )
     end
-
-    results.map do |result|
-      result_keys.inject(result) {|r, key| r.try(:[], key)}
-    end.compact
   end
+
+  SCATTER_PLOT_LIMIT = 1000
 
   public
   def _scatter_plot
@@ -179,15 +206,37 @@ class ParameterSetsController < ApplicationController
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
 
-    ps_array = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
-    data = ps_array.map do |ps|
-      values = collect_result_values(ps, analyzer, result_keys)
-      ave, err, num_data = AnalysisUtil.error_analysis(values)
-      x = ps.v[x_axis_key]
-      y = ps.v[y_axis_key]
-      [x, y, ave, err, ps.id]
+    found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
+    parameter_values = ParameterSet.collection.aggregate(
+      { '$match' => found_ps.selector },
+      { '$limit' => SCATTER_PLOT_LIMIT },
+      { '$project' => {x: "$v.#{x_axis_key}", y: "$v.#{y_axis_key}"} }
+      )
+    # parameter_values should look like
+    #   [{"_id"=>"52bb8662b93f96e193000007", "x"=>1, "y"=>1.0}, {...}, {...}, ... ]
+
+    ps_ids = parameter_values.map {|ps| ps["_id"]}
+
+    result_values = collect_result_values(ps_ids, analyzer, result_keys)
+    # result_values should look like
+    # [{"_id"=>"52bba7bab93f969a7900000f",
+    #   "average"=>99.0, "square_average"=>9801.0, "count"=>1},
+    #  {...}, {...}, ... ]
+
+    data = result_values.map do |avg|
+      ps_id = avg["_id"]
+      found_pv = parameter_values.find {|pv| pv["_id"] == ps_id }
+      x = found_pv["x"]
+      y = found_pv["y"]
+      average = avg["average"]
+      error = 0
+      if avg["count"] > 1
+        err_sq = (avg["square_average"] - avg["average"]**2) / (avg["count"] - 1)
+        error = Math.sqrt(err_sq)
+      end
+      [x, y, average, error, ps_id]
     end
-    data.reject! {|dat| dat[2].nil? }
+
     h = {
       xlabel: x_axis_key,
       ylabel: y_axis_key,
