@@ -205,4 +205,85 @@ describe Simulator do
       ]
     end
   end
+
+  describe "#progress_overview_data" do
+
+    before(:each) do
+      parameter_definitions = [
+        ParameterDefinition.new({ key: "L", type: "Integer", default: 0}),
+        ParameterDefinition.new({ key: "T", type: "Float", default: 1.0}),
+        ParameterDefinition.new({ key: "S", type: "String", default: "xxx"})
+      ]
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_definitions: parameter_definitions,
+                                parameter_sets_count: 0)
+      create_ps = lambda {|h| FactoryGirl.create(:parameter_set, {simulator: @sim}.merge(h)) }
+      create_ps.call( v: {"L" => 1, "T" => 1.0}, runs_count: 2, finished_runs_count: 3)
+      create_ps.call( v: {"L" => 2, "T" => 1.0}, runs_count: 2, finished_runs_count: 3)
+      create_ps.call( v: {"L" => 3, "T" => 1.0}, runs_count: 2, finished_runs_count: 3)
+      create_ps.call( v: {"L" => 1, "T" => 2.0}, runs_count: 2, finished_runs_count: 3)
+      create_ps.call( v: {"L" => 2, "T" => 2.0}, runs_count: 0, finished_runs_count: 8)
+      create_ps.call( v: {"L" => 1, "T" => 1.0, "S" => "yyy"}, runs_count: 1, finished_runs_count: 2)
+    end
+
+    it "returns a Hash with valid keys" do
+      progress = @sim.progress_overview_data("L", "T")
+      progress.should be_a(Hash)
+      progress.keys.should =~ [:parameters, :parameter_values, :num_runs]
+    end
+
+    it "progress[:parameters] is an Array of row_parameter and column_parameter" do
+      @sim.progress_overview_data("L", "T")[:parameters].should eq ["L", "T"]
+    end
+
+    it "progress[:parameter_values] are distinct values for each parameters" do
+      param_values = @sim.progress_overview_data("L", "T")[:parameter_values]
+      param_values[0] = [1,2,3]    # <= @sim.parameter_sets.distinct("v.L").sort
+      param_values[1] = [1.0, 2.0] # <= @sim.parameter_sets.distinct("v.T").sort
+    end
+
+    it "progress[:num_runs] is matrix having [finished_runs, total_runs]" do
+      num_runs = @sim.progress_overview_data("L", "T")[:num_runs]
+      expected = [
+        # L=1,   2,     3
+        [ [5,8], [3,5], [3,5] ], # T=1.0
+        [ [3,5], [8,8], [0,0] ], # T=2.0
+      ]
+      num_runs.should eq expected
+    end
+
+    context "when first and second parameters are same" do
+
+      it "progress[:num_runs] should have only diaglonal elements" do
+        num_runs = @sim.progress_overview_data("L", "L")[:num_runs]
+        expected = [
+          # L=1,   2,      3
+          [ [8,13],[0,0],  [0,0] ], # L=1
+          [ [0,0], [11,13],[0,0] ], # L=2
+          [ [0,0], [0,0],  [3,5] ], # L=3
+        ]
+        num_runs.should eq expected
+      end
+    end
+
+    context "when some parameter_sets have runs_status_count_cache field" do
+
+      before(:each) do
+        # set cache for some of the parameter sets
+        @sim.parameter_sets[0].runs_status_count
+        @sim.parameter_sets[2].runs_status_count
+        @sim.parameter_sets[-1].runs_status_count
+      end
+
+      it "progress[:num_runs] is matrix having [finished_runs, total_runs]" do
+        num_runs = @sim.progress_overview_data("L", "T")[:num_runs]
+        expected = [
+          # L=1,   2,     3
+          [ [5,8], [3,5], [3,5] ], # T=1.0
+          [ [3,5], [8,8], [0,0] ], # T=2.0
+        ]
+        num_runs.should eq expected
+      end
+    end
+  end
 end
