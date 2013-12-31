@@ -141,13 +141,25 @@ class ParameterSetsController < ApplicationController
     analyzer_name = y_axis_keys.shift
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
 
-    plot_data = base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).map do |ps|
-      x = ps.v[x_axis_key]
-      values = collect_result_values(ps, analyzer, y_axis_keys)
-      y, yerror, num_data = AnalysisUtil.error_analysis(values)
-      [x, y, yerror, ps.id]
+    ps_ids = []
+    ps_id_to_x = {}
+    base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).each do |ps|
+      ps_ids << ps.id
+      ps_id_to_x[ps.id.to_s] = ps.v[x_axis_key]
     end
-    plot_data.reject {|dat| dat[1].nil? }
+
+    plot_data = collect_result_values(ps_ids, analyzer, y_axis_keys).map do |result_val|
+      ps_id = result_val["_id"]
+      x = ps_id_to_x[ps_id.to_s]
+      y = result_val["average"]
+      error = nil
+      if result_val["count"] > 1
+        err_sq = (result_val["square_average"] - result_val["average"]**2) / (result_val["count"] - 1)
+        error = Math.sqrt(err_sq)
+      end
+      [x, y, error, ps_id]
+    end
+    plot_data.sort_by {|d| d[0]}
   end
 
   # return an array like follows
