@@ -17,6 +17,7 @@ group :assets do
   gem 'jquery-datatables-rails'
   gem "haml-rails"
   gem "factory_girl_rails"
+  gem "d3-rails"
 end
 
 group :development, :test do

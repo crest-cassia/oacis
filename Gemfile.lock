@@ -34,6 +34,8 @@ GEM
       builder (>= 2.1.2)
     coderay (1.0.9)
     commonjs (0.2.6)
+    d3-rails (3.3.7)
+      railties (>= 3.1)
     daemon-spawn (0.4.2)
     database_cleaner (1.0.1)
     diff-lcs (1.2.4)
@@ -177,6 +179,7 @@ PLATFORMS
 
 DEPENDENCIES
   ci_reporter
+  d3-rails
   daemon-spawn
   database_cleaner
   factory_girl_rails
