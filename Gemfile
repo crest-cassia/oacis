@@ -7,6 +7,7 @@ gem "haml"
 gem "net-ssh"
 gem "net-sftp"
 gem 'daemon-spawn', :require => 'daemon_spawn'
+gem "ruby-progressbar"
 
 group :assets do
   gem 'sass-rails'
