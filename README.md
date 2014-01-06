@@ -1,6 +1,6 @@
 # OACIS
 
-*OACIS* (''Open Administrator for Comprehensive and Inclusive Simulations'') is developed for efficient management of simulation jobs and results.
+*OACIS* (''Organizing Assistant for Comprehensive and Interactive Simulations'') is developed for efficient management of simulation jobs and results.
 See docs (doc/build/html/index.html) for the sequence of installation and usage.
 
 ## Getting Started
