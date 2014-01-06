@@ -97,7 +97,9 @@ class ParameterSetsController < ApplicationController
     ps = ParameterSet.find(params[:id])
 
     x_axis_key = params[:x_axis_key]
-    y_axis_keys = params[:y_axis_key].split('.')
+    result_keys = params[:y_axis_key].split('.')[1..-1]
+    analyzer_name = params[:y_axis_key].split('.')[0]
+    analyzer = ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
 
     series = (params[:series] != x_axis_key) ? params[:series] : nil
@@ -111,24 +113,20 @@ class ParameterSetsController < ApplicationController
       series_values = []
     end
     data = ps_array.map do |base_ps|
-      collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
+      collect_data_for_line_plot(base_ps, x_axis_key, analyzer, result_keys, irrelevant_keys)
     end
 
-    h = {
-      xlabel: x_axis_key,
-      ylabel: y_axis_keys.last,
-      series: series,
-      series_values: series_values,
-      data: data
-    }
     respond_to do |format|
-      format.json { render json: h }
+      format.json {
+        render json: { xlabel: x_axis_key, ylabel: result_keys.last,
+                       series: series, series_values: series_values, data: data}
+      }
       format.plt {
         if series.blank?
-          script = GnuplotUtil.script_for_single_line_plot(data[0], x_axis_key, y_axis_keys.last, true)
+          script = GnuplotUtil.script_for_single_line_plot(data[0], x_axis_key, result_keys.last, true)
         else
-          script = GnuplotUtil.script_for_multi_line_plot(data, x_axis_key, y_axis_keys.last, true,
-                                                            series, series_values)
+          script = GnuplotUtil.script_for_multi_line_plot(data, x_axis_key, result_keys.last, true,
+                                                          series, series_values)
         end
         render text: script
       }
@@ -136,11 +134,9 @@ class ParameterSetsController < ApplicationController
   end
 
   private
-  def collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
-    y_axis_keys = y_axis_keys.dup
-    analyzer_name = y_axis_keys.shift
-    analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
-
+  # return an array like follows
+  #  [ [x, average, error, ps_id], .... ]
+  def collect_data_for_line_plot(base_ps, x_axis_key, analyzer, result_keys, irrelevant_keys)
     ps_ids = []
     ps_id_to_x = {}
     base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).each do |ps|
@@ -148,12 +144,9 @@ class ParameterSetsController < ApplicationController
       ps_id_to_x[ps.id.to_s] = ps.v[x_axis_key]
     end
 
-    plot_data = collect_result_values(ps_ids, analyzer, y_axis_keys).map do |result_val|
-      ps_id = result_val["_id"]
-      x = ps_id_to_x[ps_id.to_s]
-      y = result_val["average"]
-      error = result_val["error"]
-      [x, y, error, ps_id]
+    plot_data = collect_result_values(ps_ids, analyzer, result_keys).map do |h|
+      ps_id = h["_id"]
+      [ ps_id_to_x[ps_id.to_s], h["average"], h["error"], ps_id ]
     end
     plot_data.sort_by {|d| d[0]}
   end
@@ -221,8 +214,8 @@ class ParameterSetsController < ApplicationController
     end
 
     aggregated.map do |h|
-      error = nil
-      error = Math.sqrt( (h["square_average"] - h["average"]**2) / (h["count"] - 1) ) if h["count"] > 1
+      error = h["count"] > 1 ?
+        Math.sqrt( (h["square_average"] - h["average"]**2) / (h["count"] - 1) ) : nil
       { "_id" => h["_id"], "average" => h["average"], "error" => error, "count" => h["count"] }
     end
   end
@@ -257,25 +250,15 @@ class ParameterSetsController < ApplicationController
     #   "average"=>99.0, "square_average"=>9801.0, "count"=>1},
     #  {...}, {...}, ... ]
 
-    data = result_values.map do |avg|
-      ps_id = avg["_id"]
-      found_pv = parameter_values.find {|pv| pv["_id"] == ps_id }
-      x = found_pv["x"]
-      y = found_pv["y"]
-      average = avg["average"]
-      error = avg["error"]
-      [x, y, average, error, ps_id]
+    data = result_values.map do |h|
+      found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
+      [found["x"], found["y"], h["average"], h["error"], h["_id"]]
     end
 
-    h = {
-      xlabel: x_axis_key,
-      ylabel: y_axis_key,
-      result: result_keys.last,
-      data: data
-    }
-
     respond_to do |format|
-      format.json { render json: h }
+      format.json {
+        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result_keys.last, data: data}
+      }
     end
   end
 
