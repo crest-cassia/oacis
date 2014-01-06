@@ -183,54 +183,34 @@ class ParameterSetsController < ApplicationController
                       }}
         )
     elsif analyzer.type == :on_run
-      run_id_to_ps_id = {}
-      run_ids = []
-      Run.in(parameter_set_id: ps_ids).where(status: :finished).only(:_id, :parameter_set_id).each {|run|
-        run_id_to_ps_id[run.id] = run.parameter_set_id
-        run_ids << run.id
-      }
-
-      result_values = Analysis.collection.aggregate(
-        {'$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
-                             .in(analyzable_id: run_ids)
-                             .exists("result.#{result_keys.join('.')}" => true)
-                             .selector },
-        { '$sort' => {'updated_at' => -1} }, # get the latest analysis
-        { '$project' => { run_id: '$analyzable_id',
-                          result_val: "$result.#{result_keys.join('.')}"
-                        }},
-        { '$group' => { _id: '$run_id',
-                        result_val: {'$first' => '$result_val'}  # get one analysis for each run
-                      }}
-        )
-      # result_values should look like
-      # [{"_id"=>"522d7631899e53481800012d", "result_val"=>-0.776064}, {...}, {...}, ...]
-
-      run_id_to_result = Hash[ result_values.map {|r| [r["_id"], r["result_val"]] } ]
-      # run_id_to_result should look like
-      # { "522d7631899e53481800012d" => -0.776064, ....}
-
-      ps_id_to_results = {}
-      run_id_to_result.each_pair do |run_id, result_val|
-        ps_id = run_id_to_ps_id[run_id]
-        (ps_id_to_results[ps_id] ||= []) << result_val
-      end
-
-      ps_id_to_results.map do |ps_id, values|
-        count = values.size
-        average = values.inject(0, :+).to_f / count
-        square_average = ( values.map {|v| v*v}.inject(0, :+) ).to_f / count
-        { "_id" => ps_id,
-          "average" => average, "square_average" => square_average, "count" => count }
-      end
-    elsif analyzer.type == :on_parameter_set
       Analysis.collection.aggregate(
         { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
-                              .in(analyzable_id: ps_ids)
+                              .in(parameter_set_id: ps_ids)
                               .exists("result.#{result_keys.join('.')}" => true)
                               .selector },
         { '$sort' => {'updated_at' => -1} }, # get the latest analysis
-        { '$project' => { parameter_set_id: '$analyzable_id',
+        { '$project' => { parameter_set_id: '$parameter_set_id',
+                          run_id: '$analyzable_id',
+                          result_val: "$result.#{result_keys.join('.')}"
+                        }},
+        { '$group' => { _id: '$run_id',  # get one analysis for each run
+                        parameter_set_id: {'$first' => '$parameter_set_id'},
+                        result_val: {'$first' => '$result_val'}
+                      }},
+        { '$group' => { _id: '$parameter_set_id',  # calculate average for each parameter_set
+                        average: {'$avg' => '$result_val'},
+                        square_average: {'$avg' => {'$multiply' =>['$result_val', '$result_val']}},
+                        count: {'$sum' => 1}
+                      }}
+        )
+    elsif analyzer.type == :on_parameter_set
+      Analysis.collection.aggregate(
+        { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
+                              .in(parameter_set_id: ps_ids)
+                              .exists("result.#{result_keys.join('.')}" => true)
+                              .selector },
+        { '$sort' => {'updated_at' => -1} }, # get the latest analysis
+        { '$project' => { parameter_set_id: '$parameter_set_id',
                           result_val: "$result.#{result_keys.join('.')}"
                         }},
         { '$group' => { _id: '$parameter_set_id',
