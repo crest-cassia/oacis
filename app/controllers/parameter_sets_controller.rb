@@ -152,11 +152,7 @@ class ParameterSetsController < ApplicationController
       ps_id = result_val["_id"]
       x = ps_id_to_x[ps_id.to_s]
       y = result_val["average"]
-      error = nil
-      if result_val["count"] > 1
-        err_sq = (result_val["square_average"] - result_val["average"]**2) / (result_val["count"] - 1)
-        error = Math.sqrt(err_sq)
-      end
+      error = result_val["error"]
       [x, y, error, ps_id]
     end
     plot_data.sort_by {|d| d[0]}
@@ -164,11 +160,12 @@ class ParameterSetsController < ApplicationController
 
   # return an array like follows
   # [{"_id"=>"52bba7bab93f969a7900000f",
-  #   "average"=>99.0, "square_average"=>9801.0, "count"=>1},
+  #   "average"=>99.0, "error"=>0.2, "count"=>3},
   #  {...}, {...}, ... ]
   def collect_result_values(ps_ids, analyzer, result_keys)
+    aggregated = []
     if analyzer.nil?
-      Run.collection.aggregate(
+      aggregated = Run.collection.aggregate(
         { '$match' => Run.in(parameter_set_id: ps_ids)
                          .where(status: :finished)
                          .exists("result.#{result_keys.join('.')}" => true)
@@ -183,7 +180,7 @@ class ParameterSetsController < ApplicationController
                       }}
         )
     elsif analyzer.type == :on_run
-      Analysis.collection.aggregate(
+      aggregated = Analysis.collection.aggregate(
         { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
                               .in(parameter_set_id: ps_ids)
                               .exists("result.#{result_keys.join('.')}" => true)
@@ -204,7 +201,7 @@ class ParameterSetsController < ApplicationController
                       }}
         )
     elsif analyzer.type == :on_parameter_set
-      Analysis.collection.aggregate(
+      aggregated = Analysis.collection.aggregate(
         { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
                               .in(parameter_set_id: ps_ids)
                               .exists("result.#{result_keys.join('.')}" => true)
@@ -219,6 +216,14 @@ class ParameterSetsController < ApplicationController
                         count: {'$first' => 1}
                       }}
         )
+    else
+      raise "must not happen"
+    end
+
+    aggregated.map do |h|
+      error = nil
+      error = Math.sqrt( (h["square_average"] - h["average"]**2) / (h["count"] - 1) ) if h["count"] > 1
+      { "_id" => h["_id"], "average" => h["average"], "error" => error, "count" => h["count"] }
     end
   end
 
@@ -258,11 +263,7 @@ class ParameterSetsController < ApplicationController
       x = found_pv["x"]
       y = found_pv["y"]
       average = avg["average"]
-      error = nil
-      if avg["count"] > 1
-        err_sq = (avg["square_average"] - avg["average"]**2) / (avg["count"] - 1)
-        error = Math.sqrt(err_sq)
-      end
+      error = avg["error"]
       [x, y, average, error, ps_id]
     end
 
