@@ -34,6 +34,8 @@ GEM
       builder (>= 2.1.2)
     coderay (1.0.9)
     commonjs (0.2.6)
+    d3-rails (3.3.7)
+      railties (>= 3.1)
     daemon-spawn (0.4.2)
     database_cleaner (1.0.1)
     diff-lcs (1.2.4)
@@ -137,6 +139,7 @@ GEM
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
       rspec-mocks (~> 2.14.0)
+    ruby-progressbar (1.4.0)
     sass (3.2.9)
     sass-rails (3.2.6)
       railties (~> 3.2.0)
@@ -177,6 +180,7 @@ PLATFORMS
 
 DEPENDENCIES
   ci_reporter
+  d3-rails
   daemon-spawn
   database_cleaner
   factory_girl_rails
@@ -194,6 +198,7 @@ DEPENDENCIES
   quiet_assets
   rails (= 3.2.13)
   rspec-rails
+  ruby-progressbar
   sass-rails
   simplecov
   simplecov-rcov

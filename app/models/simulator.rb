@@ -87,6 +87,76 @@ class Simulator
     list
   end
 
+  def progress_overview_data(parameter_key1, parameter_key2)
+    parameter_values = [
+      parameter_sets.distinct("v.#{parameter_key1}").sort,
+      parameter_sets.distinct("v.#{parameter_key2}").sort
+    ]
+
+    map = <<-EOS
+function() {
+  var key = [ this.v["#{parameter_key1}"], this.v["#{parameter_key2}"] ];
+  if( this.runs_status_count_cache ) {
+    var cache = this.runs_status_count_cache;
+    var total_runs = 0;
+    for(var stat in cache) {
+      if (stat == "cancelled") continue;
+      total_runs += cache[stat];
+    }
+    var val = {finished: cache["finished"], total: total_runs };
+    emit(key, val);
+  }
+  else {
+    emit(key, { ids: [this._id]} );
+  }
+}
+EOS
+
+    reduce = <<-EOS
+function(key,values) {
+  var reduced = {finished: 0, total: 0, ids: []};
+  values.forEach( function(v){
+    if( v.finished ) { reduced.finished += v.finished; }
+    if( v.total ) { reduced.total += v.total; }
+    if( v.ids ) { reduced.ids = reduced.ids.concat(v.ids); }
+  });
+  return reduced;
+}
+EOS
+
+    parameters_to_runs_count = {}
+    parameter_sets.map_reduce(map, reduce).out(inline: true).each do |d|
+      # type casting is necessary because numeric data are treated as a Number
+      # http://stackoverflow.com/questions/3732161/does-mongodbs-map-reduce-always-return-results-in-floats
+      casted_parameters = [parameter_key1, parameter_key2].each_with_index.map do |key,idx|
+        type = parameter_definition_for(key).type
+        ParametersUtil.cast_value(d["_id"][idx], type)
+      end
+      runs_count = [ d["value"]["finished"].to_i, d["value"]["total"].to_i ]
+
+      # count for not cached parameter sets
+      if d["value"]["ids"].present?
+        target_runs = Run.in(parameter_set_id: d["value"]["ids"])
+        runs_count[0] += target_runs.where(status: :finished).count
+        runs_count[1] += target_runs.ne(status: :cancelled).count
+      end
+
+      parameters_to_runs_count[ casted_parameters ] = runs_count
+    end
+
+    num_runs = parameter_values[1].map do |p2|
+      parameter_values[0].map do |p1|
+        parameters_to_runs_count[ [p1,p2] ] or [0, 0]
+      end
+    end
+
+    progress_overview = {
+      parameters: [parameter_key1, parameter_key2],
+      parameter_values: parameter_values,
+      num_runs: num_runs
+    }
+  end
+
   private
   def plottable_keys(result)
     ret = []

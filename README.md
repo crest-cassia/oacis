@@ -1,6 +1,6 @@
 # OACIS
 
-*OACIS* (''Open Administrator for Comprehensive and Inclusive Simulations'') is developed for efficient management of simulation jobs and results.
+*OACIS* (''Organizing Assistant for Comprehensive and Interactive Simulations'') is developed for efficient management of simulation jobs and results.
 See docs (doc/build/html/index.html) for the sequence of installation and usage.
 
 ## Getting Started
@@ -27,13 +27,13 @@ gem install bundler
 - clone the git repository
 
     ```sh:clone.sh
-git clone https://github.com/noda50/cassia.git
+git clone -b master git@github.com:crest-cassia/cassia.git
 ```
 - install dependent gems using bundle command
   - cd to  the root directory, and run the following command
 
       ```sh:install_sh
-  bundle install --binstubs --path=vendor/bundle
+  bundle install --path=vendor/bundle
 ```
 
 - run daemons

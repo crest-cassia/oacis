@@ -375,17 +375,19 @@ describe ParameterSetsController do
     it "returns valid json" do
       get :_scatter_plot,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", format: :json}
-      expected = {
-        xlabel: "L", ylabel: "T", result: "ResultKey1",
-        data: [
-          [1, 1.0, 99.0, nil, @ps_array[0].id],
-          [1, 2.0, 99.0, nil, @ps_array[3].id],
-          [2, 1.0, 99.0, nil, @ps_array[1].id],
-          [2, 2.0, 99.0, nil, @ps_array[4].id],
-          [3, 1.0, 99.0, nil, @ps_array[2].id]
-        ]
-      }.to_json
-      response.body.should eq expected
+      expected_data = [
+        [1, 1.0, 99.0, nil, @ps_array[0].id.to_s],
+        [1, 2.0, 99.0, nil, @ps_array[3].id.to_s],
+        [2, 1.0, 99.0, nil, @ps_array[1].id.to_s],
+        [2, 2.0, 99.0, nil, @ps_array[4].id.to_s],
+        [3, 1.0, 99.0, nil, @ps_array[2].id.to_s]
+      ]
+
+      loaded = JSON.load(response.body)
+      loaded["xlabel"].should eq "L"
+      loaded["ylabel"].should eq "T"
+      loaded["result"].should eq "ResultKey1"
+      loaded["data"].should =~ expected_data
     end
   end
 end

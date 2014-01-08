@@ -74,7 +74,7 @@ FactoryGirl.define do
 
   factory :run do
 
-    submitted_to { self.parameter_set.simulator.executable_on.first }
+    submitted_to { self.parameter_set.simulator.executable_on.where(name: "localhost").first }
 
     factory :finished_run do
 
