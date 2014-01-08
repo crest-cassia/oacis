@@ -116,13 +116,15 @@ class Run
     dir.join('..', "#{id}.tar.bz2")
   end
 
-  def destroy
-    if status == :submitted or status == :running
-      cancel
-    elsif status == :cancelled and submitted_to.present?
-      cancel
-    else
+  def destroy(call_super = false)
+    if call_super
       super
+    else
+      if status == :submitted or status == :running or status == :cancelled
+        cancel
+      else
+        super
+      end
     end
   end
 

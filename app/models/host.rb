@@ -106,10 +106,9 @@ class Host
       submitted_runs.each do |run|
         begin
           if run.status == :cancelled
-            cancel_job(ssh, run)
+            cancel_remote_job(ssh, run)
             remove_remote_files(ssh, run)
-            run.submitted_to = nil
-            run.destroy
+            run.destroy(true)
             next
           end
           case remote_status(ssh, run)
@@ -222,7 +221,7 @@ class Host
     Pathname.new(work_base_dir).join("#{run.id}.tar.bz2")
   end
 
-  def cancel_job(ssh, run)
+  def cancel_remote_job(ssh, run)
     stat = remote_status(ssh, run)
     if stat == :submitted or stat == :running
       scheduler = SchedulerWrapper.new(scheduler_type)
