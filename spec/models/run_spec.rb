@@ -523,6 +523,22 @@ EOS
       run.save!
       run.job_script.should be_present
     end
+
+    context "when submitted_to is nil" do
+
+      it "creates a job-script" do
+        run = @param_set.runs.build(submitted_to: nil)
+        run.save!
+        ResultDirectory.manual_submission_job_script_path(run).should be_exist
+      end
+
+      it "create _input.json" do
+        @simulator.update_attribute(:support_input_json, true)
+        run = @param_set.runs.build(submitted_to: nil)
+        run.save!
+        ResultDirectory.manual_submission_input_json_path(run).should be_exist
+      end
+    end
   end
 
   describe "removing runs_status_count_cache" do

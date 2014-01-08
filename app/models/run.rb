@@ -43,7 +43,7 @@ class Run
 
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   before_save :remove_runs_status_count_cache, :if => :status_changed?
-  after_create :create_run_dir
+  after_create :create_run_dir, :create_job_script_for_manual_submission
   before_destroy :delete_run_dir, :delete_archived_result_file , :remove_runs_status_count_cache
 
   public
@@ -182,6 +182,18 @@ class Run
 
   def create_run_dir
     FileUtils.mkdir_p(dir)
+  end
+
+  def create_job_script_for_manual_submission
+    return if submitted_to
+
+    FileUtils.mkdir_p(ResultDirectory.manual_submission_path)
+    js_path = ResultDirectory.manual_submission_job_script_path(self)
+    File.open(js_path, 'w') {|io| io.puts job_script; io.flush }
+    if simulator.support_input_json
+      input_json_path = ResultDirectory.manual_submission_input_json_path(self)
+      File.open(input_json_path, 'w') {|io| io.puts input.to_json; io.flush }
+    end
   end
 
   def delete_run_dir
