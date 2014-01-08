@@ -32,7 +32,7 @@ private
       tmp << @view.link_to( @view.shortened_id(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )
       host = run.submitted_to
-      tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "")
+      tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "---")
       tmp << @view.shortened_job_id(run.job_id)
       tmp << @view.formatted_elapsed_time(run.cpu_time)
       tmp << @view.formatted_elapsed_time(run.real_time)

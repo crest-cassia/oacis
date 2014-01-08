@@ -13,7 +13,7 @@
     %tr
       %th submitted_to
       - host = @run.submitted_to
-      %td= (host ? link_to( host.name, host_path(host) ) : "")
+      %td= (host ? link_to( host.name, host_path(host) ) : "(manual submission)")
     %tr
       %th job_id
       %td= @run.job_id
