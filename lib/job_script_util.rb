@@ -52,7 +52,7 @@ EOS
     default_variables = {
       "run_id" => run.id.to_s,
       "is_mpi_job" => run.simulator.support_mpi ? "true" : "false",
-      "work_base_dir" => host.work_base_dir,
+      "work_base_dir" => host ? host.work_base_dir : '.',
       "omp_threads" => run.omp_threads,
       "mpi_procs" => run.mpi_procs,
       "cmd" => run.command_and_input[0].sub(/;$/, '')
@@ -63,7 +63,8 @@ EOS
     variables = run.host_parameters.dup if run.host_parameters
     variables.update(default_variables)
 
-    rendered_script = SafeTemplateEngine.render(host.template, variables)
+    template = host ? host.template : DEFAULT_TEMPLATE
+    rendered_script = SafeTemplateEngine.render(template, variables)
     rendered_script.gsub(/(\r\n|\r|\n)/, "\n")
   end
 

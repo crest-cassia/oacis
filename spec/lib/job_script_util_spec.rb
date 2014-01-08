@@ -98,6 +98,15 @@ EOS
       script = JobScriptUtil.script_for(@run, @host)
       script.should match(/OACIS_OMP_THREADS=8/)
     end
+
+    context "when host is nil" do
+
+      it "does not cause an exception" do
+        expect {
+          JobScriptUtil.script_for(@run, nil)
+        }.should_not raise_error
+      end
+    end
   end
 
   describe ".expand_result_file_and_update_run" do
