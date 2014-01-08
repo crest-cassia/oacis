@@ -51,4 +51,7 @@ module ResultDirectory
     analyzable_path(analyzable).join(analysis.to_param)
   end
 
+  def self.manual_submission_path
+    root.join("manual_submission")
+  end
 end

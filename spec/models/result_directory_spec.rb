@@ -80,4 +80,8 @@ describe ResultDirectory do
     ResultDirectory.analysis_path(arn).should ==
       ResultDirectory.run_path(run).join(arn.to_param)
   end
+
+  it ".manual_submission_path returns the directory containing shell scripts for manual submission" do
+    ResultDirectory.manual_submission_path.should eq @default_root.join("manual_submission")
+  end
 end
