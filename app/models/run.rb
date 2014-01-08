@@ -157,6 +157,13 @@ class Run
     end
   end
 
+  def delete_files_for_manual_submission
+    sh_path = ResultDirectory.manual_submission_job_script_path(self)
+    FileUtils.rm(sh_path) if sh_path.exist?
+    json_path = ResultDirectory.manual_submission_input_json_path(self)
+    FileUtils.rm(json_path) if json_path.exist?
+  end
+
   private
   def set_simulator
     if parameter_set
@@ -212,13 +219,6 @@ class Run
       archive = archived_result_path
       FileUtils.rm(archive) if File.exist?(archive)
     end
-  end
-
-  def delete_files_for_manual_submission
-    sh_path = ResultDirectory.manual_submission_job_script_path(self)
-    FileUtils.rm(sh_path) if sh_path.exist?
-    json_path = ResultDirectory.manual_submission_input_json_path(self)
-    FileUtils.rm(json_path) if json_path.exist?
   end
 
   def remove_runs_status_count_cache
