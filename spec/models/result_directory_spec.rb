@@ -84,4 +84,16 @@ describe ResultDirectory do
   it ".manual_submission_path returns the directory containing shell scripts for manual submission" do
     ResultDirectory.manual_submission_path.should eq @default_root.join("manual_submission")
   end
+
+  it ".manual_submission_job_script_path returns the path to job script for manual submission" do
+    run = @simulator.parameter_sets.first.runs.first
+    expected = ResultDirectory.manual_submission_path.join(run.id.to_s + ".sh")
+    ResultDirectory.manual_submission_job_script_path(run).should eq expected
+  end
+
+  it ".manual_submission_input_json_path returns the path to _input.json for manual submission" do
+    run = @simulator.parameter_sets.first.runs.first
+    expected = ResultDirectory.manual_submission_path.join(run.id.to_s + "_input.json")
+    ResultDirectory.manual_submission_input_json_path(run).should eq expected
+  end
 end
