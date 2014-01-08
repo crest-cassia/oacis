@@ -464,6 +464,20 @@ EOS
       }.to change { Run.count }.by(-1)
     end
 
+    it "deletes job script and _input.json created for manual submission" do
+      sim = @run.simulator
+      sim.update_attribute(:support_input_json, true)
+      run = sim.parameter_sets.first.runs.create(submitted_to: nil)
+      sh_path = ResultDirectory.manual_submission_job_script_path(run)
+      json_path = ResultDirectory.manual_submission_input_json_path(run)
+
+      sh_path.should be_exist
+      json_path.should be_exist
+      run.destroy
+      sh_path.should_not be_exist
+      json_path.should_not be_exist
+    end
+
     context "when status is :submitted or :running" do
 
       before(:each) do

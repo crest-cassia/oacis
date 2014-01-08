@@ -44,7 +44,8 @@ class Run
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   before_save :remove_runs_status_count_cache, :if => :status_changed?
   after_create :create_run_dir, :create_job_script_for_manual_submission
-  before_destroy :delete_run_dir, :delete_archived_result_file , :remove_runs_status_count_cache
+  before_destroy :delete_run_dir, :delete_archived_result_file ,
+                 :delete_files_for_manual_submission, :remove_runs_status_count_cache
 
   public
   def initialize(*arg)
@@ -211,6 +212,13 @@ class Run
       archive = archived_result_path
       FileUtils.rm(archive) if File.exist?(archive)
     end
+  end
+
+  def delete_files_for_manual_submission
+    sh_path = ResultDirectory.manual_submission_job_script_path(self)
+    FileUtils.rm(sh_path) if sh_path.exist?
+    json_path = ResultDirectory.manual_submission_input_json_path(self)
+    FileUtils.rm(json_path) if json_path.exist?
   end
 
   def remove_runs_status_count_cache
