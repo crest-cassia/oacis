@@ -104,7 +104,7 @@ EOS
       it "does not cause an exception" do
         expect {
           JobScriptUtil.script_for(@run, nil)
-        }.should_not raise_error
+        }.to_not raise_error
       end
     end
   end
