@@ -4,6 +4,7 @@ namespace :daemon do
 
   desc "start daemons"
   task :start do
+    Rake::Task['db:update_schema'].invoke
     if is_server_running?
       $stderr.puts "server is already running: #{SERVER_PID}"
     else

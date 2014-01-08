@@ -97,7 +97,9 @@ class ParameterSetsController < ApplicationController
     ps = ParameterSet.find(params[:id])
 
     x_axis_key = params[:x_axis_key]
-    y_axis_keys = params[:y_axis_key].split('.')
+    result_keys = params[:y_axis_key].split('.')[1..-1]
+    analyzer_name = params[:y_axis_key].split('.')[0]
+    analyzer = ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
 
     series = (params[:series] != x_axis_key) ? params[:series] : nil
@@ -111,24 +113,20 @@ class ParameterSetsController < ApplicationController
       series_values = []
     end
     data = ps_array.map do |base_ps|
-      collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
+      collect_data_for_line_plot(base_ps, x_axis_key, analyzer, result_keys, irrelevant_keys)
     end
 
-    h = {
-      xlabel: x_axis_key,
-      ylabel: y_axis_keys.last,
-      series: series,
-      series_values: series_values,
-      data: data
-    }
     respond_to do |format|
-      format.json { render json: h }
+      format.json {
+        render json: { xlabel: x_axis_key, ylabel: result_keys.last,
+                       series: series, series_values: series_values, data: data}
+      }
       format.plt {
         if series.blank?
-          script = GnuplotUtil.script_for_single_line_plot(data[0], x_axis_key, y_axis_keys.last, true)
+          script = GnuplotUtil.script_for_single_line_plot(data[0], x_axis_key, result_keys.last, true)
         else
-          script = GnuplotUtil.script_for_multi_line_plot(data, x_axis_key, y_axis_keys.last, true,
-                                                            series, series_values)
+          script = GnuplotUtil.script_for_multi_line_plot(data, x_axis_key, result_keys.last, true,
+                                                          series, series_values)
         end
         render text: script
       }
@@ -136,37 +134,93 @@ class ParameterSetsController < ApplicationController
   end
 
   private
-  def collect_data(base_ps, x_axis_key, y_axis_keys, irrelevant_keys)
-    y_axis_keys = y_axis_keys.dup
-    analyzer_name = y_axis_keys.shift
-    analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
-
-    plot_data = base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).map do |ps|
-      x = ps.v[x_axis_key]
-      values = collect_result_values(ps, analyzer, y_axis_keys)
-      y, yerror, num_data = AnalysisUtil.error_analysis(values)
-      [x, y, yerror, ps.id]
+  # return an array like follows
+  #  [ [x, average, error, ps_id], .... ]
+  def collect_data_for_line_plot(base_ps, x_axis_key, analyzer, result_keys, irrelevant_keys)
+    ps_ids = []
+    ps_id_to_x = {}
+    base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).each do |ps|
+      ps_ids << ps.id
+      ps_id_to_x[ps.id.to_s] = ps.v[x_axis_key]
     end
-    plot_data.reject {|dat| dat[1].nil? }
+
+    plot_data = collect_result_values(ps_ids, analyzer, result_keys).map do |h|
+      ps_id = h["_id"]
+      [ ps_id_to_x[ps_id.to_s], h["average"], h["error"], ps_id ]
+    end
+    plot_data.sort_by {|d| d[0]}
   end
 
-  def collect_result_values(ps, analyzer, result_keys)
-    results = []
+  # return an array like follows
+  # [{"_id"=>"52bba7bab93f969a7900000f",
+  #   "average"=>99.0, "error"=>0.2, "count"=>3},
+  #  {...}, {...}, ... ]
+  def collect_result_values(ps_ids, analyzer, result_keys)
+    aggregated = []
     if analyzer.nil?
-      results = ps.runs.where(status: :finished).map(&:result)
+      aggregated = Run.collection.aggregate(
+        { '$match' => Run.in(parameter_set_id: ps_ids)
+                         .where(status: :finished)
+                         .exists("result.#{result_keys.join('.')}" => true)
+                         .selector },
+        { '$project' => { parameter_set_id: 1,
+                          result_val: "$result.#{result_keys.join('.')}"
+                        }},
+        { '$group' => { _id: '$parameter_set_id',
+                        average: {'$avg' => '$result_val'},
+                        square_average: {'$avg' => {'$multiply' =>['$result_val', '$result_val']} },
+                        count: {'$sum' => 1}
+                      }}
+        )
     elsif analyzer.type == :on_run
-      results = ps.runs.where(status: :finished).map do |run|
-        run.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
-      end
+      aggregated = Analysis.collection.aggregate(
+        { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
+                              .in(parameter_set_id: ps_ids)
+                              .exists("result.#{result_keys.join('.')}" => true)
+                              .selector },
+        { '$sort' => {'updated_at' => -1} }, # get the latest analysis
+        { '$project' => { parameter_set_id: '$parameter_set_id',
+                          run_id: '$analyzable_id',
+                          result_val: "$result.#{result_keys.join('.')}"
+                        }},
+        { '$group' => { _id: '$run_id',  # get one analysis for each run
+                        parameter_set_id: {'$first' => '$parameter_set_id'},
+                        result_val: {'$first' => '$result_val'}
+                      }},
+        { '$group' => { _id: '$parameter_set_id',  # calculate average for each parameter_set
+                        average: {'$avg' => '$result_val'},
+                        square_average: {'$avg' => {'$multiply' =>['$result_val', '$result_val']}},
+                        count: {'$sum' => 1}
+                      }}
+        )
     elsif analyzer.type == :on_parameter_set
-      r = ps.analyses.where(analyzer: analyzer, status: :finished).first.try(:result)
-      results = [r]
+      aggregated = Analysis.collection.aggregate(
+        { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
+                              .in(parameter_set_id: ps_ids)
+                              .exists("result.#{result_keys.join('.')}" => true)
+                              .selector },
+        { '$sort' => {'updated_at' => -1} }, # get the latest analysis
+        { '$project' => { parameter_set_id: '$parameter_set_id',
+                          result_val: "$result.#{result_keys.join('.')}"
+                        }},
+        { '$group' => { _id: '$parameter_set_id',
+                        average: {'$first' => '$result_val'},
+                        square_average: {'$first' => {'$multiply' =>['$result_val', '$result_val']}},
+                        count: {'$first' => 1}
+                      }}
+        )
+    else
+      raise "must not happen"
     end
 
-    results.map do |result|
-      result_keys.inject(result) {|r, key| r.try(:[], key)}
-    end.compact
+    aggregated.map do |h|
+      error = h["count"] > 1 ?
+        Math.sqrt( (h["square_average"] - h["average"]**2) / (h["count"] - 1) ) : nil
+      { "_id" => h["_id"], "average" => h["average"], "error" => error, "count" => h["count"] }
+    end
   end
+
+  SCATTER_PLOT_LIMIT = 1000
 
   public
   def _scatter_plot
@@ -179,24 +233,32 @@ class ParameterSetsController < ApplicationController
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
 
-    ps_array = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
-    data = ps_array.map do |ps|
-      values = collect_result_values(ps, analyzer, result_keys)
-      ave, err, num_data = AnalysisUtil.error_analysis(values)
-      x = ps.v[x_axis_key]
-      y = ps.v[y_axis_key]
-      [x, y, ave, err, ps.id]
+    found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
+    parameter_values = ParameterSet.collection.aggregate(
+      { '$match' => found_ps.selector },
+      { '$limit' => SCATTER_PLOT_LIMIT },
+      { '$project' => {x: "$v.#{x_axis_key}", y: "$v.#{y_axis_key}"} }
+      )
+    # parameter_values should look like
+    #   [{"_id"=>"52bb8662b93f96e193000007", "x"=>1, "y"=>1.0}, {...}, {...}, ... ]
+
+    ps_ids = parameter_values.map {|ps| ps["_id"]}
+
+    result_values = collect_result_values(ps_ids, analyzer, result_keys)
+    # result_values should look like
+    # [{"_id"=>"52bba7bab93f969a7900000f",
+    #   "average"=>99.0, "square_average"=>9801.0, "count"=>1},
+    #  {...}, {...}, ... ]
+
+    data = result_values.map do |h|
+      found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
+      [found["x"], found["y"], h["average"], h["error"], h["_id"]]
     end
-    data.reject! {|dat| dat[2].nil? }
-    h = {
-      xlabel: x_axis_key,
-      ylabel: y_axis_key,
-      result: result_keys.last,
-      data: data
-    }
 
     respond_to do |format|
-      format.json { render json: h }
+      format.json {
+        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result_keys.last, data: data}
+      }
     end
   end
 
