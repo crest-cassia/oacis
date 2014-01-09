@@ -3,7 +3,7 @@ module JobIncluder
   def self.include_manual_job(archive_path, run)
     FileUtils.mv( archive_path, run.dir.join('..') )
     include_archive(run)
-    create_auto_run_analyzers(run)
+    create_auto_run_analyses(run)
     run.delete_files_for_manual_submission
   end
 
@@ -19,7 +19,7 @@ module JobIncluder
       end
 
       remove_remote_files( ssh, RemoteFilePath.all_file_paths(host, run) )
-      create_auto_run_analyzers(run)
+      create_auto_run_analyses(run)
     }
   end
 
@@ -28,7 +28,7 @@ module JobIncluder
     JobScriptUtil.expand_result_file_and_update_run(run)
   end
 
-  def self.create_auto_run_analyzers(run)
+  def self.create_auto_run_analyses(run)
     run.enqueue_auto_run_analyzers
   end
 
