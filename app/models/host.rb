@@ -120,7 +120,7 @@ class Host
               run.save
             end
           when :includable, :unknown
-            include_result(ssh, run)
+            JobIncluder.include_remote_job(self, run)
           end
         rescue => ex
           logger.error("Error in Host#check_submitted_job_status: #{ex.inspect}")
@@ -143,7 +143,6 @@ class Host
     submittable_runs.empty? and submitted_runs.empty?
   end
 
-  private
   def start_ssh
     if @ssh
       yield @ssh
@@ -159,6 +158,7 @@ class Host
     end
   end
 
+  private
   def create_remote_work_dir(ssh, run)
     cmd = "mkdir -p #{work_dir_path(run)}"
     out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
@@ -201,26 +201,6 @@ class Host
     run.save!
   end
 
-  def job_script_path(run)
-    Pathname.new(work_base_dir).join("#{run.id}.sh")
-  end
-
-  def pre_process_script_path(run)
-    work_dir_path(run).join("_preprocess.sh")
-  end
-
-  def input_json_path(run)
-    work_dir_path(run).join('_input.json')
-  end
-
-  def work_dir_path(run)
-    Pathname.new(work_base_dir).join("#{run.id}")
-  end
-
-  def result_file_path(run)
-    Pathname.new(work_base_dir).join("#{run.id}.tar.bz2")
-  end
-
   def cancel_remote_job(ssh, run)
     stat = remote_status(ssh, run)
     if stat == :submitted or stat == :running
@@ -238,39 +218,6 @@ class Host
     out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
     status = scheduler.parse_remote_status(out) if rc == 0
     status
-  end
-
-  def include_result(ssh, run)
-    archive = result_file_path(run)
-    archive_exist = SSHUtil.exist?(ssh, archive)
-    work_dir = work_dir_path(run)
-    work_dir_exist = SSHUtil.exist?(ssh, work_dir_path(run))
-    if archive_exist and !work_dir_exist           # normal case
-      base = File.basename(archive)
-      SSHUtil.download(ssh, archive, run.dir.join('..', base))
-      JobScriptUtil.expand_result_file_and_update_run(run)
-    else
-      SSHUtil.download_recursive(ssh, work_dir, run.dir) if work_dir_exist
-      run.status = :failed
-      run.save!
-    end
-
-    remove_remote_files(ssh, run)
-    run.enqueue_auto_run_analyzers
-  end
-
-  def remove_remote_files(ssh, run)
-    paths = [job_script_path(run),
-             input_json_path(run),
-             work_dir_path(run),
-             result_file_path(run),
-             Pathname.new(work_base_dir).join("#{run.id}_status.json"),
-             Pathname.new(work_base_dir).join("#{run.id}_time.txt"),
-             Pathname.new(work_base_dir).join("#{run.id}.tar")
-            ]
-    paths.each do |path|
-      SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
-    end
   end
 
   def work_base_dir_is_not_editable_when_submitted_runs_exist

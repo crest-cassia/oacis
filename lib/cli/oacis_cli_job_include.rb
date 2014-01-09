@@ -11,7 +11,7 @@ class OacisCli < Thor
     archives.each do |archive|
       run = find_included_run(archive)
       next if options[:dry_run]
-      JobIncluder.include_manual_jobs(archive, run)
+      JobIncluder.include_manual_job(archive, run)
     end
   end
 

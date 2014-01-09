@@ -479,9 +479,7 @@ EOS
 
     it "include remote data and update status to 'finished' or 'failed'" do
       @host.should_receive(:remote_status).and_return(:includable)
-      SSHUtil.stub(:download)
-      SSHUtil.stub(:exist?).and_return(true, false)
-      JobScriptUtil.should_receive(:expand_result_file_and_update_run) do |run|
+      JobIncluder.should_receive(:include_remote_job) do |host, run|
         run.id.should eq @run.id
       end
       @host.check_submitted_job_status
