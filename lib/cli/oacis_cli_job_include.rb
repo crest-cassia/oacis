@@ -9,7 +9,19 @@ class OacisCli < Thor
   def job_include
     archives = options[:input]
     archives.each do |archive|
-      JobIncluder.include_manual_jobs(archive, options)
+      run = find_included_run(archive)
+      next if options[:dry_run]
+      JobIncluder.include_manual_jobs(archive, run)
     end
+  end
+
+  private
+  def find_included_run(archive)
+    run_id = File.basename(archive, '.tar.bz2')
+    run = Run.find(run_id)
+    if [:finished, :failed, :cancelled].include?(run.status)
+      raise "status of run #{run_id} is not valid"
+    end
+    run
   end
 end
