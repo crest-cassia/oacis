@@ -161,20 +161,20 @@ class Host
 
   private
   def create_remote_work_dir(ssh, run)
-    cmd = "mkdir -p #{RemoteFilePath.new(self).work_dir_path(run)}"
+    cmd = "mkdir -p #{RemoteFilePath.work_dir_path(self,run)}"
     out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
     raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
   end
 
   def prepare_input_json(ssh, run)
     input = run.input
-    SSHUtil.write_remote_file(ssh, RemoteFilePath.new(self).input_json_path(run), input.to_json) if input
+    SSHUtil.write_remote_file(ssh, RemoteFilePath.input_json_path(self,run), input.to_json) if input
   end
 
   def execute_pre_process(ssh, run)
     script = run.simulator.pre_process_script
     if script.present?
-      path = RemoteFilePath.new(self).pre_process_script_path(run)
+      path = RemoteFilePath.pre_process_script_path(self, run)
       SSHUtil.write_remote_file(ssh, path, script)
       out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
       raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
@@ -185,7 +185,7 @@ class Host
   end
 
   def prepare_job_script(ssh, run)
-    jspath = RemoteFilePath.new(self).job_script_path(run)
+    jspath = RemoteFilePath.job_script_path(self, run)
     SSHUtil.write_remote_file(ssh, jspath, run.job_script)
     out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{jspath}")
     raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
@@ -222,7 +222,7 @@ class Host
   end
 
   def remove_remote_files(ssh, run)
-    RemoteFilePath.new(self).all_file_paths(run).each do |path|
+    RemoteFilePath.all_file_paths(self, run).each do |path|
       SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
     end
   end

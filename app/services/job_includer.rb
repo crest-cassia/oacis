@@ -18,7 +18,7 @@ module JobIncluder
         run.save!
       end
 
-      remove_remote_files( ssh, RemoteFilePath.new(host).all_file_paths(run) )
+      remove_remote_files( ssh, RemoteFilePath.all_file_paths(host, run) )
       create_auto_run_analyzers(run)
     }
   end
@@ -33,21 +33,20 @@ module JobIncluder
   end
 
   def self.remote_file_is_ready_to_include(host, run, ssh)
-    remote_path = RemoteFilePath.new(host)
-    archive = remote_path.result_file_path(run)
-    work_dir = remote_path.work_dir_path(run)
+    archive = RemoteFilePath.result_file_path(host, run)
+    work_dir = RemoteFilePath.work_dir_path(host, run)
 
     SSHUtil.exist?(ssh, archive) and !(SSHUtil.exist?(ssh, work_dir))
   end
 
   def self.download_remote_file(host, run, ssh)
-    archive = RemoteFilePath.new(host).result_file_path(run)
+    archive = RemoteFilePath.result_file_path(host, run)
     base = File.basename(archive)
     SSHUtil.download(ssh, archive, run.dir.join('..', base))
   end
 
   def self.download_work_dir_if_exists(host, run, ssh)
-    work_dir = RemoteFilePath.new(host).work_dir_path(run)
+    work_dir = RemoteFilePath.work_dir_path(host, run)
     if SSHUtil.exist?(ssh, work_dir)
       SSHUtil.download_recursive(ssh, work_dir, run.dir)
     end

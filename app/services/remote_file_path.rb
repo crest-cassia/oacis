@@ -1,38 +1,34 @@
-class RemoteFilePath
+module RemoteFilePath
 
-  def initialize(host)
-    @work_base_dir = host.work_base_dir
+  def self.job_script_path(host, run)
+    Pathname.new(host.work_base_dir).join("#{run.id}.sh")
   end
 
-  def job_script_path(run)
-    Pathname.new(@work_base_dir).join("#{run.id}.sh")
+  def self.pre_process_script_path(host, run)
+    work_dir_path(host, run).join("_preprocess.sh")
   end
 
-  def pre_process_script_path(run)
-    work_dir_path(run).join("_preprocess.sh")
+  def self.input_json_path(host, run)
+    work_dir_path(host, run).join('_input.json')
   end
 
-  def input_json_path(run)
-    work_dir_path(run).join('_input.json')
+  def self.work_dir_path(host, run)
+    Pathname.new(host.work_base_dir).join("#{run.id}")
   end
 
-  def work_dir_path(run)
-    Pathname.new(@work_base_dir).join("#{run.id}")
+  def self.result_file_path(host, run)
+    Pathname.new(host.work_base_dir).join("#{run.id}.tar.bz2")
   end
 
-  def result_file_path(run)
-    Pathname.new(@work_base_dir).join("#{run.id}.tar.bz2")
-  end
-
-  def all_file_paths(run)
+  def self.all_file_paths(host, run)
     [
-      job_script_path(run),
-      input_json_path(run),
-      work_dir_path(run),
-      result_file_path(run),
-      Pathname.new(@work_base_dir).join("#{run.id}_status.json"),
-      Pathname.new(@work_base_dir).join("#{run.id}_time.txt"),
-      Pathname.new(@work_base_dir).join("#{run.id}.tar")
+      job_script_path(host, run),
+      input_json_path(host, run),
+      work_dir_path(host, run),
+      result_file_path(host, run),
+      Pathname.new(host.work_base_dir).join("#{run.id}_status.json"),
+      Pathname.new(host.work_base_dir).join("#{run.id}_time.txt"),
+      Pathname.new(host.work_base_dir).join("#{run.id}.tar")
     ]
   end
 end
