@@ -29,7 +29,28 @@ module JobIncluder
   end
 
   def self.create_auto_run_analyses(run)
-    run.enqueue_auto_run_analyzers
+    runs = run.parameter_set.runs
+    analyzers = run.simulator.analyzers
+
+    if run.status == :finished
+      analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
+        run.analyses.create(analyzer: azr)
+      end
+
+      analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
+        unless runs.where(status: :finished).ne(id: run.id).exists?
+          run.analyses.create(analyzer: azr)
+        end
+      end
+    end
+
+    if run.status == :finished or run.status == :failed
+      analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
+        unless runs.nin(status: [:finished, :failed]).exists?
+          run.parameter_set.analyses.create(analyzer: azr)
+        end
+      end
+    end
   end
 
   def self.remote_file_is_ready_to_include(host, run, ssh)

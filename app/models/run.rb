@@ -128,35 +128,6 @@ class Run
     end
   end
 
-  def enqueue_auto_run_analyzers
-    ps = parameter_set
-    sim = ps.simulator
-
-    if self.status == :finished
-      sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
-        anl = analyses.build(analyzer: azr)
-        anl.save
-      end
-
-      sim.analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
-        scope = ps.runs.where(status: :finished)
-        if scope.count == 1 and scope.first.id == id
-          anl = analyses.build(analyzer: azr)
-          anl.save
-        end
-      end
-    end
-
-    if self.status == :finished or self.status == :failed
-      sim.analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
-        unless ps.runs.nin(status: [:finished, :failed]).exists?
-          anl = ps.analyses.build(analyzer: azr)
-          anl.save
-        end
-      end
-    end
-  end
-
   def delete_files_for_manual_submission
     sh_path = ResultDirectory.manual_submission_job_script_path(self)
     FileUtils.rm(sh_path) if sh_path.exist?
