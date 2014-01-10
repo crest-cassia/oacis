@@ -128,6 +128,7 @@ class Run
     end
   end
 
+  private
   def delete_files_for_manual_submission
     sh_path = ResultDirectory.manual_submission_job_script_path(self)
     FileUtils.rm(sh_path) if sh_path.exist?
@@ -135,7 +136,6 @@ class Run
     FileUtils.rm(json_path) if json_path.exist?
   end
 
-  private
   def set_simulator
     if parameter_set
       self.simulator = parameter_set.simulator

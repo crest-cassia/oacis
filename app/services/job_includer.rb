@@ -4,7 +4,7 @@ module JobIncluder
     FileUtils.mv( archive_path, run.dir.join('..') )
     include_archive(run)
     create_auto_run_analyses(run)
-    run.delete_files_for_manual_submission
+    run.send(:delete_files_for_manual_submission)
   end
 
   def self.include_remote_job(host, run)
