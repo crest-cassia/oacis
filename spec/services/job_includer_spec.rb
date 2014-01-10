@@ -49,10 +49,12 @@ describe JobIncluder do
   shared_examples_for "included correctly" do
 
     it "copies reuslt files into the run directory" do
+      include_job
       @run.dir.join("_stdout.txt").should be_exist
     end
 
     it "parses _status.json" do
+      include_job
       @run.hostname.should eq "hostXXX"
       @run.started_at.should be_a(DateTime)
       @run.finished_at.should be_a(DateTime)
@@ -60,16 +62,19 @@ describe JobIncluder do
     end
 
     it "parses _time.txt" do
+      include_job
       @run.cpu_time.should be_within(0.01).of(8.0)
       @run.real_time.should be_within(0.01).of(10.0)
     end
 
     it "deletes archive file after the inclusion finishes" do
+      include_job
       @archive_full_path.should_not be_exist
     end
 
     it "invokes create_auto_run_analyses" do
-      Analysis.count.should eq 1
+      JobIncluder.should_receive(:create_auto_run_analyses)
+      include_job
     end
   end
 
@@ -79,10 +84,9 @@ describe JobIncluder do
       @run = @sim.parameter_sets.first.runs.create(submitted_to: nil)
       ResultDirectory.manual_submission_job_script_path(@run).should be_exist
       make_valid_archive_file(@run)
-
-      JobIncluder.include_manual_job(@archive_full_path, @run)
-      @run.reload
     end
+
+    let(:include_job) { JobIncluder.include_manual_job(@archive_full_path, @run) }
 
     it_behaves_like "included correctly"
 
@@ -104,9 +108,9 @@ describe JobIncluder do
 
       before(:each) do
         make_valid_archive_file(@run)
-        JobIncluder.include_remote_job(@host, @run)
-        @run.reload
       end
+
+      let(:include_job) { JobIncluder.include_remote_job(@host, @run) }
 
       it_behaves_like "included correctly"
     end
