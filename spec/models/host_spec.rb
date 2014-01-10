@@ -513,7 +513,7 @@ EOS
 
       it "does not include remote data even if remote status is 'includable'" do
         @host.stub(:remote_status) { :includable }
-        @host.should_not_receive(:include_result)
+        JobIncluder.should_not_receive(:include_remote_job)
         @host.check_submitted_job_status
       end
     end
