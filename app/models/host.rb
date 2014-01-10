@@ -89,7 +89,7 @@ class Host
           job_script_path = prepare_job_script(ssh, run)
           submit_to_scheduler(ssh, run, job_script_path)
         rescue => ex
-          work_dir = work_dir_path(run)
+          work_dir = RemoteFilePath.work_dir_path(self,run)
           SSHUtil.download_recursive(ssh, work_dir, run.dir) if SSHUtil.exist?(ssh, work_dir)
           remove_remote_files(ssh, run)
           run.update_attribute(:status, :failed)
