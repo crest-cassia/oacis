@@ -37,8 +37,6 @@ describe JobIncluder do
     @sim = FactoryGirl.create(:simulator,
                               parameter_sets_count: 1, runs_count: 0,
                               command: "sleep 1")
-    azr = FactoryGirl.create(:analyzer, simulator: @sim, auto_run: :yes, run_analysis: false)
-
     @temp_dir = Pathname.new( Dir.mktmpdir )
   end
 
@@ -91,6 +89,7 @@ describe JobIncluder do
     it_behaves_like "included correctly"
 
     it "deletes job script after inclusion" do
+      include_job
       ResultDirectory.manual_submission_job_script_path(@run).should_not be_exist
     end
   end
@@ -133,6 +132,96 @@ describe JobIncluder do
 
       it "deletes remote work_dir and archive file" do
         Dir.entries(@temp_dir).should eq ['.', '..']
+      end
+    end
+  end
+
+  describe ".create_auto_run_analyses" do
+
+    def invoke
+      JobIncluder.send(:create_auto_run_analyses, @run)
+    end
+
+    before(:each) do
+      @run = @sim.parameter_sets.first.runs.create
+      @run.update_attribute(:status, :finished)
+    end
+
+    describe "auto run of analyzers for on_run type" do
+
+      before(:each) do
+        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_run)
+      end
+
+      context "when Analyzer#auto_run is :yes" do
+
+        before(:each) { @azr.update_attribute(:auto_run, :yes) }
+
+        it "creates analysis if status is 'finished'" do
+          expect { invoke }.to change { @run.reload.analyses.count }.by(1)
+        end
+
+        it "do not create analysis if status is not 'finished'" do
+          @run.update_attribute(:status, :failed)
+          expect { invoke }.to_not change { @run.reload.analyses.count }
+        end
+      end
+
+      context "when Analyzer#auto_run is :no" do
+
+        before(:each) { @azr.update_attribute(:auto_run, :no) }
+
+        it "does not create analysis if Anaylzer#auto_run is :no" do
+          @azr.update_attributes!(auto_run: :no)
+          expect { invoke }.to_not change { @run.reload.analyses.count }
+        end
+      end
+
+      context "when Analyzer#auto_run is :first_run_only" do
+
+        before(:each) { @azr.update_attributes!(auto_run: :first_run_only) }
+
+        it "creates analysis if the run is the first 'finished' run within the parameter set" do
+          expect { invoke }.to change { @run.reload.analyses.count }.by(1)
+        end
+
+        it "does not create analysis if 'finished' run already exists within the paramter set" do
+          FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :finished)
+          expect { invoke }.to_not change { @run.reload.analyses.count }
+        end
+      end
+    end
+
+    describe "auto run of analyzers for on_parameter_set type" do
+
+      before(:each) do
+        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_parameter_set)
+      end
+
+      context "when Analyzer#auto_run is :yes" do
+
+        before(:each) { @azr.update_attribute(:auto_run, :yes) }
+
+        it "creates analysis if all the other runs within the parameter set are 'finished' or 'failed'" do
+          FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :failed)
+          FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :finished)
+          expect { invoke }.to change { @run.parameter_set.reload.analyses.count }.by(1)
+        end
+
+        it "does not create analysis if any of runs within the parameter set is not 'finished' or 'failed'" do
+          FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :submitted)
+          expect { invoke }.to_not change { @run.parameter_set.reload.analyses.count }
+        end
+      end
+
+      context "when Analyzer#auto_run is :no" do
+
+        before(:each) { @azr.update_attribute(:auto_run, :no) }
+
+        it "does not create analysis even if all the other runs are finished" do
+          FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :finished)
+          expect { invoke }.to_not change { @run.parameter_set.reload.analyses.count }
+        end
       end
     end
   end
