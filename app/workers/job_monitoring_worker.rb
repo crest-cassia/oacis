@@ -1,4 +1,4 @@
-class JobObserver
+class JobMonitoringWorker
 
   def self.perform(logger)
     # if @@last_updated_at and @last_updated_at - DateTime.now
