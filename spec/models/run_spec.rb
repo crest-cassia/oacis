@@ -192,10 +192,8 @@ EOS
       end
     end
 
-    it "skips validation of submitted_to for a persisted document" do
-      run = @param_set.runs.build(@valid_attribute)
-      run.save!
-      run.submitted_to = nil
+    it "submitted_to can be nil" do
+      run = @param_set.runs.build(@valid_attribute.update({submitted_to: nil}))
       run.should be_valid
     end
   end
@@ -366,92 +364,6 @@ EOS
     end
   end
 
-  describe "#enqueue_auto_run_analyzers" do
-
-    describe "auto run of analyzers for on_run type" do
-
-      before(:each) do
-        @run = @simulator.parameter_sets.first.runs.first
-        # @run.update_attributes!(status: :finished)
-        @run.status = :finished
-        @run.save!
-        @azr = FactoryGirl.create(:analyzer, simulator: @simulator, type: :on_run, auto_run: :yes)
-      end
-
-      context "when Analyzer#auto_run is :yes" do
-
-        it "creates analysis if status is 'finished'" do
-          expect {
-            @run.enqueue_auto_run_analyzers
-          }.to change { @run.reload.analyses.count }.by(1)
-        end
-
-        it "do not create analysis if status is not 'finished'" do
-          @run.status = :failed
-          @run.save!
-          expect {
-            @run.enqueue_auto_run_analyzers
-          }.to_not change { @run.reload.analyses.count }
-        end
-      end
-
-      context "when Analyzer#auto_run is :no" do
-
-        it "does not create analysis if Anaylzer#auto_run is :no" do
-          @azr.update_attributes!(auto_run: :no)
-          expect {
-            @run.enqueue_auto_run_analyzers
-          }.to_not change { @run.reload.analyses.count }
-        end
-      end
-
-      context "when Analyzer#auto_run is :first_run_only" do
-
-        before(:each) do
-          @azr.update_attributes!(auto_run: :first_run_only)
-        end
-
-        it "creates analysis if the run is the first 'finished' run within the parameter set" do
-          expect {
-            @run.enqueue_auto_run_analyzers
-          }.to change { @run.reload.analyses.count }.by(1)
-        end
-
-        it "does not create analysis if 'finished' run already exists within the paramter set" do
-          FactoryGirl.create(:run, parameter_set: @param_set, status: :finished)
-          expect {
-            @run.enqueue_auto_run_analyzers
-          }.to_not change { @run.reload.analyses.count }
-        end
-      end
-    end
-
-    describe "auto run of analyzers for on_parameter_set type" do
-
-      before(:each) do
-        @run = @simulator.parameter_sets.first.runs.first
-        @run.status = :finished
-        @run.save!
-        @azr = FactoryGirl.create(:analyzer,
-                                  simulator: @simulator, type: :on_parameter_set, auto_run: :yes)
-      end
-
-      it "creates analysis if all the other runs within the parameter set are 'finished' or 'failed'" do
-        FactoryGirl.create(:run, parameter_set: @param_set, status: :failed)
-        FactoryGirl.create(:run, parameter_set: @param_set, status: :finished)
-        expect {
-          @run.enqueue_auto_run_analyzers
-        }.to change { @param_set.reload.analyses.count }.by(1)
-      end
-
-      it "does not create analysis if any of runs within the parameter set is not 'finished' or 'failed'" do
-        FactoryGirl.create(:run, parameter_set: @param_set, status: :submitted)
-        expect {
-          @run.enqueue_auto_run_analyzers
-        }.to_not change { @param_set.reload.analyses.count }
-      end
-    end
-  end
 
   describe "#destroy" do
 
@@ -464,6 +376,20 @@ EOS
       expect {
         @run.destroy
       }.to change { Run.count }.by(-1)
+    end
+
+    it "deletes job script and _input.json created for manual submission" do
+      sim = @run.simulator
+      sim.update_attribute(:support_input_json, true)
+      run = sim.parameter_sets.first.runs.create(submitted_to: nil)
+      sh_path = ResultDirectory.manual_submission_job_script_path(run)
+      json_path = ResultDirectory.manual_submission_input_json_path(run)
+
+      sh_path.should be_exist
+      json_path.should be_exist
+      run.destroy
+      sh_path.should_not be_exist
+      json_path.should_not be_exist
     end
 
     context "when status is :submitted or :running" do
@@ -524,6 +450,20 @@ EOS
       run.job_script.should_not be_present
       run.save!
       run.job_script.should be_present
+    end
+
+    context "when submitted_to is nil" do
+
+      it "creates a job-script" do
+        run = @param_set.runs.create!(submitted_to: nil)
+        ResultDirectory.manual_submission_job_script_path(run).should be_exist
+      end
+
+      it "create _input.json" do
+        @simulator.update_attribute(:support_input_json, true)
+        run = @param_set.runs.create!(submitted_to: nil)
+        ResultDirectory.manual_submission_input_json_path(run).should be_exist
+      end
     end
   end
 

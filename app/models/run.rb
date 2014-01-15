@@ -29,7 +29,6 @@ class Run
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
-  validates :submitted_to, presence: true, on: :create  # submitted_to can be nil because a host may be destroyed
   validate :host_parameters_given, on: :create
   validate :host_parameters_format, on: :create
   validate :mpi_procs_is_in_range, on: :create
@@ -44,8 +43,9 @@ class Run
 
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   before_save :remove_runs_status_count_cache, :if => :status_changed?
-  after_create :create_run_dir
-  before_destroy :delete_run_dir, :delete_archived_result_file , :remove_runs_status_count_cache
+  after_create :create_run_dir, :create_job_script_for_manual_submission
+  before_destroy :delete_run_dir, :delete_archived_result_file ,
+                 :delete_files_for_manual_submission, :remove_runs_status_count_cache
 
   public
   def initialize(*arg)
@@ -116,46 +116,26 @@ class Run
     dir.join('..', "#{id}.tar.bz2")
   end
 
-  def destroy
-    if status == :submitted or status == :running
-      cancel
-    elsif status == :cancelled and submitted_to.present?
-      cancel
-    else
+  def destroy(call_super = false)
+    if call_super
       super
-    end
-  end
-
-  def enqueue_auto_run_analyzers
-    ps = parameter_set
-    sim = ps.simulator
-
-    if self.status == :finished
-      sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
-        anl = analyses.build(analyzer: azr)
-        anl.save
-      end
-
-      sim.analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
-        scope = ps.runs.where(status: :finished)
-        if scope.count == 1 and scope.first.id == id
-          anl = analyses.build(analyzer: azr)
-          anl.save
-        end
-      end
-    end
-
-    if self.status == :finished or self.status == :failed
-      sim.analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
-        unless ps.runs.nin(status: [:finished, :failed]).exists?
-          anl = ps.analyses.build(analyzer: azr)
-          anl.save
-        end
+    else
+      if status == :submitted or status == :running or status == :cancelled
+        cancel
+      else
+        super
       end
     end
   end
 
   private
+  def delete_files_for_manual_submission
+    sh_path = ResultDirectory.manual_submission_job_script_path(self)
+    FileUtils.rm(sh_path) if sh_path.exist?
+    json_path = ResultDirectory.manual_submission_input_json_path(self)
+    FileUtils.rm(json_path) if json_path.exist?
+  end
+
   def set_simulator
     if parameter_set
       self.simulator = parameter_set.simulator
@@ -181,6 +161,18 @@ class Run
 
   def create_run_dir
     FileUtils.mkdir_p(dir)
+  end
+
+  def create_job_script_for_manual_submission
+    return if submitted_to
+
+    FileUtils.mkdir_p(ResultDirectory.manual_submission_path)
+    js_path = ResultDirectory.manual_submission_job_script_path(self)
+    File.open(js_path, 'w') {|io| io.puts job_script; io.flush }
+    if simulator.support_input_json
+      input_json_path = ResultDirectory.manual_submission_input_json_path(self)
+      File.open(input_json_path, 'w') {|io| io.puts input.to_json; io.flush }
+    end
   end
 
   def delete_run_dir

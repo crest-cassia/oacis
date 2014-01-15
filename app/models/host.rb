@@ -89,7 +89,7 @@ class Host
           job_script_path = prepare_job_script(ssh, run)
           submit_to_scheduler(ssh, run, job_script_path)
         rescue => ex
-          work_dir = work_dir_path(run)
+          work_dir = RemoteFilePath.work_dir_path(self,run)
           SSHUtil.download_recursive(ssh, work_dir, run.dir) if SSHUtil.exist?(ssh, work_dir)
           remove_remote_files(ssh, run)
           run.update_attribute(:status, :failed)
@@ -106,10 +106,9 @@ class Host
       submitted_runs.each do |run|
         begin
           if run.status == :cancelled
-            cancel_job(ssh, run)
+            cancel_remote_job(ssh, run)
             remove_remote_files(ssh, run)
-            run.submitted_to = nil
-            run.destroy
+            run.destroy(true)
             next
           end
           case remote_status(ssh, run)
@@ -121,10 +120,11 @@ class Host
               run.save
             end
           when :includable, :unknown
-            include_result(ssh, run)
+            JobIncluder.include_remote_job(self, run)
           end
         rescue => ex
           logger.error("Error in Host#check_submitted_job_status: #{ex.inspect}")
+          logger.error ex.backtrace
           logger.error("run:\"#{run.to_param.to_s}\" is failed")
           if run.result.present?
             run.result = "System_message:_output.json is not stored. More detail is written in log files."
@@ -144,7 +144,6 @@ class Host
     submittable_runs.empty? and submitted_runs.empty?
   end
 
-  private
   def start_ssh
     if @ssh
       yield @ssh
@@ -160,21 +159,22 @@ class Host
     end
   end
 
+  private
   def create_remote_work_dir(ssh, run)
-    cmd = "mkdir -p #{work_dir_path(run)}"
+    cmd = "mkdir -p #{RemoteFilePath.work_dir_path(self,run)}"
     out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
     raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
   end
 
   def prepare_input_json(ssh, run)
     input = run.input
-    SSHUtil.write_remote_file(ssh, input_json_path(run), input.to_json) if input
+    SSHUtil.write_remote_file(ssh, RemoteFilePath.input_json_path(self,run), input.to_json) if input
   end
 
   def execute_pre_process(ssh, run)
     script = run.simulator.pre_process_script
     if script.present?
-      path = pre_process_script_path(run)
+      path = RemoteFilePath.pre_process_script_path(self, run)
       SSHUtil.write_remote_file(ssh, path, script)
       out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
       raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
@@ -185,7 +185,7 @@ class Host
   end
 
   def prepare_job_script(ssh, run)
-    jspath = job_script_path(run)
+    jspath = RemoteFilePath.job_script_path(self, run)
     SSHUtil.write_remote_file(ssh, jspath, run.job_script)
     out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{jspath}")
     raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
@@ -202,27 +202,7 @@ class Host
     run.save!
   end
 
-  def job_script_path(run)
-    Pathname.new(work_base_dir).join("#{run.id}.sh")
-  end
-
-  def pre_process_script_path(run)
-    work_dir_path(run).join("_preprocess.sh")
-  end
-
-  def input_json_path(run)
-    work_dir_path(run).join('_input.json')
-  end
-
-  def work_dir_path(run)
-    Pathname.new(work_base_dir).join("#{run.id}")
-  end
-
-  def result_file_path(run)
-    Pathname.new(work_base_dir).join("#{run.id}.tar.bz2")
-  end
-
-  def cancel_job(ssh, run)
+  def cancel_remote_job(ssh, run)
     stat = remote_status(ssh, run)
     if stat == :submitted or stat == :running
       scheduler = SchedulerWrapper.new(scheduler_type)
@@ -241,35 +221,8 @@ class Host
     status
   end
 
-  def include_result(ssh, run)
-    archive = result_file_path(run)
-    archive_exist = SSHUtil.exist?(ssh, archive)
-    work_dir = work_dir_path(run)
-    work_dir_exist = SSHUtil.exist?(ssh, work_dir_path(run))
-    if archive_exist and !work_dir_exist           # normal case
-      base = File.basename(archive)
-      SSHUtil.download(ssh, archive, run.dir.join('..', base))
-      JobScriptUtil.expand_result_file_and_update_run(run)
-    else
-      SSHUtil.download_recursive(ssh, work_dir, run.dir) if work_dir_exist
-      run.status = :failed
-      run.save!
-    end
-
-    remove_remote_files(ssh, run)
-    run.enqueue_auto_run_analyzers
-  end
-
   def remove_remote_files(ssh, run)
-    paths = [job_script_path(run),
-             input_json_path(run),
-             work_dir_path(run),
-             result_file_path(run),
-             Pathname.new(work_base_dir).join("#{run.id}_status.json"),
-             Pathname.new(work_base_dir).join("#{run.id}_time.txt"),
-             Pathname.new(work_base_dir).join("#{run.id}.tar")
-            ]
-    paths.each do |path|
+    RemoteFilePath.all_file_paths(self, run).each do |path|
       SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
     end
   end

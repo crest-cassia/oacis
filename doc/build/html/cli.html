@@ -64,6 +64,7 @@
 <li>ジョブパラメータ指定用テンプレート作成 (job_parameter_template)</li>
 <li>Run作成 (create_runs)</li>
 <li>作成済みRunのステータス確認 (run_status)</li>
+<li>手動実行したジョブの実行結果の取り込み (job_include)</li>
 </ul>
 <p>OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行する操作を指定する。
 例えば</p>
@@ -488,7 +489,7 @@
 </td>
 <td><p class="first last">host id (string)</p>
 </td>
-<td><p class="first last">yes</p>
+<td><p class="first last">no</p>
 </td>
 </tr>
 <tr class="row-odd"><td><p class="first last">&#8211;output</p>
@@ -506,7 +507,7 @@
 <li><dl class="first docutils">
 <dt>入力</dt>
 <dd><ul class="first last simple">
-<li>host idはHostのidを文字列で指定する</li>
+<li>host idはHostのidを文字列で指定する。指定が無い場合はmanualでのジョブ投入。</li>
 </ul>
 </dd>
 </dl>
@@ -702,6 +703,63 @@
 </li>
 </ul>
 </div>
+<div class="section" id="job-include">
+<h3>job_include<a class="headerlink" href="#job-include" title="Permalink to this headline">¶</a></h3>
+<p>手動実行したRunの実行結果を取り込む</p>
+<ul>
+<li><p class="first">実効方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli job_include -i 52cde935b93f969b07000005.tar.bz2
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="12%" />
+<col width="48%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;input</p>
+</td>
+<td><p class="first last">-i</p>
+</td>
+<td><p class="first last">input archive files</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力ファイル</p>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>inputファイルは手動実行後に生成される結果のアーカイブファイル(.tar.bz2)を指定する</dt>
+<dd><ul class="first last simple">
+<li>空白区切り、またはコンマ区切りで複数指定可能</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
 </div>
 </div>
 
@@ -724,6 +782,7 @@
 <li><a class="reference internal" href="#job-parameter-template">job_parameter_template</a></li>
 <li><a class="reference internal" href="#create-runs">create_runs</a></li>
 <li><a class="reference internal" href="#run-status">run_status</a></li>
+<li><a class="reference internal" href="#job-include">job_include</a></li>
 </ul>
 </li>
 </ul>

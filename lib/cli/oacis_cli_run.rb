@@ -5,27 +5,32 @@ class OacisCli < Thor
     type:     :string,
     aliases:  '-h',
     desc:     'id of submitting host',
-    required: true
+    required: false
   method_option :output,
     type:     :string,
     aliases:  '-o',
     desc:     'output json file (run_ids.json)',
     required: true
   def job_parameter_template
-    host = Host.find(options[:host_id])
-    host_parameters = {}
-    host.host_parameter_definitions.each do |param_def|
-      host_parameters[param_def.key] = param_def.default
+    job_parameters = {
+      "host_id" => nil,
+      "host_parameters" => {},
+      "mpi_procs" => 1,
+      "omp_threads" => 1
+    }
+
+    if options[:host_id]
+      host = Host.find(options[:host_id])
+      host_parameters = {}
+      host.host_parameter_definitions.each do |param_def|
+        host_parameters[param_def.key] = param_def.default
+      end
+      job_parameters["host_id"] = host.id.to_s
+      job_parameters["host_parameters"] = host_parameters
     end
 
     return if options[:dry_run]
     File.open(options[:output], 'w') do |io|
-      job_parameters = {
-        "host_id" => host.id.to_s,
-        "host_parameters" => host_parameters,
-        "mpi_procs" => 1,
-        "omp_threads" => 1
-      }
       io.puts JSON.pretty_generate(job_parameters)
     end
   end
@@ -54,7 +59,7 @@ class OacisCli < Thor
   def create_runs
     parameter_sets = get_parameter_sets(options[:parameter_sets])
     job_parameters = JSON.load( File.read(options[:job_parameters]) )
-    submitted_to = Host.find(job_parameters["host_id"])
+    submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
     host_parameters = job_parameters["host_parameters"].to_hash
 
     if options[:verbose]

@@ -479,9 +479,7 @@ EOS
 
     it "include remote data and update status to 'finished' or 'failed'" do
       @host.should_receive(:remote_status).and_return(:includable)
-      SSHUtil.stub(:download)
-      SSHUtil.stub(:exist?).and_return(true, false)
-      JobScriptUtil.should_receive(:expand_result_file_and_update_run) do |run|
+      JobIncluder.should_receive(:include_remote_job) do |host, run|
         run.id.should eq @run.id
       end
       @host.check_submitted_job_status
@@ -494,33 +492,29 @@ EOS
         @run.save!
       end
 
-      it "does not update status to 'running' even if remote status is 'running'" do
-        pending "NEED TO UPDATE"
-        @host.should_receive(:remote_status).and_return(:running)
-        @host.check_submitted_job_status
-        @run.reload.status.should eq :cancelled
-      end
-
-      it "does not include remote data even if remote status is 'includable'" do
-        pending "NEED TO UPDATE"
-        @host.stub(:remote_status).and_return(:includable)
-        SSHUtil.should_not_receive(:download)
+      it "cancelles a remote job" do
+        @host.should_receive(:cancel_remote_job)
+        @host.stub(:remove_remote_files) # do nothing
         @host.check_submitted_job_status
       end
 
       it "deletes archived reuslt file on the remote host" do
-        pending "NEED TO UPDATE"
-        @host.stub(:remote_status).and_return(:includable)
-        SSHUtil.should_receive(:rm_r).exactly(2).times
+        @host.stub(:cancel_remote_job) # do nothing
+        @host.should_receive(:remove_remote_files)
         @host.check_submitted_job_status
       end
 
       it "destroys run" do
-        pending "NEED TO UPDATE"
-        @host.stub(:remote_status).and_return(:includable)
+        @host.stub(:remote_status) { :includable }
         expect {
           @host.check_submitted_job_status
         }.to change { Run.count }.by(-1)
+      end
+
+      it "does not include remote data even if remote status is 'includable'" do
+        @host.stub(:remote_status) { :includable }
+        JobIncluder.should_not_receive(:include_remote_job)
+        @host.check_submitted_job_status
       end
     end
   end

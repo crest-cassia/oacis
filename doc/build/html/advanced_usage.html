@@ -165,6 +165,74 @@
 </div>
 </div>
 </div>
+<div class="section" id="id5">
+<h2>手動でジョブを実行する<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">OACIS上でRunを作るとworkerによってジョブ投入が自動で行われるが、ジョブの実行を手動で行う事もできる。</div>
+<div class="line">Run作成時に手動実行を指定した場合、自動ジョブ投入は行われずジョブスクリプトの生成のみ行われる。</div>
+<div class="line">そのジョブスクリプトをユーザーが手動で実行し、結果を後からOACISに取り込む事が可能である。</div>
+</div>
+<div class="line-block">
+<div class="line">手動で実行することにより、手間は増えるが細かなスクリプトのカスタマイズが可能である。</div>
+<div class="line">例えば、以下の様な用途に利用できる。</div>
+</div>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>複数のRunを一つのジョブとしてスケジューラに投入する場合</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>スケジューラのジョブ数に制限がある場合などにまとめて投入する事ができる</dt>
+<dd><ul class="first last simple">
+<li>例：京のバルクジョブ</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>スケジューラの制限時間よりも長いジョブを実行する場合</dt>
+<dd><ul class="first last simple">
+<li>一度の実行ではジョブが完了せずジョブのリスタートが必要になる場合には、一つのRunに対して複数回ジョブ投入が必要になる</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>スケジューラに投入するジョブスクリプトに特殊な設定が必要な場合</dt>
+<dd><ul class="first last simple">
+<li>OACISによって生成されたスクリプトを手動で編集する事によって、実効方法をカスタマイズできる</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line">手動実行を行うためにはRunの作成時に投入ホスト選択フィールドで &#8220;manual submission&#8221; を選択する。</div>
+<div class="line">Runの作成後に <cite>${OACIS_ROOT}/public/Result_development/manual_submission</cite> ディレクトリにシェルスクリプトが生成される。</div>
+<div class="line">パラメータの入力形式がJSON形式の場合には、入力用JSONファイルも作成される。</div>
+</div>
+<a class="reference internal image-reference" href="_images/manual_submission.png"><img alt="_images/manual_submission.png" class="align-center" src="_images/manual_submission.png" style="width: 30%;" /></a>
+<div class="line-block">
+<div class="line">ユーザーが以下のように生成されたジョブスクリプト実行すると、ジョブが実行される。</div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre>bash 52cde935b93f969b07000005.sh
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">シミュレーション実行結果のファイル（今回の例の場合 52cde935b93f969b07000005.tar.bz2）は以下のコマンドでデータベースに取り込む事ができる。</div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli job_include -i 52cde935b93f969b07000005.tar.bz2
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">上記コマンドの入力ファイルはスペース区切りまたはコンマ区切りで複数ファイルを指定できる。</div>
+</div>
+</div>
 <div class="section" id="mongodb">
 <h2>結果をMongoDB内に格納する<a class="headerlink" href="#mongodb" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
@@ -181,8 +249,8 @@
 </div>
 <a class="reference internal image-reference" href="_images/run_results.png"><img alt="_images/run_results.png" class="align-center" src="_images/run_results.png" style="width: 40%;" /></a>
 </div>
-<div class="section" id="id5">
-<h2>プリプロセスの定義<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h2>プリプロセスの定義<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">シミュレータによっては実際にシミュレーションジョブを開始する前に、入力ファイルを準備したりフォーマットを調整したりするプリプロセスが必要な場合がしばしばある。</div>
 <div class="line">しかしプリプロセスを計算ジョブの中で行おうとすると以下のようなケースで問題になる。</div>
@@ -453,8 +521,9 @@ plot &quot;_input/time_series.dat&quot; w l
 <li><a class="reference internal" href="#mpi-openmp">MPI, OpenMPのジョブ</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#id5">手動でジョブを実行する</a></li>
 <li><a class="reference internal" href="#mongodb">結果をMongoDB内に格納する</a></li>
-<li><a class="reference internal" href="#id5">プリプロセスの定義</a></li>
+<li><a class="reference internal" href="#id6">プリプロセスの定義</a></li>
 <li><a class="reference internal" href="#analyzer">Analyzerの登録と実行</a><ul>
 <li><a class="reference internal" href="#run">Runに対する解析</a></li>
 <li><a class="reference internal" href="#parameterset">ParameterSetに対する解析</a></li>
