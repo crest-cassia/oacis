@@ -81,19 +81,13 @@ class Host
 
   def submit(runs)
     start_ssh do |ssh|
+      handler = RemoteJobHandler.new(self)
       runs.each do |run|
         begin
-          create_remote_work_dir(ssh, run)
-          prepare_input_json(ssh, run)
-          execute_pre_process(ssh, run)
-          job_script_path = prepare_job_script(ssh, run)
-          submit_to_scheduler(ssh, run, job_script_path)
+          handler.submit_remote_job(run)
         rescue => ex
-          work_dir = RemoteFilePath.work_dir_path(self,run)
-          SSHUtil.download_recursive(ssh, work_dir, run.dir) if SSHUtil.exist?(ssh, work_dir)
-          remove_remote_files(ssh, run)
-          run.update_attribute(:status, :failed)
-          $stderr.puts ex.inspect
+          logger.puts ex.inspect
+          logger.puts ex.backtrace
         end
       end
     end
@@ -102,23 +96,20 @@ class Host
   def check_submitted_job_status(logger = Logger.new($stderr))
     return if submitted_runs.count == 0
     start_ssh do |ssh|
+      handler = RemoteJobHandler.new(self)
       # check if job is finished
       submitted_runs.each do |run|
         begin
           if run.status == :cancelled
-            cancel_remote_job(ssh, run)
-            remove_remote_files(ssh, run)
+            handler.cancel_remote_job(run)
             run.destroy(true)
             next
           end
-          case remote_status(ssh, run)
+          case handler.remote_status(run)
           when :submitted
             # DO NOTHING
           when :running
-            if run.status == :submitted
-              run.status = :running
-              run.save
-            end
+            run.update_attribute(:status, :running) if run.status == :submitted
           when :includable, :unknown
             JobIncluder.include_remote_job(self, run)
           end
@@ -160,73 +151,6 @@ class Host
   end
 
   private
-  def create_remote_work_dir(ssh, run)
-    cmd = "mkdir -p #{RemoteFilePath.work_dir_path(self,run)}"
-    out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-    raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
-  end
-
-  def prepare_input_json(ssh, run)
-    input = run.input
-    SSHUtil.write_remote_file(ssh, RemoteFilePath.input_json_path(self,run), input.to_json) if input
-  end
-
-  def execute_pre_process(ssh, run)
-    script = run.simulator.pre_process_script
-    if script.present?
-      path = RemoteFilePath.pre_process_script_path(self, run)
-      SSHUtil.write_remote_file(ssh, path, script)
-      out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
-      raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
-      cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} #{run.args} 1>> _stdout.txt 2>> _stderr.txt"
-      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
-    end
-  end
-
-  def prepare_job_script(ssh, run)
-    jspath = RemoteFilePath.job_script_path(self, run)
-    SSHUtil.write_remote_file(ssh, jspath, run.job_script)
-    out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{jspath}")
-    raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
-    jspath
-  end
-
-  def submit_to_scheduler(ssh, run, job_script_path)
-    cmd = SchedulerWrapper.new(self.scheduler_type).submit_command(job_script_path)
-    out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-    raise "#{cmd} failed : #{rc}, #{err}" unless rc == 0
-    run.status = :submitted
-    run.job_id = out.chomp
-    run.submitted_at = DateTime.now
-    run.save!
-  end
-
-  def cancel_remote_job(ssh, run)
-    stat = remote_status(ssh, run)
-    if stat == :submitted or stat == :running
-      scheduler = SchedulerWrapper.new(scheduler_type)
-      cmd = scheduler.cancel_command(run.job_id)
-      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      $stderr.puts out, err, rc unless rc == 0
-    end
-  end
-
-  def remote_status(ssh, run)
-    status = :unknown
-    scheduler = SchedulerWrapper.new(scheduler_type)
-    cmd = scheduler.status_command(run.job_id)
-    out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-    status = scheduler.parse_remote_status(out) if rc == 0
-    status
-  end
-
-  def remove_remote_files(ssh, run)
-    RemoteFilePath.all_file_paths(self, run).each do |path|
-      SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
-    end
-  end
-
   def work_base_dir_is_not_editable_when_submitted_runs_exist
     if work_base_dir_is_not_editable? and self.work_base_dir_changed?
       errors.add(:work_base_dir, "is not editable when submitted runs exist")
