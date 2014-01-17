@@ -42,6 +42,7 @@ class RemoteJobHandler
         out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
         $stderr.puts out, err, rc unless rc == 0
       end
+      remove_remote_files(run)
     end
   end
 

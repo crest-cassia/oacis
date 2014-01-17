@@ -353,25 +353,33 @@ EOS
       before(:each) do
         @sim.pre_process_script = "invalid command"
         @sim.save!
+
+        @temp_dir = Pathname.new('__temp__')
+        FileUtils.mkdir_p(@temp_dir)
+        @logger = Logger.new( @temp_dir.join('log.txt') )
+      end
+
+      after(:each) do
+        FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
       end
 
       it "sets status of Run to failed" do
-        @host.submit(@runs)
+        @host.submit(@runs, @logger)
         @runs.first.reload.status.should eq :failed
       end
 
       it "does not enqueue job script" do
         SchedulerWrapper.any_instance.should_not_receive(:submit_command)
-        @host.submit(@runs)
+        @host.submit(@runs, @logger)
       end
 
       it "removes files on remote host" do
-        @host.submit(@runs)
+        @host.submit(@runs, @logger)
         File.directory?( @temp_dir.join(@runs.first.id) ).should be_false
       end
 
       it "copies files in the remote work_dir to Run's directory" do
-        @host.submit(@runs)
+        @host.submit(@runs, @logger)
         File.exist?( @runs.first.dir.join('_preprocess.sh') ).should be_true
       end
     end
@@ -409,41 +417,6 @@ EOS
     end
   end
 
-  describe "#remote_status" do
-
-    before(:each) do
-      @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count: 1, runs_count: 1)
-      @run = @sim.parameter_sets.first.runs.first
-      @run.job_id = "12345"
-      @host = @sim.executable_on.where(name: "localhost").first
-      @temp_dir = Pathname.new('__temp__')
-      FileUtils.mkdir_p(@temp_dir)
-      @host.work_base_dir = @temp_dir.expand_path
-      @host.save!
-      SSHUtil.stub(:execute2).and_return(["out", "err", 0, nil])
-    end
-
-    after(:each) do
-      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
-    end
-
-    it "returns status parsed by SchedulerWrapper#parse_remote_status" do
-      SchedulerWrapper.any_instance.should_receive(:parse_remote_status).and_return(:submitted)
-      @host.__send__(:start_ssh) {|ssh|
-        @host.__send__(:remote_status, ssh, @run).should eq :submitted
-      }
-    end
-
-    it "returns :unknown if remote status is not obtained by SchedulerWrapper" do
-      SSHUtil.stub(:execute2).and_return([nil, nil, 1, nil])
-      SchedulerWrapper.any_instance.should_not_receive(:parse_remote_status)
-      @host.__send__(:start_ssh) {|ssh|
-        @host.__send__(:remote_status, ssh, @run).should eq :unknown
-      }
-    end
-  end
-
   describe "#check_submitted_job_status" do
 
     before(:each) do
@@ -459,6 +432,8 @@ EOS
       @run.status = :submitted
       @run.submitted_to = @host
       @run.save!
+
+      @logger = Logger.new( @temp_dir.join('log.txt') )
     end
 
     after(:each) do
@@ -466,23 +441,23 @@ EOS
     end
 
     it "do nothing if remote_status is 'submitted'" do
-      @host.should_receive(:remote_status).and_return(:submitted)
-      @host.check_submitted_job_status
+      RemoteJobHandler.any_instance.should_receive(:remote_status).and_return(:submitted)
+      @host.check_submitted_job_status(@logger)
       @run.status.should eq :submitted
     end
 
     it "update status to 'running' when remote_status of Run is 'running'" do
-      @host.should_receive(:remote_status).and_return(:running)
-      @host.check_submitted_job_status
+      RemoteJobHandler.any_instance.should_receive(:remote_status).and_return(:running)
+      @host.check_submitted_job_status(@logger)
       @run.reload.status.should eq :running
     end
 
     it "include remote data and update status to 'finished' or 'failed'" do
-      @host.should_receive(:remote_status).and_return(:includable)
+      RemoteJobHandler.any_instance.should_receive(:remote_status).and_return(:includable)
       JobIncluder.should_receive(:include_remote_job) do |host, run|
         run.id.should eq @run.id
       end
-      @host.check_submitted_job_status
+      @host.check_submitted_job_status(@logger)
     end
 
     context "when run is cancelled" do
@@ -493,28 +468,21 @@ EOS
       end
 
       it "cancelles a remote job" do
-        @host.should_receive(:cancel_remote_job)
-        @host.stub(:remove_remote_files) # do nothing
-        @host.check_submitted_job_status
-      end
-
-      it "deletes archived reuslt file on the remote host" do
-        @host.stub(:cancel_remote_job) # do nothing
-        @host.should_receive(:remove_remote_files)
-        @host.check_submitted_job_status
+        RemoteJobHandler.any_instance.should_receive(:cancel_remote_job) # do nothing
+        @host.check_submitted_job_status(@logger)
       end
 
       it "destroys run" do
-        @host.stub(:remote_status) { :includable }
+        RemoteJobHandler.any_instance.stub(:remote_status) { :includable }
         expect {
-          @host.check_submitted_job_status
+          @host.check_submitted_job_status(@logger)
         }.to change { Run.count }.by(-1)
       end
 
       it "does not include remote data even if remote status is 'includable'" do
         @host.stub(:remote_status) { :includable }
         JobIncluder.should_not_receive(:include_remote_job)
-        @host.check_submitted_job_status
+        @host.check_submitted_job_status(@logger)
       end
     end
   end
