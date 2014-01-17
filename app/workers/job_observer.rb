@@ -30,7 +30,7 @@ class JobObserver
           when :running
             run.update_attribute(:status, :running) if run.status == :submitted
           when :includable, :unknown
-            JobIncluder.include_remote_job(self, run)
+            JobIncluder.include_remote_job(host, run)
           end
         rescue => ex
           logger.error("Error in Host#check_submitted_job_status: #{ex.inspect}")
