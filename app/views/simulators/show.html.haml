@@ -12,8 +12,6 @@
       %a{"href"=>"#tab-list-parameters", "data-toggle" => "tab"} Parameter Sets
     %li
       %a{"href"=>"#tab-progress", "data-toggle" => "tab"} Progress
-    %li
-      %a{"href"=>"#tab-description", "data-toggle" => "tab"} Description
 
   %div.tab-content
     %div.tab-pane#tab-about
@@ -23,5 +21,3 @@
       = render "parameter_sets_list"
     %div.tab-pane#tab-progress
       = render "progress"
-    %div.tab-pane#tab-description
-      = render partial: "description", locals: {simulator: @simulator}
