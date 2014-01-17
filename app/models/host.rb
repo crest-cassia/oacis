@@ -79,20 +79,6 @@ class Host
     Run.where(submitted_to: self).in(status: [:submitted, :running, :cancelled])
   end
 
-  def submit(runs, logger = Logger.new($stderr))
-    start_ssh do |ssh|
-      handler = RemoteJobHandler.new(self)
-      runs.each do |run|
-        begin
-          handler.submit_remote_job(run)
-        rescue => ex
-          logger.info ex.inspect
-          logger.info ex.backtrace
-        end
-      end
-    end
-  end
-
   def check_submitted_job_status(logger = Logger.new($stderr))
     return if submitted_runs.count == 0
     start_ssh do |ssh|
