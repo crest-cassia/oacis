@@ -121,7 +121,7 @@ describe OacisCli do
         File.exist?('parameter_set_ids.json').should be_true
 
         expected = @sim.reload.parameter_sets.map {|ps| {"parameter_set_id" => ps.id.to_s} }
-        JSON.load(File.read('parameter_set_ids.json')).should eq expected
+        JSON.load(File.read('parameter_set_ids.json')).should =~ expected
       }
     end
 
