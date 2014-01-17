@@ -79,40 +79,6 @@ class Host
     Run.where(submitted_to: self).in(status: [:submitted, :running, :cancelled])
   end
 
-  def check_submitted_job_status(logger = Logger.new($stderr))
-    return if submitted_runs.count == 0
-    start_ssh do |ssh|
-      handler = RemoteJobHandler.new(self)
-      # check if job is finished
-      submitted_runs.each do |run|
-        begin
-          if run.status == :cancelled
-            handler.cancel_remote_job(run)
-            run.destroy(true)
-            next
-          end
-          case handler.remote_status(run)
-          when :submitted
-            # DO NOTHING
-          when :running
-            run.update_attribute(:status, :running) if run.status == :submitted
-          when :includable, :unknown
-            JobIncluder.include_remote_job(self, run)
-          end
-        rescue => ex
-          logger.error("Error in Host#check_submitted_job_status: #{ex.inspect}")
-          logger.error ex.backtrace
-          logger.error("run:\"#{run.to_param.to_s}\" is failed")
-          if run.result.present?
-            run.result = "System_message:_output.json is not stored. More detail is written in log files."
-          end
-          run.status = :failed
-          run.save!
-        end
-      end
-    end
-  end
-
   def work_base_dir_is_not_editable?
     self.persisted? and submitted_runs.any?
   end
