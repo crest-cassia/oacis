@@ -19,6 +19,7 @@ group :assets do
   gem "haml-rails"
   gem "factory_girl_rails"
   gem "d3-rails"
+  gem "redcarpet"
 end
 
 group :development, :test do
