@@ -19,7 +19,7 @@ class Worker < DaemonSpawn::Base
     loop do
       JobSubmitter.perform(@logger)
       break if @term_received
-      JobMonitoringWorker.perform(@logger)
+      JobObserver.perform(@logger)
       break if @term_received
       AnalyzerRunner.perform(@logger)
       break if @term_received
