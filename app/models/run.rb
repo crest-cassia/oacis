@@ -18,8 +18,8 @@ class Run
   field :job_id, type: String
   field :job_script, type: String
   index({ status: 1 }, { name: "run_status_index" })
-  belongs_to :parameter_set
-  belongs_to :simulator  # for caching. do not edit this field explicitly
+  belongs_to :parameter_set, autosave: false
+  belongs_to :simulator, autosave: false  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy
   belongs_to :submitted_to, class_name: "Host"
 

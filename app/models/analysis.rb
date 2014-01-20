@@ -14,7 +14,7 @@ class Analysis
   index({ status: 1 }, { name: "analysis_status_index" })
 
   belongs_to :analyzer
-  belongs_to :analyzable, polymorphic: true
+  belongs_to :analyzable, polymorphic: true, autosave: false
   belongs_to :parameter_set
 
   before_validation :set_status
