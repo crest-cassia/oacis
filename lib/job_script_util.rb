@@ -10,6 +10,7 @@ OACIS_IS_MPI_JOB=<%= is_mpi_job %>
 OACIS_WORK_BASE_DIR=<%= work_base_dir %>
 OACIS_MPI_PROCS=<%= mpi_procs %>
 OACIS_OMP_THREADS=<%= omp_threads %>
+OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
 
 # PRE-PROCESS ---------------------
 mkdir -p ${OACIS_WORK_BASE_DIR}
@@ -22,6 +23,11 @@ fi
 echo "{" > ../${OACIS_RUN_ID}_status.json
 echo "  \\"started_at\\": \\"`date`\\"," >> ../${OACIS_RUN_ID}_status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${OACIS_RUN_ID}_status.json
+
+# PRINT SIMULATOR VERSION ---------
+if [ -n "$OACIS_PRINT_VERSION_COMMAND" ]; then
+  (eval ${OACIS_PRINT_VERSION_COMMAND}) > ../${OACIS_RUN_ID}_version.txt
+fi
 
 # JOB EXECUTION -------------------
 export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
@@ -39,6 +45,9 @@ echo "}" >> ../${OACIS_RUN_ID}_status.json
 cd ..
 \\mv -f ${OACIS_RUN_ID}_status.json ${OACIS_RUN_ID}/_status.json
 \\mv -f ${OACIS_RUN_ID}_time.txt ${OACIS_RUN_ID}/_time.txt
+if [ -e ${OACIS_RUN_ID}_version.txt ]; then
+  \\mv -f ${OACIS_RUN_ID}_version.txt ${OACIS_RUN_ID}/_version.txt
+fi
 tar cf ${OACIS_RUN_ID}.tar ${OACIS_RUN_ID}
 if test $? -ne 0; then { echo "// Failed to make an archive for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
 bzip2 ${OACIS_RUN_ID}.tar
@@ -46,7 +55,7 @@ if test $? -ne 0; then { echo "// Failed to compress for ${OACIS_RUN_ID}" >> ./_
 rm -rf ${OACIS_RUN_ID}
 EOS
 
-  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "work_base_dir", "omp_threads", "mpi_procs", "cmd"]
+  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
 
   def self.script_for(run, host)
     default_variables = {
@@ -55,7 +64,8 @@ EOS
       "work_base_dir" => host ? host.work_base_dir : '.',
       "omp_threads" => run.omp_threads,
       "mpi_procs" => run.mpi_procs,
-      "cmd" => run.command_and_input[0].sub(/;$/, '')
+      "cmd" => run.command_and_input[0].sub(/;$/, ''),
+      "print_version_command" => run.simulator.print_version_command
     }
     # semi-colon in the last of the command causes bash syntax error
 
