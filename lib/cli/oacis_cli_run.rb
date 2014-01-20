@@ -62,13 +62,13 @@ class OacisCli < Thor
     submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
     host_parameters = job_parameters["host_parameters"].to_hash
 
+    progressbar = ProgressBar.create(total: parameter_sets.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
-      $stderr.puts "Number of parameter_sets : #{parameter_sets.count}"
+      progressbar.log "Number of parameter_sets : #{parameter_sets.count}"
     end
 
     runs = []
     parameter_sets.each_with_index.map do |ps, idx|
-      $stderr.puts "Creating Runs : #{idx} / #{parameter_sets.count}"
       sim = ps.simulator
       mpi_procs = sim.support_mpi ? job_parameters["mpi_procs"] : 1
       omp_threads = sim.support_omp ? job_parameters["omp_threads"] : 1
@@ -83,11 +83,12 @@ class OacisCli < Thor
           run.save! unless options[:dry_run]
           runs << run
         else
-          $stderr.puts "Failed to create a Run for ParameterSet #{ps.id}"
-          $stderr.puts run.errors.full_messages
+          progressbar.log "Failed to create a Run for ParameterSet #{ps.id}"
+          progressbar.log run.errors.full_messages
           raise "failed to create a Run"
         end
       end
+      progressbar.increment
     end
 
   ensure
