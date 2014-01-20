@@ -5,7 +5,8 @@ class RunsListDatatable
              '<th>MPI</th>', '<th>OMP</th>', '<th>version</th>',
              '<th>created_at</th>', '<th>finished_at</th>', '<th style="min-width: 18px; width: 1%;"></th>']
   SORT_BY = ["id", "status", "submitted_to", "job_id", "cpu_time",
-             "real_time", "simulator_version", "created_at", "finished_at", "id"]
+             "real_time", "mpi_procs", "omp_threads",
+             "simulator_version", "created_at", "finished_at", "id"]
 
   def initialize(runs, view)
     @view = view
