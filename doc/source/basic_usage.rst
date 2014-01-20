@@ -95,7 +95,7 @@ Executable simulators         実行可能なシミュレータをチェック�
               ~/path/to/simulator.out
 
 - 以下の名前のファイルがカレントディレクトリにあっても問題なく動作し、これらのファイルを上書きしたりしないこと
-    - *_input.json* , *_output.json* , *_status.json* , *_time.txt*
+    - *_input.json* , *_output.json* , *_status.json* , *_time.txt*, *_version.txt*
     - これらのファイルはCMが使用するファイル名であるため干渉しないようにする必要がある
 - 正常終了時にリターンコード０、エラー発生時に０以外を返す事
     - リターンコードによってシミュレーションの正常終了/異常終了が判定される。
