@@ -250,7 +250,35 @@
 <a class="reference internal image-reference" href="_images/run_results.png"><img alt="_images/run_results.png" class="align-center" src="_images/run_results.png" style="width: 40%;" /></a>
 </div>
 <div class="section" id="id6">
-<h2>プリプロセスの定義<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<h2>シミュレーターのバージョンを記録する<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">シミュレーションの実行時にどのバージョンのシミュレーターで実行したかOACISに記録をさせておくことができる。</div>
+<div class="line">RunとSimulatorのバージョンをひもづけて記録する事により、例えば、あるバージョンの実行結果の一括削除などの操作ができる様になる。</div>
+</div>
+<div class="line-block">
+<div class="line">バージョンを保存するには、Simulatorのバージョンを出力させるコマンドをOACISに登録する。</div>
+<div class="line">例えば</div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre>~/path/to/simulator.out --version
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">というコマンドでバージョン情報を出力するシミュレーターがある場合、このコマンドをSimulator登録時に &#8220;Print version command&#8221; というフィールドに入力する。</div>
+<div class="line">このコマンドを登録しておくと、ジョブスクリプトの中でこのコマンドを実行しその標準出力をバージョンとして記録することができる。</div>
+</div>
+<div class="line-block">
+<div class="line">Print version command の標準出力に出力された文字列がバージョンとして認識されるので、実行バイナリに引数を渡すだけでなく柔軟な指定が可能である。</div>
+<div class="line">例えば、以下のようにビルドログを出力したり、バージョン管理システムのコミットIDを出力するような利用方法も考えられる。</div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre>cat ~/path/to/build_log.txt
+</pre></div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> ~/path/to; git describe --always
+</pre></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>プリプロセスの定義<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">シミュレータによっては実際にシミュレーションジョブを開始する前に、入力ファイルを準備したりフォーマットを調整したりするプリプロセスが必要な場合がしばしばある。</div>
 <div class="line">しかしプリプロセスを計算ジョブの中で行おうとすると以下のようなケースで問題になる。</div>
@@ -523,7 +551,8 @@ plot &quot;_input/time_series.dat&quot; w l
 </li>
 <li><a class="reference internal" href="#id5">手動でジョブを実行する</a></li>
 <li><a class="reference internal" href="#mongodb">結果をMongoDB内に格納する</a></li>
-<li><a class="reference internal" href="#id6">プリプロセスの定義</a></li>
+<li><a class="reference internal" href="#id6">シミュレーターのバージョンを記録する</a></li>
+<li><a class="reference internal" href="#id7">プリプロセスの定義</a></li>
 <li><a class="reference internal" href="#analyzer">Analyzerの登録と実行</a><ul>
 <li><a class="reference internal" href="#run">Runに対する解析</a></li>
 <li><a class="reference internal" href="#parameterset">ParameterSetに対する解析</a></li>
