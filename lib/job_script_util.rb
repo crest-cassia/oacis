@@ -65,7 +65,7 @@ EOS
       "omp_threads" => run.omp_threads,
       "mpi_procs" => run.mpi_procs,
       "cmd" => run.command_and_input[0].sub(/;$/, ''),
-      "print_version_command" => run.simulator.print_version_command
+      "print_version_command" => run.simulator.print_version_command.to_s.gsub(/\"/, '\\"')
     }
     # semi-colon in the last of the command causes bash syntax error
 
