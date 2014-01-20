@@ -101,6 +101,11 @@ EOS
         end
       end
 
+      if File.exist?("_version.txt")
+        version = File.open("_version.txt", 'r').read.chomp
+        run.simulator_version = version
+      end
+
       json_path = '_output.json'
       run.result = JSON.load(File.open(json_path)) if File.exist?(json_path)
       run.included_at = DateTime.now
