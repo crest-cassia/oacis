@@ -20,6 +20,10 @@
     .controls
       = f.text_field(:command)
   .control-group
+    = f.label(:print_version_command, class: 'control-label')
+    .controls
+      = f.text_field(:print_version_command)
+  .control-group
     = f.label(:support_input_json, "Input type", class: 'control-label')
     .controls
       = f.select(:support_input_json, {"Argument" => false, "JSON" => true} )
