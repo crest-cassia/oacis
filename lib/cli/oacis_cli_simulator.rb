@@ -7,6 +7,7 @@ class OacisCli < Thor
   "support_input_json": false,
   "support_mpi": false,
   "support_omp": false,
+  "print_version_command": null,
   "pre_process_script": null,
   "executable_on_ids": [],
   "parameter_definitions": [
