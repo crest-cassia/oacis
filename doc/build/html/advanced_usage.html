@@ -291,7 +291,7 @@
 </ul>
 </div></blockquote>
 <div class="line-block">
-<div class="line">そこで、CMにはジョブの実行前にプリプロセスを個別に実行する仕組みを用意してある。</div>
+<div class="line">そこで、OACISにはジョブの実行前にプリプロセスを個別に実行する仕組みを用意してある。</div>
 <div class="line">このプリプロセスはジョブの投入前にログインノードで実行されるため上記の問題は起きない。</div>
 <div class="line">ここではプリプロセスの仕様と設定方法を説明する。</div>
 </div>
@@ -333,11 +333,11 @@
 <h2>Analyzerの登録と実行<a class="headerlink" href="#analyzer" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">ジョブの実行後、実行結果に対してポストプロセス（Analyzer）を定義することができる。</div>
-<div class="line">CMで定義できるAnalyzerには２種類存在する。</div>
+<div class="line">OACISで定義できるAnalyzerには２種類存在する。</div>
 <div class="line">一つは各個別のRunに対して実行されるもの、もう一つはParameterSet内のすべてのRunに対して行われるものである。</div>
 <div class="line">前者の例としては、シミュレーションのスナップショットデータから可視化を行う、時系列のシミュレーション結果に対してフーリエ変換する、などがあげられる。</div>
 <div class="line">後者の例は、複数のRunの統計平均と誤差を計算することなどがあげられる。</div>
-<div class="line">CMの用語として、Analyzerによって得られた結果はAnalysisと呼ばれる。AnalyzerとAnalysisの関係は、SimulatorとRunの関係のようなものである。</div>
+<div class="line">OACISの用語として、Analyzerによって得られた結果はAnalysisと呼ばれる。AnalyzerとAnalysisの関係は、SimulatorとRunの関係のようなものである。</div>
 </div>
 <div class="line-block">
 <div class="line">Analyzerはサーバー上でバックグラウンドプロセスとして実行される。よってサーバー上でanalyzerが適切に動くように事前にセットアップする必要がある。</div>
@@ -383,7 +383,7 @@ plot &quot;_input/time_series.dat&quot; w l
 </pre></div>
 </div>
 <div class="line-block">
-<div class="line">これでAnalyzerの準備ができたので、CMに登録する</div>
+<div class="line">これでAnalyzerの準備ができたので、OACISに登録する</div>
 <div class="line">Simulatorの画面を開き、[About]タブをクリックするとAnalyzerを新規登録するためのリンク[New Analyzer]が表示される。</div>
 <div class="line">そのリンクをクリックすると下図のような登録画面が現れる。</div>
 </div>
@@ -403,7 +403,7 @@ plot &quot;_input/time_series.dat&quot; w l
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>Name</td>
-<td>CMの中で使われるAnalyzerの名前。任意の名前を指定できる。各Simulator内で一意でなくてはならない。</td>
+<td>OACISの中で使われるAnalyzerの名前。任意の名前を指定できる。各Simulator内で一意でなくてはならない。</td>
 </tr>
 <tr class="row-odd"><td>Type</td>
 <td>Runに対する解析(on_run)、ParameterSetに対する解析(on_parameter_set)のどちらかから選ぶ</td>
