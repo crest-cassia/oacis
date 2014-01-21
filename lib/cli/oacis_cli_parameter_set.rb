@@ -44,27 +44,28 @@ class OacisCli < Thor
     input = JSON.load(File.read(options[:input]))
     simulator = get_simulator(options[:simulator])
 
+    progressbar = ProgressBar.create(total: input.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
-      $stderr.puts "input parameter_sets :", JSON.pretty_generate(input)
-      $stderr.puts "simulator :", JSON.pretty_generate(simulator)
+      progressbar.log "input parameter_sets :", JSON.pretty_generate(input)
+      progressbar.log "simulator :", JSON.pretty_generate(JSON.load(simulator.to_json))
     end
 
     parameter_sets = []
     input.each_with_index.map do |ps_value, idx|
-      $stderr.puts "creating parameter_set : #{idx} / #{input.size}"
-      $stderr.puts "  parameter values : #{ps_value.inspect}" if options[:verbose]
+      progressbar.log "  parameter values : #{ps_value.inspect}" if options[:verbose]
       param_set = simulator.parameter_sets.build({v: ps_value})
       if param_set.valid?
         param_set.save! unless options[:dry_run]
         parameter_sets << param_set
       elsif param_set.errors.keys == [:parameters] # An identical parameter_set is found
-        $stderr.puts "  An identical parameter_set already exists. Skipping..."
+        progressbar.log "  An identical parameter_set already exists. Skipping..."
         parameter_sets << simulator.parameter_sets.where(v: ps_value).first
       else
-        $stderr.puts param_set.inspect
-        $stderr.puts param_set.errors.full_messages
+        progressbar.log param_set.inspect
+        progressbar.log param_set.errors.full_messages
         raise "validation of parameter_set failed"
       end
+      progressbar.increment
     end
 
   ensure
