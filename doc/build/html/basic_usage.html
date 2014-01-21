@@ -100,7 +100,7 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>Name</td>
-<td>CMの中で使われるHostの名前。任意の名前を指定できる。一意でなくてはならない。</td>
+<td>OACISの中で使われるHostの名前。任意の名前を指定できる。一意でなくてはならない。</td>
 </tr>
 <tr class="row-odd"><td>Hostname</td>
 <td>ssh接続先のhostnameまたはIPアドレス</td>
@@ -154,14 +154,14 @@
 <div class="section" id="id5">
 <h2>シミュレータ登録<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
-<div class="line">扱うシミュレータは、言語やマシンを問わず自由に作成できる。（CMは登録されたコマンドを実行するだけなので、どの言語で実装されているかは関係ない。）</div>
+<div class="line">扱うシミュレータは、言語やマシンを問わず自由に作成できる。（OACISは登録されたコマンドを実行するだけなので、どの言語で実装されているかは関係ない。）</div>
 <div class="line">ただし、以下の要件を満たす必要がある。</div>
 </div>
 <ul>
 <li><dl class="first docutils">
 <dt>出力ファイルがカレントディレクトリ以下に作成される事</dt>
 <dd><ul class="first last simple">
-<li>CMは実行時にディレクトリを作り、その中でジョブを実行する。完了後、そのディレクトリ内のファイルすべてを出力結果として取り込む。</li>
+<li>OACISは実行時にディレクトリを作り、その中でジョブを実行する。完了後、そのディレクトリ内のファイルすべてを出力結果として取り込む。</li>
 </ul>
 </dd>
 </dl>
@@ -185,7 +185,7 @@
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>JSON形式の場合、実行時に次のような形式のJSONファイルを <em>_input.json</em> というファイル名でCMが実行時に配置する。シミュレータはカレントディレクトリの <em>_input.json</em> パースするように実装する必要がある。</dt>
+<dt>JSON形式の場合、実行時に次のような形式のJSONファイルを <em>_input.json</em> というファイル名でOACISが実行時に配置する。シミュレータはカレントディレクトリの <em>_input.json</em> パースするように実装する必要がある。</dt>
 <dd><div class="first highlight-json"><div class="highlight"><pre><span class="p">{</span><span class="nt">&quot;param1&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span><span class="nt">&quot;param2&quot;</span><span class="p">:</span><span class="mf">3.0</span><span class="p">,</span><span class="nt">&quot;_seed&quot;</span><span class="p">:</span><span class="mi">12345</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -211,8 +211,8 @@
 <li><dl class="first docutils">
 <dt>以下の名前のファイルがカレントディレクトリにあっても問題なく動作し、これらのファイルを上書きしたりしないこと</dt>
 <dd><ul class="first last simple">
-<li><em>_input.json</em> , <em>_output.json</em> , <em>_status.json</em> , <em>_time.txt</em></li>
-<li>これらのファイルはCMが使用するファイル名であるため干渉しないようにする必要がある</li>
+<li><em>_input.json</em> , <em>_output.json</em> , <em>_status.json</em> , <em>_time.txt</em>, <em>_version.txt</em></li>
+<li>これらのファイルはOACISが使用するファイル名であるため干渉しないようにする必要がある</li>
 </ul>
 </dd>
 </dl>

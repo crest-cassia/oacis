@@ -176,5 +176,23 @@ EOS
         File.exist?(@run.dir.join('_stdout.txt')).should be_true
       }
     end
+
+    context "when print_version_command is not nil" do
+
+      it "parses simulator version printed by Simulator#print_version_command" do
+        @sim.command = "echo '[1,2,3]' > _output.json"
+        @sim.support_input_json = true
+        @sim.print_version_command = 'echo "simulator version: 1.0.0"'
+        @sim.save!
+        run_test_script_in_temp_dir
+        Dir.chdir(@temp_dir) {
+          result_file = "#{@run.id}.tar.bz2"
+          FileUtils.mv( result_file, @run.dir.join('..') )
+          JobScriptUtil.expand_result_file_and_update_run(@run)
+
+          @run.simulator_version.should eq "simulator version: 1.0.0"
+        }
+      end
+    end
   end
 end

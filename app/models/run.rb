@@ -14,6 +14,7 @@ class Run
   field :result  # can be any type. it's up to Simulator spec
   field :mpi_procs, type: Integer, default: 1
   field :omp_threads, type: Integer, default: 1
+  field :simulator_version, type: String
   field :host_parameters, type: Hash, default: {}
   field :job_id, type: String
   field :job_script, type: String
