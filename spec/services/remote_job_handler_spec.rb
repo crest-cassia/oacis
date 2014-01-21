@@ -14,8 +14,6 @@ describe RemoteJobHandler do
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
       SchedulerWrapper.any_instance.stub(:submit_command).and_return("echo")
-
-      @logger = Logger.new(@temp_dir.join('log.txt'))
     end
 
     after(:each) do
@@ -52,7 +50,6 @@ describe RemoteJobHandler do
         @sim.update_attribute(:pre_process_script, "invalid command")
 
         @temp_dir = Pathname.new( Dir.mktmpdir )
-        @logger = Logger.new( @temp_dir.join('log.txt') )
       end
 
       after(:each) do
@@ -154,6 +151,82 @@ describe RemoteJobHandler do
     it "returns :unknown if remote status is not obtained by SchedulerWrapper" do
       SSHUtil.stub(:execute2).and_return([nil, nil, 1, nil])
       RemoteJobHandler.new(@host).remote_status(@run).should eq :unknown
+    end
+  end
+
+  describe ".cancel_remote_job" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                command: "echo",
+                                parameter_sets_count: 1, runs_count: 1)
+      @run = @sim.parameter_sets.first.runs.first
+      @host = @sim.executable_on.where(name: "localhost").first
+      @temp_dir = Pathname.new( Dir.mktmpdir )
+      @host.update_attribute(:work_base_dir, @temp_dir.expand_path)
+      SchedulerWrapper.any_instance.stub(:cancel_command).and_return("echo")
+      @handler = RemoteJobHandler.new(@host)
+    end
+
+    after(:each) do
+      FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    context "when remote_status is :submitted" do
+
+      before(:each) do
+        @handler.stub(:remote_status).and_return(:submitted)
+      end
+
+      it "calls cancel_command of the scheduler" do
+        SchedulerWrapper.any_instance.should_receive(:cancel_command)
+        @handler.cancel_remote_job(@run)
+      end
+
+      it "removes_remote_file" do
+        dummy_work_dir = RemoteFilePath.work_dir_path(@host, @run)
+        FileUtils.mkdir_p(dummy_work_dir)
+        @handler.cancel_remote_job(@run)
+        File.directory?(dummy_work_dir).should be_false
+      end
+    end
+
+    context "when remote_status is :running" do
+
+      before(:each) do
+        @handler.stub(:remote_status).and_return(:running)
+      end
+
+      it "calls cancel_command of the scheduler" do
+        SchedulerWrapper.any_instance.should_receive(:cancel_command)
+        @handler.cancel_remote_job(@run)
+      end
+
+      it "removes_remote_file" do
+        dummy_work_dir = RemoteFilePath.work_dir_path(@host, @run)
+        FileUtils.mkdir_p(dummy_work_dir)
+        @handler.cancel_remote_job(@run)
+        File.directory?(dummy_work_dir).should be_false
+      end
+    end
+
+    context "when remote_status is :includable" do
+
+      before(:each) do
+        @handler.stub(:remote_status).and_return(:includable)
+      end
+
+      it "calls cancel_command of the scheduler" do
+        SchedulerWrapper.any_instance.should_not_receive(:cancel_command)
+        @handler.cancel_remote_job(@run)
+      end
+
+      it "removes_remote_file" do
+        dummy_work_dir = RemoteFilePath.work_dir_path(@host, @run)
+        FileUtils.mkdir_p(dummy_work_dir)
+        @handler.cancel_remote_job(@run)
+        File.directory?(dummy_work_dir).should be_false
+      end
     end
   end
 end
