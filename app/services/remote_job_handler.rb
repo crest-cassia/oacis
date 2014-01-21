@@ -1,5 +1,7 @@
 class RemoteJobHandler
 
+  class RemoteOperationError < StandardError; end
+
   def initialize(host)
     @host = host
   end
@@ -51,7 +53,7 @@ class RemoteJobHandler
     cmd = "mkdir -p #{RemoteFilePath.work_dir_path(@host,run)}"
     @host.start_ssh do |ssh|
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
+      raise RemoteOperationError, "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
     end
   end
 
@@ -71,10 +73,10 @@ class RemoteJobHandler
       @host.start_ssh do |ssh|
         SSHUtil.write_remote_file(ssh, path, script)
         out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
-        raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
+        raise RemoteOperationError, "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
         cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} #{run.args} 1>> _stdout.txt 2>> _stderr.txt"
         out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-        raise "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
+        raise RemoteOperationError, "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
       end
     end
   end
@@ -84,7 +86,7 @@ class RemoteJobHandler
     @host.start_ssh do |ssh|
       SSHUtil.write_remote_file(ssh, jspath, run.job_script)
       out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{jspath}")
-      raise "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
+      raise RemoteOperationError, "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
     end
     jspath
   end
@@ -93,7 +95,7 @@ class RemoteJobHandler
     cmd = SchedulerWrapper.new(@host.scheduler_type).submit_command(job_script_path)
     @host.start_ssh do |ssh|
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      raise "#{cmd} failed : #{rc}, #{err}" unless rc == 0
+      raise RemoteOperationError, "#{cmd} failed : #{rc}, #{err}" unless rc == 0
       run.status = :submitted
       run.job_id = out.chomp
       run.submitted_at = DateTime.now
