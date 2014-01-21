@@ -37,6 +37,7 @@ describe OacisCli do
           "support_input_json": true,
           "support_mpi": true,
           "support_omp": false,
+          "print_version_command": null,
           "pre_process_script": null,
           "executable_on_ids": [],
           "parameter_definitions": [
