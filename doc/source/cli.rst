@@ -369,3 +369,51 @@ job_include
 
     - inputファイルは手動実行後に生成される結果のアーカイブファイル(.tar.bz2)を指定する
         - 空白区切り、またはコンマ区切りで複数指定可能
+
+destroy_runs
+--------------------------------
+
+Runを削除する
+
+- 実行方法
+
+  .. code-block:: sh
+
+    ../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:failed
+
+- オプション
+
+  +----------------+--------+-----------------------------------------+-----------+
+  |Option          |alias   |description                              |required?  |
+  +================+========+=========================================+===========+
+  |--simulator_id  |-s      |simulator id or path to simulator_id.json|yes        |
+  +----------------+--------+-----------------------------------------+-----------+
+  |--query         |-q      |query for runs(Hash)                     |yes        |
+  +----------------+--------+-----------------------------------------+-----------+
+
+- 入力形式
+
+    - simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。
+    - queryは連想配列で指定する。
+        - 連想配列は {key}:{value} という形式で指定する。
+        - keyとして可能な値は"status", "simulator_version"のみ。
+
+- 実行例
+
+    - simulator_versionが"1.0.0"のRunを削除する
+
+    .. code-block:: sh
+
+        ../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
+
+    - simulator_version が存在しないRunを削除する
+
+    .. code-block:: sh
+
+        ../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:
+
+    - statusが "created" （ジョブ投入前）のRunを削除する
+
+    .. code-block:: sh
+
+        ../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:created
