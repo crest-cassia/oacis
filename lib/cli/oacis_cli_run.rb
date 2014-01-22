@@ -120,4 +120,49 @@ class OacisCli < Thor
     end
     $stdout.puts JSON.pretty_generate(counts)
   end
+
+  desc 'destroy_runs', "destroy runs"
+  method_option :simulator,
+    type:     :string,
+    aliases:  '-s',
+    desc:     'simulator ID or path to simulator_id.json',
+    required: true
+  method_option :query,
+    type:     :hash,
+    aliases:  '-q',
+    desc:     'query of run specified as Hash (e.g. --query=status:failed simulator_version=0.0.1)',
+    required: true
+  def destroy_runs
+    sim = get_simulator(options[:simulator])
+
+    runs = sim.runs
+    unless options[:query]["status"] or options[:query]["simulator_version"]
+      say("query must have 'status' or 'simulator_version' key", :red)
+      raise "invalid query"
+    end
+    if stat = options[:query]["status"]
+      runs = runs.where(status: stat.to_sym)
+    end
+    if version = options[:query]["simulator_version"]
+      version = nil if version == ""
+      runs = runs.where(simulator_version: version)
+    end
+
+    if runs.empty?
+      say("No runs are found.")
+      return
+    end
+
+    if options[:verbose]
+      say("Found runs: #{runs.map(&:id).to_json}")
+    end
+
+    if yes?("Destroy #{runs.count} runs?")
+      progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
+      runs.each do |run|
+        run.destroy
+        progressbar.increment
+      end
+    end
+  end
 end
