@@ -94,7 +94,7 @@ class SchedulerWrapper
       "kill -- -`ps x -o \"pgid pid command\" | grep \"[#{job_id[0]}]#{job_id[1..-1]}\" | awk '{print $1}'`"
     when "torque"
       "qdel #{job_id}"
-    when "pjm"
+    when "pjm", "pjm_k"
       "pjdel #{job_id}"
     else
       raise "not supported"
