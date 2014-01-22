@@ -48,6 +48,8 @@ db/*.sqlite3
 /spec/requests
 /spec/routing
 /spec/views
+/spec/stdout.txt
+/spec/stderr.txt
 /specifications
 rerun.txt
 pickle-email-*.html

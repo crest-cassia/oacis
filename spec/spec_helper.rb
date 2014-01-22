@@ -76,7 +76,18 @@ Spork.prefork do
       DatabaseCleaner.clean
     end
 
+    # redirect stdout and stderr
+    config.before(:all) do
+      $stderr = File.new(File.join(File.dirname(__FILE__), 'stderr.txt'), 'w')
+      $stdout = File.new(File.join(File.dirname(__FILE__), 'stdout.txt'), 'w')
+      if ProgressBar::Base::DEFAULT_OUTPUT_STREAM != $stdout
+        ProgressBar::Base::DEFAULT_OUTPUT_STREAM = $stdout
+      end
+    end
+
     config.after(:all) do
+      $stderr = STDERR
+      $stdout = STDOUT
       root_dir = ResultDirectory.root
       FileUtils.rm_r(root_dir) if FileTest.directory?(root_dir)
     end
