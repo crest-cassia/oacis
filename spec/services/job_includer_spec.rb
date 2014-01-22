@@ -131,7 +131,7 @@ describe JobIncluder do
       end
 
       it "deletes remote work_dir and archive file" do
-        Dir.entries(@temp_dir).should eq ['.', '..']
+        Dir.entries(@temp_dir).should =~ ['.', '..']
       end
     end
   end
