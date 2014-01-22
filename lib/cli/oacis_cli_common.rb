@@ -67,10 +67,14 @@ EOS
     host
   end
 
-  def get_simulator(file)
-    parsed = JSON.load( File.read(file) )
-    validate_simulator_id(parsed)
-    Simulator.find(parsed["simulator_id"])
+  def get_simulator(simulator_id)
+    if simulator_id =~ /[0-9a-f]{24}/
+      return Simulator.find(simulator_id)
+    else
+      parsed = JSON.load( File.read(simulator_id) )
+      validate_simulator_id(parsed)
+      return Simulator.find(parsed["simulator_id"])
+    end
   end
 
   def validate_simulator_id(parsed)

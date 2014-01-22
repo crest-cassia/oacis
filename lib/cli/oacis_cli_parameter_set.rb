@@ -4,7 +4,7 @@ class OacisCli < Thor
   method_option :simulator,
     type:     :string,
     aliases:  '-s',
-    desc:     'target simulator',
+    desc:     'simulator ID or path to simulator_id.json',
     required: true
   method_option :output,
     type:     :string,
@@ -28,7 +28,7 @@ class OacisCli < Thor
   method_option :simulator,
     type:     :string,
     aliases:  '-s',
-    desc:     'target simulator',
+    desc:     'simulator ID or path to simulator_id.json',
     required: true
     method_option :input,
     type:     :string,
