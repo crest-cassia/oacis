@@ -111,7 +111,7 @@ describe OacisCli do
       at_temp_dir {
         invoke_create_parameter_sets
         mapped = @sim.reload.parameter_sets.map {|ps| [ps.v["L"], ps.v["T"]] }
-        mapped.should eq [ [10, 0.1], [20, 0.1], [30, 0.1], [10, 0.2], [20, 0.2], [30, 0.2]]
+        mapped.should =~ [ [10, 0.1], [20, 0.1], [30, 0.1], [10, 0.2], [20, 0.2], [30, 0.2]]
       }
     end
 
