@@ -98,7 +98,7 @@ class RemoteJobHandler
       raise RemoteOperationError, "#{cmd} failed : #{rc}, #{err}" unless rc == 0
       run.status = :submitted
       run.job_id = out.chomp
-      run.job_id = out.chomp.split(" ")[5] if @host.hostname == "k.aics.riken.jp" #STDOUT:[INFO] PJM 0000 pjsub Job 2275991 submitted.
+      run.job_id = out.chomp.split(" ")[5] if @host.scheduler_type == "pjm_k" #STDOUT:[INFO] PJM 0000 pjsub Job 2275991 submitted.
       run.submitted_at = DateTime.now
       run.save!
     end
