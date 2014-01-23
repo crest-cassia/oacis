@@ -1,6 +1,6 @@
 class SchedulerWrapper
 
-  TYPES = ["none", "torque", "pjm"]
+  TYPES = ["none", "torque", "pjm", "pjm_k"]
 
   attr_reader :type
 
@@ -19,6 +19,8 @@ class SchedulerWrapper
       "qsub #{script}"
     when "pjm"
       "pjsub #{script}"
+    when "pjm_k"
+      "bash -l -c \"cat #{script} | pjsub\""
     else
       raise "not supported"
     end
@@ -30,7 +32,7 @@ class SchedulerWrapper
       "ps ux"
     when "torque"
       "qstat; pbsnodes -a"
-    when "pjm"
+    when "pjm", "pjm_k"
       "pjstat"
     else
       raise "not supported"
@@ -43,7 +45,7 @@ class SchedulerWrapper
       "ps ux | grep \"[#{job_id[0]}]#{job_id[1..-1]}\""
     when "torque"
       "qstat #{job_id}"
-    when "pjm"
+    when "pjm", "pjm_k"
       "pjstat #{job_id}"
     else
       raise "not supported"
@@ -69,7 +71,7 @@ class SchedulerWrapper
       else
         :unknown
       end
-    when "pjm"
+    when "pjm", "pjm_k"
       stat = stdout.lines.to_a.last.split[3]
       case stat
       when /ACC|QUE/
@@ -92,7 +94,7 @@ class SchedulerWrapper
       "kill -- -`ps x -o \"pgid pid command\" | grep \"[#{job_id[0]}]#{job_id[1..-1]}\" | awk '{print $1}'`"
     when "torque"
       "qdel #{job_id}"
-    when "pjm"
+    when "pjm", "pjm_k"
       "pjdel #{job_id}"
     else
       raise "not supported"
