@@ -108,6 +108,77 @@ MPI, OpenMPのジョブ
   #PBS -l walltime=10:00
   ...
 
+京コンピュータのPJMを利用するケース
+----------------------------------------------
+
+| 京コンピュータでジョブを実行する場合、ノード形状やelapse timeやステージング情報をジョブスクリプトに記載する必要がある。
+| また、若干の修正(PRE-PROCESS, JOB EXECUTION)が必要である。
+
+1. ステージングへの対応
+  - PJM --vset は、PJM内で利用する変数を定義する。ここでは、OACIS_RUN_IDとOACIS_WORK_BASE_DIRを定義している。
+  - PJM --stgin-dir "./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/"は、_input.jsonや設定ファイルを転送する。
+  - PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}は、ステージインするベースディレクトリを指示する。
+  - PJM --stgin-dir "./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/"は、signalsディレクトリ以下のファイルを転送する。(注: 空のフォルダが必要なときは、ステージングでは指示しない。)
+  - PJM --stgout-basedir ${OACIS_WORK_BASE_DIR}は、ステージアウトするベースディレクトリを指示する。
+  - PJM --stgout "./* ./"は、すべてのファイル(ディレクトリは含まない)を転送する。(デフォルトでは、${RUN_ID}.tar.bz2がステージアウトされる。)
+
+  .. code-block:: sh
+
+    #!/bin/bash -x
+    #
+    #PJM --rsc-list "node=1"
+    #PJM --rsc-list "elapse=0:05:00"
+    #PJM --vset OACIS_RUN_ID=<%= run_id %>
+    #PJM --vset OACIS_WORK_BASE_DIR=<%= work_base_dir %>
+    #PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}
+    #PJM --stgin-dir "./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/"
+    #PJM --stgin-dir "./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/"
+    #PJM --stgout-basedir ${OACIS_WORK_BASE_DIR}
+    #PJM --stgout "./* ./"
+    #PJM -s
+    #
+    LANG=C
+
+2. PRE-PROCESSへの修正
+  - mkdir -p result/instは、シミュレータの実行に必要なフォルダを生成する。
+  - SIMCMD=`cat ${OACIS_RUN_ID}/SIMCMD.txt`は、シミュレータ実行コマンドをSIMCMD.txtから読み込む。SIMCMD.txtは、Simulatorのpreprocessで生成しておく。(preprocessは、その他にも、実行バイナリやライブラリやシミュレーション実行に必要なファイル群を${OACIS_RUN_ID}直下にコピーする。)
+
+  .. code-block:: diff
+
+    # PRE-PROCESS ---------------------
+    + . /work/system/Env_base
+    + mkdir -p result/inst
+    + SIMCMD=`cat ${OACIS_RUN_ID}/SIMCMD.txt` #SIMCMD.txt is created by _preprocess.sh
+    - #mkdir -p ${OACIS_WORK_BASE_DIR}
+    - #cd ${OACIS_WORK_BASE_DIR}
+    - mkdir -p ${OACIS_RUN_ID}
+    cd ${OACIS_RUN_ID}
+    if [ -e ../${OACIS_RUN_ID}_input.json ]; then
+    \mv ../${OACIS_RUN_ID}_input.json ./_input.json
+    fi
+    echo "{" > ../${OACIS_RUN_ID}_status.json
+    echo "  \"started_at\": \"`date`\"," >> ../${OACIS_RUN_ID}_status.json
+    echo "  \"hostname\": \"`hostname`\"," >> ../${OACIS_RUN_ID}_status.json
+
+3. JOB EXECUTIONへの修正
+
+  .. code-block:: diff
+
+    # JOB EXECUTION -------------------
+    if ${OACIS_IS_MPI_JOB}
+    then
+      export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
+    -  { time -p { { mpiexec -n ${OACIS_MPI_PROCS}  <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    +  { time -p { { mpiexec -n ${OACIS_MPI_PROCS} ${SIMCMD}; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    else
+    -  { time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    +  { time -p { { ${SIMCMD}; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    fi
+    echo "  \"rc\": $?," >> ../${OACIS_RUN_ID}_status.json
+    echo "  \"finished_at\": \"`date`\"" >> ../${OACIS_RUN_ID}_status.json
+    echo "}" >> ../${OACIS_RUN_ID}_status.json
+
+
 手動でジョブを実行する
 ==============================================
 
