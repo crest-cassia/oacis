@@ -324,7 +324,13 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
         .style("fill-opacity", 0.7)
         .style("stroke", "none");
     }
-    draw_voronoi_heat_map();
+    try {
+      draw_voronoi_heat_map();
+      // Voronoi division fails when duplicate points are included.
+      // In that case, just ignore creating voronoi heatmap and continue plotting.
+    } catch(e) {
+      console.log(e);
+    }
 
     function draw_points() {
       var tooltip = d3.select("#plot-tooltip");
