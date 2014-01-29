@@ -55,6 +55,11 @@ describe Host do
       Host.new(@valid_attr).should_not be_valid
     end
 
+    it "'user' can include '.'" do
+      @valid_attr.update(user: 'user.XYZ')
+      Host.new(@valid_attr).should be_valid
+    end
+
     it "default of 'port' is 22" do
       @valid_attr.delete(:port)
       Host.new(@valid_attr).port.should eq(22)
