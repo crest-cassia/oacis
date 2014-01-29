@@ -23,8 +23,7 @@ class Host
   validates :hostname, presence: true, format: {with: /^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/}
   # See http://stackoverflow.com/questions/1418423/the-hostname-regex for the regexp of the hsotname
 
-  validates :user, presence: true, format: {with: /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/}
-  # See http://stackoverflow.com/questions/1221985/how-to-validate-a-user-name-with-regex
+  validates :user, presence: true, format: {with: /^[A-Za-z0-9. _-]+$/}
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
