@@ -122,7 +122,7 @@ Command                   シミュレータの実行コマンド。リモート
 Input type                パラメータを引数で渡すか、JSONで渡すか指定する。
 Support mpi               シミュレータがMPIで実行されるか。チェックを入れた場合、mpiexecコマンド付きで実行される。
 Support omp               シミュレータがOpenMPで並列化されているか。チェックを入れた場合、環境変数OMP_NUM_THREADSで並列数を指定して実行される。
-Description               シミュレータの説明を入力する。（任意の文字列を入力可能で、redcarpet[https://github.com/vmg/redcarpet]で整形されて表示る。）
+Description               シミュレータの説明を入力する。（markdownフォーマット[http://daringfireball.net/projects/markdown/syntax]で入力できる。）
 Executable_on             実行可能Hostを指定する。
 ========================= ===============================================================================================
 
