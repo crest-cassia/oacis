@@ -417,3 +417,42 @@ Runを削除する
     .. code-block:: sh
 
         ../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:created
+
+replace_runs
+--------------------------------
+
+| 指定したRunを削除して、同じ設定で新しいRunを再作成する。
+| 例えば、ジョブを大量に流したが古いコードにバグが見つかり再実験が必要になった場合などに使える。
+| 以前のRunと同じジョブパラメータ（投入ホスト、MPIプロセス数、OMPスレッド数、ホストパラメータ）で実行される。
+
+- 実行方法
+
+  .. code-block:: sh
+
+    ../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:0.0.1
+
+- オプション
+
+  +----------------+--------+-----------------------------------------+-----------+
+  |Option          |alias   |description                              |required?  |
+  +================+========+=========================================+===========+
+  |--simulator_id  |-s      |simulator id or path to simulator_id.json|yes        |
+  +----------------+--------+-----------------------------------------+-----------+
+  |--query         |-q      |query for runs(Hash)                     |yes        |
+  +----------------+--------+-----------------------------------------+-----------+
+
+- 入力形式
+
+    - simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。
+    - queryは連想配列で指定する。
+        - 連想配列は {key}:{value} という形式で指定する。
+        - keyとして可能な値は"status", "simulator_version"のみ。
+        - "simulator_version" が空のものを指定したい場合には "simulator_version:" と指定する。
+
+- 実行例
+
+    - simulator_versionが"1.0.0"のRunを削除し、同じ設定で新しいRunを再作成する。
+
+    .. code-block:: sh
+
+        ../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
