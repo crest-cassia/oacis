@@ -108,6 +108,93 @@ MPI, OpenMPのジョブ
   #PBS -l walltime=10:00
   ...
 
+京コンピュータのPJMを利用するケース
+----------------------------------------------
+
+| 京コンピュータでジョブを実行する場合、ノード形状やelapse timeやステージング情報をジョブスクリプトに記載する必要がある。
+| また、若干の修正(PRE-PROCESS, JOB EXECUTION)が必要である。
+| 以下では、実行時ディレクトリからみて、 ./signals/ 以下の設定ファイルを読み込み、 ./result/inst/ 以下に結果を出力するシミュレータでの例を示す。(シミュレータ依存の操作はOptionalと示される。)
+
+0. プリプロセスでの処理
+  - 下記(1. 2. 3.)に続くジョブスクリプトへの修正を行うことで、プリプロセスが実行されるディレクトリ以下をステージイン可能となる。しかし、実行に必要なバイナリや設定ファイルをジョブスクリプト実行ディレクトリ以下に配置する作業や実行コマンドの微修正などをあらかじめ実行しておく必要がある。
+  - 例えば、バイナリの移動(need)や設定ファイル群の移動(optional)には、下記のようにコマンドをプリプロセスに追加する。
+
+  .. code-block:: sh
+
+    cp ~/path/to/simulator.out . #(Need)
+    cp -r ~/path/to/signals . #(Optional)
+
+  - 例えば、シミュレータの実行コマンドをステージイン後のパスに変更するには、実行コマンドを *SIMCMD.txt* ファイルに書き出す処理をプリプロセスに追加し、ジョブスクリプトから読み込む。(Optional)
+
+  .. code-block:: sh
+
+    echo "./simulator.out" > SIMCMD.txt
+
+1. ステージングへの対応
+  - PJM --vset は、PJM内で利用する変数を定義する。ここでは、OACIS_RUN_IDとOACIS_WORK_BASE_DIRを定義している。
+  - PJM --stgin-dir "./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/"は、_input.jsonや設定ファイルを転送する。
+  - PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}は、ステージインするベースディレクトリを指示する。
+  - PJM --stgin-dir "./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/"は、signalsディレクトリ以下のファイルを転送する。(Optional)
+  - PJM --stgout-basedir ${OACIS_WORK_BASE_DIR}は、ステージアウトするベースディレクトリを指示する。
+  - PJM --stgout "./* ./"は、すべてのファイル(ディレクトリは含まない)を転送する。(デフォルトでは、${RUN_ID}.tar.bz2がステージアウトされる。)
+
+  .. code-block:: sh
+
+    #!/bin/bash -x
+    #
+    #PJM --rsc-list "node=1"
+    #PJM --rsc-list "elapse=0:05:00"
+    #PJM --vset OACIS_RUN_ID=<%= run_id %>
+    #PJM --vset OACIS_WORK_BASE_DIR=<%= work_base_dir %>
+    #PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}
+    #PJM --stgin-dir "./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/"
+    #PJM --stgin-dir "./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/"
+    #PJM --stgout-basedir ${OACIS_WORK_BASE_DIR}
+    #PJM --stgout "./* ./"
+    #PJM -s
+    #
+    LANG=C
+
+2. PRE-PROCESSへの修正
+  - mkdir -p result/instは、シミュレータの実行結果を出力するのに必要なフォルダを生成する。(Optional)
+
+  .. code-block:: diff
+
+    # PRE-PROCESS ---------------------
+    + . /work/system/Env_base
+    + mkdir -p result/inst
+    - #mkdir -p ${OACIS_WORK_BASE_DIR}
+    - #cd ${OACIS_WORK_BASE_DIR}
+    - mkdir -p ${OACIS_RUN_ID}
+    cd ${OACIS_RUN_ID}
+    if [ -e ../${OACIS_RUN_ID}_input.json ]; then
+    \mv ../${OACIS_RUN_ID}_input.json ./_input.json
+    fi
+    echo "{" > ../${OACIS_RUN_ID}_status.json
+    echo "  \"started_at\": \"`date`\"," >> ../${OACIS_RUN_ID}_status.json
+    echo "  \"hostname\": \"`hostname`\"," >> ../${OACIS_RUN_ID}_status.json
+
+3. JOB EXECUTIONへの修正
+  - SIMCMD=`cat SIMCMD.txt`は、シミュレータ実行コマンドを *SIMCMD.txt* から読み込む。SIMCMD.txtは、Simulatorのプリプロセスで生成しておく。(Optional)
+
+  .. code-block:: diff
+
+    # JOB EXECUTION -------------------
+    + SIMCMD=`cat SIMCMD.txt` #SIMCMD.txt is created by _preprocess.sh
+    if ${OACIS_IS_MPI_JOB}
+    then
+      export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
+    -  { time -p { { mpiexec -n ${OACIS_MPI_PROCS}  <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    +  { time -p { { mpiexec -n ${OACIS_MPI_PROCS} ${SIMCMD}; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    else
+    -  { time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    +  { time -p { { ${SIMCMD}; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    fi
+    echo "  \"rc\": $?," >> ../${OACIS_RUN_ID}_status.json
+    echo "  \"finished_at\": \"`date`\"" >> ../${OACIS_RUN_ID}_status.json
+    echo "}" >> ../${OACIS_RUN_ID}_status.json
+
+
 手動でジョブを実行する
 ==============================================
 
