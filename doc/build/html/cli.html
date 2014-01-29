@@ -196,6 +196,7 @@
   <span class="nt">&quot;support_input_json&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&quot;support_mpi&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&quot;support_omp&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&quot;print_version_command&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
   <span class="nt">&quot;pre_process_script&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
   <span class="nt">&quot;executable_on_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
   <span class="nt">&quot;parameter_definitions&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -760,6 +761,97 @@
 </li>
 </ul>
 </div>
+<div class="section" id="destroy-runs">
+<h3>destroy_runs<a class="headerlink" href="#destroy-runs" title="Permalink to this headline">¶</a></h3>
+<p>Runを削除する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:failed
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="11%" />
+<col width="54%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;simulator_id</p>
+</td>
+<td><p class="first last">-s</p>
+</td>
+<td><p class="first last">simulator id or path to simulator_id.json</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;query</p>
+</td>
+<td><p class="first last">-q</p>
+</td>
+<td><p class="first last">query for runs(Hash)</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力形式</p>
+<blockquote>
+<div><ul>
+<li><p class="first">simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。</p>
+</li>
+<li><dl class="first docutils">
+<dt>queryは連想配列で指定する。</dt>
+<dd><ul class="first last simple">
+<li>連想配列は {key}:{value} という形式で指定する。</li>
+<li>keyとして可能な値は&#8221;status&#8221;, &#8220;simulator_version&#8221;のみ。</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">実行例</p>
+<blockquote>
+<div><ul class="simple">
+<li>simulator_versionが&#8221;1.0.0&#8221;のRunを削除する</li>
+</ul>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
+</pre></div>
+</div>
+<ul class="simple">
+<li>simulator_version が存在しないRunを削除する</li>
+</ul>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:
+</pre></div>
+</div>
+<ul class="simple">
+<li>statusが &#8220;created&#8221; （ジョブ投入前）のRunを削除する</li>
+</ul>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:created
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div>
 </div>
 </div>
 
@@ -783,6 +875,7 @@
 <li><a class="reference internal" href="#create-runs">create_runs</a></li>
 <li><a class="reference internal" href="#run-status">run_status</a></li>
 <li><a class="reference internal" href="#job-include">job_include</a></li>
+<li><a class="reference internal" href="#destroy-runs">destroy_runs</a></li>
 </ul>
 </li>
 </ul>

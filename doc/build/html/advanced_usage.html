@@ -93,7 +93,7 @@
 </div>
 <div class="line-block">
 <div class="line">そのためにはホストパラメータと呼ぶ仕組みを使用する。</div>
-<div class="line">ホストパラメータとして指定した変数は各Runの作成時に個別に入力することができ、その変数がホストのテンプレート部分に展開される。</div>
+<div class="line">ホストパラメータとして指定した変数は各Runの作成時に個別に入力することができ、その変数がHostのテンプレート部分に展開される。</div>
 </div>
 <div class="line-block">
 <div class="line">具体的には以下の手順でHostの &#8220;template&#8221;, &#8220;Definition of Host Parameters&#8221; というフィールドを設定する。</div>
@@ -124,7 +124,7 @@
 </div>
 </div></blockquote>
 <div class="line-block">
-<div class="line">以上でホストの設定は完了である。</div>
+<div class="line">以上でHostの設定は完了である。</div>
 <div class="line">この設定後、Runの作成時に以下のようにホストパラメータを入力する箇所が現れる。</div>
 <div class="line">適切な値を入れて [Preview] ボタンをクリックするとジョブスクリプトのプレビューが表示される。</div>
 <div class="line">[Create Run]をクリックするとRunが作成され、順番にジョブが投入される。</div>
@@ -163,6 +163,109 @@
 ...
 </pre></div>
 </div>
+</div>
+<div class="section" id="pjm">
+<h3>京コンピュータのPJMを利用するケース<a class="headerlink" href="#pjm" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">京コンピュータでジョブを実行する場合、ノード形状やelapse timeやステージング情報をジョブスクリプトに記載する必要がある。</div>
+<div class="line">また、若干の修正(PRE-PROCESS, JOB EXECUTION)が必要である。</div>
+<div class="line">以下では、実行時ディレクトリからみて、 ./signals/ 以下の設定ファイルを読み込み、 ./result/inst/ 以下に結果を出力するシミュレータでの例を示す。(シミュレータ依存の操作はOptionalと示される。)</div>
+</div>
+<ol class="arabic simple" start="0">
+<li>プリプロセスでの処理</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>下記(1. 2. 3.)に続くジョブスクリプトへの修正を行うことで、プリプロセスが実行されるディレクトリ以下をステージイン可能となる。しかし、実行に必要なバイナリや設定ファイルをジョブスクリプト実行ディレクトリ以下に配置する作業や実行コマンドの微修正などをあらかじめ実行しておく必要がある。</li>
+<li>例えば、バイナリの移動(need)や設定ファイル群の移動(optional)には、下記のようにコマンドをプリプロセスに追加する。</li>
+</ul>
+<div class="highlight-sh"><div class="highlight"><pre>cp ~/path/to/simulator.out . <span class="c">#(Need)</span>
+cp -r ~/path/to/signals . <span class="c">#(Optional)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>例えば、シミュレータの実行コマンドをステージイン後のパスに変更するには、実行コマンドを <em>SIMCMD.txt</em> ファイルに書き出す処理をプリプロセスに追加し、ジョブスクリプトから読み込む。(Optional)</li>
+</ul>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">&quot;./simulator.out&quot;</span> &gt; SIMCMD.txt
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple">
+<li>ステージングへの対応</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>PJM &#8211;vset は、PJM内で利用する変数を定義する。ここでは、OACIS_RUN_IDとOACIS_WORK_BASE_DIRを定義している。</li>
+<li>PJM &#8211;stgin-dir &#8221;./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/&#8221;は、_input.jsonや設定ファイルを転送する。</li>
+<li>PJM &#8211;stgin-basedir ${OACIS_WORK_BASE_DIR}は、ステージインするベースディレクトリを指示する。</li>
+<li>PJM &#8211;stgin-dir &#8221;./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/&#8221;は、signalsディレクトリ以下のファイルを転送する。(Optional)</li>
+<li>PJM &#8211;stgout-basedir ${OACIS_WORK_BASE_DIR}は、ステージアウトするベースディレクトリを指示する。</li>
+<li>PJM &#8211;stgout &#8221;./* ./&#8221;は、すべてのファイル(ディレクトリは含まない)を転送する。(デフォルトでは、${RUN_ID}.tar.bz2がステージアウトされる。)</li>
+</ul>
+<div class="highlight-sh"><div class="highlight"><pre><span class="c">#!/bin/bash -x</span>
+<span class="c">#</span>
+<span class="c">#PJM --rsc-list &quot;node=1&quot;</span>
+<span class="c">#PJM --rsc-list &quot;elapse=0:05:00&quot;</span>
+<span class="c">#PJM --vset OACIS_RUN_ID=&lt;%= run_id %&gt;</span>
+<span class="c">#PJM --vset OACIS_WORK_BASE_DIR=&lt;%= work_base_dir %&gt;</span>
+<span class="c">#PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}</span>
+<span class="c">#PJM --stgin-dir &quot;./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/&quot;</span>
+<span class="c">#PJM --stgin-dir &quot;./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/&quot;</span>
+<span class="c">#PJM --stgout-basedir ${OACIS_WORK_BASE_DIR}</span>
+<span class="c">#PJM --stgout &quot;./* ./&quot;</span>
+<span class="c">#PJM -s</span>
+<span class="c">#</span>
+<span class="nv">LANG</span><span class="o">=</span>C
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>PRE-PROCESSへの修正</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>mkdir -p result/instは、シミュレータの実行結果を出力するのに必要なフォルダを生成する。(Optional)</li>
+</ul>
+<div class="highlight-diff"><div class="highlight"><pre># PRE-PROCESS ---------------------
+<span class="gi">+ . /work/system/Env_base</span>
+<span class="gi">+ mkdir -p result/inst</span>
+<span class="gd">- #mkdir -p ${OACIS_WORK_BASE_DIR}</span>
+<span class="gd">- #cd ${OACIS_WORK_BASE_DIR}</span>
+<span class="gd">- mkdir -p ${OACIS_RUN_ID}</span>
+cd ${OACIS_RUN_ID}
+if [ -e ../${OACIS_RUN_ID}_input.json ]; then
+\mv ../${OACIS_RUN_ID}_input.json ./_input.json
+fi
+echo &quot;{&quot; &gt; ../${OACIS_RUN_ID}_status.json
+echo &quot;  \&quot;started_at\&quot;: \&quot;`date`\&quot;,&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
+echo &quot;  \&quot;hostname\&quot;: \&quot;`hostname`\&quot;,&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>JOB EXECUTIONへの修正</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>SIMCMD=`cat SIMCMD.txt`は、シミュレータ実行コマンドを <em>SIMCMD.txt</em> から読み込む。SIMCMD.txtは、Simulatorのプリプロセスで生成しておく。(Optional)</li>
+</ul>
+<div class="highlight-diff"><div class="highlight"><pre># JOB EXECUTION -------------------
+<span class="gi">+ SIMCMD=`cat SIMCMD.txt` #SIMCMD.txt is created by _preprocess.sh</span>
+if ${OACIS_IS_MPI_JOB}
+then
+  export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
+<span class="gd">-  { time -p { { mpiexec -n ${OACIS_MPI_PROCS}  &lt;%= cmd %&gt;; } 1&gt;&gt; _stdout.txt 2&gt;&gt; _stderr.txt; } } 2&gt;&gt; ../${OACIS_RUN_ID}_time.txt</span>
+<span class="gi">+  { time -p { { mpiexec -n ${OACIS_MPI_PROCS} ${SIMCMD}; } 1&gt;&gt; _stdout.txt 2&gt;&gt; _stderr.txt; } } 2&gt;&gt; ../${OACIS_RUN_ID}_time.txt</span>
+else
+<span class="gd">-  { time -p { { &lt;%= cmd %&gt;; } 1&gt;&gt; _stdout.txt 2&gt;&gt; _stderr.txt; } } 2&gt;&gt; ../${OACIS_RUN_ID}_time.txt</span>
+<span class="gi">+  { time -p { { ${SIMCMD}; } 1&gt;&gt; _stdout.txt 2&gt;&gt; _stderr.txt; } } 2&gt;&gt; ../${OACIS_RUN_ID}_time.txt</span>
+fi
+echo &quot;  \&quot;rc\&quot;: $?,&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
+echo &quot;  \&quot;finished_at\&quot;: \&quot;`date`\&quot;&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
+echo &quot;}&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
+</pre></div>
+</div>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="id5">
@@ -212,7 +315,7 @@
 </ul>
 </div></blockquote>
 <div class="line-block">
-<div class="line">手動実行を行うためにはRunの作成時に投入ホスト選択フィールドで &#8220;manual submission&#8221; を選択する。</div>
+<div class="line">手動実行を行うためにはRunの作成時に投入Host選択フィールドで &#8220;manual submission&#8221; を選択する。</div>
 <div class="line">Runの作成後に <cite>${OACIS_ROOT}/public/Result_development/manual_submission</cite> ディレクトリにシェルスクリプトが生成される。</div>
 <div class="line">パラメータの入力形式がJSON形式の場合には、入力用JSONファイルも作成される。</div>
 </div>
@@ -268,7 +371,10 @@
 </div>
 <div class="line-block">
 <div class="line">Print version command の標準出力に出力された文字列がバージョンとして認識されるので、実行バイナリに引数を渡すだけでなく柔軟な指定が可能である。</div>
-<div class="line">例えば、以下のようにビルドログを出力したり、バージョン管理システムのコミットIDを出力するような利用方法も考えられる。</div>
+<div class="line">例えば、以下のように手動でタグをつけたり、ビルドログを出力したり、バージョン管理システムのコミットIDを出力するような利用方法も考えられる。</div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">&quot;v1.0.0&quot;</span>
+</pre></div>
 </div>
 <div class="highlight-sh"><div class="highlight"><pre>cat ~/path/to/build_log.txt
 </pre></div>
@@ -340,7 +446,7 @@
 <div class="line">OACISの用語として、Analyzerによって得られた結果はAnalysisと呼ばれる。AnalyzerとAnalysisの関係は、SimulatorとRunの関係のようなものである。</div>
 </div>
 <div class="line-block">
-<div class="line">Analyzerはサーバー上でバックグラウンドプロセスとして実行される。よってサーバー上でanalyzerが適切に動くように事前にセットアップする必要がある。</div>
+<div class="line">Analyzerはサーバー上でバックグラウンドプロセスとして実行される。(すなわち、Host上で実行されない点がプリプロセスと異なる。)よってサーバー上でanalyzerが適切に動くように事前にセットアップする必要がある。</div>
 <div class="line">ユーザーはAnalyzerの登録時に実行されるコマンドを入力する。そのコマンドがバックグラウンドで呼ばれて解析が実行されることになる。</div>
 <div class="line">Simulatorの場合と同じように、実行日時や実行時間などの情報が保存され、結果はブラウザ経由で確認できる。</div>
 </div>
@@ -547,6 +653,7 @@ plot &quot;_input/time_series.dat&quot; w l
 <li><a class="reference internal" href="#id3">ジョブスクリプトのヘッダに特別な指定がいらないケース</a></li>
 <li><a class="reference internal" href="#id4">ジョブスクリプトのヘッダに変数を指定するケース</a></li>
 <li><a class="reference internal" href="#mpi-openmp">MPI, OpenMPのジョブ</a></li>
+<li><a class="reference internal" href="#pjm">京コンピュータのPJMを利用するケース</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#id5">手動でジョブを実行する</a></li>
