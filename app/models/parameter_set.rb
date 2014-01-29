@@ -3,7 +3,7 @@ class ParameterSet
   include Mongoid::Timestamps
   field :v, type: Hash
   field :runs_status_count_cache, type: Hash
-  index({ v: 1 }, { unique: true, name: "v_index" })
+  index({ v: 1 }, { name: "v_index" })
   belongs_to :simulator, autosave: false
   has_many :runs, dependent: :destroy
   has_many :analyses, as: :analyzable, dependent: :destroy

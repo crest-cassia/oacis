@@ -1,5 +1,11 @@
+= render partial: "description", locals: {simulator: simulator}
+.form-actions
+  = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
+  = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
+  = link_to 'Destroy', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
+
+
 %h3 About
-= simulator.description
 
 %table.table.table-striped
   %thead
@@ -16,10 +22,6 @@
     %tr
       %th Executable On
       %td= raw( simulator.executable_on.map {|host| h(host.name) }.join('<br />') )
-.form-actions
-  = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
-  = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
-  = link_to 'Destroy', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
 
 %h3 Defined Parameters
 %table.table.table-striped
@@ -49,3 +51,8 @@
     %br
     %pre
       = simulator.command
+  %li
+    Print-version Command
+    %br
+    %pre
+      = simulator.print_version_command

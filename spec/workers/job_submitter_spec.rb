@@ -11,7 +11,7 @@ describe JobSubmitter do
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
 
-      @logger = Logger.new(STDERR)
+      @logger = Logger.new($stderr)
     end
 
     after(:each) do

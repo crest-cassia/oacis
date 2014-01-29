@@ -301,4 +301,58 @@ describe OacisCli do
       }
     end
   end
+
+  describe "#destroy_runs" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 0)
+      ps = @sim.parameter_sets.first
+      FactoryGirl.create(:run, parameter_set: ps).update_attribute(:simulator_version, "1.0.0")
+      FactoryGirl.create(:run, parameter_set: ps).update_attribute(:simulator_version, "1.0.1")
+      FactoryGirl.create(:finished_run, parameter_set: ps)
+      @failed_run = FactoryGirl.create(:finished_run, parameter_set: ps)
+        .update_attribute(:status, :failed)
+    end
+
+    it "destroys runs specified by 'status'" do
+      $stdin.should_receive(:gets).and_return("y")
+      at_temp_dir {
+        options = {simulator: @sim.id.to_s, query: {"status" => "failed"} }
+        expect {
+          OacisCli.new.invoke(:destroy_runs, [], options)
+        }.to change { Run.where(status: :failed).count }.by(-1)
+      }
+    end
+
+    it "destroys runs specified by 'simulator_version'" do
+      $stdin.should_receive(:gets).and_return("y")
+      at_temp_dir {
+        options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}}
+        expect {
+          OacisCli.new.invoke(:destroy_runs, [], options)
+        }.to change { Run.where(simulator_version: "1.0.0").count }.by(-1)
+      }
+    end
+
+    it "destroys runs of simulator_version=nil when simulator_version is empty" do
+      $stdin.should_receive(:gets).and_return("y")
+      at_temp_dir {
+        options = {simulator: @sim.id.to_s, query: {"simulator_version" => ""}}
+        expect {
+          OacisCli.new.invoke(:destroy_runs, [], options)
+        }.to change { Run.where(simulator_version: nil).count }.by(-2)
+      }
+    end
+
+    it "fails neither 'status' nor 'simulator_version' is given as the query-key" do
+      $stdin.stub(:gets).and_return("y")
+      at_temp_dir {
+        options = {simulator: @sim.id.to_s, query: {"hostname" => "localhost"}}
+        expect {
+          OacisCli.new.invoke(:destroy_runs, [], options)
+        }.to raise_error
+      }
+    end
+  end
 end

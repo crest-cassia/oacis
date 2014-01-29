@@ -123,6 +123,7 @@ GEM
     rake (10.1.0)
     rdoc (3.12.2)
       json (~> 1.4)
+    redcarpet (3.0.0)
     ref (1.0.5)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
@@ -197,6 +198,7 @@ DEPENDENCIES
   pry
   quiet_assets
   rails (= 3.2.13)
+  redcarpet
   rspec-rails
   ruby-progressbar
   sass-rails

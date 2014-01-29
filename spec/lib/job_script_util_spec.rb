@@ -98,6 +98,15 @@ EOS
       script = JobScriptUtil.script_for(@run, @host)
       script.should match(/OACIS_OMP_THREADS=8/)
     end
+
+    context "when host is nil" do
+
+      it "does not cause an exception" do
+        expect {
+          JobScriptUtil.script_for(@run, nil)
+        }.to_not raise_error
+      end
+    end
   end
 
   describe ".expand_result_file_and_update_run" do
@@ -166,6 +175,24 @@ EOS
         @run.included_at.should be_a(DateTime)
         File.exist?(@run.dir.join('_stdout.txt')).should be_true
       }
+    end
+
+    context "when print_version_command is not nil" do
+
+      it "parses simulator version printed by Simulator#print_version_command" do
+        @sim.command = "echo '[1,2,3]' > _output.json"
+        @sim.support_input_json = true
+        @sim.print_version_command = 'echo "simulator version: 1.0.0"'
+        @sim.save!
+        run_test_script_in_temp_dir
+        Dir.chdir(@temp_dir) {
+          result_file = "#{@run.id}.tar.bz2"
+          FileUtils.mv( result_file, @run.dir.join('..') )
+          JobScriptUtil.expand_result_file_and_update_run(@run)
+
+          @run.simulator_version.should eq "simulator version: 1.0.0"
+        }
+      end
     end
   end
 end

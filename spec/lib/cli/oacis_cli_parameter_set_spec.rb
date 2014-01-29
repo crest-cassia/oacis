@@ -111,7 +111,7 @@ describe OacisCli do
       at_temp_dir {
         invoke_create_parameter_sets
         mapped = @sim.reload.parameter_sets.map {|ps| [ps.v["L"], ps.v["T"]] }
-        mapped.should eq [ [10, 0.1], [20, 0.1], [30, 0.1], [10, 0.2], [20, 0.2], [30, 0.2]]
+        mapped.should =~ [ [10, 0.1], [20, 0.1], [30, 0.1], [10, 0.2], [20, 0.2], [30, 0.2]]
       }
     end
 
@@ -121,7 +121,7 @@ describe OacisCli do
         File.exist?('parameter_set_ids.json').should be_true
 
         expected = @sim.reload.parameter_sets.map {|ps| {"parameter_set_id" => ps.id.to_s} }
-        JSON.load(File.read('parameter_set_ids.json')).should eq expected
+        JSON.load(File.read('parameter_set_ids.json')).should =~ expected
       }
     end
 

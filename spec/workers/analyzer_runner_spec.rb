@@ -13,7 +13,7 @@ describe AnalyzerRunner do
     @azr = @arn.analyzer
     @azr.update_attribute(:command, 'echo hello')
 
-    @logger = Logger.new(STDERR)
+    @logger = Logger.new($stderr)
   end
 
   describe ".perform" do
