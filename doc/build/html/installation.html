@@ -114,18 +114,25 @@
 <li>MongoDB 2.4以上 (<a class="reference external" href="http://www.mongodb.org/">http://www.mongodb.org/</a>)</li>
 </ul>
 <div class="line-block">
+<div class="line">Rubyのインストールにはrbenvまたはrvmを使って環境を整えると良い。</div>
 <div class="line">Mac OS Xの場合、homebrew (<a class="reference external" href="http://brew.sh/">http://brew.sh/</a>) を使ってインストールするのが手軽で良い。</div>
 <div class="line">Linuxの場合、yumやaptコマンドを使ってインストールできる。</div>
-<div class="line">いずれの場合でも、インストールの確認とバージョンの確認を行うことを推奨する。</div>
 </div>
-<p>インストール(PATH)の確認:</p>
+<div class="line-block">
+<div class="line">以下のコマンドでRubyのバージョン、bundlerのインストール、MongoDBのバージョン、MongoDBのデーモンが起動していることを確認する事ができる。</div>
+</div>
+<div class="highlight-python"><pre>${OACIS_PROJECT_ROOT}/bin/check_oacis_env</pre>
+</div>
+<div class="line-block">
+<div class="line">もしエラーが起きた場合は、以下のコマンドで手動で確認し必要なソフトウェアをインストールすること。</div>
+<div class="line">インストール(PATH)の確認</div>
+</div>
 <div class="highlight-python"><pre>which ruby(mongod)</pre>
 </div>
-<p>バージョンの確認:</p>
+<p>バージョンの確認</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">ruby</span><span class="p">(</span><span class="n">mongod</span><span class="p">)</span> <span class="o">--</span><span class="n">version</span>
 </pre></div>
 </div>
-<p>以下ではこれらのものがインストールされている前提で説明する。</p>
 <div class="line-block">
 <div class="line">OACISは各利用者が自分のPCにインストールし、イントラネット内で使用されることを想定している。</div>
 <div class="line">インターネット上へ公開し不特定多数のアクセスを受け付ける場合は、ここで記述したセットアップに加えてセキュリティーや不可分散の対策を十分に行う必要がある。</div>
