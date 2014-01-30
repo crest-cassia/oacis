@@ -134,19 +134,7 @@ class OacisCli < Thor
     required: true
   def destroy_runs
     sim = get_simulator(options[:simulator])
-
-    runs = sim.runs
-    unless options[:query]["status"] or options[:query]["simulator_version"]
-      say("query must have 'status' or 'simulator_version' key", :red)
-      raise "invalid query"
-    end
-    if stat = options[:query]["status"]
-      runs = runs.where(status: stat.to_sym)
-    end
-    if version = options[:query]["simulator_version"]
-      version = nil if version == ""
-      runs = runs.where(simulator_version: version)
-    end
+    runs = find_runs(sim, options[:query])
 
     if runs.empty?
       say("No runs are found.")
@@ -164,5 +152,64 @@ class OacisCli < Thor
         progressbar.increment
       end
     end
+  end
+
+  desc 'replace_runs', "replace runs"
+  method_option :simulator,
+    type:     :string,
+    aliases:  '-s',
+    desc:     'simulator ID or path to simulator_id.json',
+    required: true
+  method_option :query,
+    type:     :hash,
+    aliases:  '-q',
+    desc:     'query of run specified as Hash (e.g. --query=status:failed simulator_version=0.0.1)',
+    required: true
+  def replace_runs
+    sim = get_simulator(options[:simulator])
+    runs = find_runs(sim, options[:query])
+
+    if runs.empty?
+      say("No runs are found.")
+      return
+    end
+
+    if options[:verbose]
+      say("Found runs: #{runs.map(&:id).to_json}")
+    end
+
+    if yes?("Replace #{runs.count} runs with new ones?")
+      progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
+      runs.each do |run|
+        run_attr = { submitted_to: run.submitted_to,
+                     mpi_procs: run.mpi_procs,
+                     omp_threads: run.omp_threads,
+                     host_parameters: run.host_parameters }
+        new_run = run.parameter_set.runs.build(run_attr)
+        if new_run.save
+          run.destroy
+        else
+          progressbar.log "Failed to create Run #{new_run.errors.full_messages}"
+        end
+        progressbar.increment
+      end
+    end
+  end
+
+  private
+  def find_runs(simulator, query)
+    unless query["status"] or query["simulator_version"]
+      say("query must have 'status' or 'simulator_version' key", :red)
+      raise "invalid query"
+    end
+    runs = Run.where(simulator: simulator)
+    if stat = query["status"]
+      runs = runs.where(status: stat.to_sym)
+    end
+    if version = query["simulator_version"]
+      version = nil if version == ""
+      runs = runs.where(simulator_version: version)
+    end
+    runs
   end
 end
