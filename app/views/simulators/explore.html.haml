@@ -27,8 +27,26 @@
 
 %hr
 
-#plot
-  #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
+.row
+  .span4
+    %table.table.table-striped
+      %tbody
+        %tr
+          %th ParameterSet
+          %td= @param_set.id.to_s
+          %td
+          %td
+        - @simulator.parameter_definitions.map(&:key).each do |key|
+          %tr
+            %th= key
+            %td= @param_set.v[key]
+            %td{style: "padding-left: 0; padding-right: 0;"}
+              %i.icon-arrow-down
+            %td{style: "padding-left: 0; padding-right: 0;"}
+              %i.icon-arrow-up
+  .span8
+    #plot
+      #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
 
 :css
   .axis path,
