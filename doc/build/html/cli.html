@@ -852,6 +852,90 @@
 </li>
 </ul>
 </div>
+<div class="section" id="replace-runs">
+<h3>replace_runs<a class="headerlink" href="#replace-runs" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">指定したRunを削除して、同じ設定で新しいRunを再作成する。</div>
+<div class="line">例えば、ジョブを大量に流したが古いコードにバグが見つかり再実験が必要になった場合などに使える。</div>
+<div class="line">以前のRunと同じジョブパラメータ（投入ホスト、MPIプロセス数、OMPスレッド数、ホストパラメータ）で実行される。</div>
+</div>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:0.0.1
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="11%" />
+<col width="54%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;simulator_id</p>
+</td>
+<td><p class="first last">-s</p>
+</td>
+<td><p class="first last">simulator id or path to simulator_id.json</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;query</p>
+</td>
+<td><p class="first last">-q</p>
+</td>
+<td><p class="first last">query for runs(Hash)</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力形式</p>
+<blockquote>
+<div><ul>
+<li><p class="first">simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。</p>
+</li>
+<li><dl class="first docutils">
+<dt>queryは連想配列で指定する。</dt>
+<dd><ul class="first last simple">
+<li>連想配列は {key}:{value} という形式で指定する。</li>
+<li>keyとして可能な値は&#8221;status&#8221;, &#8220;simulator_version&#8221;のみ。</li>
+<li>&#8220;simulator_version&#8221; が空のものを指定したい場合には &#8220;simulator_version:&#8221; と指定する。</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">実行例</p>
+<blockquote>
+<div><ul class="simple">
+<li>simulator_versionが&#8221;1.0.0&#8221;のRunを削除し、同じ設定で新しいRunを再作成する。</li>
+</ul>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div>
 </div>
 </div>
 
@@ -876,6 +960,7 @@
 <li><a class="reference internal" href="#run-status">run_status</a></li>
 <li><a class="reference internal" href="#job-include">job_include</a></li>
 <li><a class="reference internal" href="#destroy-runs">destroy_runs</a></li>
+<li><a class="reference internal" href="#replace-runs">replace_runs</a></li>
 </ul>
 </li>
 </ul>
