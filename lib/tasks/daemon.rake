@@ -13,7 +13,11 @@ namespace :daemon do
       system(cmd)
     end
 
-    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'worker.rb')} start"
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'job_worker.rb')} start"
+    system(cmd)
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'analyzer_worker.rb')} start"
+    system(cmd)
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'service_worker.rb')} start"
     system(cmd)
   end
 
@@ -30,7 +34,11 @@ namespace :daemon do
       $stderr.puts "#{SERVER_PID} is not found"
     end
 
-    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'worker.rb')} stop"
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'job_worker.rb')} stop"
+    system(cmd)
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'abalyzer_worker.rb')} stop"
+    system(cmd)
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'service_worker.rb')} stop"
     system(cmd)
   end
 
