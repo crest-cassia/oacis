@@ -34,20 +34,6 @@ def verify_bundler_installation
   end
 end
 
-def verify_gems_are_installed
-  print "checking gems installation ...   "
-  ENV['BUNDLE_GEMFILE'] = File.join(File.dirname(__FILE__), '../Gemfile')
-  begin
-    require 'bundler/setup'
-    puts_ok
-    return true
-  rescue LoadError
-    puts_error
-    puts "\tgems are not installed. Execute `bundle install --path=vendor/bundle`"
-    return false
-  end
-end
-
 def verify_mongodb_version
   print "checking mongodb version ...     "
   v = `mongo --verion`
@@ -76,7 +62,6 @@ end
 
 if verify_ruby_version and
    verify_bundler_installation and
-   verify_gems_are_installed and
    verify_mongodb_version and
    verify_mongod_process_is_running
   puts "\e[32mAll the environment checks have passed!\e[0m"
