@@ -198,11 +198,11 @@ class OacisCli < Thor
 
   private
   def find_runs(simulator, query)
-    runs = simulator.runs
     unless query["status"] or query["simulator_version"]
       say("query must have 'status' or 'simulator_version' key", :red)
       raise "invalid query"
     end
+    runs = Run.where(simulator: simulator)
     if stat = query["status"]
       runs = runs.where(status: stat.to_sym)
     end
