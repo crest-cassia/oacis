@@ -18,6 +18,7 @@
       = render partial: "about", locals: {simulator: @simulator}
       = render "analyzers_list"
     %div.tab-pane.active#tab-list-parameters
+      = link_to "Explore", explore_simulator_path, class: "btn btn-primary"
       = render "parameter_sets_list"
     %div.tab-pane#tab-progress
       = render "progress"
