@@ -355,4 +355,38 @@ describe OacisCli do
       }
     end
   end
+
+  describe "#replace_runs" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 0)
+      ps = @sim.parameter_sets.first
+      FactoryGirl.create(:finished_run, parameter_set: ps, mpi_procs: 8)
+        .update_attribute(:simulator_version, "1.0.0")
+      FactoryGirl.create(:finished_run, parameter_set: ps, mpi_procs: 4)
+        .update_attribute(:simulator_version, "1.0.1")
+    end
+
+    it "newly create runs have the same attribute as old ones" do
+      $stdin.should_receive(:gets).and_return("y")
+      at_temp_dir {
+        options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"} }
+        expect {
+          OacisCli.new.invoke(:replace_runs, [], options)
+        }.to change { Run.where(status: :created).count }.by(1)
+        Run.where(status: :created).first.mpi_procs.should eq 8
+      }
+    end
+
+    it "destroys old run" do
+      $stdin.should_receive(:gets).and_return("y")
+      at_temp_dir {
+        options = { simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"} }
+        expect {
+          OacisCli.new.invoke(:replace_runs, [], options)
+        }.to change { Run.where(simulator_version: "1.0.0").count }.from(1).to(0)
+      }
+    end
+  end
 end
