@@ -142,6 +142,7 @@ class SimulatorsController < ApplicationController
 
   def explore
     @simulator = Simulator.find(params[:id])
+    @param_set = @simulator.parameter_sets.first
 
     respond_to do |format|
       format.html
