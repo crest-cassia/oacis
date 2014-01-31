@@ -40,12 +40,28 @@ function draw_explorer(url, current_ps_id) {
   var svg = plot_region.insert("svg")
     .attr({
       "width": width + margin.left + margin.right,
-      "height": height + margin.top + margin.bottom
+      "height": height + margin.top + margin.bottom,
+      "id": "plot-svg"
     });
   var colorMapG = svg.append("g")
-    .attr("transform", "translate(" + (margin.left + width) + "," + margin.top + ")");
+    .attr({
+      "transform": "translate(" + (margin.left + width) + "," + margin.top + ")",
+      "id": "color-map-group"
+    });
   var svg = svg.append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr({
+      "transform": "translate(" + margin.left + "," + margin.top + ")",
+      "id": "plot-group"
+    });
+
+  update_explorer(url, current_ps_id);
+}
+
+function update_explorer(url, current_ps_id) {
+  var width = 560;
+  var height = 460;
+  var colorMapG = d3.select("g#color-map-group");
+  var svg = d3.select("g#plot-group");
 
   var progress = show_loading_spin_arc(svg, width, height);
 
