@@ -33,13 +33,13 @@
       %tbody
         %tr
           %th ParameterSet
-          %td= @param_set.id.to_s
+          %td#current_ps_id= @param_set.id.to_s
           %td
           %td
         - @simulator.parameter_definitions.map(&:key).each do |key|
           %tr
             %th= key
-            %td= @param_set.v[key]
+            %td{id: "ps_v_#{key}"}= @param_set.v[key]
             %td{style: "padding-left: 0; padding-right: 0;"}
               %i.icon-arrow-down
             %td{style: "padding-left: 0; padding-right: 0;"}
