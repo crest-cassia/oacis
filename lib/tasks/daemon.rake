@@ -36,7 +36,7 @@ namespace :daemon do
 
     cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'job_worker.rb')} stop"
     system(cmd)
-    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'abalyzer_worker.rb')} stop"
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'analyzer_worker.rb')} stop"
     system(cmd)
     cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'service_worker.rb')} stop"
     system(cmd)
