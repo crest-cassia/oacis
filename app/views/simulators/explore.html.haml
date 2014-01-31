@@ -89,3 +89,13 @@
       }).get().join(',');
     add_explorer(x, y, result, irrelevants);
   });
+
+  $(function() {
+    var x = $('#scatter-plot-form #x_axis_key').val();
+    var y = $('#scatter-plot-form #y_axis_key').val();
+    var result = "";
+    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
+      return this.id;
+      }).get().join(',');
+    add_explorer(x, y, result, irrelevants);
+  });
