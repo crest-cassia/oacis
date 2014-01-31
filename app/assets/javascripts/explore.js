@@ -115,6 +115,8 @@ function update_explorer(url, current_ps_id) {
         .style("text-anchor", "begin")
         .text( colorScale.domain()[0] );
     }
+    colorMapG.selectAll("text").remove();
+    colorMapG.selectAll("rect").remove();
     if( colorScale ) { draw_color_map(colorMapG); }
 
     function draw_axes(xlabel, ylabel) {
@@ -153,7 +155,9 @@ function update_explorer(url, current_ps_id) {
       var vertices = dat.data.map(function(v) { return [xScale(v[0]), yScale(v[1])]; })
       var voronoi = d3.geom.voronoi()
         .clipExtent([[0, 0], [width, height]]);
-      var path = svg.append("g").selectAll("path")
+      var path = svg.append("g")
+        .attr("id", "voronoi-group")
+        .selectAll("path")
         .data(voronoi(vertices));
       path.enter().append("path")
         .style("fill", function(d, i) { return colorScale(dat.data[i][2]);})
@@ -162,6 +166,7 @@ function update_explorer(url, current_ps_id) {
         .style("stroke", "none");
     }
     try {
+      d3.select("g#voronoi-group").remove();
       if( colorScale ) { draw_voronoi_heat_map(); }
       // Voronoi division fails when duplicate points are included.
       // In that case, just ignore creating voronoi heatmap and continue plotting.
@@ -221,10 +226,10 @@ function update_explorer(url, current_ps_id) {
     }
     draw_points();
   })
-  .on("error", function() {progress.remove();})
+  .on("error", function() { console.log("error"); /*progress.remove(); */})
   .get();
-  progress.on("mousedown", function(){
-    xhr.abort();
-    row.remove();
-  });
+  // progress.on("mousedown", function(){
+  //   xhr.abort();
+  //   row.remove();
+  // });
 }
