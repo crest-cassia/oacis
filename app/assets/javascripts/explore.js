@@ -13,6 +13,23 @@ function set_current_ps(ps_id) {
   });
 }
 
+function build_scatter_plot_url(ps_id) {
+  ps_id = ps_id || $('td#current_ps_id').text();
+  var x = $('#scatter-plot-form #x_axis_key').val();
+  var y = $('#scatter-plot-form #y_axis_key').val();
+  var result = $('#scatter-plot-form #result').val();
+  var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
+    return this.id;
+    }).get().join(',');
+  var url = $('#plot').data('scatter-plot-url').replace('PSID', ps_id);
+  var url_with_param = url +
+    "?x_axis_key=" + encodeURIComponent(x) +
+    "&y_axis_key=" + encodeURIComponent(y) +
+    "&result=" + encodeURIComponent(result) +
+    "&irrelevants=" + encodeURIComponent(irrelevants);
+  return url_with_param;
+}
+
 function draw_explorer(url, parameter_set_base_url, current_ps_id) {
   var margin = {top: 10, right: 100, bottom: 100, left: 100};
   var width = 560;

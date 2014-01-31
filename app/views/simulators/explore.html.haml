@@ -15,7 +15,7 @@
       = label_tag 'y_axis_key', "Y-Axis"
       = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
       = label_tag 'result', "Result"
-      = select_tag 'result', options_for_select(@simulator.plottable), id: 'result'
+      = select_tag 'result', options_for_select(@simulator.plottable), id: 'result', include_blank: true
       %a.btn.btn-primary#add_scatter_plot_button Add Scatter Plot
     #irrelevant-params
       %br
@@ -71,32 +71,9 @@
   }
 
 :javascript
-  function add_explorer(x, y, result, irrelevants) {
-    var url = "#{_scatter_plot_parameter_set_path(@param_set)}" + ".json";
-    var url_with_param = url +
-      "?x_axis_key=" + encodeURIComponent(x) +
-      "&y_axis_key=" + encodeURIComponent(y) +
-      "&result=" + encodeURIComponent(result) +
-      "&irrelevants=" + encodeURIComponent(irrelevants);
-    var ps_base_url = "#{parameter_set_path('')}";
-    draw_explorer(url_with_param, ps_base_url, "#{@param_set.id.to_s}");
-  }
-  $('#add_scatter_plot_button').on('click', function() {
-    var x = $('#scatter-plot-form #x_axis_key').val();
-    var y = $('#scatter-plot-form #y_axis_key').val();
-    var result = $('#scatter-plot-form #result').val();
-    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
-      return this.id;
-      }).get().join(',');
-    add_explorer(x, y, result, irrelevants);
-  });
-
   $(function() {
-    var x = $('#scatter-plot-form #x_axis_key').val();
-    var y = $('#scatter-plot-form #y_axis_key').val();
-    var result = "";
-    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
-      return this.id;
-      }).get().join(',');
-    add_explorer(x, y, result, irrelevants);
+    var url_with_param = build_scatter_plot_url();
+    var ps_url = $('#plot').data('ps-url').replace('PSID', '');
+    var ps_id = $('td#current_ps_id').text();
+    draw_explorer(url_with_param, ps_url, ps_id);
   });
