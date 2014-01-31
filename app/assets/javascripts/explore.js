@@ -30,7 +30,7 @@ function build_scatter_plot_url(ps_id) {
   return url_with_param;
 }
 
-function draw_explorer(url, parameter_set_base_url, current_ps_id) {
+function draw_explorer(url, current_ps_id) {
   var margin = {top: 10, right: 100, bottom: 100, left: 100};
   var width = 560;
   var height = 460;
@@ -197,8 +197,9 @@ function draw_explorer(url, parameter_set_base_url, current_ps_id) {
           set_current_ps(d.psid);
         })
         .on("dblclick", function(d) {
+          var ps_url = $('#plot').data('ps-url').replace('PSID', d.psid);
           // open a link in a background window
-          window.open(parameter_set_base_url + d.psid, '_blank');
+          window.open(ps_url, '_blank');
         });
     }
     draw_points();
