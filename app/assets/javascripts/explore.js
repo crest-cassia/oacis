@@ -1,3 +1,18 @@
+function set_current_ps(ps_id, parameter_set_base_url) {
+  $('#current_ps_id').text(ps_id);
+
+  var point = d3.selectAll("circle")
+    .attr("r", function(d) { return (d.psid == ps_id) ? 5 : 3;});
+
+  var url = parameter_set_base_url + ps_id + ".json";
+  d3.json(url, function(error, json) {
+    var param_values = json.v;
+    for(key in param_values) {
+      $('#ps_v_'+key).text(param_values[key]);
+    }
+  });
+}
+
 function draw_explorer(url, parameter_set_base_url, current_ps_id) {
   var margin = {top: 10, right: 100, bottom: 100, left: 100};
   var width = 560;
@@ -160,6 +175,9 @@ function draw_explorer(url, parameter_set_base_url, current_ps_id) {
           tooltip.transition()
             .duration(300)
             .style("opacity", 0);
+        })
+        .on("click", function(d) {
+          set_current_ps(d.psid, parameter_set_base_url);
         })
         .on("dblclick", function(d) {
           // open a link in a background window
