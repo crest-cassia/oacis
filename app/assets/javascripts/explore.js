@@ -24,21 +24,25 @@ function draw_explorer(url, parameter_set_base_url, current_ps_id) {
     progress.remove();
 
     var xScale = d3.scale.linear().range([0, width]);
-    var yScale = d3.scale.linear().range([height, 0]);
-    var colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"])
-
     xScale.domain([
       d3.min( dat.data, function(d) { return d[0];}),
       d3.max( dat.data, function(d) { return d[0];})
     ]).nice();
+
+    var yScale = d3.scale.linear().range([height, 0]);
     yScale.domain([
       d3.min( dat.data, function(d) { return d[1];}),
       d3.max( dat.data, function(d) { return d[1];})
     ]).nice();
-    colorScale.domain([
-      d3.min( dat.data, function(d) { return d[2];}),
-      d3.max( dat.data, function(d) { return d[2];})
-    ]).nice();
+
+    var colorScale;
+    if( dat.result ) {
+      colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"])
+      colorScale.domain([
+        d3.min( dat.data, function(d) { return d[2];}),
+        d3.max( dat.data, function(d) { return d[2];})
+      ]).nice();
+    }
 
     function draw_color_map(g) {
       var scale = d3.scale.linear().domain([0.0, 1.0]).range(colorScale.range());
@@ -65,7 +69,7 @@ function draw_explorer(url, parameter_set_base_url, current_ps_id) {
         .style("text-anchor", "begin")
         .text( colorScale.domain()[0] );
     }
-    draw_color_map(colorMapG);
+    if( colorScale ) { draw_color_map(colorMapG); }
 
     function draw_axes(xlabel, ylabel) {
       // X-Axis
@@ -111,7 +115,7 @@ function draw_explorer(url, parameter_set_base_url, current_ps_id) {
         .style("stroke", "none");
     }
     try {
-      draw_voronoi_heat_map();
+      if( colorScale ) { draw_voronoi_heat_map(); }
       // Voronoi division fails when duplicate points are included.
       // In that case, just ignore creating voronoi heatmap and continue plotting.
     } catch(e) {
@@ -131,7 +135,10 @@ function draw_explorer(url, parameter_set_base_url, current_ps_id) {
       point.append("circle")
         .attr("cx", function(d) { return xScale(d.x);})
         .attr("cy", function(d) { return yScale(d.y);})
-        .style("fill", function(d) { return colorScale(d.average);})
+        .style("fill", function(d) {
+          if( colorScale) { return colorScale(d.average); }
+          else { return "black"; }
+        })
         .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;})
         .on("mouseover", function(d) {
           tooltip.transition()

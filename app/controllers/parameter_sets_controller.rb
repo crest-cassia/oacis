@@ -242,22 +242,27 @@ class ParameterSetsController < ApplicationController
     # parameter_values should look like
     #   [{"_id"=>"52bb8662b93f96e193000007", "x"=>1, "y"=>1.0}, {...}, {...}, ... ]
 
-    ps_ids = parameter_values.map {|ps| ps["_id"]}
+    if result_keys.present?
+      ps_ids = parameter_values.map {|ps| ps["_id"]}
+      result_values = collect_result_values(ps_ids, analyzer, result_keys)
+      # result_values should look like
+      # [{"_id"=>"52bba7bab93f969a7900000f",
+      #   "average"=>99.0, "square_average"=>9801.0, "count"=>1},
+      #  {...}, {...}, ... ]
 
-    result_values = collect_result_values(ps_ids, analyzer, result_keys)
-    # result_values should look like
-    # [{"_id"=>"52bba7bab93f969a7900000f",
-    #   "average"=>99.0, "square_average"=>9801.0, "count"=>1},
-    #  {...}, {...}, ... ]
-
-    data = result_values.map do |h|
-      found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
-      [found["x"], found["y"], h["average"], h["error"], h["_id"]]
+      data = result_values.map do |h|
+        found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
+        [found["x"], found["y"], h["average"], h["error"], h["_id"]]
+      end
+    else
+      data = parameter_values.map do |pv|
+        [pv["x"], pv["y"], nil, nil, pv["_id"]]
+      end
     end
 
     respond_to do |format|
       format.json {
-        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result_keys.last, data: data}
+        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result_keys.try(:last), data: data}
       }
     end
   end
