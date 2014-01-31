@@ -63,11 +63,11 @@ function update_explorer(url, current_ps_id) {
   var colorMapG = d3.select("g#color-map-group");
   var svg = d3.select("g#plot-group");
 
-  var progress = show_loading_spin_arc(svg, width, height);
+  // var progress = show_loading_spin_arc(svg, width, height);
 
   var xhr = d3.json(url)
     .on("load", function(dat) {
-    progress.remove();
+    // progress.remove();
 
     var xScale = d3.scale.linear().range([0, width]);
     xScale.domain([
@@ -118,6 +118,7 @@ function update_explorer(url, current_ps_id) {
     if( colorScale ) { draw_color_map(colorMapG); }
 
     function draw_axes(xlabel, ylabel) {
+      d3.selectAll("g.axis").remove();
       // X-Axis
       var xAxis = d3.svg.axis()
         .scale(xScale)
@@ -177,8 +178,10 @@ function update_explorer(url, current_ps_id) {
         };
       });
       var point = svg.selectAll("circle")
-        .data(mapped).enter();
-      point.append("circle")
+        .data(mapped);
+      point.exit().remove();
+      point.enter().append("circle");
+      point
         .attr("cx", function(d) { return xScale(d.x);})
         .attr("cy", function(d) { return yScale(d.y);})
         .style("fill", function(d) {
