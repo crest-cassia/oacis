@@ -16,7 +16,6 @@
       = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
       = label_tag 'result', "Result"
       = select_tag 'result', options_for_select(@simulator.plottable), id: 'result', include_blank: true
-      %a.btn.btn-primary#add_scatter_plot_button Add Scatter Plot
     #irrelevant-params
       %br
       Irrelevant parameters :
@@ -83,5 +82,5 @@
     update_explorer(url, ps_id);
   }
 
-  $('#scatter-plot-form #x_axis_key').change( on_select_change );
-  $('#scatter-plot-form #y_axis_key').change( on_select_change );
+  $('#scatter-plot-form').change( on_select_change );
+  $('#irrelevant-params').change( on_select_change );
