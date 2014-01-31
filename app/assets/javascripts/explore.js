@@ -1,10 +1,10 @@
-function set_current_ps(ps_id, parameter_set_base_url) {
+function set_current_ps(ps_id) {
   $('#current_ps_id').text(ps_id);
 
   var point = d3.selectAll("circle")
     .attr("r", function(d) { return (d.psid == ps_id) ? 5 : 3;});
 
-  var url = parameter_set_base_url + ps_id + ".json";
+  var url = $('#plot').data('ps-url').replace('PSID', ps_id);
   d3.json(url, function(error, json) {
     var param_values = json.v;
     for(key in param_values) {
@@ -177,7 +177,7 @@ function draw_explorer(url, parameter_set_base_url, current_ps_id) {
             .style("opacity", 0);
         })
         .on("click", function(d) {
-          set_current_ps(d.psid, parameter_set_base_url);
+          set_current_ps(d.psid);
         })
         .on("dblclick", function(d) {
           // open a link in a background window

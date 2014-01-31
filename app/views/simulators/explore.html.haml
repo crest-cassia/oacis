@@ -45,7 +45,9 @@
             %td{style: "padding-left: 0; padding-right: 0;"}
               %i.icon-arrow-up
   .span8
-    #plot
+    - urls = {:"scatter-plot-url" => _scatter_plot_parameter_set_path('PSID') + '.json',
+              :"ps-url" => parameter_set_path('PSID')+'.json' }
+    #plot{data: urls }
       #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
 
 :css
@@ -69,7 +71,6 @@
   }
 
 :javascript
-
   function add_explorer(x, y, result, irrelevants) {
     var url = "#{_scatter_plot_parameter_set_path(@param_set)}" + ".json";
     var url_with_param = url +
