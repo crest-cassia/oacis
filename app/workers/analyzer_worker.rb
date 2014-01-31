@@ -1,9 +1,9 @@
-class Worker < DaemonSpawn::Base
+class AnalyzerWorker < DaemonSpawn::Base
 
   INTERVAL = 5
 
-  WORKER_PID_FILE = Rails.root.join('tmp', 'pids', "worker_#{Rails.env}.pid")
-  WORKER_LOG_FILE = Rails.root.join('log', "worker_#{Rails.env}.log")
+  WORKER_PID_FILE = Rails.root.join('tmp', 'pids', "analyzer_worker_#{Rails.env}.pid")
+  WORKER_LOG_FILE = Rails.root.join('log', "analyzer_worker_#{Rails.env}.log")
 
   def start(args)
     @logger = Logger.new(STDOUT, 7)
@@ -17,13 +17,7 @@ class Worker < DaemonSpawn::Base
     }
 
     loop do
-      JobSubmitter.perform(@logger)
-      break if @term_received
-      JobObserver.perform(@logger)
-      break if @term_received
       AnalyzerRunner.perform(@logger)
-      break if @term_received
-      CacheUpdater.perform(@logger)
       break if @term_received
       sleep INTERVAL
       break if @term_received
@@ -57,10 +51,10 @@ class Worker < DaemonSpawn::Base
 end
 
 if $0 == __FILE__
-  Worker.spawn!(log_file: Worker::WORKER_LOG_FILE,
-                pid_file: Worker::WORKER_PID_FILE,
-                sync_log: true,
-                working_dir: Rails.root,
-                singleton: true
-                )
+  AnalyzerWorker.spawn!(log_file:  AnalyzerWorker::WORKER_LOG_FILE,
+                        pid_file:  AnalyzerWorker::WORKER_PID_FILE,
+                        sync_log: true,
+                        working_dir: Rails.root,
+                        singleton: true
+                        )
 end
