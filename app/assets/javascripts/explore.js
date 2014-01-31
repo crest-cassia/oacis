@@ -35,9 +35,7 @@ function draw_explorer(url, current_ps_id) {
   var width = 560;
   var height = 460;
 
-  var row = d3.select("#plot").insert("div","div").attr("class", "row");
-  var plot_region = row.append("div").attr("class", "span8");
-  var description = row.append("div").attr("class", "span4");
+  var plot_region = d3.select("#plot");
 
   var svg = plot_region.insert("svg")
     .attr({
@@ -203,23 +201,6 @@ function draw_explorer(url, current_ps_id) {
         });
     }
     draw_points();
-
-    function add_description() {
-      // description for the specification of the plot
-      var dl = description.append("dl");
-      dl.append("dt").text("X-Axis");
-      dl.append("dd").text(dat.xlabel);
-      dl.append("dt").text("Y-Axis");
-      dl.append("dd").text(dat.ylabel);
-      dl.append("dt").text("Result");
-      dl.append("dd").text(dat.result);
-      description.append("a").attr({target: "_blank", href: url}).text("show data in json");
-      description.append("br");
-      description.append("a").text("delete plot").on("click", function() {
-        row.remove();
-      });
-    }
-    add_description();
   })
   .on("error", function() {progress.remove();})
   .get();
