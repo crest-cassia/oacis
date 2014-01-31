@@ -73,7 +73,15 @@
 :javascript
   $(function() {
     var url_with_param = build_scatter_plot_url();
-    var ps_url = $('#plot').data('ps-url').replace('PSID', '');
     var ps_id = $('td#current_ps_id').text();
     draw_explorer(url_with_param, ps_id);
   });
+
+  function on_select_change() {
+    var url = build_scatter_plot_url();
+    var ps_id = $('td#current_ps_id').text();
+    update_explorer(url, ps_id);
+  }
+
+  $('#scatter-plot-form #x_axis_key').change( on_select_change );
+  $('#scatter-plot-form #y_axis_key').change( on_select_change );
