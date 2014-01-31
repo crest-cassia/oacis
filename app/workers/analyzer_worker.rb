@@ -52,9 +52,9 @@ end
 
 if $0 == __FILE__
   AnalyzerWorker.spawn!(log_file:  AnalyzerWorker::WORKER_LOG_FILE,
-                pid_file:  AnalyzerWorker::WORKER_PID_FILE,
-                sync_log: true,
-                working_dir: Rails.root,
-                singleton: true
-                )
+                        pid_file:  AnalyzerWorker::WORKER_PID_FILE,
+                        sync_log: true,
+                        working_dir: Rails.root,
+                        singleton: true
+                        )
 end
