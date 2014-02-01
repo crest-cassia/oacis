@@ -24,6 +24,7 @@ AcmProto::Application.routes.draw do
         get "_analyses_list" # for ajax, datatables
         get "_line_plot" # for line plot
         get "_scatter_plot" # for scatter plot
+        get "_neighbor"
       end
       resources :runs, only: ["show","create", "destroy"] do
         member do

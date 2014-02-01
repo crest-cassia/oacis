@@ -267,6 +267,36 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  def _neighbor
+    current = ParameterSet.find(params[:id])
+    simulator = current.simulator
+
+    param_keys = simulator.parameter_definitions.map(&:key)
+    target_key = params[:key]
+    raise "not found key #{target_key}" unless param_keys.include?(target_key)
+    query = {simulator: simulator}
+    param_keys.each do |key|
+      next if key == target_key
+      query["v.#{key}"] = current.v[key]
+    end
+    target_key_values = ParameterSet.where(query).distinct("v.#{target_key}").sort
+
+    idx = target_key_values.index(current.v[target_key])
+    if params[:direction] == "up"
+      idx = (idx + 1) % target_key_values.size
+    elsif params[:direction] == "down"
+      idx = (idx - 1) % target_key_values.size
+    else
+      raise "must not happen"
+    end
+    query = query.merge({"v.#{target_key}" => target_key_values[idx] })
+    @param_set = ParameterSet.where(query).first
+
+    respond_to do |format|
+      format.json { render json: @param_set }
+    end
+  end
+
   private
   MAX_CREATION_SIZE = 100
   # return created parameter sets
