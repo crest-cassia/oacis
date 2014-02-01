@@ -13,6 +13,22 @@ function set_current_ps(ps_id) {
   });
 }
 
+function move_current_ps(neighbor_ps_url) {
+  var current_ps_id = $('#current_ps_id').text();
+  var url = neighbor_ps_url.replace('PSID', current_ps_id);
+
+  d3.json(url, function(error, json) {
+    var ps_id = json._id;
+    $('#current_ps_id').text(ps_id);
+    var param_values = json.v;
+    for(key in param_values) {
+      $('#ps_v_'+key).text(param_values[key]);
+    }
+    var point = d3.selectAll("circle")
+      .attr("r", function(d) { return (d.psid == ps_id) ? 5 : 3;});
+  });
+}
+
 function build_scatter_plot_url(ps_id) {
   ps_id = ps_id || $('td#current_ps_id').text();
   var x = $('#scatter-plot-form #x_axis_key').val();
