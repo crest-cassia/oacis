@@ -18,14 +18,17 @@ function move_current_ps(neighbor_ps_url) {
   var url = neighbor_ps_url.replace('PSID', current_ps_id);
 
   d3.json(url, function(error, json) {
+    // update table
     var ps_id = json._id;
     $('#current_ps_id').text(ps_id);
     var param_values = json.v;
     for(key in param_values) {
       $('#ps_v_'+key).text(param_values[key]);
     }
-    var point = d3.selectAll("circle")
-      .attr("r", function(d) { return (d.psid == ps_id) ? 5 : 3;});
+
+    // update scatter plot
+    var url = build_scatter_plot_url();
+    update_explorer(url, ps_id);
   });
 }
 
