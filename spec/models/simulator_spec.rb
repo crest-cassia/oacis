@@ -206,6 +206,42 @@ describe Simulator do
     end
   end
 
+  describe "#plottable_domains" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1,
+                               runs_count: 2,
+                               analyzers_count: 1,
+                               run_analysis: true)
+      runs = @sim.parameter_sets.first.runs.asc(:_id)
+      runs.each_with_index do |run, idx|
+        run.status = :finished
+        run.result = { r1: 1+idx, r2: { r3: 3+idx, r4: 4+idx}, r5: [1,2,3] }
+        run.save!
+      end
+
+      @sim.analyzers.first.analyses.each_with_index do |anl, idx|
+        anl.status = :finished
+        anl.result = { a1: 1+idx, a2: { a3: 3+idx, a4: 4+idx}, a5: [1,2,3] }
+        anl.save!
+      end
+    end
+
+    it "return the min and max values for each result" do
+      azr = @sim.analyzers.first
+      expected = {
+        ".r1" => [1, 2],
+        ".r2.r3" => [3, 4],
+        ".r2.r4" => [4, 5],
+        "#{azr.name}.a1" => [1, 2],
+        "#{azr.name}.a2.a3" => [3, 4],
+        "#{azr.name}.a2.a4" => [4, 5]
+      }
+      @sim.plottable_domains.should eq expected
+    end
+  end
+
   describe "#progress_overview_data" do
 
     before(:each) do
