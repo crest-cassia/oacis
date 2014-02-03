@@ -4,8 +4,6 @@ require_relative 'optimizer.rb'
 
 class GaSimple < Optimizer
 
-  @@OPTIMIZER_TYPES += ["GA"]
-
   def initialize(data)
     super(data)
   end

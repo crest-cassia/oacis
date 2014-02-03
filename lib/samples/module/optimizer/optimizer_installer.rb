@@ -77,8 +77,6 @@ class OptimizerSelect
     message
     @step_counter += 1
     @opt_param_counter=0
-    @optimizer_types = Optimizer::OPTIMIZER_TYPES
-    @optimizer_desctiptions={"GA"=>"default GA"}
   end
 
   def run(str)
@@ -134,17 +132,8 @@ class OptimizerSelect
   end
 
   def set_type(str)
-    if @optimizer_types.include?(str)
       @type=str
       puts "new optimizer type is "+TermColor.blue_i+"\""+@type+"\""+TermColor.reset_i
-    else
-      TermColor.red
-      puts "*****************************************"
-      puts "***ERROR:enter a type of optimizer from "+@optimizer_types.to_s+")***"
-      puts "*****************************************"
-      TermColor.reset
-      @step_counter -=1
-    end
   end
   
   def select_analyzer(str)
@@ -270,7 +259,7 @@ class OptimizerSelect
     @managed_params.each do |mpara|
       h["settings"]["managed_parameters"].push(mpara)
     end
-    a.push(ParameterDefinition.new({"key"=>"operation", "type"=>"String", "default" => h.to_json.to_s, "description" => @optimizer_desctiptions[@type]}))
+    a.push(ParameterDefinition.new({"key"=>"operation", "type"=>"String", "default" => h.to_json.to_s, "description" => @type}))
     a.push(ParameterDefinition.new({"key"=>"iteration", "type"=>"Integer", "default" => 2, "description" =>"max_iteration"}))
     a.push(ParameterDefinition.new({"key"=>"population", "type"=>"Integer", "default" => 32, "description" =>"max_iteration"}))
     a.push(ParameterDefinition.new({"key"=>"seed", "type"=>"Integer", "default" => 0, "description" =>"seed for an optimizer"}))
