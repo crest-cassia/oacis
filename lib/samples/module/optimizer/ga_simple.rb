@@ -4,6 +4,21 @@ require_relative 'optimizer.rb'
 
 class GaSimple < Optimizer
 
+  def self.definitions(sim, anz, host, type, managed_params)
+    a = []
+    a.push(ParameterDefinition.new({"key"=>"target", "type"=>"String", "default" => {"Simulator"=>sim.to_param,"Analyzer"=>anz.to_param,"Host"=>host.map{|h| h.to_param}}.to_json.to_s, "description" => "targets for operation"}))
+    h = {"module"=>"optimization","type"=>type,"settings"=>{"maximize"=>true}}
+    h["settings"]["managed_parameters"]=[]
+    managed_params.each do |mpara|
+      h["settings"]["managed_parameters"].push(mpara)
+    end
+    a.push(ParameterDefinition.new({"key"=>"operation", "type"=>"String", "default" => h.to_json.to_s, "description" => type}))
+    a.push(ParameterDefinition.new({"key"=>"iteration", "type"=>"Integer", "default" => 2, "description" =>"max_iteration"}))
+    a.push(ParameterDefinition.new({"key"=>"population", "type"=>"Integer", "default" => 32, "description" =>"max_population"}))
+    a.push(ParameterDefinition.new({"key"=>"seed", "type"=>"Integer", "default" => 0, "description" =>"seed for an optimizer"}))
+    a
+  end
+
   def initialize(data)
     super(data)
   end

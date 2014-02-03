@@ -1,6 +1,6 @@
 require 'pp'
 require 'json'
-require Rails.root.to_s+'/lib/samples/module/optimizer/optimizer.rb'
+require Rails.root.to_s+'/lib/samples/module/optimizer/ga_simple.rb'
 
 class TermColor
   class << self
@@ -193,8 +193,7 @@ class OptimizerSelect
     TermColor.green
     puts "install stage: "+@steps[@step_counter+1]
     TermColor.reset
-    pp @optimizer_types
-    puts "Input optimizer type:"
+    puts "Input optimizer type:(GA)"
   end
 
   def analyzer_list
@@ -252,18 +251,7 @@ class OptimizerSelect
   end
 
   def opt_parameter_definitions
-    a = []
-    a.push(ParameterDefinition.new({"key"=>"target", "type"=>"String", "default" => {"Simulator"=>@sim.to_param,"Analyzer"=>@anz.to_param,"Host"=>@host.map{|h| h.to_param}}.to_json.to_s, "description" => "targets for operation"}))
-    h = {"module"=>"optimization","type"=>@type,"settings"=>{"maximize"=>true}}
-    h["settings"]["managed_parameters"]=[]
-    @managed_params.each do |mpara|
-      h["settings"]["managed_parameters"].push(mpara)
-    end
-    a.push(ParameterDefinition.new({"key"=>"operation", "type"=>"String", "default" => h.to_json.to_s, "description" => @type}))
-    a.push(ParameterDefinition.new({"key"=>"iteration", "type"=>"Integer", "default" => 2, "description" =>"max_iteration"}))
-    a.push(ParameterDefinition.new({"key"=>"population", "type"=>"Integer", "default" => 32, "description" =>"max_iteration"}))
-    a.push(ParameterDefinition.new({"key"=>"seed", "type"=>"Integer", "default" => 0, "description" =>"seed for an optimizer"}))
-    return a
+    GaSimple.definitions(@sim, @anz, @host, @type, @managed_params)
   end
 end
 
