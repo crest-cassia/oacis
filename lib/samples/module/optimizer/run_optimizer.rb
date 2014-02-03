@@ -1,6 +1,6 @@
 require 'json'
 
-require_relative 'optimizer.rb'
+require_relative 'ga_simple.rb'
 
 def load_input_data
   if File.exist?("_input.json")
@@ -17,4 +17,14 @@ if input_data.blank?
   exit(-1)
 end
 
-Optimizer.new(input_data).run
+input_data["target"]=JSON.parse(input_data["target"])
+input_data["operation"]=JSON.parse(input_data["operation"])
+
+case input_data["operation"]["type"]
+when "GA"
+  @optimizer = GaSimple.new(input_data)
+  @optimizer.run
+else
+  puts "No such optimizer."
+end
+

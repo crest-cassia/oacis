@@ -1,74 +1,63 @@
 require 'json'
 require_relative '../OACIS_module.rb'
+require_relative 'optimizer.rb'
 
-class Optimizer < OacisModule
+class GaSimple < Optimizer
 
-  @@OPTIMIZER_TYPES = []
+  @@OPTIMIZER_TYPES += ["GA"]
 
   def initialize(data)
-    @input_data = data
-
-    if target_simulator.blank?
-      puts "Target simulator is missing."
-      exit(-1)
-    end
-
-    if optimizer_data["data"]["seed"].class == String
-      @prng = Random.new.marshal_load(JSON.parse(optimizer_data["data"]["seed"]))
-    else
-      @prng = Random.new(optimizer_data["data"]["seed"])
-    end
+    super(data)
   end
 
   private
   #override
   def generate_runs
-    raise "IMPLEMENT ME"
+    generate_parameters_and_submit_runs
   end
 
   #override
   def evaluate_runs
     evaluate_results
-    select_population
-  end
-
-  #override
-  def dump_serialized_data
-    output_file = "_output.json"
-    optimizer_data["data"]["iteration"] = @num_iterations
-    optimizer_data["data"]["seed"] = @prng.marshal_dump.to_json
-    File.open(output_file, 'w') {|io| io.print optimizer_data.to_json }
   end
 
   #override
   def finished?
     b=[]
-    b.push(@num_iterations >= optimizer_data["data"]["max_optimizer_iteration"])
+    b.push(super)
     return b.any?
   end
 
-  def target_simulator
-    @target_simulator ||= Simulator.find(@input_data["target"]["Simulator"])
-  end
-
-  def target_analzer
-    @target_analyzer ||= Analyzer.find(@input_data["target"]["Analyzer"])
-  end
-
-  def managed_parameters
-    parameter_definitions = target_simulator.parameter_definitions
-    @input_data["operation"]["settings"]["managed_parameters"].each do |mpara|
-      parameter_definitions.where({"key"=>mpara["key"]}).first["range"]=mpara["range"]
-    end
-    parameter_definitions
-  end
-
-  def optimizer_data
-    @optimizer_data ||= create_optimizer_data
-  end
-
   def create_optimizer_data
-    raise "IMPLEMENT ME"
+    h={}
+    h["data"]=opt_data
+    h["result"]=[]
+    File.open("_output.json", 'w') {|io| io.print h["result"].to_json }
+    h
+  end
+
+  def template_result
+    {"best"=>{},
+     "population"=>[], #[{"ps_v"=>{"dt_1"=>0,"dt_2"=>0},"val"=>0}, ..., {"ps_v"=>{"dt_1"=>100,"dt_2"=>100},"val"=>100}]
+     "children"=>[]
+    }
+  end
+
+  def opt_data
+    default_number_of_individuals_crossover=(@input_data["population"]/2).to_i
+    default_number_of_individuals_mutation=@input_data["population"]-default_number_of_individuals_crossover
+    mutation_target_parameters=@input_data["operation"]["settings"]["managed_parameters"].map{|mpara| mpara["key"]}
+    {"iteration"=>0,
+     "max_optimizer_iteration"=>@input_data["iteration"],
+     "population_num"=>@input_data["population"],
+     "maximize"=>@input_data["operation"]["settings"]["maximize"],
+     "seed"=>@input_data["seed"],
+     "type"=>@input_data["operation"]["type"],
+     "operation"=>[{"crossover"=>{"count"=>default_number_of_individuals_crossover,"type"=>"1point","selection"=>{"tournament"=>{"tournament_size"=>4}}}},
+                   {"mutation"=>{"count"=>default_number_of_individuals_mutation,"type"=>"uniform_distribution","target_parameters"=>mutation_target_parameters}}
+                  ],
+     "selection"=>"ranking"
+    }
   end
 
   def get_parents(optimizer_data, count)
@@ -234,10 +223,93 @@ class Optimizer < OacisModule
   end
 
   def generate_parameters_and_submit_runs
-    raise "IMPLEMENT ME"
+    generated = []
+
+    optimizer_data["result"].push(template_result)
+    if optimizer_data["data"]["iteration"] == 0
+      create_children_ga.each_with_index do |child, i|
+        optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"][i] = {"ps_v"=>child}
+      end
+    else
+      generate_children_ga.each_with_index do |child, i|
+        optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"][i] = {"ps_v"=>child}
+      end
+    end
+    optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].each do |child|
+      v = {}
+      managed_parameters.each do |val|
+        if child["ps_v"][val["key"]].present?
+          v[val["key"]] = child["ps_v"][val["key"]]
+        else
+          v[val["key"]] = val["default"]
+        end
+      end
+      ps = target_simulator.parameter_sets.find_or_create_by(v: v)
+      if ps.runs.count == 0
+        run = ps.runs.build
+        run.submitted_to_id=@input_data["target"]["Host"].first
+        run.save
+        generated << run
+      end
+    end
+    generated
+  end
+
+  def target_field(ps)
+    anl = Analysis.where(analyzer_id: target_analzer.to_param, analyzable_id: ps.runs.first.to_param, status: :finished).first
+    b = anl
+    return nil if b.blank?
+    b = b.result
+    return nil if b.blank?
+    b = b["Fitness"]
+    return nil if b.blank?
+    b
   end
 
   def evaluate_results
-    raise "IMPLEMENT ME"
+    get_values
+    select_population
+  end
+
+  def get_values
+    target_field = "Fitness"
+
+    optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].each do |child|
+      if child["val"].blank?
+        h = {}
+        managed_parameters.each do |val|
+          if child["ps_v"][val["key"]].present?
+            h["v."+val["key"]] = child["ps_v"][val["key"]]
+          else
+            h["v."+val["key"]] = val["default"]
+          end
+        end
+        ps = target_simulator.parameter_sets.where(h).first
+        val = target_field(ps)
+        if val.present?
+          child["val"] = val
+        end
+      end
+    end
+    finished_run_count = optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"].select{|x| x["val"].present?}.length
+    puts "finished_run_count:#{finished_run_count}"
+    raise "error in __method__" if finished_run_count != optimizer_data["data"]["population_num"]
+  end
+
+  def select_population
+    case optimizer_data["data"]["selection"]
+    when "ranking"
+      if optimizer_data["data"]["iteration"]==0
+        all_members = optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"]
+      else
+        all_members = (optimizer_data["result"][optimizer_data["data"]["iteration"]-1]["population"] + optimizer_data["result"][optimizer_data["data"]["iteration"]]["children"]).uniq
+      end
+      if optimizer_data["data"]["maximize"]
+        optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"] = all_members.sort{|a, b| (b["val"] <=> a["val"])}[0..optimizer_data["data"]["population_num"]-1]
+      else
+        optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"] = all_members.sort{|a, b| (a["val"] <=> b["val"])}[0..optimizer_data["data"]["population_num"]-1]
+      end
+      optimizer_data["result"][optimizer_data["data"]["iteration"]]["best"] = optimizer_data["result"][optimizer_data["data"]["iteration"]]["population"][0]
+    end
   end
 end
