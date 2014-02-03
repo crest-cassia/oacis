@@ -9,11 +9,11 @@
 %form
   .form-inline
     #scatter-plot-form
-      - parameter_keys = @simulator.parameter_definitions.map(&:key)
+      - opts = @simulator.parameter_ranges.map {|key, range| [key, key, {:"data-range" => range}] }
       = label_tag 'x_axis_key', "X-Axis"
-      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key'
+      = select_tag 'x_axis_key', options_for_select(opts), id: 'x_axis_key'
       = label_tag 'y_axis_key', "Y-Axis"
-      = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
+      = select_tag 'y_axis_key', options_for_select(opts, selected: opts[1]), id: 'y_axis_key'
       = label_tag 'result', "Result"
       - opts = @simulator.plottable_domains.map {|key,domain| [key, key, {:"data-domain" => domain}] }
       = select_tag 'result', options_for_select(opts), id: 'result', include_blank: true

@@ -89,19 +89,23 @@ function update_explorer(url, current_ps_id) {
     // progress.remove();
 
     var xScale = d3.scale.linear().range([0, width]);
-    xScale.domain([
-      d3.min( dat.data, function(d) { return d[0];}),
-      d3.max( dat.data, function(d) { return d[0];})
-    ]).nice();
+    var xDomain = $('select#x_axis_key option:selected').data("range");
+    xScale.domain(xDomain).nice();
+    // xScale.domain([
+    //   d3.min( dat.data, function(d) { return d[0];}),
+    //   d3.max( dat.data, function(d) { return d[0];})
+    // ]).nice();
 
     var yScale = d3.scale.linear().range([height, 0]);
-    yScale.domain([
-      d3.min( dat.data, function(d) { return d[1];}),
-      d3.max( dat.data, function(d) { return d[1];})
-    ]).nice();
+    var yDomain = $('select#y_axis_key option:selected').data("range");
+    yScale.domain(yDomain).nice();
+    // yScale.domain([
+    //   d3.min( dat.data, function(d) { return d[1];}),
+    //   d3.max( dat.data, function(d) { return d[1];})
+    // ]).nice();
 
     var colorScale;
-    domains = $('select#result option:selected').data("domain")
+    domains = $('select#result option:selected').data("domain");
     if( domains ) {
       colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"])
       colorScale.domain(domains).nice();
