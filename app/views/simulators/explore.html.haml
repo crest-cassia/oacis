@@ -15,7 +15,8 @@
       = label_tag 'y_axis_key', "Y-Axis"
       = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
       = label_tag 'result', "Result"
-      = select_tag 'result', options_for_select(@simulator.plottable), id: 'result', include_blank: true
+      - opts = @simulator.plottable_domains.map {|key,domain| [key, key, {:"data-domain" => domain}] }
+      = select_tag 'result', options_for_select(opts), id: 'result', include_blank: true
     #irrelevant-params
       %br
       Irrelevant parameters :

@@ -101,12 +101,10 @@ function update_explorer(url, current_ps_id) {
     ]).nice();
 
     var colorScale;
-    if( dat.result ) {
+    domains = $('select#result option:selected').data("domain")
+    if( domains ) {
       colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"])
-      colorScale.domain([
-        d3.min( dat.data, function(d) { return d[2];}),
-        d3.max( dat.data, function(d) { return d[2];})
-      ]).nice();
+      colorScale.domain(domains).nice();
     }
 
     function draw_color_map(g) {
