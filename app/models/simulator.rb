@@ -140,6 +140,28 @@ class Simulator
   end
 
   public
+  def parameter_ranges
+    query = ParameterSet.where(simulator: self)
+    group = {_id: 0}
+    parameter_definitions.each do |pd|
+      next unless pd.type == "Float" or pd.type == "Integer"
+      # pd.key cannot include '-'. Hence, prefix "min-" and "max-" are safe.
+      group["min-#{pd.key}"] = { '$min' => "$v.#{pd.key}" }
+      group["max-#{pd.key}"] = { '$max' => "$v.#{pd.key}" }
+    end
+    aggregated = ParameterSet.collection.aggregate(
+      {'$match' => query.selector },
+      {'$group' => group }
+    ).first
+
+    ranges = {}
+    parameter_definitions.each do |pd|
+      ranges[pd.key] = [ aggregated["min-#{pd.key}"], aggregated["max-#{pd.key}"] ]
+    end
+    ranges
+  end
+
+  public
   def progress_overview_data(parameter_key1, parameter_key2)
     parameter_values = [
       parameter_sets.distinct("v.#{parameter_key1}").sort,

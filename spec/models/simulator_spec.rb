@@ -242,6 +242,34 @@ describe Simulator do
     end
   end
 
+  describe "#parameter_ranges" do
+
+    before(:each) do
+      parameter_definitions = [
+        ParameterDefinition.new({ key: "L", type: "Integer", default: 0}),
+        ParameterDefinition.new({ key: "T", type: "Float", default: 1.0}),
+        ParameterDefinition.new({ key: "S", type: "String", default: 'xxx'})
+      ]
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_definitions: parameter_definitions,
+                                parameter_sets_count: 0)
+      create_ps = lambda {|h| FactoryGirl.create(:parameter_set, {simulator: @sim}.merge(h)) }
+      create_ps.call(v: {"L" => 1, "T" => 1.0})
+      create_ps.call(v: {"L" => 2, "T" => 1.0})
+      create_ps.call(v: {"L" => 3, "T" => 1.0})
+      create_ps.call(v: {"L" => 1, "T" => 10.0})
+    end
+
+    it "returns ranges of each parameters" do
+      expected = {
+        "L" => [1, 3],
+        "T" => [1.0, 10.0],
+        "S" => [nil, nil]
+      }
+      @sim.parameter_ranges.should eq expected
+    end
+  end
+
   describe "#progress_overview_data" do
 
     before(:each) do
