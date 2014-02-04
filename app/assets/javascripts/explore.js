@@ -263,9 +263,9 @@ function update_explorer(url, current_ps_id) {
 }
 
 function add_pc_plot(url, current_ps_id) {
-  var margin = {top: 100, right: 100, bottom: 100, left: 100};
-  var width = 560;
-  var height = 460;
+  var margin = {top: 50, right: 100, bottom: 50, left: 100};
+  var width = 1000;
+  var height = 200;
 
   var plot_region = d3.select("#pc-plot");
 
@@ -278,7 +278,7 @@ function add_pc_plot(url, current_ps_id) {
     .append("g")
     .attr({
       "transform": "translate(" + margin.left + "," + margin.top + ")",
-      "id": "plot-group"
+      "id": "pc-plot-group"
     });
 
   var dimensions = [];
