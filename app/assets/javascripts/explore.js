@@ -254,3 +254,61 @@ function update_explorer(url, current_ps_id) {
   //   row.remove();
   // });
 }
+
+function add_pc_plot(url, current_ps_id) {
+  var margin = {top: 100, right: 100, bottom: 100, left: 100};
+  var width = 560;
+  var height = 460;
+
+  var plot_region = d3.select("#pc-plot");
+
+  var svg = plot_region.insert("svg")
+    .attr({
+      "width": width + margin.left + margin.right,
+      "height": height + margin.top + margin.bottom,
+      "id": "pc-plot-svg"
+    })
+    .append("g")
+    .attr({
+      "transform": "translate(" + margin.left + "," + margin.top + ")",
+      "id": "plot-group"
+    });
+
+  var dimensions = [];
+  var yScales = {};
+  function set_scales_and_dimensions() {
+    $('select#x_axis_key option').each(function() {
+      var extent = $(this).data("range");
+      var key = $(this).text();
+      var scale = d3.scale.linear().domain(extent).range([height, 0]).nice();
+      yScales[key] = scale;
+      dimensions.push(key);
+    });
+  };
+  set_scales_and_dimensions();
+
+  var xScale = d3.scale.ordinal().rangePoints([0,width], 1).domain( dimensions );
+
+  function path_generater(d) {
+    var points = dimensions.map( function(p) {
+      return [ xScale(p), yScales[p]( d[p] ) ]
+    })
+  }
+
+  var g = svg.selectAll(".dimension")
+    .data(dimensions)
+    .enter().append("svg:g")
+    .attr("class", "dimension")
+    .attr("transform", function(d) { return "translate(" + xScale(d) + ")"; });
+
+  var axis = d3.svg.axis().orient("left");
+  g.append("svg:g")
+    .attr("class", "pcp-axis")
+    .each(function(d) {
+      d3.select(this).call( axis.scale(yScales[d]) );
+    })
+    .append("svg:text")
+    .attr("text-anchor", "middle")
+    .attr("y", -9)
+    .text(String); // set text to the data values
+};
