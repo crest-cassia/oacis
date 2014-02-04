@@ -173,7 +173,11 @@ function update_explorer(url, current_ps_id) {
     draw_axes(dat.xlabel, dat.ylabel);
 
     function draw_voronoi_heat_map() {
-      var vertices = dat.data.map(function(v) { return [xScale(v[0]), yScale(v[1])]; })
+      var xlabel = dat.xlabel;
+      var ylabel = dat.ylabel;
+      var vertices = dat.data.map(function(v) {
+        return [xScale(v[0][xlabel]), yScale(v[0][ylabel])];
+      });
       var voronoi = d3.geom.voronoi()
         .clipExtent([[0, 0], [width, height]]);
       var path = svg.append("g")
@@ -181,7 +185,7 @@ function update_explorer(url, current_ps_id) {
         .selectAll("path")
         .data(voronoi(vertices));
       path.enter().append("path")
-        .style("fill", function(d, i) { return colorScale(dat.data[i][2]);})
+        .style("fill", function(d, i) { return colorScale(dat.data[i][1]);})
         .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
         .style("fill-opacity", 0.7)
         .style("stroke", "none");
@@ -197,10 +201,13 @@ function update_explorer(url, current_ps_id) {
 
     function draw_points() {
       var tooltip = d3.select("#plot-tooltip");
+
+      var xlabel = dat.xlabel;
+      var ylabel = dat.ylabel;
       var mapped = dat.data.map(function(v) {
         return {
-          x: v[0], y: v[1],
-          average: v[2], error: v[3], psid: v[4]
+          x: v[0][xlabel], y: v[0][ylabel],
+          average: v[1], error: v[2], psid: v[3]
         };
       });
       var point = svg.selectAll("circle")
