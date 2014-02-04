@@ -239,19 +239,21 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
 
     var xScale = d3.scale.linear().range([0, width]);
     var yScale = d3.scale.linear().range([height, 0]);
-    var colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"])
+    var colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"]);
+    var xlabel = dat.xlabel;
+    var ylabel = dat.ylabel;
 
     xScale.domain([
-      d3.min( dat.data, function(d) { return d[0];}),
-      d3.max( dat.data, function(d) { return d[0];})
+      d3.min( dat.data, function(d) { return d[0][xlabel];}),
+      d3.max( dat.data, function(d) { return d[0][xlabel];})
     ]).nice();
     yScale.domain([
-      d3.min( dat.data, function(d) { return d[1];}),
-      d3.max( dat.data, function(d) { return d[1];})
+      d3.min( dat.data, function(d) { return d[0][ylabel];}),
+      d3.max( dat.data, function(d) { return d[0][ylabel];})
     ]).nice();
     colorScale.domain([
-      d3.min( dat.data, function(d) { return d[2];}),
-      d3.max( dat.data, function(d) { return d[2];})
+      d3.min( dat.data, function(d) { return d[1];}),
+      d3.max( dat.data, function(d) { return d[1];})
     ]).nice();
 
     function draw_color_map(g) {
@@ -313,13 +315,13 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
     draw_axes(dat.xlabel, dat.ylabel);
 
     function draw_voronoi_heat_map() {
-      var vertices = dat.data.map(function(v) { return [xScale(v[0]), yScale(v[1])]; })
+      var vertices = dat.data.map(function(v) { return [xScale(v[0][xlabel]), yScale(v[0][ylabel])]; });
       var voronoi = d3.geom.voronoi()
         .clipExtent([[0, 0], [width, height]]);
       var path = svg.append("g").selectAll("path")
         .data(voronoi(vertices));
       path.enter().append("path")
-        .style("fill", function(d, i) { return colorScale(dat.data[i][2]);})
+        .style("fill", function(d, i) { return colorScale(dat.data[i][1]);})
         .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
         .style("fill-opacity", 0.7)
         .style("stroke", "none");
@@ -336,8 +338,8 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
       var tooltip = d3.select("#plot-tooltip");
       var mapped = dat.data.map(function(v) {
         return {
-          x: v[0], y: v[1],
-          average: v[2], error: v[3], psid: v[4]
+          x: v[0][xlabel], y: v[0][ylabel],
+          average: v[1], error: v[2], psid: v[3]
         };
       });
       var point = svg.selectAll("circle")
