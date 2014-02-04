@@ -237,10 +237,10 @@ class ParameterSetsController < ApplicationController
     parameter_values = ParameterSet.collection.aggregate(
       { '$match' => found_ps.selector },
       { '$limit' => SCATTER_PLOT_LIMIT },
-      { '$project' => {x: "$v.#{x_axis_key}", y: "$v.#{y_axis_key}"} }
+      { '$project' => {v: "$v"} }
       )
     # parameter_values should look like
-    #   [{"_id"=>"52bb8662b93f96e193000007", "x"=>1, "y"=>1.0}, {...}, {...}, ... ]
+    #   [{"_id"=>"52bb8662b93f96e193000007", "v"=> {...}}, {...}, {...}, ... ]
 
     if result_keys.present?
       ps_ids = parameter_values.map {|ps| ps["_id"]}
@@ -252,11 +252,11 @@ class ParameterSetsController < ApplicationController
 
       data = result_values.map do |h|
         found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
-        [found["x"], found["y"], h["average"], h["error"], h["_id"]]
+        [found["v"], h["average"], h["error"], h["_id"]]
       end
     else
       data = parameter_values.map do |pv|
-        [pv["x"], pv["y"], nil, nil, pv["_id"]]
+        [pv["v"], nil, nil, pv["_id"]]
       end
     end
 
