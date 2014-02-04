@@ -4,26 +4,7 @@
 .page-header
   %h1=t '.title', :default => @simulator.name
 
-%h3 Plot
-
-%form
-  .form-inline
-    #scatter-plot-form
-      - opts = @simulator.parameter_ranges.map {|key, range| [key, key, {:"data-range" => range}] }
-      = label_tag 'x_axis_key', "X-Axis"
-      = select_tag 'x_axis_key', options_for_select(opts), id: 'x_axis_key'
-      = label_tag 'y_axis_key', "Y-Axis"
-      = select_tag 'y_axis_key', options_for_select(opts, selected: opts[1]), id: 'y_axis_key'
-      = label_tag 'result', "Result"
-      - opts = @simulator.plottable_domains.map {|key,domain| [key, key, {:"data-domain" => domain}] }
-      = select_tag 'result', options_for_select(opts), id: 'result', include_blank: true
-    #irrelevant-params
-      %br
-      Irrelevant parameters :
-      %br
-      - @simulator.parameter_definitions.map(&:key).each do |key|
-        = label_tag key, key
-        = check_box_tag key
+#pc-plot
 
 %hr
 
@@ -46,13 +27,34 @@
             %td{style: "padding-left: 0; padding-right: 0;"}
               - url = _neighbor_parameter_set_path('PSID') +".json?key=#{key}&direction=up"
               %i.icon-arrow-up{id: "ps_up_#{key}", data: {"neighbor-url" => url}}
+    %form.form-horizontal
+      #scatter-plot-form
+        - opts = @simulator.parameter_ranges.map {|key, range| [key, key, {:"data-range" => range}] }
+        .control-group
+          = label_tag 'x_axis_key', "X-Axis", class: 'control-label scatter-plot-label'
+          .controls
+            = select_tag 'x_axis_key', options_for_select(opts), id: 'x_axis_key'
+        .control-group
+          = label_tag 'y_axis_key', "Y-Axis", class: 'control-label scatter-plot-label'
+          .controls
+            = select_tag 'y_axis_key', options_for_select(opts, selected: opts[1]), id: 'y_axis_key'
+        .control-group
+          = label_tag 'result', "Result", class: 'control-label'
+          .controls
+            - opts = @simulator.plottable_domains.map {|key,domain| [key, key, {:"data-domain" => domain}] }
+            = select_tag 'result', options_for_select(opts), id: 'result', include_blank: true
+      #irrelevant-params.form-inline
+        %br
+        Irrelevant parameters :
+        %br
+        - @simulator.parameter_definitions.map(&:key).each do |key|
+          = label_tag key, key
+          = check_box_tag key
   .span8
     - urls = {"scatter-plot-url" => _scatter_plot_parameter_set_path('PSID') + '.json',
               "ps-url" => parameter_set_path('PSID')+'.json'}
     #plot{data: urls }
       #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
-
-#pc-plot
 
 :css
   .axis path,
