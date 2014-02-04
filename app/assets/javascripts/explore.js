@@ -253,6 +253,8 @@ function update_explorer(url, current_ps_id) {
         });
     }
     draw_points();
+
+    update_pc_plot(dat.data, current_ps_id);
   })
   .on("error", function() { console.log("error"); /*progress.remove(); */})
   .get();
@@ -262,7 +264,7 @@ function update_explorer(url, current_ps_id) {
   // });
 }
 
-function add_pc_plot(url, current_ps_id) {
+function initialize_pc_plot() {
   var margin = {top: 50, right: 100, bottom: 50, left: 100};
   var width = 1000;
   var height = 200;
@@ -279,7 +281,14 @@ function add_pc_plot(url, current_ps_id) {
     .attr({
       "transform": "translate(" + margin.left + "," + margin.top + ")",
       "id": "pc-plot-group"
-    });
+    })
+    .data({"width": width, "height": height});
+}
+
+function update_pc_plot(data, current_ps_id) {
+  var svg = d3.select('#pc-plot-group');
+  var width = 1000;
+  var height = 200;
 
   var dimensions = [];
   var yScales = {};
@@ -295,12 +304,6 @@ function add_pc_plot(url, current_ps_id) {
   set_scales_and_dimensions();
 
   var xScale = d3.scale.ordinal().rangePoints([0,width], 1).domain( dimensions );
-
-  function path_generater(d) {
-    var points = dimensions.map( function(p) {
-      return [ xScale(p), yScales[p]( d[p] ) ]
-    })
-  }
 
   var g = svg.selectAll(".dimension")
     .data(dimensions)
@@ -318,4 +321,25 @@ function add_pc_plot(url, current_ps_id) {
     .attr("text-anchor", "middle")
     .attr("y", -9)
     .text(String); // set text to the data values
+
+  function draw_path() {
+    d3.selectAll('g.pcp-path').remove();
+    var pcp_path = svg.append("svg:g")
+      .attr("class", "pcp-path")
+      .selectAll("path")
+      .data(data);
+    pcp_path.enter().append("svg:path");
+    pcp_path
+      .style({ "fill": "none", "stroke": "steelblue", "stroke-opacity": 0.7})
+      .attr("d", function(d) {
+        var points = dimensions.map( function(p) {
+          return [ xScale(p), yScales[p]( d[0][p] ) ];
+        });
+        return d3.svg.line()(points);
+      })
+      .attr("stroke-width", function(d) {
+        return d[3] == current_ps_id ? 3 : 1;
+      });
+  }
+  draw_path();
 };
