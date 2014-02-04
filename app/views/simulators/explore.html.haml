@@ -52,9 +52,13 @@
     #plot{data: urls }
       #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
 
+#pc-plot
+
 :css
   .axis path,
-  .axis line {
+  .axis line,
+  .pcp-axis path,
+  .pcp-axis line {
     fill: none;
     stroke: #000;
     shape-rendering: crispEdges;
@@ -77,6 +81,8 @@
     var url_with_param = build_scatter_plot_url();
     var ps_id = $('td#current_ps_id').text();
     draw_explorer(url_with_param, ps_id);
+
+    add_pc_plot();
   });
 
   function on_select_change() {
