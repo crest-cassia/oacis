@@ -82,9 +82,8 @@
   $(function() {
     var url_with_param = build_scatter_plot_url();
     var ps_id = $('td#current_ps_id').text();
+    initialize_pc_plot();
     draw_explorer(url_with_param, ps_id);
-
-    add_pc_plot();
   });
 
   function on_select_change() {
