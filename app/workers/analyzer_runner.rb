@@ -4,13 +4,19 @@ class AnalyzerRunner
   INPUT_FILES_DIR = '_input'
   OUTPUT_JSON_FILENAME = '_output.json'
 
+  NUM_PROCESSES = 4
+
   def self.perform(logger)
     Analysis.where(status: :cancelled).each do |anl|
       logger.info("Deleting cancelled analysis: #{anl.id}")
       anl.destroy(true)
     end
-    Analysis.where(status: :created).each do |anl|
-      logger.info("Analyzing #{anl.id}")
+    anl_ids = Analysis.where(status: :created).limit(NUM_PROCESSES).map(&:id)
+    Mongoid::sessions.clear
+    Parallel.each(anl_ids, in_progresses: NUM_PROCESSES) do |anl_id|
+      logger.info("Analyzing #{anl_id}")
+      Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml'))
+      anl = Analysis.find(anl_id)
       work_dir = anl.dir  # UPDATE ME: a tentative implementation
       begin
         output = run_analysis(anl, work_dir)
@@ -20,6 +26,7 @@ class AnalyzerRunner
         anl.update_status_failed
       end
     end
+    Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml'))
   rescue => ex
     logger.error("Error in AnalyzerRunner: #{ex.inspect}")
   end
@@ -85,3 +92,4 @@ class AnalyzerRunner
     end
   end
 end
+

@@ -1,6 +1,6 @@
 class AnalyzerWorker < DaemonSpawn::Base
 
-  INTERVAL = 5
+  INTERVAL = 0
 
   WORKER_PID_FILE = Rails.root.join('tmp', 'pids', "analyzer_worker_#{Rails.env}.pid")
   WORKER_LOG_FILE = Rails.root.join('log', "analyzer_worker_#{Rails.env}.log")
