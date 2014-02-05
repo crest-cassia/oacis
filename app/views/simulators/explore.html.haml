@@ -80,16 +80,14 @@
 
 :javascript
   $(function() {
-    var url_with_param = build_scatter_plot_url();
     var ps_id = $('td#current_ps_id').text();
     initialize_pc_plot();
-    draw_explorer(url_with_param, ps_id);
+    draw_explorer(ps_id);
   });
 
   function on_select_change() {
-    var url = build_scatter_plot_url();
     var ps_id = $('td#current_ps_id').text();
-    update_explorer(url, ps_id, {});
+    update_explorer(ps_id, {});
   }
 
   $('#scatter-plot-form').change( on_select_change );

@@ -28,7 +28,7 @@ function move_current_ps(neighbor_ps_url) {
 
     // update scatter plot
     var url = build_scatter_plot_url();
-    update_explorer(url, ps_id, {});
+    update_explorer(ps_id, {});
   });
 }
 
@@ -49,7 +49,7 @@ function build_scatter_plot_url(ps_id) {
   return url_with_param;
 }
 
-function draw_explorer(url, current_ps_id) {
+function draw_explorer(current_ps_id) {
   var margin = {top: 10, right: 100, bottom: 100, left: 100};
   var width = 560;
   var height = 460;
@@ -73,7 +73,7 @@ function draw_explorer(url, current_ps_id) {
       "id": "plot-group"
     });
 
-  update_explorer(url, current_ps_id, {});
+  update_explorer(current_ps_id, {});
 }
 
 function update_x_scale_of_scatter_plot(xdomain) {
@@ -96,11 +96,13 @@ function update_y_scale_of_scatter_plot(ydomain) {
   point.attr("cy", function(d) { return yScale(d.y);})
 }
 
-function update_explorer(url, current_ps_id, domains) {
+function update_explorer(current_ps_id, domains) {
   var width = 560;
   var height = 460;
   var colorMapG = d3.select("g#color-map-group");
   var svg = d3.select("g#plot-group");
+
+  var url = build_scatter_plot_url(current_ps_id);
 
   // var progress = show_loading_spin_arc(svg, width, height);
 
