@@ -89,7 +89,7 @@
   function on_select_change() {
     var url = build_scatter_plot_url();
     var ps_id = $('td#current_ps_id').text();
-    update_explorer(url, ps_id);
+    update_explorer(url, ps_id, {});
   }
 
   $('#scatter-plot-form').change( on_select_change );

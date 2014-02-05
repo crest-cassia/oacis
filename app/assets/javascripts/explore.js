@@ -28,7 +28,7 @@ function move_current_ps(neighbor_ps_url) {
 
     // update scatter plot
     var url = build_scatter_plot_url();
-    update_explorer(url, ps_id);
+    update_explorer(url, ps_id, {});
   });
 }
 
@@ -73,7 +73,7 @@ function draw_explorer(url, current_ps_id) {
       "id": "plot-group"
     });
 
-  update_explorer(url, current_ps_id);
+  update_explorer(url, current_ps_id, {});
 }
 
 function update_x_scale_of_scatter_plot(xdomain) {
@@ -96,19 +96,11 @@ function update_y_scale_of_scatter_plot(ydomain) {
   point.attr("cy", function(d) { return yScale(d.y);})
 }
 
-function update_explorer(url, current_ps_id) {
+function update_explorer(url, current_ps_id, domains) {
   var width = 560;
   var height = 460;
   var colorMapG = d3.select("g#color-map-group");
   var svg = d3.select("g#plot-group");
-  svg.append("svg:clipPath")
-    .attr("id", "clip")
-    .append("svg:rect")
-    .attr("x", -5)
-    .attr("width", width+10)
-    .attr("y", -5)
-    .attr("height", height+10);
-
 
   // var progress = show_loading_spin_arc(svg, width, height);
 
@@ -118,25 +110,19 @@ function update_explorer(url, current_ps_id) {
 
     var xScale = d3.scale.linear().range([0, width]);
     var xDomain = $('select#x_axis_key option:selected').data("range");
+    if( domains.x ) { xDomain = domains.x; }
     xScale.domain(xDomain).nice();
-    // xScale.domain([
-    //   d3.min( dat.data, function(d) { return d[0];}),
-    //   d3.max( dat.data, function(d) { return d[0];})
-    // ]).nice();
 
     var yScale = d3.scale.linear().range([height, 0]);
     var yDomain = $('select#y_axis_key option:selected').data("range");
+    if( domains.y ) { yDomain = domains.y; }
     yScale.domain(yDomain).nice();
-    // yScale.domain([
-    //   d3.min( dat.data, function(d) { return d[1];}),
-    //   d3.max( dat.data, function(d) { return d[1];})
-    // ]).nice();
 
     var colorScale;
-    domains = $('select#result option:selected').data("domain");
-    if( domains ) {
+    result_domain = $('select#result option:selected').data("domain");
+    if( result_domain ) {
       colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"])
-      colorScale.domain(domains).nice();
+      colorScale.domain(result_domain).nice();
     }
 
     function draw_color_map(g) {
@@ -240,11 +226,22 @@ function update_explorer(url, current_ps_id) {
           average: v[1], error: v[2], psid: v[3]
         };
       });
-      var point = svg.append("g")
+
+      d3.select("#circles").remove();
+      var circles = svg
+        .append("g")
         .attr("id", "circles")
-        .attr("clip-path", "url(#clip)")
-        .selectAll("circle")
-        .data(mapped);
+        .attr("clip-path", "url(#clip)");
+
+      circles.append("svg:clipPath")
+        .attr("id", "clip")
+        .append("svg:rect")
+        .attr("x", -5)
+        .attr("width", width+10)
+        .attr("y", -5)
+        .attr("height", height+10);
+
+      var point = circles.selectAll("circle").data(mapped);
       point.exit().remove();
       point.enter().append("circle");
       point
