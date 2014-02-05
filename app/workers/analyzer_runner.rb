@@ -12,10 +12,10 @@ class AnalyzerRunner
       anl.destroy(true)
     end
     anl_ids = Analysis.where(status: :created).limit(NUM_PROCESSES*100).map(&:id)
-    Mongoid::sessions.clear
+    Mongoid::sessions.clear # before forking a process, clear Mongo session. Otherwise, invalid data may be obtained.
     Parallel.each(anl_ids, in_processes: NUM_PROCESSES) do |anl_id|
       logger.info("Analyzing #{anl_id}")
-      Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml'))
+      Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml')) #make a new Mongo session in each process.
       anl = Analysis.find(anl_id)
       work_dir = anl.dir  # UPDATE ME: a tentative implementation
       begin
@@ -26,10 +26,10 @@ class AnalyzerRunner
         anl.update_status_failed
       end
     end
-    Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml'))
+    Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml')) #after forking a process, make Mongo session again.
   rescue => ex
     logger.error("Error in AnalyzerRunner: #{ex.inspect}")
-    Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml')) if Mongoid::sessions.has_key?("default")
+    Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml')) if Mongoid::sessions.has_key?("default") #when some errors occer, try to make a new Mongo session.
   end
 
   private
