@@ -63,7 +63,7 @@ class AnalyzerRunner
       output_dir = File.join(INPUT_FILES_DIR, dir)
       FileUtils.mkdir_p(output_dir)
       inputs.each do |input|
-        FileUtils.cp_r(input, output_dir)
+        FileUtils.ln_s(input, output_dir)
       end
     end
   end
