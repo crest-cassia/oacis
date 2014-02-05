@@ -11,7 +11,7 @@ class AnalyzerRunner
       logger.info("Deleting cancelled analysis: #{anl.id}")
       anl.destroy(true)
     end
-    anl_ids = Analysis.where(status: :created).limit(NUM_PROCESSES).map(&:id)
+    anl_ids = Analysis.where(status: :created).limit(NUM_PROCESSES*100).map(&:id)
     Mongoid::sessions.clear
     Parallel.each(anl_ids, in_progresses: NUM_PROCESSES) do |anl_id|
       logger.info("Analyzing #{anl_id}")
