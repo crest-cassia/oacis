@@ -26,7 +26,6 @@ class AnalyzerRunner
         anl.update_status_failed
       end
     end
-    Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml')) # after forking a process, make a new Mongo session again.
   rescue => ex
     logger.error("Error in AnalyzerRunner: #{ex.inspect}")
   ensure
