@@ -4,7 +4,7 @@ class AnalyzerRunner
   INPUT_FILES_DIR = '_input'
   OUTPUT_JSON_FILENAME = '_output.json'
 
-  NUM_PROCESSES = 4
+  NUM_PROCESSES = 8
 
   def self.perform(logger)
     Analysis.where(status: :cancelled).each do |anl|
@@ -13,7 +13,7 @@ class AnalyzerRunner
     end
     anl_ids = Analysis.where(status: :created).limit(NUM_PROCESSES*100).map(&:id)
     Mongoid::sessions.clear
-    Parallel.each(anl_ids, in_progresses: NUM_PROCESSES) do |anl_id|
+    Parallel.each(anl_ids, in_processes: NUM_PROCESSES) do |anl_id|
       logger.info("Analyzing #{anl_id}")
       Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml'))
       anl = Analysis.find(anl_id)
