@@ -76,11 +76,39 @@ function draw_explorer(url, current_ps_id) {
   update_explorer(url, current_ps_id);
 }
 
+function update_x_scale_of_scatter_plot(xdomain) {
+  var width = 560;
+  var xScale = d3.scale.linear().range([0, width]).domain(xdomain);
+  var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+  d3.select("#scatter-plot-x-axis").call(xAxis);
+
+  var point = d3.select("g#plot-group").selectAll("circle");
+  point.attr("cx", function(d) { return xScale(d.x);})
+}
+
+function update_y_scale_of_scatter_plot(ydomain) {
+  var height = 460;
+  var yScale = d3.scale.linear().range([height, 0]).domain(ydomain);
+  var yAxis = d3.svg.axis().scale(yScale).orient("left");
+  d3.select("#scatter-plot-y-axis").call(yAxis);
+
+  var point = d3.select("g#plot-group").selectAll("circle");
+  point.attr("cy", function(d) { return yScale(d.y);})
+}
+
 function update_explorer(url, current_ps_id) {
   var width = 560;
   var height = 460;
   var colorMapG = d3.select("g#color-map-group");
   var svg = d3.select("g#plot-group");
+  svg.append("svg:clipPath")
+    .attr("id", "clip")
+    .append("svg:rect")
+    .attr("x", -5)
+    .attr("width", width+10)
+    .attr("y", -5)
+    .attr("height", height+10);
+
 
   // var progress = show_loading_spin_arc(svg, width, height);
 
@@ -149,6 +177,7 @@ function update_explorer(url, current_ps_id) {
       svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
+        .attr("id", "scatter-plot-x-axis")
         .call(xAxis)
         .append("text")
           .style("text-anchor", "middle")
@@ -162,6 +191,7 @@ function update_explorer(url, current_ps_id) {
         .orient("left");
       svg.append("g")
         .attr("class", "y axis")
+        .attr("id", "scatter-plot-y-axis")
         .call(yAxis)
         .append("text")
           .attr("transform", "rotate(-90)")
@@ -210,7 +240,10 @@ function update_explorer(url, current_ps_id) {
           average: v[1], error: v[2], psid: v[3]
         };
       });
-      var point = svg.selectAll("circle")
+      var point = svg.append("g")
+        .attr("id", "circles")
+        .attr("clip-path", "url(#clip)")
+        .selectAll("circle")
         .data(mapped);
       point.exit().remove();
       point.enter().append("circle");
