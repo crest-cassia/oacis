@@ -5,13 +5,14 @@ class AnalyzerRunner
   OUTPUT_JSON_FILENAME = '_output.json'
 
   NUM_PROCESSES = 8
+  NUM_LIMIT = NUM_PROCESSES*100
 
   def self.perform(logger)
     Analysis.where(status: :cancelled).each do |anl|
       logger.info("Deleting cancelled analysis: #{anl.id}")
       anl.destroy(true)
     end
-    anl_ids = Analysis.where(status: :created).limit(NUM_PROCESSES*100).map(&:id)
+    anl_ids = Analysis.where(status: :created).limit(NUM_LIMIT).map(&:id)
     Mongoid::sessions.clear # before forking a process, clear Mongo session. Otherwise, invalid data may be obtained.
     Parallel.each(anl_ids, in_processes: NUM_PROCESSES) do |anl_id|
       logger.info("Analyzing #{anl_id}")
