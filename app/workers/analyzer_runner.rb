@@ -30,7 +30,9 @@ class AnalyzerRunner
     Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml')) # after forking a process, make a new Mongo session again.
   rescue => ex
     logger.error("Error in AnalyzerRunner: #{ex.inspect}")
-    Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml')) if Mongoid::sessions.has_key?("default") # when some errors occur, try to make a new Mongo session.
+    # anyway, try to clear Mongoid session, then try to make a new Mongoid session
+    Mongoid::sessions.clear
+    Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml'))
   end
 
   private
