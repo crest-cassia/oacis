@@ -1,6 +1,7 @@
 require 'json'
 
 require_relative 'ga_simple.rb'
+require_relative 'pso.rb'
 
 def load_input_data
   if File.exist?("_input.json")
@@ -23,6 +24,9 @@ input_data["operation"]=JSON.parse(input_data["operation"])
 case input_data["operation"]["type"]
 when "GA"
   @optimizer = GaSimple.new(input_data)
+  @optimizer.run
+when "PSO"
+  @optimizer = Pso.new(input_data)
   @optimizer.run
 else
   puts "No such optimizer."
