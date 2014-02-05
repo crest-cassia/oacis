@@ -29,6 +29,7 @@ class AnalyzerRunner
     Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml'))
   rescue => ex
     logger.error("Error in AnalyzerRunner: #{ex.inspect}")
+    Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml')) if Mongoid::sessions.has_key?("default")
   end
 
   private
