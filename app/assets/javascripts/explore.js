@@ -358,7 +358,8 @@ function initialize_pc_plot() {
     svg.selectAll(".dimension").each(function(d) {
       var brush = d3.svg.brush().y( window.pcp_y_scales[d] ).on("brushend", on_brush_end);
       function on_brush_end() {
-        set_current_range_for( d, brush.extent() );
+        var domain = brush.empty() ? null : brush.extent();
+        set_current_range_for( d, domain );
         update_explorer();
       }
       d3.select(this).append("svg:g")
