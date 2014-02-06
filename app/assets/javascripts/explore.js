@@ -348,6 +348,21 @@ function initialize_pc_plot() {
       .text(String); // set text to the data values
   }
   draw_axis();
+
+  function set_brsuh() {
+    var brush = d3.svg.brush().y( window.pcp_y_scales["Lx"] ).on("brush", function() {
+      console.log("brushed");
+    });
+    svg.selectAll(".dimension")
+      .append("svg:g")
+      .attr("class", "brush")
+      .call(brush)
+      .selectAll("rect")
+        .attr("x", -8)
+        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
+        .attr("width", 16);
+  }
+  set_brsuh();
 }
 
 function update_pc_plot(data, current_ps_id) {
