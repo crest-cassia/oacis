@@ -43,10 +43,14 @@ function build_scatter_plot_url(ps_id) {
   var result = $('#scatter-plot-form #result').val();
   var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
     return this.id;
-    }).get().join(',');
+    }).get();
+  irrelevants = irrelevants.concat(range_modified_keys()).join(',');
+
   var url = $('#plot').data('scatter-plot-url').replace('PSID', ps_id);
   var range = {};
-  range[x] = get_current_range_for(x); range[y] = get_current_range_for(y);
+  range_modified_keys().forEach( function(key) {
+    range[key] = get_current_range_for(key);
+  })
   var url_with_param = url +
     "?x_axis_key=" + encodeURIComponent(x) +
     "&y_axis_key=" + encodeURIComponent(y) +
@@ -98,6 +102,17 @@ function get_current_range_for(parameter_key) {
     current = $('td#ps_v_' + parameter_key).data('range')
   }
   return current;
+}
+
+function range_modified_keys() {
+  var modified_key = []
+  $('td[id^="ps_v_"]').each( function(){
+    if( $(this).data('current-range') ) {
+      var key = $(this).attr('id').replace('ps_v_', '');
+      modified_key.push(key);
+    }
+  })
+  return modified_key;
 }
 
 function update_explorer(current_ps_id) {
