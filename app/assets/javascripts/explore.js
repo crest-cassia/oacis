@@ -76,26 +76,6 @@ function draw_explorer(current_ps_id) {
   update_explorer(current_ps_id, {});
 }
 
-function update_x_scale_of_scatter_plot(xdomain) {
-  var width = 560;
-  var xScale = d3.scale.linear().range([0, width]).domain(xdomain);
-  var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
-  d3.select("#scatter-plot-x-axis").call(xAxis);
-
-  var point = d3.select("g#plot-group").selectAll("circle");
-  point.attr("cx", function(d) { return xScale(d.x);})
-}
-
-function update_y_scale_of_scatter_plot(ydomain) {
-  var height = 460;
-  var yScale = d3.scale.linear().range([height, 0]).domain(ydomain);
-  var yAxis = d3.svg.axis().scale(yScale).orient("left");
-  d3.select("#scatter-plot-y-axis").call(yAxis);
-
-  var point = d3.select("g#plot-group").selectAll("circle");
-  point.attr("cy", function(d) { return yScale(d.y);})
-}
-
 function get_original_range_for(parameter_key) {
   return $('td#ps_v_' + parameter_key).data('range');
 }
