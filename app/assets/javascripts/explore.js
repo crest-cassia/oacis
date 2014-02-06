@@ -45,11 +45,14 @@ function build_scatter_plot_url(ps_id) {
     return this.id;
     }).get().join(',');
   var url = $('#plot').data('scatter-plot-url').replace('PSID', ps_id);
+  var range = {};
+  range[x] = get_current_range_for(x); range[y] = get_current_range_for(y);
   var url_with_param = url +
     "?x_axis_key=" + encodeURIComponent(x) +
     "&y_axis_key=" + encodeURIComponent(y) +
     "&result=" + encodeURIComponent(result) +
-    "&irrelevants=" + encodeURIComponent(irrelevants);
+    "&irrelevants=" + encodeURIComponent(irrelevants) +
+    "&range=" + encodeURIComponent( JSON.stringify(range) );
   return url_with_param;
 }
 
