@@ -19,7 +19,7 @@ class AnalyzerWorker < DaemonSpawn::Base
     loop do
       AnalyzerRunner.perform(@logger)
       break if @term_received
-      sleep INTERVAL
+      sleep INTERVAL if Analysis.where(status: :created).count == 0
       break if @term_received
     end
 

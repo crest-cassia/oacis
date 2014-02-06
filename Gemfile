@@ -20,6 +20,7 @@ group :assets do
   gem "factory_girl_rails"
   gem "d3-rails"
   gem "redcarpet"
+  gem "parallel"
 end
 
 group :development, :test do
