@@ -6,15 +6,12 @@ class Optimizer < OacisModule
   def initialize(data)
     @input_data = data
 
-    if target_simulator.blank?
-      puts "Target simulator is missing."
-      exit(-1)
-    end
+    raise "Target simulator is missing." if target_simulator.blank?
 
-    if optimizer_data["data"]["seed"].class == String
-      @prng = Random.new.marshal_load(JSON.parse(optimizer_data["data"]["seed"]))
+    if optimizer_data["seed"].class == String
+      @prng = Random.new.marshal_load(JSON.parse(optimizer_data["seed"]))
     else
-      @prng = Random.new(optimizer_data["data"]["seed"])
+      @prng = Random.new(optimizer_data["seed"])
     end
   end
 
@@ -52,12 +49,27 @@ class Optimizer < OacisModule
     @target_analyzer ||= Analyzer.find(@input_data["target"]["Analyzer"])
   end
 
+  def target_host
+    @target_host ||= Host.find(@input_data["target"]["Host"].first)
+  end
+ 
   def managed_parameters
-    parameter_definitions = target_simulator.parameter_definitions
-    @input_data["operation"]["settings"]["managed_parameters"].each do |mpara|
-      parameter_definitions.where({"key"=>mpara["key"]}).first["range"]=mpara["range"]
-    end
+    parameter_definitions = target_simulator.parameter_definitions.order_by(:id.asc).map{|mpara|
+      if @input_data["operation"]["settings"]["managed_parameters"].keys.include?(mpara["key"])
+        mpara["range"]=@input_data["operation"]["settings"]["managed_parameters"]["range"]
+      end
+      mpara
+    }
     parameter_definitions
+  end
+
+  def managed_parameters_table
+    a = {}
+    managed_parameters.each do |mpara|
+    if mpara["range"].exist
+      a << {"key"=>mpara["key"],"type"=>mpara["type"]}
+    end
+    a
   end
 
   def optimizer_data
