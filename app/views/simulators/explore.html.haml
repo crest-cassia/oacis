@@ -17,10 +17,11 @@
           %td#current_ps_id= @param_set.id.to_s
           %td
           %td
+        - domains = @simulator.parameter_ranges
         - @simulator.parameter_definitions.map(&:key).each do |key|
           %tr
             %th= key
-            %td{id: "ps_v_#{key}"}= @param_set.v[key]
+            %td{id: "ps_v_#{key}", :"data-range" => domains[key] }= @param_set.v[key]
             %td{style: "padding-left: 0; padding-right: 0;"}
               - url = _neighbor_parameter_set_path('PSID') +".json?key=#{key}&direction=down"
               %i.icon-arrow-down{id: "ps_down_#{key}", data: {"neighbor-url" => url}}
@@ -29,7 +30,7 @@
               %i.icon-arrow-up{id: "ps_up_#{key}", data: {"neighbor-url" => url}}
     %form.form-horizontal
       #scatter-plot-form
-        - opts = @simulator.parameter_ranges.map {|key, range| [key, key, {:"data-range" => range}] }
+        - opts = @simulator.parameter_definitions.map(&:key)
         .control-group
           = label_tag 'x_axis_key', "X-Axis", class: 'control-label scatter-plot-label'
           .controls

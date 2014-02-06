@@ -96,6 +96,23 @@ function update_y_scale_of_scatter_plot(ydomain) {
   point.attr("cy", function(d) { return yScale(d.y);})
 }
 
+function get_original_range_for(parameter_key) {
+  return $('td#ps_v_' + parameter_key).data('range');
+}
+
+// to clear current range, set range to null
+function set_current_range_for(parameter_key, range) {
+  $('td#ps_v_' + parameter_key).data('current-range', range);
+}
+
+function get_current_range_for(parameter_key) {
+  var current = $('td#ps_v_' + parameter_key).data('current-range');
+  if( !current ) {
+    current = $('td#ps_v_' + parameter_key).data('range')
+  }
+  return current;
+}
+
 function update_explorer(current_ps_id, domains) {
   var width = 560;
   var height = 460;
@@ -111,13 +128,13 @@ function update_explorer(current_ps_id, domains) {
     // progress.remove();
 
     var xScale = d3.scale.linear().range([0, width]);
-    var xDomain = $('select#x_axis_key option:selected').data("range");
-    if( domains.x ) { xDomain = domains.x; }
+    var xlabel = $('select#x_axis_key option:selected').text();
+    var xDomain = get_current_range_for(xlabel);
     xScale.domain(xDomain).nice();
 
     var yScale = d3.scale.linear().range([height, 0]);
-    var yDomain = $('select#y_axis_key option:selected').data("range");
-    if( domains.y ) { yDomain = domains.y; }
+    var ylabel = $('select#y_axis_key option:selected').text();
+    var yDomain = get_current_range_for(ylabel);
     yScale.domain(yDomain).nice();
 
     var colorScale;
@@ -326,9 +343,9 @@ function update_pc_plot(data, current_ps_id) {
   var yScales = {};
   function set_scales_and_dimensions() {
     $('select#x_axis_key option').each(function() {
-      var extent = $(this).data("range");
       var key = $(this).text();
-      var scale = d3.scale.linear().domain(extent).range([height, 0]).nice();
+      var domain = get_current_range_for(key);
+      var scale = d3.scale.linear().domain(domain).range([height, 0]).nice();
       yScales[key] = scale;
       dimensions.push(key);
     });
