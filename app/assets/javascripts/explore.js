@@ -87,10 +87,6 @@ function draw_explorer(current_ps_id) {
   update_explorer(current_ps_id, {});
 }
 
-function get_original_range_for(parameter_key) {
-  return $('td#ps_v_' + parameter_key).data('range');
-}
-
 // to clear current range, set range to null
 function set_current_range_for(parameter_key, range) {
   $('td#ps_v_' + parameter_key).data('current-range', range);
