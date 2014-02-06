@@ -235,20 +235,11 @@ function update_explorer(current_ps_id) {
       });
 
       d3.select("#circles").remove();
-      var circles = svg
+      var point = svg
         .append("g")
         .attr("id", "circles")
-        .attr("clip-path", "url(#clip)");
+        .selectAll("circle").data(mapped);
 
-      circles.append("svg:clipPath")
-        .attr("id", "clip")
-        .append("svg:rect")
-        .attr("x", -5)
-        .attr("width", width+10)
-        .attr("y", -5)
-        .attr("height", height+10);
-
-      var point = circles.selectAll("circle").data(mapped);
       point.exit().remove();
       point.enter().append("circle");
       point
