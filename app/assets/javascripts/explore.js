@@ -310,14 +310,7 @@ function initialize_pc_plot() {
     .attr({
       "transform": "translate(" + margin.left + "," + margin.top + ")",
       "id": "pc-plot-group"
-    })
-    .data({"width": width, "height": height});
-}
-
-function update_pc_plot(data, current_ps_id) {
-  var svg = d3.select('#pc-plot-group');
-  var width = 1000;
-  var height = 200;
+    });
 
   var dimensions = [];
   var yScales = {};
@@ -329,29 +322,41 @@ function update_pc_plot(data, current_ps_id) {
       yScales[key] = scale;
       dimensions.push(key);
     });
-  };
+  }
   set_scales_and_dimensions();
 
-  var xScale = d3.scale.ordinal().rangePoints([0,width], 1).domain( dimensions );
+  window.pcp_x_scale = d3.scale.ordinal().rangePoints([0,width], 1).domain( dimensions );
+  window.pcp_y_scales = yScales;
 
-  var g = svg.selectAll(".dimension")
-    .data(dimensions)
-    .enter().append("svg:g")
-    .attr("class", "dimension")
-    .attr("transform", function(d) { return "translate(" + xScale(d) + ")"; });
+  function draw_axis() {
+    var xScale = pcp_x_scale;
+    var dimension_g = svg.selectAll(".dimension")
+      .data(dimensions)
+      .enter().append("svg:g")
+      .attr("class", "dimension")
+      .attr("transform", function(d) { return "translate(" + xScale(d) + ")"; });
 
-  var axis = d3.svg.axis().orient("left");
-  g.append("svg:g")
-    .attr("class", "pcp-axis")
-    .each(function(d) {
-      d3.select(this).call( axis.scale(yScales[d]) );
-    })
-    .append("svg:text")
-    .attr("text-anchor", "middle")
-    .attr("y", -9)
-    .text(String); // set text to the data values
+    var axis = d3.svg.axis().orient("left");
+    dimension_g.append("svg:g")
+      .attr("class", "pcp-axis")
+      .each(function(d) {
+        d3.select(this).call( axis.scale(yScales[d]) );
+      })
+      .append("svg:text")
+      .attr("text-anchor", "middle")
+      .attr("y", -9)
+      .text(String); // set text to the data values
+  }
+  draw_axis();
+}
 
-  function draw_path() {
+function update_pc_plot(data, current_ps_id) {
+  var svg = d3.select('#pc-plot-group');
+  var dimensions = svg.selectAll(".dimension").data();
+  var xScale = window.pcp_x_scale;
+  var yScales = window.pcp_y_scales;
+
+  function redraw_path() {
     d3.selectAll('g.pcp-path').remove();
     var pcp_path = svg.append("svg:g")
       .attr("class", "pcp-path")
@@ -370,5 +375,5 @@ function update_pc_plot(data, current_ps_id) {
         return d[3] == current_ps_id ? 3 : 1;
       });
   }
-  draw_path();
+  redraw_path();
 };
