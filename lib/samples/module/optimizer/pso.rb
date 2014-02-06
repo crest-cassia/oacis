@@ -4,12 +4,12 @@ require_relative 'optimizer_data.rb'
 class Pso
 
   def self.fitnessfunction(a)
-    [a.inject{|sum, n| sum + n*n }]
+    [a.inject(0.0){|sum, n| sum + n*n }]
   end
 
   def self.fitnessfunction_definition
     h={}
-    h["dimension"]=10
+    h["dimension"]=2
     h["range"]=[]
     h["type"] = []
     h["dimension"].times do |i|
@@ -21,7 +21,7 @@ class Pso
 
   def self.definition
     h = {}
-    h["iteration"]=2
+    h["iteration"]=100
     h["population"]=10
     h["w"]=[0.729,0.729]
     h["cp"]=1.494
@@ -32,8 +32,8 @@ class Pso
   end
 
   def initialize()
-    @prng = Random.new(definition["seed"])
-    @pa = ParticleArchve.new
+    @prng = Random.new(Pso.definition["seed"])
+    @pa = ParticleArchive.new
     @status = {}
     @status["iteration"]=0
     @status["rnd_algorithm"]=@prng.marshal_dump
@@ -46,14 +46,17 @@ class Pso
       #evaluate_runs
       evaluate_particles
       dump_serialized_data
+      $stdout.puts "iteration#{@status["iteration"]}"
+      @status["iteration"]+=1
     end while (!finished?)
+    "optimization is finished with iteration #{@status["iteration"]} best is #{@pa.get_best(@status["iteration"]-1)}"
   end
 
   private
   def dump_serialized_data
     h={}
-    h["data"]=opt_data
-    @status["iteration"]=@num_iterations
+    h["data"]=Pso.definition
+    #@status["iteration"]=@num_iterations
     @status["rnd_algorithm"]=@prng.marshal_dump
     h["status"]=@status
     h["result"]=@pa.result
@@ -77,58 +80,89 @@ class Pso
 
   def finished?
     b=[]
-    b.push(super)
+    b.push(@status["iteration"] >= Pso.definition["iteration"])
+    #b.push(super)
     return b.any?
   end
 
   def adjust_range(x, d)
-    if fitnessfunction_definition["range"][d].length ==3 and fitnessfunction_definition["range"][d][2] != 0
-      case fitnessfunction_definition["type"][d]
+    x = Pso.fitnessfunction_definition["range"][d][0] if x < Pso.fitnessfunction_definition["range"][d][0]
+    x = Pso.fitnessfunction_definition["range"][d][1] if x > Pso.fitnessfunction_definition["range"][d][1]
+    if Pso.fitnessfunction_definition["range"][d].length ==3 and Pso.fitnessfunction_definition["range"][d][2] != 0
+      case Pso.fitnessfunction_definition["type"][d]
       when "Integer"
-        x = (Rational((x * 1/fitnessfunction_definition["range"][d][2]).to_i,1/fitnessfunction_definition["range"][d][2])).to_i
+        x = (Rational((x * 1/Pso.fitnessfunction_definition["range"][d][2]).to_i,1/Pso.fitnessfunction_definition["range"][d][2])).to_i
       when "Float"
-        x = ((Rational((x * 1/fitnessfunction_definition["range"][d][2]).to_i,1/fitnessfunction_definition["range"][d][2])).to_f).round(6)
+        x = ((Rational((x * 1/Pso.fitnessfunction_definition["range"][d][2]).to_i,1/Pso.fitnessfunction_definition["range"][d][2])).to_f).round(6)
       end
     end
   end
 
   def create_particles
-    definition["population"].times do |i|
-      fitnessfunction_definition["dimension"].times do |d|
-        x = @prng.rand(fitnessfunction_definition["range"][d][1] - fitnessfunction_definition["range"][d][0]) + fitnessfunction_definition["range"][d][0]
-        x = fitnessfunction_definition["range"][d][0] if x < fitnessfunction_definition["range"][d][0]
-        x = fitnessfunction_definition["range"][d][1] if x > fitnessfunction_definition["range"][d][1]
+    Pso.definition["population"].times do |i|
+      Pso.fitnessfunction_definition["dimension"].times do |d|
+        width = Pso.fitnessfunction_definition["range"][d][1] - Pso.fitnessfunction_definition["range"][d][0]
+        width = width.to_f if Pso.fitnessfunction_definition["type"][d] == "Float"
+        x = @prng.rand(width) + Pso.fitnessfunction_definition["range"][d][0]
         adjust_range(x, d)
-        @pa.set_position(@iteration, i, d, x)
-        @pa.set_velocity(@iteration, i, d, 0.0)
+        @pa.set_position(@status["iteration"], i, d, x)
+        @pa.set_velocity(@status["iteration"], i, d, 0.0)
       end
     end
   end
 
   def move_particles
-    definition["population"].times do |i|
-      fitnessfunction_definition["dimension"].times do |d|
-        w = (definition["w"][0] - definition["w"][1])*(1.0-@iteration.to_f/definition["iteration"].to_f) + definition["w"][1]
-        v = w*@pa.get_velocity(@iteration, i, d)
-        v += definition["cp"]*@prng.rand(1.0)*(@pa.get_pbest_position(@iteration, i, d) - @pa.get_position(@iteration, i, d))
-        v += definition["cg"]*@prng.rand(1.0)*(@pa.get_best_position(@iteration, i, d) - @pa.get_position(@iteration, i, d))
-        x = @pa.get_position(@iteration, i, d)
+    pre_iteration = @status["iteration"]-1
+    Pso.definition["population"].times do |i|
+      Pso.fitnessfunction_definition["dimension"].times do |d|
+        w = (Pso.definition["w"][0] - Pso.definition["w"][1])*(1.0-pre_iteration.to_f/Pso.definition["iteration"].to_f) + Pso.definition["w"][1]
+        v = w*@pa.get_velocity(pre_iteration, i, d)
+        $stdout.puts "ite=#{pre_iteration}, i=#{i}, d=#{d}" if @pa.get_pbest_position(pre_iteration, i, d).nil?
+        dump_serialized_data if @pa.get_pbest_position(pre_iteration, i, d).nil?
+        v += Pso.definition["cp"]*@prng.rand(1.0)*(@pa.get_pbest_position(pre_iteration, i, d) - @pa.get_position(pre_iteration, i, d))
+        v += Pso.definition["cg"]*@prng.rand(1.0)*(@pa.get_best_position(pre_iteration, i, d) - @pa.get_position(pre_iteration, i, d))
+        x = @pa.get_position(pre_iteration, i, d) + v
         adjust_range(x, d)
-        @pa.set_position(@iteration, i, d, x)
-        @pa.set_velocity(@iteration, i, d, v)
+        @pa.set_position(@status["iteration"], i, d, x)
+        @pa.set_velocity(@status["iteration"], i, d, v)
       end
     end
   end
 
   def evaluate_particles
-    definition["population"].times do |i|
-      @pa.set_fitness(@iteration, i, [fitnessfunction(@pa.get_positions(@iteration, i))] )
+    #update fitness value
+    Pso.definition["population"].times do |i|
+      @pa.set_fitness(@status["iteration"], i, [Pso.fitnessfunction(@pa.get_positions(@status["iteration"], i))] )
     end
+
+    #update pbest
+    Pso.definition["population"].times do |i|
+      h = @pa.get_datasets(@status["iteration"], i)
+      if @status["iteration"] > 0 and (Pso.definition["maximize"] and @pa.get_pbest(@status["iteration"]-1, i)["output"][0] > h["output"][0]) and (!Pso.definition["maximize"] and @pa.get_pbest(@status["iteration"]-1, i)["output"][0] < h["output"][0])
+        h = @pa.get_pbest(@status["iteration"]-1, i)
+      end
+      @pa.set_pbest(@status["iteration"], i, h)
+    end
+
+    #update gbest
+    fitness_array = @pa.get_pbests(@status["iteration"]).map{|d| d["output"][0]}
+    if Pso.definition["maximize"]
+      best_key = fitness_array.sort.last
+    else
+      best_key = fitness_array.sort.first
+    end
+    best_index = fitness_array.index(best_key)
+    h = {"input"=>@pa.get_pbest_positions(@status["iteration"], best_index), "output"=>[best_key]}
+    if @status["iteration"] > 0 and (Pso.definition["maximize"] and @pa.get_best(@status["iteration"]-1)["output"][0] > h["output"][0]) and (!Pso.definition["maximize"] and @pa.get_best(@status["iteration"]-1)["output"][0] < h["output"][0])
+       h = @pa.get_best(@status["iteration"]-1)
+    end
+      @pa.set_best(@status["iteration"], h)
   end
 end
 
 class ParticleArchive < OptimizerData
 
+  #overwrite
   def data
     h = super
     h["velocity"] = []
@@ -136,6 +170,7 @@ class ParticleArchive < OptimizerData
     h
   end
 
+  ##overwrite
   def result
     @result ||= data
   end
@@ -187,7 +222,7 @@ class ParticleArchive < OptimizerData
   end
 
   def get_velocity(iteration, index, dim)
-    result["velocity"][iteration][dim]
+    result["velocity"][iteration][index][dim]
   end
 
   def set_velocity(iteration, index, dim, val)
@@ -195,22 +230,35 @@ class ParticleArchive < OptimizerData
     a[dim] = val
   end
 
+  def get_pbests(iteration)
+    result["personal_best"][iteration] ||= []
+  end
+
+
   def get_pbest(iteration, index)
-    result["personal_best"][iteration] = [] if result["personal_best"][iteration].nil?
-    result["personal_best"][iteration][index] ||= []
+    a = get_pbests(iteration)
+    a[index] ||= {}
   end
 
   def set_pbest(iteration, index, val)
-    raise "val must be a Array" unless val.is_a?(Array)
-    a = get_pbest(iteration, index)
-    val.each_with_index do |v, i|
-      a[i] = v
+    raise "val must be a Hash" unless val.is_a?(Hash)
+    raise "\"input\" key is necessary" unless val.keys.include?("input")
+    raise "\"output\" key is necessary" unless val.keys.include?("output")
+    h = get_pbest(iteration, index)
+    val.each do |k, v|
+      h[k] = v
     end
+  end
+
+  def get_pbest_positions(iteration, index)
+    result["personal_best"][iteration] = [] if result["personal_best"][iteration].nil?
+    result["personal_best"][iteration][index] = {"input"=>[], "output"=>[], "velocity"=>[]} if result["personal_best"][iteration][index].nil?
+    result["personal_best"][iteration][index]["input"]
   end
 
   def get_pbest_position(iteration, index, dim)
     result["personal_best"][iteration] = [] if result["personal_best"][iteration].nil?
-    result["personal_best"][iteration][index] = {"input"=>[], "output"=>[], "velocity"=>} if result["personal_best"][iteration][index].nil?
+    result["personal_best"][iteration][index] = {"input"=>[], "output"=>[], "velocity"=>[]} if result["personal_best"][iteration][index].nil?
     result["personal_best"][iteration][index]["input"][dim]
   end
 

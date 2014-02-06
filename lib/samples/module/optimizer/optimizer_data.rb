@@ -2,8 +2,12 @@ class OptimizerData
 
   def data
     {"best"=>[], #[{"input"=>[5,0],"output"=>[25]}, ..., {"input"=>[0,0],"output"=>[0]}]
-     "data_sets"=>[[]] #[[{"input"=>[5,0],"output"=>[25]}, ..., {"input"=>[0,0],"output"=>[0]}]]
+     "data_sets"=>[] #[[{"input"=>[5,0],"output"=>[25]}, ..., {"input"=>[0,0],"output"=>[0]}]]
     }
+  end
+
+  def set_result(h)
+    @result = h
   end
 
   def result
@@ -11,6 +15,7 @@ class OptimizerData
   end
 
   def get_datasets(iteration, index)
+    result["data_sets"][iteration] = [] if result["data_sets"][iteration].nil?
     result["data_sets"][iteration][index] ||= {"input"=>[],"output"=>[]}
   end
 
