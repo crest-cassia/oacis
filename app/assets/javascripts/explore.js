@@ -142,6 +142,7 @@ function update_explorer(current_ps_id) {
       colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"])
       colorScale.domain(result_domain).nice();
     }
+    window.color_scale = colorScale;
 
     function draw_color_map(g) {
       var scale = d3.scale.linear().domain([0.0, 1.0]).range(colorScale.range());
@@ -393,7 +394,7 @@ function update_pc_plot(data, current_ps_id) {
       .data(data);
     pcp_path.enter().append("svg:path");
     pcp_path
-      .style({ "fill": "none", "stroke": "steelblue", "stroke-opacity": 0.7})
+      .style({ "fill": "none", "stroke-opacity": 0.7})
       .attr("d", function(d) {
         var points = dimensions.map( function(p) {
           return [ xScale(p), yScales[p]( d[0][p] ) ];
@@ -402,6 +403,10 @@ function update_pc_plot(data, current_ps_id) {
       })
       .attr("stroke-width", function(d) {
         return d[3] == current_ps_id ? 3 : 1;
+      })
+      .attr("stroke", function(d) {
+        if( window.color_scale ) { return window.color_scale(d[1]); }
+        else { return "steelblue"; }
       });
   }
   redraw_path();
