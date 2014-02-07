@@ -12,7 +12,7 @@ class ParameterSetsController < ApplicationController
     simulator = Simulator.find(params[:simulator_id])
     v = {}
     simulator.parameter_definitions.each do |defn|
-      v[defn.key] = defn.default if defn.default
+      v[defn.key] = defn.default unless defn.default.nil?
     end
     @param_set = simulator.parameter_sets.build(v: v)
   end
