@@ -139,9 +139,9 @@ function update_explorer(current_ps_id) {
     yScale.domain(yDomain).nice();
 
     var colorScale;
-    result_domain = $('select#result option:selected').data("domain");
+    var result_domain = $('select#result option:selected').data("domain");
     if( result_domain ) {
-      colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"])
+      colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"]);
       colorScale.domain(result_domain).nice();
     }
     window.color_scale = colorScale;
