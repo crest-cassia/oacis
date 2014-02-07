@@ -17,6 +17,15 @@ function set_current_ps(ps_id) {
   });
 }
 
+function get_current_parameter_values() {
+  var parameter_values = {};
+  $('td[id^="ps_v_"]').each( function(){
+    var key = $(this).attr('id').replace('ps_v_', '');
+    parameter_values[key] = $(this).text();
+  });
+  return parameter_values;
+}
+
 function move_current_ps(neighbor_ps_url) {
   var current_ps_id = get_current_ps();
   var url = neighbor_ps_url.replace('PSID', current_ps_id);
@@ -145,6 +154,25 @@ function update_explorer(current_ps_id) {
       colorScale.domain(result_domain).nice();
     }
     window.color_scale = colorScale;
+
+    function find_current_parameter_set() {
+      var psids = dat.data.map(function(v) { return v[3]; });
+      var idx = psids.indexOf(current_ps_id);
+      if( idx == -1 ) {
+        var values = get_current_parameter_values();
+        var current_x = xScale( +values[xlabel] );
+        var current_y = yScale( +values[ylabel] );
+        var distances = dat.data.map(function(v) {
+          var dx = xScale(v[0][xlabel]) - current_x;
+          var dy = yScale(v[0][ylabel]) - current_y;
+          return dx*dx + dy*dy;
+        });
+        idx = distances.indexOf( Math.min.apply(null, distances) );
+        current_ps_id = psids[idx];
+        set_current_ps(current_ps_id);
+      }
+    }
+    find_current_parameter_set();
 
     function draw_color_map(g) {
       var scale = d3.scale.linear().domain([0.0, 1.0]).range(colorScale.range());
