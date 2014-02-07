@@ -5,14 +5,26 @@ class Optimizer < OacisModule
 
   def initialize(data)
     @input_data = data
-
     raise "Target simulator is missing." if target_simulator.blank?
+  end
 
-    if optimizer_data["seed"].class == String
-      @prng = Random.new.marshal_load(JSON.parse(optimizer_data["seed"]))
-    else
-      @prng = Random.new(optimizer_data["seed"])
+  def self.paramater_definitions(sim, v)
+    raise "val is not a Hash" unless v.is_a?(Hash)
+    a = []
+    v.each do |key, val|
+      pd = sim.parameter_definitions.build
+      pd["key"] = key
+      default_val = val
+      default_val = val.to_json if val.is_a?(Hash) or val.is_a?(Array)
+      pd["default"] = default_val
+      parameter_type = "Integer" if val.is_a?(Integer)
+      parameter_type = "Float" if val.is_a?(Float)
+      parameter_type = "Boolean" if val.is_a?(TrueClass) or val.is_a?(FalseClass)
+      parameter_type = "String" if val.is_a?(String) or val.is_a?(Hash) or val.is_a?(Array)
+      pd["type"] = parameter_type
+      a << pd
     end
+    a
   end
 
   private
@@ -29,34 +41,30 @@ class Optimizer < OacisModule
   #override
   def dump_serialized_data
     output_file = "_output.json"
-    optimizer_data["data"]["iteration"] = @num_iterations
-    optimizer_data["data"]["seed"] = @prng.marshal_dump.to_json
-    File.open(output_file, 'w') {|io| io.print optimizer_data.to_json }
+    File.open(output_file, 'w') {|io| io.print optimization_data.to_json }
   end
 
   #override
   def finished?
-    b=[]
-    b.push(@num_iterations >= optimizer_data["data"]["max_optimizer_iteration"])
-    return b.any?
+    raise "IMPLEMENT ME"
   end
 
   def target_simulator
-    @target_simulator ||= Simulator.find(@input_data["target"]["Simulator"])
+    @target_simulator ||= Simulator.find(@input_data["_target"]["Simulator"])
   end
 
   def target_analzer
-    @target_analyzer ||= Analyzer.find(@input_data["target"]["Analyzer"])
+    @target_analyzer ||= Analyzer.find(@input_data["_target"]["Analyzer"])
   end
 
   def target_host
-    @target_host ||= Host.find(@input_data["target"]["Host"].first)
+    @target_host ||= Host.find(@input_data["_target"]["Host"].first)
   end
  
   def managed_parameters
     parameter_definitions = target_simulator.parameter_definitions.order_by(:id.asc).map{|mpara|
-      if @input_data["operation"]["settings"]["managed_parameters"].keys.include?(mpara["key"])
-        mpara["range"]=@input_data["operation"]["settings"]["managed_parameters"]["range"]
+      if @input_data["_managed_parameters"].keys.include?(mpara["key"])
+        mpara["range"]=@input_data["_managed_parameters"]["range"]
       end
       mpara
     }
@@ -66,18 +74,43 @@ class Optimizer < OacisModule
   def managed_parameters_table
     a = {}
     managed_parameters.each do |mpara|
-    if mpara["range"].exist
-      a << {"key"=>mpara["key"],"type"=>mpara["type"]}
+      if mpara["range"].exist
+        a << {"key"=>mpara["key"],"type"=>mpara["type"]}
+      end
     end
     a
   end
 
+  #for dump and restart
   def optimizer_data
     @optimizer_data ||= create_optimizer_data
   end
 
   def create_optimizer_data
     raise "IMPLEMENT ME"
+  end
+
+  def  generate_optimizer_runs(population)
+    generated = []
+    population.each do |pos|
+      v = {}
+      managed_parameters.each do |mpara|
+        index =  managed_parameters_table.map{|m| m["key"]}.index(mpara["key"])
+        if index
+          v[mpara["key"]] = pos[index]
+        else
+          v[mpara["key"]] = mpara["default"]
+        end
+      end
+      ps = target_simulator.parameter_sets.find_or_create_by(v: v)
+      if ps.runs.count == 0
+        run = ps.runs.build
+        run.submitted_to_id=target_host
+        run.save
+        generated << run
+      end
+    end
+    generated
   end
 end
 
