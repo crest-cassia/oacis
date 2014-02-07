@@ -5,13 +5,13 @@ function get_current_ps() {
 function set_current_ps(ps_id) {
   $('#current_ps_id').text(ps_id);
 
-  var point = d3.selectAll("circle")
+  d3.selectAll("circle")
     .attr("r", function(d) { return (d.psid == ps_id) ? 5 : 3;});
 
   var url = $('#plot').data('ps-url').replace('PSID', ps_id);
   d3.json(url, function(error, json) {
     var param_values = json.v;
-    for(key in param_values) {
+    for(var key in param_values) {
       $('#ps_v_'+key).text(param_values[key]);
     }
   });
@@ -26,12 +26,11 @@ function move_current_ps(neighbor_ps_url) {
     var ps_id = json._id;
     $('#current_ps_id').text(ps_id);
     var param_values = json.v;
-    for(key in param_values) {
+    for(var key in param_values) {
       $('#ps_v_'+key).text(param_values[key]);
     }
 
     // update scatter plot
-    var url = build_scatter_plot_url();
     update_explorer(ps_id);
   });
 }
@@ -43,14 +42,14 @@ function build_scatter_plot_url(ps_id) {
   var result = $('#scatter-plot-form #result').val();
   var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
     return this.id;
-    }).get();
+  }).get();
   irrelevants = irrelevants.concat(range_modified_keys()).join(',');
 
   var url = $('#plot').data('scatter-plot-url').replace('PSID', ps_id);
   var range = {};
   range_modified_keys().forEach( function(key) {
     range[key] = get_current_range_for(key);
-  })
+  });
   var url_with_param = url +
     "?x_axis_key=" + encodeURIComponent(x) +
     "&y_axis_key=" + encodeURIComponent(y) +
@@ -73,12 +72,15 @@ function draw_explorer(current_ps_id) {
       "height": height + margin.top + margin.bottom,
       "id": "plot-svg"
     });
-  var colorMapG = svg.append("g")
+
+  // add group for color map
+  svg.append("g")
     .attr({
       "transform": "translate(" + (margin.left + width) + "," + margin.top + ")",
       "id": "color-map-group"
     });
-  var svg = svg.append("g")
+  // add group for plot region
+  svg.append("g")
     .attr({
       "transform": "translate(" + margin.left + "," + margin.top + ")",
       "id": "plot-group"
@@ -95,19 +97,19 @@ function set_current_range_for(parameter_key, range) {
 function get_current_range_for(parameter_key) {
   var current = $('td#ps_v_' + parameter_key).data('current-range');
   if( !current ) {
-    current = $('td#ps_v_' + parameter_key).data('range')
+    current = $('td#ps_v_' + parameter_key).data('range');
   }
   return current;
 }
 
 function range_modified_keys() {
-  var modified_key = []
+  var modified_key = [];
   $('td[id^="ps_v_"]').each( function(){
     if( $(this).data('current-range') ) {
       var key = $(this).attr('id').replace('ps_v_', '');
       modified_key.push(key);
     }
-  })
+  });
   return modified_key;
 }
 
@@ -241,8 +243,11 @@ function update_explorer(current_ps_id) {
       var ylabel = dat.ylabel;
       var mapped = dat.data.map(function(v) {
         return {
-          x: v[0][xlabel], y: v[0][ylabel],
-          average: v[1], error: v[2], psid: v[3]
+          x: v[0][xlabel],
+          y: v[0][ylabel],
+          average: v[1],
+          error: v[2],
+          psid: v[3]
         };
       });
 
@@ -265,7 +270,7 @@ function update_explorer(current_ps_id) {
         .on("mouseover", function(d) {
           tooltip.transition()
             .duration(200)
-            .style("opacity", .8);
+            .style("opacity", 0.8);
           tooltip.html(
             dat.xlabel + " : " + d.x + "<br/>" +
             dat.ylabel + " : " + d.y + "<br/>" +
@@ -340,7 +345,7 @@ function initialize_pc_plot() {
   window.pcp_y_scales = yScales;
 
   function draw_axis() {
-    var xScale = pcp_x_scale;
+    var xScale = window.pcp_x_scale;
     var dimension_g = svg.selectAll(".dimension")
       .data(dimensions)
       .enter().append("svg:g")
@@ -375,7 +380,7 @@ function initialize_pc_plot() {
         .attr("x", -8)
         .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
         .attr("width", 16);
-    })
+    });
   }
   set_brsuh();
 }
@@ -410,4 +415,4 @@ function update_pc_plot(data, current_ps_id) {
       });
   }
   redraw_path();
-};
+}
