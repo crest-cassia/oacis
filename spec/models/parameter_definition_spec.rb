@@ -63,8 +63,14 @@ describe ParameterDefinition do
       it "is not be valid when the default value can not be casted" do
         pd = ParameterDefinition.new( @valid_attr.update(default: "abc") )
         pd.should_not be_valid
-        pd.default.should eq "abc"
       end
+
+      it "is casted properly to the specified type(Boolean)" do
+        pd = ParameterDefinition.new( @valid_attr.update(type: "Boolean",default: false) )
+        pd.should be_valid
+        pd = ParameterDefinition.new( @valid_attr.update(type: "Boolean",default: true) )
+        pd.should be_valid
+      end 
     end
 
     describe "description field" do
