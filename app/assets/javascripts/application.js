@@ -49,7 +49,9 @@ $(document).ready( function() {
   $('form').on('click', '.add_fields', function() {
       var time = new Date().getTime();
       var regexp = new RegExp($(this).data('id'), 'g');
-      $(this).before($(this).data('fields').replace(regexp, time));
+      var position_to_add = $(this);
+      if( $('#add_field_here').size() > 0 ) { position_to_add = $('#add_field_here'); }
+      position_to_add.before($(this).data('fields').replace(regexp, time));
       event.preventDefault();
   });
 });
