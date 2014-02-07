@@ -95,6 +95,14 @@ function draw_explorer(current_ps_id) {
       "id": "plot-group"
     });
 
+  // add group for loading spin
+  var color_map_group_height = 180;
+  svg.append("g")
+    .attr({
+      "transform": "translate(" + (margin.left + width) + "," + (margin.top + color_map_group_height) + ")",
+      "id": "progress_arc_group"
+    });
+
   update_explorer(current_ps_id, {});
 }
 
@@ -131,11 +139,17 @@ function update_explorer(current_ps_id) {
 
   var url = build_scatter_plot_url(current_ps_id);
 
-  // var progress = show_loading_spin_arc(svg, width, height);
+  function show_progress_arc() {
+    var g = d3.select('#progress_arc_group');
+    var spin_size = 100;
+    var progress = show_loading_spin_arc(g, spin_size, spin_size);
+    return progress;
+  }
+  var progress = show_progress_arc();
 
   var xhr = d3.json(url)
     .on("load", function(dat) {
-    // progress.remove();
+    progress.remove();
 
     var xScale = d3.scale.linear().range([0, width]);
     var xlabel = $('select#x_axis_key option:selected').text();
@@ -331,10 +345,10 @@ function update_explorer(current_ps_id) {
   })
   .on("error", function() { console.log("error"); /*progress.remove(); */})
   .get();
-  // progress.on("mousedown", function(){
-  //   xhr.abort();
-  //   row.remove();
-  // });
+  progress.on("mousedown", function(){
+    xhr.abort();
+    progress.remove();
+  });
 }
 
 function initialize_pc_plot() {
