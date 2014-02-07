@@ -1,6 +1,7 @@
 require 'pp'
 require 'json'
 require Rails.root.to_s+'/lib/samples/module/optimizer/ga_simple.rb'
+require Rails.root.to_s+'/lib/samples/module/optimizer/pso_module.rb'
 
 class TermColor
   class << self
@@ -251,7 +252,22 @@ class OptimizerSelect
   end
 
   def opt_parameter_definitions
-    GaSimple.definitions(@sim, @anz, @host, @type, @managed_params)
+    case @type
+    when "GA"
+      a = GaSimple.definitions(@sim, @anz, @host, @type, @managed_params)
+    when "PSO"
+      a =PsoModule.paramater_definitions(@sim)
+    end
+    pd = @sim.parameter_definitions.build
+    pd["key"] = "_managed_parameters"
+    pd["type"] = "String"
+    pd["default"] = @managed_params.to_json
+    a << pd
+    a.each do |p|
+      puts p.inspect
+      puts p.valid?
+    end
+    a
   end
 end
 

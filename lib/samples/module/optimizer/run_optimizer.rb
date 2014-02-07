@@ -14,21 +14,19 @@ end
 input_data = load_input_data
 
 if input_data.blank?
-  STDERR.puts "_input.json is missing."
-  exit(-1)
+  raise "_input.json is missing."
 end
 
-input_data["target"]=JSON.parse(input_data["target"])
-input_data["operation"]=JSON.parse(input_data["operation"])
+input_data["_target"]=JSON.parse(input_data["_target"])
 
-case input_data["operation"]["type"]
+case input_data["_optimizer_type"]
 when "GA"
   @optimizer = GaSimple.new(input_data)
   @optimizer.run
 when "PSO"
-  @optimizer = Pso.new(input_data)
+  @optimizer = PsoModule.new(input_data)
   @optimizer.run
 else
-  puts "No such optimizer."
+  raise "No such optimizer."
 end
 
