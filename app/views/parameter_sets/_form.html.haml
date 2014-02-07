@@ -9,7 +9,7 @@
       = label_tag(property, "#{key} (#{pd.type})", class: 'control-label')
       .controls
         - if pd.type == "Boolean"
-          = select_tag( property, options_for_select([[true,"true"],[false,"false"]], selected: value))
+          = select_tag( property, options_for_select([[true,"true"],[false,"false"]], selected: pd.default))
         - else
           = text_field_tag(property, value, class: 'text_field')
         = pd.description
