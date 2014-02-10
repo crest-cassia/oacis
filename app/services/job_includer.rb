@@ -64,6 +64,16 @@ module JobIncluder
   def self.download_remote_file(host, run, ssh)
     archive = RemoteFilePath.result_file_path(host, run)
     base = File.basename(archive)
+    logs = RemoteFilePath.scheduler_log_file_paths
+    if logs.length > 0
+      cmd = "bunzip2 #{archive}"
+      SSHUtil.execute(ssh, cmd)
+      RemoteFilePath.scheduler_log_file_paths.each do |path|
+        SSHUtil.add_file_to_archive(ssh, path, archive)  if SSHUtil.exist?(ssh, path)
+      end
+      cmd = "bzip2 #{archive}"
+      SSHUtil.execute(ssh, cmd)
+    end
     SSHUtil.download(ssh, archive, run.dir.join('..', base))
   end
 

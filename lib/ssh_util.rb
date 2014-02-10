@@ -98,6 +98,12 @@ module SSHUtil
     return false
   end
 
+  def self.add_file_to_archive(ssh, remote_path, remote_archive)
+    rpath = expand_remote_home_path(ssh, remote_path)
+    cmd = "tar rf #{remote_archive} #{remote_path}"
+    SSHUtil.comand(cmd)
+  end
+
   private
   # Net::SSH and Net::SFTP can't interpret '~' as a home directory
   # a relative path is recognized as a relative path from home directory
