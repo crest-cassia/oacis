@@ -256,12 +256,17 @@ class OptimizerSelect
     when "GA"
       a = GaSimple.definitions(@sim, @anz, @host, @type, @managed_params)
     when "PSO"
-      a =PsoModule.paramater_definitions(@sim)
+      a = PsoModule.paramater_definitions(@sim)
     end
     pd = @sim.parameter_definitions.build
     pd["key"] = "_managed_parameters"
     pd["type"] = "String"
     pd["default"] = @managed_params.to_json
+    a << pd
+    pd = @sim.parameter_definitions.build
+    pd["key"] = "_target"
+    pd["type"] = "String"
+    pd["default"] = {"Simulator"=>@sim.to_param, "Analyzer"=>@anz.to_param, "Host"=>@host.to_param}.to_json
     a << pd
     a.each do |p|
       puts p.inspect

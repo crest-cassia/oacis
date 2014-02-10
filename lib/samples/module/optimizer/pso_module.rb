@@ -44,7 +44,7 @@ class PsoModule < Optimizer
     @prng = Random.new(@pso_definition["seed"])
     @status = {}
     @status["iteration"]=0
-    @status["iteration"]=@num_iterations
+    #@status["iteration"]=@num_iterations
     @status["rnd_algorithm"]=@prng.marshal_dump
     @pso_definition = data
     @pa = ParticleArchive.new
@@ -54,7 +54,6 @@ class PsoModule < Optimizer
   def create_optimizer_data #this data is written in _output.json and imported to DB
     h={}
     h["data"]=@pso_definition
-    @status["iteration"]=@num_iterations
     @status["rnd_algorithm"]=@prng.marshal_dump
     h["status"]=@status
     h["result"]=@pa.result
@@ -74,7 +73,6 @@ class PsoModule < Optimizer
 
   private
   def dump_serialized_data
-    @status["iteration"]=@num_iterations
     @status["rnd_algorithm"]=@prng.marshal_dump
     optimizer_data["status"]=@status
     super
@@ -135,7 +133,8 @@ class PsoModule < Optimizer
     if @status["iteration"] > 0 and (@pso_definition["maximize"] and @pa.get_best(@status["iteration"]-1)["output"][0] > h["output"][0]) and (!@pso_definition["maximize"] and @pa.get_best(@status["iteration"]-1)["output"][0] < h["output"][0])
        h = @pa.get_best(@status["iteration"]-1)
     end
-      @pa.set_best(@status["iteration"], h)
+    @pa.set_best(@status["iteration"], h)
+    @status["iteration"] +=1
   end
 
   def target_fields(ps)
