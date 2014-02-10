@@ -3,11 +3,6 @@
 .page-header
   %h1 Parameter Set
 
-%h3 Parameters
-%pre
-  = @param_set.v.to_json.gsub('":', '": ').gsub(',"', ',  "')
-%br
-
 %div.tabbable
   %ul.nav.nav-tabs
     %li
