@@ -20,7 +20,7 @@ class SchedulerWrapper
     when "pjm"
       "pjsub #{script}"
     when "pjm_k"
-      "bash -l -c \"cat #{script} | pjsub\""
+      ". /etc/bashrc; pjsub #{script} < /dev/null"
     else
       raise "not supported"
     end

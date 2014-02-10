@@ -20,6 +20,21 @@ module RemoteFilePath
     Pathname.new(host.work_base_dir).join("#{run.id}.tar.bz2")
   end
 
+  def self.scheduler_log_file_paths(host, run)
+    a = []
+    if host.scheduler_type =~ /PJM/
+      a << Pathname.new("~").join("J#{run.id}.sh.o#{run.job_id}")
+      a << Pathname.new("~").join("J#{run.id}.sh.e#{run.job_id}")
+      a << Pathname.new("~").join("J#{run.id}.sh.i#{run.job_id}")
+      a << Pathname.new("~").join("J#{run.id}.sh.s#{run.job_id}")
+    end
+    if host.scheduler_type =~ /torque/
+      a << Pathname.new("~").join("#{run.id}.sh.o#{run.job_id}")
+      a << Pathname.new("~").join("#{run.id}.sh.e#{run.job_id}")
+    end
+    a
+  end
+
   def self.all_file_paths(host, run)
     [
       job_script_path(host, run),
