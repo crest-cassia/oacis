@@ -98,10 +98,20 @@ module SSHUtil
     return false
   end
 
-  def self.add_file_to_archive(ssh, remote_path, remote_archive)
-    rpath = expand_remote_home_path(ssh, remote_path)
-    cmd = "tar rf #{remote_archive} #{remote_path}"
-    SSHUtil.comand(cmd)
+  def self.add_file_to_archive(ssh, remote_file, remote_archive, dir_depth = 0)
+    #NOTE: dir_depth is the number of depth of directories which are included in archive
+    #example: if remote_file == "/usr/bin/ruby" and dir_depth==0 then "ruby" is archived, dir_depth==1 then "bin/ruby" is archived
+    if SSHUtil.exist?(ssh, remote_file) and SSHUtil.exist?(ssh, remote_archive)
+      rfile = expand_remote_home_path(ssh, remote_file)
+      rfile_dirname = rfile.dirname
+      dir_depth.times {
+        rfile_dirname, base = rfile_dirname.split
+      }
+      relational_path_to_rfile = rfile.to_s.gsub(/^#{rfile_dirname}/,".")
+      rarchive = expand_remote_home_path(ssh, remote_archive)
+      cmd = "tar rf #{rarchive} -C #{rfile_dirname} #{relational_path_to_rfile}"
+      SSHUtil.execute(ssh, cmd)
+    end
   end
 
   private
