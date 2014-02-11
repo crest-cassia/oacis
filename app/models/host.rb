@@ -78,6 +78,17 @@ class Host
     Run.where(submitted_to: self).in(status: [:submitted, :running, :cancelled])
   end
 
+  def runs_status_count
+    count = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0, cancelled: 0}
+    Run.collection.aggregate(
+      { '$match' => Run.where(submitted_to: self).selector },
+      { '$group' => {_id: '$status', count: {'$sum' => 1} } }
+    ).each do |h|
+      count[ h["_id"] ] = h["count"]
+    end
+    count
+  end
+
   def work_base_dir_is_not_editable?
     self.persisted? and submitted_runs.any?
   end
