@@ -19,11 +19,6 @@
 :javascript
   $(function() {
     var oTable = datatables_for_analyses_table();
-    $('#analyses_list_length').append(
-      '<i class="icon-refresh" id="analyses_list_refresh"></i>'
-    ).on('click', function() {
-      oTable.fnReloadAjax();
-    });
     aoAnalysesTables = [];
     aoAnalysesTables.push(oTable);
   })

@@ -30,11 +30,6 @@
 :javascript
   $(function() {
     var oTable = datatables_for_runs_table();
-    $('#runs_list_length').append(
-      '<i class="icon-refresh" id="runs_list_refresh"></i>'
-    ).on('click', function() {
-      oTable.fnReloadAjax();
-    });
     aoRunsTables = [];
     aoRunsTables.push(oTable);
   })
