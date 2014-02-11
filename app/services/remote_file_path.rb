@@ -29,8 +29,8 @@ module RemoteFilePath
       a << Pathname.new("~").join("J#{run.id}.sh.s#{run.job_id}")
     end
     if host.scheduler_type =~ /torque/
-      a << Pathname.new("~").join("#{run.id}.sh.o#{run.job_id}")
-      a << Pathname.new("~").join("#{run.id}.sh.e#{run.job_id}")
+      a << Pathname.new("~").join("#{run.id}.sh.o#{run.job_id.to_i}") # run.job_id = 12345.host
+      a << Pathname.new("~").join("#{run.id}.sh.e#{run.job_id.to_i}")
     end
     a
   end
