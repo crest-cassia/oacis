@@ -315,7 +315,14 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
     draw_axes(dat.xlabel, dat.ylabel);
 
     function draw_voronoi_heat_map() {
-      var vertices = dat.data.map(function(v) { return [xScale(v[0][xlabel]), yScale(v[0][ylabel])]; });
+      // add noise to coordinates of vertices in order to prevent hang-up.
+      // hanging-up sometimes happen when duplicated points are included.
+      var vertices = dat.data.map(function(v) {
+        return [
+          xScale(v[0][xlabel]) + Math.random() * 1.0,
+          yScale(v[0][ylabel]) + Math.random() * 1.0
+        ];
+      });
       var voronoi = d3.geom.voronoi()
         .clipExtent([[0, 0], [width, height]]);
       var path = svg.append("g").selectAll("path")
