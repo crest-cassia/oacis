@@ -180,29 +180,4 @@ describe SSHUtil do
       SSHUtil.exist?(@ssh, remote_path).should be_true
     end
   end
-
-  describe ".add_file_to_archive" do
-
-    before(:each) do
-      @remote_directory= @temp_dir.join('foo')
-      FileUtils.mkdir_p(@remote_directory)
-      dumy_file = @remote_directory.join('abc')
-      FileUtils.touch(dumy_file)
-      @remote_archive = @temp_dir.join('foo.tar')
-      relational_path_to_dumy_file = dumy_file.to_s.gsub(/^#{@temp_dir.to_s}/,".")
-      cmd = "tar cf #{@remote_archive} -C #{@temp_dir} #{relational_path_to_dumy_file}"
-      system(cmd)
-    end
-
-    it "add a file to an archive if the file and the archive exist" do
-      remote_file = @temp_dir.join('foo').join('def').expand_path
-      FileUtils.touch(remote_file)
-      relational_path_to_remote_file = remote_file.to_s.gsub(/^#{@temp_dir.to_s}/,".")
-      SSHUtil.add_file_to_archive(@ssh, remote_file, @remote_archive, 1)
-      FileUtils.rm_r(@remote_directory)
-      cmd = "cd #{@temp_dir}; tar xf #{@remote_archive}"
-      system(cmd)
-      File.exist?(remote_file).should be_true
-    end
-  end
 end
