@@ -9,7 +9,7 @@
   %br
   .form-inline
     - simulator = @param_set.simulator
-    - plottable = simulator.plottable
+    - plottable = ["cpu_time", "real_time"] + simulator.plottable
     #line-plot-form
       - parameter_keys = @param_set.parameter_keys_having_distinct_values
       = label_tag 'x_axis_key', "X-Axis"
@@ -26,7 +26,7 @@
       = label_tag 'y_axis_key', "Y-Axis"
       = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
       = label_tag 'result', "Result"
-      = select_tag 'result', options_for_select(["cpu_time","real_time"] + plottable), id: 'result'
+      = select_tag 'result', options_for_select(plottable), id: 'result'
       %a.btn.btn-primary#add_scatter_plot_button Add Scatter Plot
     #irrelevant-params
       %br
