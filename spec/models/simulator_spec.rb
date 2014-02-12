@@ -218,6 +218,8 @@ describe Simulator do
       runs.each_with_index do |run, idx|
         run.status = :finished
         run.result = { r1: 1+idx, r2: { r3: 3+idx, r4: 4+idx}, r5: [1,2,3] }
+        run.cpu_time = 10.0 + idx
+        run.real_time = 3.0 + idx
         run.save!
       end
 
@@ -231,6 +233,8 @@ describe Simulator do
     it "return the min and max values for each result" do
       azr = @sim.analyzers.first
       expected = {
+        "cpu_time" => [0.0, 11.0],
+        "real_time" => [0.0, 4.0],
         ".r1" => [1, 2],
         ".r2.r3" => [3, 4],
         ".r2.r4" => [4, 5],

@@ -95,6 +95,10 @@ class Simulator
   def plottable_domains
     all_domains = {}
 
+    # get domains for elapsed times
+    all_domains["cpu_time"] = [0.0, Run.where(simulator: self, status: :finished).max(:cpu_time)]
+    all_domains["real_time"] = [0.0, Run.where(simulator: self, status: :finished).max(:real_time)]
+
     # get domains for runs
     first_run = Run.where(simulator: self, status: :finished).first
     run_result_keys = plottable_keys( first_run.try(:result) )
