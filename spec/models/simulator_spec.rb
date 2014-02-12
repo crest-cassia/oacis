@@ -200,6 +200,7 @@ describe Simulator do
     it "return array of plottable keys" do
       analyzer_name = @sim.analyzers.first.name
       @sim.plottable.should eq [
+        "cpu_time", "real_time",
         ".r1", ".r2.r3", ".r2.r4",
         "#{analyzer_name}.a1", "#{analyzer_name}.a2.a3", "#{analyzer_name}.a2.a4"
       ]

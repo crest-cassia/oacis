@@ -9,7 +9,7 @@
   %br
   .form-inline
     - simulator = @param_set.simulator
-    - plottable = ["cpu_time", "real_time"] + simulator.plottable
+    - plottable = simulator.plottable
     #line-plot-form
       - parameter_keys = @param_set.parameter_keys_having_distinct_values
       = label_tag 'x_axis_key', "X-Axis"
