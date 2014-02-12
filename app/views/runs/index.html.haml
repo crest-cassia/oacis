@@ -44,6 +44,7 @@
     $('.dataTables_length').each( function() {
       $(this).append(
         '<i class="icon-refresh" id="dataTables_refresh"></i>'
-      ).on('click', reload_runs_table);
+      );
+      $(this).children('#dataTables_refresh').on('click', reload_runs_table);
     });
   });
