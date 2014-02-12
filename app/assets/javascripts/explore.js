@@ -259,8 +259,8 @@ function update_explorer(current_ps_id) {
       // hanging-up sometimes happen when duplicated points are included.
       var vertices = dat.data.map(function(v) {
         return [
-          xScale(v[0][xlabel]) + Math.random() * 1.0,
-          yScale(v[0][ylabel]) + Math.random() * 1.0
+          xScale(v[0][xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
+          yScale(v[0][ylabel]) + Math.random() * 1.0 - 0.5
         ];
       });
       var voronoi = d3.geom.voronoi()
