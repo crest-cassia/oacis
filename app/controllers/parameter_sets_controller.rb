@@ -232,33 +232,73 @@ class ParameterSetsController < ApplicationController
     analyzer_name = params[:result].split('.')[0]
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
+    ranges = JSON.load(params[:range])
 
     found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
+    ranges.each_pair do |key, range|
+      found_ps = found_ps.where({ "v.#{key}" => {"$gte" => range.first, "$lte" => range.last} })
+    end
+
     parameter_values = ParameterSet.collection.aggregate(
       { '$match' => found_ps.selector },
       { '$limit' => SCATTER_PLOT_LIMIT },
-      { '$project' => {x: "$v.#{x_axis_key}", y: "$v.#{y_axis_key}"} }
+      { '$project' => {v: "$v"} }
       )
     # parameter_values should look like
-    #   [{"_id"=>"52bb8662b93f96e193000007", "x"=>1, "y"=>1.0}, {...}, {...}, ... ]
+    #   [{"_id"=>"52bb8662b93f96e193000007", "v"=> {...}}, {...}, {...}, ... ]
 
-    ps_ids = parameter_values.map {|ps| ps["_id"]}
+    if result_keys.present?
+      ps_ids = parameter_values.map {|ps| ps["_id"]}
+      result_values = collect_result_values(ps_ids, analyzer, result_keys)
+      # result_values should look like
+      # [{"_id"=>"52bba7bab93f969a7900000f",
+      #   "average"=>99.0, "square_average"=>9801.0, "count"=>1},
+      #  {...}, {...}, ... ]
 
-    result_values = collect_result_values(ps_ids, analyzer, result_keys)
-    # result_values should look like
-    # [{"_id"=>"52bba7bab93f969a7900000f",
-    #   "average"=>99.0, "square_average"=>9801.0, "count"=>1},
-    #  {...}, {...}, ... ]
-
-    data = result_values.map do |h|
-      found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
-      [found["x"], found["y"], h["average"], h["error"], h["_id"]]
+      data = result_values.map do |h|
+        found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
+        [found["v"], h["average"], h["error"], h["_id"]]
+      end
+    else
+      data = parameter_values.map do |pv|
+        [pv["v"], nil, nil, pv["_id"]]
+      end
     end
 
     respond_to do |format|
       format.json {
-        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result_keys.last, data: data}
+        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result_keys.try(:last), data: data}
       }
+    end
+  end
+
+  def _neighbor
+    current = ParameterSet.find(params[:id])
+    simulator = current.simulator
+
+    param_keys = simulator.parameter_definitions.map(&:key)
+    target_key = params[:key]
+    raise "not found key #{target_key}" unless param_keys.include?(target_key)
+    query = {simulator: simulator}
+    param_keys.each do |key|
+      next if key == target_key
+      query["v.#{key}"] = current.v[key]
+    end
+    target_key_values = ParameterSet.where(query).distinct("v.#{target_key}").sort
+
+    idx = target_key_values.index(current.v[target_key])
+    if params[:direction] == "up"
+      idx = (idx + 1) % target_key_values.size
+    elsif params[:direction] == "down"
+      idx = (idx - 1) % target_key_values.size
+    else
+      raise "must not happen"
+    end
+    query = query.merge({"v.#{target_key}" => target_key_values[idx] })
+    @param_set = ParameterSet.where(query).first
+
+    respond_to do |format|
+      format.json { render json: @param_set }
     end
   end
 

@@ -10,6 +10,7 @@ AcmProto::Application.routes.draw do
   resources :simulators, shallow: true, only: ["index", "show", "new", "create", "edit", "update", "destroy"] do
     member do
       get 'duplicate'
+      get 'explore'
       post "_make_query" # for ajax
       get "_parameters_list" # for ajax, datatables
       get "_analyzer_list" # for ajax, datatables
@@ -23,6 +24,7 @@ AcmProto::Application.routes.draw do
         get "_analyses_list" # for ajax, datatables
         get "_line_plot" # for line plot
         get "_scatter_plot" # for scatter plot
+        get "_neighbor"
       end
       resources :runs, only: ["show","create", "destroy"] do
         member do

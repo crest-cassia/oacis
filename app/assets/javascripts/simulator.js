@@ -30,12 +30,13 @@ function show_loading_spin_arc(svg, width, height) {
     .style("fill", "#4D4D4D")
     .attr("d", arc)
     .call(spin, 1500);
+  var message = radius > 100 ? "LOADING: click here to cancel" : "LOADING";
   loading_spin.append("text")
     .style({
       "text-anchor": "middle",
       "font-size": radius*0.1
     })
-    .text("LOADING: click here to cancel");
+    .text(message);
 
   function spin(selection, duration) {
     selection.transition()

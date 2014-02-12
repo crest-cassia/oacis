@@ -139,4 +139,13 @@ class SimulatorsController < ApplicationController
     data = sim.progress_overview_data(first_parameter, second_parameter)
     render json: data
   end
+
+  def explore
+    @simulator = Simulator.find(params[:id])
+    @param_set = @simulator.parameter_sets.first
+
+    respond_to do |format|
+      format.html
+    end
+  end
 end

@@ -376,11 +376,31 @@ describe ParameterSetsController do
       get :_scatter_plot,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", format: :json}
       expected_data = [
-        [1, 1.0, 99.0, nil, @ps_array[0].id.to_s],
-        [1, 2.0, 99.0, nil, @ps_array[3].id.to_s],
-        [2, 1.0, 99.0, nil, @ps_array[1].id.to_s],
-        [2, 2.0, 99.0, nil, @ps_array[4].id.to_s],
-        [3, 1.0, 99.0, nil, @ps_array[2].id.to_s]
+        [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s],
+        [@ps_array[3].v, 99.0, nil, @ps_array[3].id.to_s],
+        [@ps_array[1].v, 99.0, nil, @ps_array[1].id.to_s],
+        [@ps_array[4].v, 99.0, nil, @ps_array[4].id.to_s],
+        [@ps_array[2].v, 99.0, nil, @ps_array[2].id.to_s]
+      ]
+
+      loaded = JSON.load(response.body)
+      loaded["xlabel"].should eq "L"
+      loaded["ylabel"].should eq "T"
+      loaded["result"].should eq "ResultKey1"
+      loaded["data"].should =~ expected_data
+    end
+
+    it "returns records specified by range" do
+      get :_scatter_plot,
+        { id: @ps_array.first,
+          x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1",
+          irrelevants: "", range: {"L" => [1,2]}.to_json,
+          format: :json}
+      expected_data = [
+        [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s],
+        [@ps_array[3].v, 99.0, nil, @ps_array[3].id.to_s],
+        [@ps_array[1].v, 99.0, nil, @ps_array[1].id.to_s],
+        [@ps_array[4].v, 99.0, nil, @ps_array[4].id.to_s]
       ]
 
       loaded = JSON.load(response.body)

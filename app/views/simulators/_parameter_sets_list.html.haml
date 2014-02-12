@@ -1,4 +1,8 @@
 %h3 List of Parameter Sets
+
+%div{align: "right"}
+  = link_to "Go to Explorer(beta)", explore_simulator_path
+
 %table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr
