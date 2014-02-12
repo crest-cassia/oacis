@@ -63,12 +63,6 @@ class ParameterSet
     counts
   end
 
-  # get real_time and cpu_time of the latest finished Run
-  def elapsed_times
-    run = runs.where(status: :finished).desc(:finished_at).first
-    {cpu_time: run.try(:cpu_time), real_time: run.try(:real_time)}
-  end
-
   private
   def cast_and_validate_parameter_values
     unless v.is_a?(Hash)
