@@ -306,4 +306,32 @@ EOS
       @host.submitted_runs.should have(4).items
     end
   end
+
+  describe "#runs_status_count" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 0)
+      @host = FactoryGirl.create(:host)
+      host2 = FactoryGirl.create(:host)
+      ps = @sim.parameter_sets.first
+      FactoryGirl.create_list(:run, 5,
+                              parameter_set: ps, status: :created, submitted_to: @host)
+      FactoryGirl.create_list(:run, 4,
+                              parameter_set: ps, status: :submitted, submitted_to: @host)
+      FactoryGirl.create_list(:run, 3,
+                              parameter_set: ps, status: :running, submitted_to: @host)
+      FactoryGirl.create_list(:run, 2,
+                              parameter_set: ps, status: :finished, submitted_to: @host)
+      FactoryGirl.create_list(:run, 1,
+                              parameter_set: ps, status: :failed, submitted_to: @host)
+      FactoryGirl.create_list(:run, 2,
+                              parameter_set: ps, status: :submitted, submitted_to: host2)
+    end
+
+    it "returns the number of runs for each status" do
+      expected = {created: 5, submitted: 4, running: 3, finished: 2, failed: 1, cancelled: 0}
+      @host.runs_status_count.should eq expected
+    end
+  end
 end
