@@ -254,8 +254,14 @@ function update_explorer(current_ps_id) {
     function draw_voronoi_heat_map() {
       var xlabel = dat.xlabel;
       var ylabel = dat.ylabel;
+
+      // add noise to coordinates of vertices in order to prevent hang-up.
+      // hanging-up sometimes happen when duplicated points are included.
       var vertices = dat.data.map(function(v) {
-        return [xScale(v[0][xlabel]), yScale(v[0][ylabel])];
+        return [
+          xScale(v[0][xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
+          yScale(v[0][ylabel]) + Math.random() * 1.0 - 0.5
+        ];
       });
       var voronoi = d3.geom.voronoi()
         .clipExtent([[0, 0], [width, height]]);
