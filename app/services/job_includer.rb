@@ -68,12 +68,10 @@ module JobIncluder
 
     #include scheduler logs
     logs = RemoteFilePath.scheduler_log_file_paths(host, run)
-    if logs.length > 0
-      logs.each do |path|
-        if SSHUtil.exist?(ssh, path)
-          SSHUtil.download(ssh, path, run.dir.join(path.basename))
-          SSHUtil.rm_r(ssh, path)
-        end
+    logs.each do |path|
+      if SSHUtil.exist?(ssh, path)
+        SSHUtil.download(ssh, path, run.dir.join(path.basename))
+        SSHUtil.rm_r(ssh, path)
       end
     end
   end
@@ -86,13 +84,10 @@ module JobIncluder
 
     #include scheduler logs
     logs = RemoteFilePath.scheduler_log_file_paths(host, run)
-    if logs.length > 0
-      logs.each do |path|
-        if SSHUtil.exist?(ssh, path)
-          Fileutils.mkdir_p(run.dir) unless File.exists?(run.dir)
-          SSHUtil.download(ssh, path, run.dir.join(path.basename))
-          SSHUtil.rm_r(ssh, path)
-        end
+    logs.each do |path|
+      if SSHUtil.exist?(ssh, path)
+        SSHUtil.download(ssh, path, run.dir.join(path.basename))
+        SSHUtil.rm_r(ssh, path)
       end
     end
   end
