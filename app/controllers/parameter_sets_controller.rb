@@ -232,7 +232,7 @@ class ParameterSetsController < ApplicationController
     analyzer_name = params[:result].split('.')[0]
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
-    ranges = JSON.load(params[:range])
+    ranges = params[:range] ? JSON.load(params[:range]) : {}
 
     found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
     ranges.each_pair do |key, range|
