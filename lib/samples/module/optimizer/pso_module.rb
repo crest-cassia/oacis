@@ -38,6 +38,9 @@ class PsoModule < Optimizer
   end
 
   def initialize(data)
+    data.each do |key, val|
+      data[key]=JSON.parse(data[key]) if JSON.is_json?(data[key])
+    end
     super(data)
     #@pso_definition = Pso.definition
     @pso_definition = data
@@ -48,13 +51,14 @@ class PsoModule < Optimizer
     @status["rnd_algorithm"]=@prng.marshal_dump
     @pso_definition = data
     @pa = ParticleArchive.new
+    @fitnessfunction_definition = PsoModule.fitnessfunction_definition
   end
 
   #override
   def create_optimizer_data #this data is written in _output.json and imported to DB
     h={}
     h["data"]=@pso_definition
-    @status["rnd_algorithm"]=@prng.marshal_dump
+    @status["rnd_algorithm"]=@prng.marshal_dump.to_json
     h["status"]=@status
     h["result"]=@pa.result
     h
@@ -73,7 +77,7 @@ class PsoModule < Optimizer
 
   private
   def dump_serialized_data
-    @status["rnd_algorithm"]=@prng.marshal_dump
+    @status["rnd_algorithm"]=@prng.marshal_dump.to_json
     optimizer_data["status"]=@status
     super
   end
@@ -89,7 +93,7 @@ class PsoModule < Optimizer
   #override
   def generate_runs #define generate_runs afeter update_particle_positions
     update_particle_positions
-    generate_optimizer_runs(@pa.get_positions(@status["iteration"]))
+    generate_optimizer_runs(@status["iteration"])
   end
 
   #override
@@ -98,7 +102,8 @@ class PsoModule < Optimizer
     #@pso_definition["population"].times do |i|
     #  @pa.set_fitness(@status["iteration"], i, [Pso.fitnessfunction(@pa.get_positions(@status["iteration"], i))] )
     #end
-    @pa.get_positions(@status["iteration"]).each do |pos|
+    population = @pa.result["data_sets"][@status["iteration"]].map{|d| d["input"]}
+    population.each_with_index do |pos, i|
       v = {}
       managed_parameters.each do |mpara|
         index =  managed_parameters_table.map{|m| m["key"]}.index(mpara["key"])
@@ -108,8 +113,8 @@ class PsoModule < Optimizer
           v[mpara["key"]] = mpara["default"]
         end
       end
-      ps = target_simulator.parameter_sets.find(v: v)
-      @pa.set_fitness(@status["iteration"], target_fields(ps))
+      ps = target_simulator.parameter_sets.where(v: v).first
+      @pa.set_fitness(@status["iteration"], i, target_fields(ps))
     end
 
     #update pbest
@@ -140,35 +145,40 @@ class PsoModule < Optimizer
   def target_fields(ps)
     anl = Analysis.where(analyzer_id: target_analzer.to_param, analyzable_id: ps.runs.first.to_param, status: :finished).first
     return [nil] if anl.blank? or anl.result.blank? or anl.result["Fitness"].blank?
-    anl.result["Fitness"]
+    [anl.result["Fitness"]]
   end
 
   def finished?
     b=[]
-    b.push(@status["iteration"] >= pso_definition["iteration"])
+    b.push(@status["iteration"] >= @pso_definition["iteration"])
     return b.any?
   end
 
   def adjust_range(x, d)
-    x = Pso.fitnessfunction_definition["range"][d][0] if x < Pso.fitnessfunction_definition["range"][d][0]
-    x = Pso.fitnessfunction_definition["range"][d][1] if x > Pso.fitnessfunction_definition["range"][d][1]
-    if Pso.fitnessfunction_definition["range"][d].length ==3 and Pso.fitnessfunction_definition["range"][d][2] != 0
-      case Pso.fitnessfunction_definition["type"][d]
+    x = @fitnessfunction_definition["range"][d][0] if x < @fitnessfunction_definition["range"][d][0]
+    x = @fitnessfunction_definition["range"][d][1] if x > @fitnessfunction_definition["range"][d][1]
+    mpara = managed_parameters.select{|mp| mp["key"] == managed_parameters_table[d]["key"]}.first
+    x = mpara["range"][0] if x < mpara["range"][0]
+    x = mpara["range"][1] if x > mpara["range"][1]
+    if mpara["range"].length ==3 and mpara["range"][2] != 0
+      range = mpara["range"][2]
+      case mpara["type"]
       when "Integer"
-        x = (Rational((x * 1/Pso.fitnessfunction_definition["range"][d][2]).to_i,1/Pso.fitnessfunction_definition["range"][d][2])).to_i
+        x = (Rational((x * 1/range).to_i,1/range)).to_i
       when "Float"
-        x = ((Rational((x * 1/Pso.fitnessfunction_definition["range"][d][2]).to_i,1/Pso.fitnessfunction_definition["range"][d][2])).to_f).round(6)
+        x = ((Rational((x * 1/range).to_i,1/range)).to_f).round(6)
       end
     end
+    x
   end
 
   def create_particles
     @pso_definition["population"].times do |i|
-      Pso.fitnessfunction_definition["dimension"].times do |d|
-        width = Pso.fitnessfunction_definition["range"][d][1] - Pso.fitnessfunction_definition["range"][d][0]
-        width = width.to_f if Pso.fitnessfunction_definition["type"][d] == "Float"
-        x = @prng.rand(width) + Pso.fitnessfunction_definition["range"][d][0]
-        adjust_range(x, d)
+      @fitnessfunction_definition["dimension"].times do |d|
+        width = @fitnessfunction_definition["range"][d][1] - @fitnessfunction_definition["range"][d][0]
+        width = width.to_f if @fitnessfunction_definition["type"][d] == "Float"
+        x = @prng.rand(width) + @fitnessfunction_definition["range"][d][0]
+        x = adjust_range(x, d)
         @pa.set_position(@status["iteration"], i, d, x)
         @pa.set_velocity(@status["iteration"], i, d, 0.0)
       end
@@ -178,7 +188,7 @@ class PsoModule < Optimizer
   def move_particles
     pre_iteration = @status["iteration"]-1
     @pso_definition["population"].times do |i|
-      Pso.fitnessfunction_definition["dimension"].times do |d|
+      @fitnessfunction_definition["dimension"].times do |d|
         w = (@pso_definition["w"][0] - @pso_definition["w"][1])*(1.0-pre_iteration.to_f/@pso_definition["iteration"].to_f) + @pso_definition["w"][1]
         v = w*@pa.get_velocity(pre_iteration, i, d)
         $stdout.puts "ite=#{pre_iteration}, i=#{i}, d=#{d}" if @pa.get_pbest_position(pre_iteration, i, d).nil?
@@ -186,7 +196,7 @@ class PsoModule < Optimizer
         v += @pso_definition["cp"]*@prng.rand(1.0)*(@pa.get_pbest_position(pre_iteration, i, d) - @pa.get_position(pre_iteration, i, d))
         v += @pso_definition["cg"]*@prng.rand(1.0)*(@pa.get_best_position(pre_iteration, i, d) - @pa.get_position(pre_iteration, i, d))
         x = @pa.get_position(pre_iteration, i, d) + v
-        adjust_range(x, d)
+        x = adjust_range(x, d)
         @pa.set_position(@status["iteration"], i, d, x)
         @pa.set_velocity(@status["iteration"], i, d, v)
       end

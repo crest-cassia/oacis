@@ -266,7 +266,7 @@ class OptimizerSelect
     pd = @sim.parameter_definitions.build
     pd["key"] = "_target"
     pd["type"] = "String"
-    pd["default"] = {"Simulator"=>@sim.to_param, "Analyzer"=>@anz.to_param, "Host"=>@host.to_param}.to_json
+    pd["default"] = {"Simulator"=>@sim.to_param, "Analyzer"=>@anz.to_param, "Host"=>[@host.to_param]}.to_json
     a << pd
     a.each do |p|
       puts p.inspect

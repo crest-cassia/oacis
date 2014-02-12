@@ -18,6 +18,7 @@ if input_data.blank?
 end
 
 input_data["_target"]=JSON.parse(input_data["_target"])
+input_data["_managed_parameters"]=JSON.parse(input_data["_managed_parameters"])
 
 case input_data["_optimizer_type"]
 when "GA"

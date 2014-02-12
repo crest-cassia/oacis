@@ -41,7 +41,7 @@ class Optimizer < OacisModule
   #override
   def dump_serialized_data
     output_file = "_output.json"
-    File.open(output_file, 'w') {|io| io.print optimization_data.to_json }
+    File.open(output_file, 'w') {|io| io.print optimizer_data.to_json }
   end
 
   #override
@@ -62,19 +62,19 @@ class Optimizer < OacisModule
   end
  
   def managed_parameters
-    parameter_definitions = target_simulator.parameter_definitions.order_by(:id.asc).map{|mpara|
-      if @input_data["_managed_parameters"].keys.include?(mpara["key"])
-        mpara["range"]=@input_data["_managed_parameters"]["range"]
+    parameter_definitions = target_simulator.parameter_definitions.order_by(:id.asc).map{|pd|
+      @input_data["_managed_parameters"].each do |mp|
+        pd["range"]=mp["range"] if pd["key"] == mp["key"]
       end
-      mpara
+      pd
     }
     parameter_definitions
   end
 
   def managed_parameters_table
-    a = {}
+    a = []
     managed_parameters.each do |mpara|
-      if mpara["range"].exist
+      if mpara["range"].present?
         a << {"key"=>mpara["key"],"type"=>mpara["type"]}
       end
     end
@@ -90,8 +90,9 @@ class Optimizer < OacisModule
     raise "IMPLEMENT ME"
   end
 
-  def  generate_optimizer_runs(population)
+  def  generate_optimizer_runs(iteration)
     generated = []
+    population = optimizer_data["result"]["data_sets"][iteration].map{|d| d["input"]}
     population.each do |pos|
       v = {}
       managed_parameters.each do |mpara|
