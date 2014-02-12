@@ -220,6 +220,16 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  def collect_latest_elapsed_times(ps_ids)
+    Run.collection.aggregate(
+      { '$match' => Run.in(parameter_set_id: ps_ids).where(status: :finished).selector },
+      { '$sort' => { finished_at: -1 } },
+      { '$group' => { _id: '$parameter_set_id',
+                      real_time: {'$first' => '$real_time'},
+                      cpu_time: {'$first' => '$cpu_time'}}}
+      )
+  end
+
   SCATTER_PLOT_LIMIT = 1000
 
   public
@@ -247,6 +257,7 @@ class ParameterSetsController < ApplicationController
     # parameter_values should look like
     #   [{"_id"=>"52bb8662b93f96e193000007", "v"=> {...}}, {...}, {...}, ... ]
 
+    result = nil
     if result_keys.present?
       ps_ids = parameter_values.map {|ps| ps["_id"]}
       result_values = collect_result_values(ps_ids, analyzer, result_keys)
@@ -259,6 +270,18 @@ class ParameterSetsController < ApplicationController
         found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
         [found["v"], h["average"], h["error"], h["_id"]]
       end
+      result = result_keys.last
+    elsif params[:result] == "cpu_time" or params[:result] == "real_time"
+      result = params[:result]
+      ps_ids = parameter_values.map {|ps| ps["_id"]}
+      elapsed_times = collect_latest_elapsed_times(ps_ids)
+      # elapsed_times should look like
+      # [{"_id" => "52bba7bab93f969a7900000f", "cpu_time"=>9.0, "real_time"=>3.0},
+      #  {...}, {...}, ... ]
+      data = elapsed_times.map do |h|
+        found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
+        [found["v"], h[result], nil, h["_id"]]
+      end
     else
       data = parameter_values.map do |pv|
         [pv["v"], nil, nil, pv["_id"]]
@@ -267,7 +290,7 @@ class ParameterSetsController < ApplicationController
 
     respond_to do |format|
       format.json {
-        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result_keys.try(:last), data: data}
+        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result, data: data}
       }
     end
   end

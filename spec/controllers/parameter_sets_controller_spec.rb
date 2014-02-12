@@ -359,6 +359,8 @@ describe ParameterSetsController do
         ps = @sim.parameter_sets.create(v: v)
         run = ps.runs.create
         run.status = :finished
+        run.cpu_time = 10.0
+        run.real_time = 3.0
         run.submitted_to = host
         run.result = {"ResultKey1" => 99}
         run.save!
@@ -407,6 +409,24 @@ describe ParameterSetsController do
       loaded["xlabel"].should eq "L"
       loaded["ylabel"].should eq "T"
       loaded["result"].should eq "ResultKey1"
+      loaded["data"].should =~ expected_data
+    end
+
+    it "returns elapsed time when params[:result] is 'cpu_time' or 'real_time'" do
+      get :_scatter_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "", format: :json}
+      expected_data = [
+        [@ps_array[0].v, 10.0, nil, @ps_array[0].id.to_s],
+        [@ps_array[3].v, 10.0, nil, @ps_array[3].id.to_s],
+        [@ps_array[1].v, 10.0, nil, @ps_array[1].id.to_s],
+        [@ps_array[4].v, 10.0, nil, @ps_array[4].id.to_s],
+        [@ps_array[2].v, 10.0, nil, @ps_array[2].id.to_s]
+      ]
+
+      loaded = JSON.load(response.body)
+      loaded["xlabel"].should eq "L"
+      loaded["ylabel"].should eq "T"
+      loaded["result"].should eq "cpu_time"
       loaded["data"].should =~ expected_data
     end
   end
