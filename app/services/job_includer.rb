@@ -64,46 +64,36 @@ module JobIncluder
   def self.download_remote_file(host, run, ssh)
     archive = RemoteFilePath.result_file_path(host, run)
     base = File.basename(archive)
+    SSHUtil.download(ssh, archive, run.dir.join('..', base))
 
     #include scheduler logs
     logs = RemoteFilePath.scheduler_log_file_paths(host, run)
     if logs.length > 0
-      cmd = "bunzip2 #{archive}"
-      SSHUtil.execute(ssh, cmd)
-
-      unziped_archive = archive.dirname.join("#{run.id}.tar")
       logs.each do |path|
         if SSHUtil.exist?(ssh, path)
-          remote_file = path.dirname.join(run.id, path.basename)
-          cmd = "mkdir -p #{remote_file.dirname}; mv #{path} #{remote_file}" # make run_id dir and move the log file
-          SSHUtil.execute(ssh, cmd)
-          SSHUtil.add_file_to_archive(ssh, remote_file, unziped_archive, 1) # add run_id/scheduler_log to the archive
-          SSHUtil.rm_r(ssh, remote_file.dirname)
+          SSHUtil.download(ssh, path, run.dir.join(path.basename))
+          SSHUtil.rm_r(ssh, path)
         end
       end
-
-      cmd = "bzip2 #{unziped_archive}"
-      SSHUtil.execute(ssh, cmd)
     end
-
-    SSHUtil.download(ssh, archive, run.dir.join('..', base))
   end
 
   def self.download_work_dir_if_exists(host, run, ssh)
     work_dir = RemoteFilePath.work_dir_path(host, run)
+    if SSHUtil.exist?(ssh, work_dir)
+      SSHUtil.download_recursive(ssh, work_dir, run.dir)
+    end
 
     #include scheduler logs
     logs = RemoteFilePath.scheduler_log_file_paths(host, run)
     if logs.length > 0
-      if SSHUtil.exist?(ssh, path)
-        remote_file = work_dir.dirname.join(path.basename)
-        cmd = "mkdir -p #{remote_file.dirname}; mv #{path} #{remote_file}" # move the log file into work_dir
-        SSHUtil.execute(ssh, cmd)
+      logs.each do |path|
+        if SSHUtil.exist?(ssh, path)
+          Fileutils.mkdir_p(run.dir) unless File.exists?(run.dir)
+          SSHUtil.download(ssh, path, run.dir.join(path.basename))
+          SSHUtil.rm_r(ssh, path)
+        end
       end
-    end
-
-    if SSHUtil.exist?(ssh, work_dir)
-      SSHUtil.download_recursive(ssh, work_dir, run.dir)
     end
   end
 
