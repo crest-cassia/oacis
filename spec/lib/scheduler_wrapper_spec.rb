@@ -118,7 +118,7 @@ EOS
     describe "#submit_command" do
 
       it "returns a command to submit a job" do
-        @wrapper.submit_command("~/path/to/job.sh").should eq "bash -l -c \"cat ~/path/to/job.sh | pjsub\""
+        @wrapper.submit_command("~/path/to/job.sh").should eq ". /etc/bashrc; pjsub ~/path/to/job.sh < /dev/null"
       end
     end
 
