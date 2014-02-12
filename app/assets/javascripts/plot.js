@@ -239,7 +239,7 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
 
     var xScale = d3.scale.linear().range([0, width]);
     var yScale = d3.scale.linear().range([height, 0]);
-    var colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"]);
+    var colorScale = d3.scale.linear().range(["#0041ff", "white", "#ff2800"]);
     var xlabel = dat.xlabel;
     var ylabel = dat.ylabel;
 
@@ -251,13 +251,12 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
       d3.min( dat.data, function(d) { return d[0][ylabel];}),
       d3.max( dat.data, function(d) { return d[0][ylabel];})
     ]).nice();
-    colorScale.domain([
-      d3.min( dat.data, function(d) { return d[1];}),
-      d3.max( dat.data, function(d) { return d[1];})
-    ]).nice();
+    var result_min_val = d3.min( dat.data, function(d) { return d[1];});
+    var result_max_val = d3.max( dat.data, function(d) { return d[1];});
+    colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
 
     function draw_color_map(g) {
-      var scale = d3.scale.linear().domain([0.0, 1.0]).range(colorScale.range());
+      var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(colorScale.range());
       g.append("text")
         .attr({x: 10.0, y: 20.0, dx: "0.1em", dy: "-0.4em"})
         .style("text-anchor", "begin")
@@ -275,7 +274,7 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
       g.append("text")
         .attr({x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
         .style("text-anchor", "begin")
-        .text( colorScale.domain()[1] );
+        .text( colorScale.domain()[2] );
       g.append("text")
         .attr({x: 30.0, y: 140.0, dx: "0.2em", dy: "-0.3em"})
         .style("text-anchor", "begin")
