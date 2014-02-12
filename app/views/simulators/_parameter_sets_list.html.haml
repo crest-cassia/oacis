@@ -116,7 +116,9 @@
     });
     $('#params_list_length').append(
       '<i class="icon-refresh" id="params_list_refresh"></i>'
-    ).on('click', reload_parameter_sets_table);
+    );
+    var refresh_icon = $('#params_list_length').children('#params_list_refresh')
+    refresh_icon.on('click', reload_parameter_sets_table);
   })
 
   $(function() {
