@@ -38,9 +38,9 @@ $(function() {
     });
     $('#analyses_list_length').append(
       '<i class="icon-refresh" id="analyses_list_refresh"></i>'
-    ).on('click', function() {
-      oTable.fnReloadAjax();
-    });
+    );
+    var refresh_icon = $('#analyses_list_length').children('#analyses_list_refresh');
+    refresh_icon.on('click', function() { oTable.fnReloadAjax(); });
     return oTable;
   };
 

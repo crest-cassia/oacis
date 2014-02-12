@@ -26,5 +26,7 @@
     });
     $('#analyzers_list_length').append(
       '<i class="icon-refresh" id="analyzers_list_refresh"></i>'
-    ).on('click', reload_analyzers_table);
+    );
+    var refresh_icon = $('#analyzers_list_length').children('#analyzers_list_refresh');
+    refresh_icon.on('click', reload_analyzers_table);
   })

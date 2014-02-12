@@ -14,9 +14,9 @@ $(function() {
     });
     $('#runs_list_length').append(
       '<i class="icon-refresh" id="runs_list_refresh"></i>'
-    ).on('click', function() {
-      oTable.fnReloadAjax();
-    });
+    );
+    var refresh_icon = $('#runs_list_length').children('#runs_list_refresh');
+    refresh_icon.on('click', function() { oTable.fnReloadAjax();});
     return oTable;
   };
 
