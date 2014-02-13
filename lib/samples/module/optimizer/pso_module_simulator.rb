@@ -31,27 +31,27 @@ class PsoModule < Optimizer
     h
   end
 
-  def self.paramater_definitions(sim)
-    definition = PsoModule.definition
-    definition["_optimizer_type"]="PSO" # add _optimizer_type_field for Optimizer Module
-    Optimizer.paramater_definitions(sim, definition)
-  end
-
   def initialize(data)
     data.each do |key, val|
       data[key]=JSON.parse(data[key]) if JSON.is_json?(data[key])
     end
     super(data)
-    #@pso_definition = Pso.definition
     @pso_definition = data
+
     @prng = Random.new(@pso_definition["seed"])
     @status = {}
     @status["iteration"]=0
-    #@status["iteration"]=@num_iterations
     @status["rnd_algorithm"]=@prng.marshal_dump
-    @pso_definition = data
     @pa = ParticleArchive.new
+
     @fitnessfunction_definition = PsoModule.fitnessfunction_definition
+  end
+
+  #override
+  def self.paramater_definitions(sim)
+    definition = PsoModule.definition
+    definition["_optimizer_type"]="PSO" # add _optimizer_type_field for Optimizer Module
+    Optimizer.paramater_definitions(sim, definition)
   end
 
   #override
@@ -64,88 +64,13 @@ class PsoModule < Optimizer
     h
   end
 
-#  def terminal_run
-#    begin
-#      update_particle_positions
-#      evaluate_particles
-#      dump_serialized_data
-#      $stdout.puts "iteration#{@status["iteration"]}"
-#      @status["iteration"]+=1
-#    end while (!finished?)
-#    "optimization is finished with iteration #{@status["iteration"]} best is #{@pa.get_best(@status["iteration"]-1)}"
-#  end
-
   private
-  def dump_serialized_data
-    @status["rnd_algorithm"]=@prng.marshal_dump.to_json
-    optimizer_data["status"]=@status
-    super
-  end
-
   def update_particle_positions
     if @status["iteration"]==0
       create_particles
     else
       move_particles
     end
-  end
-
-  #override
-  def generate_runs #define generate_runs afeter update_particle_positions
-    update_particle_positions
-    generate_optimizer_runs(@status["iteration"])
-  end
-
-  #override
-  def evaluate_runs
-    #update fitness value
-    #@pso_definition["population"].times do |i|
-    #  @pa.set_fitness(@status["iteration"], i, [Pso.fitnessfunction(@pa.get_positions(@status["iteration"], i))] )
-    #end
-    population = @pa.result["data_sets"][@status["iteration"]].map{|d| d["input"]}
-    population.each_with_index do |pos, i|
-      v = {}
-      managed_parameters.each do |mpara|
-        index =  managed_parameters_table.map{|m| m["key"]}.index(mpara["key"])
-        if index
-          v[mpara["key"]] = pos[index]
-        else
-          v[mpara["key"]] = mpara["default"]
-        end
-      end
-      ps = target_simulator.parameter_sets.where(v: v).first
-      @pa.set_fitness(@status["iteration"], i, target_fields(ps))
-    end
-
-    #update pbest
-    @pso_definition["population"].times do |i|
-      h = @pa.get_datasets(@status["iteration"], i)
-      if @status["iteration"] > 0 and (@pso_definition["maximize"] and @pa.get_pbest(@status["iteration"]-1, i)["output"][0] > h["output"][0]) and (!@pso_definition["maximize"] and @pa.get_pbest(@status["iteration"]-1, i)["output"][0] < h["output"][0])
-        h = @pa.get_pbest(@status["iteration"]-1, i)
-      end
-      @pa.set_pbest(@status["iteration"], i, h)
-    end
-
-    #update gbest
-    fitness_array = @pa.get_pbests(@status["iteration"]).map{|d| d["output"][0]}
-    if @pso_definition["maximize"]
-      best_key = fitness_array.sort.last
-    else
-      best_key = fitness_array.sort.first
-    end
-    best_index = fitness_array.index(best_key)
-    h = {"input"=>@pa.get_pbest_positions(@status["iteration"], best_index), "output"=>[best_key]}
-    if @status["iteration"] > 0 and (@pso_definition["maximize"] and @pa.get_best(@status["iteration"]-1)["output"][0] > h["output"][0]) and (!@pso_definition["maximize"] and @pa.get_best(@status["iteration"]-1)["output"][0] < h["output"][0])
-       h = @pa.get_best(@status["iteration"]-1)
-    end
-    @pa.set_best(@status["iteration"], h)
-    @status["iteration"] +=1
-  end
-
-  def target_fields(ps)
-    anl = Analysis.where(analyzer_id: target_analzer.to_param, analyzable_id: ps.runs.first.to_param, status: :finished).first
-    return [nil] if anl.blank? or anl.result.blank? or anl.result["Fitness"].blank?
-    [anl.result["Fitness"]]
   end
 
   def finished?
@@ -157,22 +82,6 @@ class PsoModule < Optimizer
   def adjust_range(x, d)
     x = @fitnessfunction_definition["range"][d][0] if x < @fitnessfunction_definition["range"][d][0]
     x = @fitnessfunction_definition["range"][d][1] if x > @fitnessfunction_definition["range"][d][1]
-    x
-  end
-
-  def adjust_range_with_maneged_parameters(x, d)
-    mpara = managed_parameters.select{|mp| mp["key"] == managed_parameters_table[d]["key"]}.first
-    x = mpara["range"][0] if x < mpara["range"][0]
-    x = mpara["range"][1] if x > mpara["range"][1]
-    if mpara["range"].length ==3 and mpara["range"][2] != 0
-      range = mpara["range"][2]
-      case mpara["type"]
-      when "Integer"
-        x = (Rational((x * 1/range).to_i,1/range)).to_i
-      when "Float"
-        x = ((Rational((x * 1/range).to_i,1/range)).to_f).round(6)
-      end
-    end
     x
   end
 
@@ -207,6 +116,91 @@ class PsoModule < Optimizer
         @pa.set_velocity(@status["iteration"], i, d, v)
       end
     end
+  end
+
+  def evaluate_particles
+    #update fitness value
+    #@pso_definition["population"].times do |i|
+    #  @pa.set_fitness(@status["iteration"], i, [Pso.fitnessfunction(@pa.get_positions(@status["iteration"], i))] )
+    #end
+
+    #update pbest
+    @pso_definition["population"].times do |i|
+      h = @pa.get_datasets(@status["iteration"], i)
+      if @status["iteration"] > 0 and (@pso_definition["maximize"] and @pa.get_pbest(@status["iteration"]-1, i)["output"][0] > h["output"][0]) and (!@pso_definition["maximize"] and @pa.get_pbest(@status["iteration"]-1, i)["output"][0] < h["output"][0])
+        h = @pa.get_pbest(@status["iteration"]-1, i)
+      end
+      @pa.set_pbest(@status["iteration"], i, h)
+    end
+
+    #update gbest
+    fitness_array = @pa.get_pbests(@status["iteration"]).map{|d| d["output"][0]}
+    if @pso_definition["maximize"]
+      best_key = fitness_array.sort.last
+    else
+      best_key = fitness_array.sort.first
+    end
+    best_index = fitness_array.index(best_key)
+    h = {"input"=>@pa.get_pbest_positions(@status["iteration"], best_index), "output"=>[best_key]}
+    if @status["iteration"] > 0 and (@pso_definition["maximize"] and @pa.get_best(@status["iteration"]-1)["output"][0] > h["output"][0]) and (!@pso_definition["maximize"] and @pa.get_best(@status["iteration"]-1)["output"][0] < h["output"][0])
+       h = @pa.get_best(@status["iteration"]-1)
+    end
+    @pa.set_best(@status["iteration"], h)
+    @status["iteration"] +=1
+  end
+
+  #override
+  def generate_runs #define generate_runs afeter update_particle_positions
+    update_particle_positions
+    generate_optimizer_runs(@status["iteration"])
+  end
+
+  #override
+  def evaluate_runs
+    population = @pa.result["data_sets"][@status["iteration"]].map{|d| d["input"]}
+    population.each_with_index do |pos, i|
+      v = {}
+      managed_parameters.each do |mpara|
+        index =  managed_parameters_table.map{|m| m["key"]}.index(mpara["key"])
+        if index
+          v[mpara["key"]] = pos[index]
+        else
+          v[mpara["key"]] = mpara["default"]
+        end
+      end
+      ps = target_simulator.parameter_sets.where(v: v).first
+      @pa.set_fitness(@status["iteration"], i, target_fields(ps))
+    end
+    evaluate_particles
+  end
+
+  def adjust_range_with_maneged_parameters(x, d)
+    mpara = managed_parameters.select{|mp| mp["key"] == managed_parameters_table[d]["key"]}.first
+    x = mpara["range"][0] if x < mpara["range"][0]
+    x = mpara["range"][1] if x > mpara["range"][1]
+    if mpara["range"].length ==3 and mpara["range"][2] != 0
+      range = mpara["range"][2]
+      case mpara["type"]
+      when "Integer"
+        x = (Rational((x * 1/range).to_i,1/range)).to_i
+      when "Float"
+        x = ((Rational((x * 1/range).to_i,1/range)).to_f).round(6)
+      end
+    end
+    x
+  end
+
+  def target_fields(ps)
+    anl = Analysis.where(analyzer_id: target_analzer.to_param, analyzable_id: ps.runs.first.to_param, status: :finished).first
+    return [nil] if anl.blank? or anl.result.blank? or anl.result["Fitness"].blank?
+    [anl.result["Fitness"]]
+  end
+
+  #override
+  def dump_serialized_data
+    @status["rnd_algorithm"]=@prng.marshal_dump.to_json
+    optimizer_data["status"]=@status
+    super
   end
 end
 
@@ -322,23 +316,4 @@ class ParticleArchive < OptimizerData
     a["input"][dim]
   end
 end
-
-#test for ParicleArchive
-#-------------------------
-#pa = ParticleArchive.new
-#pa.set_position(0, 0, 0, 1)
-#pa.set_position(0, 0, 1, 2)
-#pa.set_position(0, 0, 2, 3)
-#pa.set_positions(0, 1, [21, 22, 23])
-#pa.set_fitness(0, 0, [6])
-#pa.set_fitness(0, 1, [66])
-#pa.set_velocity(0, 0, 0, -1)
-#pa.set_velocity(0, 0, 1, -2)
-#pa.set_velocity(0, 0, 2, -3)
-#pa.set_velocities(0, 1, [-21, -22, -23])
-#pa.set_pbest(0, 0, pa.get_positions(0, 0))
-#pa.set_pbest(0, 1, pa.get_positions(0, 1))
-#pa.set_best(0, {"input"=>pa.get_positions(0,0),"output"=>pa.get_fitness(0,0),"velocity"=>pa.get_velocities(0,0)})
-#pa.result
-#-------------------------
 
