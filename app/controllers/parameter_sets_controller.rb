@@ -300,7 +300,7 @@ class ParameterSetsController < ApplicationController
         [found["v"], h["average"], h["error"], h["_id"]]
       end
       result = result_keys.last
-    elsif params[:result] == "cpu_time" or params[:result] == "real_time"
+    elsif ["cpu_time", "real_time"].include?(params[:result])
       result = params[:result]
       ps_ids = parameter_values.map {|ps| ps["_id"]}
       elapsed_times = collect_latest_elapsed_times(ps_ids)
@@ -312,6 +312,7 @@ class ParameterSetsController < ApplicationController
         [found["v"], h[result], nil, h["_id"]]
       end
     else
+      result = nil
       data = parameter_values.map do |pv|
         [pv["v"], nil, nil, pv["_id"]]
       end
