@@ -83,6 +83,9 @@ FactoryGirl.define do
         run.cpu_time = rand * 100.0
         run.real_time = run.cpu_time + rand * 2.0
         run.result = {"Energy" => rand*1.0, "Flow" => rand*3.0}
+        d = DateTime.now
+        run.finished_at = d
+        run.included_at = d
         run.status = :finished
         run.save!
       end

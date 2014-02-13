@@ -289,6 +289,24 @@ describe ParameterSet do
     end
   end
 
+  describe "#elapsed_times" do
+
+    it "returns real_time and cpu_time of the latest finished Run" do
+      sim = FactoryGirl.create(:simulator,
+        parameter_sets_count: 1, runs_count: 0, finished_runs_count: 5)
+      run = sim.runs.last
+      expected = {cpu_time: run.cpu_time, real_time: run.real_time}
+      sim.parameter_sets.first.elapsed_times.should eq expected
+    end
+
+    it "cpu_time and real_time are nil when no finished runs are found" do
+      sim = FactoryGirl.create(:simulator,
+        parameter_sets_count: 1, runs_count: 0, finished_runs_count: 0)
+      expected = {cpu_time: nil, real_time: nil}
+      sim.parameter_sets.first.elapsed_times.should eq expected
+    end
+  end
+
   describe "#destroy" do
 
     it "deletes result_directory" do
