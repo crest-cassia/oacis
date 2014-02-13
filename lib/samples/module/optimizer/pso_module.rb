@@ -157,6 +157,10 @@ class PsoModule < Optimizer
   def adjust_range(x, d)
     x = @fitnessfunction_definition["range"][d][0] if x < @fitnessfunction_definition["range"][d][0]
     x = @fitnessfunction_definition["range"][d][1] if x > @fitnessfunction_definition["range"][d][1]
+    x
+  end
+
+  def adjust_range_with_maneged_parameters(x, d)
     mpara = managed_parameters.select{|mp| mp["key"] == managed_parameters_table[d]["key"]}.first
     x = mpara["range"][0] if x < mpara["range"][0]
     x = mpara["range"][1] if x > mpara["range"][1]
@@ -179,6 +183,7 @@ class PsoModule < Optimizer
         width = width.to_f if @fitnessfunction_definition["type"][d] == "Float"
         x = @prng.rand(width) + @fitnessfunction_definition["range"][d][0]
         x = adjust_range(x, d)
+        x = adjust_range_with_maneged_parameters(x, d)
         @pa.set_position(@status["iteration"], i, d, x)
         @pa.set_velocity(@status["iteration"], i, d, 0.0)
       end
@@ -197,6 +202,7 @@ class PsoModule < Optimizer
         v += @pso_definition["cg"]*@prng.rand(1.0)*(@pa.get_best_position(pre_iteration, i, d) - @pa.get_position(pre_iteration, i, d))
         x = @pa.get_position(pre_iteration, i, d) + v
         x = adjust_range(x, d)
+        x = adjust_range_with_maneged_parameters(x, d)
         @pa.set_position(@status["iteration"], i, d, x)
         @pa.set_velocity(@status["iteration"], i, d, v)
       end
