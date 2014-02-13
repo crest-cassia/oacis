@@ -208,36 +208,6 @@ class PsoModule < Optimizer
       end
     end
   end
-
-  def evaluate_particles
-    #update fitness value
-    @pso_definition["population"].times do |i|
-      @pa.set_fitness(@status["iteration"], i, [Pso.fitnessfunction(@pa.get_positions(@status["iteration"], i))] )
-    end
-
-    #update pbest
-    @pso_definition["population"].times do |i|
-      h = @pa.get_datasets(@status["iteration"], i)
-      if @status["iteration"] > 0 and (@pso_definition["maximize"] and @pa.get_pbest(@status["iteration"]-1, i)["output"][0] > h["output"][0]) and (!@pso_definition["maximize"] and @pa.get_pbest(@status["iteration"]-1, i)["output"][0] < h["output"][0])
-        h = @pa.get_pbest(@status["iteration"]-1, i)
-      end
-      @pa.set_pbest(@status["iteration"], i, h)
-    end
-
-    #update gbest
-    fitness_array = @pa.get_pbests(@status["iteration"]).map{|d| d["output"][0]}
-    if @pso_definition["maximize"]
-      best_key = fitness_array.sort.last
-    else
-      best_key = fitness_array.sort.first
-    end
-    best_index = fitness_array.index(best_key)
-    h = {"input"=>@pa.get_pbest_positions(@status["iteration"], best_index), "output"=>[best_key]}
-    if @status["iteration"] > 0 and (@pso_definition["maximize"] and @pa.get_best(@status["iteration"]-1)["output"][0] > h["output"][0]) and (!@pso_definition["maximize"] and @pa.get_best(@status["iteration"]-1)["output"][0] < h["output"][0])
-       h = @pa.get_best(@status["iteration"]-1)
-    end
-      @pa.set_best(@status["iteration"], h)
-  end
 end
 
 class ParticleArchive < OptimizerData

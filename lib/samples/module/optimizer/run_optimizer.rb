@@ -1,7 +1,7 @@
 require 'json'
 
 require_relative 'ga_simple.rb'
-require_relative 'pso_module.rb'
+require_relative 'pso_module_simulator.rb'
 
 def load_input_data
   if File.exist?("_input.json")
