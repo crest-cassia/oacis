@@ -97,9 +97,6 @@ class ParameterSetsController < ApplicationController
     ps = ParameterSet.find(params[:id])
 
     x_axis_key = params[:x_axis_key]
-    result_keys = params[:y_axis_key].split('.')[1..-1]
-    analyzer_name = params[:y_axis_key].split('.')[0]
-    analyzer = ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
 
     series = (params[:series] != x_axis_key) ? params[:series] : nil
@@ -112,13 +109,28 @@ class ParameterSetsController < ApplicationController
       ps_array = [ps]
       series_values = []
     end
-    data = ps_array.map do |base_ps|
-      collect_data_for_line_plot(base_ps, x_axis_key, analyzer, result_keys, irrelevant_keys)
+
+    ylabel = nil
+    data = nil
+    # get data
+    if ["cpu_time", "real_time"].include?(params[:y_axis_key])
+      ylabel = params[:y_axis_key]
+      data = ps_array.map do |base_ps|
+        collect_elapsed_times_for_line_plot(base_ps, x_axis_key, ylabel, irrelevant_keys)
+      end
+    else
+      result_keys = params[:y_axis_key].split('.')[1..-1]
+      analyzer_name = params[:y_axis_key].split('.')[0]
+      analyzer = ps.simulator.analyzers.where(name: analyzer_name).first
+      data = ps_array.map do |base_ps|
+        collect_data_for_line_plot(base_ps, x_axis_key, analyzer, result_keys, irrelevant_keys)
+      end
+      ylabel = result_keys.last
     end
 
     respond_to do |format|
       format.json {
-        render json: { xlabel: x_axis_key, ylabel: result_keys.last,
+        render json: { xlabel: x_axis_key, ylabel: ylabel,
                        series: series, series_values: series_values, data: data}
       }
       format.plt {
@@ -147,6 +159,23 @@ class ParameterSetsController < ApplicationController
     plot_data = collect_result_values(ps_ids, analyzer, result_keys).map do |h|
       ps_id = h["_id"]
       [ ps_id_to_x[ps_id.to_s], h["average"], h["error"], ps_id ]
+    end
+    plot_data.sort_by {|d| d[0]}
+  end
+
+  # return an array like follows
+  #  [ [x, elapsed_time, nil, ps_id], .... ]
+  def collect_elapsed_times_for_line_plot(base_ps, x_axis_key, y_axis_key, irrelevant_keys)
+    ps_ids = []
+    ps_id_to_x = {}
+    base_ps.parameter_sets_with_different(x_axis_key, irrelevant_keys).each do |ps|
+      ps_ids << ps.id
+      ps_id_to_x[ps.id.to_s] = ps.v[x_axis_key]
+    end
+
+    plot_data = collect_latest_elapsed_times(ps_ids).map do |h|
+      ps_id = h["_id"]
+      [ ps_id_to_x[ps_id.to_s], h[y_axis_key], nil, ps_id ]
     end
     plot_data.sort_by {|d| d[0]}
   end
@@ -220,6 +249,16 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  def collect_latest_elapsed_times(ps_ids)
+    Run.collection.aggregate(
+      { '$match' => Run.in(parameter_set_id: ps_ids).where(status: :finished).selector },
+      { '$sort' => { finished_at: -1 } },
+      { '$group' => { _id: '$parameter_set_id',
+                      real_time: {'$first' => '$real_time'},
+                      cpu_time: {'$first' => '$cpu_time'}}}
+      )
+  end
+
   SCATTER_PLOT_LIMIT = 1000
 
   public
@@ -247,6 +286,7 @@ class ParameterSetsController < ApplicationController
     # parameter_values should look like
     #   [{"_id"=>"52bb8662b93f96e193000007", "v"=> {...}}, {...}, {...}, ... ]
 
+    result = nil
     if result_keys.present?
       ps_ids = parameter_values.map {|ps| ps["_id"]}
       result_values = collect_result_values(ps_ids, analyzer, result_keys)
@@ -259,7 +299,20 @@ class ParameterSetsController < ApplicationController
         found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
         [found["v"], h["average"], h["error"], h["_id"]]
       end
+      result = result_keys.last
+    elsif ["cpu_time", "real_time"].include?(params[:result])
+      result = params[:result]
+      ps_ids = parameter_values.map {|ps| ps["_id"]}
+      elapsed_times = collect_latest_elapsed_times(ps_ids)
+      # elapsed_times should look like
+      # [{"_id" => "52bba7bab93f969a7900000f", "cpu_time"=>9.0, "real_time"=>3.0},
+      #  {...}, {...}, ... ]
+      data = elapsed_times.map do |h|
+        found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
+        [found["v"], h[result], nil, h["_id"]]
+      end
     else
+      result = nil
       data = parameter_values.map do |pv|
         [pv["v"], nil, nil, pv["_id"]]
       end
@@ -267,7 +320,7 @@ class ParameterSetsController < ApplicationController
 
     respond_to do |format|
       format.json {
-        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result_keys.try(:last), data: data}
+        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result, data: data}
       }
     end
   end

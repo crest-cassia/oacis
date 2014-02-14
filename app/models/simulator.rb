@@ -79,8 +79,9 @@ class Simulator
   end
 
   def plottable
+    list = ["cpu_time", "real_time"]
     run = Run.where(simulator: self, status: :finished).first
-    list = plottable_keys(run.try(:result)).map {|key| ".#{key}" }
+    list += plottable_keys(run.try(:result)).map {|key| ".#{key}" }
 
     analyzers.each do |azr|
       anl = azr.analyses.where(status: :finished).first
@@ -94,6 +95,10 @@ class Simulator
 
   def plottable_domains
     all_domains = {}
+
+    # get domains for elapsed times
+    all_domains["cpu_time"] = [0.0, Run.where(simulator: self, status: :finished).max(:cpu_time)]
+    all_domains["real_time"] = [0.0, Run.where(simulator: self, status: :finished).max(:real_time)]
 
     # get domains for runs
     first_run = Run.where(simulator: self, status: :finished).first
