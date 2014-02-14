@@ -1,22 +1,24 @@
 class OptimizerData
 
-  def data
+  private
+  def data_struct
     {"best"=>[], #[{"input"=>[5,0],"output"=>[25]}, ..., {"input"=>[0,0],"output"=>[0]}]
      "data_sets"=>[] #[[{"input"=>[5,0],"output"=>[25]}, ..., {"input"=>[0,0],"output"=>[0]}]]
     }
   end
 
-  def set_result(h)
-    @result = h
+  public
+  def set_data(h)
+    @data = h
   end
 
-  def result
-    @result ||= data
+  def data
+    @data ||= data_struct
   end
 
   def get_datasets(iteration, index)
-    result["data_sets"][iteration] = [] if result["data_sets"][iteration].nil?
-    result["data_sets"][iteration][index] ||= {"input"=>[],"output"=>[]}
+    data["data_sets"][iteration] = [] if data["data_sets"][iteration].nil?
+    data["data_sets"][iteration][index] ||= {"input"=>[],"output"=>[]}
   end
 
   def set_datasets(iteration, index, val)
@@ -28,7 +30,7 @@ class OptimizerData
   end
 
   def get_best(iteration)
-    result["best"][iteration] ||= {"input"=>[],"output"=>[]}
+    data["best"][iteration] ||= {"input"=>[],"output"=>[]}
   end
 
   def set_best(iteration, val)

@@ -1,5 +1,6 @@
 require 'json'
 require_relative '../OACIS_module.rb'
+require_relative 'optimizer_data.rb'
 
 class Optimizer < OacisModule
 
@@ -61,6 +62,12 @@ class Optimizer < OacisModule
     @target_host ||= Host.find(@input_data["_target"]["Host"].first)
   end
  
+  def target_fields(ps)
+    anl = Analysis.where(analyzer_id: target_analzer.to_param, analyzable_id: ps.runs.first.to_param, status: :finished).first
+    return [nil] if anl.blank? or anl.result.blank? or anl.result["Fitness"].blank?
+    [anl.result["Fitness"]]
+  end
+
   def managed_parameters
     parameter_definitions = target_simulator.parameter_definitions.order_by(:id.asc).map{|pd|
       @input_data["_managed_parameters"].each do |mp|
@@ -81,19 +88,40 @@ class Optimizer < OacisModule
     a
   end
 
+  def adjust_range_with_maneged_parameters(x, d)
+    mpara = managed_parameters.select{|mp| mp["key"] == managed_parameters_table[d]["key"]}.first
+    case mpara["type"]
+    when "Integer"
+      x = mpara["range"][0] if x < mpara["range"][0]
+      x = mpara["range"][1] if x > mpara["range"][1]
+      if mpara["range"].length ==3 and mpara["range"][2] != 0
+        range = mpara["range"][2]       
+        x = (Rational((x * 1/range).to_i,1/range)).to_i
+      end
+    when "Float"
+      x = mpara["range"][0] if x < mpara["range"][0]
+      x = mpara["range"][1] if x > mpara["range"][1]
+      if mpara["range"].length ==3 and mpara["range"][2] != 0
+        range = mpara["range"][2]
+        x = ((Rational((x * 1/range).to_i,1/range)).to_f).round(6)
+      end
+    end
+    x
+  end
+
   #for dump and restart
   def optimizer_data
     @optimizer_data ||= create_optimizer_data
   end
 
   def create_optimizer_data
-    raise "IMPLEMENT ME"
+    OptimizerData.new
   end
 
   def  generate_optimizer_runs(iteration)
     generated = []
-    population = optimizer_data["result"]["data_sets"][iteration].map{|d| d["input"]}
-    population.each do |pos|
+    population_input = optimizer_data.data["data_sets"][iteration].map{|d| d["input"]}
+    population_input.each do |pos|
       v = {}
       managed_parameters.each do |mpara|
         index =  managed_parameters_table.map{|m| m["key"]}.index(mpara["key"])
@@ -112,6 +140,23 @@ class Optimizer < OacisModule
       end
     end
     generated
+  end
+
+  def evaluate_optimizer_runs(iteration)
+    population = optimizer_data.data["data_sets"][iteration]
+    population.each do |pop|
+      v = {}
+      managed_parameters.each do |mpara|
+        index =  managed_parameters_table.map{|m| m["key"]}.index(mpara["key"])
+        if index
+          v[mpara["key"]] = pop["input"][index]
+        else
+          v[mpara["key"]] = mpara["default"]
+        end
+      end
+      ps = target_simulator.parameter_sets.where(v: v).first
+      pop["output"] = target_fields(ps)
+    end
   end
 end
 
