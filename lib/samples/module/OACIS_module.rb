@@ -28,7 +28,7 @@ class OacisModule
     loop do
       runs_finished = generated_runs.all? do |run|
         run.reload unless run.status == :finished or run.status == :failed
-        raise "Run #{run} failed" if run.status == :failed
+        raise "Run #{run.id} failed" if run.status == :failed
         run.status == :finished and all_analyzer_finished( run )
       end
       break if runs_finished

@@ -1,0 +1,37 @@
+This file is written in CASSIA Project since 2013.
+
+Introduction
+This is a sample problem for optimizer.
+
+requierments
+ruby 1.9
+OACIS is installed.
+localhost is saved as an executable host.
+
+Usage(following steps is run in problem01 folder.)
+Step0:install sample problem
+$ruby -r /Path_to_OACIS/config/environment ./sample_problem_installer.rb
+
+Step1:install optimizer
+$ruby -r /Path_to_OACIS/config/environment /Path_to_OACIS/lib/modules/module/optimizer/optimizer_installer.rb < problem01/GA.config
+
+Step2
+$ruby -r /Path_to_OACIS/config/environment /Path_to_OACIS/lib/modules/module/optimizer/run_optimizer.rb
+GA.config
+#Name of target Simulator or index num of target Simulator
+ToyProblem01
+#Name of executable host or or index num of executable host
+localhost
+#Optimizer name(you can find this name as a Simulator on OACIS)
+SampleOptimizer
+#Optimizer type
+GA
+#Num of target Analyzer
+0
+#Num of managed parameters
+0,1
+#range[min,max,span]
+-10.0,10.0,0.1
+#range[min,max,span]
+-10.0,10.0,0.1
+exit

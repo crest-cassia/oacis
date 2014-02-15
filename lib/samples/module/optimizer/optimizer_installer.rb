@@ -1,6 +1,7 @@
 require 'pp'
 require 'json'
-require Rails.root.to_s+'/lib/samples/module/optimizer/optimizer.rb'
+require Rails.root.to_s+'/lib/samples/module/optimizer/ga_simple.rb'
+require Rails.root.to_s+'/lib/samples/module/optimizer/pso_module.rb'
 
 class TermColor
   class << self
@@ -77,8 +78,6 @@ class OptimizerSelect
     message
     @step_counter += 1
     @opt_param_counter=0
-    @optimizer_types = Optimizer::OPTIMIZER_TYPES
-    @optimizer_desctiptions={"GA"=>"default GA"}
   end
 
   def run(str)
@@ -134,17 +133,8 @@ class OptimizerSelect
   end
 
   def set_type(str)
-    if @optimizer_types.include?(str)
       @type=str
       puts "new optimizer type is "+TermColor.blue_i+"\""+@type+"\""+TermColor.reset_i
-    else
-      TermColor.red
-      puts "*****************************************"
-      puts "***ERROR:enter a type of optimizer from "+@optimizer_types.to_s+")***"
-      puts "*****************************************"
-      TermColor.reset
-      @step_counter -=1
-    end
   end
   
   def select_analyzer(str)
@@ -204,8 +194,7 @@ class OptimizerSelect
     TermColor.green
     puts "install stage: "+@steps[@step_counter+1]
     TermColor.reset
-    pp @optimizer_types
-    puts "Input optimizer type:"
+    puts "Input optimizer type:(GA)"
   end
 
   def analyzer_list
@@ -263,18 +252,27 @@ class OptimizerSelect
   end
 
   def opt_parameter_definitions
-    a = []
-    a.push(ParameterDefinition.new({"key"=>"target", "type"=>"String", "default" => {"Simulator"=>@sim.to_param,"Analyzer"=>@anz.to_param,"Host"=>@host.map{|h| h.to_param}}.to_json.to_s, "description" => "targets for operation"}))
-    h = {"module"=>"optimization","type"=>@type,"settings"=>{"maximize"=>true}}
-    h["settings"]["managed_parameters"]=[]
-    @managed_params.each do |mpara|
-      h["settings"]["managed_parameters"].push(mpara)
+    case @type
+    when "GA"
+      a = GaSimple.definitions(@sim, @anz, @host, @type, @managed_params)
+    when "PSO"
+      a = PsoModule.paramater_definitions(@sim)
     end
-    a.push(ParameterDefinition.new({"key"=>"operation", "type"=>"String", "default" => h.to_json.to_s, "description" => @optimizer_desctiptions[@type]}))
-    a.push(ParameterDefinition.new({"key"=>"iteration", "type"=>"Integer", "default" => 2, "description" =>"max_iteration"}))
-    a.push(ParameterDefinition.new({"key"=>"population", "type"=>"Integer", "default" => 32, "description" =>"max_iteration"}))
-    a.push(ParameterDefinition.new({"key"=>"seed", "type"=>"Integer", "default" => 0, "description" =>"seed for an optimizer"}))
-    return a
+    pd = @sim.parameter_definitions.build
+    pd["key"] = "_managed_parameters"
+    pd["type"] = "String"
+    pd["default"] = @managed_params.to_json
+    a << pd
+    pd = @sim.parameter_definitions.build
+    pd["key"] = "_target"
+    pd["type"] = "String"
+    pd["default"] = {"Simulator"=>@sim.to_param, "Analyzer"=>@anz.to_param, "Host"=>[@host.to_param]}.to_json
+    a << pd
+    a.each do |p|
+      puts p.inspect
+      puts p.valid?
+    end
+    a
   end
 end
 

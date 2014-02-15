@@ -1,6 +1,7 @@
 require 'json'
 
-require_relative 'optimizer.rb'
+require_relative 'ga_simple.rb'
+require_relative 'pso_module_simulator.rb'
 
 def load_input_data
   if File.exist?("_input.json")
@@ -13,8 +14,20 @@ end
 input_data = load_input_data
 
 if input_data.blank?
-  STDERR.puts "_input.json is missing."
-  exit(-1)
+  raise "_input.json is missing."
 end
 
-Optimizer.new(input_data).run
+input_data["_target"]=JSON.parse(input_data["_target"])
+input_data["_managed_parameters"]=JSON.parse(input_data["_managed_parameters"])
+
+case input_data["_optimizer_type"]
+when "GA"
+  @optimizer = GaSimple.new(input_data)
+  @optimizer.run
+when "PSO"
+  @optimizer = PsoModule.new(input_data)
+  @optimizer.run
+else
+  raise "No such optimizer."
+end
+
