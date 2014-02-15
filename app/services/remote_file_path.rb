@@ -23,11 +23,11 @@ module RemoteFilePath
   def self.scheduler_log_file_paths(host, run)
     a = []
     case host.scheduler_type
-    when "PJM"
+    when "pjm"
       a << Pathname.new("~").join("#{run.id}.sh.o#{run.job_id}")
       a << Pathname.new("~").join("#{run.id}.sh.e#{run.job_id}")
       a << Pathname.new("~").join("#{run.id}.sh.i#{run.job_id}")
-    when "PJM_k"
+    when "pjm_k"
       a << Pathname.new("~").join("J#{run.id}.sh.o#{run.job_id}")
       a << Pathname.new("~").join("J#{run.id}.sh.e#{run.job_id}")
       a << Pathname.new("~").join("J#{run.id}.sh.i#{run.job_id}")
