@@ -68,9 +68,7 @@ module ApplicationHelper
   def progress_bar_tag_for(status, percent)
     content = percent > MIN_PERCENT_TO_PRINT ? "#{percent}%" : ""
     tag = <<-EOS
-      <span class="progress progress-#{status} progress-striped active">
-        <span class="bar" style="width: #{percent}%">#{content}</span>
-      </span>
+      <div class="bar bar-#{status}" style="width: #{percent}%">#{content}</div>
     EOS
   end
 
