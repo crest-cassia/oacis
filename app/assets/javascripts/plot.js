@@ -239,7 +239,8 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
 
     var xScale = d3.scale.linear().range([0, width]);
     var yScale = d3.scale.linear().range([height, 0]);
-    var colorScale = d3.scale.linear().range(["#0041ff", "white", "#ff2800"]);
+    var colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
+    var colorScalePoint = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
     var xlabel = dat.xlabel;
     var ylabel = dat.ylabel;
 
@@ -254,6 +255,7 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
     var result_min_val = d3.min( dat.data, function(d) { return d[1];});
     var result_max_val = d3.max( dat.data, function(d) { return d[1];});
     colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
+    colorScalePoint.domain( colorScale.domain() );
 
     function draw_color_map(g) {
       var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(colorScale.range());
@@ -353,7 +355,7 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
       point.append("circle")
         .attr("cx", function(d) { return xScale(d.x);})
         .attr("cy", function(d) { return yScale(d.y);})
-        .style("fill", function(d) { return colorScale(d.average);})
+        .style("fill", function(d) { return colorScalePoint(d.average);})
         .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;})
         .on("mouseover", function(d) {
           tooltip.transition()
