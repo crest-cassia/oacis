@@ -10,7 +10,11 @@
     %th Ssh key
     %th Scheduler type
     %th Work base dir
-    %th Max number of jobs
+    %th Max # of jobs
+    %th
+      = '# of Runs'
+      %br
+      (running/total)
     %th
 
   - @hosts.each do |host|
@@ -23,6 +27,10 @@
       %td= host.scheduler_type
       %td= host.work_base_dir
       %td= host.max_num_jobs
+      %td
+        = Run.where(submitted_to: host, status: :running).count
+        = " / "
+        = Run.where(submitted_to: host).in(status: [:created, :submitted, :running]).count
       %td
         = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if host.destroyable?
 

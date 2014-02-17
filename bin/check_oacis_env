@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+
+def puts_ok
+  puts "  [\e[32mOK\e[0m]"
+end
+
+def puts_error
+  puts "  [\e[31mError\e[0m]"
+end
+
+def verify_ruby_version
+  print "checking ruby version ...        "
+  v = `ruby --version`
+  if v =~ /1\.9\.3/
+    puts_ok
+    return true
+  else
+    puts_error
+    puts "\tRuby version must be 1.9.3, but is #{v}"
+    return false
+  end
+end
+
+def verify_bundler_installation
+  print "checking bundler installation ..."
+  v = `which bundle`
+  if $?.to_i == 0
+    puts_ok
+    return true
+  else
+    puts_error
+    puts "\tbundle command is not found"
+    return false
+  end
+end
+
+def verify_mongodb_version
+  print "checking mongodb version ...     "
+  v = `mongo --verion`
+  if v =~ /2\.4\.\d/
+    puts_ok
+    return true
+  else
+    puts_error
+    puts "\tmongoDB version must be 2.4, but is #{v}"
+    return false
+  end
+end
+
+def verify_mongod_process_is_running
+  print "checking mongod process ...      "
+  v = `ps aux | grep [m]ongod`
+  if v.lines.count >= 1
+    puts_ok
+    return true
+  else
+    puts_error
+    puts "\tmongod process is not found"
+    return false
+  end
+end
+
+if verify_ruby_version and
+   verify_bundler_installation and
+   verify_mongodb_version and
+   verify_mongod_process_is_running
+  puts "\e[32mAll the environment checks have passed!\e[0m"
+end

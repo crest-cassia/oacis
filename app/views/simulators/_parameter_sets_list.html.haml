@@ -1,4 +1,8 @@
 %h3 List of Parameter Sets
+
+%div{align: "right"}
+  = link_to "Go to Explorer(beta)", explore_simulator_path
+
 %table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr
@@ -114,6 +118,11 @@
       sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
       sPaginationType: "bootstrap"
     });
+    $('#params_list_length').append(
+      '<i class="icon-refresh" id="params_list_refresh"></i>'
+    );
+    var refresh_icon = $('#params_list_length').children('#params_list_refresh')
+    refresh_icon.on('click', reload_parameter_sets_table);
   })
 
   $(function() {

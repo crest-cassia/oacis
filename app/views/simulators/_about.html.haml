@@ -36,7 +36,7 @@
       %tr
         %th= pd.key
         %td= pd.type
-        %td= pd.default || '-'
+        %td= pd.default.nil? ? '-' : pd.default
         %td= pd.description ? pd.description : "-"
 
 %h3 Commands

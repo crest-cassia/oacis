@@ -1,5 +1,6 @@
 .page-header
-  %h1="New Parameter Set"
+  %h2
+    = "Create a new parameter set on: #{@param_set.simulator.name}"
 
 - @run ||= @param_set.runs.build
 = render "form", parameter_set: @param_set, run: @run

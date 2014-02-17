@@ -91,6 +91,7 @@ GEM
       net-ssh (>= 2.6.5)
     net-ssh (2.6.8)
     origin (1.1.0)
+    parallel (0.9.2)
     polyglot (0.3.3)
     pry (0.9.12.2)
       coderay (~> 1.0.5)
@@ -195,6 +196,7 @@ DEPENDENCIES
   mongoid-rspec
   net-sftp
   net-ssh
+  parallel
   pry
   quiet_assets
   rails (= 3.2.13)

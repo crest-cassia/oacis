@@ -79,8 +79,9 @@ class Simulator
   end
 
   def plottable
+    list = ["cpu_time", "real_time"]
     run = Run.where(simulator: self, status: :finished).first
-    list = plottable_keys(run.try(:result)).map {|key| ".#{key}" }
+    list += plottable_keys(run.try(:result)).map {|key| ".#{key}" }
 
     analyzers.each do |azr|
       anl = azr.analyses.where(status: :finished).first
@@ -92,6 +93,80 @@ class Simulator
     list
   end
 
+  def plottable_domains
+    all_domains = {}
+
+    # get domains for elapsed times
+    all_domains["cpu_time"] = [0.0, Run.where(simulator: self, status: :finished).max(:cpu_time)]
+    all_domains["real_time"] = [0.0, Run.where(simulator: self, status: :finished).max(:real_time)]
+
+    # get domains for runs
+    first_run = Run.where(simulator: self, status: :finished).first
+    run_result_keys = plottable_keys( first_run.try(:result) )
+    collection_class = Run
+    query = Run.where(simulator: self)
+    run_domains = domains(collection_class, query, run_result_keys)
+    all_domains.update( Hash[ run_domains.map {|key,val| [".#{key}", val] } ] )
+
+    # get domains for analyses
+    analyzers.each do |azr|
+      keys = plottable_keys(azr.analyses.where(status: :finished).first.try(:result))
+      collection_class = Analysis
+      query = Analysis.where(analyzer: azr)
+      anl_domains = domains(collection_class, query, keys)
+      mapped = anl_domains.map {|key,val| ["#{azr.name}.#{key}", val] }
+      all_domains.update( Hash[mapped] )
+    end
+
+    all_domains
+  end
+
+  private
+  def domains(collection_class, query, result_keys)
+    group = {_id: 0}
+    result_keys.each do |result_key|
+      # Because key of the group cannot include '.', substitute '.' with '_'
+      group["min_#{result_key.gsub('.', '_')}"] = {'$min' => "$result.#{result_key}" }
+      group["max_#{result_key.gsub('.', '_')}"] = {'$max' => "$result.#{result_key}" }
+    end
+
+    aggregated = collection_class.collection.aggregate(
+      {'$match' =>  query.selector },
+      {'$group' => group }
+    )
+    aggregated = aggregated.first
+
+    ranges = {}
+    result_keys.each do |result_key|
+      ranges["#{result_key}"] = [aggregated["min_#{result_key.gsub('.', '_')}"],
+                                 aggregated["max_#{result_key.gsub('.', '_')}"] ]
+    end
+    ranges
+  end
+
+  public
+  def parameter_ranges
+    query = ParameterSet.where(simulator: self)
+    group = {_id: 0}
+    parameter_definitions.each do |pd|
+      next unless pd.type == "Float" or pd.type == "Integer"
+      # pd.key cannot include '-'. Hence, prefix "min-" and "max-" are safe.
+      group["min-#{pd.key}"] = { '$min' => "$v.#{pd.key}" }
+      group["max-#{pd.key}"] = { '$max' => "$v.#{pd.key}" }
+    end
+    aggregated = ParameterSet.collection.aggregate(
+      {'$match' => query.selector },
+      {'$group' => group }
+    ).first
+
+    ranges = {}
+    parameter_definitions.each do |pd|
+      ranges[pd.key] = [ aggregated["min-#{pd.key}"], aggregated["max-#{pd.key}"] ]
+    end
+    ranges
+  end
+
+  public
   def progress_overview_data(parameter_key1, parameter_key2)
     parameter_values = [
       parameter_sets.distinct("v.#{parameter_key1}").sort,

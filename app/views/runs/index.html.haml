@@ -27,9 +27,6 @@
         = raw(header)
   %tbody
 
-.form-actions
-  %a.btn.btn-primary#check_server_stat Update
-
 :javascript
   $(function() {
     $('.jobs_datatable').each( function() {
@@ -44,8 +41,10 @@
       });
       aoRunsTables.push(oTable);
     });
-
-    $('#check_server_stat').click( function() {
-      reload_runs_table();
+    $('.dataTables_length').each( function() {
+      $(this).append(
+        '<i class="icon-refresh" id="dataTables_refresh"></i>'
+      );
+      $(this).children('#dataTables_refresh').on('click', reload_runs_table);
     });
   });

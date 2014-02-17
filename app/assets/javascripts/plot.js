@@ -239,23 +239,26 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
 
     var xScale = d3.scale.linear().range([0, width]);
     var yScale = d3.scale.linear().range([height, 0]);
-    var colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"])
+    var colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
+    var colorScalePoint = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
+    var xlabel = dat.xlabel;
+    var ylabel = dat.ylabel;
 
     xScale.domain([
-      d3.min( dat.data, function(d) { return d[0];}),
-      d3.max( dat.data, function(d) { return d[0];})
+      d3.min( dat.data, function(d) { return d[0][xlabel];}),
+      d3.max( dat.data, function(d) { return d[0][xlabel];})
     ]).nice();
     yScale.domain([
-      d3.min( dat.data, function(d) { return d[1];}),
-      d3.max( dat.data, function(d) { return d[1];})
+      d3.min( dat.data, function(d) { return d[0][ylabel];}),
+      d3.max( dat.data, function(d) { return d[0][ylabel];})
     ]).nice();
-    colorScale.domain([
-      d3.min( dat.data, function(d) { return d[2];}),
-      d3.max( dat.data, function(d) { return d[2];})
-    ]).nice();
+    var result_min_val = d3.min( dat.data, function(d) { return d[1];});
+    var result_max_val = d3.max( dat.data, function(d) { return d[1];});
+    colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
+    colorScalePoint.domain( colorScale.domain() ).nice();
 
     function draw_color_map(g) {
-      var scale = d3.scale.linear().domain([0.0, 1.0]).range(colorScale.range());
+      var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(colorScale.range());
       g.append("text")
         .attr({x: 10.0, y: 20.0, dx: "0.1em", dy: "-0.4em"})
         .style("text-anchor", "begin")
@@ -273,13 +276,40 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
       g.append("text")
         .attr({x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
         .style("text-anchor", "begin")
-        .text( colorScale.domain()[1] );
+        .text( colorScale.domain()[2] );
       g.append("text")
         .attr({x: 30.0, y: 140.0, dx: "0.2em", dy: "-0.3em"})
         .style("text-anchor", "begin")
         .text( colorScale.domain()[0] );
     }
     draw_color_map(colorMapG);
+
+    function draw_voronoi_heat_map() {
+      // add noise to coordinates of vertices in order to prevent hang-up.
+      // hanging-up sometimes happen when duplicated points are included.
+      var vertices = dat.data.map(function(v) {
+        return [
+          xScale(v[0][xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
+          yScale(v[0][ylabel]) + Math.random() * 1.0 - 0.5
+        ];
+      });
+      var voronoi = d3.geom.voronoi()
+        .clipExtent([[0, 0], [width, height]]);
+      var path = svg.append("g").selectAll("path")
+        .data(voronoi(vertices));
+      path.enter().append("path")
+        .style("fill", function(d, i) { return colorScale(dat.data[i][1]);})
+        .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
+        .style("fill-opacity", 0.7)
+        .style("stroke", "none");
+    }
+    try {
+      draw_voronoi_heat_map();
+      // Voronoi division fails when duplicate points are included.
+      // In that case, just ignore creating voronoi heatmap and continue plotting.
+    } catch(e) {
+      console.log(e);
+    }
 
     function draw_axes(xlabel, ylabel) {
       // X-Axis
@@ -312,32 +342,12 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
     }
     draw_axes(dat.xlabel, dat.ylabel);
 
-    function draw_voronoi_heat_map() {
-      var vertices = dat.data.map(function(v) { return [xScale(v[0]), yScale(v[1])]; })
-      var voronoi = d3.geom.voronoi()
-        .clipExtent([[0, 0], [width, height]]);
-      var path = svg.append("g").selectAll("path")
-        .data(voronoi(vertices));
-      path.enter().append("path")
-        .style("fill", function(d, i) { return colorScale(dat.data[i][2]);})
-        .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
-        .style("fill-opacity", 0.7)
-        .style("stroke", "none");
-    }
-    try {
-      draw_voronoi_heat_map();
-      // Voronoi division fails when duplicate points are included.
-      // In that case, just ignore creating voronoi heatmap and continue plotting.
-    } catch(e) {
-      console.log(e);
-    }
-
     function draw_points() {
       var tooltip = d3.select("#plot-tooltip");
       var mapped = dat.data.map(function(v) {
         return {
-          x: v[0], y: v[1],
-          average: v[2], error: v[3], psid: v[4]
+          x: v[0][xlabel], y: v[0][ylabel],
+          average: v[1], error: v[2], psid: v[3]
         };
       });
       var point = svg.selectAll("circle")
@@ -345,7 +355,7 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
       point.append("circle")
         .attr("cx", function(d) { return xScale(d.x);})
         .attr("cy", function(d) { return yScale(d.y);})
-        .style("fill", function(d) { return colorScale(d.average);})
+        .style("fill", function(d) { return colorScalePoint(d.average);})
         .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;})
         .on("mouseover", function(d) {
           tooltip.transition()
