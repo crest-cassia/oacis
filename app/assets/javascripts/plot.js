@@ -255,7 +255,7 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
     var result_min_val = d3.min( dat.data, function(d) { return d[1];});
     var result_max_val = d3.max( dat.data, function(d) { return d[1];});
     colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
-    colorScalePoint.domain( colorScale.domain() );
+    colorScalePoint.domain( colorScale.domain() ).nice();
 
     function draw_color_map(g) {
       var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(colorScale.range());

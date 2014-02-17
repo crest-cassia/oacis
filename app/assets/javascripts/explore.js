@@ -161,11 +161,15 @@ function update_explorer(current_ps_id) {
     var yDomain = get_current_range_for(ylabel);
     yScale.domain(yDomain).nice();
 
-    var colorScale;
+    var colorScale, colorScaleVoronoi;
     var result_domain = $('select#result option:selected').data("domain");
     if( result_domain ) {
-      colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"]);
-      colorScale.domain(result_domain).nice();
+      colorScale = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
+      colorScaleVoronoi = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
+      var middle = (result_domain[0] + result_domain[1]) / 2.0;
+      var domain = [ result_domain[0], middle, result_domain[1] ];
+      colorScale.domain(domain).nice();
+      colorScaleVoronoi.domain( colorScale.domain() ).nice();
     }
     window.color_scale = colorScale;
 
@@ -189,7 +193,7 @@ function update_explorer(current_ps_id) {
     find_current_parameter_set();
 
     function draw_color_map(g) {
-      var scale = d3.scale.linear().domain([0.0, 1.0]).range(colorScale.range());
+      var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(colorScaleVoronoi.range());
       g.append("text")
         .attr({x: 10.0, y: 20.0, dx: "0.1em", dy: "-0.4em"})
         .style("text-anchor", "begin")
@@ -270,7 +274,7 @@ function update_explorer(current_ps_id) {
         .selectAll("path")
         .data(voronoi(vertices));
       path.enter().append("path")
-        .style("fill", function(d, i) { return colorScale(dat.data[i][1]);})
+        .style("fill", function(d, i) { return colorScaleVoronoi(dat.data[i][1]);})
         .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
         .style("fill-opacity", 0.7)
         .style("stroke", "none");
