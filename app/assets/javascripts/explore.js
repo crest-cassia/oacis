@@ -161,11 +161,15 @@ function update_explorer(current_ps_id) {
     var yDomain = get_current_range_for(ylabel);
     yScale.domain(yDomain).nice();
 
-    var colorScale;
+    var colorScale, colorScaleVoronoi;
     var result_domain = $('select#result option:selected').data("domain");
     if( result_domain ) {
-      colorScale = d3.scale.linear().range(["#0041ff", "#ff2800"]);
-      colorScale.domain(result_domain).nice();
+      colorScale = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
+      colorScaleVoronoi = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
+      var middle = (result_domain[0] + result_domain[1]) / 2.0;
+      var domain = [ result_domain[0], middle, result_domain[1] ];
+      colorScale.domain(domain).nice();
+      colorScaleVoronoi.domain( colorScale.domain() ).nice();
     }
     window.color_scale = colorScale;
 
@@ -189,7 +193,7 @@ function update_explorer(current_ps_id) {
     find_current_parameter_set();
 
     function draw_color_map(g) {
-      var scale = d3.scale.linear().domain([0.0, 1.0]).range(colorScale.range());
+      var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(colorScaleVoronoi.range());
       g.append("text")
         .attr({x: 10.0, y: 20.0, dx: "0.1em", dy: "-0.4em"})
         .style("text-anchor", "begin")
@@ -207,7 +211,7 @@ function update_explorer(current_ps_id) {
       g.append("text")
         .attr({x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
         .style("text-anchor", "begin")
-        .text( colorScale.domain()[1] );
+        .text( colorScale.domain()[2] );
       g.append("text")
         .attr({x: 30.0, y: 140.0, dx: "0.2em", dy: "-0.3em"})
         .style("text-anchor", "begin")
@@ -216,6 +220,39 @@ function update_explorer(current_ps_id) {
     colorMapG.selectAll("text").remove();
     colorMapG.selectAll("rect").remove();
     if( colorScale ) { draw_color_map(colorMapG); }
+
+    function draw_voronoi_heat_map() {
+      var xlabel = dat.xlabel;
+      var ylabel = dat.ylabel;
+
+      // add noise to coordinates of vertices in order to prevent hang-up.
+      // hanging-up sometimes happen when duplicated points are included.
+      var vertices = dat.data.map(function(v) {
+        return [
+          xScale(v[0][xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
+          yScale(v[0][ylabel]) + Math.random() * 1.0 - 0.5
+        ];
+      });
+      var voronoi = d3.geom.voronoi()
+        .clipExtent([[0, 0], [width, height]]);
+      var path = svg.append("g")
+        .attr("id", "voronoi-group")
+        .selectAll("path")
+        .data(voronoi(vertices));
+      path.enter().append("path")
+        .style("fill", function(d, i) { return colorScaleVoronoi(dat.data[i][1]);})
+        .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
+        .style("fill-opacity", 0.7)
+        .style("stroke", "none");
+    }
+    try {
+      d3.select("g#voronoi-group").remove();
+      if( colorScale ) { draw_voronoi_heat_map(); }
+      // Voronoi division fails when duplicate points are included.
+      // In that case, just ignore creating voronoi heatmap and continue plotting.
+    } catch(e) {
+      console.log(e);
+    }
 
     function draw_axes(xlabel, ylabel) {
       d3.selectAll("g.axis").remove();
@@ -250,39 +287,6 @@ function update_explorer(current_ps_id) {
           .text(ylabel);
     }
     draw_axes(dat.xlabel, dat.ylabel);
-
-    function draw_voronoi_heat_map() {
-      var xlabel = dat.xlabel;
-      var ylabel = dat.ylabel;
-
-      // add noise to coordinates of vertices in order to prevent hang-up.
-      // hanging-up sometimes happen when duplicated points are included.
-      var vertices = dat.data.map(function(v) {
-        return [
-          xScale(v[0][xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
-          yScale(v[0][ylabel]) + Math.random() * 1.0 - 0.5
-        ];
-      });
-      var voronoi = d3.geom.voronoi()
-        .clipExtent([[0, 0], [width, height]]);
-      var path = svg.append("g")
-        .attr("id", "voronoi-group")
-        .selectAll("path")
-        .data(voronoi(vertices));
-      path.enter().append("path")
-        .style("fill", function(d, i) { return colorScale(dat.data[i][1]);})
-        .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
-        .style("fill-opacity", 0.7)
-        .style("stroke", "none");
-    }
-    try {
-      d3.select("g#voronoi-group").remove();
-      if( colorScale ) { draw_voronoi_heat_map(); }
-      // Voronoi division fails when duplicate points are included.
-      // In that case, just ignore creating voronoi heatmap and continue plotting.
-    } catch(e) {
-      console.log(e);
-    }
 
     function draw_points() {
       var tooltip = d3.select("#plot-tooltip");
