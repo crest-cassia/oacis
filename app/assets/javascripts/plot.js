@@ -284,6 +284,33 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
     }
     draw_color_map(colorMapG);
 
+    function draw_voronoi_heat_map() {
+      // add noise to coordinates of vertices in order to prevent hang-up.
+      // hanging-up sometimes happen when duplicated points are included.
+      var vertices = dat.data.map(function(v) {
+        return [
+          xScale(v[0][xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
+          yScale(v[0][ylabel]) + Math.random() * 1.0 - 0.5
+        ];
+      });
+      var voronoi = d3.geom.voronoi()
+        .clipExtent([[0, 0], [width, height]]);
+      var path = svg.append("g").selectAll("path")
+        .data(voronoi(vertices));
+      path.enter().append("path")
+        .style("fill", function(d, i) { return colorScale(dat.data[i][1]);})
+        .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
+        .style("fill-opacity", 0.7)
+        .style("stroke", "none");
+    }
+    try {
+      draw_voronoi_heat_map();
+      // Voronoi division fails when duplicate points are included.
+      // In that case, just ignore creating voronoi heatmap and continue plotting.
+    } catch(e) {
+      console.log(e);
+    }
+
     function draw_axes(xlabel, ylabel) {
       // X-Axis
       var xAxis = d3.svg.axis()
@@ -314,33 +341,6 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
           .text(ylabel);
     }
     draw_axes(dat.xlabel, dat.ylabel);
-
-    function draw_voronoi_heat_map() {
-      // add noise to coordinates of vertices in order to prevent hang-up.
-      // hanging-up sometimes happen when duplicated points are included.
-      var vertices = dat.data.map(function(v) {
-        return [
-          xScale(v[0][xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
-          yScale(v[0][ylabel]) + Math.random() * 1.0 - 0.5
-        ];
-      });
-      var voronoi = d3.geom.voronoi()
-        .clipExtent([[0, 0], [width, height]]);
-      var path = svg.append("g").selectAll("path")
-        .data(voronoi(vertices));
-      path.enter().append("path")
-        .style("fill", function(d, i) { return colorScale(dat.data[i][1]);})
-        .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
-        .style("fill-opacity", 0.7)
-        .style("stroke", "none");
-    }
-    try {
-      draw_voronoi_heat_map();
-      // Voronoi division fails when duplicate points are included.
-      // In that case, just ignore creating voronoi heatmap and continue plotting.
-    } catch(e) {
-      console.log(e);
-    }
 
     function draw_points() {
       var tooltip = d3.select("#plot-tooltip");
