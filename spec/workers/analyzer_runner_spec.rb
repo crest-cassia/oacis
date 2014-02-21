@@ -183,7 +183,15 @@ describe AnalyzerRunner do
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
         status[:result].should eq({"result"=>"0.12345"})
       end
-    end
+ 
+      it "updates result of Analysis when result is a Array" do
+        result = [1,2,3]
+        output_json = File.join(@work_dir, '_output.json')
+        File.open(output_json, 'w') {|io| io.puts result.to_json}
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:result].should eq({"result"=>[1,2,3]})
+      end
+   end
 
     describe ".parse_output_json" do
 
