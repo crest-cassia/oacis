@@ -168,20 +168,28 @@ describe AnalyzerRunner do
         status[:result]["yyy"].should eq(12345)
       end
 
-      it "updates result of Analysis when result is a numeric value" do
+      it "updates result of Analysis when result is a Float" do
         result = 0.12345
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts result}
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        status[:result].should eq({"result"=>0.12345})
+        status[:result].should eq({"result"=>result})
       end
 
-      it "updates result of Analysis when result is a string value" do
+      it "updates result of Analysis when result is a Boolean" do
+        result = false
+        output_json = File.join(@work_dir, '_output.json')
+        File.open(output_json, 'w') {|io| io.puts result.to_s}
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:result].should eq({"result"=>result})
+      end
+
+      it "updates result of Analysis when result is a String" do
         result = "0.12345"
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts "\"#{result}\""}
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        status[:result].should eq({"result"=>"0.12345"})
+        status[:result].should eq({"result"=>result})
       end
  
       it "updates result of Analysis when result is a Array" do
@@ -189,7 +197,7 @@ describe AnalyzerRunner do
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts result.to_json}
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        status[:result].should eq({"result"=>[1,2,3]})
+        status[:result].should eq({"result"=>result})
       end
    end
 
