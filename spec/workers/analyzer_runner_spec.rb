@@ -167,6 +167,22 @@ describe AnalyzerRunner do
         status[:result]["xxx"].should eq(0.1)
         status[:result]["yyy"].should eq(12345)
       end
+
+      it "updates result of Analysis when result is a numeric value" do
+        result = 0.12345
+        output_json = File.join(@work_dir, '_output.json')
+        File.open(output_json, 'w') {|io| io.puts result}
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:result].should eq({"result"=>0.12345})
+      end
+
+      it "updates result of Analysis when result is a string value" do
+        result = "0.12345"
+        output_json = File.join(@work_dir, '_output.json')
+        File.open(output_json, 'w') {|io| io.puts "\"#{result}\""}
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:result].should eq({"result"=>"0.12345"})
+      end
     end
 
     describe ".parse_output_json" do
