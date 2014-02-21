@@ -140,25 +140,6 @@ EOS
       }
     end
 
-    it "expand results which is not a Hash but a Array" do
-      @sim.command = "echo '[1,2,3]' > _output.json"
-      @sim.support_input_json = true
-      @sim.save!
-      run_test_script_in_temp_dir
-      Dir.chdir(@temp_dir) {
-        result_file = "#{@run.id}.tar.bz2"
-        FileUtils.mv( result_file, @run.dir.join('..') )
-        JobScriptUtil.expand_result_file_and_update_run(@run)
-
-        # expand result properly
-        File.exist?(@run.dir.join('_output.json')).should be_true
-
-        # parse status
-        @run.reload
-        @run.result.should eq Hash["result",[1,2,3]]
-      }
-    end
-
     it "expand results which is not a Hash but a Float" do
       @sim.command = "echo '0.12345' > _output.json"
       @sim.support_input_json = true
@@ -175,6 +156,63 @@ EOS
         # parse status
         @run.reload
         @run.result.should eq Hash["result",0.12345]
+      }
+    end
+
+    it "expand results which is not a Hash but a Boolean" do
+      @sim.command = "echo 'false' > _output.json"
+      @sim.support_input_json = true
+      @sim.save!
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        FileUtils.mv( result_file, @run.dir.join('..') )
+        JobScriptUtil.expand_result_file_and_update_run(@run)
+
+        # expand result properly
+        File.exist?(@run.dir.join('_output.json')).should be_true
+
+        # parse status
+        @run.reload
+        @run.result.should eq Hash["result",false]
+      }
+    end
+
+    it "expand results which is not a Hash but a String" do
+      @sim.command = "echo '\"12345\"' > _output.json"
+      @sim.support_input_json = true
+      @sim.save!
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        FileUtils.mv( result_file, @run.dir.join('..') )
+        JobScriptUtil.expand_result_file_and_update_run(@run)
+
+        # expand result properly
+        File.exist?(@run.dir.join('_output.json')).should be_true
+
+        # parse status
+        @run.reload
+        @run.result.should eq Hash["result","12345"]
+      }
+    end
+
+    it "expand results which is not a Hash but a Array" do
+      @sim.command = "echo '[1,2,3]' > _output.json"
+      @sim.support_input_json = true
+      @sim.save!
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        FileUtils.mv( result_file, @run.dir.join('..') )
+        JobScriptUtil.expand_result_file_and_update_run(@run)
+
+        # expand result properly
+        File.exist?(@run.dir.join('_output.json')).should be_true
+
+        # parse status
+        @run.reload
+        @run.result.should eq Hash["result",[1,2,3]]
       }
     end
 
