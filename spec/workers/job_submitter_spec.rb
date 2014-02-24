@@ -34,7 +34,7 @@ describe JobSubmitter do
       }.to_not raise_error
     end
 
-    it "enqueus jobs to remote host in order of the priority on the run" do
+    it "enqueus jobs to remote host in order of priorities on runs" do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @sim.executable_on.push @host
       @sim.save!
