@@ -9,6 +9,10 @@
     .controls
       = f.text_field(:omp_threads)
 .control-group
+  = f.label(:priority, 'Priorities of Runs', class: 'control-label')
+  .controls
+    = f.select(:priority, options_for_select(Run::PRIORITY_ORDER, selected: Run::PRIORITY_ORDER[1]))
+.control-group
   = f.label(:submitted_to, class: 'control-label')
   .controls
     - host_names = run.simulator.executable_on.map {|h| [h.name, h.id.to_s]}
