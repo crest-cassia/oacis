@@ -20,7 +20,7 @@ class Run
   field :job_script, type: String
   field :priority, type: Symbol, default: :normal
   index({ status: 1 }, { name: "run_status_index" })
-  index({ priority: 1 }, { name: "run_status_index" })
+  index({ priority: 1 }, { name: "run_priority_index" })
   belongs_to :parameter_set, autosave: false
   belongs_to :simulator, autosave: false  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy
@@ -46,7 +46,7 @@ class Run
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :submitted_to, :priority
+  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to
 
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   before_save :remove_runs_status_count_cache, :if => :status_changed?
