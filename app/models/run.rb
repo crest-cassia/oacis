@@ -18,6 +18,7 @@ class Run
   field :host_parameters, type: Hash, default: {}
   field :job_id, type: String
   field :job_script, type: String
+  field :priority, type: Symbol, default: :normal
   index({ status: 1 }, { name: "run_status_index" })
   belongs_to :parameter_set, autosave: false
   belongs_to :simulator, autosave: false  # for caching. do not edit this field explicitly
@@ -30,6 +31,8 @@ class Run
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
+  validates :priority, presence: true,
+                     inclusion: {in: [:low,:normal,:high]}
   validate :host_parameters_given, on: :create
   validate :host_parameters_format, on: :create
   validate :mpi_procs_is_in_range, on: :create
