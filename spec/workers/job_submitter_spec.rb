@@ -33,5 +33,17 @@ describe JobSubmitter do
         JobSubmitter.perform(@logger)
       }.to_not raise_error
     end
+
+    it "enqueus jobs to remote host in order of the priority on the run" do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @sim.executable_on.push @host
+      @sim.save!
+      run = @sim.parameter_sets.first.runs.create(priority: :high, submitted_to: @host.to_param)
+      run.save!
+      expect {
+        JobSubmitter.perform(@logger)
+      }.to change { Run.where(status: :submitted, priority: :high).count }.by(1)
+      Run.where(status: :submitted, priority: :normal).count.should eq 0
+    end
   end
 end

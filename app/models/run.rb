@@ -20,10 +20,13 @@ class Run
   field :job_script, type: String
   field :priority, type: Symbol, default: :normal
   index({ status: 1 }, { name: "run_status_index" })
+  index({ priority: 1 }, { name: "run_status_index" })
   belongs_to :parameter_set, autosave: false
   belongs_to :simulator, autosave: false  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy
   belongs_to :submitted_to, class_name: "Host"
+
+  PRIORITY_ORDER = [:high, :normal, :low]
 
   # validations
   validates :status, presence: true,
@@ -32,7 +35,7 @@ class Run
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :priority, presence: true,
-                     inclusion: {in: [:low,:normal,:high]}
+                     inclusion: {in: PRIORITY_ORDER}
   validate :host_parameters_given, on: :create
   validate :host_parameters_format, on: :create
   validate :mpi_procs_is_in_range, on: :create
