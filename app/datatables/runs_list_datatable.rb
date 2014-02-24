@@ -4,7 +4,7 @@ class RunsListDatatable
              '<th>cpu_time</th>', '<th>real_time</th>',
              '<th>MPI</th>', '<th>OMP</th>', '<th>version</th>',
              '<th>created_at</th>', '<th>finished_at</th>', '<th style="min-width: 18px; width: 1%;"></th>']
-  SORT_BY = ["id", "status", "submitted_to", "priority", "job_id", "cpu_time",
+  SORT_BY = ["id", "status", "submitted_to", "index_of_priority", "job_id", "cpu_time",
              "real_time", "mpi_procs", "omp_threads",
              "simulator_version", "created_at", "finished_at", "id"]
 

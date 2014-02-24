@@ -15,5 +15,12 @@ namespace :db do
       end
       progressbar.increment
     end
+
+    q = Run.where(index_of_priority: nil)
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |run|
+      run.save
+      progressbar.increment
+    end
   end
 end
