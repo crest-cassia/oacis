@@ -43,7 +43,7 @@ class Run
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :submitted_to
+  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :submitted_to, :priority
 
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   before_save :remove_runs_status_count_cache, :if => :status_changed?
