@@ -37,8 +37,10 @@ class ParameterSetsController < ApplicationController
       if params[:v].any? {|key,val| val.include?(',') }
         created = create_multiple(simulator, params[:v].dup)
         num_created = created.size
-        created.each do |ps|
-          num_runs.times {|i| ps.runs.create(params[:run]) }
+        num_runs.times do |i|
+          created.each do |ps|
+            ps.runs.create(params[:run])
+          end
         end
         if num_created >= 1
           @param_set = created.first
