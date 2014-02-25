@@ -3,6 +3,7 @@ class ParameterSet
   include Mongoid::Timestamps
   field :v, type: Hash
   field :runs_status_count_cache, type: Hash
+  field :order_of_progress_rate, type: Integer
   index({ v: 1 }, { name: "v_index" })
   belongs_to :simulator, autosave: false
   has_many :runs, dependent: :destroy
@@ -60,6 +61,10 @@ class ParameterSet
     # disable automatic time-stamp update when updating cache
     # See http://mongoid.org/en/mongoid/docs/extras.html#timestamps
     timeless.update_attribute(:runs_status_count_cache, counts)
+    total = counts.inject(0) {|sum, v| sum += v[1]}
+    rate = 0
+    rate = - (counts[:finished]*1000000/total).to_i - (counts[:running]*10000/total).to_i - (counts[:failed]*100/total).to_i  if total > 0
+    timeless.update_attribute(:order_of_progress_rate, rate)
     counts
   end
 

@@ -30,7 +30,7 @@ class ParameterSetsListDatatable
 
 private
   def sort_by
-    ["id", "id", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
+    ["id", "order_of_progress_rate", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
   end
 
   def data
