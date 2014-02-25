@@ -18,8 +18,7 @@ class Run
   field :host_parameters, type: Hash, default: {}
   field :job_id, type: String
   field :job_script, type: String
-  field :priority, type: Symbol, default: :normal
-  field :index_of_priority, type: Integer
+  field :priority, type: Integer, default: 1
   index({ status: 1 }, { name: "run_status_index" })
   index({ priority: 1 }, { name: "run_priority_index" })
   belongs_to :parameter_set, autosave: false
@@ -27,7 +26,7 @@ class Run
   has_many :analyses, as: :analyzable, dependent: :destroy
   belongs_to :submitted_to, class_name: "Host"
 
-  PRIORITY_ORDER = [:high, :normal, :low]
+  PRIORITY_ORDER = {0=>:high, 1=>:normal, 2=>:low}
 
   # validations
   validates :status, presence: true,
@@ -36,8 +35,7 @@ class Run
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :priority, presence: true,
-                     inclusion: {in: PRIORITY_ORDER}
-  validates :index_of_priority, presence: true
+                     inclusion: {in: PRIORITY_ORDER.keys}
   validate :host_parameters_given, on: :create
   validate :host_parameters_format, on: :create
   validate :mpi_procs_is_in_range, on: :create
@@ -50,7 +48,6 @@ class Run
 
   attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to
 
-  before_validation :set_index_of_priority
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   before_save :remove_runs_status_count_cache, :if => :status_changed?
   after_create :create_run_dir, :create_job_script_for_manual_submission
@@ -144,10 +141,6 @@ class Run
     FileUtils.rm(sh_path) if sh_path.exist?
     json_path = ResultDirectory.manual_submission_input_json_path(self)
     FileUtils.rm(json_path) if json_path.exist?
-  end
-
-  def set_index_of_priority
-    self.index_of_priority = Run::PRIORITY_ORDER.index(self.priority)
   end
 
   def set_simulator

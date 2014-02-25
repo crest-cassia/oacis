@@ -5,7 +5,7 @@ class JobSubmitter
       begin
         num = host.max_num_jobs - host.submitted_runs.count
         if num > 0
-          Run::PRIORITY_ORDER.each do |priority|
+          Run::PRIORITY_ORDER.keys.sort.each do |priority|
             runs = host.submittable_runs.where(priority: priority).limit(num)
             logger.info("submitting jobs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
             num -= runs.length
