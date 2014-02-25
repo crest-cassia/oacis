@@ -18,11 +18,15 @@ class Run
   field :host_parameters, type: Hash, default: {}
   field :job_id, type: String
   field :job_script, type: String
+  field :priority, type: Integer, default: 1
   index({ status: 1 }, { name: "run_status_index" })
+  index({ priority: 1 }, { name: "run_priority_index" })
   belongs_to :parameter_set, autosave: false
   belongs_to :simulator, autosave: false  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy
   belongs_to :submitted_to, class_name: "Host"
+
+  PRIORITY_ORDER = {0=>:high, 1=>:normal, 2=>:low}
 
   # validations
   validates :status, presence: true,
@@ -30,6 +34,8 @@ class Run
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
+  validates :priority, presence: true,
+                     inclusion: {in: PRIORITY_ORDER.keys}
   validate :host_parameters_given, on: :create
   validate :host_parameters_format, on: :create
   validate :mpi_procs_is_in_range, on: :create
@@ -40,7 +46,7 @@ class Run
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :submitted_to
+  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to
 
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   before_save :remove_runs_status_count_cache, :if => :status_changed?
