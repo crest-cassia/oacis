@@ -48,6 +48,7 @@ class AnalyzerRunner
           raise "Rc of the simulator is not 0, but #{$?.to_i}"
         end
         output[:result] = parse_output_json
+        output[:result] = {"result"=>parse_output_json} unless output[:result].is_a?(Hash)
         remove_inputs
       }
     }
@@ -81,7 +82,7 @@ class AnalyzerRunner
   def self.parse_output_json
     jpath = OUTPUT_JSON_FILENAME
     if File.exist?(jpath)
-      return JSON.parse(IO.read(jpath))
+      return JSON.load(File.open(jpath))
     else
       return nil
     end

@@ -108,6 +108,7 @@ EOS
 
       json_path = '_output.json'
       run.result = JSON.load(File.open(json_path)) if File.exist?(json_path)
+      run.result = {"result"=>run.result} unless run.result.is_a?(Hash)
       run.included_at = DateTime.now
       run.save!
     }
