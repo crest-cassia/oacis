@@ -42,7 +42,8 @@ class Host
     Errno::ENETUNREACH,
     SocketError,
     Net::SSH::Exception,
-    OpenSSL::PKey::RSAError
+    OpenSSL::PKey::RSAError,
+    Timeout::Error
   ]
 
   public
