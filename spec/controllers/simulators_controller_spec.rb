@@ -332,7 +332,8 @@ describe SimulatorsController do
                                     simulator: @simulator,
                                     query: {"L" => {"gte" => 5}})
 
-        get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 1, sSortDir_0: "desc", query_id: @query.id}, :format => :json
+        # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
+        get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 4, sSortDir_0: "desc", query_id: @query.id}, :format => :json
         @parsed_body = JSON.parse(response.body)
       end
 

@@ -283,9 +283,15 @@ describe ParameterSet do
       Run.should_receive(:collection).and_call_original
       prm.runs_status_count
       prm.runs_status_count_cache.should be_a(Hash)
+    end
 
-      Run.should_not_receive(:collection)
+    it "update progress_rate_cache field" do
+      prm = prepare_runs
+      prm.runs_status_count_cache.should be_nil
+
+      Run.should_receive(:collection).and_call_original
       prm.runs_status_count
+      prm.progress_rate_cache.should be_a(Integer)
     end
   end
 
