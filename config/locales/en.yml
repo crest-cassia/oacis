@@ -9,7 +9,7 @@ en:
         one: ! 'a year'
         other: ! '%{count}years'
       x_years:
-        one: ! '%a year'
+        one: ! 'a year'
         other: ! '%{count}years'
       about_x_months:
         one: ! 'a month'
