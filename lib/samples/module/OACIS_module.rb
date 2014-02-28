@@ -42,7 +42,7 @@ class OacisModule
   #override
   def dump_serialized_data
     output_file = "_output.json"
-    File.open(output_file, 'w') {|io| io.print oacis_module_data.to_json }
+    File.open(output_file, 'w') {|io| io.print module_data.to_json }
   end
 
   #override
@@ -108,26 +108,26 @@ class OacisModule
   end
 
   #for dump and restart
-  def oacis_module_data
-    @oacis_module_data ||= create_oacis_module_data
+  def module_data
+    @module_data ||= create_module_data
   end
 
   def create_module_data
     OacisModuleData.new
   end
 
-  def generate_runs(iteration)
+  def generate_runs_iteration(iteration)
     generated = []
     @ps_archive = []
 
     #adjust range of parameters
-    oacis_module_data.data["data_sets"][iteration].each_with_index do |data, i|
+    module_data.data["data_sets"][iteration].each_with_index do |data, i|
       data["input"].map!.with_index {|x, d| adjust_range_with_maneged_parameters(x, d)}
-      oacis_module_data.set_datasets(iteration, i, data)
+      module_data.set_datasets(iteration, i, data)
     end
 
     mp_table_keys = managed_parameters_table.map{|m| m["key"]}
-    oacis_module_data.data["data_sets"][iteration].map{|d| d["input"]}.each do |input|
+    module_data.data["data_sets"][iteration].map{|d| d["input"]}.each do |input|
       v = {}
       managed_parameters.each do |mpara|
         index = mp_table_keys.index(mpara["key"])
@@ -137,7 +137,7 @@ class OacisModule
           v[mpara["key"]] = mpara["default"]
         end
       end
-      ps = target_simulator.parameter_sets.only(:runs).hint(v: 1).find_or_create_by(v: v)
+      ps = target_simulator.parameter_sets.find_or_create_by(v: v)
       @ps_archive << ps.id
       if ps.runs.count == 0
         run = ps.runs.build
@@ -149,8 +149,8 @@ class OacisModule
     generated
   end
 
-  def evaluate_runs(iteration)
-    data_sets = oacis_module_data.data["data_sets"][iteration]
+  def evaluate_runs_iteration(iteration)
+    data_sets = module_data.data["data_sets"][iteration]
     results = Analysis.where(analyzer_id: target_analyzer.to_param, status: :finished).in(parameter_set_id: @ps_archive).only(:result, :parameter_set)
               .map {|anl| {anl.parameter_set_id => get_target_fields(anl.result)}}.inject({}) {|h, a| h.merge!(a)}
 

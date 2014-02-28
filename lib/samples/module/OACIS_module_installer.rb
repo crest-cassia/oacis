@@ -28,6 +28,7 @@ class TermColor
 end
 
 class Selector
+
   def initialize(stages, initial_data)
     @stages=stages
     @stage_counter = 0
@@ -66,10 +67,12 @@ class Selector
 end
 
 class OptimizerSelect
-  def init(target_sim)
-    @steps=["init","set_name","set_type","select_analyzer","select_managed_parameters","set_managed_parameters","finish"]
-    @sim=target_sim[0]
-    @host=target_sim[1]
+
+  def init(data)
+    @data = data
+    @steps=["init","set_name","select_analyzer","select_managed_parameters","set_managed_parameters","finish"]
+    @sim=@data["_target_simulator"]
+    @host=@data["_target_host"]
     @name=nil
     @anz=nil
     @managed_params=[]
@@ -83,8 +86,6 @@ class OptimizerSelect
     case @steps[@step_counter]
       when "set_name"
         set_name(str)
-      when "set_type"
-        set_type(str)
       when "select_analyzer"
         select_analyzer(str)
       when "select_managed_parameters"
@@ -102,11 +103,11 @@ class OptimizerSelect
     opt = Simulator.new
     opt.name = @name
     opt.parameter_definitions = opt_parameter_definitions
-    opt.command = "ruby -r "+Rails.root.to_s+"/config/environment "+Rails.root.to_s+"/lib/samples/module/optimizer/run_optimizer.rb"
+    opt.command = "ruby -r "+Rails.root.to_s+"/config/environment #{@data["_module_runnner_path"]}"
     opt.support_input_json = true
     opt.support_mpi = false
     opt.support_omp = false
-    opt.description = "A sample optimizer."
+    opt.description = "### OacisModule\nThis module is installed by [OACIS\\_module\\_installer](/oacis_document/index.html)"
     b.push(opt.save)
     host = Host.where({name: "localhost"}).first
     if host.present?
@@ -115,11 +116,11 @@ class OptimizerSelect
     end
     if b.all?
       TermColor.green
-      puts "New optimizer is installed."
+      puts "New module is installed."
       TermColor.reset
     else
       TermColor.red
-      puts "New optimizer is not installed."
+      puts "New module is not installed."
       TermColor.reset
     end
     return @managed_params
@@ -128,7 +129,7 @@ class OptimizerSelect
   private
   def set_name(str)
     @name=str
-    puts "new optimizer name is "+TermColor.blue_i+"\""+@name+"\""+TermColor.reset_i
+    puts "new module name is "+TermColor.blue_i+"\""+@name+"\""+TermColor.reset_i
   end
 
   def select_analyzer(str)
@@ -181,7 +182,7 @@ class OptimizerSelect
     TermColor.green
     puts "install stage: "+@steps[@step_counter+1]
     TermColor.reset
-    puts "Input optimizer name:"
+    puts "Input module name:"
   end
 
   def analyzer_list
@@ -212,7 +213,7 @@ class OptimizerSelect
 
   def show_result
     puts ""
-    puts "Optimizer name is "+TermColor.blue_i+"\""+@name+"\""+TermColor.reset_i
+    puts "Module name is "+TermColor.blue_i+"\""+@name+"\""+TermColor.reset_i
     puts "Target simulator is "+TermColor.blue_i+"\""+@sim.name+"\""+TermColor.reset_i
     puts "Target analyzer is "+TermColor.blue_i+"\""+@anz.name+"\""+TermColor.reset_i
     puts "Managed parameter(s) is(are)"
@@ -237,7 +238,7 @@ class OptimizerSelect
   end
 
   def opt_parameter_definitions
-    a = @module_paramater_definitions
+    a = OacisModule.paramater_definitions(@sim, @data["_target_module"].definition)
     pd = @sim.parameter_definitions.build
     pd["key"] = "_managed_parameters"
     pd["type"] = "String"
@@ -257,9 +258,10 @@ class OptimizerSelect
 end
 
 class SimulatorSelect
-  def init(target_sims)
+  def init(data)
+    @data = data
     @steps=["init","select_simulator","select_host","finish"]
-    @target_sims=target_sims
+    @target_sims=data["_target_simulators"]
     @sim=nil
     @step_counter=0
     message
@@ -281,7 +283,7 @@ class SimulatorSelect
   end
 
   def finalize
-    return [@sim,@host]
+    return @data.merge!({"_target_simulator"=>@sim, "_target_host"=>@host})
   end
 
   private
@@ -358,10 +360,18 @@ class SimulatorSelect
 end
 
 def target_simulators
-  if $target_simulators==nil
-    $target_simulators=Simulator.all.select {|sim| sim.analyzers.where(type: :on_run).count > 0}
-  end
-  $target_simulators
+  @target_simulators ||= Simulator.all.select {|sim| sim.analyzers.where(type: :on_run).count > 0}
+end
+
+def set_target_module(module_path)
+  puts "load #{module_path}"
+  load "#{module_path}"
+  puts "create #{module_path.basename.to_s.sub(/\.rb$/){""}.split('_').map {|s| s.capitalize }.inject(&:+)} class"
+  @target_module = Kernel.const_get(module_path.basename.to_s.sub(/\.rb$/){""}.split('_').map {|s| s.capitalize }.inject(&:+))
+end
+
+def target_module
+  @target_module
 end
 
 TermColor.green
@@ -377,7 +387,8 @@ puts " exit (discard settings and exit.)"
 puts ""
 TermColor.reset
 
-Class OacisModuleInstaller < Thor
+class OacisModuleInstaller < Thor
+
   desc 'install', "show_host"
   method_option :file,
     type:     :string,
@@ -385,9 +396,13 @@ Class OacisModuleInstaller < Thor
     desc:     'install file',
     required: true
   def install
-    @module_parameter_definitions = PsoModule.paramater_definitions(@sim)
-    selector = Selector.new([SimulatorSelect.new,OptimizerSelect.new],target_simulators)
+    module_path = Pathname(options[:file])
+    raise "No such file #{module_path}" unless File.exist?(module_path)
+    set_target_module(module_path)
+    selector = Selector.new([SimulatorSelect.new,OptimizerSelect.new],{"_target_simulators"=>target_simulators, "_target_module"=>target_module, "_module_runnner_path"=>Pathname("new_optimizer/pso_runner.rb").expand_path(".")})
     selector.run
   end
 end
+
+OacisModuleInstaller.start(ARGV)
 

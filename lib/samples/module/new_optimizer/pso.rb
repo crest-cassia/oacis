@@ -2,23 +2,7 @@ require 'json'
 require_relative '../OACIS_module.rb'
 require_relative '../OACIS_module_data.rb'
 
-class PsoModule < OacisModule
-
-  def self.fitnessfunction(a)
-    [a.inject(0.0){|sum, n| sum + n*n }]
-  end
-
-  def self.fitnessfunction_definition
-    h={}
-    h["dimension"]=2
-    h["range"]=[]
-    h["type"] = []
-    h["dimension"].times do |i|
-      h["range"] << [-10,10]
-      h["type"] << "Float"
-    end
-    h
-  end
+class Pso < OacisModule
 
   def self.definition
     h = {}
@@ -42,25 +26,16 @@ class PsoModule < OacisModule
     @status = {}
     @status["iteration"]=0
     @status["rnd_algorithm"]=@prng.marshal_dump.to_json
-    @opt_data = optimizer_data
-
-    @fitnessfunction_definition = PsoModule.fitnessfunction_definition
+    @opt_data = module_data
   end
 
   #override
-  def create_optimizer_data #this data is written in _output.json and imported to DB
+  def create_module_data #this data is written in _output.json and imported to DB
     data = PsoOptimizerData.new
     data.data["definition"]=@pso_definition
     @status["rnd_algorithm"]=@prng.marshal_dump.to_json
     data.data["status"]=@status
     data
-  end
-
-  #override
-  def self.paramater_definitions(sim)
-    definition = PsoModule.definition
-    definition["_optimizer_type"]="PSO" # add _optimizer_type_field for Optimizer Module
-    Optimizer.paramater_definitions(sim, definition)
   end
 
   private
@@ -150,12 +125,12 @@ class PsoModule < OacisModule
   #override
   def generate_runs #define generate_runs afeter update_particle_positions
     update_particle_positions
-    generate_runs(@status["iteration"])
+    generate_runs_iteration(@status["iteration"])
   end
 
   #override
   def evaluate_runs
-    evaluate_runs(@status["iteration"])
+    evaluate_runs_iteration(@status["iteration"])
     update_status
  end
 
