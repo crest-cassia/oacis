@@ -28,4 +28,30 @@ class OacisModuleData
       get_datasets(iteration, index)[key]=val
     end
   end
+
+  def get_input(iteration, index)
+    get_datasets(iteration, index)["input"]
+  end
+
+  def set_input(iteration, index, val)
+    raise "val must be a Array" unless val.is_a?(Array)
+    a = get_input(iteration, index)
+    h = get_datasets(iteration, index)
+    val.each_with_index do |v, d|
+      a[d] = v
+      h["input"][d] = v
+    end
+  end
+
+  def get_output(iteration, index)
+    get_datasets(iteration, index)["output"]
+  end
+
+  def set_output(iteration, index, val)
+    raise "val must be a Array" unless val.is_a?(Array)
+    a = get_output(iteration, index)
+    val.each_with_index do |v, i|
+      a[i] = v
+    end
+  end
 end

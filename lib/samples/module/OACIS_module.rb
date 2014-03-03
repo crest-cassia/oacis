@@ -4,9 +4,23 @@ require_relative 'OACIS_module_data.rb'
 
 class OacisModule
 
-  def initialize(data)
-    @input_data = data
+  def initialize(_input_data)
+    _input_data.keys.each do |key|
+      _input_data[key] = JSON.parse(_input_data[key]) if JSON.is_json?(_input_data[key]) # Array or Hash data is stored with json format
+    end
+    @input_data = _input_data
     raise "Target simulator is missing." if target_simulator.blank?
+    create_or_restore_module_data
+  end
+
+  def create_or_restore_module_data
+    module_data.data["_input_data"]=@input_data
+    module_data.data["_status"]={}
+    if File.exists?("_output.json")
+      module_data.set_data(JSON.load(File.open("_output.json")))
+    else
+      module_data.data["_status"]["iteration"]=@num_iterations
+    end
   end
 
   def self.paramater_definitions(sim, v)
@@ -31,18 +45,18 @@ class OacisModule
   private
   #override
   def generate_runs
-    raise "IMPLEMENT ME"
+    generate_runs_iteration(@num_iterations)
   end
 
   #override
   def evaluate_runs
-    raise "IMPLEMENT ME"
+    evaluate_runs_iteration(@num_iterations)
   end
 
   #override
   def dump_serialized_data
     output_file = "_output.json"
-    File.open(output_file, 'w') {|io| io.print module_data.to_json }
+    File.open(output_file, 'w') {|io| io.print module_data.data.to_json }
   end
 
   #override
@@ -107,7 +121,7 @@ class OacisModule
     x
   end
 
-  #for dump and restart
+  # this data is written in _output.json and imported to DB
   def module_data
     @module_data ||= create_module_data
   end
@@ -119,6 +133,8 @@ class OacisModule
   def generate_runs_iteration(iteration)
     generated = []
     @ps_archive = []
+
+    raise "No generated runs in iteration #{@num_iterations}" if module_data.data["data_sets"][iteration].length == 0
 
     #adjust range of parameters
     module_data.data["data_sets"][iteration].each_with_index do |data, i|
