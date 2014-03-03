@@ -103,7 +103,7 @@ class OptimizerSelect
     opt = Simulator.new
     opt.name = @name
     opt.parameter_definitions = opt_parameter_definitions
-    opt.command = "ruby -r "+Rails.root.to_s+"/config/environment #{@data["_module_runnner_path"]}"
+    opt.command = "ruby -r "+Rails.root.to_s+"/config/environment #{@data["_module_runner_path"]}"
     opt.support_input_json = true
     opt.support_mpi = false
     opt.support_omp = false
@@ -366,12 +366,45 @@ end
 def set_target_module(module_path)
   puts "load #{module_path}"
   load "#{module_path}"
-  puts "create #{module_path.basename.to_s.sub(/\.rb$/){""}.split('_').map {|s| s.capitalize }.inject(&:+)} class"
-  @target_module = Kernel.const_get(module_path.basename.to_s.sub(/\.rb$/){""}.split('_').map {|s| s.capitalize }.inject(&:+))
+  puts "create #{get_class_name(module_path)} class"
+  @target_module = Kernel.const_get(get_class_name(module_path))
 end
 
 def target_module
   @target_module
+end
+
+def create_runner(module_path, module_runner_path)
+  io = File.open(module_runner_path, "w")
+  str=<<EOS
+require 'json'
+
+require_relative '#{module_path.basename.expand_path(".")}'
+
+def load_input_data
+  if File.exist?("_input.json")
+    io = File.open('_input.json', 'r')
+    parsed = JSON.load(io)
+    return parsed
+  end
+end
+
+input_data = load_input_data
+
+if input_data.blank?
+  raise "_input.json is missing."
+end
+
+input_data["_target"]=JSON.parse(input_data["_target"])
+input_data["_managed_parameters"]=JSON.parse(input_data["_managed_parameters"])
+
+#{get_class_name(module_path)}.new(input_data).run
+EOS
+  io.puts str
+end
+
+def get_class_name(module_path)
+  module_path.basename.to_s.sub(/\.rb$/){""}.split('_').map {|s| s.capitalize }.inject(&:+)
 end
 
 TermColor.green
@@ -399,7 +432,9 @@ class OacisModuleInstaller < Thor
     module_path = Pathname(options[:file])
     raise "No such file #{module_path}" unless File.exist?(module_path)
     set_target_module(module_path)
-    selector = Selector.new([SimulatorSelect.new,OptimizerSelect.new],{"_target_simulators"=>target_simulators, "_target_module"=>target_module, "_module_runnner_path"=>Pathname("new_optimizer/pso_runner.rb").expand_path(".")})
+    module_runner_path = module_path.dirname.join(module_path.basename.sub(/.rb/,"_runner.rb")).expand_path(".")
+    create_runner(module_path, module_runner_path)
+    selector = Selector.new([SimulatorSelect.new,OptimizerSelect.new],{"_target_simulators"=>target_simulators, "_target_module"=>target_module, "_module_runner_path"=>module_runner_path})
     selector.run
   end
 end
