@@ -12,9 +12,9 @@ class Ga < OacisModule
     h["iteration"] = 100
     num_crossover=(h["population"]/2).to_i
     num_mutation=h["population"]-num_crossover
-    h["generate_children"]=[{"type"=>"crossover","definitions"=>{"selection"=>{"type"=>"tournament", "definition"=>{"tournament_size"=>4}, "type"=>"1point", "population_size"=>num_crossover}}},{"type"=>"mutation", "definition"=>{"selection"=>{"type"=>"random"}, "rate"=>0.3, "population_size"=>num_mutation}}]
+    h["generate_children"]=[{"type"=>"crossover","definition"=>{"selection"=>{"type"=>"tournament", "definition"=>{"tournament_size"=>4}}, "type"=>"1point", "population_size"=>num_crossover}},{"type"=>"mutation", "definition"=>{"type"=>"uniform_distribution", "selection"=>{"type"=>"random"}, "rate"=>0.3, "population_size"=>num_mutation}}]
     h["selection"]={"type"=>"ranking"}
-    h["maximize"]=false
+    h["maximize"]=true
     h
   end
 
@@ -47,13 +47,13 @@ class Ga < OacisModule
     case definition["type"]
     when "random"
       begin
-        parents.push(@prng.rand(num)).uniq!
+        parents.push(@prng.rand(module_data.get_parents(@num_iterations-1).length)).uniq!
       end while parents.length < num
     when "tournament"
       begin
         pa = get_parents(2, {"type"=>"random"})
-        pa1_result = module_data.get_parent(@num_iterations, pa.first)["output"].first
-        pa2_result = module_data.get_parent(@num_iterations, pa.last)["output"].first
+        pa1_result = module_data.get_parent(@num_iterations-1, pa.first)["output"].first
+        pa2_result = module_data.get_parent(@num_iterations-1, pa.last)["output"].first
         if @ga_definition["maximize"]
           better_pa = pa1_result > pa2_result ? pa.first : pa.last
         else
@@ -69,38 +69,36 @@ class Ga < OacisModule
     children = []
     begin
       pos = @prng.rand(managed_parameters.map {|x| x if x["range"].present?}.compact.length-1).truncate + 1
-      parents.length.times do |i|
-        a = []
-        b = []
-        parents = get_parents(2, definition["selection"])
-        input1 = module_data.get_parent(@num_iterations, parents.first)
-        input2 = module_data.get_parent(@num_iterations, parents.last)
-        input1.each_with_index do |val, i|
-          if j < pos
-            a[i] = input1[i]
-            b[i] = input2[i]
-          else
-            a[i] = input2[i]
-            b[i] = input1[i]
-          end
+      a = []
+      b = []
+      parents = get_parents(2, definition["selection"])
+      input1 = module_data.get_parent_position(@num_iterations-1, parents.first)
+      input2 = module_data.get_parent_position(@num_iterations-1, parents.last)
+      input1.each_with_index do |val, i|
+        if i < pos
+          a[i] = input1[i]
+          b[i] = input2[i]
+        else
+          a[i] = input2[i]
+          b[i] = input1[i]
         end
-        puts "operation:n_point_crossover,iteration:#{@num_iterations},parents:[#{parents.first}, #{paremts.last}]"
-        children.push(a)
-        children.push(b)
       end
-    end while children.length < defninition["population_size"]
-    children[0..(defninition["population_size"]-1)]
+      puts "operation:n_point_crossover,iteration:#{@num_iterations},parents:[#{parents.first}, #{parents.last}]"
+      children.push(a)
+      children.push(b)
+    end while children.length < definition["population_size"]
+    children[0..(definition["population_size"]-1)]
   end
 
   def uniform_distribution_mutation(definition)
     children = []
     begin
       x = []
-      index = get_parent(1, definition["selection"]).first
-      parent_input = module_data.get_parent(@satus, index)["input"]
-      mpara = managed_parameter_table
-      paremt_input.each_with_index do |val, d|
-        x[d] = val + @prng.rand(mpara["range"][d][1] - mpara["range"][d][0]) + mpara["range"][d][0]
+      index = get_parents(1, definition["selection"]).first
+      parent_input = module_data.get_parent(@num_iterations-1, index)["input"]
+      mpara = managed_parameters_table
+      parent_input.each_with_index do |val, d|
+        x[d] = val + @prng.rand(mpara[d]["range"][1] - mpara[d]["range"][0]) + mpara[d]["range"][0]
       end
       puts "operation:uniform_distribution_mutation,iteration:#{@num_iterations}, parents:[#{parent_input}], childlen:[#{x}]"
       children.push(x)
@@ -122,7 +120,7 @@ class Ga < OacisModule
               op_children.push(child)
             end
           end
-          children += op_children[0..op["crossover"]["count"]-1]
+          children += op_children[0..definition["population_size"]-1]
         else
           STDERR.puts definition["type"].to_s+" is not defined in crossover operations."
           exit(-1)
@@ -133,11 +131,11 @@ class Ga < OacisModule
         when "uniform_distribution"
           op_children=[]
           while op_children.length <= definition["population_size"]
-            uniform_distribution_mutation(get_parents(1)).each do |child|
+            uniform_distribution_mutation(definition).each do |child|
               op_children.push(child)
             end
           end
-          children+=op_children[0..op["mutation"]["count"]-1]
+          children+=op_children[0..definition["population_size"]-1]
         else
           STDERR.puts definition["type"].to_s+" is not defined in mutation operations."
           exit(-1)
@@ -147,7 +145,7 @@ class Ga < OacisModule
         exit(-1)
       end
     end
-    children.each do |child|
+    children.each_with_index do |child, i|
       module_data.set_child_input(@num_iterations, i, child)
     end
   end
@@ -219,7 +217,7 @@ class Ga < OacisModule
 
   #override
   def generate_runs #define generate_runs afeter update_particle_positions
-    create_children_ga
+    @num_iterations == 0 ? create_children_ga : generate_children_ga
     super
   end
 
