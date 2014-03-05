@@ -14,7 +14,7 @@ class HostsController < ApplicationController
   # GET /hosts/1.json
   def show
     @host = Host.find(params[:id])
-    if @host.connected?
+    if (@host.connected? rescue false)
       @status = @host.status
     else
       flash.now[:alert] = "Failed to establish connection. Check host information."

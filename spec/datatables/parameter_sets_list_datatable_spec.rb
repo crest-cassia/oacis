@@ -20,6 +20,7 @@ describe "ParameterSetsListDatatable" do
                                     query: {"L" => {"gte" => 5}})
 
         @context = ActionController::Base.new.view_context
+        # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
         @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"})
         @context.stub(:link_to).and_return("#{@simulator.to_param}")
         @context.stub(:distance_to_now_in_words).and_return("time")
@@ -59,7 +60,8 @@ describe "ParameterSetsListDatatable" do
                                     query: {"L" => {"gte" => 5}})
 
         @context = ActionController::Base.new.view_context
-        @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:5 , iSortCol_0: 1, sSortDir_0: "desc", query_id: @query.id})
+        # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
+        @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:5 , iSortCol_0: 4, sSortDir_0: "desc", query_id: @query.id})
         @context.stub(:link_to).and_return("#{@simulator.to_param}")
         @context.stub(:distance_to_now_in_words).and_return("time")
         @context.stub(:progress_bar).and_return("<div></div>")
