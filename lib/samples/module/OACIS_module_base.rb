@@ -9,7 +9,7 @@ class OacisModule
   end
 
   def run
-    @num_iterations = 0
+    @num_iterations ||= 0
     loop do
       $stdout.puts "Iteration: #{@num_iterations}"
       wait_runs( generate_runs )
