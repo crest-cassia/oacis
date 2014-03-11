@@ -1,6 +1,6 @@
 require 'json'
 
-require_relative './pso.rb'
+require_relative '/home/t-uchitane/git/cassia/lib/samples/module/optimizer/pso/pso.rb'
 
 def load_input_data
   if File.exist?("_input.json")
@@ -20,4 +20,3 @@ input_data["_target"]=JSON.parse(input_data["_target"])
 input_data["_managed_parameters"]=JSON.parse(input_data["_managed_parameters"])
 
 Pso.new(input_data).run
-

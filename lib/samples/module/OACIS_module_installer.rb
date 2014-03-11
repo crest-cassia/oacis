@@ -66,15 +66,13 @@ class Selector
   end
 end
 
-class OptimizerSelect
+class ModuleSetting
 
   def init(data)
     @data = data
-    @steps=["init","set_name","select_analyzer","select_managed_parameters","set_managed_parameters","finish"]
+    @steps=["init","set_name","select_managed_parameters","set_managed_parameters","finish"]
     @sim=@data["_target_simulator"]
-    @host=@data["_target_host"]
     @name=nil
-    @anz=nil
     @managed_params=[]
     @step_counter=0
     message
@@ -86,8 +84,6 @@ class OptimizerSelect
     case @steps[@step_counter]
       when "set_name"
         set_name(str)
-      when "select_analyzer"
-        select_analyzer(str)
       when "select_managed_parameters"
         select_managed_parameters(str)
       when "set_managed_parameters"
@@ -109,11 +105,6 @@ class OptimizerSelect
     opt.support_omp = false
     opt.description = "### OacisModule\nThis module is installed by [OACIS\\_module\\_installer](/oacis_document/index.html)"
     b.push(opt.save)
-    host = Host.where({name: "localhost"}).first
-    if host.present?
-      host.executable_simulator_ids.push(opt.to_param).uniq!
-      b.push(host.save)
-    end
     if b.all?
       TermColor.green
       puts "New module is installed."
@@ -130,21 +121,6 @@ class OptimizerSelect
   def set_name(str)
     @name=str
     puts "new module name is "+TermColor.blue_i+"\""+@name+"\""+TermColor.reset_i
-  end
-
-  def select_analyzer(str)
-    if (str == "0" or str.to_i > 0) and (@sim.analyzers.count > str.to_i)
-      @anz=@sim.analyzers.to_a[str.to_i]
-    elsif @sim.analyzers.map{|anz| anz.name}.include?(str)
-      @anz=@sim.analyzers.map{|anz| anz if anz.name == str}.compact.first
-    else
-      TermColor.red
-      puts "*****************************************"
-      puts "***ERROR:enter a name of analyzers or a number(Integer less than "+@sim.analyzers.count.to_s+")***"
-      puts "*****************************************"
-      TermColor.reset
-      @step_counter -=1
-    end
   end
 
   def select_managed_parameters(str)
@@ -185,16 +161,7 @@ class OptimizerSelect
     puts "Input module name:"
   end
 
-  def analyzer_list
-    TermColor.green
-    puts "install stage: "+@steps[@step_counter+1]
-    TermColor.reset
-    pp @sim.analyzers.each_with_index.map{ |s,i| i.to_s+":"+s.name }.join(",")
-    puts "select num:"
-  end
-
   def parameter_list
-    puts "selected analyzer is "+TermColor.blue_i+@anz.name+TermColor.reset_i
     TermColor.green
     puts "install stage: "+@steps[@step_counter+1]
     TermColor.reset
@@ -215,7 +182,6 @@ class OptimizerSelect
     puts ""
     puts "Module name is "+TermColor.blue_i+"\""+@name+"\""+TermColor.reset_i
     puts "Target simulator is "+TermColor.blue_i+"\""+@sim.name+"\""+TermColor.reset_i
-    puts "Target analyzer is "+TermColor.blue_i+"\""+@anz.name+"\""+TermColor.reset_i
     puts "Managed parameter(s) is(are)"
     TermColor.blue
     pp @managed_params.compact
@@ -227,8 +193,6 @@ class OptimizerSelect
     when "init"
       input_name
     when "set_name"
-      analyzer_list
-    when "select_analyzer"
       parameter_list
     when "select_managed_parameters"
       managed_parameter_message
@@ -247,7 +211,7 @@ class OptimizerSelect
     pd = @sim.parameter_definitions.build
     pd["key"] = "_target"
     pd["type"] = "String"
-    pd["default"] = {"Simulator"=>@sim.to_param, "Analyzer"=>@anz.to_param, "Host"=>[@host.to_param]}.to_json
+    pd["default"] = {"Simulator"=>@sim.to_param, "Analyzer"=>@anz.try(:to_param)}.to_json
     a << pd
     a.each do |p|
       puts p.inspect
@@ -260,13 +224,14 @@ end
 class SimulatorSelect
   def init(data)
     @data = data
-    @steps=["init","select_simulator","select_host","finish"]
-    @target_sims=data["_target_simulators"]
+    @steps=["init","select_simulator","select_analyzer","finish"]
+    @target_sims=Simulator.all.select{|sim| sim.executable_on_ids.count > 0 }
+    raise "There is no executable simulator in OACIS." if @target_sims.count == 0
     @sim=nil
+    @anz=nil
     @step_counter=0
     message
     @step_counter += 1
-    @host=[]
   end
 
   def run(str)
@@ -274,8 +239,8 @@ class SimulatorSelect
     when "select_simulator"
       select_simulator(str)
       message
-    when "select_host"
-      select_host(str)
+    when "select_analyzer"
+      select_analyzer(str)
       message
     end
     @step_counter += 1
@@ -283,7 +248,7 @@ class SimulatorSelect
   end
 
   def finalize
-    return @data.merge!({"_target_simulator"=>@sim, "_target_host"=>@host})
+    return @data.merge!({"_target_simulator"=>@sim}).merge!({"_target_analyzer"=>@anz})
   end
 
   private
@@ -302,49 +267,42 @@ class SimulatorSelect
     end
   end
 
-  def select_host(str)
-    hosts = Host.all.select{|h| h if h.executable_simulator_ids.map{|id| id.to_s}.include?(@sim.to_param)}.compact
-    if (str == "0" or str.to_i > 0) and (hosts.count > str.to_i)
-      @host.push(hosts[str.to_i])
-    elsif hosts.map{|host| host.name}.include?(str)
-      @host.push(hosts.map{|host| host if host.name == str}.compact.first)
+  def simulator_list
+    TermColor.green
+    puts "install stage: "+@steps[@step_counter+1]
+    TermColor.reset
+    pp @target_sims.each_with_index.map{ |s,i| {i.to_i => s.name} }
+    puts "select num or name:"
+  end
+
+  def select_analyzer(str)
+    if (str == "0" or str.to_i > 0) and (@target_anzs.count > str.to_i)
+      @anz=target_analyzers.to_a[str.to_i]
+    elsif target_analyzers.map{|anz| anz.name}.include?(str)
+      @anz=target_analyzers.where(name: str).first
+    elsif str == "nan" or str == "-1"
+      @anz=nil
     else
       TermColor.red
       puts "*****************************************"
-      puts "***ERROR:enter a name of executable hosts or a number(Integer less than "+@target_sims.count.to_s+")***"
+      puts "***ERROR:enter a name of analyzers or a number(Integer less than "+@target_anzs.count.to_s+")***"
       puts "*****************************************"
       TermColor.reset
       @step_counter -=1
     end
   end
 
-  def simulator_list
+  def analyzer_list
     TermColor.green
     puts "install stage: "+@steps[@step_counter+1]
     TermColor.reset
-    pp @target_sims.each_with_index.map{ |s,i| i.to_s+":"+s.name }.join(",")
-    puts "select num:"
-  end
-
-  def host_list
-    TermColor.green
-    puts "install stage: "+@steps[@step_counter+1]
-    TermColor.reset
-    hosts = Host.all.select{|h| h if h.executable_simulator_ids.map{|id| id.to_s}.include?(@sim.to_param)}.compact
-    if hosts.length == 0
-      TermColor.red
-      puts "*****************************************"
-      puts "***ERROR:There is no host to execute the selected simulator.)***"
-      puts "*****************************************"
-      TermColor.reset
-      exit(-1)
-    end
-    pp hosts.each_with_index.map{ |s,i| i.to_s+":"+s.name }.join(",")
-    puts "select num:"
+    pp target_analyzers.each_with_index.map{ |s,i| {i => s.name} }
+    puts "select num or name:"
   end
 
   def show_result
     puts "selected simulator is "+TermColor.blue_i+"\""+@sim.name+"\""+TermColor.reset_i
+    puts "selected analyzer is "+TermColor.blue_i+"\""+@anz.name+"\""+TermColor.reset_i if @anz
   end
 
   def message
@@ -352,15 +310,15 @@ class SimulatorSelect
     when "init"
       simulator_list
     when "select_simulator"
-      host_list
-    when "select_host"
+      analyzer_list
+    when "select_analyzer"
       show_result
     end
   end
-end
 
-def target_simulators
-  @target_simulators ||= Simulator.all.select {|sim| sim.analyzers.where(type: :on_run).count > 0}
+  def target_analyzers
+    @target_analyzers ||= Analyzer.where(simulator_id: @sim.to_param)
+  end
 end
 
 def set_target_module(module_path)
@@ -408,21 +366,15 @@ def get_class_name(module_path)
 end
 
 TermColor.green
-puts "This installer regits a module to OACIS."
-
-if target_simulators.count == 0
-  STDERR.puts "There are no simulator with analyzers in OACIS."
-  exit(-1)
-end
-
+puts "This installer install a module to OACIS."
+TermColor.reset
 puts "commands: reset (discard all settings and return to first stage.)"
 puts " exit (discard settings and exit.)"
 puts ""
-TermColor.reset
 
 class OacisModuleInstaller < Thor
 
-  desc 'install', "show_host"
+  desc 'install', "install"
   method_option :file,
     type:     :string,
     aliases:  '-f',
@@ -434,7 +386,7 @@ class OacisModuleInstaller < Thor
     set_target_module(module_path)
     module_runner_path = module_path.dirname.join(module_path.basename.sub(/.rb/,"_runner.rb")).expand_path(".")
     create_runner(module_path, module_runner_path)
-    selector = Selector.new([SimulatorSelect.new,OptimizerSelect.new],{"_target_simulators"=>target_simulators, "_target_module"=>target_module, "_module_runner_path"=>module_runner_path})
+    selector = Selector.new([SimulatorSelect.new, ModuleSetting.new],{"_target_module"=>target_module, "_module_runner_path"=>module_runner_path})
     selector.run
   end
 end

@@ -18,8 +18,10 @@ class OacisModule
     module_data.data["_status"]={}
     if File.exists?("_output.json")
       module_data.set_data(JSON.load(File.open("_output.json")))
+      @num_iterations = module_data.data["_status"]["iteration"]
     else
-      module_data.data["_status"]["iteration"]=@num_iterations
+      module_data.data["_status"]["iteration"] = 0
+      @num_iterations = 0
     end
   end
 
@@ -55,6 +57,7 @@ class OacisModule
 
   #override
   def dump_serialized_data
+    module_data.data["_status"]["iteration"]=@num_iterations
     output_file = "_output.json"
     File.open(output_file, 'w') {|io| io.print module_data.data.to_json }
   end
@@ -69,15 +72,30 @@ class OacisModule
   end
 
   def target_analyzer
-    @target_analyzer ||= Analyzer.find(@input_data["_target"]["Analyzer"])
+    @target_analyzer ||= Analyzer.find(@input_data["_target"]["Analyzer"]) if @input_data["_target"]["Analyzer"]
   end
 
   def target_host
-    @target_host ||= Host.find(@input_data["_target"]["Host"].first)
+    @target_host ||= Host.in(id: @target_simulator.executable_on_ids).order_by(max_num_jobs: "desc").first
   end
  
   def get_target_fields(result)
-    raise "IMPLEMENT ME" # [result.try(:fetch, "Fitness")]
+    # when you want to get ps.runs.first.result["result"][0]
+    # return result.try(:fetch, "result").try(:slice, 0)
+    raise "IMPLEMENT ME"
+  end
+
+  def target_collections
+    if target_analyzer
+      Analysis.where(analyzer_id: target_analyzer.to_param, status: :finished).in(parameter_set_id: @ps_archive).only(:result, :parameter_set)
+    else
+      Run.where(status: :finished).in(parameter_set_id: @ps_archive).only(:result, :parameter_set)
+    end
+  end
+
+  def target_results
+    binding.pry
+    target_collections.map {|col| {col.parameter_set_id => get_target_fields(col.result)}}
   end
 
   def managed_parameters
@@ -167,8 +185,7 @@ class OacisModule
 
   def evaluate_runs_iteration(iteration)
     data_sets = module_data.data["data_sets"][iteration]
-    results = Analysis.where(analyzer_id: target_analyzer.to_param, status: :finished).in(parameter_set_id: @ps_archive).only(:result, :parameter_set)
-              .map {|anl| {anl.parameter_set_id => get_target_fields(anl.result)}}.inject({}) {|h, a| h.merge!(a)}
+    results = target_results.inject({}) {|h, a| h.merge!(a)}
 
     data_sets.each_with_index do |data, i|
       data["output"] = results[@ps_archive[i]]
