@@ -1,5 +1,6 @@
 require 'pp'
 require 'json'
+require 'readline'
 require 'thor'
 
 class TermColor
@@ -40,7 +41,7 @@ class Selector
     while @stage_counter < @stages.length
       current_step = @stages[@stage_counter]
       current_step.init(@data_cash)
-      while str = STDIN.gets
+      while str = Readline.readline("> ", true)
         exit(0) if ["exit","quit","bye"].include?(str.chomp)
         if str.chomp == "" or /^\s*#/ =~ str.chomp
           next
@@ -213,10 +214,6 @@ class ModuleSetting
     pd["type"] = "String"
     pd["default"] = {"Simulator"=>@sim.to_param, "Analyzer"=>@anz.try(:to_param)}.to_json
     a << pd
-    a.each do |p|
-      puts p.inspect
-      puts p.valid?
-    end
     a
   end
 end
@@ -224,11 +221,12 @@ end
 class SimulatorSelect
   def init(data)
     @data = data
-    @steps=["init","select_simulator","select_analyzer","finish"]
+    @steps=["init","select_simulator","select_analyzer","set_num_runs","finish"]
     @target_sims=Simulator.all.select{|sim| sim.executable_on_ids.count > 0 }
     raise "There is no executable simulator in OACIS." if @target_sims.count == 0
     @sim=nil
     @anz=nil
+    @num_runs=0
     @step_counter=0
     message
     @step_counter += 1
@@ -242,13 +240,16 @@ class SimulatorSelect
     when "select_analyzer"
       select_analyzer(str)
       message
+    when "set_num_runs"
+      set_num_runs(str)
+      message
     end
     @step_counter += 1
     return true if @step_counter == @steps.length-1
   end
 
   def finalize
-    return @data.merge!({"_target_simulator"=>@sim}).merge!({"_target_analyzer"=>@anz})
+    return @data.merge!({"_target_simulator"=>@sim}).merge!({"_target_analyzer"=>@anz}).merge!({"_target_runs_count"=>@num_runs})
   end
 
   private
@@ -276,7 +277,7 @@ class SimulatorSelect
   end
 
   def select_analyzer(str)
-    if (str == "0" or str.to_i > 0) and (@target_anzs.count > str.to_i)
+    if (str == "0" or str.to_i > 0) and (target_analyzers.count > str.to_i)
       @anz=target_analyzers.to_a[str.to_i]
     elsif target_analyzers.map{|anz| anz.name}.include?(str)
       @anz=target_analyzers.where(name: str).first
@@ -300,9 +301,30 @@ class SimulatorSelect
     puts "select num or name:"
   end
 
+  def set_num_runs(str)
+    if str.to_i > 0
+      @num_runs = str.to_i
+    else
+      TermColor.red
+      puts "*****************************************"
+      puts "***ERROR:enter a number(Integer more than zero)***"
+      puts "*****************************************"
+      TermColor.reset
+      @step_counter -=1
+    end
+  end
+
+  def message_for_set_num_runs
+    TermColor.green
+    puts "install stage: "+@steps[@step_counter+1]
+    TermColor.reset
+    puts "set num of runs in each parameter_sets:"
+  end
+
   def show_result
-    puts "selected simulator is "+TermColor.blue_i+"\""+@sim.name+"\""+TermColor.reset_i
-    puts "selected analyzer is "+TermColor.blue_i+"\""+@anz.name+"\""+TermColor.reset_i if @anz
+    puts "selected simulator is "+TermColor.blue_i+"\"#{@sim.name}\""+TermColor.reset_i
+    puts "selected analyzer is "+TermColor.blue_i+"\"#{@anz.name}\""+TermColor.reset_i if @anz
+    puts "set num of runs is "+TermColor.blue_i+"\"#{@num_runs}\""+TermColor.reset_i
   end
 
   def message
@@ -312,6 +334,8 @@ class SimulatorSelect
     when "select_simulator"
       analyzer_list
     when "select_analyzer"
+      message_for_set_num_runs
+    when "set_num_runs"
       show_result
     end
   end
