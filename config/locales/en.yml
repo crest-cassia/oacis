@@ -21,7 +21,7 @@ en:
         one: ! 'a day'
         other: ! '%{count}days'
       x_days:
-        one: ! '%a day'
+        one: ! 'a day'
         other: ! '%{count}days'
       about_x_hours:
         one: ! '%{count}h'
