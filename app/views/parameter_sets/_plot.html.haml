@@ -1,4 +1,5 @@
-%h3 Plot
+- param_string = @param_set.v.map {|key,val| "#{key}=#{val}" }.join(', ')
+%h3= "Plot on (#{param_string})"
 
 %form
   .form-inline
