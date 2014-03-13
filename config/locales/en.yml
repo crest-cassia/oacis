@@ -33,8 +33,8 @@ en:
         one: ! '%{count}min.'
         other: ! '%{count}min.'
       less_than_x_minutes:
-        one: ! 'a minuite'
-        other: ! 'a few minuites'
+        one: ! 'a minute'
+        other: ! 'a few minutes'
       x_minutes:
         one: ! '%{count}min.'
         other: ! '%{count}min.'
