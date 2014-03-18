@@ -94,7 +94,6 @@ class OacisModule
   end
 
   def target_results
-    binding.pry
     target_collections.map {|col| {col.parameter_set_id => get_target_fields(col.result)}}
   end
 

@@ -84,7 +84,6 @@ class Pso < OacisModule
       h = {}
       h["output"] = module_data.get_datasets(@num_iterations, i)["output"]
       h["input"] = module_data.get_position(@num_iterations, i)
-binding.pry
       if @num_iterations > 0 and ((@pso_definition["maximize"] and module_data.get_pbest(@num_iterations-1, i)["output"][0] >= h["output"][0]) or (!@pso_definition["maximize"] and module_data.get_pbest(@num_iterations-1, i)["output"][0] <= h["output"][0]))
         h = module_data.get_pbest(@num_iterations-1, i)
       end
