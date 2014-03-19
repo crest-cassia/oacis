@@ -37,6 +37,8 @@ class Selector
     @data_cash=initial_data
   end
 
+ attr_reader :data_cash 
+
   def run
     while @stage_counter < @stages.length
       current_step = @stages[@stage_counter]
@@ -96,7 +98,6 @@ class ModuleSetting
   end
 
   def finalize
-    b = []
     opt = Simulator.new
     opt.name = @name
     opt.parameter_definitions = opt_parameter_definitions
@@ -105,17 +106,8 @@ class ModuleSetting
     opt.support_mpi = false
     opt.support_omp = false
     opt.description = "### OacisModule\nThis module is installed by [OACIS\\_module\\_installer](/oacis_document/index.html)"
-    b.push(opt.save)
-    if b.all?
-      TermColor.green
-      puts "New module is installed."
-      TermColor.reset
-    else
-      TermColor.red
-      puts "New module is not installed."
-      TermColor.reset
-    end
-    return @managed_params
+    opt.executable_on_ids << Host.where(name: "localhost").first.to_param if Host.where(name: "localhost").exists?
+    return opt
   end
 
   private
@@ -383,6 +375,7 @@ input_data["_managed_parameters"]=JSON.parse(input_data["_managed_parameters"])
 #{get_class_name(module_path)}.new(input_data).run
 EOS
   io.puts str
+  io.close
 end
 
 def get_class_name(module_path)
@@ -398,22 +391,74 @@ puts ""
 
 class OacisModuleInstaller < Thor
 
-  desc 'install', "install"
+  desc 'make-install', "make a module and install it on OACIS"
   method_option :file,
     type:     :string,
     aliases:  '-f',
-    desc:     'install file',
+    desc:     'module file',
     required: true
   def install
-    module_path = Pathname(options[:file])
-    raise "No such file #{module_path}" unless File.exist?(module_path)
-    set_target_module(module_path)
-    module_runner_path = module_path.dirname.join(module_path.basename.sub(/.rb/,"_runner.rb")).expand_path(".")
-    create_runner(module_path, module_runner_path)
-    selector = Selector.new([SimulatorSelect.new, ModuleSetting.new],{"_target_module"=>target_module, "_module_runner_path"=>module_runner_path})
+    sim = build_module(options) 
+    b = []
+    b.push(sim.save)
+    if b.all?
+      TermColor.green
+      puts "New module is installed."
+      TermColor.reset
+    else
+      TermColor.red
+      puts "New module is not installed."
+      TermColor.reset
+      exit -1
+    end
+
+    create_runner(@module_path, @module_runner_path)
+  end
+
+  desc 'make', "make a module"
+  method_option :file,
+    type:     :string,
+    aliases:  '-f',
+    desc:     'module file',
+    required: true
+  def make
+    sim = build_module(options)
+    b = []
+    b.push(sim.valid?)
+    if b.all?
+      TermColor.green
+      puts "New module is builded."
+      TermColor.reset
+      input = sim.parameter_definitions.inject({}) {|h, pd| h.merge!({pd["key"]=>pd["default"]})}
+      input["_seed"]=123456789
+      dirname = Pathname(@module_runner_path).expand_path(".").dirname
+      io = File.open(dirname.join("_input.json"),"w")
+      io.puts input.to_json
+      io.close
+    else
+      TermColor.red
+      puts "New module is not buidled."
+      TermColor.reset
+      sim.save!
+      exit -1
+    end
+
+    create_runner(@module_path, @module_runner_path)
+  end
+
+  private
+  def build_module(options)
+    @module_path = Pathname(options[:file])
+    raise "No such file #{@module_path}" unless File.exist?(@module_path)
+    set_target_module(@module_path)
+    @module_runner_path = @module_path.dirname.join(@module_path.basename.sub(/.rb/,"_runner.rb")).expand_path(".")
+    selector = Selector.new([SimulatorSelect.new, ModuleSetting.new],{"_target_module"=>target_module, "_module_runner_path"=>@module_runner_path})
     selector.run
+    return selector.data_cash
   end
 end
 
 OacisModuleInstaller.start(ARGV)
+
+TermColor.reset
 
