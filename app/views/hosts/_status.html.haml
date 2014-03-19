@@ -1,0 +1,28 @@
+%h3 Host Status
+
+%table.table.table-striped{style: "table-layout: fixed;"}
+  %thead
+    %tr
+      %th Total
+      %th
+        = raw(status_label(:finished))
+      %th
+        = raw(status_label(:failed))
+      %th
+        = raw(status_label(:running))
+      %th
+        = raw(status_label(:submitted))
+      %th
+        = raw(status_label(:created))
+  %tbody
+    %tr
+      - stat_count = @host.runs_status_count
+      - total = stat_count.reject {|status| status == :cancelled}.values.inject(:+)
+      %th= total
+      %td= "#{stat_count[:finished]} (#{(100.0*stat_count[:finished]/total.to_f).round(1)} %)"
+      %td= "#{stat_count[:failed]} (#{(100.0*stat_count[:failed]/total.to_f).round(1)} %)"
+      %td= "#{stat_count[:running]} (#{(100.0*stat_count[:running]/total.to_f).round(1)} %)"
+      %td= "#{stat_count[:submitted]} (#{(100.0*stat_count[:submitted]/total.to_f).round(1)} %)"
+      %td= "#{stat_count[:created]} (#{(100.0*stat_count[:created]/total.to_f).round(1)} %)"
+
+%pre= @status

@@ -3,6 +3,16 @@ require 'spork'
 #uncomment the following line to use spork with the debugger
 #require 'spork/ext/ruby-debug'
 
+module SpecHelper
+  def at_temp_dir
+    Dir.mktmpdir {|dir|
+      Dir.chdir(dir) {
+        yield
+      }
+    }
+  end
+end
+
 Spork.prefork do
   # Loading more in this block will cause your tests to run faster. However,
   # if you change any configuration or code from libraries loaded here, you'll
@@ -25,6 +35,7 @@ Spork.prefork do
   Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
 
   RSpec.configure do |config|
+    config.include SpecHelper
     # ## Mock Framework
     #
     # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:
@@ -65,7 +76,18 @@ Spork.prefork do
       DatabaseCleaner.clean
     end
 
+    # redirect stdout and stderr
+    config.before(:all) do
+      $stderr = File.new(File.join(File.dirname(__FILE__), 'stderr.txt'), 'w')
+      $stdout = File.new(File.join(File.dirname(__FILE__), 'stdout.txt'), 'w')
+      if ProgressBar::Base::DEFAULT_OUTPUT_STREAM != $stdout
+        ProgressBar::Base::DEFAULT_OUTPUT_STREAM = $stdout
+      end
+    end
+
     config.after(:all) do
+      $stderr = STDERR
+      $stdout = STDOUT
       root_dir = ResultDirectory.root
       FileUtils.rm_r(root_dir) if FileTest.directory?(root_dir)
     end

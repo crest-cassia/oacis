@@ -14,13 +14,19 @@ class Run
   field :result  # can be any type. it's up to Simulator spec
   field :mpi_procs, type: Integer, default: 1
   field :omp_threads, type: Integer, default: 1
+  field :simulator_version, type: String
   field :host_parameters, type: Hash, default: {}
   field :job_id, type: String
   field :job_script, type: String
-  belongs_to :parameter_set
-  belongs_to :simulator  # for caching. do not edit this field explicitly
+  field :priority, type: Integer, default: 1
+  index({ status: 1 }, { name: "run_status_index" })
+  index({ priority: 1 }, { name: "run_priority_index" })
+  belongs_to :parameter_set, autosave: false
+  belongs_to :simulator, autosave: false  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy
   belongs_to :submitted_to, class_name: "Host"
+
+  PRIORITY_ORDER = {0=>:high, 1=>:normal, 2=>:low}
 
   # validations
   validates :status, presence: true,
@@ -28,7 +34,8 @@ class Run
   validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
-  validates :submitted_to, presence: true, on: :create  # submitted_to can be nil because a host may be destroyed
+  validates :priority, presence: true,
+                     inclusion: {in: PRIORITY_ORDER.keys}
   validate :host_parameters_given, on: :create
   validate :host_parameters_format, on: :create
   validate :mpi_procs_is_in_range, on: :create
@@ -39,11 +46,13 @@ class Run
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :submitted_to
+  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to
 
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
-  after_create :create_run_dir
-  before_destroy :delete_run_dir, :delete_archived_result_file
+  before_save :remove_runs_status_count_cache, :if => :status_changed?
+  after_create :create_run_dir, :create_job_script_for_manual_submission
+  before_destroy :delete_run_dir, :delete_archived_result_file ,
+                 :delete_files_for_manual_submission, :remove_runs_status_count_cache
 
   public
   def initialize(*arg)
@@ -114,46 +123,26 @@ class Run
     dir.join('..', "#{id}.tar.bz2")
   end
 
-  def destroy
-    if status == :submitted or status == :running
-      cancel
-    elsif status == :cancelled and submitted_to.present?
-      cancel
-    else
+  def destroy(call_super = false)
+    if call_super
       super
-    end
-  end
-
-  def enqueue_auto_run_analyzers
-    ps = parameter_set
-    sim = ps.simulator
-
-    if self.status == :finished
-      sim.analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
-        anl = analyses.build(analyzer: azr)
-        anl.save
-      end
-
-      sim.analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
-        scope = ps.runs.where(status: :finished)
-        if scope.count == 1 and scope.first.id == id
-          anl = analyses.build(analyzer: azr)
-          anl.save
-        end
-      end
-    end
-
-    if self.status == :finished or self.status == :failed
-      sim.analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
-        unless ps.runs.nin(status: [:finished, :failed]).exists?
-          anl = ps.analyses.build(analyzer: azr)
-          anl.save
-        end
+    else
+      if status == :submitted or status == :running or status == :cancelled
+        cancel
+      else
+        super
       end
     end
   end
 
   private
+  def delete_files_for_manual_submission
+    sh_path = ResultDirectory.manual_submission_job_script_path(self)
+    FileUtils.rm(sh_path) if sh_path.exist?
+    json_path = ResultDirectory.manual_submission_input_json_path(self)
+    FileUtils.rm(json_path) if json_path.exist?
+  end
+
   def set_simulator
     if parameter_set
       self.simulator = parameter_set.simulator
@@ -181,6 +170,18 @@ class Run
     FileUtils.mkdir_p(dir)
   end
 
+  def create_job_script_for_manual_submission
+    return if submitted_to
+
+    FileUtils.mkdir_p(ResultDirectory.manual_submission_path)
+    js_path = ResultDirectory.manual_submission_job_script_path(self)
+    File.open(js_path, 'w') {|io| io.puts job_script; io.flush }
+    if simulator.support_input_json
+      input_json_path = ResultDirectory.manual_submission_input_json_path(self)
+      File.open(input_json_path, 'w') {|io| io.puts input.to_json; io.flush }
+    end
+  end
+
   def delete_run_dir
     # if self.parameter_set.nil, parent ParameterSet is already destroyed.
     # Therefore, self.dir raises an exception
@@ -195,6 +196,12 @@ class Run
     if parameter_set
       archive = archived_result_path
       FileUtils.rm(archive) if File.exist?(archive)
+    end
+  end
+
+  def remove_runs_status_count_cache
+    if parameter_set and parameter_set.reload.runs_status_count_cache
+      parameter_set.update_attribute(:runs_status_count_cache, nil)
     end
   end
 

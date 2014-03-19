@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>基本的な使い方 &mdash; CASSIA Manager 0.0.1 documentation</title>
+    <title>基本的な使い方 &mdash; OACIS 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="CASSIA Manager 0.0.1 documentation" href="index.html" />
+    <link rel="top" title="OACIS 0.0.1 documentation" href="index.html" />
     <link rel="next" title="高度な使い方" href="advanced_usage.html" />
     <link rel="prev" title="インストール" href="installation.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="installation.html" title="インストール"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -56,9 +56,9 @@
 <h2>手順<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple" start="0">
 <li>ここで扱うシミュレータについて</li>
-<li>ホスト登録</li>
-<li>シミュレータ登録</li>
-<li>パラメータセット登録</li>
+<li>Host登録</li>
+<li>Simulator登録</li>
+<li>ParameterSet登録</li>
 <li>ジョブ投入</li>
 <li>実行中のジョブの確認</li>
 <li>結果の確認</li>
@@ -71,18 +71,18 @@
 </div>
 <div class="highlight-python"><pre>~/path/to/simulator.out {p1} {p2} {seed}</pre>
 </div>
-<p>パラメータをシミュレータに渡す方法として、JSONで渡す方法もある。シミュレータ登録の項目を参照の事。</p>
+<p>パラメータをシミュレータに渡す方法として、JSONで渡す方法もある。Simulator登録の項目を参照の事。</p>
 </div>
 </div>
-<div class="section" id="id4">
-<h2>ホスト登録<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="host">
+<h2>Host登録<a class="headerlink" href="#host" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">シミュレータを実行するためのホストを登録する。</div>
 <div class="line">前提条件として、サーバーからシミュレータを実行するホストに鍵認証を使用してパスワード無しでSSHログインできるようにしておかなくてはいけない。</div>
 <div class="line">ここでは鍵認証でリモートホストにSSHログインできるという前提で話を進める。</div>
 </div>
 <div class="line-block">
-<div class="line">ナビゲーションバーの[Hosts]をクリックし、[New Hosts]のボタンを押すと新規ホスト登録画面が表示される。</div>
+<div class="line">ナビゲーションバーの[Hosts]をクリックし、[New Hosts]のボタンを押すと新規Host登録画面が表示される。</div>
 </div>
 <a class="reference internal image-reference" href="_images/hosts.png"><img alt="_images/hosts.png" class="align-center" src="_images/hosts.png" style="width: 30%;" /></a>
 <div class="line-block">
@@ -100,13 +100,13 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>Name</td>
-<td>CMの中で使われるHostの名前。任意の名前を指定できる。一意でなくてはならない。</td>
+<td>OACISの中で使われるHostの名前。任意の名前を指定できる。一意でなくてはならない。</td>
 </tr>
 <tr class="row-odd"><td>Hostname</td>
-<td>ssh接続先のhostnameまたはIPアドレス</td>
+<td>ssh接続先のhostnameまたはIPアドレス。</td>
 </tr>
 <tr class="row-even"><td>User</td>
-<td>ssh接続時に使用するユーザー名</td>
+<td>ssh接続時に使用するユーザー名。</td>
 </tr>
 <tr class="row-odd"><td>Port</td>
 <td>ssh接続先のポート番号。デフォルトは22。</td>
@@ -115,13 +115,13 @@
 <td>ssh接続時の鍵認証で使用する秘密鍵ファイルへのパス。デフォルトは <em>~/.ssh/id_rsa</em></td>
 </tr>
 <tr class="row-odd"><td>Scheduler Type</td>
-<td>ジョブスケジューラのタイプを指定する。スケジューラ無し、Torque、PJMの３種類から選択できる。</td>
+<td>ジョブスケジューラのタイプ。none(スケジューラ無し)、torque、pjm、pjm_kの4種類から選択する。</td>
 </tr>
 <tr class="row-even"><td>Work base dir</td>
-<td>ジョブが実行されるワークディレクトリが作られるパスを指定する。ここで指定したパス以下でジョブが実行される。</td>
+<td>ワークディレクトリとして利用するホスト上のパス。ここで指定したパス以下でジョブが実行される。</td>
 </tr>
 <tr class="row-odd"><td>Max num jobs</td>
-<td>このホストに投入可能なジョブの最大数</td>
+<td>このホストに投入可能なジョブの最大数。</td>
 </tr>
 <tr class="row-even"><td>MPI processes</td>
 <td>MPIプロセス数の最小値と最大値。Runを作成するときにここで指定した範囲外の値を指定しようとするとエラーになる。</td>
@@ -136,7 +136,7 @@
 <td>テンプレートで使用される変数（ホストパラメータと呼ぶ）の定義。変数名とデフォルト値、入力フォーマット（正規表現で指定）を指定する。</td>
 </tr>
 <tr class="row-even"><td>Executable simulators</td>
-<td>実行可能なシミュレータをチェックボックスで指定する。</td>
+<td>実行可能なシミュレータをチェックボックスで指定。</td>
 </tr>
 </tbody>
 </table>
@@ -151,17 +151,17 @@
 <li>Work base dir: &lt;任意の新規作成したパス&gt;</li>
 </ul>
 </div>
-<div class="section" id="id5">
-<h2>シミュレータ登録<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="simulator">
+<h2>Simulator登録<a class="headerlink" href="#simulator" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
-<div class="line">扱うシミュレータは、言語やマシンを問わず自由に作成できる。（CMは登録されたコマンドを実行するだけなので、どの言語で実装されているかは関係ない。）</div>
+<div class="line">扱うシミュレータは、言語やマシンを問わず自由に作成できる。（OACISは登録されたコマンドを実行するだけなので、どの言語で実装されているかは関係ない。）</div>
 <div class="line">ただし、以下の要件を満たす必要がある。</div>
 </div>
 <ul>
 <li><dl class="first docutils">
 <dt>出力ファイルがカレントディレクトリ以下に作成される事</dt>
 <dd><ul class="first last simple">
-<li>CMは実行時にディレクトリを作り、その中でジョブを実行する。完了後、そのディレクトリ内のファイルすべてを出力結果として取り込む。</li>
+<li>OACISは実行時にディレクトリを作り、その中でジョブを実行する。完了後、そのディレクトリ内のファイルすべてを出力結果として取り込む。</li>
 </ul>
 </dd>
 </dl>
@@ -185,7 +185,7 @@
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>JSON形式の場合、実行時に次のような形式のJSONファイルを <em>_input.json</em> というファイル名でCMが実行時に配置する。シミュレータはカレントディレクトリの <em>_input.json</em> パースするように実装する必要がある。</dt>
+<dt>JSON形式の場合、実行時に次のような形式のJSONファイルを <em>_input.json</em> というファイル名でOACISが実行時に配置する。シミュレータはカレントディレクトリの <em>_input.json</em> パースするように実装する必要がある。</dt>
 <dd><div class="first highlight-json"><div class="highlight"><pre><span class="p">{</span><span class="nt">&quot;param1&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span><span class="nt">&quot;param2&quot;</span><span class="p">:</span><span class="mf">3.0</span><span class="p">,</span><span class="nt">&quot;_seed&quot;</span><span class="p">:</span><span class="mi">12345</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -211,8 +211,8 @@
 <li><dl class="first docutils">
 <dt>以下の名前のファイルがカレントディレクトリにあっても問題なく動作し、これらのファイルを上書きしたりしないこと</dt>
 <dd><ul class="first last simple">
-<li><em>_input.json</em> , <em>_output.json</em> , <em>_status.json</em> , <em>_time.txt</em></li>
-<li>これらのファイルはCMが使用するファイル名であるため干渉しないようにする必要がある</li>
+<li><em>_input.json</em> , <em>_output.json</em> , <em>_status.json</em> , <em>_time.txt</em>, <em>_version.txt</em></li>
+<li>これらのファイルはOACISが使用するファイル名であるため干渉しないようにする必要がある</li>
 </ul>
 </dd>
 </dl>
@@ -232,7 +232,7 @@
 <div class="line">絶対パスで指定するよりもホームディレクトリからの相対パスで指定した方がホスト間の差異を吸収しやすい。</div>
 </div>
 <div class="line-block">
-<div class="line">Simulator一覧ページ(/simulators)で[New Simulator]ボタンをクリックすると新規シミュレータ登録画面が表示される。</div>
+<div class="line">Simulator一覧ページ(/simulators)で[New Simulator]ボタンをクリックすると新規Simulator登録画面が表示される。</div>
 </div>
 <a class="reference internal image-reference" href="_images/new_simulator.png"><img alt="_images/new_simulator.png" class="align-center" src="_images/new_simulator.png" style="width: 30%;" /></a>
 <div class="line-block">
@@ -262,7 +262,7 @@
 <td>シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. <em>~/path/to/simulator.out</em>）</td>
 </tr>
 <tr class="row-even"><td>Input type</td>
-<td>パラメータを引数で渡すか、JSONで渡すか指定する</td>
+<td>パラメータを引数で渡すか、JSONで渡すか指定する。</td>
 </tr>
 <tr class="row-odd"><td>Support mpi</td>
 <td>シミュレータがMPIで実行されるか。チェックを入れた場合、mpiexecコマンド付きで実行される。</td>
@@ -271,10 +271,10 @@
 <td>シミュレータがOpenMPで並列化されているか。チェックを入れた場合、環境変数OMP_NUM_THREADSで並列数を指定して実行される。</td>
 </tr>
 <tr class="row-odd"><td>Description</td>
-<td>シミュレータの説明を入力する。（任意）</td>
+<td>シミュレータの説明を入力する。（markdownフォーマット[<a class="reference external" href="http://daringfireball.net/projects/markdown/syntax">http://daringfireball.net/projects/markdown/syntax</a>]で入力できる。）</td>
 </tr>
 <tr class="row-even"><td>Executable_on</td>
-<td>実行可能ホストを指定する。</td>
+<td>実行可能Hostを指定する。</td>
 </tr>
 </tbody>
 </table>
@@ -288,8 +288,8 @@
 <li>Executable_on: localhostにチェック</li>
 </ul>
 </div>
-<div class="section" id="id6">
-<h2>パラメータセット登録<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="parameterset">
+<h2>ParameterSet登録<a class="headerlink" href="#parameterset" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">Simulator一覧ページで登録したシミュレータ名のリンクをクリックすると、ParameterSet一覧画面が出る。</div>
 <div class="line">現時点では、ParameterSetが何も作られていないので空のテーブルが表示されるだけだが、ParameterSetを作成して行くと下図のように一覧で表示される。</div>
@@ -309,44 +309,44 @@
 <div class="line">既に存在するパラメータセットと同じものを作ろうとすると、エラーとなりエラーメッセージが表示される。</div>
 </div>
 </div>
-<div class="section" id="id7">
-<h2>ジョブ投入<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h2>ジョブ投入<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">Runを作成してシミュレーションを実行する。</div>
-<div class="line">Create New Runsと書かれている箇所でRunの数と投入ホスト（Simulator登録時に実行可能ホストとして指定されたホストしか選択できない）を選択して[Create Run]ボタンを押す。</div>
-<div class="line">実行可能ホストが一つも表示されない場合は、Simulatorの登録時に実行可能ホストを指定し忘れたと考えられるので確認すること。</div>
+<div class="line">Create New Runsと書かれている箇所でRunの数と投入Host（Simulator登録時に実行可能ホストとして指定されたHostしか選択できない）を選択して[Create Run]ボタンを押す。</div>
+<div class="line">実行可能Hostが一つも表示されない場合は、Simulatorの登録時に実行可能Hostを指定し忘れたと考えられる。Aboutタブで確認しEditボタンから設定を変更すること。</div>
 </div>
 <a class="reference internal image-reference" href="_images/new_run.png"><img alt="_images/new_run.png" class="align-center" src="_images/new_run.png" style="width: 30%;" /></a>
 <div class="line-block">
 <div class="line">SimulatorがMPI, OpenMPに対応している場合にはここでMPIプロセス数、OpenMPスレッド数を入力するためのフィールドも表示される。</div>
-<div class="line">ホストに登録したMPIプロセス数、OpenMPスレッド数の最小値・最大値と整合しない場合はRunの作成時にエラーになる。</div>
+<div class="line">Hostに登録したMPIプロセス数、OpenMPスレッド数の最小値・最大値と整合しない場合はRunの作成時にエラーになる。</div>
 </div>
 <div class="line-block">
-<div class="line">投入するホストがホストパラメータを定義したホストの場合も、ここでホストパラメータの入力が要求される。（ホストパラメータについての詳細は次章）</div>
+<div class="line">投入するホストがホストパラメータを定義したHostの場合も、ここでホストパラメータの入力が要求される。（ホストパラメータについての詳細は次章）</div>
 </div>
 <div class="line-block">
 <div class="line">また[Preview]ボタンをクリックすると、実際に投入されるジョブスクリプトをプレビューできる。</div>
-<div class="line">ジョブがうまく実行できない場合はこちらを確認すると良い</div>
+<div class="line">ジョブがうまく実行できない場合はこちらを確認すると良い。</div>
 </div>
 <div class="line-block">
 <div class="line">Runを作成するとバックグラウンドでリモートホストにジョブが投入される。</div>
-<div class="line">ただしHostで指定された max_num_jobs がジョブの上限数で、それ以上のジョブは投入されない。実行中のジョブが完了し次第、順次ジョブ投入される。</div>
+<div class="line">ただしHostで指定された max_num_jobs がジョブの上限数で、それ以上のジョブは投入されない。実行中のジョブが完了し次第、順次ジョブが投入される。</div>
 </div>
 </div>
-<div class="section" id="id8">
-<h2>実行中のジョブの確認<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h2>実行中のジョブの確認<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
-<div class="line">Navigationバーの[Jobs]をクリックすると、実行中(running)、スケジューラに投入済み(submitted)、実行待ち（created）のジョブの一覧を確認できる。</div>
+<div class="line">ナビゲーションバーの[Jobs]をクリックすると、実行中(running)、スケジューラに投入済み(submitted)、実行待ち（created）のジョブ一覧を確認できる。</div>
 <div class="line">この情報はバックグラウンドプロセスが１分ごとにリモートホストをポーリングして取得しているのでタイムラグがある場合がある。</div>
 <div class="line">[Update]ボタンをクリックすると最新の情報に更新される。</div>
 </div>
 <a class="reference internal image-reference" href="_images/jobs.png"><img alt="_images/jobs.png" class="align-center" src="_images/jobs.png" style="width: 30%;" /></a>
 </div>
-<div class="section" id="id9">
-<h2>結果の確認<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h2>結果の確認<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">ジョブの実行が完了すると自動的に結果がサーバー内のデータベースに取り込まれる。</div>
-<div class="line">Runの作成時のページにいくとRunの一覧が表示され、そのRunのステータスが <em>finished</em> になっている事が確認できる。</div>
+<div class="line">Runの作成時のページに移動するとRunの一覧が表示され、そのRunのステータスが <em>finished</em> になっている事が確認できる。</div>
 <div class="line">(実行に失敗した場合、 <em>failed</em> というステータスになる。その際も結果のファイルはデータベースに格納されるので、そこからエラーの発生原因を調査できる。）</div>
 </div>
 <div class="line-block">
@@ -373,12 +373,12 @@
 <li><a class="reference internal" href="#id3">ここで扱うシミュレータについて</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id4">ホスト登録</a></li>
-<li><a class="reference internal" href="#id5">シミュレータ登録</a></li>
-<li><a class="reference internal" href="#id6">パラメータセット登録</a></li>
-<li><a class="reference internal" href="#id7">ジョブ投入</a></li>
-<li><a class="reference internal" href="#id8">実行中のジョブの確認</a></li>
-<li><a class="reference internal" href="#id9">結果の確認</a></li>
+<li><a class="reference internal" href="#host">Host登録</a></li>
+<li><a class="reference internal" href="#simulator">Simulator登録</a></li>
+<li><a class="reference internal" href="#parameterset">ParameterSet登録</a></li>
+<li><a class="reference internal" href="#id4">ジョブ投入</a></li>
+<li><a class="reference internal" href="#id5">実行中のジョブの確認</a></li>
+<li><a class="reference internal" href="#id6">結果の確認</a></li>
 </ul>
 </li>
 </ul>
@@ -423,7 +423,7 @@
         <li class="right" >
           <a href="installation.html" title="インストール"
              >previous</a> |</li>
-        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

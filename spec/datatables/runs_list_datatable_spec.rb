@@ -12,6 +12,7 @@ describe "RunsListDatatable" do
       @context.stub(:params).and_return({id: @param_set.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "desc"})
       @context.stub(:link_to) {|str, link_path| link_path }
       @context.stub(:run_path) {|run| run.id.to_s }
+      @context.stub(:priority) {|run| Run::PRIORITY_ORDER[run.priority].to_s }
       @context.stub(:distance_to_now_in_words).and_return("time")
       @context.stub(:formatted_elapsed_time).and_return("time")
       @context.stub(:raw).and_return("label")
@@ -35,3 +36,4 @@ describe "RunsListDatatable" do
     end
   end
 end
+

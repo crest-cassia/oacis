@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# CASSIA Manager documentation build configuration file, created by
+# OACIS documentation build configuration file, created by
 # sphinx-quickstart on Mon Jul  1 15:10:34 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'CASSIA Manager'
+project = u'OACIS'
 copyright = u'2013, Yohsuke Murase and Takeshi Uchitane'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -164,7 +164,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'CASSIAManagerdoc'
+htmlhelp_basename = 'OACISdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -183,7 +183,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'CASSIAManager.tex', u'CASSIA Manager Documentation',
+  ('index', 'OACIS.tex', u'OACIS Documentation',
    u'Yohsuke Murase and Takeshi Uchitane', 'manual'),
 ]
 
@@ -213,7 +213,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'cassiamanager', u'CASSIA Manager Documentation',
+    ('index', 'oacis', u'OACIS Documentation',
      [u'Yohsuke Murase and Takeshi Uchitane'], 1)
 ]
 
@@ -227,8 +227,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'CASSIAManager', u'CASSIA Manager Documentation',
-   u'Yohsuke Murase and Takeshi Uchitane', 'CASSIAManager', 'One line description of project.',
+  ('index', 'OACIS', u'OACIS Documentation',
+   u'Yohsuke Murase and Takeshi Uchitane', 'OACIS', 'One line description of project.',
    'Miscellaneous'),
 ]
 

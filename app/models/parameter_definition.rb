@@ -15,10 +15,7 @@ class ParameterDefinition
   def cast_default_value
     return unless errors.empty?
     casted = ParametersUtil.cast_value(self.default, self.type)
-    if casted
-      self.default = casted
-    else
-      errors.add(:default, "can not be casted to #{self.type}")
-    end
+    errors.add(:default, "can not be casted to #{self.type}") if casted.nil?
+    self.default = casted
   end
 end

@@ -10,6 +10,13 @@
     .controls
       = f.fields_for :parameter_definitions do |builder|
         = render 'parameter_definition_fields', f: builder, disabled: has_ps
+      #add_field_here
+      %fieldset.controls-row
+        = text_field_tag '__dummy__', "_seed", disabled: true
+        = select_tag '__dummy__', options_for_select(['seed']), disabled: true
+        = text_field_tag '__dummy__', "-", disabled: true
+        %br
+        = text_area_tag '__dummy__', "Random number seed", rows: 3, disabled: true
       = link_to_add_fields "Add Parameter", f, :parameter_definitions unless has_ps
   .control-group
     = f.label(:pre_process_script, class: 'control-label')
@@ -19,6 +26,10 @@
     = f.label(:command, class: 'control-label')
     .controls
       = f.text_field(:command)
+  .control-group
+    = f.label(:print_version_command, class: 'control-label')
+    .controls
+      = f.text_field(:print_version_command)
   .control-group
     = f.label(:support_input_json, "Input type", class: 'control-label')
     .controls

@@ -7,6 +7,7 @@ gem "haml"
 gem "net-ssh"
 gem "net-sftp"
 gem 'daemon-spawn', :require => 'daemon_spawn'
+gem "ruby-progressbar"
 
 group :assets do
   gem 'sass-rails'
@@ -17,6 +18,9 @@ group :assets do
   gem 'jquery-datatables-rails'
   gem "haml-rails"
   gem "factory_girl_rails"
+  gem "d3-rails"
+  gem "redcarpet"
+  gem "parallel"
 end
 
 group :development, :test do

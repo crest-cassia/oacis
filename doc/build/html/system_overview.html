@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>システム概要 &mdash; CASSIA Manager 0.0.1 documentation</title>
+    <title>システム概要 &mdash; OACIS 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="CASSIA Manager 0.0.1 documentation" href="index.html" />
+    <link rel="top" title="OACIS 0.0.1 documentation" href="index.html" />
     <link rel="next" title="インストール" href="installation.html" />
     <link rel="prev" title="はじめに" href="introduction.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="introduction.html" title="はじめに"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -51,18 +51,18 @@
             
   <div class="section" id="id1">
 <h1>システム概要<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
-<p>この章では、CASSIA Managerの全体像の理解のために、システム構成とデータ構造について説明する。</p>
+<p>この章では、OACISの全体像の理解のために、システム構成とデータ構造について説明する。</p>
 <div class="section" id="id2">
 <h2>システム構成<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
-<div class="line">CASSIA Manager (CM) は、Ruby on Railsフレームワークを用いて構築されており、ユーザーはウェブブラウザを用いて実行したシミュレーション結果などにアクセスすることができる。</div>
+<div class="line">OACISは、Ruby on Railsフレームワークを用いて構築されており、ユーザーはウェブブラウザを用いて実行したシミュレーション結果などにアクセスすることができる。</div>
 <div class="line">内部のデータベースとしてMongoDBを使用しており、シミュレーション実行時の情報、パラメータについての情報、ホストについての情報などが格納される。</div>
-<div class="line">シミュレータが出力したファイルやディレクトリについては、ファイルシステム上に保存される。</div>
+<div class="line">シミュレータが出力したファイルやディレクトリについては、ファイルシステム上(publicディレクトリ以下)に保存される。</div>
 <div class="line">システム構成の概要は下図のようになる。</div>
 </div>
 <a class="reference internal image-reference" href="_images/system_configuration_num.png"><img alt="_images/system_configuration_num.png" class="align-center" src="_images/system_configuration_num.png" style="width: 30%;" /></a>
 <div class="line-block">
-<div class="line">ユーザーがシミュレーション実行をリクエストしてから、シミュレーション結果をCMに保存するまでの処理の流れに沿ってシステムの概要を説明する。</div>
+<div class="line">ユーザーがシミュレーション実行をリクエストしてから、シミュレーション結果をOACISに保存するまでの処理の流れに沿ってシステムの概要を説明する。</div>
 </div>
 <ol class="arabic simple">
 <li>まずユーザーがウェブブラウザ（①）上で実行したいシミュレーションを指定する。</li>
@@ -80,12 +80,12 @@
 <div><ul class="simple">
 <li>Host登録時にTorqueなどのジョブスケジューラを指定すれば、ジョブスケジューラ経由でジョブが実行される。</li>
 <li>シミュレータは事前にユーザーが各ホスト上でビルドして実行可能な状態になっている必要がある。
-* 事前にシミュレータのパスをCMに登録し、Workerがそのコマンドをリモートホストで実行する。</li>
+* 事前にシミュレータのパスをOACISに登録し、Workerがそのコマンドをリモートホストで実行する。</li>
 <li>各ジョブごとにディレクトリを作成し、その中でジョブが実行される。</li>
 </ul>
 </div></blockquote>
 <ol class="arabic simple" start="4">
-<li>リモートホストでの実行が完了後、Workerが実行結果をCM実行サーバーにSFTPでダウンロードする。</li>
+<li>リモートホストでの実行が完了後、Workerが実行結果をOACIS実行サーバーにSFTPでダウンロードする。</li>
 </ol>
 <blockquote>
 <div><ul class="simple">
@@ -101,7 +101,7 @@
 <div class="section" id="id3">
 <h2>データ構造の概略<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
-<div class="line">CMではシミュレーション結果は図の様なSimulator, ParameterSet, Runの３層構造に分けて保存される。</div>
+<div class="line">OACISではシミュレーション結果は図の様なSimulator, ParameterSet, Runの３層構造に分けて保存される。</div>
 </div>
 <a class="reference internal image-reference" href="_images/data_structure.png"><img alt="_images/data_structure.png" class="align-center" src="_images/data_structure.png" style="width: 30%;" /></a>
 <div class="line-block">
@@ -176,7 +176,7 @@
         <li class="right" >
           <a href="introduction.html" title="はじめに"
              >previous</a> |</li>
-        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

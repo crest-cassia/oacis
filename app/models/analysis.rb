@@ -11,9 +11,11 @@ class Analysis
   field :finished_at, type: DateTime
   field :included_at, type: DateTime
   field :result
+  index({ status: 1 }, { name: "analysis_status_index" })
 
   belongs_to :analyzer
-  belongs_to :analyzable, polymorphic: true
+  belongs_to :analyzable, polymorphic: true, autosave: false
+  belongs_to :parameter_set
 
   before_validation :set_status
   validates :status, presence: true,
@@ -21,6 +23,7 @@ class Analysis
   validates :analyzer, :presence => true
   validate :cast_and_validate_parameter_values
 
+  before_create :assign_parameter_set_id
   after_create :create_dir
   before_destroy :delete_dir
 
@@ -128,6 +131,16 @@ class Analysis
       return
     end
     self.parameters = casted
+  end
+
+  def assign_parameter_set_id
+    if analyzable.is_a?(Run)
+      self.parameter_set = analyzable.parameter_set
+    elsif analyzable.is_a?(ParameterSet)
+      self.parameter_set = analyzable
+    else
+      raise "must not happen"
+    end
   end
 
   def create_dir

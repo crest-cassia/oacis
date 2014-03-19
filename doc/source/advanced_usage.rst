@@ -40,7 +40,7 @@
 | 各ジョブによってこれらの値が異なるため、Runの作成時にこれらの値を指定できるようにする。
 
 | そのためにはホストパラメータと呼ぶ仕組みを使用する。
-| ホストパラメータとして指定した変数は各Runの作成時に個別に入力することができ、その変数がホストのテンプレート部分に展開される。
+| ホストパラメータとして指定した変数は各Runの作成時に個別に入力することができ、その変数がHostのテンプレート部分に展開される。
 
 | 具体的には以下の手順でHostの "template", "Definition of Host Parameters" というフィールドを設定する。
 
@@ -67,7 +67,7 @@
   | この際、テンプレートとホストパラメータ定義が整合していないとエラーとなる。
   | テンプレートで展開する変数は必ずホストパラメータとして定義されている必要があり、ホストパラメータとして定義された変数はテンプレート中に現れなくてはならない。
 
-| 以上でホストの設定は完了である。
+| 以上でHostの設定は完了である。
 | この設定後、Runの作成時に以下のようにホストパラメータを入力する箇所が現れる。
 | 適切な値を入れて [Preview] ボタンをクリックするとジョブスクリプトのプレビューが表示される。
 | [Create Run]をクリックするとRunが作成され、順番にジョブが投入される。
@@ -108,6 +108,133 @@ MPI, OpenMPのジョブ
   #PBS -l walltime=10:00
   ...
 
+京コンピュータのPJMを利用するケース
+----------------------------------------------
+
+| 京コンピュータでジョブを実行する場合、ノード形状やelapse timeやステージング情報をジョブスクリプトに記載する必要がある。
+| また、若干の修正(PRE-PROCESS, JOB EXECUTION)が必要である。
+| 以下では、実行時ディレクトリからみて、 ./signals/ 以下の設定ファイルを読み込み、 ./result/inst/ 以下に結果を出力するシミュレータでの例を示す。(シミュレータ依存の操作はOptionalと示される。)
+
+0. プリプロセスでの処理
+  - 下記(1. 2. 3.)に続くジョブスクリプトへの修正を行うことで、プリプロセスが実行されるディレクトリ以下をステージイン可能となる。しかし、実行に必要なバイナリや設定ファイルをジョブスクリプト実行ディレクトリ以下に配置する作業や実行コマンドの微修正などをあらかじめ実行しておく必要がある。
+  - 例えば、バイナリの移動(need)や設定ファイル群の移動(optional)には、下記のようにコマンドをプリプロセスに追加する。
+
+  .. code-block:: sh
+
+    cp ~/path/to/simulator.out . #(Need)
+    cp -r ~/path/to/signals . #(Optional)
+
+  - 例えば、シミュレータの実行コマンドをステージイン後のパスに変更するには、実行コマンドを *SIMCMD.txt* ファイルに書き出す処理をプリプロセスに追加し、ジョブスクリプトから読み込む。(Optional)
+
+  .. code-block:: sh
+
+    echo "./simulator.out" > SIMCMD.txt
+
+1. ステージングへの対応
+  - PJM --vset は、PJM内で利用する変数を定義する。ここでは、OACIS_RUN_IDとOACIS_WORK_BASE_DIRを定義している。
+  - PJM --stgin-dir "./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/"は、_input.jsonや設定ファイルを転送する。
+  - PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}は、ステージインするベースディレクトリを指示する。
+  - PJM --stgin-dir "./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/"は、signalsディレクトリ以下のファイルを転送する。(Optional)
+  - PJM --stgout-basedir ${OACIS_WORK_BASE_DIR}は、ステージアウトするベースディレクトリを指示する。
+  - PJM --stgout "./* ./"は、すべてのファイル(ディレクトリは含まない)を転送する。(デフォルトでは、${RUN_ID}.tar.bz2がステージアウトされる。)
+
+  .. code-block:: sh
+
+    #!/bin/bash -x
+    #
+    #PJM --rsc-list "node=1"
+    #PJM --rsc-list "elapse=0:05:00"
+    #PJM --vset OACIS_RUN_ID=<%= run_id %>
+    #PJM --vset OACIS_WORK_BASE_DIR=<%= work_base_dir %>
+    #PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}
+    #PJM --stgin-dir "./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/"
+    #PJM --stgin-dir "./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/"
+    #PJM --stgout-basedir ${OACIS_WORK_BASE_DIR}
+    #PJM --stgout "./* ./"
+    #PJM -s
+    #
+    LANG=C
+
+2. PRE-PROCESSへの修正
+  - mkdir -p result/instは、シミュレータの実行結果を出力するのに必要なフォルダを生成する。(Optional)
+
+  .. code-block:: diff
+
+    # PRE-PROCESS ---------------------
+    + . /work/system/Env_base
+    + mkdir -p result/inst
+    - #mkdir -p ${OACIS_WORK_BASE_DIR}
+    - #cd ${OACIS_WORK_BASE_DIR}
+    - mkdir -p ${OACIS_RUN_ID}
+    cd ${OACIS_RUN_ID}
+    if [ -e ../${OACIS_RUN_ID}_input.json ]; then
+    \mv ../${OACIS_RUN_ID}_input.json ./_input.json
+    fi
+    echo "{" > ../${OACIS_RUN_ID}_status.json
+    echo "  \"started_at\": \"`date`\"," >> ../${OACIS_RUN_ID}_status.json
+    echo "  \"hostname\": \"`hostname`\"," >> ../${OACIS_RUN_ID}_status.json
+
+3. JOB EXECUTIONへの修正
+  - SIMCMD=`cat SIMCMD.txt`は、シミュレータ実行コマンドを *SIMCMD.txt* から読み込む。SIMCMD.txtは、Simulatorのプリプロセスで生成しておく。(Optional)
+
+  .. code-block:: diff
+
+    # JOB EXECUTION -------------------
+    + SIMCMD=`cat SIMCMD.txt` #SIMCMD.txt is created by _preprocess.sh
+    if ${OACIS_IS_MPI_JOB}
+    then
+      export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
+    -  { time -p { { mpiexec -n ${OACIS_MPI_PROCS}  <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    +  { time -p { { mpiexec -n ${OACIS_MPI_PROCS} ${SIMCMD}; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    else
+    -  { time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    +  { time -p { { ${SIMCMD}; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+    fi
+    echo "  \"rc\": $?," >> ../${OACIS_RUN_ID}_status.json
+    echo "  \"finished_at\": \"`date`\"" >> ../${OACIS_RUN_ID}_status.json
+    echo "}" >> ../${OACIS_RUN_ID}_status.json
+
+
+手動でジョブを実行する
+==============================================
+
+| OACIS上でRunを作るとworkerによってジョブ投入が自動で行われるが、ジョブの実行を手動で行う事もできる。
+| Run作成時に手動実行を指定した場合、自動ジョブ投入は行われずジョブスクリプトの生成のみ行われる。
+| そのジョブスクリプトをユーザーが手動で実行し、結果を後からOACISに取り込む事が可能である。
+
+| 手動で実行することにより、手間は増えるが細かなスクリプトのカスタマイズが可能である。
+| 例えば、以下の様な用途に利用できる。
+
+    - 複数のRunを一つのジョブとしてスケジューラに投入する場合
+        - スケジューラのジョブ数に制限がある場合などにまとめて投入する事ができる
+            - 例：京のバルクジョブ
+    - スケジューラの制限時間よりも長いジョブを実行する場合
+        - 一度の実行ではジョブが完了せずジョブのリスタートが必要になる場合には、一つのRunに対して複数回ジョブ投入が必要になる
+    - スケジューラに投入するジョブスクリプトに特殊な設定が必要な場合
+        - OACISによって生成されたスクリプトを手動で編集する事によって、実効方法をカスタマイズできる
+
+| 手動実行を行うためにはRunの作成時に投入Host選択フィールドで "manual submission" を選択する。
+| Runの作成後に `${OACIS_ROOT}/public/Result_development/manual_submission` ディレクトリにシェルスクリプトが生成される。
+| パラメータの入力形式がJSON形式の場合には、入力用JSONファイルも作成される。
+
+.. image:: images/manual_submission.png
+  :width: 30%
+  :align: center
+
+| ユーザーが以下のように生成されたジョブスクリプト実行すると、ジョブが実行される。
+
+.. code-block:: sh
+
+  bash 52cde935b93f969b07000005.sh
+
+| シミュレーション実行結果のファイル（今回の例の場合 52cde935b93f969b07000005.tar.bz2）は以下のコマンドでデータベースに取り込む事ができる。
+
+.. code-block:: sh
+
+  ./bin/oacis_cli job_include -i 52cde935b93f969b07000005.tar.bz2
+
+| 上記コマンドの入力ファイルはスペース区切りまたはコンマ区切りで複数ファイルを指定できる。
+
 結果をMongoDB内に格納する
 ==============================================
 
@@ -124,6 +251,37 @@ MPI, OpenMPのジョブ
   :width: 40%
   :align: center
 
+シミュレーターのバージョンを記録する
+==============================================
+
+| シミュレーションの実行時にどのバージョンのシミュレーターで実行したかOACISに記録をさせておくことができる。
+| RunとSimulatorのバージョンをひもづけて記録する事により、例えば、あるバージョンの実行結果の一括削除などの操作ができる様になる。
+
+| バージョンを保存するには、Simulatorのバージョンを出力させるコマンドをOACISに登録する。
+| 例えば
+
+.. code-block:: sh
+
+  ~/path/to/simulator.out --version
+
+| というコマンドでバージョン情報を出力するシミュレーターがある場合、このコマンドをSimulator登録時に "Print version command" というフィールドに入力する。
+| このコマンドを登録しておくと、ジョブスクリプトの中でこのコマンドを実行しその標準出力をバージョンとして記録することができる。
+
+| Print version command の標準出力に出力された文字列がバージョンとして認識されるので、実行バイナリに引数を渡すだけでなく柔軟な指定が可能である。
+| 例えば、以下のように手動でタグをつけたり、ビルドログを出力したり、バージョン管理システムのコミットIDを出力するような利用方法も考えられる。
+
+.. code-block:: sh
+
+  echo "v1.0.0"
+
+.. code-block:: sh
+
+  cat ~/path/to/build_log.txt
+
+.. code-block:: sh
+
+  cd ~/path/to; git describe --always
+
 プリプロセスの定義
 ==============================================
 
@@ -134,7 +292,7 @@ MPI, OpenMPのジョブ
   * 外部へのネットワークが遮断され入力用ファイルを準備するために外部からファイルを転送することができないケース
   * ファイルのステージングの都合により、ジョブの実行前にファイルをすべて用意する必要があるケース
 
-| そこで、CMにはジョブの実行前にプリプロセスを個別に実行する仕組みを用意してある。
+| そこで、OACISにはジョブの実行前にプリプロセスを個別に実行する仕組みを用意してある。
 | このプリプロセスはジョブの投入前にログインノードで実行されるため上記の問題は起きない。
 | ここではプリプロセスの仕様と設定方法を説明する。
 
@@ -162,13 +320,13 @@ Analyzerの登録と実行
 ==============================================
 
 | ジョブの実行後、実行結果に対してポストプロセス（Analyzer）を定義することができる。
-| CMで定義できるAnalyzerには２種類存在する。
+| OACISで定義できるAnalyzerには２種類存在する。
 | 一つは各個別のRunに対して実行されるもの、もう一つはParameterSet内のすべてのRunに対して行われるものである。
 | 前者の例としては、シミュレーションのスナップショットデータから可視化を行う、時系列のシミュレーション結果に対してフーリエ変換する、などがあげられる。
 | 後者の例は、複数のRunの統計平均と誤差を計算することなどがあげられる。
-| CMの用語として、Analyzerによって得られた結果はAnalysisと呼ばれる。AnalyzerとAnalysisの関係は、SimulatorとRunの関係のようなものである。
+| OACISの用語として、Analyzerによって得られた結果はAnalysisと呼ばれる。AnalyzerとAnalysisの関係は、SimulatorとRunの関係のようなものである。
 
-| Analyzerはサーバー上でバックグラウンドプロセスとして実行される。よってサーバー上でanalyzerが適切に動くように事前にセットアップする必要がある。
+| Analyzerはサーバー上でバックグラウンドプロセスとして実行される。(すなわち、Host上で実行されない点がプリプロセスと異なる。)よってサーバー上でanalyzerが適切に動くように事前にセットアップする必要がある。
 | ユーザーはAnalyzerの登録時に実行されるコマンドを入力する。そのコマンドがバックグラウンドで呼ばれて解析が実行されることになる。
 | Simulatorの場合と同じように、実行日時や実行時間などの情報が保存され、結果はブラウザ経由で確認できる。
 
@@ -207,7 +365,7 @@ Runに対する解析
   set output "sample.eps"
   plot "_input/time_series.dat" w l
 
-| これでAnalyzerの準備ができたので、CMに登録する
+| これでAnalyzerの準備ができたので、OACISに登録する
 | Simulatorの画面を開き、[About]タブをクリックするとAnalyzerを新規登録するためのリンク[New Analyzer]が表示される。
 | そのリンクをクリックすると下図のような登録画面が現れる。
 
@@ -220,7 +378,7 @@ Runに対する解析
 ============================= ======================================================================
 フィールド                     説明
 ============================= ======================================================================
-Name                          CMの中で使われるAnalyzerの名前。任意の名前を指定できる。各Simulator内で一意でなくてはならない。
+Name                          OACISの中で使われるAnalyzerの名前。任意の名前を指定できる。各Simulator内で一意でなくてはならない。
 Type                          Runに対する解析(on_run)、ParameterSetに対する解析(on_parameter_set)のどちらかから選ぶ
 Definition of Parameters      解析時に指定するパラメータがあれば登録する。空でもよい。
 Command                       実行するコマンド

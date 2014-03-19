@@ -4,7 +4,8 @@ namespace :daemon do
 
   desc "start daemons"
   task :start do
-    if File.exist?(SERVER_PID) and File.open(SERVER_PID).gets.present?
+    Rake::Task['db:update_schema'].invoke
+    if is_server_running?
       $stderr.puts "server is already running: #{SERVER_PID}"
     else
       cmd = "bundle exec rails s -d"
@@ -12,7 +13,11 @@ namespace :daemon do
       system(cmd)
     end
 
-    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'worker.rb')} start"
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'job_worker.rb')} start"
+    system(cmd)
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'analyzer_worker.rb')} start"
+    system(cmd)
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'service_worker.rb')} start"
     system(cmd)
   end
 
@@ -29,7 +34,11 @@ namespace :daemon do
       $stderr.puts "#{SERVER_PID} is not found"
     end
 
-    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'worker.rb')} stop"
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'job_worker.rb')} stop"
+    system(cmd)
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'analyzer_worker.rb')} stop"
+    system(cmd)
+    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'service_worker.rb')} stop"
     system(cmd)
   end
 
@@ -38,5 +47,26 @@ namespace :daemon do
     Rake::Task['daemon:stop'].invoke
     sleep 0.5
     Rake::Task['daemon:start'].invoke
+  end
+
+  def is_process_running?(pid, pname)
+    cmd = "pgrep -l -f \"#{pname}\""
+    IO.popen(cmd) do |f|
+      f.each do |line|
+        return true if line=~/^#{pid}/ and line=~/#{pname}/
+      end
+    end
+
+    return false
+  end
+
+  def is_server_running?
+    return false unless File.exist?(SERVER_PID)
+
+    return false unless File.open(SERVER_PID).gets.present?
+
+    pid=File.open(SERVER_PID).gets.chomp
+    pname="rails s -d"
+    is_process_running?(pid, pname)
   end
 end

@@ -236,9 +236,216 @@ describe ParameterSetsController do
     end
   end
 
-  describe "GET _runs_status_count" do
+  describe "GET _line_plot" do
+
+    before(:each) do
+      pds = [ {key: "L", type: "Integer", default: 50, description: "First parameter"},
+              {key: "T", type: "Float", default: 1.0, description: "Second parameter"},
+              {key: "P", type: "Float", default: 1.0, description: "Third parameter"}]
+      pds.map! {|h| ParameterDefinition.new(h) }
+      @sim = FactoryGirl.create(:simulator,
+                               parameter_definitions: pds,
+                               parameter_sets_count: 0,
+                               analyzers_count: 0)
+      param_values = [ {"L" => 1, "T" => 1.0, "P" => 1.0},
+                       {"L" => 2, "T" => 1.0, "P" => 1.0},
+                       {"L" => 3, "T" => 1.0, "P" => 1.0},
+                       {"L" => 1, "T" => 2.0, "P" => 1.0},
+                       {"L" => 2, "T" => 2.0, "P" => 1.0},
+                       {"L" => 3, "T" => 2.0, "P" => 2.0}  # P is different from others
+                     ]
+      host = FactoryGirl.create(:host)
+      @ps_array = param_values.map do |v|
+        ps = @sim.parameter_sets.create(v: v)
+        run = ps.runs.create
+        run.status = :finished
+        run.submitted_to = host
+        run.result = {"ResultKey1" => 99}
+        run.cpu_time = 10.0
+        run.real_time = 3.0
+        run.save!
+        ps
+      end
+    end
+
+    it "returns in json format" do
+      get :_line_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: "", format: :json}
+      response.header['Content-Type'].should include 'application/json'
+    end
+
+    it "returns valid json" do
+      get :_line_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: "", format: :json}
+      expected = {
+        xlabel: "L", ylabel: "ResultKey1", series: "", series_values: [],
+        data: [
+          [
+            [1, 99.0, nil, @ps_array[0].id],
+            [2, 99.0, nil, @ps_array[1].id],
+            [3, 99.0, nil, @ps_array[2].id],
+          ]
+        ]
+      }.to_json
+      response.body.should eq expected
+    end
+
+    it "returns elapsed times when 'real_time' or 'cpu_time' is specified as y_axis_key" do
+      get :_line_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "cpu_time", series: "", irrelevants: "", format: :json}
+      expected = {
+        xlabel: "L", ylabel: "cpu_time", series: "", series_values: [],
+        data: [
+          [
+            [1, 10.0, nil, @ps_array[0].id],
+            [2, 10.0, nil, @ps_array[1].id],
+            [3, 10.0, nil, @ps_array[2].id],
+          ]
+        ]
+      }.to_json
+      response.body.should eq expected
+    end
+
+    context "when parameter 'series' is given" do
+
+      it "returns series of data when parameter 'series' is given" do
+        get :_line_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "", format: :json}
+        expected = {
+          xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0],
+          data: [
+            [
+              [1, 99.0, nil, @ps_array[3].id],
+              [2, 99.0, nil, @ps_array[4].id],
+            ],
+            [
+              [1, 99.0, nil, @ps_array[0].id],
+              [2, 99.0, nil, @ps_array[1].id],
+              [3, 99.0, nil, @ps_array[2].id]
+            ]
+          ]
+        }.to_json
+        response.body.should eq expected
+      end
+    end
+
+    context "when 'irrelevants' are given" do
+
+      it "data includes parameter sets having different irrelevant parameters " do
+        get :_line_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "P", format: :json}
+        expected = {
+          xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0],
+          data: [
+            [
+              [1, 99.0, nil, @ps_array[3].id],
+              [2, 99.0, nil, @ps_array[4].id],
+              [3, 99.0, nil, @ps_array[5].id]
+            ],
+            [
+              [1, 99.0, nil, @ps_array[0].id],
+              [2, 99.0, nil, @ps_array[1].id],
+              [3, 99.0, nil, @ps_array[2].id]
+            ]
+          ]
+        }.to_json
+        response.body.should eq expected
+      end
+    end
   end
 
-  describe "GET _runs_table" do
+  describe "GET _scatter_plot" do
+
+    before(:each) do
+      pds = [ {key: "L", type: "Integer", default: 50, description: "First parameter"},
+              {key: "T", type: "Float", default: 1.0, description: "Second parameter"},
+              {key: "P", type: "Float", default: 1.0, description: "Third parameter"}]
+      pds.map! {|h| ParameterDefinition.new(h) }
+      @sim = FactoryGirl.create(:simulator,
+                               parameter_definitions: pds,
+                               parameter_sets_count: 0,
+                               analyzers_count: 0)
+      param_values = [ {"L" => 1, "T" => 1.0, "P" => 1.0},
+                       {"L" => 2, "T" => 1.0, "P" => 1.0},
+                       {"L" => 3, "T" => 1.0, "P" => 1.0},
+                       {"L" => 1, "T" => 2.0, "P" => 1.0},
+                       {"L" => 2, "T" => 2.0, "P" => 1.0},
+                       {"L" => 3, "T" => 2.0, "P" => 2.0}  # P is different from others
+                     ]
+      host = FactoryGirl.create(:host)
+      @ps_array = param_values.map do |v|
+        ps = @sim.parameter_sets.create(v: v)
+        run = ps.runs.create
+        run.status = :finished
+        run.cpu_time = 10.0
+        run.real_time = 3.0
+        run.submitted_to = host
+        run.result = {"ResultKey1" => 99}
+        run.save!
+        ps
+      end
+    end
+
+    it "returns in json format" do
+      get :_scatter_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", format: :json}
+      response.header['Content-Type'].should include 'application/json'
+    end
+
+    it "returns valid json" do
+      get :_scatter_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", format: :json}
+      expected_data = [
+        [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s],
+        [@ps_array[3].v, 99.0, nil, @ps_array[3].id.to_s],
+        [@ps_array[1].v, 99.0, nil, @ps_array[1].id.to_s],
+        [@ps_array[4].v, 99.0, nil, @ps_array[4].id.to_s],
+        [@ps_array[2].v, 99.0, nil, @ps_array[2].id.to_s]
+      ]
+
+      loaded = JSON.load(response.body)
+      loaded["xlabel"].should eq "L"
+      loaded["ylabel"].should eq "T"
+      loaded["result"].should eq "ResultKey1"
+      loaded["data"].should =~ expected_data
+    end
+
+    it "returns records specified by range" do
+      get :_scatter_plot,
+        { id: @ps_array.first,
+          x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1",
+          irrelevants: "", range: {"L" => [1,2]}.to_json,
+          format: :json}
+      expected_data = [
+        [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s],
+        [@ps_array[3].v, 99.0, nil, @ps_array[3].id.to_s],
+        [@ps_array[1].v, 99.0, nil, @ps_array[1].id.to_s],
+        [@ps_array[4].v, 99.0, nil, @ps_array[4].id.to_s]
+      ]
+
+      loaded = JSON.load(response.body)
+      loaded["xlabel"].should eq "L"
+      loaded["ylabel"].should eq "T"
+      loaded["result"].should eq "ResultKey1"
+      loaded["data"].should =~ expected_data
+    end
+
+    it "returns elapsed time when params[:result] is 'cpu_time' or 'real_time'" do
+      get :_scatter_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "", format: :json}
+      expected_data = [
+        [@ps_array[0].v, 10.0, nil, @ps_array[0].id.to_s],
+        [@ps_array[3].v, 10.0, nil, @ps_array[3].id.to_s],
+        [@ps_array[1].v, 10.0, nil, @ps_array[1].id.to_s],
+        [@ps_array[4].v, 10.0, nil, @ps_array[4].id.to_s],
+        [@ps_array[2].v, 10.0, nil, @ps_array[2].id.to_s]
+      ]
+
+      loaded = JSON.load(response.body)
+      loaded["xlabel"].should eq "L"
+      loaded["ylabel"].should eq "T"
+      loaded["result"].should eq "cpu_time"
+      loaded["data"].should =~ expected_data
+    end
   end
 end

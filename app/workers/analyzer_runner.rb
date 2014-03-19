@@ -4,13 +4,20 @@ class AnalyzerRunner
   INPUT_FILES_DIR = '_input'
   OUTPUT_JSON_FILENAME = '_output.json'
 
+  NUM_PROCESSES = 4
+  NUM_LIMIT = NUM_PROCESSES*2
+
   def self.perform(logger)
     Analysis.where(status: :cancelled).each do |anl|
       logger.info("Deleting cancelled analysis: #{anl.id}")
       anl.destroy(true)
     end
-    Analysis.where(status: :created).each do |anl|
-      logger.info("Analyzing #{anl.id}")
+    anl_ids = Analysis.where(status: :created).limit(NUM_LIMIT).map(&:id)
+    Mongoid::sessions.clear # before forking a process, clear Mongo session. Otherwise, invalid data may be obtained.
+    Parallel.each(anl_ids, in_processes: NUM_PROCESSES) do |anl_id|
+      logger.info("Analyzing #{anl_id}")
+      Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml')) # make a new Mongo session in each process.
+      anl = Analysis.find(anl_id)
       work_dir = anl.dir  # UPDATE ME: a tentative implementation
       begin
         output = run_analysis(anl, work_dir)
@@ -22,6 +29,10 @@ class AnalyzerRunner
     end
   rescue => ex
     logger.error("Error in AnalyzerRunner: #{ex.inspect}")
+  ensure
+    # anyway, try to clear Mongoid session, then try to make a new Mongoid session
+    Mongoid::sessions.clear
+    Mongoid::Config.load!(File.join(Rails.root, 'config/mongoid.yml'))
   end
 
   private
@@ -37,6 +48,7 @@ class AnalyzerRunner
           raise "Rc of the simulator is not 0, but #{$?.to_i}"
         end
         output[:result] = parse_output_json
+        output[:result] = {"result"=>parse_output_json} unless output[:result].is_a?(Hash)
         remove_inputs
       }
     }
@@ -56,7 +68,7 @@ class AnalyzerRunner
       output_dir = File.join(INPUT_FILES_DIR, dir)
       FileUtils.mkdir_p(output_dir)
       inputs.each do |input|
-        FileUtils.cp_r(input, output_dir)
+        FileUtils.ln_s(input, output_dir)
       end
     end
   end
@@ -70,7 +82,7 @@ class AnalyzerRunner
   def self.parse_output_json
     jpath = OUTPUT_JSON_FILENAME
     if File.exist?(jpath)
-      return JSON.parse(IO.read(jpath))
+      return JSON.load(File.open(jpath))
     else
       return nil
     end
@@ -85,3 +97,4 @@ class AnalyzerRunner
     end
   end
 end
+

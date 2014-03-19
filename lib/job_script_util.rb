@@ -10,6 +10,7 @@ OACIS_IS_MPI_JOB=<%= is_mpi_job %>
 OACIS_WORK_BASE_DIR=<%= work_base_dir %>
 OACIS_MPI_PROCS=<%= mpi_procs %>
 OACIS_OMP_THREADS=<%= omp_threads %>
+OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
 
 # PRE-PROCESS ---------------------
 mkdir -p ${OACIS_WORK_BASE_DIR}
@@ -22,6 +23,11 @@ fi
 echo "{" > ../${OACIS_RUN_ID}_status.json
 echo "  \\"started_at\\": \\"`date`\\"," >> ../${OACIS_RUN_ID}_status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${OACIS_RUN_ID}_status.json
+
+# PRINT SIMULATOR VERSION ---------
+if [ -n "$OACIS_PRINT_VERSION_COMMAND" ]; then
+  (eval ${OACIS_PRINT_VERSION_COMMAND}) > ../${OACIS_RUN_ID}_version.txt
+fi
 
 # JOB EXECUTION -------------------
 export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
@@ -39,6 +45,9 @@ echo "}" >> ../${OACIS_RUN_ID}_status.json
 cd ..
 \\mv -f ${OACIS_RUN_ID}_status.json ${OACIS_RUN_ID}/_status.json
 \\mv -f ${OACIS_RUN_ID}_time.txt ${OACIS_RUN_ID}/_time.txt
+if [ -e ${OACIS_RUN_ID}_version.txt ]; then
+  \\mv -f ${OACIS_RUN_ID}_version.txt ${OACIS_RUN_ID}/_version.txt
+fi
 tar cf ${OACIS_RUN_ID}.tar ${OACIS_RUN_ID}
 if test $? -ne 0; then { echo "// Failed to make an archive for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
 bzip2 ${OACIS_RUN_ID}.tar
@@ -46,16 +55,17 @@ if test $? -ne 0; then { echo "// Failed to compress for ${OACIS_RUN_ID}" >> ./_
 rm -rf ${OACIS_RUN_ID}
 EOS
 
-  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "work_base_dir", "omp_threads", "mpi_procs", "cmd"]
+  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
 
   def self.script_for(run, host)
     default_variables = {
       "run_id" => run.id.to_s,
       "is_mpi_job" => run.simulator.support_mpi ? "true" : "false",
-      "work_base_dir" => host.work_base_dir,
+      "work_base_dir" => host ? host.work_base_dir : '.',
       "omp_threads" => run.omp_threads,
       "mpi_procs" => run.mpi_procs,
-      "cmd" => run.command_and_input[0].sub(/;$/, '')
+      "cmd" => run.command_and_input[0].sub(/;$/, ''),
+      "print_version_command" => run.simulator.print_version_command.to_s.gsub(/\"/, '\\"')
     }
     # semi-colon in the last of the command causes bash syntax error
 
@@ -63,7 +73,8 @@ EOS
     variables = run.host_parameters.dup if run.host_parameters
     variables.update(default_variables)
 
-    rendered_script = SafeTemplateEngine.render(host.template, variables)
+    template = host ? host.template : DEFAULT_TEMPLATE
+    rendered_script = SafeTemplateEngine.render(template, variables)
     rendered_script.gsub(/(\r\n|\r|\n)/, "\n")
   end
 
@@ -90,8 +101,14 @@ EOS
         end
       end
 
+      if File.exist?("_version.txt")
+        version = File.open("_version.txt", 'r').read.chomp
+        run.simulator_version = version
+      end
+
       json_path = '_output.json'
       run.result = JSON.load(File.open(json_path)) if File.exist?(json_path)
+      run.result = {"result"=>run.result} unless run.result.is_a?(Hash)
       run.included_at = DateTime.now
       run.save!
     }

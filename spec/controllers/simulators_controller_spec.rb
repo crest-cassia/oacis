@@ -77,6 +77,22 @@ describe SimulatorsController do
     end
   end
 
+  describe "GET duplicate" do
+
+    before(:each) do
+      @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+    end
+
+    it "assigns a new simulator as @simulator" do
+      get :duplicate, {id: @simulator}, valid_session
+      assigns(:simulator).should be_a_new(Simulator)
+      assigns(:simulator).name.should eq @simulator.name
+      assigns(:simulator).command.should eq @simulator.command
+      keys = @simulator.parameter_definitions.map(&:key)
+      assigns(:simulator).parameter_definitions.map(&:key).should eq keys
+    end
+  end
+
   describe "GET edit" do
     it "assigns the requested simulator as @simulator" do
       simulator = Simulator.create! valid_attributes
@@ -316,7 +332,8 @@ describe SimulatorsController do
                                     simulator: @simulator,
                                     query: {"L" => {"gte" => 5}})
 
-        get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 1, sSortDir_0: "desc", query_id: @query.id}, :format => :json
+        # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
+        get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 4, sSortDir_0: "desc", query_id: @query.id}, :format => :json
         @parsed_body = JSON.parse(response.body)
       end
 
@@ -327,6 +344,24 @@ describe SimulatorsController do
         end
         @parsed_body["aaData"].first[4].to_i.should == @query.parameter_sets.max("v.L")
       end
+    end
+  end
+
+  describe "GET _progress" do
+    before(:each) do
+      @simulator = FactoryGirl.create(:simulator,
+                                      parameter_sets_count: 30, runs_count: 3
+                                      )
+      get :_progress, {id: @simulator.to_param, column_parameter: 'L', row_parameter: 'T'}, :format => :json
+      @parsed_body = JSON.parse(response.body)
+    end
+
+    it "return json format" do
+      response.should be_success
+      response.header['Content-Type'].should include 'application/json'
+      @parsed_body["parameters"].should eq ["L", "T"]
+      @parsed_body["parameter_values"].should be_a(Array)
+      @parsed_body["num_runs"].should be_a(Array)
     end
   end
 end

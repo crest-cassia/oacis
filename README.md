@@ -1,6 +1,6 @@
 # OACIS
 
-*OACIS* (''Open Administrator for Comprehensive and Inclusive Simulations'') is developed for efficient management of simulation jobs and results.
+*OACIS* (''Organizing Assistant for Comprehensive and Interactive Simulations'') is developed for efficient management of simulation jobs and results.
 See docs (doc/build/html/index.html) for the sequence of installation and usage.
 
 ## Getting Started
@@ -14,40 +14,44 @@ For the detailed installation process, please refer to the document.
 
         ```sh:check_db_daemons.sh
 ps aux | grep "mongod"
-```
+        ```
 
 - install ruby1.9.3 and [bundler](http://bundler.io/)
-    - Only version 1.9.3 is supported.
-    - to install bundler gem,
+    - Only version 1.9.3 is supported
+    - to install bundler gem, run the following command
+        - when using Ruby installed to the system, you might need to run as `sudo`
 
     ```sh:install_bundler.sh
 gem install bundler
-```
+    ```
 
 - clone the git repository
 
     ```sh:clone.sh
-git clone https://github.com/noda50/cassia.git
+git clone -b master git@github.com:crest-cassia/cassia.git
 ```
 - install dependent gems using bundle command
-  - cd to  the root directory, and run the following command
+    - cd to the project root directory `cassia`, and run the following command
 
       ```sh:install_sh
-  bundle install --binstubs --path=vendor/bundle
-```
+  bundle install --path=vendor/bundle
+      ```
 
 - run daemons
     - at the root directory, run the following command
 
     ```sh:start_daemon.sh
 bundle exec rake daemon:start
-```
+    ```
 
     - to stop the daemons,
 
     ```sh:stop_daemon.sh
 bundle exec rake daemon:stop
-```
+    ```
+
+- Please refer to the documents located at `doc/build/html`.
+    - At the moment, only Japanese documents are prepared.
 
 ## Generating documentation
 

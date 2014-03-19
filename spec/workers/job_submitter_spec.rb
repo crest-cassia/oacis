@@ -11,7 +11,7 @@ describe JobSubmitter do
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
 
-      @logger = Logger.new(STDERR)
+      @logger = Logger.new($stderr)
     end
 
     after(:each) do
@@ -32,6 +32,18 @@ describe JobSubmitter do
       expect {
         JobSubmitter.perform(@logger)
       }.to_not raise_error
+    end
+
+    it "enqueus jobs to remote host in order of priorities on runs" do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @sim.executable_on.push @host
+      @sim.save!
+      run = @sim.parameter_sets.first.runs.create(priority: 0, submitted_to: @host.to_param)
+      run.save!
+      expect {
+        JobSubmitter.perform(@logger)
+      }.to change { Run.where(status: :submitted, priority: 0).count }.by(1)
+      Run.where(status: :submitted, priority: 1).count.should eq 0
     end
   end
 end

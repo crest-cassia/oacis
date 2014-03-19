@@ -98,12 +98,21 @@ EOS
       script = JobScriptUtil.script_for(@run, @host)
       script.should match(/OACIS_OMP_THREADS=8/)
     end
+
+    context "when host is nil" do
+
+      it "does not cause an exception" do
+        expect {
+          JobScriptUtil.script_for(@run, nil)
+        }.to_not raise_error
+      end
+    end
   end
 
   describe ".expand_result_file_and_update_run" do
 
     it "expand results and parse _status.json" do
-      @sim.command = "echo '[1,2,3]' > _output.json"
+      @sim.command = "echo '{\"timeline\":[1,2,3]}' > _output.json"
       @sim.support_input_json = true
       @sim.save!
       run_test_script_in_temp_dir
@@ -127,7 +136,83 @@ EOS
         @run.real_time.should_not be_nil
         @run.cpu_time.should_not be_nil
         @run.included_at.should be_a(DateTime)
-        @run.result.should eq [1,2,3]
+        @run.result.should eq Hash["timeline",[1,2,3]]
+      }
+    end
+
+    it "expand results which is not a Hash but a Float" do
+      @sim.command = "echo '0.12345' > _output.json"
+      @sim.support_input_json = true
+      @sim.save!
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        FileUtils.mv( result_file, @run.dir.join('..') )
+        JobScriptUtil.expand_result_file_and_update_run(@run)
+
+        # expand result properly
+        File.exist?(@run.dir.join('_output.json')).should be_true
+
+        # parse status
+        @run.reload
+        @run.result.should eq Hash["result",0.12345]
+      }
+    end
+
+    it "expand results which is not a Hash but a Boolean" do
+      @sim.command = "echo 'false' > _output.json"
+      @sim.support_input_json = true
+      @sim.save!
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        FileUtils.mv( result_file, @run.dir.join('..') )
+        JobScriptUtil.expand_result_file_and_update_run(@run)
+
+        # expand result properly
+        File.exist?(@run.dir.join('_output.json')).should be_true
+
+        # parse status
+        @run.reload
+        @run.result.should eq Hash["result",false]
+      }
+    end
+
+    it "expand results which is not a Hash but a String" do
+      @sim.command = "echo '\"12345\"' > _output.json"
+      @sim.support_input_json = true
+      @sim.save!
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        FileUtils.mv( result_file, @run.dir.join('..') )
+        JobScriptUtil.expand_result_file_and_update_run(@run)
+
+        # expand result properly
+        File.exist?(@run.dir.join('_output.json')).should be_true
+
+        # parse status
+        @run.reload
+        @run.result.should eq Hash["result","12345"]
+      }
+    end
+
+    it "expand results which is not a Hash but a Array" do
+      @sim.command = "echo '[1,2,3]' > _output.json"
+      @sim.support_input_json = true
+      @sim.save!
+      run_test_script_in_temp_dir
+      Dir.chdir(@temp_dir) {
+        result_file = "#{@run.id}.tar.bz2"
+        FileUtils.mv( result_file, @run.dir.join('..') )
+        JobScriptUtil.expand_result_file_and_update_run(@run)
+
+        # expand result properly
+        File.exist?(@run.dir.join('_output.json')).should be_true
+
+        # parse status
+        @run.reload
+        @run.result.should eq Hash["result",[1,2,3]]
       }
     end
 
@@ -166,6 +251,24 @@ EOS
         @run.included_at.should be_a(DateTime)
         File.exist?(@run.dir.join('_stdout.txt')).should be_true
       }
+    end
+
+    context "when print_version_command is not nil" do
+
+      it "parses simulator version printed by Simulator#print_version_command" do
+        @sim.command = "echo '[1,2,3]' > _output.json"
+        @sim.support_input_json = true
+        @sim.print_version_command = 'echo "simulator version: 1.0.0"'
+        @sim.save!
+        run_test_script_in_temp_dir
+        Dir.chdir(@temp_dir) {
+          result_file = "#{@run.id}.tar.bz2"
+          FileUtils.mv( result_file, @run.dir.join('..') )
+          JobScriptUtil.expand_result_file_and_update_run(@run)
+
+          @run.simulator_version.should eq "simulator version: 1.0.0"
+        }
+      end
     end
   end
 end

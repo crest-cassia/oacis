@@ -40,6 +40,12 @@ class SimulatorsController < ApplicationController
     end
   end
 
+  # GET /simulators/1/duplicate
+  def duplicate
+    @simulator = Simulator.find(params[:id]).clone
+    render :new
+  end
+
   # GET /simulators/1/edit
   def edit
     @simulator = Simulator.find(params[:id])
@@ -122,11 +128,24 @@ class SimulatorsController < ApplicationController
     render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context)
   end
 
-  def _parameter_sets_status_count
-    render json: Simulator.only("parameter_sets.runs.status").find(params[:id]).parameter_sets_status_count.to_json
-  end
-
   def _analyzer_list
     render json: AnalyzersListDatatable.new(view_context)
+  end
+
+  def _progress
+    sim = Simulator.find(params[:id])
+    first_parameter = params[:column_parameter]
+    second_parameter = params[:row_parameter]
+    data = sim.progress_overview_data(first_parameter, second_parameter)
+    render json: data
+  end
+
+  def explore
+    @simulator = Simulator.find(params[:id])
+    @param_set = @simulator.parameter_sets.first
+
+    respond_to do |format|
+      format.html
+    end
   end
 end

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>インストール &mdash; CASSIA Manager 0.0.1 documentation</title>
+    <title>インストール &mdash; OACIS 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="CASSIA Manager 0.0.1 documentation" href="index.html" />
+    <link rel="top" title="OACIS 0.0.1 documentation" href="index.html" />
     <link rel="next" title="基本的な使い方" href="basic_usage.html" />
     <link rel="prev" title="システム概要" href="system_overview.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="system_overview.html" title="システム概要"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -79,6 +79,7 @@
 <dd><ul class="first last simple">
 <li>Mac OS 10.8, Ubuntu, CentOSで動作実績あり</li>
 <li>bash がインストールされていること</li>
+<li>sshの鍵認証でログインできること</li>
 </ul>
 </dd>
 </dl>
@@ -113,31 +114,47 @@
 <li>MongoDB 2.4以上 (<a class="reference external" href="http://www.mongodb.org/">http://www.mongodb.org/</a>)</li>
 </ul>
 <div class="line-block">
+<div class="line">Rubyのインストールにはrbenvまたはrvmを使って環境を整えると良い。</div>
 <div class="line">Mac OS Xの場合、homebrew (<a class="reference external" href="http://brew.sh/">http://brew.sh/</a>) を使ってインストールするのが手軽で良い。</div>
+<div class="line">Linuxの場合、yumやaptコマンドを使ってインストールできる。</div>
 </div>
-<p>以下ではこれらのものがインストールされている前提で説明する。</p>
 <div class="line-block">
-<div class="line">CMは各研究者が自分のPCにインストールし、イントラネット内で使用されることを想定している。</div>
+<div class="line">以下のコマンドでRubyのバージョン、bundlerのインストール、MongoDBのバージョン、MongoDBのデーモンが起動していることを確認する事ができる。</div>
+</div>
+<div class="highlight-python"><pre>${OACIS_PROJECT_ROOT}/bin/check_oacis_env</pre>
+</div>
+<div class="line-block">
+<div class="line">もしエラーが起きた場合は、以下のコマンドで手動で確認し必要なソフトウェアをインストールすること。</div>
+<div class="line">インストール(PATH)の確認</div>
+</div>
+<div class="highlight-python"><pre>which ruby(mongod)</pre>
+</div>
+<p>バージョンの確認</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ruby</span><span class="p">(</span><span class="n">mongod</span><span class="p">)</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">OACISは各利用者が自分のPCにインストールし、イントラネット内で使用されることを想定している。</div>
 <div class="line">インターネット上へ公開し不特定多数のアクセスを受け付ける場合は、ここで記述したセットアップに加えてセキュリティーや不可分散の対策を十分に行う必要がある。</div>
-<div class="line">Railsの知識が十分ある方以外は推奨しない。</div>
+<div class="line">ファイアウォールなどのネットワークセキュリティおよびRailsの知識が十分ある方以外は推奨しない。</div>
 </div>
 </div>
 <div class="section" id="id4">
 <h2>インストール<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
-<p>まず手元にCASSIA Managerのソースコード一式をダウンロードする。</p>
-<p>次にRailsおよび関連gemのインストールを行う。ダウンロードしたディレクトリにて、</p>
-<div class="highlight-python"><pre>bundle install --binstubs --path=vendor/bundle</pre>
+<p>まず手元にOACISのソースコード一式をダウンロードする。</p>
+<p>次にRailsおよび関連gemのインストールを行う。ダウンロードしたディレクトリ内に移動し、</p>
+<div class="highlight-python"><pre>bundle install --path=vendor/bundle</pre>
 </div>
 <div class="line-block">
 <div class="line">を実行する。</div>
-<div class="line">成功すればこの時点でRailsを起動させることができる。試しに以下のコマンドで起動する。</div>
+<div class="line">成功すればこの時点でRailsを起動できる。試しに以下のコマンドで起動する。</div>
 </div>
 <blockquote>
 <div>bundle exec rails s</div></blockquote>
 <div class="line-block">
 <div class="line"><a class="reference external" href="http://localhost:3000">http://localhost:3000</a> にアクセスし、ページが適切に表示されればインストールは成功している。</div>
-<div class="line">もし失敗した場合は、MongoDBが正しく起動しているか、ファイアウォールは3000番に対して開いているか、gemは正しくインストールされたか、などを確認する。</div>
 <div class="line">端末で Ctrl-C を押し、Railsを停止させる。</div>
+<div class="line">もし失敗した場合は、MongoDBが正しく起動しているか、ファイアウォールは3000番に対して開いているか、gemは正しくインストールされたか、などを確認する。</div>
 </div>
 </div>
 <div class="section" id="railsworker">
@@ -146,31 +163,38 @@
 <div class="highlight-python"><pre>bundle exec rake daemon:start</pre>
 </div>
 <p><a class="reference external" href="http://localhost:3000">http://localhost:3000</a> にアクセスできればRailsの起動が成功している。
-またWorkerプロセスが起動しているかどうかは</p>
-<div class="highlight-python"><pre>ps aux | grep "[w]orker.rb"</pre>
-</div>
-<p>を実行すれば確認できる。プロセスが表示されればWorkerは正しく起動している。</p>
+またWorkerプロセスが起動しているかどうかは <a class="reference external" href="http://localhost:3000/runs">http://localhost:3000/runs</a> にアクセスすれば確認できる。
+Workerが起動していない場合にはエラーメッセージが表示される。</p>
 <p>これらのプロセスの再起動、および停止は以下のコマンドで実行できる。</p>
 <div class="highlight-python"><pre>bundle exec rake daemon:restart
 bundle exec rake daemon:stop</pre>
 </div>
 </div>
-<div class="section" id="id5">
-<h2>パスワードの設定<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
-<div class="line-block">
-<div class="line">Digest認証に使用するパスワードを設定する。この設定を行わなくても使用することはできるが、セキュリティのために設定することを強く勧める。</div>
-<div class="line">app/controllers/application_controller.rb の８行目を編集する。</div>
-<div class="line">８行目の先頭の # を取り除きコメントアウトを解除し、ユーザー名とパスワードをセットする。デフォルトのパスワードは使用しないこと。</div>
-<div class="line">これでページにアクセスした際にユーザー認証が要求されるようになる。</div>
-</div>
-</div>
 <div class="section" id="firewall">
 <h2>Firewallの設定<a class="headerlink" href="#firewall" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
-<div class="line">現状のCASSIA Managerはユーザー管理機能を持っていないため、ネットワーク内の任意のホストからアクセス可能である。</div>
+<div class="line">現状のOACISはユーザー管理機能を持っていないため、ネットワーク内の任意のホストからアクセス可能である。</div>
 <div class="line">他のホストからのアクセスを制限するためにはファイアウォールを設定するのが最も簡単である。</div>
-<div class="line">Railsは3000番、MongoDBは27017番のポートをそれぞれ使用しているので、これらのポートへのアクセスを限定する。</div>
-<div class="line">MongoDBへのアクセスはローカルホストのみ、Railsは使用するユーザーのみに開放するのが望ましい。</div>
+<div class="line">デフォルトではRailsは3000番、MongoDBは27017番のポートをそれぞれ使用しているので、これらのポートへのアクセスを限定する。</div>
+</div>
+<div class="line-block">
+<div class="line">運用時はローカルホストのみに限定することが推奨される。</div>
+<div class="line">その場合でもsshポートフォワーディングを使用する事で、別の端末からOACISにアクセスすることが可能である。</div>
+<div class="line">OACISを server.example.com で起動している場合、</div>
+</div>
+<blockquote>
+<div>ssh -N -f -L 3000:localhost:3000 server.example.com</div></blockquote>
+<div class="line-block">
+<div class="line">を実行すると localhost:3000 でOACISにアクセスできるようになる。</div>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>パスワードの設定<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">Digest認証に使用するパスワードを設定することも可能である。</div>
+<div class="line">app/controllers/application_controller.rb の８行目を編集する。</div>
+<div class="line">８行目の先頭の # を取り除きコメントアウトを解除し、ユーザー名とパスワードをセットする。デフォルトのパスワードは使用しないこと。</div>
+<div class="line">これでページにアクセスした際にユーザー認証が要求されるようになる。</div>
 </div>
 </div>
 <div class="section" id="id6">
@@ -193,8 +217,8 @@ config/mongoid.yml の中でMongoDBへの接続情報を設定しているので
 <li><a class="reference internal" href="#id3">前提条件</a></li>
 <li><a class="reference internal" href="#id4">インストール</a></li>
 <li><a class="reference internal" href="#railsworker">RailsおよびWorkerの起動</a></li>
-<li><a class="reference internal" href="#id5">パスワードの設定</a></li>
 <li><a class="reference internal" href="#firewall">Firewallの設定</a></li>
+<li><a class="reference internal" href="#id5">パスワードの設定</a></li>
 <li><a class="reference internal" href="#id6">データベースの変更</a></li>
 </ul>
 </li>
@@ -240,7 +264,7 @@ config/mongoid.yml の中でMongoDBへの接続情報を設定しているので
         <li class="right" >
           <a href="system_overview.html" title="システム概要"
              >previous</a> |</li>
-        <li><a href="index.html">CASSIA Manager 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -24,3 +24,16 @@ ul.nav {
 ul.nav li {
   display: inline;
 }
+div.progress-tooltip {
+  position: absolute;
+  text-align: center;
+  width: 160px;
+  height: 40px;
+  padding: 2px;
+  font: 12px sans-serif;
+  background: black;
+  color: white;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+}

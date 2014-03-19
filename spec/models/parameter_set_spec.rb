@@ -181,13 +181,14 @@ describe ParameterSet do
         sim.parameter_sets.create( v: val )
       end
       4.times do |n|
-        val = {"L" => n+2, "T" => 1.0, "P" => 1.0}
+        val = {"L" => 5-n, "T" => 1.0, "P" => 1.0}
         sim.parameter_sets.create( v: val )
       end
       4.times do |n|
         val = {"L" => 1, "T" => 1.0, "P" => (n+2)*1.0}
         sim.parameter_sets.create( v: val )
       end
+      sim.parameter_sets.create(v: {"L" => 3, "T" => 1.0, "P" => 3.0})
       @prm = sim.parameter_sets.first
     end
 
@@ -209,17 +210,88 @@ describe ParameterSet do
       found = @prm.parameter_sets_with_different("L").find(@prm)
       found.should be_a(ParameterSet)
     end
+
+    it "returns parameter_sets sorted by the given key" do
+      prms_L = @prm.parameter_sets_with_different("L")
+      prms_L.map {|x| x.v["L"]}.should eq [1,2,3,4,5]
+    end
+
+    context "when irrelevant keys are given" do
+
+      it "ignores irrelevant keys when searching parameter sets" do
+        prms_L = @prm.parameter_sets_with_different("L", ["P"])
+        prms_L.map {|x| x.v["L"]}.should eq [1,1,1,1,1,2,3,3,4,5]
+      end
+    end
+  end
+
+  describe "#parameter_keys_having_distinct_values" do
+
+    before(:each) do
+      pds = [
+        ParameterDefinition.new(
+          {key: "L", type: "Integer", default: 50, description: "First parameter"}),
+        ParameterDefinition.new(
+          {key: "T", type: "Float", default: 1.0, description: "Second parameter"}),
+        ParameterDefinition.new(
+          {key: "P", type: "Float", default: 1.0, description: "Third parameter"})
+      ]
+      sim = FactoryGirl.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
+      5.times do |n|
+        val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
+        sim.parameter_sets.create( v: val )
+      end
+      4.times do |n|
+        val = {"L" => 5-n, "T" => 1.0, "P" => 1.0}
+        sim.parameter_sets.create( v: val )
+      end
+      @prm = sim.parameter_sets.first
+    end
+
+    it "returns array of parameter keys which have multiple distinct parameter values" do
+      @prm.parameter_keys_having_distinct_values.should eq ["L", "T"]
+    end
   end
 
   describe "#runs_status_count" do
 
-    it "returns the runs count" do
+    def prepare_runs
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 10)
       prm = sim.parameter_sets.first
-      prm.runs_status_count[:total] = prm.runs.count
-      prm.runs_status_count[:finished].should == prm.runs.where(status: :finished).count
-      prm.runs_status_count[:running].should == prm.runs.where(status: :running).count
-      prm.runs_status_count[:failed].should == prm.runs.where(status: :failed).count
+      prm.runs[0].update_attribute(:status, :submitted)
+      (prm.runs[1..2]).each {|r| r.update_attribute(:status, :running) }
+      (prm.runs[3..5]).each {|r| r.update_attribute(:status, :failed) }
+      (prm.runs[6..9]).each {|r| r.update_attribute(:status, :finished) }
+      prm
+    end
+
+    it "returns the runs count" do
+      prm = prepare_runs
+      prm.runs_status_count.values.inject(:+).should eq prm.runs.count
+      prm.runs_status_count[:created].to_i.should eq prm.runs.where(status: :created).count
+      prm.runs_status_count[:submitted].to_i.should eq prm.runs.where(status: :submitted).count
+      prm.runs_status_count[:running].should eq prm.runs.where(status: :running).count
+      prm.runs_status_count[:finished].should eq prm.runs.where(status: :finished).count
+      prm.runs_status_count[:failed].should eq prm.runs.where(status: :failed).count
+      prm.runs_status_count[:cancelled].should eq prm.runs.where(status: :cancelled).count
+    end
+
+    it "save the result into runs_status_count_cache field" do
+      prm = prepare_runs
+      prm.runs_status_count_cache.should be_nil
+
+      Run.should_receive(:collection).and_call_original
+      prm.runs_status_count
+      prm.runs_status_count_cache.should be_a(Hash)
+    end
+
+    it "update progress_rate_cache field" do
+      prm = prepare_runs
+      prm.runs_status_count_cache.should be_nil
+
+      Run.should_receive(:collection).and_call_original
+      prm.runs_status_count
+      prm.progress_rate_cache.should be_a(Integer)
     end
   end
 

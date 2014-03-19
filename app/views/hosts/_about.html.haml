@@ -1,0 +1,67 @@
+%table.table.table-striped
+  %thead
+  %tbody
+    %tr
+      %th Name
+      %td= @host.name
+    %tr
+      %th Hostname
+      %td= @host.hostname
+    %tr
+      %th User
+      %td= @host.user
+    %tr
+      %th Port
+      %td= @host.port
+    %tr
+      %th SSH key
+      %td= @host.ssh_key
+    %tr
+      %th Scheduler type
+      %td= @host.scheduler_type
+    %tr
+      %th Work base directory
+      %td= @host.work_base_dir
+    %tr
+      %th Maximum number of jobs
+      %td= @host.max_num_jobs
+    %tr
+      %th MPI procs
+      %td
+        - if @host.min_mpi_procs == @host.max_mpi_procs
+          = @host.min_mpi_procs
+        - else
+          = "#{@host.min_mpi_procs} ~ #{@host.max_mpi_procs}"
+    %tr
+      %th OMP threads
+      %td
+        - if @host.min_omp_threads == @host.max_omp_threads
+          = @host.min_omp_threads
+        - else
+          = "#{@host.min_omp_threads} ~ #{@host.max_omp_threads}"
+    %tr
+      %th Template
+      %td
+        %pre= @host.template
+    %tr
+      %th Host Parameters
+      %td
+        %table.table.table-striped
+          %thead
+            %th Name
+            %th Default
+            %th Format
+          %tbody
+            - @host.host_parameter_definitions.each do |host_prm|
+              %tr
+                %td= host_prm.key
+                %td= host_prm.default
+                %td= host_prm.format
+    %tr
+      %th Executable simulators
+      %td= raw( @host.executable_simulators.map {|sim| h(sim.name) }.join('<br />') )
+
+.form-actions
+  = link_to 'Edit', edit_host_path(@host), class: 'btn btn-info'
+  = link_to 'Back to Index', hosts_path, class: 'btn'
+  = link_to 'Destroy', @host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @host.destroyable?

@@ -118,6 +118,15 @@ describe Analysis do
     end
   end
 
+  describe "callback" do
+
+    it "sets parameter_set when created" do
+      anl = @run.analyses.create(@valid_attr)
+      anl.should respond_to(:parameter_set)
+      anl.parameter_set.should eq @run.parameter_set
+    end
+  end
+
   describe "#update_status_running" do
 
     it "updates status to 'running' and sets hostname" do
