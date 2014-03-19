@@ -1,1 +1,0 @@
-{"runs":[{"id":"0000","seed":0,"para1":0,"para2":0},{"id":"0001","seed":1,"para1":0,"para2":0},{"id":"0002","seed":0,"para1":1,"para2":1},{"id":"0003","seed":1,"para1":1,"para2":1},{"id":"0004","seed":0,"para1":2,"para2":2},{"id":"0005","seed":1,"para1":2,"para2":2}],"command":"cat _input.json > _output.json"}
