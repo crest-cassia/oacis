@@ -1,6 +1,6 @@
 class RunsListDatatable
 
-  HEADER  = ['<th>ID</th>', '<th>status</th>', '<th>submitted_to</th>', '<th>priority</th>', '<th>job_id</th>',
+  HEADER  = ['<th>RunID</th>', '<th>status</th>', '<th>submitted_to</th>', '<th>priority</th>', '<th>job_id</th>',
              '<th>cpu_time</th>', '<th>real_time</th>',
              '<th>MPI</th>', '<th>OMP</th>', '<th>version</th>',
              '<th>created_at</th>', '<th>finished_at</th>', '<th style="min-width: 18px; width: 1%;"></th>']

@@ -17,7 +17,7 @@ class AnalyzersListDatatable
 
   def self.header(simulator)
     header = [ '<th style="min-width: 18px; width: 1%"></th>',
-               '<th class="span1">ID</th>',
+               '<th class="span1">AnalyzerID</th>',
                '<th class="span1">Name</th>',
                '<th class="span1">Type</th>',
                '<th class="span1">Description</th>',
