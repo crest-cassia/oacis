@@ -199,12 +199,12 @@ class ModuleSetting
     pd = @sim.parameter_definitions.build
     pd["key"] = "_managed_parameters"
     pd["type"] = "String"
-    pd["default"] = @managed_params.to_json
+    pd["default"] = @managed_params.compact.to_json
     a << pd
     pd = @sim.parameter_definitions.build
     pd["key"] = "_target"
     pd["type"] = "String"
-    pd["default"] = {"Simulator"=>@sim.to_param, "Analyzer"=>@anz.try(:to_param)}.to_json
+    pd["default"] = {"Simulator"=>@sim.to_param, "Analyzer"=>@anz.try(:to_param), "RunsCount"=>@data["_target_runs_count"]}.to_json
     a << pd
     a
   end

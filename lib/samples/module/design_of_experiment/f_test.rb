@@ -2,14 +2,15 @@ require 'pp'
 
 module FTest
 
-  def self.eff_facts(ps_array, parameter_keys)
+  def self.eff_facts(ps_array, results)
 
     @mean = 0
     @ss = 0
     @count = 0
 
-    ps_array.each do |ps|
-      cycle_array = cycles(ps)
+    ps_array.each_with_index do |ps, i|
+      #cycle_array = cycles(ps)
+      cycle_array = results[i]
       @mean += cycle_array.inject(:+)
       @ss += cycle_array.map {|x| x*x}.inject(:+)
       @count += cycle_array.size
@@ -18,6 +19,25 @@ module FTest
     @ct = @mean * @mean / @count.to_f
     @mean /= @count.to_f
 
+    effFacts = ps_array.first.map.with_index do |ps_a, index|
+      effFact = {}
+      effFact[:name] = index
+      effFact[:results] = {}
+      ps_array.each_with_index do |ps, i|
+        effFact[:results][ps[index]] ||= []
+        effFact[:results][ps[index]] += results[i]
+      end
+
+      effFact[:effect] = 0.0
+      effFact[:results].each_value do |v|
+        effFact[:effect] += (v.inject(:+) ** 2).to_f / v.size
+      end
+      effFact[:effect] -= @ct
+      effFact[:free] = 1
+      effFact
+    end
+
+=begin
     effFacts = parameter_keys.map do |parameter_key|
       effFact ={}
       effFact[:name] = parameter_key
@@ -35,6 +55,7 @@ module FTest
       effFact[:free] = 1
       effFact
     end
+=end
 
     @s_e = @ss - (@ct + effFacts.inject(0) {|sum,ef| sum + ef[:effect]})
     @e_f = @count - 1
@@ -42,6 +63,7 @@ module FTest
       @e_f -= ef[:free]
     end
 
+    @e_f = 1 if @e_f == 0 # TODO
     @e_v = @s_e / @e_f
     effFacts.each do |fact|
       fact[:f_value] = fact[:effect] / @e_v
