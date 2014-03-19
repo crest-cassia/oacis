@@ -391,13 +391,13 @@ puts ""
 
 class OacisModuleInstaller < Thor
 
-  desc 'make-install', "make a module and install it on OACIS"
+  desc 'make_install', "make a module and install it on OACIS"
   method_option :file,
     type:     :string,
     aliases:  '-f',
     desc:     'module file',
     required: true
-  def install
+  def make_install
     sim = build_module(options) 
     b = []
     b.push(sim.save)
