@@ -1,7 +1,8 @@
 require 'json'
 require_relative '../OACIS_module.rb'
 require_relative '../OACIS_module_data.rb'
-require_relative 'f_test.rb'
+#require_relative 'f_test.rb'
+require_relative 'mean_test.rb'
 require_relative 'orthogonal_array'
 
 class Doe < OacisModule
@@ -9,7 +10,7 @@ class Doe < OacisModule
   def self.definition
     h = {}
     h["f_block_count_max"] = 1000
-    h["f_value_threshold"] = 10.0
+    h["distance_threshold"] = 10.0
     h["target_field"] = "order_parameter"
     h["concurrent_job_max"] = 30
     h
@@ -68,7 +69,7 @@ class Doe < OacisModule
 
   def generate_runs
 
-    @f_block_list.sort_by! {|f_block| f_block[:priority]}
+    @f_block_list.sort_by! {|f_block| -f_block[:priority]}
     ps_count = 0
     num_jobs = module_data.data["_input_data"]["concurrent_job_max"]
     @running_f_block_list = @f_block_list.shift(num_jobs)
@@ -165,12 +166,54 @@ class Doe < OacisModule
     end
 
     @running_f_block_list.each do |f_block|
-      f_result = FTest.eff_facts(f_block)
-      f_values = f_result.map {|f| f[:f_value]}
-      @f_block_list += new_f_blocks(f_block, f_values)
+      #f_result = FTest.eff_facts(f_block)
+      mean_distances = MeanTest.mean_distances(f_block)
+      @f_block_list += new_f_blocks(f_block, mean_distances)
+      #f_values = f_result.map {|f| f[:f_value]}
+      #@f_block_list += new_f_blocks(f_block, f_values)
     end
-
     @total_f_block_count += @running_f_block_list.size
+  end
+
+  #def new_f_blocks(f_block, f_values)
+  def new_f_blocks(f_block, mean_distances)
+    f_blocks = []
+    mean_distances.each_with_index do |mean_distance, index|
+      b = f_value > module_data.data["_input_data"]["distance_threshold"]
+      if b
+
+        v_values = f_block[:ps].map {|ps| ps[:v][index] }
+        range = [v_values.min, v_values.max]
+        one_third = range[0]*2 / 3 + range[1]   /3
+        two_third = range[0]   / 3 + range[1]*2 /3
+        one_third = one_third.round(6) if one_third.is_a?(Float)
+        two_third = two_third.round(6) if two_third.is_a?(Float)
+        ranges = [
+          [range.first, one_third], [one_third, two_third], [two_third, range.last]
+        ]
+
+        range_hash = f_block_to_range_hash(f_block)
+        ranges.each do |r|
+          range_hash[f_block[:keys][index]] = r
+          ps = get_parameter_sets_from_range_hash(range_hash)
+          new_f_block = {}
+          new_f_block[:keys] = f_block[:keys]
+          new_f_block[:priority] = f_value
+          new_f_block[:ps] = ps.map {|p| {v: p}}
+          f_blocks << new_f_block
+        end
+      end
+    end
+    f_blocks
+  end
+
+  def f_block_to_range_hash(f_block)
+    range_hash = {}
+    f_block[:keys].each_with_index do |key, index|
+      v_values = f_block[:ps].map {|ps| ps[:v][index] }
+      range_hash[key] = [v_values.min, v_values.max]
+    end
+    range_hash
   end
 
   def finished?
