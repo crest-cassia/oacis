@@ -75,6 +75,10 @@ class OacisModule
     @target_analyzer ||= Analyzer.find(@input_data["_target"]["Analyzer"]) if @input_data["_target"]["Analyzer"]
   end
 
+  def target_runs_count
+    @target_runs_count ||= @input_data["_target"]["RunsCount"]
+  end
+
   def target_host
     @target_host ||= Host.in(id: @target_simulator.executable_on_ids).order_by(max_num_jobs: "desc").first
   end
@@ -100,7 +104,7 @@ class OacisModule
   def managed_parameters
     parameter_definitions = target_simulator.parameter_definitions.order_by(:id.asc).map{|pd|
       @input_data["_managed_parameters"].each do |mp|
-        pd["range"]=mp["range"] if pd["key"] == mp["key"]
+        pd["range"]=mp["range"].dup if pd["key"] == mp["key"]
       end
       pd
     }
@@ -111,7 +115,10 @@ class OacisModule
     a = []
     managed_parameters.each do |mpara|
       if mpara["range"].present?
-        a << {"key"=>mpara["key"],"type"=>mpara["type"], "range"=>mpara["range"]}
+        h = {"key"=>mpara["key"],"type"=>mpara["type"], "range"=>mpara["range"]}
+        h["range"].map! {|x| x.to_f} if h["type"] == "Float"
+        h["range"].map! {|x| x.to_i} if h["type"] == "Integer"
+        a << h
       end
     end
     a
@@ -172,11 +179,13 @@ class OacisModule
       end
       ps = target_simulator.parameter_sets.find_or_create_by(v: v)
       @ps_archive << ps.id
-      if ps.runs.count == 0
-        run = ps.runs.build
-        run.submitted_to_id=target_host
-        run.save
-        generated << run
+      if ps.runs.count < target_runs_count
+        (target_runs_count - ps.runs.count).times do
+          run = ps.runs.build
+          run.submitted_to_id=target_host
+          run.save
+          generated << run
+        end
       end
     end
     generated
@@ -184,8 +193,12 @@ class OacisModule
 
   def evaluate_runs_iteration(iteration)
     data_sets = module_data.data["data_sets"][iteration]
-    results = target_results.inject({}) {|h, a| h.merge!(a)}
-
+    results = {}
+    target_results.each do |target_result|
+      target_result.each_pair do |ps_id, result_val|
+        results[ps_id] = results[ps_id].to_a << result_val
+      end
+    end
     data_sets.each_with_index do |data, i|
       data["output"] = results[@ps_archive[i]]
     end
