@@ -1,7 +1,6 @@
 require 'json'
 require_relative '../OACIS_module.rb'
 require_relative '../OACIS_module_data.rb'
-#require_relative 'f_test.rb'
 require_relative 'mean_test.rb'
 require_relative 'orthogonal_array'
 
@@ -16,29 +15,13 @@ class Doe < OacisModule
     h
   end
 
-  #NUM_RUNS = 5
-
   def initialize(input_data)
     super(input_data)
-    #@sim = Simulator.where(name: "dilemma_game").first
-    #raise "Simulator 'dilemma_game' is not found" unless @sim
-    #@host = Host.where(name: "localhost").first
-    #raise "Host 'localhost' is not found" unless @host
 
     @param_names = managed_parameters_table.map {|mpt| mpt["key"]}
-
-    #noise_array = [0, 0.05]
-    #num_games_array = [10, 100]
-
-    #if input_data
-    #  noise_array = input_data[@param_names[0]]
-    #  num_games_array = input_data[@param_names[1]]
-    #end
-
     @total_f_block_count = 0
 
-    #@range_hashes = [ {@param_names[0] => noise_array, @param_names[1] => num_games_array} ]
-    #@range_hashes = [
+    #range_hashes = [
     #                  {"beta"=>[0.2, 0.6], "H"=>[-1.0, 1.0]},
     #                  ...
     #                ]
@@ -46,7 +29,7 @@ class Doe < OacisModule
     managed_parameters_table.each do |pd|
       range_hash[pd["key"]] = pd["range"]
     end
-    get_parameter_sets_from_range_hash(range_hash)
+    parameter_sets = get_parameter_sets_from_range_hash(range_hash)
 
     #f_block = {
     #             keys: ["beta", "H"],
@@ -59,7 +42,7 @@ class Doe < OacisModule
     f_block = {}
     f_block[:keys] = managed_parameters_table.map {|mtb| mtb["key"]}
     f_block[:ps] = []
-    @parameter_sets.each_with_index do |ps_v, index|
+    parameter_sets.each_with_index do |ps_v, index|
       f_block[:ps] << {v: ps_v, result: nil}
     end
     f_block[:priority] = 1.0
@@ -67,6 +50,7 @@ class Doe < OacisModule
     @f_block_list << f_block
   end
 
+  #override
   def generate_runs
 
     @f_block_list.sort_by! {|f_block| -f_block[:priority]}
@@ -85,8 +69,8 @@ class Doe < OacisModule
 
   private
   def get_parameter_sets_from_range_hash(range_hash)
-    @parameter_sets = []
 
+    parameter_sets = []
     oa_param = @param_names.map do |name|
       {name: name, paramDefs: [0, 1]}
     end
@@ -99,38 +83,15 @@ class Doe < OacisModule
         parameter_value = range[ row[idx].to_i ]
         @parameter_hash[name] = parameter_value
       end
-      #parameter_sets << get_parameter_set(parameter_hash)
-      @parameter_sets << managed_parameters_table.map {|mpt| @parameter_hash[mpt["key"]]}
+      parameter_sets << managed_parameters_table.map {|mpt| @parameter_hash[mpt["key"]]}
     end
 
-    @parameter_sets
-  end
-
-  #def get_parameter_set(parameter_hash)
-  #  h = {}
-  #  parameter_hash.each {|key,val| h["v.#{key}"] = val }
-  #  ps = @sim.parameter_sets.where(h).first
-  #  unless ps
-  #    ps = @sim.parameter_sets.build({"v" => parameter_hash})
-  #    ps.save!
-  #  end
-  #  ps
-  #end
-
-  def create_runs_for(parameter_set)
-    created_runs = []
-    (NUM_RUNS - parameter_set.runs.count).times do |i|
-      run = parameter_set.runs.build
-      run.submitted_to = @host
-      run.save!
-      created_runs << run
-    end
-    created_runs
+    parameter_sets
   end
 
   def new_range_hashes(range_hash, relevant_factors)
-    new_ranges = []
 
+    new_ranges = []
     ranges_array = managed_parameters_table.map {|mpt| mpt["key"]}.map.with_index do |key, index|
       ranges = [ range_hash[key] ]
       if relevant_factors.include?(index)
@@ -153,6 +114,7 @@ class Doe < OacisModule
     new_ranges
   end
 
+  #override
   def evaluate_runs
 
     super
@@ -166,22 +128,17 @@ class Doe < OacisModule
     end
 
     @running_f_block_list.each do |f_block|
-      #f_result = FTest.eff_facts(f_block)
       mean_distances = MeanTest.mean_distances(f_block)
       @f_block_list += new_f_blocks(f_block, mean_distances)
-      #f_values = f_result.map {|f| f[:f_value]}
-      #@f_block_list += new_f_blocks(f_block, f_values)
     end
     @total_f_block_count += @running_f_block_list.size
   end
 
-  #def new_f_blocks(f_block, f_values)
   def new_f_blocks(f_block, mean_distances)
+
     f_blocks = []
     mean_distances.each_with_index do |mean_distance, index|
-      b = mean_distance > module_data.data["_input_data"]["distance_threshold"]
-      if b
-
+      if mean_distance > module_data.data["_input_data"]["distance_threshold"]
         v_values = f_block[:ps].map {|ps| ps[:v][index] }
         range = [v_values.min, v_values.max]
         one_third = range[0]*2 / 3 + range[1]   /3
@@ -208,6 +165,7 @@ class Doe < OacisModule
   end
 
   def f_block_to_range_hash(f_block)
+
     range_hash = {}
     f_block[:keys].each_with_index do |key, index|
       v_values = f_block[:ps].map {|ps| ps[:v][index] }
@@ -216,7 +174,9 @@ class Doe < OacisModule
     range_hash
   end
 
+  #override
   def finished?
+
     puts "# of f_block_list.size = #{@f_block_list.size}"
     puts "total_f_block_count = #{@total_f_block_count}"
     @f_block_list.empty? or  @total_f_block_count > module_data.data["_input_data"]["f_block_count_max"]
