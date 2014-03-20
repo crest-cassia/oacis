@@ -10,7 +10,7 @@ class Doe < OacisModule
   def self.definition
     h = {}
     h["f_block_count_max"] = 1000
-    h["distance_threshold"] = 10.0
+    h["distance_threshold"] = 0.1
     h["target_field"] = "order_parameter"
     h["concurrent_job_max"] = 30
     h
@@ -179,7 +179,7 @@ class Doe < OacisModule
   def new_f_blocks(f_block, mean_distances)
     f_blocks = []
     mean_distances.each_with_index do |mean_distance, index|
-      b = f_value > module_data.data["_input_data"]["distance_threshold"]
+      b = mean_distance > module_data.data["_input_data"]["distance_threshold"]
       if b
 
         v_values = f_block[:ps].map {|ps| ps[:v][index] }
@@ -198,7 +198,7 @@ class Doe < OacisModule
           ps = get_parameter_sets_from_range_hash(range_hash)
           new_f_block = {}
           new_f_block[:keys] = f_block[:keys]
-          new_f_block[:priority] = f_value
+          new_f_block[:priority] = mean_distance
           new_f_block[:ps] = ps.map {|p| {v: p}}
           f_blocks << new_f_block
         end
