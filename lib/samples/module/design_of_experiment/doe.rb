@@ -89,31 +89,6 @@ class Doe < OacisModule
     parameter_values
   end
 
-  def new_range_hashes(range_hash, relevant_factors)
-
-    new_ranges = []
-    ranges_array = managed_parameters_table.map {|mpt| mpt["key"]}.map.with_index do |key, index|
-      ranges = [ range_hash[key] ]
-      if relevant_factors.include?(index)
-        range = range_hash[key]
-        one_third = range[0]*2 / 3 + range[1]   /3
-        two_third = range[0]   / 3 + range[1]*2 /3
-        one_third = one_third.round(6) if one_third.is_a?(Float)
-        two_third = two_third.round(6) if two_third.is_a?(Float)
-        ranges = [
-          [range.first, one_third], [one_third, two_third], [two_third, range.last]
-        ]
-      end
-      ranges
-    end
-
-    ranges_array.first.product( *(ranges_array[1..-1]) ).each do |a|
-      h = { @param_names[0] => a[0], @param_names[1] => a[1]}
-      new_ranges << h
-    end
-    new_ranges
-  end
-
   #override
   def evaluate_runs
 
