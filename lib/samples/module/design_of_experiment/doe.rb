@@ -29,7 +29,7 @@ class Doe < OacisModule
     managed_parameters_table.each do |pd|
       range_hash[pd["key"]] = pd["range"]
     end
-    parameter_sets = get_parameter_sets_from_range_hash(range_hash)
+    parameter_values = get_parameter_values_from_range_hash(range_hash)
 
     #ps_block = {
     #             keys: ["beta", "H"],
@@ -42,7 +42,7 @@ class Doe < OacisModule
     ps_block = {}
     ps_block[:keys] = managed_parameters_table.map {|mtb| mtb["key"]}
     ps_block[:ps] = []
-    parameter_sets.each_with_index do |ps_v, index|
+    parameter_values.each_with_index do |ps_v, index|
       ps_block[:ps] << {v: ps_v, result: nil}
     end
     ps_block[:priority] = 1.0
@@ -50,6 +50,7 @@ class Doe < OacisModule
     @ps_block_list << ps_block
   end
 
+  private
   #override
   def generate_runs
 
@@ -67,10 +68,9 @@ class Doe < OacisModule
     super
   end
 
-  private
-  def get_parameter_sets_from_range_hash(range_hash)
+  def get_parameter_values_from_range_hash(range_hash)
 
-    parameter_sets = []
+    parameter_values = []
     oa_param = @param_names.map do |name|
       {name: name, paramDefs: [0, 1]}
     end
@@ -83,10 +83,10 @@ class Doe < OacisModule
         parameter_value = range[ row[idx].to_i ]
         @parameter_hash[name] = parameter_value
       end
-      parameter_sets << managed_parameters_table.map {|mpt| @parameter_hash[mpt["key"]]}
+      parameter_values << managed_parameters_table.map {|mpt| @parameter_hash[mpt["key"]]}
     end
 
-    parameter_sets
+    parameter_values
   end
 
   def new_range_hashes(range_hash, relevant_factors)
@@ -152,7 +152,7 @@ class Doe < OacisModule
         range_hash = ps_block_to_range_hash(ps_block)
         ranges.each do |r|
           range_hash[ps_block[:keys][index]] = r
-          ps = get_parameter_sets_from_range_hash(range_hash)
+          ps = get_parameter_values_from_range_hash(range_hash)
           new_ps_block = {}
           new_ps_block[:keys] = ps_block[:keys]
           new_ps_block[:priority] = mean_distance
