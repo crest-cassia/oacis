@@ -8,7 +8,7 @@ class Doe < OacisModule
 
   def self.definition
     h = {}
-    h["f_block_count_max"] = 1000
+    h["ps_block_count_max"] = 1000
     h["distance_threshold"] = 0.1
     h["target_field"] = "order_parameter"
     h["concurrent_job_max"] = 30
@@ -19,7 +19,7 @@ class Doe < OacisModule
     super(input_data)
 
     @param_names = managed_parameters_table.map {|mpt| mpt["key"]}
-    @total_f_block_count = 0
+    @total_ps_block_count = 0
 
     #range_hashes = [
     #                  {"beta"=>[0.2, 0.6], "H"=>[-1.0, 1.0]},
@@ -31,7 +31,7 @@ class Doe < OacisModule
     end
     parameter_sets = get_parameter_sets_from_range_hash(range_hash)
 
-    #f_block = {
+    #ps_block = {
     #             keys: ["beta", "H"],
     #             ps: [
     #                   {v: [0.2, -1.0], result: [-0.483285, -0.484342, -0.483428]},
@@ -39,26 +39,26 @@ class Doe < OacisModule
     #                 ],
     #             priority: 5.0
     #          }
-    f_block = {}
-    f_block[:keys] = managed_parameters_table.map {|mtb| mtb["key"]}
-    f_block[:ps] = []
+    ps_block = {}
+    ps_block[:keys] = managed_parameters_table.map {|mtb| mtb["key"]}
+    ps_block[:ps] = []
     parameter_sets.each_with_index do |ps_v, index|
-      f_block[:ps] << {v: ps_v, result: nil}
+      ps_block[:ps] << {v: ps_v, result: nil}
     end
-    f_block[:priority] = 1.0
-    @f_block_list = []
-    @f_block_list << f_block
+    ps_block[:priority] = 1.0
+    @ps_block_list = []
+    @ps_block_list << ps_block
   end
 
   #override
   def generate_runs
 
-    @f_block_list.sort_by! {|f_block| -f_block[:priority]}
+    @ps_block_list.sort_by! {|ps_block| -ps_block[:priority]}
     ps_count = 0
     num_jobs = module_data.data["_input_data"]["concurrent_job_max"]
-    @running_f_block_list = @f_block_list.shift(num_jobs)
-    @running_f_block_list.each do |f_block|
-      f_block[:ps].each do |ps|
+    @running_ps_block_list = @ps_block_list.shift(num_jobs)
+    @running_ps_block_list.each do |ps_block|
+      ps_block[:ps].each do |ps|
         module_data.set_input(@num_iterations, ps_count, ps[:v])
         ps_count += 1
       end
@@ -120,26 +120,26 @@ class Doe < OacisModule
     super
 
     ps_count = 0
-    @running_f_block_list.each do |f_block|
-      f_block[:ps].each do |ps|
+    @running_ps_block_list.each do |ps_block|
+      ps_block[:ps].each do |ps|
         ps[:result] = module_data.get_output(@num_iterations, ps_count)
         ps_count += 1
       end
     end
 
-    @running_f_block_list.each do |f_block|
-      mean_distances = MeanTest.mean_distances(f_block)
-      @f_block_list += new_f_blocks(f_block, mean_distances)
+    @running_ps_block_list.each do |ps_block|
+      mean_distances = MeanTest.mean_distances(ps_block)
+      @ps_block_list += new_ps_blocks(ps_block, mean_distances)
     end
-    @total_f_block_count += @running_f_block_list.size
+    @total_ps_block_count += @running_ps_block_list.size
   end
 
-  def new_f_blocks(f_block, mean_distances)
+  def new_ps_blocks(ps_block, mean_distances)
 
-    f_blocks = []
+    ps_blocks = []
     mean_distances.each_with_index do |mean_distance, index|
       if mean_distance > module_data.data["_input_data"]["distance_threshold"]
-        v_values = f_block[:ps].map {|ps| ps[:v][index] }
+        v_values = ps_block[:ps].map {|ps| ps[:v][index] }
         range = [v_values.min, v_values.max]
         one_third = range[0]*2 / 3 + range[1]   /3
         two_third = range[0]   / 3 + range[1]*2 /3
@@ -149,26 +149,26 @@ class Doe < OacisModule
           [range.first, one_third], [one_third, two_third], [two_third, range.last]
         ]
 
-        range_hash = f_block_to_range_hash(f_block)
+        range_hash = ps_block_to_range_hash(ps_block)
         ranges.each do |r|
-          range_hash[f_block[:keys][index]] = r
+          range_hash[ps_block[:keys][index]] = r
           ps = get_parameter_sets_from_range_hash(range_hash)
-          new_f_block = {}
-          new_f_block[:keys] = f_block[:keys]
-          new_f_block[:priority] = mean_distance
-          new_f_block[:ps] = ps.map {|p| {v: p}}
-          f_blocks << new_f_block
+          new_ps_block = {}
+          new_ps_block[:keys] = ps_block[:keys]
+          new_ps_block[:priority] = mean_distance
+          new_ps_block[:ps] = ps.map {|p| {v: p}}
+          ps_blocks << new_ps_block
         end
       end
     end
-    f_blocks
+    ps_blocks
   end
 
-  def f_block_to_range_hash(f_block)
+  def ps_block_to_range_hash(ps_block)
 
     range_hash = {}
-    f_block[:keys].each_with_index do |key, index|
-      v_values = f_block[:ps].map {|ps| ps[:v][index] }
+    ps_block[:keys].each_with_index do |key, index|
+      v_values = ps_block[:ps].map {|ps| ps[:v][index] }
       range_hash[key] = [v_values.min, v_values.max]
     end
     range_hash
@@ -177,9 +177,9 @@ class Doe < OacisModule
   #override
   def finished?
 
-    puts "# of f_block_list.size = #{@f_block_list.size}"
-    puts "total_f_block_count = #{@total_f_block_count}"
-    @f_block_list.empty? or  @total_f_block_count > module_data.data["_input_data"]["f_block_count_max"]
+    puts "# of ps_block_list.size = #{@ps_block_list.size}"
+    puts "total_ps_block_count = #{@total_ps_block_count}"
+    @ps_block_list.empty? or  @total_ps_block_count > module_data.data["_input_data"]["ps_block_count_max"]
   end
 
   #override
