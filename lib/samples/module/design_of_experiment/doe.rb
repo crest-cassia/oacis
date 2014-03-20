@@ -8,10 +8,10 @@ class Doe < OacisModule
 
   def self.definition
     h = {}
-    h["ps_count_max"] = 80
-    h["range_count_max"] = 30
+    h["f_block_count_max"] = 1000
     h["f_value_threshold"] = 10.0
     h["target_field"] = "order_parameter"
+    h["concurrent_job_max"] = 30
     h
   end
 
@@ -34,26 +34,50 @@ class Doe < OacisModule
     #  num_games_array = input_data[@param_names[1]]
     #end
 
-    @ranges_count = 0
+    @total_f_block_count = 0
 
     #@range_hashes = [ {@param_names[0] => noise_array, @param_names[1] => num_games_array} ]
-    @range_hashes = [{}]
+    #@range_hashes = [
+    #                  {"beta"=>[0.2, 0.6], "H"=>[-1.0, 1.0]},
+    #                  ...
+    #                ]
+    range_hash = {}
     managed_parameters_table.each do |pd|
-      @range_hashes[0][pd["key"]] = pd["range"]
+      range_hash[pd["key"]] = pd["range"]
     end
+    get_parameter_sets_from_range_hash(range_hash)
+
+    #f_block = {
+    #             keys: ["beta", "H"],
+    #             ps: [
+    #                   {v: [0.2, -1.0], result: [-0.483285, -0.484342, -0.483428]},
+    #                   ...
+    #                 ],
+    #             priority: 5.0
+    #          }
+    f_block = {}
+    f_block[:keys] = managed_parameters_table.map {|mtb| mtb["key"]}
+    f_block[:ps] = []
+    @parameter_sets.each_with_index do |ps_v, index|
+      f_block[:ps] << {v: ps_v, result: nil}
+    end
+    f_block[:priority] = 1.0
+    @f_block_list = []
+    @f_block_list << f_block
   end
 
   def generate_runs
-    #created_runs = []
-    pp @range_hashes
+
+    @f_block_list.sort_by! {|f_block| f_block[:priority]}
     ps_count = 0
-    @range_hashes.each do |range_hash|
-      get_parameter_sets_from_range_hash(range_hash).each do |ps|
-        module_data.set_input(@num_iterations, ps_count, ps)
+    num_jobs = module_data.data["_input_data"]["concurrent_job_max"]
+    @running_f_block_list = @f_block_list.shift(num_jobs)
+    @running_f_block_list.each do |f_block|
+      f_block[:ps].each do |ps|
+        module_data.set_input(@num_iterations, ps_count, ps[:v])
         ps_count += 1
       end
     end
-    #created_runs
 
     super
   end
@@ -121,21 +145,6 @@ class Doe < OacisModule
       ranges
     end
 
-    #ranges_array = [@param_names[0], @param_names[1]].map do |key|
-    #  ranges = [ range_hash[key] ]
-    #  if relevant_factors.include?(key)
-    #    range = range_hash[key]
-    #    one_third = range.inject(:+) / 3
-    #    two_third = range.inject(:+) * 2 / 3
-    #    one_third = one_third.round(6) if one_third.is_a?(Float)
-    #    two_third = two_third.round(6) if two_third.is_a?(Float)
-    #    ranges = [
-    #      [range.first, one_third], [one_third, two_third], [two_third, range.last]
-    #    ]
-    #  end
-    #  ranges
-    #end
-
     ranges_array.first.product( *(ranges_array[1..-1]) ).each do |a|
       h = { @param_names[0] => a[0], @param_names[1] => a[1]}
       new_ranges << h
@@ -143,34 +152,31 @@ class Doe < OacisModule
     new_ranges
   end
 
-
   def evaluate_runs
 
     super
 
-    new_gen_range_hashes = []
-    @range_hashes.each do |range_hash|
-      #ps_array = get_parameter_sets_from_range_hash(range_hash)
-
-      results = module_data.data["data_sets"][@num_iterations].map {|d| d["output"] }
-      ef = FTest.eff_facts(@parameter_sets, results)
-
-      relevant_factors = []
-      managed_parameters_table.each_with_index do |mpt, index|
-        relevant_factors << index if ef[index][:f_value] > module_data.data["_input_data"]["f_value_threshold"]
+    ps_count = 0
+    @running_f_block_list.each do |f_block|
+      f_block[:ps].each do |ps|
+        ps[:result] = module_data.get_output(@num_iterations, ps_count)
+        ps_count += 1
       end
-      new_gen_range_hashes += new_range_hashes(range_hash, relevant_factors)
     end
 
-    @range_hashes = new_gen_range_hashes
-    @ranges_count += @range_hashes.count
+    @running_f_block_list.each do |f_block|
+      f_result = FTest.eff_facts(f_block)
+      f_values = f_result.map {|f| f[:f_value]}
+      @f_block_list += new_f_blocks(f_block, f_values)
+    end
+
+    @total_f_block_count += @running_f_block_list.size
   end
 
   def finished?
-    puts "range_hashes is empty? #{@range_hashes.empty?}"
-    puts "ranges_count = #{@ranges_count}"
-    @range_hashes.empty? or @ranges_count > module_data.data["_input_data"]["range_count_max"]
-     # @sim.parameter_sets.count > PS_COUNT_MAX
+    puts "# of f_block_list.size = #{@f_block_list.size}"
+    puts "total_f_block_count = #{@total_f_block_count}"
+    @f_block_list.empty? or  @total_f_block_count > module_data.data["_input_data"]["f_block_count_max"]
   end
 
   #override

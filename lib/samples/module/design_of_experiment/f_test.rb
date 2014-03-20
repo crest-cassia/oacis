@@ -2,15 +2,44 @@ require 'pp'
 
 module FTest
 
-  def self.eff_facts(ps_array, results)
+
+  #[
+  #  {:name=>0,
+  #   :results=>{
+  #                0.2=>[
+  #                       -0.483285
+  #                       ...,
+  #                       0.484342
+  #                     ],
+  #                0.6=>[
+  #                       -0.994595,
+  #                       ...,
+  #                       0.994443
+  #                     ]
+  #              }
+  #   :effect=>1.4620500000005297e-07,
+  #   :free=>1,
+  #   :f_value=>1.9038296239370828e-06
+  #  },
+  #  {name=>1,
+  #  ...
+  #]
+  def self.eff_facts(f_block)
+
+    #f_block = {
+    #             keys: ["beta", "H"],
+    #             ps: [
+    #                   {v: [0.2, -1.0], result: [-0.483285, -0.484342, -0.483428]},
+    #                   ...
+    #                 ],
+    #          }
 
     @mean = 0
     @ss = 0
     @count = 0
 
-    ps_array.each_with_index do |ps, i|
-      #cycle_array = cycles(ps)
-      cycle_array = results[i]
+    f_block[:ps].each do |ps|
+      cycle_array = ps[:result]
       @mean += cycle_array.inject(:+)
       @ss += cycle_array.map {|x| x*x}.inject(:+)
       @count += cycle_array.size
@@ -19,13 +48,15 @@ module FTest
     @ct = @mean * @mean / @count.to_f
     @mean /= @count.to_f
 
-    effFacts = ps_array.first.map.with_index do |ps_a, index|
+    effFacts = []
+    f_block[:keys].each_with_index do |key, index|
       effFact = {}
       effFact[:name] = index
       effFact[:results] = {}
-      ps_array.each_with_index do |ps, i|
-        effFact[:results][ps[index]] ||= []
-        effFact[:results][ps[index]] += results[i]
+
+      f_block[:ps].each do |ps|
+        effFact[:results][ps[:v][index]] ||= []
+        effFact[:results][ps[:v][index]] += ps[:result]
       end
 
       effFact[:effect] = 0.0
@@ -34,28 +65,8 @@ module FTest
       end
       effFact[:effect] -= @ct
       effFact[:free] = 1
-      effFact
+      effFacts << effFact
     end
-
-=begin
-    effFacts = parameter_keys.map do |parameter_key|
-      effFact ={}
-      effFact[:name] = parameter_key
-      effFact[:results] = {}
-      ps_array.each do |ps|
-        effFact[:results][ps.v[parameter_key]] ||= []
-        effFact[:results][ps.v[parameter_key]] += cycles(ps)
-      end
-
-      effFact[:effect] = 0.0
-      effFact[:results].each_value do |v|
-        effFact[:effect] += (v.inject(:+) ** 2).to_f / v.size
-      end
-      effFact[:effect] -= @ct
-      effFact[:free] = 1
-      effFact
-    end
-=end
 
     @s_e = @ss - (@ct + effFacts.inject(0) {|sum,ef| sum + ef[:effect]})
     @e_f = @count - 1
@@ -69,20 +80,13 @@ module FTest
       fact[:f_value] = fact[:effect] / @e_v
     end
 
-    result = {}
-    effFacts.each do |ef|
-      result[ ef[:name] ] = ef
-      result[ ef[:name] ].delete(:name)
-    end
-
-    result
+    effFacts
   end
 
   private
   def self.cycles(ps)
     ps.runs.map {|run| run.analyses.only("result").first.result["Cycles"]}
   end
-
 end
 
 if $0 == __FILE__
