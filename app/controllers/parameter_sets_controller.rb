@@ -28,45 +28,44 @@ class ParameterSetsController < ApplicationController
     simulator = Simulator.find(params[:simulator_id])
     num_runs = params[:num_runs].to_i
 
+    previous_num_ps = simulator.parameter_sets.count
+    previous_num_runs = simulator.runs.count
+
     @param_set = simulator.parameter_sets.build(params)
     # this run is not saved, but used when rendering new
-    @run = @param_set.runs.build(params[:run]) if num_runs > 0
-
-    num_created = 0
-    if num_runs == 0 or @run.valid?
-      if params[:v].any? {|key,val| val.include?(',') }
-        created = create_multiple(simulator, params[:v].dup)
-        num_created = created.size
-        num_runs.times do |i|
-          created.each do |ps|
-            ps.runs.create(params[:run])
-          end
-        end
-        if num_created >= 1
-          @param_set = created.first
-        else # num_created == 0
-          @param_set.errors.add(:base, "No parameter_set was newly created")
-        end
-      else
-        if @param_set.save
-          num_runs.times {|i| @param_set.runs.create(params[:run]) }
-          num_created = 1
-        end
+    if num_runs > 0
+      @run = @param_set.runs.build(params[:run])
+      unless @run.valid?
+        @num_runs = num_runs
+        render action: "new"
+        return
       end
     end
 
-    respond_to do |format|
-      if @param_set.persisted? and num_created == 1
-        format.html { redirect_to @param_set, notice: 'New ParameterSet was successfully created.' }
-        format.json { render json: @param_set, status: :created, location: @param_set }
-      elsif @param_set.persisted? and num_created > 1
-        format.html { redirect_to simulator, notice: "#{num_created} ParameterSets were created" }
-        format.json { render json: simulator, status: :created, location: simulator }
-      else
-        @num_runs = num_runs
-        format.html { render action: "new" }
-        format.json { render json: @param_set.errors, status: :unprocessable_entity }
+    created = create_multiple(simulator, params[:v].dup)
+
+    if created.empty?
+      @param_set.errors.add(:base, "No parameter_set was created")
+      render action: "new"
+      return
+    end
+
+    num_runs.times do |i|
+      created.each do |ps|
+        next if ps.runs.count > i
+        ps.runs.create(params[:run])
       end
+    end
+
+    num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
+    num_created_runs = simulator.runs.count - previous_num_runs
+    flash[:notice] = "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
+
+    if created.size == 1
+      @param_set = created.first
+      redirect_to @param_set
+    else
+      redirect_to simulator
     end
   end
 
@@ -380,7 +379,7 @@ class ParameterSetsController < ApplicationController
     end
 
     created = []
-    patterns = mapped[0].product( *mapped[1..-1] ).each do |param_ary|
+    mapped[0].product( *mapped[1..-1] ).each do |param_ary|
       param = {}
       simulator.parameter_definitions.each_with_index do |defn, idx|
         param[defn.key] = param_ary[idx]
