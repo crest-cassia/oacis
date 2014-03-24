@@ -26,17 +26,16 @@ class ParameterSetsController < ApplicationController
 
   def create
     simulator = Simulator.find(params[:simulator_id])
-    num_runs = params[:num_runs].to_i
+    @num_runs = params[:num_runs].to_i
 
     previous_num_ps = simulator.parameter_sets.count
     previous_num_runs = simulator.runs.count
 
     @param_set = simulator.parameter_sets.build(params)
     # this run is not saved, but used when rendering new
-    if num_runs > 0
+    if @num_runs > 0
       @run = @param_set.runs.build(params[:run])
       unless @run.valid?
-        @num_runs = num_runs
         render action: "new"
         return
       end
@@ -50,7 +49,7 @@ class ParameterSetsController < ApplicationController
       return
     end
 
-    num_runs.times do |i|
+    @num_runs.times do |i|
       created.each do |ps|
         next if ps.runs.count > i
         ps.runs.create(params[:run])

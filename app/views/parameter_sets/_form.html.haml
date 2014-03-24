@@ -25,14 +25,15 @@
     = link_to "Cancel", simulator_path(parameter_set.simulator), :class => 'btn'
 
 :javascript
-  $('#runs_fields').hide();
   $(function() {
-    $('#num_runs').change(function() {
-      if( $(this).val() == 0 ) {
+    var hide_show_runs_field = function () {
+      if( $('#num_runs').val() == 0 ) {
         $('#runs_fields').hide("normal");
       }
       else {
         $('#runs_fields').show("normal");
       }
-    });
+    }
+    hide_show_runs_field();
+    $('#num_runs').change(hide_show_runs_field);
   });
