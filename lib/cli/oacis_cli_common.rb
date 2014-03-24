@@ -86,7 +86,7 @@ EOS
   def get_parameter_sets(file)
     parsed = JSON.load( File.read(file) )
     validate_parameter_set_ids(parsed)
-    parsed.map {|h| ParameterSet.find( h["parameter_set_id"] ) }
+    ParameterSet.in(id: parsed.map {|h| h["parameter_set_id"] } )
   end
 
   def validate_parameter_set_ids(parsed)
@@ -101,7 +101,7 @@ EOS
   def get_runs(file)
     parsed = JSON.load( File.read(file) )
     validate_run_ids(parsed)
-    parsed.map {|h| Run.find(h["run_id"]) }
+    Run.in(id: parsed.map {|h| h["run_id"] } )
   end
 
   def validate_run_ids(parsed)
@@ -110,6 +110,36 @@ EOS
     end
     unless parsed.all? {|h| h.has_key?("run_id") }
       raise "Invalid json format. Key 'run_id' is necessary."
+    end
+  end
+
+  def get_analyzers(analyzer_ids)
+    parsed = JSON.load( File.read(file) )
+    validate_analyzer_ids(parsed)
+    Analyzer.in(id: parsed.map {|h| h["analyzer_id"] } )
+  end
+
+  def validate_analyzer_ids(parsed)
+    unless parsed.is_a?(Array)
+      raise "Invalid json format. Must be an Array"
+    end
+    unless parsed.all? {|h| h.has_key?("analyzer_id") }
+      raise "Invalid json format. Key 'analyzer_id' is necessary."
+    end
+  end
+
+  def get_analyses(file)
+    parsed = JSON.load( File.read(file) )
+    validate_analysis_ids(parsed)
+    Analysis.in(id: parsed.map {|h| h["analysis_id"] } )
+  end
+
+  def validate_analysis_ids(parsed)
+    unless parsed.is_a?(Array)
+      raise "Invalid json format. Must be an Array"
+    end
+    unless parsed.all? {|h| h.has_key?("analysis_id") }
+      raise "Invalid json format. Key 'analysis_id' is necessary."
     end
   end
 end
