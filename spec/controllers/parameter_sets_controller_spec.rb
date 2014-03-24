@@ -156,6 +156,13 @@ describe ParameterSetsController do
               post :create, @valid_param, valid_session
             }.to change { ParameterSet.count }.by(1)
           end
+
+          it "creates runs also for existing parameter_sets upto the specified num_runs" do
+            @valid_param.update(v: {"L" => "1", "T" => "1.0,2.0"}, num_runs: 3)
+            expect {
+              post :create, @valid_param, valid_session
+            }.to change { Run.count }.by(5)
+          end
         end
       end
     end

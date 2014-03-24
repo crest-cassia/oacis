@@ -42,7 +42,7 @@ class ParameterSetsController < ApplicationController
       end
     end
 
-    created = create_multiple(simulator, params[:v].dup)
+    created = find_or_create_multiple(simulator, params[:v].dup)
 
     if created.empty?
       @param_set.errors.add(:base, "No parameter_set was created")
@@ -359,7 +359,7 @@ class ParameterSetsController < ApplicationController
   private
   MAX_CREATION_SIZE = 100
   # return created parameter sets
-  def create_multiple(simulator, parameters)
+  def find_or_create_multiple(simulator, parameters)
     mapped = simulator.parameter_definitions.map do |defn|
       key = defn.key
       if parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
@@ -384,8 +384,9 @@ class ParameterSetsController < ApplicationController
       simulator.parameter_definitions.each_with_index do |defn, idx|
         param[defn.key] = param_ary[idx]
       end
-      ps = simulator.parameter_sets.build(v: param)
-      if ps.save
+      casted = ParametersUtil.cast_parameter_values(param, simulator.parameter_definitions)
+      ps = simulator.parameter_sets.find_or_initialize_by(v: casted)
+      if ps.persisted? or ps.save
         created << ps
       end
     end
