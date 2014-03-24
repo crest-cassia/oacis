@@ -141,6 +141,22 @@ describe ParameterSetsController do
             post :create, @valid_param, valid_session
           }.to change { Run.count }.by(6)
         end
+
+        describe "when some of parameter_sets are already created" do
+
+          before(:each) do
+            FactoryGirl.create(:parameter_set,
+                               simulator: @sim, v: {"L" => 1, "T" => 1.0},
+                               runs_count: 1)
+          end
+
+          it "skips creation of existing parameter_sets" do
+            @valid_param.update( v: {"L" => "1", "T" => "1.0,2.0"} )
+            expect {
+              post :create, @valid_param, valid_session
+            }.to change { ParameterSet.count }.by(1)
+          end
+        end
       end
     end
 
