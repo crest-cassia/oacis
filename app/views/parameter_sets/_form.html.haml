@@ -14,7 +14,7 @@
           = text_field_tag(property, value, class: 'text_field')
         = pd.description
   .control-group
-    = label_tag('num_runs', '# of Runs', class: 'control-label')
+    = label_tag('num_runs', 'Target # of Runs', class: 'control-label')
     .controls
       = select_tag('num_runs', options_for_select([0,1,2,3,4,5,10,20], selected: @num_runs))
   #runs_fields
