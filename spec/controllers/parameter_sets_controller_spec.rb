@@ -188,7 +188,7 @@ describe ParameterSetsController do
           @sim.save!
         end
 
-        it "creates runs with host_parameters" do
+        it "does not create parameter_sets or runs" do
           parameters = {"L" => 10, "T" => 2.0}
           invalid_param = {simulator_id: @sim, v: parameters, num_runs: 1, run: {mpi_procs: -1}}
           expect {
