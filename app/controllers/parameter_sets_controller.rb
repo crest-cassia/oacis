@@ -26,47 +26,50 @@ class ParameterSetsController < ApplicationController
 
   def create
     simulator = Simulator.find(params[:simulator_id])
-    num_runs = params[:num_runs].to_i
+    @num_runs = params[:num_runs].to_i
+
+    previous_num_ps = simulator.parameter_sets.count
+    previous_num_runs = simulator.runs.count
 
     @param_set = simulator.parameter_sets.build(params)
     # this run is not saved, but used when rendering new
-    @run = @param_set.runs.build(params[:run]) if num_runs > 0
-
-    num_created = 0
-    if num_runs == 0 or @run.valid?
-      if params[:v].any? {|key,val| val.include?(',') }
-        created = create_multiple(simulator, params[:v].dup)
-        num_created = created.size
-        num_runs.times do |i|
-          created.each do |ps|
-            ps.runs.create(params[:run])
-          end
-        end
-        if num_created >= 1
-          @param_set = created.first
-        else # num_created == 0
-          @param_set.errors.add(:base, "No parameter_set was newly created")
-        end
-      else
-        if @param_set.save
-          num_runs.times {|i| @param_set.runs.create(params[:run]) }
-          num_created = 1
-        end
+    if @num_runs > 0
+      @run = @param_set.runs.build(params[:run])
+      unless @run.valid?
+        render action: "new"
+        return
       end
     end
 
-    respond_to do |format|
-      if @param_set.persisted? and num_created == 1
-        format.html { redirect_to @param_set, notice: 'New ParameterSet was successfully created.' }
-        format.json { render json: @param_set, status: :created, location: @param_set }
-      elsif @param_set.persisted? and num_created > 1
-        format.html { redirect_to simulator, notice: "#{num_created} ParameterSets were created" }
-        format.json { render json: simulator, status: :created, location: simulator }
-      else
-        @num_runs = num_runs
-        format.html { render action: "new" }
-        format.json { render json: @param_set.errors, status: :unprocessable_entity }
+    created = find_or_create_multiple(simulator, params[:v].dup)
+
+    if created.empty?
+      @param_set.errors.add(:base, "No parameter_set was created")
+      render action: "new"
+      return
+    end
+
+    @num_runs.times do |i|
+      created.each do |ps|
+        next if ps.runs.count > i
+        ps.runs.create(params[:run])
       end
+    end
+
+    num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
+    num_created_runs = simulator.runs.count - previous_num_runs
+    if num_created_ps == 0 and num_created_runs == 0
+      @param_set.errors.add(:base, "No parameter_sets or runs are created")
+      render action: "new"
+      return
+    end
+
+    flash[:notice] = "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
+    if created.size == 1
+      @param_set = created.first
+      redirect_to @param_set
+    else
+      redirect_to simulator
     end
   end
 
@@ -360,7 +363,7 @@ class ParameterSetsController < ApplicationController
   private
   MAX_CREATION_SIZE = 100
   # return created parameter sets
-  def create_multiple(simulator, parameters)
+  def find_or_create_multiple(simulator, parameters)
     mapped = simulator.parameter_definitions.map do |defn|
       key = defn.key
       if parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
@@ -380,13 +383,14 @@ class ParameterSetsController < ApplicationController
     end
 
     created = []
-    patterns = mapped[0].product( *mapped[1..-1] ).each do |param_ary|
+    mapped[0].product( *mapped[1..-1] ).each do |param_ary|
       param = {}
       simulator.parameter_definitions.each_with_index do |defn, idx|
         param[defn.key] = param_ary[idx]
       end
-      ps = simulator.parameter_sets.build(v: param)
-      if ps.save
+      casted = ParametersUtil.cast_parameter_values(param, simulator.parameter_definitions)
+      ps = simulator.parameter_sets.find_or_initialize_by(v: casted)
+      if ps.persisted? or ps.save
         created << ps
       end
     end

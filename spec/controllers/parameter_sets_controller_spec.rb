@@ -100,6 +100,21 @@ describe ParameterSetsController do
         Run.last.mpi_procs.should eq 8
       end
 
+      context "when duplicated parameter_set exists" do
+
+        before(:each) do
+          FactoryGirl.create(:parameter_set,
+                             simulator: @sim, v: {"L" => 1, "T" => 1.0},
+                             runs_count: 1)
+        end
+
+        it "creates runs upto the specified number" do
+          expect {
+            post :create, @valid_param.update(v: {"L" => 1, "T" => 1.0}, num_runs: 3)
+          }.to change { Run.count }.by(2)
+        end
+      end
+
       describe "creation of multiple parameter sets" do
 
         it "creates multiple parameter sets if comma-separated-values are given" do
@@ -140,6 +155,41 @@ describe ParameterSetsController do
           expect {
             post :create, @valid_param, valid_session
           }.to change { Run.count }.by(6)
+        end
+
+        describe "when some of parameter_sets are already created" do
+
+          before(:each) do
+            FactoryGirl.create(:parameter_set,
+                               simulator: @sim, v: {"L" => 1, "T" => 1.0},
+                               runs_count: 1)
+          end
+
+          it "skips creation of existing parameter_sets" do
+            @valid_param.update( v: {"L" => "1", "T" => "1.0,2.0"} )
+            expect {
+              post :create, @valid_param, valid_session
+            }.to change { ParameterSet.count }.by(1)
+          end
+
+          it "creates runs also for existing parameter_sets upto the specified num_runs" do
+            @valid_param.update(v: {"L" => "1", "T" => "1.0,2.0"}, num_runs: 3)
+            expect {
+              post :create, @valid_param, valid_session
+            }.to change { Run.count }.by(5)
+          end
+
+          it "redirects to simulator when multiple parameter sets are specified" do
+            @valid_param.update(v: {"L" => "1", "T" => "1.0,2.0"}, num_runs: 3)
+            post :create, @valid_param, valid_session
+            response.should redirect_to(@sim)
+          end
+
+          it "shows an error when no parameter_sets or runs are created" do
+            @valid_param.update(v: {"L" => 1, "T" => 1.0}, num_runs: 1)
+            post :create, @valid_param, valid_session
+            response.should render_template("new")
+          end
         end
       end
     end
@@ -188,7 +238,7 @@ describe ParameterSetsController do
           @sim.save!
         end
 
-        it "creates runs with host_parameters" do
+        it "does not create parameter_sets or runs" do
           parameters = {"L" => 10, "T" => 2.0}
           invalid_param = {simulator_id: @sim, v: parameters, num_runs: 1, run: {mpi_procs: -1}}
           expect {
