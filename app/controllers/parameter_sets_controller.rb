@@ -59,8 +59,13 @@ class ParameterSetsController < ApplicationController
 
     num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
     num_created_runs = simulator.runs.count - previous_num_runs
-    flash[:notice] = "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
+    if num_created_ps == 0 and num_created_runs == 0
+      @param_set.errors.add(:base, "No parameter_sets or runs are created")
+      render action: "new"
+      return
+    end
 
+    flash[:notice] = "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
     if created.size == 1
       @param_set = created.first
       redirect_to @param_set
