@@ -113,7 +113,7 @@ EOS
     end
   end
 
-  def get_analyzers(analyzer_ids)
+  def get_analyzers(file)
     parsed = JSON.load( File.read(file) )
     validate_analyzer_ids(parsed)
     Analyzer.in(id: parsed.map {|h| h["analyzer_id"] } )
