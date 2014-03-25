@@ -259,7 +259,7 @@ describe OacisCli do
           options = {analyzers: 'analyzers.json', query: { "status" => "DO_NOT_EXIST" } }
           expect {
             OacisCli.new.invoke(:destroy_analyses, [], options)
-          }.to change { Analysis.count }.by(0) 
+          }.to raise_error
         }
       end
     end
