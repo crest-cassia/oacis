@@ -13,7 +13,7 @@ class OacisCli < Thor
     required: true
   def analyses_template
     sim = get_simulator(options[:simulator])
-    analuzer_list = sim.analyzers.map(&:id).map {|anz_id| {analyzer_id: anz_id}}
+    analyzer_list = sim.analyzers.map {|anz| {"analyzer_id"=>anz.id.to_s}}
 
     return if options[:dry_run]
     File.open(options[:output], 'w') do |io|
@@ -48,15 +48,17 @@ class OacisCli < Thor
     desc:     'output file (analysis_ids.json)',
     required: true
   def create_analyses
+    raise "number_of_analyses must be a Integer(>0)" if options[:number_of_analyses] <= 0
     analyses = []
     created_analyses = []
     get_analyzers(options[:analyzers]).each do |anz|
       if anz.type == :on_run
         sim = Simulator.find(anz.simulator_id)
-        runs = runs.in(id: get_runs(options[:runs])) if options[:runs]
+        runs = sim.runs.where(status: :finished)
+        runs = runs.in(id: get_runs(options[:runs]).map(&:id) ) if options[:runs]
         runs.each do |run|
           analyses += run.analyses.limit(options[:number_of_analyses])
-          while run.analyses.count < options[:number_of_analyses]
+          (options[:number_of_analyses].to_i - run.analyses.count).times do |i|
             anl = run.analyses.build
             anl.analyzer_id = anz.id
             analyses << anl
@@ -65,11 +67,12 @@ class OacisCli < Thor
         end
       elsif anz.type == :on_parameter_set
         sim = Simulator.find(anz.simulator_id)
-        parameter_sets = Parameter.where(simulator_id: sim.to_param)
-        parameter_sets = parameter_sets.in(id: get_runs(options[:parameter_sets])) if options[:prameter_sets]
+        parameter_sets = sim.parameter_sets
+        parameter_sets = parameter_sets.in(id: get_parameter_sets(options[:parameter_sets]).map(&:id) ) if options[:parameter_sets]
+        parameter_sets = parameter_sets.select {|ps| ps.runs_status_count[:finished] == ps.runs.count}
         parameter_sets.each do |ps|
           analyses += ps.analyses.limit(options[:number_of_analyses])
-          while ps.analyses.count < options[:number_of_analyses]
+          (options[:number_of_analyses].to_i - ps.analyses.count).times do |i|
             anl = ps.analyses.build
             anl.analyzer_id = anz.id
             analyses << anl
@@ -105,7 +108,7 @@ class OacisCli < Thor
 
   private
   def write_analysis_ids_to_file(path, analyses)
-    return unless runs.present?
+    return unless analyses.present?
     File.open(path, 'w') {|io|
       ids = analyses.map {|anl| "  #{{'analysis_id' => anl.id.to_s}.to_json}"}
       io.puts "[", ids.join(",\n"), "]"
@@ -120,7 +123,7 @@ class OacisCli < Thor
     aliases:  '-r',
     desc:     'target analyses',
     required: true
-  def analyses_status
+  def analysis_status
     analyses = get_analyses(options[:analysis_ids])
     counts = {total: analyses.count}
     [:created,:submitted,:running,:failed,:finished].each do |status|
@@ -142,10 +145,10 @@ class OacisCli < Thor
     required: true
   def destroy_analyses
     analyses_count = 0
-    amalyses = []
+    analyses = []
     get_analyzers(options[:analyzers]).each do |anz|
       analyses += find_analyses(anz, options[:query]).to_a
-      analyses_count += analysis.count
+      analyses_count += analyses.count
     end
 
     if analyses_count == 0
@@ -179,10 +182,10 @@ class OacisCli < Thor
     required: true
   def replace_analyses
     analyses_count = 0
-    amalyses = []
+    analyses = []
     get_analyzers(options[:analyzers]).each do |anz|
       analyses += find_analyses(anz, options[:query]).to_a
-      analyses_count += analysis.count
+      analyses_count += analyses.count
     end
 
     if analyses_count == 0
@@ -198,9 +201,13 @@ class OacisCli < Thor
       progressbar = ProgressBar.create(total: analyses.count, format: "%t %B %p%% (%c/%C)")
       analyses.each do |anl|
         if anl.analyzable_type == "Run"
-          new_analysis = Run.find(anl.analyzable_id).analyses.build( {analyzer_id: anl.analyzer_id} )
+          new_analysis = Run.find(anl.analyzable_id).analyses.build
+          new_analysis.parameters = anl.parameters
+          new_analysis.analyzer_id = anl.analyzer_id
         elsif anl.analyzable_type == "ParameterSet"
-          new_analysis = ParameterSet.find(anl.analyzable_id).analyses.build( {analyzer_id: anl.analyzer_id} )
+          new_analysis = ParameterSet.find(anl.analyzable_id).analyses.build
+          new_analysis.parameters = anl.parameters
+          new_analysis.analyzer_id = anl.analyzer_id
         end
         if new_analysis.save
           anl.destroy
@@ -218,7 +225,7 @@ class OacisCli < Thor
       say("query must have 'status' key", :red)
       raise "invalid query"
     end
-    analyses = Analysis.where(analyzer_id: anz.id)
+    analyses = Analysis.where(analyzer_id: analyzer.id.to_s)
     if stat = query["status"]
       analyses = analyses.where(status: stat.to_sym)
     end
