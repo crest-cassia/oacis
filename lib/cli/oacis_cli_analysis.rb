@@ -144,14 +144,12 @@ class OacisCli < Thor
     desc:     'query of analysis specified as Hash (e.g. --query=status:failed simulator_version=0.0.1)',
     required: true
   def destroy_analyses
-    analyses_count = 0
     analyses = []
     get_analyzers(options[:analyzers]).each do |anz|
       analyses += find_analyses(anz, options[:query]).to_a
-      analyses_count += analyses.count
     end
 
-    if analyses_count == 0
+    if analyses.count == 0
       say("No analyses are found.")
       return
     end
@@ -181,14 +179,12 @@ class OacisCli < Thor
     desc:     'query of analysis specified as Hash (e.g. --query=status:failed simulator_version=0.0.1)',
     required: true
   def replace_analyses
-    analyses_count = 0
     analyses = []
     get_analyzers(options[:analyzers]).each do |anz|
       analyses += find_analyses(anz, options[:query]).to_a
-      analyses_count += analyses.count
     end
 
-    if analyses_count == 0
+    if analyses.count == 0
       say("No analyses are found.")
       return
     end
@@ -229,6 +225,7 @@ class OacisCli < Thor
     if stat = query["status"]
       analyses = analyses.where(status: stat.to_sym)
     end
+    raise "No analysis is found with status:#{stat}" if analyses.count == 0
     analyses
   end
 end

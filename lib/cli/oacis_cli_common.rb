@@ -86,7 +86,9 @@ EOS
   def get_parameter_sets(file)
     parsed = JSON.load( File.read(file) )
     validate_parameter_set_ids(parsed)
-    ParameterSet.in(id: parsed.map {|h| h["parameter_set_id"] } )
+    parameter_sets = ParameterSet.in(id: parsed.map {|h| h["parameter_set_id"] } )
+    raise "Invalid #{parsed.length - parameter_sets.count} prameter_set_ids are incdluding" if parameter_sets.count != parsed.length
+    parameter_sets
   end
 
   def validate_parameter_set_ids(parsed)
@@ -101,7 +103,9 @@ EOS
   def get_runs(file)
     parsed = JSON.load( File.read(file) )
     validate_run_ids(parsed)
-    Run.in(id: parsed.map {|h| h["run_id"] } )
+    runs = Run.in(id: parsed.map {|h| h["run_id"] } )
+    raise "Invalid #{parsed.length - runs.count} prameter_set_ids are incdluding" if runs.count != parsed.length
+    runs
   end
 
   def validate_run_ids(parsed)
@@ -116,7 +120,9 @@ EOS
   def get_analyzers(file)
     parsed = JSON.load( File.read(file) )
     validate_analyzer_ids(parsed)
-    Analyzer.in(id: parsed.map {|h| h["analyzer_id"] } )
+    analyzers = Analyzer.in(id: parsed.map {|h| h["analyzer_id"] } )
+    raise "Invalid #{parsed.length - analyzers.count} prameter_set_ids are incdluding" if analyzers.count != parsed.length
+    analyzers
   end
 
   def validate_analyzer_ids(parsed)
