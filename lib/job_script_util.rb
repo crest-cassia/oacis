@@ -78,39 +78,74 @@ EOS
     rendered_script.gsub(/(\r\n|\r|\n)/, "\n")
   end
 
-  def self.expand_result_file_and_update_run(run)
+  def self.expand_result_file(run)
+
     Dir.chdir(run.dir.join('..')) {
       cmd = "tar xjf #{run.id}.tar.bz2"
       system(cmd)
       raise "failed to extract the archive"  unless $?.to_i == 0
     }
+  end
+
+  def self.update_run(run)
 
     Dir.chdir(run.dir) {
-      parsed = JSON.load(File.open("_status.json"))
-      run.hostname = parsed["hostname"]
-      run.started_at = parsed["started_at"]
-      run.finished_at = parsed["finished_at"]
-      run.status = (parsed["rc"].to_i == 0) ? :finished : :failed
+      is_updated = false
 
-      File.open("_time.txt", 'r').each do |line|
-        if line =~ /^real \d/
-          run.real_time = line.sub(/^real /, '').to_f
-        elsif line =~ /^user \d/
-          # sum up cpu_times over processes
-          run.cpu_time = run.cpu_time.to_f + line.sub(/^user /,'').to_f
+      if File.exist?("_status.json")
+        begin
+          parsed = JSON.load(File.open("_status.json"))
+          run.hostname = parsed["hostname"]
+          run.started_at = parsed["started_at"]
+          run.finished_at = parsed["finished_at"]
+          run.status = (parsed["rc"].to_i == 0) ? :finished : :failed
+          is_updated = true
+        rescue => ex
+          $stderr.puts ex.message
+        end
+      end
+
+      if File.exist?("_time.txt")
+        begin
+          File.open("_time.txt", 'r').each do |line|
+            if line =~ /^real \d/
+              run.real_time = line.sub(/^real /, '').to_f
+            elsif line =~ /^user \d/
+              # sum up cpu_times over processes
+              run.cpu_time = run.cpu_time.to_f + line.sub(/^user /,'').to_f
+            end
+          end
+          is_updated = true
+        rescue => ex
+          $stderr.puts ex.message
         end
       end
 
       if File.exist?("_version.txt")
-        version = File.open("_version.txt", 'r').read.chomp
-        run.simulator_version = version
+        begin
+          version = File.open("_version.txt", 'r').read.chomp
+          run.simulator_version = version
+          is_updated = true
+        rescue => ex
+          $stderr.puts ex.message
+        end
       end
 
       json_path = '_output.json'
-      run.result = JSON.load(File.open(json_path)) if File.exist?(json_path)
-      run.result = {"result"=>run.result} unless run.result.is_a?(Hash)
-      run.included_at = DateTime.now
-      run.save!
+      if File.exist?(json_path)
+        begin
+        run.result = JSON.load(File.open(json_path))
+        run.result = {"result"=>run.result} unless run.result.is_a?(Hash)
+        is_updated = true
+        rescue => ex
+          $stderr.puts ex.message
+        end
+      end
+
+      if is_updated
+        run.included_at = DateTime.now
+        run.save!
+      end
     }
   end
 end
