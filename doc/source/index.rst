@@ -17,6 +17,7 @@ Contents:
    basic_usage
    advanced_usage
    cli
+   tips
 
 Indices and tables
 ==================
