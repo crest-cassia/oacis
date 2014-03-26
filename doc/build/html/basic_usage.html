@@ -69,7 +69,8 @@
 <div class="line">このチュートリアルでは、２つの浮動小数点型のパラメータ&#8221;p1&#8221;, &#8220;p2&#8221;を持つとする。</div>
 <div class="line">このシミュレータは以下の様にパラメータと乱数の種を引数で受け取り実行できるように、各実行ホストでビルドをしておく。</div>
 </div>
-<div class="highlight-python"><pre>~/path/to/simulator.out {p1} {p2} {seed}</pre>
+<div class="highlight-python"><div class="highlight"><pre>~/path/to/simulator.out {p1} {p2} {seed}
+</pre></div>
 </div>
 <p>パラメータをシミュレータに渡す方法として、JSONで渡す方法もある。Simulator登録の項目を参照の事。</p>
 </div>
@@ -186,7 +187,7 @@
 </li>
 <li><dl class="first docutils">
 <dt>JSON形式の場合、実行時に次のような形式のJSONファイルを <em>_input.json</em> というファイル名でOACISが実行時に配置する。シミュレータはカレントディレクトリの <em>_input.json</em> パースするように実装する必要がある。</dt>
-<dd><div class="first highlight-json"><div class="highlight"><pre><span class="p">{</span><span class="nt">&quot;param1&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span><span class="nt">&quot;param2&quot;</span><span class="p">:</span><span class="mf">3.0</span><span class="p">,</span><span class="nt">&quot;_seed&quot;</span><span class="p">:</span><span class="mi">12345</span><span class="p">}</span>
+<dd><div class="first highlight-json"><div class="highlight"><pre>{&quot;param1&quot;:100,&quot;param2&quot;:3.0,&quot;_seed&quot;:12345}
 </pre></div>
 </div>
 <ul class="last">
@@ -259,7 +260,7 @@
 <td>ジョブの前に実行されるプリプロセスを記述するスクリプト。空の場合はプリプロセスは実行されない。</td>
 </tr>
 <tr class="row-odd"><td>Command</td>
-<td>シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. <em>~/path/to/simulator.out</em>）</td>
+<td>シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. <a href="#id4"><span class="problematic" id="id5">*</span></a>~/path/to/simulator.out*）</td>
 </tr>
 <tr class="row-even"><td>Input type</td>
 <td>パラメータを引数で渡すか、JSONで渡すか指定する。</td>
@@ -309,8 +310,8 @@
 <div class="line">既に存在するパラメータセットと同じものを作ろうとすると、エラーとなりエラーメッセージが表示される。</div>
 </div>
 </div>
-<div class="section" id="id4">
-<h2>ジョブ投入<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h2>ジョブ投入<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">Runを作成してシミュレーションを実行する。</div>
 <div class="line">Create New Runsと書かれている箇所でRunの数と投入Host（Simulator登録時に実行可能ホストとして指定されたHostしか選択できない）を選択して[Create Run]ボタンを押す。</div>
@@ -333,8 +334,8 @@
 <div class="line">ただしHostで指定された max_num_jobs がジョブの上限数で、それ以上のジョブは投入されない。実行中のジョブが完了し次第、順次ジョブが投入される。</div>
 </div>
 </div>
-<div class="section" id="id5">
-<h2>実行中のジョブの確認<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id7">
+<h2>実行中のジョブの確認<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">ナビゲーションバーの[Jobs]をクリックすると、実行中(running)、スケジューラに投入済み(submitted)、実行待ち（created）のジョブ一覧を確認できる。</div>
 <div class="line">この情報はバックグラウンドプロセスが１分ごとにリモートホストをポーリングして取得しているのでタイムラグがある場合がある。</div>
@@ -342,8 +343,8 @@
 </div>
 <a class="reference internal image-reference" href="_images/jobs.png"><img alt="_images/jobs.png" class="align-center" src="_images/jobs.png" style="width: 30%;" /></a>
 </div>
-<div class="section" id="id6">
-<h2>結果の確認<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id8">
+<h2>結果の確認<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">ジョブの実行が完了すると自動的に結果がサーバー内のデータベースに取り込まれる。</div>
 <div class="line">Runの作成時のページに移動するとRunの一覧が表示され、そのRunのステータスが <em>finished</em> になっている事が確認できる。</div>
@@ -376,9 +377,9 @@
 <li><a class="reference internal" href="#host">Host登録</a></li>
 <li><a class="reference internal" href="#simulator">Simulator登録</a></li>
 <li><a class="reference internal" href="#parameterset">ParameterSet登録</a></li>
-<li><a class="reference internal" href="#id4">ジョブ投入</a></li>
-<li><a class="reference internal" href="#id5">実行中のジョブの確認</a></li>
-<li><a class="reference internal" href="#id6">結果の確認</a></li>
+<li><a class="reference internal" href="#id6">ジョブ投入</a></li>
+<li><a class="reference internal" href="#id7">実行中のジョブの確認</a></li>
+<li><a class="reference internal" href="#id8">結果の確認</a></li>
 </ul>
 </li>
 </ul>
@@ -428,7 +429,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

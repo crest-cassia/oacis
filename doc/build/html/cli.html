@@ -68,7 +68,8 @@
 </ul>
 <p>OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行する操作を指定する。
 例えば</p>
-<div class="highlight-python"><pre>./bin/oacis_cli usage</pre>
+<div class="highlight-python"><div class="highlight"><pre>./bin/oacis_cli usage
+</pre></div>
 </div>
 <p>このドキュメント内ではOACISのチェックアウトディレクトリから実行することを想定してコマンド例を示すが、どのディレクトリから実行しても良い。</p>
 <div class="section" id="usage">
@@ -129,14 +130,14 @@
 <li>以下の様に、登録済みhostの情報をObjectの配列としてJSON形式で出力する。</li>
 <li>hostにはid, name, hostname, userの情報のみ出力される</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
-  <span class="p">{</span>
-    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;522fe89a899e53ec05000005&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;hostname&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;user&quot;</span><span class="p">:</span> <span class="s2">&quot;murase&quot;</span>
-  <span class="p">}</span>
-<span class="p">]</span>
+<div class="last highlight-json"><div class="highlight"><pre>[
+  {
+    &quot;id&quot;: &quot;522fe89a899e53ec05000005&quot;,
+    &quot;name&quot;: &quot;localhost&quot;,
+    &quot;hostname&quot;: &quot;localhost&quot;,
+    &quot;user&quot;: &quot;murase&quot;
+  }
+]
 </pre></div>
 </div>
 </dd>
@@ -190,20 +191,20 @@
 <dd><ul class="first simple">
 <li>Simulatorの属性情報のテンプレートを出力する</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;b_sample_simulator&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/murase/program/oacis/lib/lib/samples/tutorial/simulator/simulator.out&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;support_input_json&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&quot;support_mpi&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&quot;support_omp&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&quot;print_version_command&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-  <span class="nt">&quot;pre_process_script&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-  <span class="nt">&quot;executable_on_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
-  <span class="nt">&quot;parameter_definitions&quot;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="p">{</span><span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;p1&quot;</span><span class="p">,</span><span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Integer&quot;</span><span class="p">,</span><span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span><span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;parameter1&quot;</span><span class="p">},</span>
-    <span class="p">{</span><span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;p2&quot;</span><span class="p">,</span><span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Float&quot;</span><span class="p">,</span><span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span><span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;parameter2&quot;</span><span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">}</span>
+<div class="last highlight-json"><div class="highlight"><pre>{
+  &quot;name&quot;: &quot;b_sample_simulator&quot;,
+  &quot;command&quot;: &quot;/Users/murase/program/oacis/lib/lib/samples/tutorial/simulator/simulator.out&quot;,
+  &quot;support_input_json&quot;: false,
+  &quot;support_mpi&quot;: false,
+  &quot;support_omp&quot;: false,
+  &quot;print_version_command&quot;: null,
+  &quot;pre_process_script&quot;: null,
+  &quot;executable_on_ids&quot;: [],
+  &quot;parameter_definitions&quot;: [
+    {&quot;key&quot;: &quot;p1&quot;,&quot;type&quot;: &quot;Integer&quot;,&quot;default&quot;: 0,&quot;description&quot;: &quot;parameter1&quot;},
+    {&quot;key&quot;: &quot;p2&quot;,&quot;type&quot;: &quot;Float&quot;,&quot;default&quot;: 5.0,&quot;description&quot;: &quot;parameter2&quot;}
+  ]
+}
 </pre></div>
 </div>
 </dd>
@@ -283,9 +284,9 @@
 <dd><ul class="first simple">
 <li>新規作成されたsimulatorのidをObjectとしてJSON形式で出力する。</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nt">&quot;simulator_id&quot;</span><span class="p">:</span> <span class="s2">&quot;52b3bcd7b93f964178000001&quot;</span>
-<span class="p">}</span>
+<div class="last highlight-json"><div class="highlight"><pre>{
+  &quot;simulator_id&quot;: &quot;52b3bcd7b93f964178000001&quot;
+}
 </pre></div>
 </div>
 </dd>
@@ -355,9 +356,9 @@
 <dd><ul class="first simple">
 <li>ParameterSet作成時に使用するパラメータ指定ファイルのテンプレートを出力する</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
-  <span class="p">{</span><span class="nt">&quot;p1&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="nt">&quot;p2&quot;</span><span class="p">:</span><span class="mf">5.0</span><span class="p">}</span>
-<span class="p">]</span>
+<div class="last highlight-json"><div class="highlight"><pre>[
+  {&quot;p1&quot;:0,&quot;p2&quot;:5.0}
+]
 </pre></div>
 </div>
 </dd>
@@ -437,9 +438,9 @@
 <dd><ul class="first simple">
 <li>新規作成されたParameterSetのidをObjectの配列としてJSON形式で出力する。</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
-  <span class="p">{</span><span class="nt">&quot;parameter_set_id&quot;</span><span class="p">:</span><span class="s2">&quot;52b3ddc7b93f969b8c000001&quot;</span><span class="p">}</span>
-<span class="p">]</span>
+<div class="last highlight-json"><div class="highlight"><pre>[
+  {&quot;parameter_set_id&quot;:&quot;52b3ddc7b93f969b8c000001&quot;}
+]
 </pre></div>
 </div>
 </dd>
@@ -518,16 +519,16 @@
 <dd><ul class="first simple">
 <li>Run作成時に使用するジョブパラメータ指定ファイルのテンプレートを出力する</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nt">&quot;host_id&quot;</span><span class="p">:</span> <span class="s2">&quot;522fe89a899e53ec05000005&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;host_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;nodes&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;ppn&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;walltime&quot;</span><span class="p">:</span> <span class="s2">&quot;10:00&quot;</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;mpi_procs&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-  <span class="nt">&quot;omp_threads&quot;</span><span class="p">:</span> <span class="mi">1</span>
-<span class="p">}</span>
+<div class="last highlight-json"><div class="highlight"><pre>{
+  &quot;host_id&quot;: &quot;522fe89a899e53ec05000005&quot;,
+  &quot;host_parameters&quot;: {
+    &quot;nodes&quot;: &quot;1&quot;,
+    &quot;ppn&quot;: &quot;1&quot;,
+    &quot;walltime&quot;: &quot;10:00&quot;
+  },
+  &quot;mpi_procs&quot;: 1,
+  &quot;omp_threads&quot;: 1
+}
 </pre></div>
 </div>
 </dd>
@@ -618,9 +619,9 @@
 <li>RunのidをObjectの配列としてJSON形式で出力する。</li>
 <li>新規作成されていないRunについても、各ParameterSetごとにnで指定された数の分だけRunのidを出力する</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
-  <span class="p">{</span><span class="nt">&quot;run_id&quot;</span><span class="p">:</span><span class="s2">&quot;52b3eaebb93f96933f000001&quot;</span><span class="p">}</span>
-<span class="p">]</span>
+<div class="last highlight-json"><div class="highlight"><pre>[
+  {&quot;run_id&quot;:&quot;52b3eaebb93f96933f000001&quot;}
+]
 </pre></div>
 </div>
 </dd>
@@ -689,14 +690,14 @@
 <dd><ul class="first simple">
 <li>指定されたRunのステータスを集計し、標準出力に表示する</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nt">&quot;total&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-  <span class="nt">&quot;created&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-  <span class="nt">&quot;submitted&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-  <span class="nt">&quot;running&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-  <span class="nt">&quot;failed&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-  <span class="nt">&quot;finished&quot;</span><span class="p">:</span> <span class="mi">0</span>
-<span class="p">}</span>
+<div class="last highlight-json"><div class="highlight"><pre>{
+  &quot;total&quot;: 1,
+  &quot;created&quot;: 0,
+  &quot;submitted&quot;: 0,
+  &quot;running&quot;: 0,
+  &quot;failed&quot;: 1,
+  &quot;finished&quot;: 0
+}
 </pre></div>
 </div>
 </dd>
@@ -1006,7 +1007,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>
