@@ -5,17 +5,19 @@ Tips
 バックアップ・レストア
 ==========================
 
-----
+------------------------------------------
 OACISのバックアップとレストア方法について
-----
+------------------------------------------
 | OACISによって管理されているデータは、DB上のレコード(MongoDBではコレクションと呼ぶ。)とファイルシステム上のpublicディレクトリに保存されている。
 | 以下では、コレクションとpublicディレクトリそれぞれに対して、バックアップ・レストア手順を示す。
+
 ``注意:バックアップ・レストア方法の十分な検証が済んでいないため、自己責任でお願いします。(v1.8.0-2014/03/28)``
 
-----
+------------------------------------------
 コレクションのバックアップ・レストア
-----
+------------------------------------------
 | OACISが利用しているDBの名前をoacis_developmentとする。（DB名は、confing/mongoid.ymlに記載されている。）
+
 1. コレクションのバックアップ(バックアップデータは./dump/以下に作成される。)
     - すべてのコレクションをバックアップ
 
@@ -43,14 +45,14 @@ OACISのバックアップとレストア方法について
           mongodump --db oacis_development --collection analyses -q '{analyzer_id: { $in: [ObjectId("526638c781e31e98cf000004"),ObjectId("52fde12081e31ed67f00008b")]} }'
 
     -  補足
-        - あるSimulatorに関連したコレクションをすべてバックアップするには、上記のように、simulators, parameter_sets, runs, analyzers, analysesをmongodumpする。 
+        - あるSimulatorに関連したコレクションをすべてバックアップするには、上記のように、simulators, parameter_sets, runs, analyzers, analysesをmongodumpする。
         - すでにバックアップデータがある状態でmongodumpを行うと、既存のバックアップデータは上書きされる。
 
 2. BDのレストア
     - レコードをレストア
 
         .. code-block:: sh
-          
+
           mongorestore --db oacis_development /path/to/DB_data/dump/oacis_development
 
     - 補足
@@ -70,18 +72,18 @@ OACISのバックアップとレストア方法について
 
             .. code-block:: sh
 
-              #change directory to OACIS directory 
+              #change directory to OACIS directory
               cd /path/to/OACIS
               vim config/mongoid.yml
         
-            .. code-block:: diff 
-          
+            .. code-block:: diff
+
               - database: oacis_development
               +  database: oacis_new
 
----- 
-publicディレクトリのバックアップ・レストア 
-----
+------------------------------------------
+publicディレクトリのバックアップ・レストア
+------------------------------------------
 | OACISは、結果のファイル群をpublicディレクトリ以下に保管している。
 | 例えば、public以下の構造は以下のとおり。
 
@@ -97,6 +99,7 @@ Analysis on 5327fbc281e31e035f000001       ./public/Result_development/526638c78
 
 | 上位以外にも、アーカイブファイルなどが、simulatorのディレクトリ以下に保管されている。
 | そのため、simulatorのディレクトリ単位でバックアップレストアを行う。
+
 1. ディレクトリのバックアップ
     - 差分コピー
 
@@ -127,12 +130,12 @@ Analysis on 5327fbc281e31e035f000001       ./public/Result_development/526638c78
 
 
 参考
-====
+==========================
 * MongoDB mongodump: http://docs.mongodb.org/manual/reference/program/mongodump/
 * MongoDB mongorestore: http://docs.mongodb.org/manual/reference/program/mongorestore/
 * MongoDB ObjectID: http://docs.mongodb.org/manual/reference/object-id/
 
 Infomation
-====
+==========================
 * CASSIA project since 2013
 * ソースリポジトリ: https://github.com/crest-cassia/cassia
