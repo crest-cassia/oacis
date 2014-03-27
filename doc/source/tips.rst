@@ -68,10 +68,11 @@ OACISのバックアップとレストア方法について
         - DBのレストアのみで可能になる項目
             - グラフの描画
             - 実行済みパラメータの確認、... など
-        - DBのレストアのみでは不可能な項目（ただし、publicディレクトリのレストア、Hostの設定、simulatorの再設定などを適切に行えば可能。）
+        - publicディレクトリのレストアも必要な項目
             - ParameterSetやRunの新規追加
             - 結果archive(.tar.bz2)の取得
             - 結果ファイルの閲覧（図の参照を含む）、... など
+            （別のマシンに移植する場合には、Hostの再設定が必要。）
         - (非推奨)レコードの上書
             | 既存のデータベースにレストアした場合、OACISによるコレクションのvalidationが働かないため、最悪OACISが機能しなくなる。
             | よって、レストア先のデータベースは空であることが望ましい。（OACISのweb browser front endまたはCLIからsimulator単位で削除する。）
@@ -114,13 +115,13 @@ Analysis on 5327fbc281e31e035f000001       ./public/Result_development/526638c78
 
         .. code-block:: sh
 
-          rsync -av -P /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 /path/to/backup_dir/Reuslt_development/
+          rsync -av -P --delete /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 /path/to/backup_dir/Reuslt_development/
 
     - リモートマシンに差分コピー
 
         .. code-block:: sh
 
-          rsync -avz -P -e "ssh -i ~/.ssh/id_rsa" /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 username@remotehost:/path/to/backup_dir/Reuslt_development/
+          rsync -avz -P --delete -e "ssh -i ~/.ssh/id_rsa" /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 username@remotehost:/path/to/backup_dir/Reuslt_development/
 
     - 補足
         - ``cp -r`` や ``scp -r`` では、バックアップ先に同じ名前のディレクトリが存在しているとき、挙動が変わるので非推奨
