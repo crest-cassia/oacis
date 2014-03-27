@@ -131,9 +131,9 @@ EOS
       json_path = '_output.json'
       if File.exist?(json_path)
         begin
-        run.result = JSON.load(File.open(json_path))
-        run.result = {"result"=>run.result} unless run.result.is_a?(Hash)
-        is_updated = true
+          run.result = JSON.load(File.open(json_path))
+          run.result = {"result"=>run.result} unless run.result.is_a?(Hash)
+          is_updated = true
         rescue => ex
           $stderr.puts ex.message
         end

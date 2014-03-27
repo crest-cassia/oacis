@@ -275,7 +275,7 @@ EOS
         end
 
         expect {
-        JobScriptUtil.update_run(@run)
+          JobScriptUtil.update_run(@run)
         }.not_to change { @run.result }
 
         # parse status
