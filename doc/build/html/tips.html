@@ -1,0 +1,366 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tips &mdash; OACIS 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="OACIS 0.0.1 documentation" href="index.html" />
+    <link rel="prev" title="Command Line Interface(CLI)の使い方" href="cli.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cli.html" title="Command Line Interface(CLI)の使い方"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tips">
+<h1>Tips<a class="headerlink" href="#tips" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>バックアップ・レストア<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="oacis">
+<h3>OACISのバックアップとレストア方法について<a class="headerlink" href="#oacis" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">OACISによって管理されているデータは、DB上のレコード(MongoDBではコレクションと呼ぶ。)とファイルシステム上のpublicディレクトリに保存されている。</div>
+<div class="line">以下では、コレクションとpublicディレクトリそれぞれに対して、バックアップ・レストア手順を示す。</div>
+</div>
+<p><tt class="docutils literal"><span class="pre">注意:バックアップ・レストア方法の十分な検証が済んでいないため、自己責任でお願いします。(v1.8.0-2014/03/28)</span></tt></p>
+</div>
+<div class="section" id="id2">
+<h3>コレクションのバックアップ・レストア<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">OACISが利用しているDBの名前をoacis_developmentとする。（DB名は、confing/mongoid.ymlに記載されている。）</div>
+</div>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>コレクションのバックアップ(バックアップデータは./dump/以下に作成される。)</dt>
+<dd><ul class="first last">
+<li><p class="first">すべてのコレクションをバックアップ</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>mongodump --db oacis_development
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">特定のコレクションをバックアップ</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre><span class="c">#get ObjectId of Simulator</span>
+mongo oacis_development --eval <span class="s1">&#39;db.simulators.find( { name: &quot;ToyProblem01&quot;}).map( function(u) { return u._id; } )&#39;</span>
+&gt; ObjectId<span class="o">(</span><span class="s2">&quot;526638c781e31e98cf000001&quot;</span><span class="o">)</span>
+
+mongodump --db oacis_development --collection simulators -q <span class="s1">&#39;{_id: ObjectId(&quot;526638c781e31e98cf000001&quot;)}&#39;</span>
+mongodump --db oacis_development --collection parameter_sets -q <span class="s1">&#39;{simulator_id: ObjectId(&quot;526638c781e31e98cf000001&quot;)}&#39;</span>
+mongodump --db oacis_development --collection runs -q <span class="s1">&#39;{simulator_id: ObjectId(&quot;526638c781e31e98cf000001&quot;)}&#39;</span>
+
+<span class="c">#get ObjectIds of Analyzers</span>
+mongo oacis_development --eval <span class="s1">&#39;db.analyzers.find( { simulator_id: ObjectId(&quot;526638c781e31e98cf000001&quot;)} ).map( function(u) { return u._id; } )&#39;</span>
+&gt; ObjectId<span class="o">(</span><span class="s2">&quot;526638c781e31e98cf000004&quot;</span><span class="o">)</span>,ObjectId<span class="o">(</span><span class="s2">&quot;52fde12081e31ed67f00008b&quot;</span><span class="o">)</span>
+
+mongodump --db oacis_development --collection analyzers -q <span class="s1">&#39;{_id: { $in: [ObjectId(&quot;526638c781e31e98cf000004&quot;),ObjectId(&quot;52fde12081e31ed67f00008b&quot;)]} }&#39;</span>
+mongodump --db oacis_development --collection analyses -q <span class="s1">&#39;{analyzer_id: { $in: [ObjectId(&quot;526638c781e31e98cf000004&quot;),ObjectId(&quot;52fde12081e31ed67f00008b&quot;)]} }&#39;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>補足</dt>
+<dd><ul class="first last simple">
+<li>あるSimulatorに関連したコレクションをすべてバックアップするには、上記のように、simulators, parameter_sets, runs, analyzers, analysesをmongodumpする。</li>
+<li>すでにバックアップデータがある状態でmongodumpを行うと、既存のバックアップデータは上書きされる。</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>DBのレストア</dt>
+<dd><ul class="first last">
+<li><p class="first">レコードをレストア</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>mongorestore --db oacis_development /path/to/DB_data/dump/oacis_development
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">補足</p>
+<blockquote>
+<div><ul id="initialize-db">
+<li><p class="first">DBの初期化(注意：publicディレクトリは初期化されないので別途消去する。 <a class="reference internal" href="#initialize-public-directory"><em>publicディレクトリの初期化</em></a> )</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>mongo  oacis_development --eval <span class="s1">&#39;db.dropDatabase();&#39;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>DBのレストアのみで可能になる項目</dt>
+<dd><ul class="first last simple">
+<li>グラフの描画</li>
+<li>実行済みパラメータの確認、... など</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>publicディレクトリのレストアも必要な項目</dt>
+<dd><ul class="first simple">
+<li>ParameterSetやRunの新規追加</li>
+<li>結果archive(.tar.bz2)の取得</li>
+<li>結果ファイルの閲覧（図の参照を含む）、... など</li>
+</ul>
+<p class="last">（別のマシンに移植する場合には、Hostの再設定が必要。）</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>(非推奨)レコードの上書</dt>
+<dd><div class="first last line-block">
+<div class="line">既存のデータベースにレストアした場合、OACISによるコレクションのvalidationが働かないため、最悪OACISが機能しなくなる。</div>
+<div class="line">よって、レストア先のデータベースは空であることが望ましい。（OACISのweb browser front endまたはCLIからsimulator単位で削除する。）</div>
+<div class="line">ただし、別名のシミューレータを追加することは可能。（ObjectIdが同じものになる可能性は考えなくて良い。詳しくは、 <a class="reference external" href="http://docs.mongodb.org/manual/reference/object-id/">MongoDB ObjectId</a> を参照。）</div>
+</div>
+</dd>
+</dl>
+</li>
+<li><p class="first">(非推奨)レコードをレストアするDBを変更(注意：これまでのレコードは参照不可。)</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre><span class="c">#change directory to OACIS directory</span>
+<span class="nb">cd</span> /path/to/OACIS
+vim config/mongoid.yml
+</pre></div>
+</div>
+<div class="highlight-diff"><div class="highlight"><pre><span class="gd">- database: oacis_development</span>
+<span class="gi">+  database: oacis_new</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
+<div class="section" id="public">
+<h3>publicディレクトリのバックアップ・レストア<a class="headerlink" href="#public" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">OACISは、結果のファイル群をpublicディレクトリ以下に保管している。</div>
+<div class="line">例えば、public以下の構造は以下のとおり。</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">collection</th>
+<th class="head">path</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Simulator</td>
+<td>./public/Result_development/526638c781e31e98cf000001</td>
+</tr>
+<tr class="row-odd"><td>ParameterSet on 526638c781e31e98cf000001</td>
+<td>./public/Result_development/526638c781e31e98cf000001/5327fbc281e31e035f000001</td>
+</tr>
+<tr class="row-even"><td>Run on 5327fbc281e31e035f000001</td>
+<td>./public/Result_development/526638c781e31e98cf000001/5327fbc281e31e035f000001/5327fbc281e31e035f000002</td>
+</tr>
+<tr class="row-odd"><td>Analysis on 526638c781e31e98cf000001</td>
+<td>./public/Result_development/526638c781e31e98cf000001/5327fbc281e31e035f000001/526638c781e31e98cf000004</td>
+</tr>
+<tr class="row-even"><td>Analysis on 5327fbc281e31e035f000001</td>
+<td>./public/Result_development/526638c781e31e98cf000001/5327fbc281e31e035f000001/5327fbc281e31e035f000002/5327fbc681e31e6b8400000a</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line">上位以外にも、アーカイブファイルなどが、simulatorのディレクトリ以下に保管されている。</div>
+<div class="line">そのため、simulatorのディレクトリ単位でバックアップレストアを行う。</div>
+</div>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>ディレクトリのバックアップ</dt>
+<dd><ul class="first last">
+<li><p class="first">差分コピー</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>rsync -av -P --delete /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 /path/to/backup_dir/Reuslt_development/
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">リモートマシンに差分コピー</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>rsync -avz -P --delete -e <span class="s2">&quot;ssh -i ~/.ssh/id_rsa&quot;</span> /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 username@remotehost:/path/to/backup_dir/Reuslt_development/
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>補足</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">cp</span> <span class="pre">-r</span></tt> や <tt class="docutils literal"><span class="pre">scp</span> <span class="pre">-r</span></tt> では、バックアップ先に同じ名前のディレクトリが存在しているとき、挙動が変わるので非推奨</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>ディレクトリのレストア</dt>
+<dd><ul class="first last">
+<li><p class="first">差分コピー</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>rsync -av -P /path/to/backup_dir/Reuslt_development/526638c781e31e98cf000001 /path/to/OACIS/public/Reuslt_development/
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">リモートマシンから差分コピー</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>rsync -avz -P -e <span class="s2">&quot;ssh -i ~/.ssh/id_rsa&quot;</span> username@oacishost:/path/to/backup_dir/Reuslt_development/526638c781e31e98cf000001 /path/to/OACIS/public/Reuslt_development/
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">補足</p>
+<blockquote>
+<div><ul id="initialize-public-directory">
+<li><p class="first">publicディレクトリの初期化（注意：DBは初期化されないので別途消去する。 <a class="reference internal" href="#initialize-db"><em>DBの初期化</em></a> ）</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>rm -rf /path/to/OACIS/public/Result_development/*
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>参考<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>MongoDB mongodump: <a class="reference external" href="http://docs.mongodb.org/manual/reference/program/mongodump/">http://docs.mongodb.org/manual/reference/program/mongodump/</a></li>
+<li>MongoDB mongorestore: <a class="reference external" href="http://docs.mongodb.org/manual/reference/program/mongorestore/">http://docs.mongodb.org/manual/reference/program/mongorestore/</a></li>
+<li>MongoDB ObjectID: <a class="reference external" href="http://docs.mongodb.org/manual/reference/object-id/">http://docs.mongodb.org/manual/reference/object-id/</a></li>
+</ul>
+</div>
+<div class="section" id="infomation">
+<h2>Infomation<a class="headerlink" href="#infomation" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>CASSIA project since 2013</li>
+<li>ソースリポジトリ: <a class="reference external" href="https://github.com/crest-cassia/cassia">https://github.com/crest-cassia/cassia</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tips</a><ul>
+<li><a class="reference internal" href="#id1">バックアップ・レストア</a><ul>
+<li><a class="reference internal" href="#oacis">OACISのバックアップとレストア方法について</a></li>
+<li><a class="reference internal" href="#id2">コレクションのバックアップ・レストア</a></li>
+<li><a class="reference internal" href="#public">publicディレクトリのバックアップ・レストア</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id3">参考</a></li>
+<li><a class="reference internal" href="#infomation">Infomation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cli.html"
+                        title="previous chapter">Command Line Interface(CLI)の使い方</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tips.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cli.html" title="Command Line Interface(CLI)の使い方"
+             >previous</a> |</li>
+        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

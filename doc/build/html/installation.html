@@ -121,13 +121,15 @@
 <div class="line-block">
 <div class="line">以下のコマンドでRubyのバージョン、bundlerのインストール、MongoDBのバージョン、MongoDBのデーモンが起動していることを確認する事ができる。</div>
 </div>
-<div class="highlight-python"><pre>${OACIS_PROJECT_ROOT}/bin/check_oacis_env</pre>
+<div class="highlight-python"><div class="highlight"><pre>${OACIS_PROJECT_ROOT}/bin/check_oacis_env
+</pre></div>
 </div>
 <div class="line-block">
 <div class="line">もしエラーが起きた場合は、以下のコマンドで手動で確認し必要なソフトウェアをインストールすること。</div>
 <div class="line">インストール(PATH)の確認</div>
 </div>
-<div class="highlight-python"><pre>which ruby(mongod)</pre>
+<div class="highlight-python"><div class="highlight"><pre>which ruby(mongod)
+</pre></div>
 </div>
 <p>バージョンの確認</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">ruby</span><span class="p">(</span><span class="n">mongod</span><span class="p">)</span> <span class="o">--</span><span class="n">version</span>
@@ -143,7 +145,8 @@
 <h2>インストール<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
 <p>まず手元にOACISのソースコード一式をダウンロードする。</p>
 <p>次にRailsおよび関連gemのインストールを行う。ダウンロードしたディレクトリ内に移動し、</p>
-<div class="highlight-python"><pre>bundle install --path=vendor/bundle</pre>
+<div class="highlight-python"><div class="highlight"><pre>bundle install --path=vendor/bundle
+</pre></div>
 </div>
 <div class="line-block">
 <div class="line">を実行する。</div>
@@ -160,14 +163,16 @@
 <div class="section" id="railsworker">
 <h2>RailsおよびWorkerの起動<a class="headerlink" href="#railsworker" title="Permalink to this headline">¶</a></h2>
 <p>Railsおよびworkerの起動は以下のコマンドを実行する。</p>
-<div class="highlight-python"><pre>bundle exec rake daemon:start</pre>
+<div class="highlight-python"><div class="highlight"><pre>bundle exec rake daemon:start
+</pre></div>
 </div>
 <p><a class="reference external" href="http://localhost:3000">http://localhost:3000</a> にアクセスできればRailsの起動が成功している。
 またWorkerプロセスが起動しているかどうかは <a class="reference external" href="http://localhost:3000/runs">http://localhost:3000/runs</a> にアクセスすれば確認できる。
 Workerが起動していない場合にはエラーメッセージが表示される。</p>
 <p>これらのプロセスの再起動、および停止は以下のコマンドで実行できる。</p>
-<div class="highlight-python"><pre>bundle exec rake daemon:restart
-bundle exec rake daemon:stop</pre>
+<div class="highlight-python"><div class="highlight"><pre>bundle exec rake daemon:restart
+bundle exec rake daemon:stop
+</pre></div>
 </div>
 </div>
 <div class="section" id="firewall">
@@ -269,7 +274,7 @@ config/mongoid.yml の中でMongoDBへの接続情報を設定しているので
     </div>
     <div class="footer">
         &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>
