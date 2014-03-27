@@ -26,7 +26,7 @@ echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${OACIS_RUN_ID}_status.json
 
 # PRINT SIMULATOR VERSION ---------
 if [ -n "$OACIS_PRINT_VERSION_COMMAND" ]; then
-  (eval ${OACIS_PRINT_VERSION_COMMAND}) > ../${OACIS_RUN_ID}_version.txt
+  (eval ${OACIS_PRINT_VERSION_COMMAND}) > _version.txt
 fi
 
 # JOB EXECUTION -------------------
@@ -45,9 +45,6 @@ echo "}" >> ../${OACIS_RUN_ID}_status.json
 cd ..
 \\mv -f ${OACIS_RUN_ID}_status.json ${OACIS_RUN_ID}/_status.json
 \\mv -f ${OACIS_RUN_ID}_time.txt ${OACIS_RUN_ID}/_time.txt
-if [ -e ${OACIS_RUN_ID}_version.txt ]; then
-  \\mv -f ${OACIS_RUN_ID}_version.txt ${OACIS_RUN_ID}/_version.txt
-fi
 tar cf ${OACIS_RUN_ID}.tar ${OACIS_RUN_ID}
 if test $? -ne 0; then { echo "// Failed to make an archive for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
 bzip2 ${OACIS_RUN_ID}.tar
