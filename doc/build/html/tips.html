@@ -107,7 +107,7 @@ mongodump --db oacis_development --collection analyses -q <span class="s1">&#39;
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>BDのレストア</dt>
+<dt>DBのレストア</dt>
 <dd><ul class="first last">
 <li><p class="first">レコードをレストア</p>
 <blockquote>
@@ -116,9 +116,16 @@ mongodump --db oacis_development --collection analyses -q <span class="s1">&#39;
 </div>
 </div></blockquote>
 </li>
-<li><dl class="first docutils">
-<dt>補足</dt>
-<dd><ul class="first last">
+<li><p class="first">補足</p>
+<blockquote>
+<div><ul id="initialize-db">
+<li><p class="first">DBの初期化(注意：publicディレクトリは初期化されないので別途消去する。 <a class="reference internal" href="#initialize-public-directory"><em>publicディレクトリの初期化</em></a> )</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>mongo  oacis_development --eval <span class="s1">&#39;db.dropDatabase();&#39;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
 <li><dl class="first docutils">
 <dt>DBのレストアのみで可能になる項目</dt>
 <dd><ul class="first last simple">
@@ -162,8 +169,7 @@ vim config/mongoid.yml
 </div></blockquote>
 </li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </li>
 </ul>
 </dd>
@@ -254,6 +260,19 @@ vim config/mongoid.yml
 <div><div class="highlight-sh"><div class="highlight"><pre>rsync -avz -P -e <span class="s2">&quot;ssh -i ~/.ssh/id_rsa&quot;</span> username@oacishost:/path/to/backup_dir/Reuslt_development/526638c781e31e98cf000001 /path/to/OACIS/public/Reuslt_development/
 </pre></div>
 </div>
+</div></blockquote>
+</li>
+<li><p class="first">補足</p>
+<blockquote>
+<div><ul id="initialize-public-directory">
+<li><p class="first">publicディレクトリの初期化（注意：DBは初期化されないので別途消去する。 <a class="reference internal" href="#initialize-db"><em>DBの初期化</em></a> ）</p>
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>rm -rf /path/to/OACIS/public/Result_development/*
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
 </div></blockquote>
 </li>
 </ul>
