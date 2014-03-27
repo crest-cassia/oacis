@@ -98,7 +98,21 @@ class RemoteJobHandler
       raise RemoteOperationError, "#{cmd} failed : #{rc}, #{err}" unless rc == 0
       run.status = :submitted
       run.job_id = out.chomp
-      run.job_id = out.chomp.split(" ")[5] if @host.scheduler_type == "pjm_k" #STDOUT:[INFO] PJM 0000 pjsub Job 2275991 submitted.
+
+      if @host.scheduler_type == "pjm_k"
+        #success: out = STDOUT:[INFO] PJM 0000 pjsub Job 2275991 submitted.
+        #         rc  = 0
+        #failed:  out = [ERR.] PJM 0007 pjsub Staging option error (3).
+        #               Refer to the staging information file. (J5333b14881e31ebcd2000001.sh.s2366652)
+        #         rc  = 0
+        if out =~ /submitted/
+          run.job_id = out.chomp.split(" ")[5]
+        else
+          scriptname_s_jobid = out.chomp.split(" ").last
+          job_id = scriptname_s_jobid.sub("(J#{run.id}.sh.s", "").sub(")", "")
+          run.job_id = job_id
+        end
+      end
       run.submitted_at = DateTime.now
       run.save!
     end
