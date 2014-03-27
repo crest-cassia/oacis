@@ -264,7 +264,7 @@ class ParameterSetsController < ApplicationController
       )
   end
 
-  SCATTER_PLOT_LIMIT = 1000
+  SCATTER_PLOT_LIMIT = 10000
 
   public
   def _scatter_plot
