@@ -136,12 +136,13 @@ mongodump --db oacis_development --collection analyses -q <span class="s1">&#39;
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>DBのレストアのみでは不可能な項目（ただし、publicディレクトリのレストア、Hostの設定、simulatorの再設定などを適切に行えば可能。）</dt>
-<dd><ul class="first last simple">
+<dt>publicディレクトリのレストアも必要な項目</dt>
+<dd><ul class="first simple">
 <li>ParameterSetやRunの新規追加</li>
 <li>結果archive(.tar.bz2)の取得</li>
 <li>結果ファイルの閲覧（図の参照を含む）、... など</li>
 </ul>
+<p class="last">（別のマシンに移植する場合には、Hostの再設定が必要。）</p>
 </dd>
 </dl>
 </li>
@@ -221,14 +222,14 @@ vim config/mongoid.yml
 <dd><ul class="first last">
 <li><p class="first">差分コピー</p>
 <blockquote>
-<div><div class="highlight-sh"><div class="highlight"><pre>rsync -av -P /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 /path/to/backup_dir/Reuslt_development/
+<div><div class="highlight-sh"><div class="highlight"><pre>rsync -av -P --delete /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 /path/to/backup_dir/Reuslt_development/
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">リモートマシンに差分コピー</p>
 <blockquote>
-<div><div class="highlight-sh"><div class="highlight"><pre>rsync -avz -P -e <span class="s2">&quot;ssh -i ~/.ssh/id_rsa&quot;</span> /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 username@remotehost:/path/to/backup_dir/Reuslt_development/
+<div><div class="highlight-sh"><div class="highlight"><pre>rsync -avz -P --delete -e <span class="s2">&quot;ssh -i ~/.ssh/id_rsa&quot;</span> /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 username@remotehost:/path/to/backup_dir/Reuslt_development/
 </pre></div>
 </div>
 </div></blockquote>
