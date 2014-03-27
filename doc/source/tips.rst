@@ -48,7 +48,7 @@ OACISのバックアップとレストア方法について
         - あるSimulatorに関連したコレクションをすべてバックアップするには、上記のように、simulators, parameter_sets, runs, analyzers, analysesをmongodumpする。
         - すでにバックアップデータがある状態でmongodumpを行うと、既存のバックアップデータは上書きされる。
 
-2. BDのレストア
+2. DBのレストア
     - レコードをレストア
 
         .. code-block:: sh
@@ -56,6 +56,15 @@ OACISのバックアップとレストア方法について
           mongorestore --db oacis_development /path/to/DB_data/dump/oacis_development
 
     - 補足
+
+        .. _initialize_db:
+
+        - DBの初期化(注意：publicディレクトリは初期化されないので別途消去する。 :ref:`publicディレクトリの初期化<initialize_public_directory>` )
+
+            .. code-block:: sh
+
+              mongo  oacis_development --eval 'db.dropDatabase();'
+
         - DBのレストアのみで可能になる項目
             - グラフの描画
             - 実行済みパラメータの確認、... など
@@ -128,6 +137,16 @@ Analysis on 5327fbc281e31e035f000001       ./public/Result_development/526638c78
 
           rsync -avz -P -e "ssh -i ~/.ssh/id_rsa" username@oacishost:/path/to/backup_dir/Reuslt_development/526638c781e31e98cf000001 /path/to/OACIS/public/Reuslt_development/
 
+
+    - 補足
+
+        .. _initialize_public_directory:
+
+        - publicディレクトリの初期化（注意：DBは初期化されないので別途消去する。 :ref:`DBの初期化<initialize_db>` ）
+
+            .. code-block:: sh
+
+              rm -rf /path/to/OACIS/public/Result_development/*
 
 参考
 ==========================
