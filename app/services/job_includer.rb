@@ -14,6 +14,7 @@ module JobIncluder
         include_archive(run)
       else
         download_work_dir_if_exists(host, run, ssh)
+        include_work_dir(run)
         run.status = :failed
         run.save!
       end
@@ -25,7 +26,12 @@ module JobIncluder
 
   private
   def self.include_archive(run)
-    JobScriptUtil.expand_result_file_and_update_run(run)
+    JobScriptUtil.expand_result_file(run)
+    JobScriptUtil.update_run(run)
+  end
+
+  def self.include_work_dir(run)
+    JobScriptUtil.update_run(run)
   end
 
   def self.create_auto_run_analyses(run)
