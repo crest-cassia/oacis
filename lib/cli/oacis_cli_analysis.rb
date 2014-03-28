@@ -1,90 +1,89 @@
 class OacisCli < Thor
 
   desc 'analyses_template', "print analyses parameters"
-  method_option :simulator,
+  method_option :analyzer,
     type:     :string,
-    aliases:  '-s',
-    desc:     'simulator ID or path to simulator_id.json',
+    aliases:  '-a',
+    desc:     'analyzer ID',
     required: true
   method_option :output,
     type:     :string,
     aliases:  '-o',
-    desc:     'output json file (run_ids.json)',
+    desc:     'output json file (anz_parameters.json)',
     required: true
   def analyses_template
-    sim = get_simulator(options[:simulator])
-    analyzer_list = sim.analyzers.map {|anz| {"analyzer_id"=>anz.id.to_s}}
+    anz = Analyzer.find(options[:analyzer])
+    mapped = anz.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
+    anz_parameters = Hash[mapped]
 
     return if options[:dry_run]
     File.open(options[:output], 'w') do |io|
-      io.puts JSON.pretty_generate(analyzer_list)
+      # for visibility, manually print the json object as follows
+      io.puts "[", "  #{anz_parameters.to_json}", "]"
+      io.flush
     end
   end
 
   desc 'create_analyses', "create analyses"
-  method_option :parameter_sets,
-    type:     :string,
-    aliases:  '-p',
-    desc:     'path to parameter_set_ids.json',
-    required: false
-  method_option :runs,
-    type:     :string,
-    aliases:  '-r',
-    desc:     'path to run_ids.json',
-    required: false
-  method_option :analyzers,
+  method_option :analyzer,
     type:     :string,
     aliases:  '-a',
-    desc:     'path to analyzer_ids.json',
+    desc:     'analyzer ID',
     required: true
-  method_option :number_of_analyses,
-    type:     :numeric,
-    aliases:  '-n',
-    desc:     'analyses are created up to this number',
-    default:  1
+  method_option :input,
+    type:     :string,
+    aliases:  '-i',
+    desc:     'input file',
+    required: true
+  option :first_run_only,
+    desc:     'create analyses only on first runs',
+    required: false
+  method_option :target,
+    type:     :string,
+    aliases:  '-t',
+    desc:     'create analyses on targets(parmeter_set_ids.json or run_ids.json)',
+    required: false
   method_option :output,
     type:     :string,
     aliases:  '-o',
     desc:     'output file (analysis_ids.json)',
     required: true
   def create_analyses
-    raise "number_of_analyses must be a Integer(>0)" if options[:number_of_analyses] <= 0
+    raise "can not use both first_run_only option and target option" if options[:first_run_only].present? and options[:target].present?
+    input = JSON.load(File.read(options[:input]))
+    anz = Analyzer.find(options[:analyzer])
+
     analyses = []
-    created_analyses = []
-    get_analyzers(options[:analyzers]).each do |anz|
-      if anz.type == :on_run
-        sim = Simulator.find(anz.simulator_id)
-        runs = sim.runs.where(status: :finished)
-        runs = runs.in(id: get_runs(options[:runs]).map(&:id) ) if options[:runs]
+    sim = Simulator.find(anz.simulator_id)
+    if anz.type == :on_run
+      runs = sim.runs
+      runs = runs.order_by("updated_at desc").limit(1) if options[:first_run_only]
+      runs = runs.in(id: get_runs(options[:target]).map(&:id) ) if options[:target]
+      runs = runs.where(status: :finished)
+      input.each do |parameters|
         runs.each do |run|
-          analyses += run.analyses.limit(options[:number_of_analyses])
-          (options[:number_of_analyses].to_i - run.analyses.count).times do |i|
-            anl = run.analyses.build
-            anl.analyzer_id = anz.id
-            analyses << anl
-            created_analyses << anl
-          end
+          anl = run.analyses.where(analyzer: anz, parameters: parameters).first
+          anl = run.analyses.build(analyzer: anz, parameters: parameters) if anl.blank?
+          analyses << anl
         end
-      elsif anz.type == :on_parameter_set
-        sim = Simulator.find(anz.simulator_id)
-        parameter_sets = sim.parameter_sets
-        parameter_sets = parameter_sets.in(id: get_parameter_sets(options[:parameter_sets]).map(&:id) ) if options[:parameter_sets]
-        parameter_sets = parameter_sets.select {|ps| ps.runs_status_count[:finished] == ps.runs.count}
+      end
+    elsif anz.type == :on_parameter_set
+      parameter_sets = sim.parameter_sets
+      parameter_sets = parameter_sets.in(id: get_parameter_sets(options[:target]).map(&:id) ) if options[:target]
+      parameter_sets = parameter_sets.select {|ps| ps.runs_status_count[:finished] == ps.runs.count}
+      input.each do |parameters|
         parameter_sets.each do |ps|
-          analyses += ps.analyses.limit(options[:number_of_analyses])
-          (options[:number_of_analyses].to_i - ps.analyses.count).times do |i|
-            anl = ps.analyses.build
-            anl.analyzer_id = anz.id
-            analyses << anl
-            created_analyses << anl
-          end
+          anl = ps.analyses.where(analyzer: anz, parameters: parameters).first
+          anl = ps.analyses.build(analyzer: anz, parameters: parameters) if anl.blank?
+          analyses << anl
         end
       end
     end
+    created_analyses = analyses.select {|anl| anl.status == nil}
 
     progressbar = ProgressBar.create(total: created_analyses.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
-      progressbar.log "Number of parameter_sets : #{created_analyses.count}"
+      progressbar.log "Number of analyses : #{created_analyses.count}"
     end
 
     created_analyses.each_with_index.map do |anl, idx|
@@ -120,34 +119,33 @@ class OacisCli < Thor
   desc 'analysis_status', "print analysis status"
   method_option :analysis_ids,
     type:     :string,
-    aliases:  '-r',
+    aliases:  '-a',
     desc:     'target analyses',
     required: true
   def analysis_status
     analyses = get_analyses(options[:analysis_ids])
     counts = {total: analyses.count}
-    [:created,:submitted,:running,:failed,:finished].each do |status|
-      counts[status] = analyses.count {|anl| anl.status == status}
+    # :submitted does not exist in status of analysis
+    [:created,:running,:failed,:finished].each do |status|
+      counts[status] = analyses.where(status: status).count
     end
     $stdout.puts JSON.pretty_generate(counts)
   end
 
   desc 'destroy_analyses', "destroy analyses"
-  method_option :analyzers,
+  method_option :analyzer,
     type:     :string,
     aliases:  '-a',
-    desc:     'path to analyzer_ids.json',
+    desc:     'analyzer ID',
     required: true
   method_option :query,
     type:     :hash,
     aliases:  '-q',
-    desc:     'query of analysis specified as Hash (e.g. --query=status:failed simulator_version=0.0.1)',
+    desc:     'query of analysis specified as Hash (e.g. --query=status:failed)',
     required: true
   def destroy_analyses
-    analyses = []
-    get_analyzers(options[:analyzers]).each do |anz|
-      analyses += find_analyses(anz, options[:query]).to_a
-    end
+    anz = Analyzer.find(options[:analyzer])
+    analyses = find_analyses(anz, options[:query])
 
     if analyses.count == 0
       say("No analyses are found.")
@@ -168,21 +166,19 @@ class OacisCli < Thor
   end
 
   desc 'replace_analyses', "replace analyses"
-  method_option :analyzers,
+  method_option :analyzer,
     type:     :string,
     aliases:  '-a',
-    desc:     'path to analyzer_ids.json',
+    desc:     'analyzer ID',
     required: true
   method_option :query,
     type:     :hash,
     aliases:  '-q',
-    desc:     'query of analysis specified as Hash (e.g. --query=status:failed simulator_version=0.0.1)',
+    desc:     'query of analysis specified as Hash (e.g. --query=status:failed)',
     required: true
   def replace_analyses
-    analyses = []
-    get_analyzers(options[:analyzers]).each do |anz|
-      analyses += find_analyses(anz, options[:query]).to_a
-    end
+    anz = Analyzer.find(options[:analyzer])
+    analyses = find_analyses(anz, options[:query])
 
     if analyses.count == 0
       say("No analyses are found.")
@@ -222,10 +218,8 @@ class OacisCli < Thor
       raise "invalid query"
     end
     analyses = Analysis.where(analyzer_id: analyzer.id.to_s)
-    if stat = query["status"]
-      analyses = analyses.where(status: stat.to_sym)
-    end
-    raise "No analysis is found with status:#{stat}" if analyses.count == 0
+    analyses = analyses.where(status: query["status"].to_sym)
+    raise "No analysis is found with status:#{query["status"]}" if analyses.count == 0
     analyses
   end
 end
