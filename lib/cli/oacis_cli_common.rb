@@ -87,7 +87,7 @@ EOS
     parsed = JSON.load( File.read(file) )
     validate_parameter_set_ids(parsed)
     parameter_sets = ParameterSet.in(id: parsed.map {|h| h["parameter_set_id"] } )
-    raise "Invalid #{parsed.length - parameter_sets.count} prameter_set_ids are incdluding" if parameter_sets.count != parsed.length
+    raise "Invalid #{parsed.length - parameter_sets.count} prameter_set_ids are found" if parameter_sets.count != parsed.length
     parameter_sets
   end
 

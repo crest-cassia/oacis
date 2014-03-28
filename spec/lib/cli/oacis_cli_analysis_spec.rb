@@ -9,23 +9,22 @@ describe OacisCli do
   end
 
   def create_options(option={})
-    options = { analyzers: 'analyzers.json', number_of_analyses: 1, output: 'analysis_ids.json' }
+    options = { output: 'analysis_ids.json' }
     options.merge!(option)
     options
   end
 
   def invoke_create_analyses(type, option={})
-    io = File.open('analyzers.json','w')
+    analyzer_id = nil
     case type
     when :on_run
-      io.puts @sim.analyzers.where(type: :on_run).map {|anz| {"analyzer_id"=>anz.id.to_s}}.to_json
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
     when :on_parameter_set
-      io.puts @sim.analyzers.where(type: :on_parameter_set).map {|anz| {"analyzer_id"=>anz.id.to_s}}.to_json
-    when :each
-      io.puts @sim.analyzers.map {|anz| {"analyzer_id"=>anz.id.to_s}}.to_json
+      analyzer_id = @sim.analyzers.where(type: :on_parameter_set).first.id
     end
-    io.close
+    option.merge!({analyzer: analyzer_id, input: "anz_parameters.json"})
     options = create_options(option)
+    OacisCli.new.invoke(:analyses_template, [], {analyzer: analyzer_id, output: "anz_parameters.json"})
     OacisCli.new.invoke(:create_analyses, [], options)
   end
 
@@ -34,27 +33,27 @@ describe OacisCli do
 
     it "outputs a template of analyses" do
       at_temp_dir {
-        options = { simulator: @sim.id.to_s, output: 'analyzers.json' }
+        options = { analyzer: @sim.analyzers.first.id.to_s, output: 'anz_parameters.json' }
         OacisCli.new.invoke(:analyses_template, [], options)
-        File.exist?('analyzers.json').should be_true
+        File.exist?('anz_parameters.json').should be_true
         expect {
-          JSON.load(File.read('analyzers.json'))
+          JSON.load(File.read('anz_parameters.json'))
         }.not_to raise_error
       }
     end
 
     it "outputs a template having default analysis parameters" do
       at_temp_dir {
-        options = { simulator: @sim.id.to_s, output: 'analyzers.json' }
+        options = { analyzer: @sim.analyzers.first.id.to_s, output: 'anz_parameters.json' }
         OacisCli.new.invoke(:analyses_template, [], options)
-        expected = @sim.analyzers.map {|anz| {"analyzer_id"=>anz.id.to_s}}
-        JSON.load(File.read('analyzers.json')).should eq expected
+        expected = @sim.analyzers.first.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
+        JSON.load(File.read('anz_parameters.json')).should eq [Hash[expected]]
       }
     end
 
-    it "when simulator id is invalid" do
+    it "when analyzer id is invalid" do
       at_temp_dir {
-        options = { simulator: "DO_NOT_EXIST", output: 'analyzers.json' }
+        options = { analyzer: "DO_NOT_EXIST", output: 'analyzers.json' }
         expect {
           OacisCli.new.invoke(:analyses_template, [], options)
         }.to raise_error
@@ -65,7 +64,7 @@ describe OacisCli do
 
       it "does not create output file" do
         at_temp_dir {
-          options = { simulator: @sim.id.to_s, output: 'analyzres.json', dry_run: true }
+          options = { analyzer: @sim.analyzers.first.id.to_s, output: 'analyzres.json', dry_run: true }
           OacisCli.new.invoke(:analyses_template, [], options)
           File.exist?('analyzers.json').should be_false
         }
@@ -101,17 +100,9 @@ describe OacisCli do
       }
     end
 
-    it "creates analyses on runs and parameter_sets" do
-      at_temp_dir {
-        expect {
-          invoke_create_analyses(:each)
-        }.to change { Analysis.count }.by(6)
-      }
-    end
-
     it "outputs ids of created analyses in json" do
       at_temp_dir {
-        invoke_create_analyses(:each, {output: 'analysis_ids_tmp.json'})
+        invoke_create_analyses(:on_run, {output: 'analysis_ids_tmp.json'})
 
         File.exist?('analysis_ids_tmp.json').should be_true
         expected = Analysis.all.map {|anl| {"analysis_id" => anl.id.to_s} }.sort_by {|h| h["analysis_id"]}
@@ -132,7 +123,7 @@ describe OacisCli do
             end
             io.puts a.to_json
             io.close
-            invoke_create_analyses(:on_run, {runs: "runs.json"})
+            invoke_create_analyses(:on_run, {target: "runs.json"})
           }.to change { Analysis.where(analyzable_type: "Run").count }.by(2)
         }
       end
@@ -147,7 +138,7 @@ describe OacisCli do
             a = [{"parameter_set_id" => @sim.parameter_sets.first.id }]
             io.puts a.to_json
             io.close
-            invoke_create_analyses(:on_parameter_set, {parameter_sets: "parameter_sets.json"})
+            invoke_create_analyses(:on_parameter_set, {target: "parameter_sets.json"})
           }.to change { Analysis.where(analyzable_type: "ParameterSet").count }.by(1)
         }
       end
@@ -156,40 +147,24 @@ describe OacisCli do
     context "when analyses exists" do
 
       before(:each) do
-        invoke_create_analyses(:each, {number_of_analyses: 1})
+        invoke_create_analyses(:on_run, {first_run_only: "first_run_onlyi"})
       end
 
-      it "iterates creation of analyses up to the specified number" do
+      it "iterates creation of analyses on runs without same analyzer and analyzers parameter" do
         at_temp_dir {
           expect {
-            invoke_create_analyses(:each, {number_of_analyses: 2})
-          }.to change { Analysis.count }.by(6)
+            invoke_create_analyses(:on_run)
+          }.to change { Analysis.count }.by(3)
         }
       end
 
-      it "outputs ids of created and existing runs up to the specified number" do
+      it "outputs ids of created and existing analyses" do
         at_temp_dir {
-          invoke_create_analyses(:each, {number_of_analyses: 2, output: "analysis_ids_tmp.json"})
+          invoke_create_analyses(:on_run, {output: "analysis_ids_tmp.json"})
 
           File.exist?('analysis_ids_tmp.json').should be_true
           expected = Analysis.all.map {|anl| {"analysis_id" => anl.id.to_s} }.sort_by {|h| h["analysis_id"]}
           JSON.load(File.read('analysis_ids_tmp.json')).should =~ expected
-        }
-      end
-    end
-
-    context "when number_of_analyses are invalid" do
-
-      it "raises an exception" do
-        at_temp_dir {
-          expect {
-            invoke_create_analyses(:each, {number_of_analyses: 0})
-          }.to raise_error
-        }
-        at_temp_dir {
-          expect {
-            invoke_create_analyses(:each, {number_of_analyses: -1})
-          }.to raise_error
         }
       end
     end
@@ -199,15 +174,27 @@ describe OacisCli do
       it "does not save Anasyses" do
         at_temp_dir {
           expect {
-            invoke_create_analyses(:each, {number_of_analyses: 1, dry_run: true})
+            invoke_create_analyses(:on_run, {number_of_analyses: 1, dry_run: true})
           }.to_not change { Analysis.count }
         }
       end
 
       it "does not create output file" do
         at_temp_dir {
-          invoke_create_analyses(:each, {number_of_analyses: 1, output: "analysis_ids_dry_run.json", dry_run: true})
+          invoke_create_analyses(:on_run, {number_of_analyses: 1, output: "analysis_ids_dry_run.json", dry_run: true})
           File.exist?('analysis_ids_dry_run.json').should be_false
+        }
+      end
+    end
+
+    context "when both target option and first_run_only option are given" do
+
+      it "raise an error" do
+        at_temp_dir {
+          options = { target: "some thing", first_run_only: "first_run_only" }
+          expect {
+            invoke_create_analyses(:on_run, options)
+          }.to raise_error
         }
       end
     end
@@ -218,14 +205,14 @@ describe OacisCli do
 
     it "shows number of analysis for each status in json" do
       at_temp_dir {
-        invoke_create_analyses(:each, output: "analysis_ids.json")
+        invoke_create_analyses(:on_run, output: "analysis_ids.json")
         options = {analysis_ids: 'analysis_ids.json'}
         captured = capture(:stdout) {
           OacisCli.new.invoke(:analysis_status, [], options)
         }
         loaded = JSON.load(captured)
-        loaded["total"].should eq 6
-        loaded["created"].should eq 6
+        loaded["total"].should eq 4
+        loaded["created"].should eq 4
         loaded["finished"].should eq 0
       }
     end
@@ -234,29 +221,31 @@ describe OacisCli do
   describe "#destroy_analyses" do
 
     it "destroys analyses specified by 'status'" do
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
       $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
-        invoke_create_analyses(:each, output: "analysis_ids.json")
-        Analysis.limit(5).each do |anl|
+        invoke_create_analyses(:on_run, output: "analysis_ids.json")
+        Analysis.limit(3).each do |anl|
           anl.status = :failed
           anl.save
         end
-        options = {analyzers: 'analyzers.json', query: {"status" => "failed"} }
+        options = {analyzer: analyzer_id, query: {"status" => "failed"} }
         expect {
           OacisCli.new.invoke(:destroy_analyses, [], options)
-        }.to change { Analysis.where(status: :failed).count }.by(-5)
+        }.to change { Analysis.where(status: :failed).count }.by(-3)
       }
     end
 
     context "when query option is invalid" do
       it "raises an exception" do
+        analyzer_id = @sim.analyzers.where(type: :on_run).first.id
         at_temp_dir {
-          invoke_create_analyses(:each, output: "analysis_ids.json")
-          options = {analyzers: 'analyzers.json', query: "DO_NOT_EXIST" }
+          invoke_create_analyses(:on_run, output: "analysis_ids.json")
+          options = {analyzer: analyzer_id, query: "DO_NOT_EXIST" }
           expect {
             OacisCli.new.invoke(:destroy_analyses, [], options)
           }.to raise_error
-          options = {analyzers: 'analyzers.json', query: { "status" => "DO_NOT_EXIST" } }
+          options = {analyzer: analyzer_id, query: { "status" => "DO_NOT_EXIST" } }
           expect {
             OacisCli.new.invoke(:destroy_analyses, [], options)
           }.to raise_error
@@ -268,34 +257,36 @@ describe OacisCli do
   describe "#replace_analyses" do
 
     it "newly create analyses have the same attribute as old ones" do
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
       $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
-        invoke_create_analyses(:each, output: "analysis_ids.json")
-        Analysis.limit(5).each do |anl|
+        invoke_create_analyses(:on_run, output: "analysis_ids.json")
+        Analysis.limit(2).each do |anl|
           anl.status = :failed
           anl.save
         end
         h = Analysis.first.parameters
-        options = {analyzers: 'analyzers.json', query: {"status" => "failed"} }
+        options = {analyzer: analyzer_id, query: {"status" => "failed"} }
         expect {
           OacisCli.new.invoke(:replace_analyses, [], options)
-        }.to change { Analysis.where(status: :created).count }.by(5)
+        }.to change { Analysis.where(status: :created).count }.by(2)
         Analysis.where(status: :created).first.parameters.should eq h
       }
     end
 
     it "destroys old analysis" do
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
       $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
-        invoke_create_analyses(:each, output: "analysis_ids.json")
-        Analysis.limit(5).each do |anl|
+        invoke_create_analyses(:on_run, output: "analysis_ids.json")
+        Analysis.limit(2).each do |anl|
           anl.status = :failed
           anl.save
         end
-        options = {analyzers: 'analyzers.json', query: {"status" => "failed"} }
+        options = {analyzer: analyzer_id, query: {"status" => "failed"} }
         expect {
           OacisCli.new.invoke(:replace_analyses, [], options)
-        }.to change { Analysis.where(status: :failed).count  }.from(5).to(0)
+        }.to change { Analysis.where(status: :failed).count  }.from(2).to(0)
       }
     end
   end
