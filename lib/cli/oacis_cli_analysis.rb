@@ -70,7 +70,7 @@ class OacisCli < Thor
     elsif anz.type == :on_parameter_set
       parameter_sets = sim.parameter_sets
       parameter_sets = parameter_sets.in(id: get_parameter_sets(options[:target]).map(&:id) ) if options[:target]
-      parameter_sets = parameter_sets.select {|ps| ps.runs_status_count[:finished] == ps.runs.count}
+      parameter_sets = parameter_sets.select {|ps| ps.runs_status_count[:finished] > 0}
       input.each do |parameters|
         parameter_sets.each do |ps|
           anl = ps.analyses.where(analyzer: anz, parameters: parameters).first

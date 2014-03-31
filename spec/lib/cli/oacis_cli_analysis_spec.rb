@@ -90,13 +90,16 @@ describe OacisCli do
       }
     end
 
-    it "do not create analyses on parameter_sets having :created runs" do
+    it "do not create analyses on parameter_sets without having :finished runs" do
       at_temp_dir {
         expect {
-          new_run = @sim.parameter_sets.first.runs.build
-          new_run.save!
+          @sim.parameter_sets.first.runs.each do |run|
+            run.status = :failed
+            run.save!
+          end
           invoke_create_analyses(:on_parameter_set, {input: "anz_parameters.json"})
         }.to change { Analysis.where(analyzable_type: "ParameterSet").count }.by(1)
+
       }
     end
 
