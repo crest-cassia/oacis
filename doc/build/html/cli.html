@@ -1070,7 +1070,7 @@
 </td>
 <td><p class="first last">input file path</p>
 </td>
-<td><p class="first last">yes</p>
+<td><p class="first last">no</p>
 </td>
 </tr>
 <tr class="row-even"><td><p class="first last">&#8211;output</p>
@@ -1105,8 +1105,8 @@
 <li><p class="first">入力ファイル</p>
 <blockquote>
 <div><ul class="simple">
-<li>analyzerはanalyzerのIDを指定する</li>
-<li>inputは analyses_template で出力されるJSON形式のファイルを指定する</li>
+<li>analyzerはanalyzerのIDを指定する。</li>
+<li>inputは analyses_template で出力されるJSON形式のファイルを指定する。デフォルトは、Analyzerに登録されたパラメータのデフォルト値。</li>
 </ul>
 </div></blockquote>
 </li>
@@ -1150,6 +1150,7 @@
 <dt>その他</dt>
 <dd><ul class="first last simple">
 <li>既にAnalysisが存在する場合には、新規にAnalysisを作成せずに既存のAnalysisのidを出力として返す。エラーにはならない。</li>
+<li>ParamterSetに対するAnalyzerを実行するとき、ParameterSetに status:created, running, failed のRunが存在する場合には、そのParameterSetを対象としたAnalysisは作成されず、Analysisのidも出力されない。</li>
 </ul>
 </dd>
 </dl>
