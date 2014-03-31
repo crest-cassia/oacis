@@ -1,7 +1,7 @@
 class OacisCli < Thor
 
   desc 'analyses_template', "print analyses parameters"
-  method_option :analyzer,
+  method_option :analyzer_id,
     type:     :string,
     aliases:  '-a',
     desc:     'analyzer ID',
@@ -12,7 +12,7 @@ class OacisCli < Thor
     desc:     'output json file (anz_parameters.json)',
     required: true
   def analyses_template
-    anz = Analyzer.find(options[:analyzer])
+    anz = Analyzer.find(options[:analyzer_id])
     mapped = anz.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
     anz_parameters = Hash[mapped]
 
@@ -25,7 +25,7 @@ class OacisCli < Thor
   end
 
   desc 'create_analyses', "create analyses"
-  method_option :analyzer,
+  method_option :analyzer_id,
     type:     :string,
     aliases:  '-a',
     desc:     'analyzer ID',
@@ -51,7 +51,7 @@ class OacisCli < Thor
   def create_analyses
     raise "can not use both first_run_only option and target option" if options[:first_run_only].present? and options[:target].present?
     input = JSON.load(File.read(options[:input]))
-    anz = Analyzer.find(options[:analyzer])
+    anz = Analyzer.find(options[:analyzer_id])
 
     analyses = []
     sim = Simulator.find(anz.simulator_id)
@@ -133,7 +133,7 @@ class OacisCli < Thor
   end
 
   desc 'destroy_analyses', "destroy analyses"
-  method_option :analyzer,
+  method_option :analyzer_id,
     type:     :string,
     aliases:  '-a',
     desc:     'analyzer ID',
@@ -144,7 +144,7 @@ class OacisCli < Thor
     desc:     'query of analysis specified as Hash (e.g. --query=status:failed)',
     required: true
   def destroy_analyses
-    anz = Analyzer.find(options[:analyzer])
+    anz = Analyzer.find(options[:analyzer_id])
     analyses = find_analyses(anz, options[:query])
 
     if analyses.count == 0
@@ -166,7 +166,7 @@ class OacisCli < Thor
   end
 
   desc 'replace_analyses', "replace analyses"
-  method_option :analyzer,
+  method_option :analyzer_id,
     type:     :string,
     aliases:  '-a',
     desc:     'analyzer ID',
@@ -177,7 +177,7 @@ class OacisCli < Thor
     desc:     'query of analysis specified as Hash (e.g. --query=status:failed)',
     required: true
   def replace_analyses
-    anz = Analyzer.find(options[:analyzer])
+    anz = Analyzer.find(options[:analyzer_id])
     analyses = find_analyses(anz, options[:query])
 
     if analyses.count == 0
