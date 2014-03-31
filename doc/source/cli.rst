@@ -564,7 +564,7 @@ Analysisを新規作成する
 
 - その他
     - 既にAnalysisが存在する場合には、新規にAnalysisを作成せずに既存のAnalysisのidを出力として返す。エラーにはならない。
-    - ParamterSetに対するAnalyzerを実行するとき、ParameterSetに status:created, running, failed のRunが存在する場合には、そのParameterSetを対象としたAnalysisは作成されず、Analysisのidも出力されない。
+    - ParamterSetに対するAnalyzerを実行するとき、status:finished のRunが存在しないParameterSetを対象としたAnalysisは作成されない。
 
 analysis_status
 --------------------------------
