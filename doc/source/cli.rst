@@ -519,7 +519,7 @@ Analysisを新規作成する
   +=================+========+===================================================+===========+
   |--analyzer       |-a      |analyzer id                                        |yes        |
   +-----------------+--------+---------------------------------------------------+-----------+
-  |--input          |-i      |input file path                                    |yes        |
+  |--input          |-i      |input file path                                    |no         |
   +-----------------+--------+---------------------------------------------------+-----------+
   |--output         |-o      |output file path                                   |yes        |
   +-----------------+--------+---------------------------------------------------+-----------+
@@ -530,8 +530,8 @@ Analysisを新規作成する
 
 - 入力ファイル
 
-    - analyzerはanalyzerのIDを指定する
-    - inputは analyses_template で出力されるJSON形式のファイルを指定する
+    - analyzerはanalyzerのIDを指定する。
+    - inputは analyses_template で出力されるJSON形式のファイルを指定する。デフォルトは、Analyzerに登録されたパラメータのデフォルト値。
 
 - 出力
     - AnalysisのidをObjectの配列としてJSON形式で出力する。
@@ -564,6 +564,7 @@ Analysisを新規作成する
 
 - その他
     - 既にAnalysisが存在する場合には、新規にAnalysisを作成せずに既存のAnalysisのidを出力として返す。エラーにはならない。
+    - ParamterSetに対するAnalyzerを実行するとき、ParameterSetに status:created, running, failed のRunが存在する場合には、そのParameterSetを対象としたAnalysisは作成されず、Analysisのidも出力されない。
 
 analysis_status
 --------------------------------
