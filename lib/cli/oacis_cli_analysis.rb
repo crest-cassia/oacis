@@ -34,7 +34,7 @@ class OacisCli < Thor
     type:     :string,
     aliases:  '-i',
     desc:     'input file',
-    required: true
+    required: false
   option :first_run_only,
     desc:     'create analyses only on first runs',
     required: false
@@ -50,8 +50,8 @@ class OacisCli < Thor
     required: true
   def create_analyses
     raise "can not use both first_run_only option and target option" if options[:first_run_only].present? and options[:target].present?
-    input = JSON.load(File.read(options[:input]))
     anz = Analyzer.find(options[:analyzer_id])
+    input = options[:input] ? JSON.load(File.read(options[:input])) : [ anz.parameter_definitions.inject({}) {|h, pd| h.merge!({pd["key"]=>pd["default"]})} ]
 
     analyses = []
     sim = Simulator.find(anz.simulator_id)
