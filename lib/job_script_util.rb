@@ -10,7 +10,6 @@ OACIS_IS_MPI_JOB=<%= is_mpi_job %>
 OACIS_WORK_BASE_DIR=<%= work_base_dir %>
 OACIS_MPI_PROCS=<%= mpi_procs %>
 OACIS_OMP_THREADS=<%= omp_threads %>
-OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
 
 # PRE-PROCESS ---------------------
 mkdir -p ${OACIS_WORK_BASE_DIR}
@@ -23,11 +22,6 @@ fi
 echo "{" > ../${OACIS_RUN_ID}_status.json
 echo "  \\"started_at\\": \\"`date`\\"," >> ../${OACIS_RUN_ID}_status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${OACIS_RUN_ID}_status.json
-
-# PRINT SIMULATOR VERSION ---------
-if [ -n "$OACIS_PRINT_VERSION_COMMAND" ]; then
-  (eval ${OACIS_PRINT_VERSION_COMMAND}) > _version.txt
-fi
 
 # JOB EXECUTION -------------------
 export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
@@ -62,7 +56,6 @@ EOS
       "omp_threads" => run.omp_threads,
       "mpi_procs" => run.mpi_procs,
       "cmd" => run.command_and_input[0].sub(/;$/, ''),
-      "print_version_command" => run.simulator.print_version_command.to_s.gsub(/\"/, '\\"')
     }
     # semi-colon in the last of the command causes bash syntax error
 
