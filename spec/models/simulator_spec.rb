@@ -32,10 +32,10 @@ describe Simulator do
       Simulator.new(@valid_fields.update({name:"b l a n k"})).should_not be_valid
     end
 
-    it "is not editable after a parameter set is created" do
+    it "is editable after a parameter set is created" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       sim.name = "AnotherSimulator"
-      sim.should_not be_valid
+      sim.should be_valid
     end
   end
 
