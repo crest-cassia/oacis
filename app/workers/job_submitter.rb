@@ -27,6 +27,7 @@ class JobSubmitter
       handler = RemoteJobHandler.new(host)
       runs.each do |run|
         begin
+          handler.execute_print_version_command(run) if run.simulator.print_version_command.present?
           handler.submit_remote_job(run)
         rescue => ex
           logger.info ex.inspect

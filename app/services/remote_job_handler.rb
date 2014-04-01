@@ -48,6 +48,15 @@ class RemoteJobHandler
     remove_remote_files(run)
   end
 
+  def execute_print_version_command(run)
+    script = run.simulator.print_version_command.to_s
+    @host.start_ssh do |ssh|
+      cmd = "cd #{run.dir}; #{script} > _version.txt"
+      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+      raise RemoteOperationError, "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
+    end
+  end
+
   private
   def create_remote_work_dir(run)
     cmd = "mkdir -p #{RemoteFilePath.work_dir_path(@host,run)}"

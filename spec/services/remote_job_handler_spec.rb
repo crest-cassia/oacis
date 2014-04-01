@@ -229,4 +229,29 @@ describe RemoteJobHandler do
       end
     end
   end
+
+  describe ".execute_print_version_command" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                command: "echo",
+                                parameter_sets_count: 1, runs_count: 1)
+      @run = @sim.parameter_sets.first.runs.first
+      @host = @sim.executable_on.where(name: "localhost").first
+      @temp_dir = Pathname.new( Dir.mktmpdir )
+      @host.update_attribute(:work_base_dir, @temp_dir.expand_path)
+      SchedulerWrapper.any_instance.stub(:cancel_command).and_return("echo")
+      @handler = RemoteJobHandler.new(@host)
+    end
+
+    after(:each) do
+      FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it "execute print_version_command" do
+      FileUtils.mkdir_p(@run.dir)
+      @handler.execute_print_version_command(@run)
+      File.file?(@run.dir.join("_version.txt")).should be_true
+    end
+  end
 end

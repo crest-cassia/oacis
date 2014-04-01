@@ -6,6 +6,7 @@ FactoryGirl.define do
   factory :simulator do
     sequence(:name, 'A') {|n| "simulator#{n}"}
     command "echo"
+    print_version_command "echo \"v1.0.0\""
 
     parameter_definitions {
       [
