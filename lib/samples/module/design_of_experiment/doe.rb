@@ -8,7 +8,7 @@ class Doe < OacisModule
 
   def self.definition
     h = {}
-    h["ps_block_count_max"] = 1000
+    h["ps_block_count_max"] = 300
     h["distance_threshold"] = 0.1
     h["target_field"] = "order_parameter"
     h["concurrent_job_max"] = 30
@@ -29,6 +29,9 @@ class Doe < OacisModule
     managed_parameters_table.each do |pd|
       range_hash[pd["key"]] = pd["range"]
     end
+    # ex.)
+    # range_hash["beta"] = [0.3,0.4]
+    # range_hash["H"] = [0.1,0.2]
     parameter_values = get_parameter_values_from_range_hash(range_hash)
 
     #ps_block = {
@@ -112,6 +115,8 @@ class Doe < OacisModule
   def new_ps_blocks(ps_block, mean_distances)
 
     ps_blocks = []
+=begin
+    # => inside 
     mean_distances.each_with_index do |mean_distance, index|
       if mean_distance > module_data.data["_input_data"]["distance_threshold"]
         v_values = ps_block[:ps].map {|ps| ps[:v][index] }
@@ -136,6 +141,39 @@ class Doe < OacisModule
         end
       end
     end
+=end
+    # ==========
+    # => outside
+    mean_distances.each_with_index do |mean_distance, index|
+      v_values = ps_block[:ps].map {|ps| ps[:v][index] }
+      range = [v_values.min, v_values.max]
+      # one_third = range[0]*2 / 3 + range[1]   /3
+      # two_third = range[0]   / 3 + range[1]*2 /3
+      # one_third = one_third.round(6) if one_third.is_a?(Float)
+      # two_third = two_third.round(6) if two_third.is_a?(Float)
+      # ranges = [
+      #   [range.first, one_third], [one_third, two_third], [two_third, range.last]
+      # ]
+      lower = range[0] - 0.1
+      upper = range[1] + 0.1
+      lower = lower.round(6) if lower.is_a?(Float)
+      upper = upper.round(6) if upper.is_a?(Float)
+      ranges = [
+        [lower, range.first], [range.last, upper]
+      ]
+
+      range_hash = ps_block_to_range_hash(ps_block)
+      ranges.each do |r|
+        range_hash[ps_block[:keys][index]] = r
+        ps = get_parameter_values_from_range_hash(range_hash)
+        new_ps_block = {}
+        new_ps_block[:keys] = ps_block[:keys]
+        new_ps_block[:priority] = mean_distance
+        new_ps_block[:ps] = ps.map {|p| {v: p}}
+        ps_blocks << new_ps_block
+      end
+    end
+    # ==========
     ps_blocks
   end
 
