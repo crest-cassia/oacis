@@ -113,7 +113,7 @@ describe OacisCli do
       }
     end
 
-    context "when :runs argument exits" do
+    context "when :runs argument exists" do
 
       it "creates analyses on :runs" do
         at_temp_dir {
@@ -132,7 +132,7 @@ describe OacisCli do
       end
     end
 
-    context "when :parameter_sets argument exits" do
+    context "when :parameter_sets argument exists" do
 
       it "creates analyses on :parameter_sets" do
         at_temp_dir {
@@ -147,6 +147,20 @@ describe OacisCli do
       end
     end
 
+    context "when :first_run_only argument exists" do
+
+      describe "creates analyses only on the first_run of each parameter_sets" do
+        subject { -> {
+                       at_temp_dir {
+                         invoke_create_analyses(:on_run, {first_run_only: "first_run_only", input: "anz_parameters.json"})
+                       }
+                     }
+        }
+        it { should change { Analysis.count }.by(2) }
+        it { should change { Analysis.where(parameter_set_id: @sim.parameter_sets.first.id).count }.by(1) }
+      end
+    end
+
     context "when analyses exists" do
 
       before(:each) do
@@ -157,7 +171,7 @@ describe OacisCli do
         at_temp_dir {
           expect {
             invoke_create_analyses(:on_run, {input: "anz_parameters.json"})
-          }.to change { Analysis.count }.by(3)
+          }.to change { Analysis.count }.by(2)
         }
       end
 

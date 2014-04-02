@@ -56,15 +56,17 @@ class OacisCli < Thor
     analyses = []
     sim = Simulator.find(anz.simulator_id)
     if anz.type == :on_run
-      runs = sim.runs
-      runs = runs.order_by("updated_at desc").limit(1) if options[:first_run_only]
-      runs = runs.in(id: get_runs(options[:target]).map(&:id) ) if options[:target]
-      runs = runs.where(status: :finished)
       input.each do |parameters|
-        runs.each do |run|
-          anl = run.analyses.where(analyzer: anz, parameters: parameters).first
-          anl = run.analyses.build(analyzer: anz, parameters: parameters) if anl.blank?
-          analyses << anl
+        sim.parameter_sets.each do |ps|
+          runs = ps.runs
+          runs = runs.order_by("updated_at desc").limit(1) if options[:first_run_only]
+          runs = runs.in(id: get_runs(options[:target]).map(&:id) ) if options[:target]
+          runs = runs.where(status: :finished)
+          runs.each do |run|
+            anl = run.analyses.where(analyzer: anz, parameters: parameters).first
+            anl = run.analyses.build(analyzer: anz, parameters: parameters) if anl.blank?
+            analyses << anl
+          end
         end
       end
     elsif anz.type == :on_parameter_set
