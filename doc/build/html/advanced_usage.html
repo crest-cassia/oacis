@@ -555,23 +555,23 @@ plot &quot;_input/time_series.dat&quot; w l
 <div class="line">Runに対する解析の場合、 <cite>_input.json</cite> のフォーマットは以下の通りである。</div>
 <div class="line">&#8220;analysis_parameters&#8221;, &#8220;simulation_parameters&#8221;, &#8220;result&#8221; はそれぞれ解析パラメータ、シミュレーションパラメータ、Runの結果を表す。</div>
 </div>
-<div class="highlight-json"><div class="highlight"><pre>{
- &quot;analysis_parameters&quot;: {
-   &quot;x&quot;: 0.1,
-   &quot;y&quot;: 2
- },
- &quot;simulation_parameters&quot;: {
-   &quot;L&quot;: 32,
-   &quot;T&quot;: 0.5
- },
- &quot;result&quot;: {
-   &quot;magnetization&quot;: 0.5,
-   &quot;energy&quot;: 24.5,
-   &quot;another_analysis&quot;: {
-       &quot;maximum_energy&quot;: 28.1
-   }
- }
-}
+<div class="highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+ <span class="s2">&quot;analysis_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;x&quot;</span><span class="o">:</span> <span class="mf">0.1</span><span class="p">,</span>
+   <span class="s2">&quot;y&quot;</span><span class="o">:</span> <span class="mi">2</span>
+ <span class="p">},</span>
+ <span class="s2">&quot;simulation_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;L&quot;</span><span class="o">:</span> <span class="mi">32</span><span class="p">,</span>
+   <span class="s2">&quot;T&quot;</span><span class="o">:</span> <span class="mf">0.5</span>
+ <span class="p">},</span>
+ <span class="s2">&quot;result&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.5</span><span class="p">,</span>
+   <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">24.5</span><span class="p">,</span>
+   <span class="s2">&quot;another_analysis&quot;</span><span class="o">:</span> <span class="p">{</span>
+       <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">28.1</span>
+   <span class="p">}</span>
+ <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 </div>
@@ -597,39 +597,39 @@ plot &quot;_input/time_series.dat&quot; w l
 <div class="line-block">
 <div class="line"><cite>_input.json</cite> の形式は以下の通り</div>
 </div>
-<div class="highlight-json"><div class="highlight"><pre>{
- &quot;analysis_parameters&quot;: {
-   &quot;x&quot;: 0.1,
-   &quot;y&quot;: 2
- },
- &quot;simulation_parameters&quot;: {
-   &quot;L&quot;: 32,
-   &quot;T&quot;: 0.5
- },
- &quot;result&quot;: {
-   &quot;run_id1&quot;: {
-     &quot;magnetization&quot;: 0.5,
-     &quot;energy&quot;: 24.5,
-     &quot;analysis1&quot;: {
-         &quot;maximum_energy&quot;: 28.1
-     }
-   },
-   &quot;run_id2&quot;: {
-     &quot;magnetization&quot;: 0.32,
-     &quot;energy&quot;: 25.1,
-     &quot;analysis1&quot;: {
-         &quot;maximum_energy&quot;: 27.9
-     }
-   },
-   &quot;run_id3&quot;: {
-     &quot;magnetization&quot;: 0.2,
-     &quot;energy&quot;: 20.7,
-     &quot;analysis1&quot;: {
-         &quot;maximum_energy&quot;: 26.8
-     }
-   }
- }
-}
+<div class="highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+ <span class="s2">&quot;analysis_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;x&quot;</span><span class="o">:</span> <span class="mf">0.1</span><span class="p">,</span>
+   <span class="s2">&quot;y&quot;</span><span class="o">:</span> <span class="mi">2</span>
+ <span class="p">},</span>
+ <span class="s2">&quot;simulation_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;L&quot;</span><span class="o">:</span> <span class="mi">32</span><span class="p">,</span>
+   <span class="s2">&quot;T&quot;</span><span class="o">:</span> <span class="mf">0.5</span>
+ <span class="p">},</span>
+ <span class="s2">&quot;result&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;run_id1&quot;</span><span class="o">:</span> <span class="p">{</span>
+     <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.5</span><span class="p">,</span>
+     <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">24.5</span><span class="p">,</span>
+     <span class="s2">&quot;analysis1&quot;</span><span class="o">:</span> <span class="p">{</span>
+         <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">28.1</span>
+     <span class="p">}</span>
+   <span class="p">},</span>
+   <span class="s2">&quot;run_id2&quot;</span><span class="o">:</span> <span class="p">{</span>
+     <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.32</span><span class="p">,</span>
+     <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">25.1</span><span class="p">,</span>
+     <span class="s2">&quot;analysis1&quot;</span><span class="o">:</span> <span class="p">{</span>
+         <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">27.9</span>
+     <span class="p">}</span>
+   <span class="p">},</span>
+   <span class="s2">&quot;run_id3&quot;</span><span class="o">:</span> <span class="p">{</span>
+     <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.2</span><span class="p">,</span>
+     <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">20.7</span><span class="p">,</span>
+     <span class="s2">&quot;analysis1&quot;</span><span class="o">:</span> <span class="p">{</span>
+         <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">26.8</span>
+     <span class="p">}</span>
+   <span class="p">}</span>
+ <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <div class="line-block">

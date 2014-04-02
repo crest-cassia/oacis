@@ -116,6 +116,7 @@ MPI, OpenMPのジョブ
 | 以下では、実行時ディレクトリからみて、 ./signals/ 以下の設定ファイルを読み込み、 ./result/inst/ 以下に結果を出力するシミュレータでの例を示す。(シミュレータ依存の操作はOptionalと示される。)
 
 0. プリプロセスでの処理
+
   - 下記(1. 2. 3.)に続くジョブスクリプトへの修正を行うことで、プリプロセスが実行されるディレクトリ以下をステージイン可能となる。しかし、実行に必要なバイナリや設定ファイルをジョブスクリプト実行ディレクトリ以下に配置する作業や実行コマンドの微修正などをあらかじめ実行しておく必要がある。
   - 例えば、バイナリの移動(need)や設定ファイル群の移動(optional)には、下記のようにコマンドをプリプロセスに追加する。
 
@@ -131,6 +132,7 @@ MPI, OpenMPのジョブ
     echo "./simulator.out" > SIMCMD.txt
 
 1. ステージングへの対応
+
   - PJM --vset は、PJM内で利用する変数を定義する。ここでは、OACIS_RUN_IDとOACIS_WORK_BASE_DIRを定義している。
   - PJM --stgin-dir "./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/"は、_input.jsonや設定ファイルを転送する。
   - PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}は、ステージインするベースディレクトリを指示する。
@@ -156,6 +158,7 @@ MPI, OpenMPのジョブ
     LANG=C
 
 2. PRE-PROCESSへの修正
+
   - mkdir -p result/instは、シミュレータの実行結果を出力するのに必要なフォルダを生成する。(Optional)
 
   .. code-block:: diff
@@ -175,6 +178,7 @@ MPI, OpenMPのジョブ
     echo "  \"hostname\": \"`hostname`\"," >> ../${OACIS_RUN_ID}_status.json
 
 3. JOB EXECUTIONへの修正
+
   - SIMCMD=`cat SIMCMD.txt`は、シミュレータ実行コマンドを *SIMCMD.txt* から読み込む。SIMCMD.txtは、Simulatorのプリプロセスで生成しておく。(Optional)
 
   .. code-block:: diff
@@ -407,7 +411,7 @@ Description                   Analyzerに対する説明。入力は任意。
 | Runに対する解析の場合、 `_input.json` のフォーマットは以下の通りである。
 | "analysis_parameters", "simulation_parameters", "result" はそれぞれ解析パラメータ、シミュレーションパラメータ、Runの結果を表す。
 
-.. code-block:: json
+.. code-block:: javascript
 
   {
    "analysis_parameters": {
@@ -448,7 +452,7 @@ ParameterSetに対する解析
 
 | `_input.json` の形式は以下の通り
 
-.. code-block:: json
+.. code-block:: javascript
 
   {
    "analysis_parameters": {
