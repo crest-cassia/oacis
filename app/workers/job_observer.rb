@@ -48,7 +48,7 @@ class JobObserver
   end
 
   def self.is_enough_disk_space_left?(logger)
-    stat= Sys::Filesystem.stat("#{Rails.root.join("public").join("Result_#{Rails.env}")}")
+    stat= Sys::Filesystem.stat(ResultDirectory.root.to_s)
     rate = 1.0 - stat.blocks_available.to_f / stat.blocks.to_f
     b = true
     if rate > 0.95
