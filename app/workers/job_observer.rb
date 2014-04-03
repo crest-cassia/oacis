@@ -48,9 +48,8 @@ class JobObserver
   end
 
   def self.is_enough_disk_space_left?(logger)
-    str=`df #{Rails.root.join("public").join("Result_#{Rails.env}")} | tail -1`
-    #str format is [Filesystem, 1K-blocks, Used, Available, Use%, Mounted_on]
-    rate = str.split[2].to_f/str.split[1].to_f
+    stat= Sys::Filesystem.stat("#{Rails.root.join("public").join("Result_#{Rails.env}")}")
+    rate = 1.0 - stat.blocks_available.to_f / stat.blocks.to_f
     b = true
     if rate > 0.95
       b = false
