@@ -34,6 +34,10 @@
       - else
         = f.text_field(:work_base_dir, class: 'text_field')
   .control-group
+    = f.label(:mounted_work_base_dir, class: 'control-label')
+    .controls
+      = f.check_box(:mounted_work_base_dir, class: 'check_box')
+  .control-group
     = f.label(:max_num_jobs, class: 'control-label')
     .controls
       = f.text_field(:max_num_jobs, class: 'text_field')

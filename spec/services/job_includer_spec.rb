@@ -134,6 +134,29 @@ describe JobIncluder do
         Dir.entries(@temp_dir).should =~ ['.', '..']
       end
     end
+
+    describe "when work_dir exists and mounted_work_base_dir is true" do
+
+      before(:each) do
+        @host.mounted_work_base_dir = true
+        @host.save
+        make_valid_archive_file(@run, true)
+        JobIncluder.include_remote_job(@host, @run)
+        @run.reload
+      end
+
+      it "updates status to failed" do
+        @run.status.should eq :finished
+      end
+
+      it "copies files in work_dir" do
+        @run.dir.join("_stdout.txt").should be_exist
+      end
+
+      it "deletes remote work_dir and archive file" do
+        Dir.entries(@temp_dir).should =~ ['.', '..']
+      end
+    end
   end
 
   describe ".create_auto_run_analyses" do
