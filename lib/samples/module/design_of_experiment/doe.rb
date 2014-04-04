@@ -8,7 +8,7 @@ class Doe < OacisModule
 
   def self.definition
     h = {}
-    h["ps_block_count_max"] = 300
+    h["ps_block_count_max"] = 500
     h["distance_threshold"] = 0.1
     h["target_field"] = "order_parameter"
     h["concurrent_job_max"] = 30
@@ -21,17 +21,24 @@ class Doe < OacisModule
     @param_names = managed_parameters_table.map {|mpt| mpt["key"]}
     @total_ps_block_count = 0
 
+    @parameter_values_list = {}
+    @step_size = {}
+
     #range_hashes = [
     #                  {"beta"=>[0.2, 0.6], "H"=>[-1.0, 1.0]},
     #                  ...
     #                ]
     range_hash = {}
     managed_parameters_table.each do |pd|
-      range_hash[pd["key"]] = pd["range"]
+      # range_hash[pd["key"]] = pd["range"]
+      mid = (pd["range"][0] + pd["range"][1])/2.0
+      @step_size[pd["key"]] = 20*pd["range"][2]
+      range_hash[pd["key"]] = [mid - @step_size[pd["key"]]/2.0, mid + @step_size[pd["key"]]/2.0]
+      @parameter_values_list[pd["key"]] ||= []
+      @parameter_values_list[pd["key"]] += range_hash[pd["key"]]
+      @parameter_values_list[pd["key"]].uniq!
     end
-    # ex.)
-    # range_hash["beta"] = [0.3,0.4]
-    # range_hash["H"] = [0.1,0.2]
+
     parameter_values = get_parameter_values_from_range_hash(range_hash)
 
     #ps_block = {
@@ -40,7 +47,8 @@ class Doe < OacisModule
     #                   {v: [0.2, -1.0], result: [-0.483285, -0.484342, -0.483428]},
     #                   ...
     #                 ],
-    #             priority: 5.0
+    #             priority: 5.0,
+    #             direction: "inside"
     #          }
     ps_block = {}
     ps_block[:keys] = managed_parameters_table.map {|mtb| mtb["key"]}
@@ -49,6 +57,7 @@ class Doe < OacisModule
       ps_block[:ps] << {v: ps_v, result: nil}
     end
     ps_block[:priority] = 1.0
+    ps_block[:direction] = "outside"
     @ps_block_list = []
     @ps_block_list << ps_block
   end
@@ -115,7 +124,7 @@ class Doe < OacisModule
   def new_ps_blocks(ps_block, mean_distances)
 
     ps_blocks = []
-=begin
+
     # => inside 
     mean_distances.each_with_index do |mean_distance, index|
       if mean_distance > module_data.data["_input_data"]["distance_threshold"]
@@ -136,41 +145,39 @@ class Doe < OacisModule
           new_ps_block = {}
           new_ps_block[:keys] = ps_block[:keys]
           new_ps_block[:priority] = mean_distance
+          new_ps_block[:direction] = "inside"
           new_ps_block[:ps] = ps.map {|p| {v: p}}
           ps_blocks << new_ps_block
         end
       end
     end
-=end
     # ==========
-    # => outside
-    mean_distances.each_with_index do |mean_distance, index|
-      v_values = ps_block[:ps].map {|ps| ps[:v][index] }
-      range = [v_values.min, v_values.max]
-      # one_third = range[0]*2 / 3 + range[1]   /3
-      # two_third = range[0]   / 3 + range[1]*2 /3
-      # one_third = one_third.round(6) if one_third.is_a?(Float)
-      # two_third = two_third.round(6) if two_third.is_a?(Float)
-      # ranges = [
-      #   [range.first, one_third], [one_third, two_third], [two_third, range.last]
-      # ]
-      lower = range[0] - 0.1
-      upper = range[1] + 0.1
-      lower = lower.round(6) if lower.is_a?(Float)
-      upper = upper.round(6) if upper.is_a?(Float)
-      ranges = [
-        [lower, range.first], [range.last, upper]
-      ]
 
-      range_hash = ps_block_to_range_hash(ps_block)
-      ranges.each do |r|
-        range_hash[ps_block[:keys][index]] = r
-        ps = get_parameter_values_from_range_hash(range_hash)
-        new_ps_block = {}
-        new_ps_block[:keys] = ps_block[:keys]
-        new_ps_block[:priority] = mean_distance
-        new_ps_block[:ps] = ps.map {|p| {v: p}}
-        ps_blocks << new_ps_block
+    # => outside
+    if ps_block[:direction] != "inside"
+      mean_distances.each_with_index do |mean_distance, index|
+        v_values = ps_block[:ps].map {|ps| ps[:v][index] }
+        range = [v_values.min, v_values.max]
+        
+        lower = range[0] - @step_size[ps_block[:keys][index]]
+        upper = range[1] + @step_size[ps_block[:keys][index]]
+        lower = lower.round(6) if lower.is_a?(Float)
+        upper = upper.round(6) if upper.is_a?(Float)
+        ranges = [
+          [lower, range.first], [range.last, upper]
+        ]
+
+        range_hash = ps_block_to_range_hash(ps_block)
+        ranges.each do |r|
+          range_hash[ps_block[:keys][index]] = r
+          ps = get_parameter_values_from_range_hash(range_hash)
+          new_ps_block = {}
+          new_ps_block[:keys] = ps_block[:keys]
+          new_ps_block[:priority] = mean_distance
+          new_ps_block[:direction] = "outside"
+          new_ps_block[:ps] = ps.map {|p| {v: p}}
+          ps_blocks << new_ps_block
+        end
       end
     end
     # ==========
