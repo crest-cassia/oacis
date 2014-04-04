@@ -1,14 +1,15 @@
 require 'json'
 require_relative '../OACIS_module.rb'
 require_relative '../OACIS_module_data.rb'
-require_relative 'mean_test.rb'
+require_relative 'mean_test'
+require_relative 'f_test'
 require_relative 'orthogonal_array'
 
 class Doe < OacisModule
 
   def self.definition
     h = {}
-    h["ps_block_count_max"] = 500
+    h["ps_block_count_max"] = 1000
     h["distance_threshold"] = 0.1
     h["target_field"] = "order_parameter"
     h["concurrent_job_max"] = 30
@@ -112,7 +113,9 @@ class Doe < OacisModule
 
     @running_ps_block_list.each do |ps_block|
       mean_distances = MeanTest.mean_distances(ps_block)
-      @ps_block_list += new_ps_blocks(ps_block, mean_distances)
+      new_ps_blocks(ps_block, mean_distances).each do |new_ps_block|
+        @ps_block_list << new_ps_block if !is_duplicate(new_ps_block)
+      end
     end
     @total_ps_block_count += @running_ps_block_list.size
   end
@@ -201,5 +204,16 @@ class Doe < OacisModule
   #override
   def get_target_fields(result)
     result.try(:fetch, module_data.data["_input_data"]["target_field"])
+  end
+
+  def is_duplicate(check_block)
+
+    return false if @ps_block_list.empty?
+    @ps_block_list.each do |ps_block|
+      ps_block[:ps].each do |values|
+        return false if !check_block[:ps].include?(values)
+      end
+    end
+    true
   end
 end
