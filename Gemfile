@@ -21,6 +21,7 @@ group :assets do
   gem "d3-rails"
   gem "redcarpet"
   gem "parallel"
+  gem "sys-filesystem"
 end
 
 group :development, :test do

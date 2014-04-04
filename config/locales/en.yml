@@ -6,42 +6,42 @@ en:
   datetime:
     distance_in_words:
       about_x_years:
-        one: ! 'a year'
-        other: ! '%{count}years'
+        one: ! '1 year'
+        other: ! '%{count} years'
       x_years:
-        one: ! 'a year'
-        other: ! '%{count}years'
+        one: ! '1 year'
+        other: ! '%{count} years'
       about_x_months:
-        one: ! 'a month'
-        othre: ! '%{count}months'
+        one: ! '1 month'
+        othre: ! '%{count} months'
       x_months:
-        one: ! 'a month'
-        othre: ! '%{count}months'
+        one: ! '1 month'
+        othre: ! '%{count} months'
       about_x_days:
-        one: ! 'a day'
-        other: ! '%{count}days'
+        one: ! '1 day'
+        other: ! '%{count} days'
       x_days:
-        one: ! 'a day'
-        other: ! '%{count}days'
+        one: ! '1 day'
+        other: ! '%{count} days'
       about_x_hours:
-        one: ! '%{count}h'
-        other: ! '%{count}h'
+        one: ! '%{count} h'
+        other: ! '%{count} h'
       x_hours:
-        one: ! '%{count}h'
-        other: ! '%{count}h'
+        one: ! '%{count} h'
+        other: ! '%{count} h'
       about_x_minutes:
-        one: ! '%{count}min.'
-        other: ! '%{count}min.'
+        one: ! '%{count} min.'
+        other: ! '%{count} min.'
       less_than_x_minutes:
-        one: ! 'a minute'
-        other: ! 'a few minutes'
+        one: ! '< 1 min.'
+        other: ! '< 1 min.'
       x_minutes:
-        one: ! '%{count}min.'
-        other: ! '%{count}min.'
+        one: ! '%{count} min.'
+        other: ! '%{count} min.'
       about_x_seconds:
-        one: ! '%{count}sec.'
-        other: ! '%{count}sec.'
+        one: ! '%{count} sec.'
+        other: ! '%{count} sec.'
       x_seconds:
-        one: ! '%{count}sec.'
-        other: ! '%{count}sec.'
+        one: ! '%{count} sec.'
+        other: ! '%{count} sec.'
 
