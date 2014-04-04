@@ -21,7 +21,6 @@ class Doe < OacisModule
     @param_names = managed_parameters_table.map {|mpt| mpt["key"]}
     @total_ps_block_count = 0
 
-    @parameter_values_list = {}
     @step_size = {}
 
     #range_hashes = [
@@ -34,9 +33,6 @@ class Doe < OacisModule
       mid = (pd["range"][0] + pd["range"][1])/2.0
       @step_size[pd["key"]] = 20*pd["range"][2]
       range_hash[pd["key"]] = [mid - @step_size[pd["key"]]/2.0, mid + @step_size[pd["key"]]/2.0]
-      @parameter_values_list[pd["key"]] ||= []
-      @parameter_values_list[pd["key"]] += range_hash[pd["key"]]
-      @parameter_values_list[pd["key"]].uniq!
     end
 
     parameter_values = get_parameter_values_from_range_hash(range_hash)
@@ -158,7 +154,7 @@ class Doe < OacisModule
       mean_distances.each_with_index do |mean_distance, index|
         v_values = ps_block[:ps].map {|ps| ps[:v][index] }
         range = [v_values.min, v_values.max]
-        
+
         lower = range[0] - @step_size[ps_block[:keys][index]]
         upper = range[1] + @step_size[ps_block[:keys][index]]
         lower = lower.round(6) if lower.is_a?(Float)
