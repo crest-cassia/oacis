@@ -4,11 +4,12 @@ class SchedulerWrapper
 
   attr_reader :type
 
-  def initialize(type)
-    unless TYPES.include?(type)
+  def initialize(host)
+    unless TYPES.include?(host.scheduler_type)
       raise ArgumentError.new("type must be selected from #{TYPES.inspect}")
     end
     @type = type
+    @work_base_dir = Pathname.new(host.work_base_dir)
   end
 
   def submit_command(script)
@@ -16,11 +17,11 @@ class SchedulerWrapper
     when "none"
       "nohup bash #{script} > /dev/null 2>&1 < /dev/null & basename #{script}"
     when "torque"
-      "qsub #{script}"
+      "cd #{@work_base_dir}; qsub #{script}"
     when "pjm"
-      "pjsub #{script}"
+      "cd #{@work_base_dir}; pjsub #{script}"
     when "pjm_k"
-      ". /etc/bashrc; pjsub #{script} < /dev/null"
+      ". /etc/bashrc; cd #{@work_base_dir}; pjsub #{script} < /dev/null"
     else
       raise "not supported"
     end
