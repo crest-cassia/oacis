@@ -8,7 +8,7 @@ class Host
   field :ssh_key, type: String, default: '~/.ssh/id_rsa'
   field :scheduler_type, type: String, default: "none"
   field :work_base_dir, type: String, default: '~'
-  field :mounted_work_base_dir, type: Boolean, default: false
+  field :mounted_work_base_dir, type: String, default: ""
   field :max_num_jobs, type: Integer, default: 1
   field :min_mpi_procs, type: Integer, default: 1
   field :max_mpi_procs, type: Integer, default: 1

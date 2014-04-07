@@ -50,7 +50,7 @@ tar cf ${OACIS_RUN_ID}.tar ${OACIS_RUN_ID}
 if test $? -ne 0; then { echo "// Failed to make an archive for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
 bzip2 ${OACIS_RUN_ID}.tar
 if test $? -ne 0; then { echo "// Failed to compress for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
-if ! ${OACIS_MOUNTED_WORK_BASE_DIR}
+if [ -z "$OACIS_MOUNTED_WORK_BASE_DIR" ]
 then
   rm -rf ${OACIS_RUN_ID}
 fi
@@ -63,7 +63,7 @@ EOS
       "run_id" => run.id.to_s,
       "is_mpi_job" => run.simulator.support_mpi ? "true" : "false",
       "work_base_dir" => host ? host.work_base_dir : '.',
-      "mounted_work_base_dir" => host ? host.mounted_work_base_dir.to_s : "false",
+      "mounted_work_base_dir" => host ? host.mounted_work_base_dir.to_s : "",
       "omp_threads" => run.omp_threads,
       "mpi_procs" => run.mpi_procs,
       "cmd" => run.command_and_input[0].sub(/;$/, ''),

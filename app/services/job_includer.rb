@@ -15,7 +15,7 @@ module JobIncluder
       else
         run.status = :failed
         run.save!
-        if host.mounted_work_base_dir
+        if host.mounted_work_base_dir.length > 0
           move_local_file(host, run)
         else
           download_work_dir_if_exists(host, run, ssh)
@@ -87,7 +87,7 @@ module JobIncluder
   end
 
   def self.move_local_file(host, run)
-    work_dir = RemoteFilePath.work_dir_path(host, run)
+    work_dir = Pathname.new(host.mounted_work_base_dir).join(run.id.to_s)
     archive = RemoteFilePath.result_file_path(host, run)
     cmd = "rm -rf #{run.dir}; mv #{work_dir} #{run.dir}; mv #{archive} #{run.dir.join("..")}/"
     system(cmd)
