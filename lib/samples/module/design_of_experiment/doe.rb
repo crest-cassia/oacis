@@ -13,28 +13,32 @@ class Doe < OacisModule
     h["distance_threshold"] = 0.1
     h["target_field"] = "order_parameter"
     h["concurrent_job_max"] = 30
+    h["search_parameter_ranges"] = {
+      # ex.) 
+      # "beta" => [0.5, 0.6],
+      # "H" => [-0.1, 0.0]
+    }
     h
   end
 
   def initialize(input_data)
     super(input_data)
 
-    @param_names = managed_parameters_table.map {|mpt| mpt["key"]}
     @total_ps_block_count = 0
-
+    @param_names = []
     @step_size = {}
+
+    module_data.data["_input_data"]["search_parameter_ranges"].each do |key, range|
+      @param_names.push(key)
+      @step_size[key] = range.max - range.min
+      @step_size[key] = @step_size[key].round(6) if @step_size[key].is_a?(Float)
+    end
 
     #range_hashes = [
     #                  {"beta"=>[0.2, 0.6], "H"=>[-1.0, 1.0]},
     #                  ...
     #                ]
-    range_hash = {}
-    managed_parameters_table.each do |pd|
-      # range_hash[pd["key"]] = pd["range"]
-      mid = (pd["range"][0] + pd["range"][1])/2.0
-      @step_size[pd["key"]] = 20*pd["range"][2]
-      range_hash[pd["key"]] = [mid - @step_size[pd["key"]]/2.0, mid + @step_size[pd["key"]]/2.0]
-    end
+    range_hash = module_data.data["_input_data"]["search_parameter_ranges"]
 
     parameter_values = get_parameter_values_from_range_hash(range_hash)
 
