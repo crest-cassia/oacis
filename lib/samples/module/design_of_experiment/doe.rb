@@ -1,7 +1,8 @@
 require 'json'
 require_relative '../OACIS_module.rb'
 require_relative '../OACIS_module_data.rb'
-require_relative 'mean_test.rb'
+require_relative 'mean_test'
+require_relative 'f_test'
 require_relative 'orthogonal_array'
 
 class Doe < OacisModule
@@ -12,23 +13,33 @@ class Doe < OacisModule
     h["distance_threshold"] = 0.1
     h["target_field"] = "order_parameter"
     h["concurrent_job_max"] = 30
+    h["search_parameter_ranges"] = {
+      # ex.) 
+      # "beta" => [0.5, 0.6],
+      # "H" => [-0.1, 0.0]
+    }
     h
   end
 
   def initialize(input_data)
     super(input_data)
 
-    @param_names = managed_parameters_table.map {|mpt| mpt["key"]}
     @total_ps_block_count = 0
+    @param_names = []
+    @step_size = {}
+
+    module_data.data["_input_data"]["search_parameter_ranges"].each do |key, range|
+      @param_names.push(key)
+      @step_size[key] = range.max - range.min
+      @step_size[key] = @step_size[key].round(6) if @step_size[key].is_a?(Float)
+    end
 
     #range_hashes = [
     #                  {"beta"=>[0.2, 0.6], "H"=>[-1.0, 1.0]},
     #                  ...
     #                ]
-    range_hash = {}
-    managed_parameters_table.each do |pd|
-      range_hash[pd["key"]] = pd["range"]
-    end
+    range_hash = module_data.data["_input_data"]["search_parameter_ranges"]
+
     parameter_values = get_parameter_values_from_range_hash(range_hash)
 
     #ps_block = {
@@ -37,7 +48,8 @@ class Doe < OacisModule
     #                   {v: [0.2, -1.0], result: [-0.483285, -0.484342, -0.483428]},
     #                   ...
     #                 ],
-    #             priority: 5.0
+    #             priority: 5.0,
+    #             direction: "inside"
     #          }
     ps_block = {}
     ps_block[:keys] = managed_parameters_table.map {|mtb| mtb["key"]}
@@ -46,6 +58,7 @@ class Doe < OacisModule
       ps_block[:ps] << {v: ps_v, result: nil}
     end
     ps_block[:priority] = 1.0
+    ps_block[:direction] = "outside"
     @ps_block_list = []
     @ps_block_list << ps_block
   end
@@ -104,7 +117,9 @@ class Doe < OacisModule
 
     @running_ps_block_list.each do |ps_block|
       mean_distances = MeanTest.mean_distances(ps_block)
-      @ps_block_list += new_ps_blocks(ps_block, mean_distances)
+      new_ps_blocks(ps_block, mean_distances).each do |new_ps_block|
+        @ps_block_list << new_ps_block if !is_duplicate(new_ps_block)
+      end
     end
     @total_ps_block_count += @running_ps_block_list.size
   end
@@ -112,6 +127,8 @@ class Doe < OacisModule
   def new_ps_blocks(ps_block, mean_distances)
 
     ps_blocks = []
+
+    # => inside 
     mean_distances.each_with_index do |mean_distance, index|
       if mean_distance > module_data.data["_input_data"]["distance_threshold"]
         v_values = ps_block[:ps].map {|ps| ps[:v][index] }
@@ -131,11 +148,42 @@ class Doe < OacisModule
           new_ps_block = {}
           new_ps_block[:keys] = ps_block[:keys]
           new_ps_block[:priority] = mean_distance
+          new_ps_block[:direction] = "inside"
           new_ps_block[:ps] = ps.map {|p| {v: p}}
           ps_blocks << new_ps_block
         end
       end
     end
+    # ==========
+
+    # => outside
+    if ps_block[:direction] != "inside"
+      mean_distances.each_with_index do |mean_distance, index|
+        v_values = ps_block[:ps].map {|ps| ps[:v][index] }
+        range = [v_values.min, v_values.max]
+
+        lower = range[0] - @step_size[ps_block[:keys][index]]
+        upper = range[1] + @step_size[ps_block[:keys][index]]
+        lower = lower.round(6) if lower.is_a?(Float)
+        upper = upper.round(6) if upper.is_a?(Float)
+        ranges = [
+          [lower, range.first], [range.last, upper]
+        ]
+
+        range_hash = ps_block_to_range_hash(ps_block)
+        ranges.each do |r|
+          range_hash[ps_block[:keys][index]] = r
+          ps = get_parameter_values_from_range_hash(range_hash)
+          new_ps_block = {}
+          new_ps_block[:keys] = ps_block[:keys]
+          new_ps_block[:priority] = mean_distance
+          new_ps_block[:direction] = "outside"
+          new_ps_block[:ps] = ps.map {|p| {v: p}}
+          ps_blocks << new_ps_block
+        end
+      end
+    end
+    # ==========
     ps_blocks
   end
 
@@ -160,5 +208,16 @@ class Doe < OacisModule
   #override
   def get_target_fields(result)
     result.try(:fetch, module_data.data["_input_data"]["target_field"])
+  end
+
+  def is_duplicate(check_block)
+
+    return false if @ps_block_list.empty?
+    @ps_block_list.each do |ps_block|
+      ps_block[:ps].each do |values|
+        return false if !check_block[:ps].include?(values)
+      end
+    end
+    true
   end
 end
