@@ -26,7 +26,7 @@ class RemoteJobHandler
 
   def remote_status(run)
     status = :unknown
-    scheduler = SchedulerWrapper.new(@host.scheduler_type)
+    scheduler = SchedulerWrapper.new(@host)
     cmd = scheduler.status_command(run.job_id)
     @host.start_ssh do |ssh|
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
@@ -38,7 +38,7 @@ class RemoteJobHandler
   def cancel_remote_job(run)
     stat = remote_status(run)
     if stat == :submitted or stat == :running
-      scheduler = SchedulerWrapper.new(@host.scheduler_type)
+      scheduler = SchedulerWrapper.new(@host)
       cmd = scheduler.cancel_command(run.job_id)
       @host.start_ssh do |ssh|
         out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
@@ -92,7 +92,7 @@ class RemoteJobHandler
   end
 
   def submit_to_scheduler(run, job_script_path)
-    cmd = SchedulerWrapper.new(@host.scheduler_type).submit_command(job_script_path)
+    cmd = SchedulerWrapper.new(@host).submit_command(job_script_path)
     @host.start_ssh do |ssh|
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
       raise RemoteOperationError, "#{cmd} failed : #{rc}, #{err}" unless rc == 0
