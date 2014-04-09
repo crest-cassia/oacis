@@ -91,8 +91,8 @@
 </div>
 <table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="82%" />
+<col width="12%" />
+<col width="88%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">フィールド</th>
@@ -121,22 +121,25 @@
 <tr class="row-even"><td>Work base dir</td>
 <td>ワークディレクトリとして利用するホスト上のパス。ここで指定したパス以下でジョブが実行される。</td>
 </tr>
-<tr class="row-odd"><td>Max num jobs</td>
+<tr class="row-odd"><td>Mounted work base dir</td>
+<td>localhostでジョブを実行する場合やホームディレクトリがNFSで共有されている場合など、直接ワークディレクトリが参照できる場合、ここで指定したディレクトリから直接ジョブの取り込みが行われパフォーマンスが向上する。</td>
+</tr>
+<tr class="row-even"><td>Max num jobs</td>
 <td>このホストに投入可能なジョブの最大数。</td>
 </tr>
-<tr class="row-even"><td>MPI processes</td>
+<tr class="row-odd"><td>MPI processes</td>
 <td>MPIプロセス数の最小値と最大値。Runを作成するときにここで指定した範囲外の値を指定しようとするとエラーになる。</td>
 </tr>
-<tr class="row-odd"><td>OMP threads</td>
+<tr class="row-even"><td>OMP threads</td>
 <td>OMPスレッド数の最小値と最大値。Runを作成するときにここで指定した範囲外の値を指定しようとするとエラーになる。</td>
 </tr>
-<tr class="row-even"><td>Template</td>
+<tr class="row-odd"><td>Template</td>
 <td>ジョブ実行時に作成されるスクリプト（ジョブスクリプトと呼ぶ）のテンプレート。&lt;%= ... %&gt; の部分が変数展開される。</td>
 </tr>
-<tr class="row-odd"><td>Definition of Host Parameters</td>
+<tr class="row-even"><td>Definition of Host Parameters</td>
 <td>テンプレートで使用される変数（ホストパラメータと呼ぶ）の定義。変数名とデフォルト値、入力フォーマット（正規表現で指定）を指定する。</td>
 </tr>
-<tr class="row-even"><td>Executable simulators</td>
+<tr class="row-odd"><td>Executable simulators</td>
 <td>実行可能なシミュレータをチェックボックスで指定。</td>
 </tr>
 </tbody>
@@ -187,7 +190,7 @@
 </li>
 <li><dl class="first docutils">
 <dt>JSON形式の場合、実行時に次のような形式のJSONファイルを <em>_input.json</em> というファイル名でOACISが実行時に配置する。シミュレータはカレントディレクトリの <em>_input.json</em> パースするように実装する必要がある。</dt>
-<dd><div class="first highlight-json"><div class="highlight"><pre>{&quot;param1&quot;:100,&quot;param2&quot;:3.0,&quot;_seed&quot;:12345}
+<dd><div class="first highlight-javascript"><div class="highlight"><pre><span class="p">{</span><span class="s2">&quot;param1&quot;</span><span class="o">:</span><span class="mi">100</span><span class="p">,</span><span class="s2">&quot;param2&quot;</span><span class="o">:</span><span class="mf">3.0</span><span class="p">,</span><span class="s2">&quot;_seed&quot;</span><span class="o">:</span><span class="mi">12345</span><span class="p">}</span>
 </pre></div>
 </div>
 <ul class="last">
@@ -260,7 +263,7 @@
 <td>ジョブの前に実行されるプリプロセスを記述するスクリプト。空の場合はプリプロセスは実行されない。</td>
 </tr>
 <tr class="row-odd"><td>Command</td>
-<td>シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. <a href="#id4"><span class="problematic" id="id5">*</span></a>~/path/to/simulator.out*）</td>
+<td>シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. <em>~/path/to/simulator.out</em> ）</td>
 </tr>
 <tr class="row-even"><td>Input type</td>
 <td>パラメータを引数で渡すか、JSONで渡すか指定する。</td>
@@ -310,8 +313,8 @@
 <div class="line">既に存在するパラメータセットと同じものを作ろうとすると、エラーとなりエラーメッセージが表示される。</div>
 </div>
 </div>
-<div class="section" id="id6">
-<h2>ジョブ投入<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h2>ジョブ投入<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">Runを作成してシミュレーションを実行する。</div>
 <div class="line">Create New Runsと書かれている箇所でRunの数と投入Host（Simulator登録時に実行可能ホストとして指定されたHostしか選択できない）を選択して[Create Run]ボタンを押す。</div>
@@ -334,8 +337,8 @@
 <div class="line">ただしHostで指定された max_num_jobs がジョブの上限数で、それ以上のジョブは投入されない。実行中のジョブが完了し次第、順次ジョブが投入される。</div>
 </div>
 </div>
-<div class="section" id="id7">
-<h2>実行中のジョブの確認<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h2>実行中のジョブの確認<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">ナビゲーションバーの[Jobs]をクリックすると、実行中(running)、スケジューラに投入済み(submitted)、実行待ち（created）のジョブ一覧を確認できる。</div>
 <div class="line">この情報はバックグラウンドプロセスが１分ごとにリモートホストをポーリングして取得しているのでタイムラグがある場合がある。</div>
@@ -343,8 +346,8 @@
 </div>
 <a class="reference internal image-reference" href="_images/jobs.png"><img alt="_images/jobs.png" class="align-center" src="_images/jobs.png" style="width: 30%;" /></a>
 </div>
-<div class="section" id="id8">
-<h2>結果の確認<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h2>結果の確認<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">ジョブの実行が完了すると自動的に結果がサーバー内のデータベースに取り込まれる。</div>
 <div class="line">Runの作成時のページに移動するとRunの一覧が表示され、そのRunのステータスが <em>finished</em> になっている事が確認できる。</div>
@@ -377,9 +380,9 @@
 <li><a class="reference internal" href="#host">Host登録</a></li>
 <li><a class="reference internal" href="#simulator">Simulator登録</a></li>
 <li><a class="reference internal" href="#parameterset">ParameterSet登録</a></li>
-<li><a class="reference internal" href="#id6">ジョブ投入</a></li>
-<li><a class="reference internal" href="#id7">実行中のジョブの確認</a></li>
-<li><a class="reference internal" href="#id8">結果の確認</a></li>
+<li><a class="reference internal" href="#id4">ジョブ投入</a></li>
+<li><a class="reference internal" href="#id5">実行中のジョブの確認</a></li>
+<li><a class="reference internal" href="#id6">結果の確認</a></li>
 </ul>
 </li>
 </ul>

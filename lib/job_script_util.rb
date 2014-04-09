@@ -8,6 +8,7 @@ LANG=C
 OACIS_RUN_ID=<%= run_id %>
 OACIS_IS_MPI_JOB=<%= is_mpi_job %>
 OACIS_WORK_BASE_DIR=<%= work_base_dir %>
+OACIS_MOUNTED_WORK_BASE_DIR=<%= mounted_work_base_dir %>
 OACIS_MPI_PROCS=<%= mpi_procs %>
 OACIS_OMP_THREADS=<%= omp_threads %>
 OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
@@ -49,16 +50,20 @@ tar cf ${OACIS_RUN_ID}.tar ${OACIS_RUN_ID}
 if test $? -ne 0; then { echo "// Failed to make an archive for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
 bzip2 ${OACIS_RUN_ID}.tar
 if test $? -ne 0; then { echo "// Failed to compress for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
-rm -rf ${OACIS_RUN_ID}
+if [ -z "$OACIS_MOUNTED_WORK_BASE_DIR" ]
+then
+  rm -rf ${OACIS_RUN_ID}
+fi
 EOS
 
-  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
+  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "work_base_dir", "mounted_work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
 
   def self.script_for(run, host)
     default_variables = {
       "run_id" => run.id.to_s,
       "is_mpi_job" => run.simulator.support_mpi ? "true" : "false",
       "work_base_dir" => host ? host.work_base_dir : '.',
+      "mounted_work_base_dir" => host ? host.mounted_work_base_dir.to_s : "",
       "omp_threads" => run.omp_threads,
       "mpi_procs" => run.mpi_procs,
       "cmd" => run.command_and_input[0].sub(/;$/, ''),
