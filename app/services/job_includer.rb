@@ -15,7 +15,7 @@ module JobIncluder
       else
         run.status = :failed
         run.save!
-        if host.mounted_work_base_dir.length > 0
+        if host.mounted_work_base_dir.present?
           move_local_file(host, run)
         else
           download_work_dir_if_exists(host, run, ssh)
@@ -88,7 +88,7 @@ module JobIncluder
 
   def self.move_local_file(host, run)
     work_dir = Pathname.new(host.mounted_work_base_dir).join(run.id.to_s)
-    archive = RemoteFilePath.result_file_path(host, run)
+    archive = Pathname.new(host.mounted_work_base_dir).join("#{run.id}.tar.bz2")
     cmd = "rm -rf #{run.dir}; mv #{work_dir} #{run.dir}; mv #{archive} #{run.dir.join("..")}/"
     system(cmd)
     raise "can not move work_directory from #{work_dir}" unless $?.exitstatus == 0
