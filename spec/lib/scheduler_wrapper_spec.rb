@@ -2,10 +2,16 @@ require 'spec_helper'
 
 describe SchedulerWrapper do
 
+  before(:each) do
+    @host = FactoryGirl.create(:host)
+  end
+
   it "is initialized with a correct type" do
     possible_types = SchedulerWrapper::TYPES.each do |type|
+      @host.scheduler_type = type
+      @host.save!
       expect {
-        SchedulerWrapper.new(type)
+        SchedulerWrapper.new(@host)
       }.to_not raise_error
     end
   end
@@ -19,7 +25,9 @@ describe SchedulerWrapper do
   describe "none" do
 
     before(:each) do
-      @wrapper = SchedulerWrapper.new("none")
+      @host.scheduler_type = "none"
+      @host.save!
+      @wrapper = SchedulerWrapper.new(@host)
     end
 
     describe "#submit_command" do
@@ -65,13 +73,15 @@ EOS
   describe "torque" do
 
     before(:each) do
-      @wrapper = SchedulerWrapper.new("torque")
+      @host.scheduler_type = "torque"
+      @host.save!
+      @wrapper = SchedulerWrapper.new(@host)
     end
 
     describe "#submit_command" do
 
       it "returns a command to submit a job" do
-        @wrapper.submit_command("~/path/to/job.sh").should eq "qsub ~/path/to/job.sh"
+        @wrapper.submit_command("~/path/to/job.sh").should eq "cd #{@host.work_base_dir}; qsub ~/path/to/job.sh"
       end
     end
 
@@ -112,13 +122,15 @@ EOS
   describe "pjm_k" do
 
     before(:each) do
-      @wrapper = SchedulerWrapper.new("pjm_k")
+      @host.scheduler_type = "pjm_k"
+      @host.save!
+      @wrapper = SchedulerWrapper.new(@host)
     end
 
     describe "#submit_command" do
 
       it "returns a command to submit a job" do
-        @wrapper.submit_command("~/path/to/job.sh").should eq ". /etc/bashrc; pjsub ~/path/to/job.sh < /dev/null"
+        @wrapper.submit_command("~/path/to/job.sh").should eq ". /etc/bashrc; cd #{@host.work_base_dir}; pjsub ~/path/to/job.sh < /dev/null"
       end
     end
 

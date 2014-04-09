@@ -64,7 +64,7 @@ class Host
   def status
     ret = nil
     start_ssh do |ssh|
-      wrapper = SchedulerWrapper.new(self.scheduler_type)
+      wrapper = SchedulerWrapper.new(self)
       cmd = wrapper.all_status_command
       ret = SSHUtil.execute(ssh, cmd)
     end

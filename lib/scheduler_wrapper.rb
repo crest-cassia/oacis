@@ -8,7 +8,7 @@ class SchedulerWrapper
     unless TYPES.include?(host.scheduler_type)
       raise ArgumentError.new("type must be selected from #{TYPES.inspect}")
     end
-    @type = type
+    @type = host.scheduler_type
     @work_base_dir = Pathname.new(host.work_base_dir)
   end
 
