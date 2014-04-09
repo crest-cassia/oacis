@@ -116,7 +116,7 @@ describe JobIncluder do
 
     describe "when work_dir exists" do
 
-      context "if _status.txt exits in downloded work_dir" do
+      context "if _status.txt exists in downloded work_dir" do
 
         before(:each) do
           make_valid_archive_file(@run, true)
@@ -137,7 +137,7 @@ describe JobIncluder do
         end
       end
 
-      context "if _status.txt do not exit in downloded work_dir" do
+      context "if _status.txt does not exist in downloded work_dir" do
 
         before(:each) do
           make_valid_archive_file(@run, true)
