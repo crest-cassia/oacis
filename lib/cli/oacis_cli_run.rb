@@ -69,12 +69,15 @@ class OacisCli < Thor
 
     runs = []
     parameter_sets.each_with_index.map do |ps, idx|
-      sim = ps.simulator
-      mpi_procs = sim.support_mpi ? job_parameters["mpi_procs"] : 1
-      omp_threads = sim.support_omp ? job_parameters["omp_threads"] : 1
-      existing_runs = ps.runs.limit(options[:number_of_runs]).to_a
+      sim = nil
+      mpi_procs = nil
+      omp_threads = nil
+      existing_runs = ps.runs.only(:id).limit(options[:number_of_runs]).to_a
       runs += existing_runs
       (options[:number_of_runs] - existing_runs.count).times do |i|
+        sim ||= ps.simulator
+        mpi_procs ||= sim.support_mpi ? job_parameters["mpi_procs"] : 1
+        omp_threads ||= sim.support_omp ? job_parameters["omp_threads"] : 1
         run = ps.runs.build(submitted_to: submitted_to,
                             mpi_procs: mpi_procs,
                             omp_threads: omp_threads,
