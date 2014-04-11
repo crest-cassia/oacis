@@ -704,7 +704,7 @@ append_parameter_definition
   +----------------+--------+-----------------------------------------+-----------+
   |--type          |-t      |type of the new parameter                |yes        |
   +----------------+--------+-----------------------------------------+-----------+
-  |--default       |-d      |default value of the new parameter       |yes        |
+  |--default       |-e      |default value of the new parameter       |yes        |
   +----------------+--------+-----------------------------------------+-----------+
 
 - 入力形式
