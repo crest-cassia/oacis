@@ -207,7 +207,7 @@ describe OacisCli do
             option = {simulator: "INVALID", name: 'NEW_PARAM', type: "Float", default: 0.5}
             expect {
               OacisCli.new.invoke(:append_parameter_definition, [], option)
-            }.should raise_error
+            }.to raise_error
           }
         end
       end
@@ -219,7 +219,7 @@ describe OacisCli do
             option = {simulator: @sim.id.to_s, name: 'L', type: "Float", default: 0.5}
             expect {
               OacisCli.new.invoke(:append_parameter_definition, [], option)
-            }.should raise_error
+            }.to raise_error
           }
         end
       end
@@ -231,7 +231,7 @@ describe OacisCli do
             option = {simulator: @sim.id.to_s, name: 'L', type: "Float", default: 0.5}
             expect {
               OacisCli.new.invoke(:append_parameter_definition, [], option)
-            }.should raise_error
+            }.to raise_error
           }
         end
       end
@@ -243,7 +243,7 @@ describe OacisCli do
             option = {simulator: @sim.id.to_s, name: 'L', type: "Double", default: 0.5}
             expect {
               OacisCli.new.invoke(:append_parameter_definition, [], option)
-            }.should raise_error
+            }.to raise_error
           }
         end
       end
@@ -255,7 +255,7 @@ describe OacisCli do
             option = {simulator: @sim.id.to_s, name: 'L', type: "Integer", default: 0.5}
             expect {
               OacisCli.new.invoke(:append_parameter_definition, [], option)
-            }.should raise_error
+            }.to raise_error
           }
         end
       end
