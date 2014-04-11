@@ -27,6 +27,7 @@ CLIで利用可能な操作は以下の通りである。
 - 作成済みAnalysisのステータス確認（analysis_status）
 - Analysis削除（destroy_analyses）
 - Analysis再作成（replace_analyses）
+- 既存SimulatorへのParameterDefinition追加 (append_parameter_definition)
 
 OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行する操作を指定する。
 例えば
@@ -678,3 +679,47 @@ replace_analyses
 
         ../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
 
+append_parameter_definition
+--------------------------------
+
+指定したSimulatorに、新しいParameterを追加する。
+
+- ユースケース
+    | 既存のSimulatorを拡張したいが、既存のデータを破棄したくない場合に使用する。
+
+- 実行方法
+
+  .. code-block:: sh
+
+    ./bin/oacis_cli append_parameter_definition -s 522442de899e53dd8d000034 -n "new_param" -t Float -d 0.0
+
+- オプション
+
+  +----------------+--------+-----------------------------------------+-----------+
+  |Option          |alias   |description                              |required?  |
+  +================+========+=========================================+===========+
+  |--simulator_id  |-s      |simulator id or path to simulator_id.json|yes        |
+  +----------------+--------+-----------------------------------------+-----------+
+  |--name          |-n      |name of the new parameter                |yes        |
+  +----------------+--------+-----------------------------------------+-----------+
+  |--type          |-t      |type of the new parameter                |yes        |
+  +----------------+--------+-----------------------------------------+-----------+
+  |--default       |-d      |default value of the new parameter       |yes        |
+  +----------------+--------+-----------------------------------------+-----------+
+
+- 入力形式
+
+    - simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。
+    - name は新規パラメータの名前を指定する。既存のパラメータと重複するとエラー。
+    - type は新規パラメータの型を指定する。指定可能な値は "Integer", "Float", "String", "Boolean" の４種類。
+    - default は新規パラメータのデフォルト値を指定する。
+        - type と整合性が取れていない場合はエラー
+        - 既存のパラメータセットのパラメータはこの値で保存される。
+
+- 実行例
+
+    - "p3" という名前の整数型のパラメータ（デフォルト値 0）を追加する。
+
+      .. code-block:: sh
+
+        ./bin/oacis_cli append_parameter_definition -s 522442de899e53dd8d000034 -n p3 -t Integer -d 0
