@@ -68,7 +68,7 @@ class OacisCli < Thor
     end
 
     runs = []
-    parameter_sets.each_with_index.map do |ps, idx|
+    parameter_sets.no_timeout.each_with_index.map do |ps, idx|
       sim = nil
       mpi_procs = nil
       omp_threads = nil
