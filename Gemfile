@@ -19,10 +19,10 @@ gem "redcarpet"
 # for workers
 gem 'daemon-spawn', :require => 'daemon_spawn'
 gem "sys-filesystem"
+gem "parallel"
 
 # for cli
 gem "ruby-progressbar"
-gem "parallel"
 gem "quiet_assets"
 
 # utility tool
