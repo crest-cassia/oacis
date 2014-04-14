@@ -255,6 +255,8 @@ MPI, OpenMPのジョブ
   :width: 40%
   :align: center
 
+.. _manage_simulator_version:
+
 シミュレーターのバージョンを記録する
 ==============================================
 
@@ -334,7 +336,7 @@ Analyzerの登録と実行
 | ユーザーはAnalyzerの登録時に実行されるコマンドを入力する。そのコマンドがバックグラウンドで呼ばれて解析が実行されることになる。
 | Simulatorの場合と同じように、実行日時や実行時間などの情報が保存され、結果はブラウザ経由で確認できる。
 
-| またAnalyzer実行時に解析用のパラメータを指定して実行することもできる。
+| また、Analyzerは実行時に解析用のパラメータを指定して実行することもできる。
 | 例えば、時系列データを解析するときに最初の何ステップを除外するか指定したい場合などに使える。
 | Analyzerの登録時にパラメータの定義を登録することができる。
 
@@ -385,7 +387,8 @@ Runに対する解析
 Name                          OACISの中で使われるAnalyzerの名前。任意の名前を指定できる。各Simulator内で一意でなくてはならない。
 Type                          Runに対する解析(on_run)、ParameterSetに対する解析(on_parameter_set)のどちらかから選ぶ
 Definition of Parameters      解析時に指定するパラメータがあれば登録する。空でもよい。
-Command                       実行するコマンド
+Command                       Analyzerを実行するコマンド。
+Pring version command         Analyzerのバージョンを標準出力に出力するコマンド。
 Auto Run                      Runの終了後に解析が自動実行されるか指定する。
 Description                   Analyzerに対する説明。入力は任意。
 ============================= ======================================================================
@@ -490,3 +493,20 @@ ParameterSetに対する解析
 
 | ParaemterSetに対する解析の場合、Auto Runのフラグはyes, noの２択から選択可能である。
 | yesの場合、ParameterSet内のすべてのRunが :finished または :failed になったときに自動実行される。
+
+Analyzerのバージョンを記録する
+----------------------------------------------
+
+| Analyzer実行時に、どのバージョンのAnalyzerを実行したかをanalysisとひもづけてOACISに記録させておく>ことができる。
+| バージョンを記録することにより、例えば、あるバージョンのanalysisを一括削除などの操作ができる様になる。
+
+| Analyzerのバージョンを保存するには、Analyzerのバージョンを出力させるコマンドをOACISに登録する。
+| 例えば、
+
+.. code-block:: sh
+
+  echo "v0.1.0"
+
+| というコマンドでバージョン情報を出力する場合、このコマンドをAnalyzer登録時に"Print version command" というフィールドに入力する。
+| その他、登録できるコマンドの書式は、 :ref:`シミュレーターのバージョンを記録する<manage_simulator_version>` を参照。
+
