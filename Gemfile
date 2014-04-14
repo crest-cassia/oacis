@@ -16,7 +16,7 @@ gem "rspec-rails"
 
 group :assets do
 #  gem 'sass-rails'
-  gem 'uglifier'
+#  gem 'uglifier'
   gem 'therubyracer'
   gem "less-rails"
   gem 'twitter-bootstrap-rails', '2.2.6'
