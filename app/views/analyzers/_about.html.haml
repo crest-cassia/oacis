@@ -10,6 +10,10 @@
     %tr
       %th Auto-Run Flag
       %td= analyzer.auto_run
+    %tr
+      %th Print version command
+      %td= analyzer.print_version_command || "-"
+
 
 - if analyzer.parameter_definitions.present?
   %h3 Defined Parameters
