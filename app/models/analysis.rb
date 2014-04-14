@@ -66,7 +66,7 @@ class Analysis
     self.result = status[:result] if status.has_key?(:result)
     self.finished_at = status[:finished_at]
     self.status = :finished
-    self.analyzer_version = status[:analyzer_version] if status.has_key?(:version)
+    self.analyzer_version = status[:analyzer_version] if status.has_key?(:analyzer_version)
     self.included_at = DateTime.now
     self.save
   end
