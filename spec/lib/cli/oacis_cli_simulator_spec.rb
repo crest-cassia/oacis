@@ -188,7 +188,7 @@ describe OacisCli do
       }
     end
 
-    it "updates the new parameter of existing parameter sets with the default value" do
+    it "updates the existing parameter sets so as to have the new parameter key with the default value" do
       at_temp_dir {
         option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
         OacisCli.new.invoke(:append_parameter_definition, [], option)
