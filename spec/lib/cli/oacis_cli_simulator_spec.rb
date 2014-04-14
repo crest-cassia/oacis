@@ -198,6 +198,15 @@ describe OacisCli do
       }
     end
 
+    it "adds Boolean parameter correctly" do
+      at_temp_dir {
+        option = {simulator: @sim.id.to_s, name: "NEW_PARAM", type: "Boolean", default: false}
+        OacisCli.new.invoke(:append_parameter_definition, [], option)
+        new_param_def = @sim.reload.parameter_definitions.last
+        new_param_def.default.should eq false
+      }
+    end
+
     describe "error case" do
 
       context "when invalid simulator ID is given" do
