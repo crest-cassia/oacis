@@ -50,7 +50,7 @@ class AnalyzerRunner
         end
         output[:result] = parse_output_json
         output[:result] = {"result"=>parse_output_json} unless output[:result].is_a?(Hash)
-        output[:version] = File.open("_version.txt").read.chomp if File.exist?("_version.txt")
+        output[:analyzer_version] = File.open("_version.txt").read.chomp if File.exist?("_version.txt")
         remove_inputs
       }
     }
