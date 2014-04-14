@@ -3,6 +3,15 @@ require File.join(Rails.root, 'lib/cli/oacis_cli')
 
 describe OacisCli do
 
+  before(:each) do
+    class OacisCli
+      private
+      def yes?(str)  # define as a private method otherwise mock will define the method as public
+        true
+      end
+    end
+  end
+
   describe "#job_parameter_template" do
 
     before(:each) do
@@ -316,7 +325,6 @@ describe OacisCli do
     end
 
     it "destroys runs specified by 'status'" do
-      $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
         options = {simulator: @sim.id.to_s, query: {"status" => "failed"} }
         expect {
@@ -326,7 +334,6 @@ describe OacisCli do
     end
 
     it "destroys runs specified by 'simulator_version'" do
-      $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
         options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}}
         expect {
@@ -336,7 +343,6 @@ describe OacisCli do
     end
 
     it "destroys runs of simulator_version=nil when simulator_version is empty" do
-      $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
         options = {simulator: @sim.id.to_s, query: {"simulator_version" => ""}}
         expect {
@@ -346,7 +352,6 @@ describe OacisCli do
     end
 
     it "fails neither 'status' nor 'simulator_version' is given as the query-key" do
-      $stdin.stub(:gets).and_return("y")
       at_temp_dir {
         options = {simulator: @sim.id.to_s, query: {"hostname" => "localhost"}}
         expect {
@@ -369,7 +374,6 @@ describe OacisCli do
     end
 
     it "newly create runs have the same attribute as old ones" do
-      $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
         options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"} }
         expect {
@@ -380,7 +384,6 @@ describe OacisCli do
     end
 
     it "destroys old run" do
-      $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
         options = { simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"} }
         expect {

@@ -6,6 +6,13 @@ describe OacisCli do
   before(:each) do
     @sim = FactoryGirl.create(:simulator, parameter_sets_count: 2, runs_count: 0, finished_runs_count: 2, analyzers_count: 1, run_analysis: false, analyzers_on_parameter_set_count: 1, run_analysis_on_parameter_set: false)
     @sim.save!
+
+    class OacisCli
+      private
+      def yes?(str) # define as a private method otherwise mock will define the method as public
+        true
+      end
+    end
   end
 
   def create_options(option={})
@@ -250,7 +257,6 @@ describe OacisCli do
 
     it "destroys analyses specified by 'status'" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id
-      $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
         Analysis.limit(3).each do |anl|
@@ -286,7 +292,6 @@ describe OacisCli do
 
     it "newly create analyses have the same attribute as old ones" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id
-      $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
         Analysis.limit(2).each do |anl|
@@ -304,7 +309,6 @@ describe OacisCli do
 
     it "destroys old analysis" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id
-      $stdin.should_receive(:gets).and_return("y")
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
         Analysis.limit(2).each do |anl|

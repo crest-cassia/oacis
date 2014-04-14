@@ -1,44 +1,42 @@
 source 'https://rubygems.org'
 
-gem 'rails', '3.2.13'
-gem 'jquery-rails'
+gem 'rails', '~> 3.2.0'
+gem 'thin'
 gem "mongoid"
-gem "haml"
 gem "net-ssh"
 gem "net-sftp"
+
+# assets
+gem "haml-rails"
+gem 'therubyracer' # necessary to compile less
+gem "less-rails"   # necessary for bootstrap
+gem 'twitter-bootstrap-rails', '2.2.6'
+gem 'jquery-rails'
+gem 'jquery-datatables-rails'
+gem "d3-rails"
+gem "redcarpet"
+
+# for workers
 gem 'daemon-spawn', :require => 'daemon_spawn'
+gem "sys-filesystem"
+gem "parallel"
+
+# for cli
 gem "ruby-progressbar"
+gem "quiet_assets"
 
-group :assets do
-  gem 'sass-rails'
-  gem 'uglifier'
-  gem 'therubyracer'
-  gem "less-rails"
-  gem 'twitter-bootstrap-rails', '2.2.6'
-  gem 'jquery-datatables-rails'
-  gem "haml-rails"
-  gem "factory_girl_rails"
-  gem "d3-rails"
-  gem "redcarpet"
-  gem "parallel"
-  gem "sys-filesystem"
-end
-
-group :development, :test do
-  gem "rspec-rails"
-  gem "pry"
-end
-
-group :development do
-  gem "quiet_assets"
-  gem "faker"
-end
+# utility tool
+gem "pry"
+gem "rspec-rails" # must be in :development group to use the rake task 'spec'
 
 group :test do
+  gem "factory_girl_rails"
   gem "database_cleaner"
   gem "mongoid-rspec"
   gem "simplecov", :require => false
   gem "simplecov-rcov", :require => false
   gem "ci_reporter"
   gem "spork"
+  gem "faker"
 end
+
