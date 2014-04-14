@@ -70,15 +70,12 @@ class OacisCli < Thor
     runs = []
     # no_timeout enables creation of 10000 or more runs
     parameter_sets.no_timeout.each_with_index.map do |ps, idx|
-      sim = nil
-      mpi_procs = nil
-      omp_threads = nil
-      existing_runs = ps.runs.only(:id).limit(options[:number_of_runs]).to_a
+      sim = ps.simulator
+      mpi_procs = sim.support_mpi ? job_parameters["mpi_procs"] : 1
+      omp_threads = sim.support_omp ? job_parameters["omp_threads"] : 1
+      existing_runs = ps.runs.limit(options[:number_of_runs]).to_a
       runs += existing_runs
       (options[:number_of_runs] - existing_runs.count).times do |i|
-        sim ||= ps.simulator
-        mpi_procs ||= sim.support_mpi ? job_parameters["mpi_procs"] : 1
-        omp_threads ||= sim.support_omp ? job_parameters["omp_threads"] : 1
         run = ps.runs.build(submitted_to: submitted_to,
                             mpi_procs: mpi_procs,
                             omp_threads: omp_threads,
