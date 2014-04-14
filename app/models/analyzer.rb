@@ -7,6 +7,7 @@ class Analyzer
   field :command, type: String
   field :auto_run, type: Symbol, default: :no
   field :description, type: String
+  field :print_version_command, type: String
 
   embeds_many :parameter_definitions
   belongs_to :simulator
