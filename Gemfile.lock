@@ -37,10 +37,12 @@ GEM
     d3-rails (3.4.4)
       railties (>= 3.1)
     daemon-spawn (0.4.2)
+    daemons (1.1.9)
     database_cleaner (1.2.0)
     diff-lcs (1.2.5)
     docile (1.1.3)
     erubis (2.7.0)
+    eventmachine (1.0.3)
     execjs (2.0.2)
     factory_girl (4.4.0)
       activesupport (>= 3.0.0)
@@ -163,6 +165,10 @@ GEM
     therubyracer (0.12.1)
       libv8 (~> 3.16.14.0)
       ref
+    thin (1.6.2)
+      daemons (>= 1.0.9)
+      eventmachine (>= 1.0.0)
+      rack (>= 1.0.0)
     thor (0.19.1)
     tilt (1.4.1)
     treetop (1.4.15)
@@ -204,4 +210,5 @@ DEPENDENCIES
   spork
   sys-filesystem
   therubyracer
+  thin
   twitter-bootstrap-rails (= 2.2.6)
