@@ -68,6 +68,7 @@ class OacisCli < Thor
     end
 
     runs = []
+    # no_timeout enables creation of 10000 or more runs
     parameter_sets.no_timeout.each_with_index.map do |ps, idx|
       sim = nil
       mpi_procs = nil
