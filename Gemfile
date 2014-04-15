@@ -8,6 +8,7 @@ gem "net-sftp"
 
 # assets
 gem "haml-rails"
+gem "sass-rails"
 gem 'therubyracer' # necessary to compile less
 gem "less-rails"   # necessary for bootstrap
 gem 'twitter-bootstrap-rails', '2.2.6'
