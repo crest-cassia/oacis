@@ -15,6 +15,7 @@ class Host
   field :min_omp_threads, type: Integer, default: 1
   field :max_omp_threads, type: Integer, default: 1
   field :template, type: String, default: JobScriptUtil::DEFAULT_TEMPLATE
+  field :position, type: Integer # position in the table. start from zero
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
   embeds_many :host_parameter_definitions
@@ -36,6 +37,7 @@ class Host
   validate :min_is_not_larger_than_max
   validate :template_conform_to_host_parameter_definitions
 
+  before_create :set_position
   before_destroy :validate_destroyable
 
   CONNECTION_EXCEPTIONS = [
@@ -163,6 +165,10 @@ class Host
       errors.add(:base, "Created/Submitted Runs exist")
       return false
     end
+  end
+
+  def set_position
+    self.position = Host.count
   end
 end
 
