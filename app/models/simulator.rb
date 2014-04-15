@@ -28,7 +28,7 @@ class Simulator
                   :support_input_json, :support_omp, :support_mpi,
                   :print_version_command
 
-  after_initialize :set_position
+  before_create :set_position
   after_create :create_simulator_dir
 
   public
