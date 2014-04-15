@@ -9,6 +9,7 @@ class Simulator
   field :support_omp, type: Boolean, default: false
   field :pre_process_script, type: String
   field :print_version_command, type: String
+  field :position, type: Integer # position in the table. start from zero
 
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
@@ -27,6 +28,7 @@ class Simulator
                   :support_input_json, :support_omp, :support_mpi,
                   :print_version_command
 
+  after_initialize :set_position
   after_create :create_simulator_dir
 
   public
@@ -253,5 +255,10 @@ EOS
 
   def create_simulator_dir
     FileUtils.mkdir_p(ResultDirectory.simulator_path(self))
+  end
+
+  private
+  def set_position
+    self.position = Simulator.count
   end
 end
