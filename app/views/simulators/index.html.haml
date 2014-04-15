@@ -7,7 +7,7 @@
       %th Name
       %th Updated_at
       %th Progress
-  %tbody
+  %tbody.sortable
     - @simulators.each do |simulator|
       %tr
         %td= link_to h(simulator.name), simulator_path(simulator)
@@ -18,3 +18,9 @@
 
 .form-actions
   %a.btn.btn-primary{href: new_simulator_path} New Simulator
+
+:javascript
+  $(function() {
+    $('.sortable').sortable();
+    $('.sortable').disableSelection();
+  });
