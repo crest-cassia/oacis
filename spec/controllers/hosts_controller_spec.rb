@@ -28,7 +28,9 @@ describe HostsController do
     end
 
     it "@hosts are sorted by position" do
-      FactoryGirl.create_list(:host, 3)
+      hosts = FactoryGirl.create_list(:host, 3)
+      hosts.first.update_attribute(:position, 2)
+      hosts.last.update_attribute(:position, 0)
       get :index, {}, valid_session
       assigns(:hosts).map(&:position).should eq [0,1,2]
     end
