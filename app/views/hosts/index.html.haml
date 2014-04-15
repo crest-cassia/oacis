@@ -18,9 +18,9 @@
         %br
         (running/total)
       %th
-  %tbody
+  %tbody.sortable{data: {'sort-url' => _sort_hosts_url }}
     - @hosts.each do |host|
-      %tr
+      = content_tag_for :tr, host do
         %td= link_to(host.name, host)
         %td= host.hostname
         %td= host.user
@@ -40,3 +40,13 @@
 .form-actions
   %a.btn.btn-primary{href: new_host_path} New Host
 
+:javascript
+  $(function() {
+    $('.sortable').sortable({
+      axis: 'y',
+      update: function() {
+        $.post( $(this).data('sort-url'), $(this).sortable('serialize') );
+      }
+    });
+    $('.sortable').disableSelection();
+  });
