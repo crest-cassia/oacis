@@ -2,7 +2,7 @@ class SimulatorsController < ApplicationController
   # GET /simulators
   # GET /simulators.json
   def index
-    @simulators = Simulator.all
+    @simulators = Simulator.asc(:position).all
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @simulators }

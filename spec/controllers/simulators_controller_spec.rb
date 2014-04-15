@@ -42,11 +42,21 @@ describe SimulatorsController do
   end
 
   describe "GET index" do
+
     it "assigns all simulators as @simulators" do
       simulator = Simulator.create! valid_attributes
       get :index, {}, valid_session
       response.should be_success
       assigns(:simulators).should eq([simulator])
+    end
+
+    it "@simulators are sorted by the position" do
+      simulators = FactoryGirl.create_list(:simulator, 3)
+      simulators.first.update_attribute(:position, 2)
+      simulators.last.update_attribute(:position, 0)
+      sorted = simulators.sort_by {|sim| sim.position }
+      get :index, {}, valid_session
+      assigns(:simulators).should eq sorted
     end
   end
 
