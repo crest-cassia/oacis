@@ -12,6 +12,7 @@ gem 'therubyracer' # necessary to compile less
 gem "less-rails"   # necessary for bootstrap
 gem 'twitter-bootstrap-rails', '2.2.6'
 gem 'jquery-rails'
+gem 'jquery-ui-rails'
 gem 'jquery-datatables-rails'
 gem "d3-rails"
 gem "redcarpet"
