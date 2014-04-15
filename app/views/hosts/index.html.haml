@@ -39,13 +39,3 @@
 
 .form-actions
   %a.btn.btn-primary{href: new_host_path} New Host
-
-:javascript
-  $(function() {
-    $('.sortable').sortable({
-      axis: 'y',
-      update: function() {
-        $.post( $(this).data('sort-url'), $(this).sortable('serialize') );
-      }
-    });
-  });
