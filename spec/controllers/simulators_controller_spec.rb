@@ -374,4 +374,19 @@ describe SimulatorsController do
       @parsed_body["num_runs"].should be_a(Array)
     end
   end
+
+  describe "POST _sort" do
+
+    before(:each) do
+      FactoryGirl.create_list(:simulator, 3)
+    end
+
+    it "updates position of the simulators" do
+      simulators = Simulator.asc(:position).to_a
+      expect {
+        post :_sort, {simulator: simulators.reverse }
+        response.should be_success
+      }.to change { simulators.first.reload.position }.from(0).to(2)
+    end
+  end
 end

@@ -150,6 +150,9 @@ class SimulatorsController < ApplicationController
   end
 
   def _sort
+    params[:simulator].each_with_index do |sim_id, index|
+      Simulator.find(sim_id).timeless.update_attribute(:position, index)
+    end
     render nothing: true
   end
 end
