@@ -352,8 +352,8 @@ echo &quot;}&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
 </div>
 <a class="reference internal image-reference" href="_images/run_results.png"><img alt="_images/run_results.png" class="align-center" src="_images/run_results.png" style="width: 40%;" /></a>
 </div>
-<div class="section" id="id6">
-<h2>シミュレーターのバージョンを記録する<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="manage-simulator-version">
+<span id="id6"></span><h2>シミュレーターのバージョンを記録する<a class="headerlink" href="#manage-simulator-version" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">シミュレーションの実行時にどのバージョンのシミュレーターで実行したかOACISに記録をさせておくことができる。</div>
 <div class="line">RunとSimulatorのバージョンをひもづけて記録する事により、例えば、あるバージョンの実行結果の一括削除などの操作ができる様になる。</div>
@@ -451,7 +451,7 @@ echo &quot;}&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
 <div class="line">Simulatorの場合と同じように、実行日時や実行時間などの情報が保存され、結果はブラウザ経由で確認できる。</div>
 </div>
 <div class="line-block">
-<div class="line">またAnalyzer実行時に解析用のパラメータを指定して実行することもできる。</div>
+<div class="line">また、Analyzerは実行時に解析用のパラメータを指定して実行することもできる。</div>
 <div class="line">例えば、時系列データを解析するときに最初の何ステップを除外するか指定したい場合などに使える。</div>
 <div class="line">Analyzerの登録時にパラメータの定義を登録することができる。</div>
 </div>
@@ -518,12 +518,15 @@ plot &quot;_input/time_series.dat&quot; w l
 <td>解析時に指定するパラメータがあれば登録する。空でもよい。</td>
 </tr>
 <tr class="row-odd"><td>Command</td>
-<td>実行するコマンド</td>
+<td>Analyzerを実行するコマンド。</td>
 </tr>
-<tr class="row-even"><td>Auto Run</td>
+<tr class="row-even"><td>Pring version command</td>
+<td>Analyzerのバージョンを標準出力に出力するコマンド。</td>
+</tr>
+<tr class="row-odd"><td>Auto Run</td>
 <td>Runの終了後に解析が自動実行されるか指定する。</td>
 </tr>
-<tr class="row-odd"><td>Description</td>
+<tr class="row-even"><td>Description</td>
 <td>Analyzerに対する説明。入力は任意。</td>
 </tr>
 </tbody>
@@ -637,6 +640,24 @@ plot &quot;_input/time_series.dat&quot; w l
 <div class="line">yesの場合、ParameterSet内のすべてのRunが :finished または :failed になったときに自動実行される。</div>
 </div>
 </div>
+<div class="section" id="id8">
+<h3>Analyzerのバージョンを記録する<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">Analyzer実行時に、どのバージョンのAnalyzerを実行したかをanalysisとひもづけてOACISに記録させておく&gt;ことができる。</div>
+<div class="line">バージョンを記録することにより、例えば、あるバージョンのanalysisを一括削除などの操作ができる様になる。</div>
+</div>
+<div class="line-block">
+<div class="line">Analyzerのバージョンを保存するには、Analyzerのバージョンを出力させるコマンドをOACISに登録する。</div>
+<div class="line">例えば、</div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">&quot;v0.1.0&quot;</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">というコマンドでバージョン情報を出力する場合、このコマンドをAnalyzer登録時に&#8221;Print version command&#8221; というフィールドに入力する。</div>
+<div class="line">その他、登録できるコマンドの書式は、 <a class="reference internal" href="#manage-simulator-version"><em>シミュレーターのバージョンを記録する</em></a> を参照。</div>
+</div>
+</div>
 </div>
 </div>
 
@@ -658,11 +679,12 @@ plot &quot;_input/time_series.dat&quot; w l
 </li>
 <li><a class="reference internal" href="#id5">手動でジョブを実行する</a></li>
 <li><a class="reference internal" href="#mongodb">結果をMongoDB内に格納する</a></li>
-<li><a class="reference internal" href="#id6">シミュレーターのバージョンを記録する</a></li>
+<li><a class="reference internal" href="#manage-simulator-version">シミュレーターのバージョンを記録する</a></li>
 <li><a class="reference internal" href="#id7">プリプロセスの定義</a></li>
 <li><a class="reference internal" href="#analyzer">Analyzerの登録と実行</a><ul>
 <li><a class="reference internal" href="#run">Runに対する解析</a></li>
 <li><a class="reference internal" href="#parameterset">ParameterSetに対する解析</a></li>
+<li><a class="reference internal" href="#id8">Analyzerのバージョンを記録する</a></li>
 </ul>
 </li>
 </ul>
