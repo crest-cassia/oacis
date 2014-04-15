@@ -148,4 +148,8 @@ class SimulatorsController < ApplicationController
       format.html
     end
   end
+
+  def _sort
+    render nothing: true
+  end
 end
