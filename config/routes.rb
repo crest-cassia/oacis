@@ -49,7 +49,11 @@ AcmProto::Application.routes.draw do
     end
   end
 
-  resources :hosts
+  resources :hosts do
+    collection do
+      post "_sort" # for ajax, update order of the table
+    end
+  end
 
   root :to => "simulators#index"
 end

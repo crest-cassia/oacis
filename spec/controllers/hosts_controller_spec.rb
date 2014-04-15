@@ -154,4 +154,19 @@ describe HostsController do
       end
     end
   end
+
+  describe "POST _sort" do
+
+    before(:each) do
+      FactoryGirl.create_list(:host, 3)
+    end
+
+    it "updates position of the simulators" do
+      hosts = Host.asc(:position).to_a
+      expect {
+        post :_sort, {host: hosts.reverse }
+        response.should be_success
+      }.to change { hosts.first.reload.position }.from(0).to(2)
+    end
+  end
 end

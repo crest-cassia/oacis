@@ -91,4 +91,11 @@ class HostsController < ApplicationController
       end
     end
   end
+
+  def _sort
+    params[:host].each_with_index do |host_id, index|
+      Host.find(host_id).timeless.update_attribute(:position, index)
+    end
+    render nothing: true
+  end
 end
