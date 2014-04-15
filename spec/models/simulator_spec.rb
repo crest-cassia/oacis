@@ -99,16 +99,13 @@ describe Simulator do
 
   describe "'position' field" do
 
-    context "when initialized" do
+    before(:each) do
+      FactoryGirl.create_list(:simulator, 2)
+    end
 
-      before(:each) do
-        FactoryGirl.create_list(:simulator, 2)
-      end
-
-      it "has the largest number within existing simulator" do
-        Simulator.create!(@valid_fields.update(name: 'simulatorC')).position.should eq 2
-        Simulator.all.map(&:position).should =~ [0,1,2]
-      end
+    it "has the largest number within existing simulator" do
+      Simulator.create!(@valid_fields.update(name: 'simulatorC')).position.should eq 2
+      Simulator.all.map(&:position).should =~ [0,1,2]
     end
   end
 

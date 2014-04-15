@@ -337,16 +337,13 @@ EOS
 
   describe "'position' field" do
 
-    context "when initialized" do
+    before(:each) do
+      FactoryGirl.create_list(:host, 2)
+    end
 
-      before(:each) do
-        FactoryGirl.create_list(:host, 2)
-      end
-
-      it "has the largest number within existing hosts" do
-        Host.create!(name: 'h1', hostname: 'localhost', user: 'foo').position.should eq 2
-        Host.all.map(&:position).should =~ [0,1,2]
-      end
+    it "the largest number within existing hosts is assigned" do
+      Host.create!(name: 'h1', hostname: 'localhost', user: 'foo').position.should eq 2
+      Host.all.map(&:position).should =~ [0,1,2]
     end
   end
 end
