@@ -341,7 +341,7 @@ EOS
       FactoryGirl.create_list(:host, 2)
     end
 
-    it "the largest number within existing hosts is assigned" do
+    it "the largest number within existing hosts is assigned when created" do
       Host.create!(name: 'h1', hostname: 'localhost', user: 'foo').position.should eq 2
       Host.all.map(&:position).should =~ [0,1,2]
     end

@@ -103,7 +103,7 @@ describe Simulator do
       FactoryGirl.create_list(:simulator, 2)
     end
 
-    it "has the largest number within existing simulator" do
+    it "the largest number within existing simulators is assigned when created" do
       Simulator.create!(@valid_fields.update(name: 'simulatorC')).position.should eq 2
       Simulator.all.map(&:position).should =~ [0,1,2]
     end
