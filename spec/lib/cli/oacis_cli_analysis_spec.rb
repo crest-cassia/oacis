@@ -171,7 +171,9 @@ describe OacisCli do
     context "when analyses exists" do
 
       before(:each) do
-        invoke_create_analyses(:on_run, {first_run_only: "first_run_only", input: "anz_parameters.json"})
+        at_temp_dir {
+          invoke_create_analyses(:on_run, {first_run_only: "first_run_only", input: "anz_parameters.json"})
+        }
       end
 
       it "iterates creation of analyses on runs without same analyzer and analyzers parameter" do
