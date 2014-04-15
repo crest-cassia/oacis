@@ -2,7 +2,7 @@ class HostsController < ApplicationController
   # GET /hosts
   # GET /hosts.json
   def index
-    @hosts = Host.all
+    @hosts = Host.asc(:position).all
 
     respond_to do |format|
       format.html # index.html.erb

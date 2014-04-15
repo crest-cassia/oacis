@@ -26,6 +26,12 @@ describe HostsController do
       get :index, {}, valid_session
       assigns(:hosts).should eq([host])
     end
+
+    it "@hosts are sorted by position" do
+      FactoryGirl.create_list(:host, 3)
+      get :index, {}, valid_session
+      assigns(:hosts).map(&:position).should eq [0,1,2]
+    end
   end
 
   describe "GET show" do
