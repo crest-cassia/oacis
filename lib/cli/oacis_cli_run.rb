@@ -148,7 +148,8 @@ class OacisCli < Thor
 
     if yes?("Destroy #{runs.count} runs?")
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
-      runs.each do |run|
+      # no_timeout enables destruction of 10000 or more runs
+      runs.no_timeout.each do |run|
         run.destroy
         progressbar.increment
       end
@@ -181,7 +182,8 @@ class OacisCli < Thor
 
     if yes?("Replace #{runs.count} runs with new ones?")
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
-      runs.each do |run|
+      # no_timeout enables replacement of 10000 or more runs
+      runs.no_timeout.each do |run|
         run_attr = { submitted_to: run.submitted_to,
                      mpi_procs: run.mpi_procs,
                      omp_threads: run.omp_threads,
