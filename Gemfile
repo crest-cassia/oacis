@@ -10,7 +10,7 @@ gem "net-sftp"
 gem "haml-rails"
 gem "sass-rails"
 gem 'therubyracer' # necessary to compile less
-gem "less-rails"   # necessary for bootstrap
+gem "less-rails", '2.3.3' # necessary for bootstrap. 2.3.3 is required. See http://stackoverflow.com/questions/19371695
 gem 'twitter-bootstrap-rails', '2.2.6'
 gem 'jquery-rails'
 gem 'jquery-datatables-rails'
