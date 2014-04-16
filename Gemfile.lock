@@ -68,11 +68,11 @@ GEM
       railties (>= 3.0, < 5.0)
       thor (>= 0.14, < 2.0)
     json (1.8.1)
-    less (2.5.0)
-      commonjs (~> 0.2.7)
-    less-rails (2.5.0)
+    less (2.3.3)
+      commonjs (~> 0.2.6)
+    less-rails (2.3.3)
       actionpack (>= 3.1)
-      less (~> 2.5.0)
+      less (~> 2.3.1)
     libv8 (3.16.14.3)
     mail (2.5.4)
       mime-types (~> 1.16)
@@ -198,7 +198,7 @@ DEPENDENCIES
   haml-rails
   jquery-datatables-rails
   jquery-rails
-  less-rails
+  less-rails (= 2.3.3)
   mongoid
   mongoid-rspec
   net-sftp
