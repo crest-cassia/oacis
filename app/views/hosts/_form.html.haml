@@ -76,7 +76,14 @@
   .form-actions
     = f.submit('Save', class: 'btn btn-primary')
     = link_to('Cancel', (@host.persisted? ? @host : hosts_path), class: 'btn')
-    = link_to_function 'Load default template',
-                       "if(confirm('Are you sure to load default template?')) $('textarea#host_template').text(#{JobScriptUtil::DEFAULT_TEMPLATE.to_json})",
-                       class: 'btn btn-warning'
+    %a{class: 'btn btn-warning', id: 'load_default_template', data: JobScriptUtil::DEFAULT_TEMPLATE} Load default template
+
+:javascript
+  $(function(){
+    $('a#load_default_template').on('click', function(){
+      if(confirm('Are you sure to load default template?')){
+        $('textarea#host_template').text($('a#load_default_template').attr('data'));
+      }
+    });
+  });
 
