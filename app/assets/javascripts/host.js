@@ -1,11 +1,11 @@
 $(function() {
-  var reload_template;
+  var load_template;
 
-  reload_template = function (default_template) {
+  load_template = function (default_template) {
     var template = $('textarea#host_template');
     template.text(default_template);
   };
 
-  window.reload_template = reload_template;
+  window.load_template = load_template;
 });
 
