@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>基本的な使い方 &mdash; OACIS 0.0.1 documentation</title>
+    <title>基本的な使い方 &mdash; OACIS 1.9.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.0.1',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="OACIS 0.0.1 documentation" href="index.html" />
+    <link rel="top" title="OACIS 1.9.0 documentation" href="index.html" />
     <link rel="next" title="高度な使い方" href="advanced_usage.html" />
     <link rel="prev" title="インストール" href="installation.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="installation.html" title="インストール"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 1.9.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -69,7 +69,8 @@
 <div class="line">このチュートリアルでは、２つの浮動小数点型のパラメータ&#8221;p1&#8221;, &#8220;p2&#8221;を持つとする。</div>
 <div class="line">このシミュレータは以下の様にパラメータと乱数の種を引数で受け取り実行できるように、各実行ホストでビルドをしておく。</div>
 </div>
-<div class="highlight-python"><pre>~/path/to/simulator.out {p1} {p2} {seed}</pre>
+<div class="highlight-python"><div class="highlight"><pre>~/path/to/simulator.out {p1} {p2} {seed}
+</pre></div>
 </div>
 <p>パラメータをシミュレータに渡す方法として、JSONで渡す方法もある。Simulator登録の項目を参照の事。</p>
 </div>
@@ -90,8 +91,8 @@
 </div>
 <table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="82%" />
+<col width="12%" />
+<col width="88%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">フィールド</th>
@@ -120,22 +121,25 @@
 <tr class="row-even"><td>Work base dir</td>
 <td>ワークディレクトリとして利用するホスト上のパス。ここで指定したパス以下でジョブが実行される。</td>
 </tr>
-<tr class="row-odd"><td>Max num jobs</td>
+<tr class="row-odd"><td>Mounted work base dir</td>
+<td>localhostでジョブを実行する場合やホームディレクトリがNFSで共有されている場合など、直接ワークディレクトリが参照できる場合、ここで指定したディレクトリから直接ジョブの取り込みが行われパフォーマンスが向上する。</td>
+</tr>
+<tr class="row-even"><td>Max num jobs</td>
 <td>このホストに投入可能なジョブの最大数。</td>
 </tr>
-<tr class="row-even"><td>MPI processes</td>
+<tr class="row-odd"><td>MPI processes</td>
 <td>MPIプロセス数の最小値と最大値。Runを作成するときにここで指定した範囲外の値を指定しようとするとエラーになる。</td>
 </tr>
-<tr class="row-odd"><td>OMP threads</td>
+<tr class="row-even"><td>OMP threads</td>
 <td>OMPスレッド数の最小値と最大値。Runを作成するときにここで指定した範囲外の値を指定しようとするとエラーになる。</td>
 </tr>
-<tr class="row-even"><td>Template</td>
+<tr class="row-odd"><td>Template</td>
 <td>ジョブ実行時に作成されるスクリプト（ジョブスクリプトと呼ぶ）のテンプレート。&lt;%= ... %&gt; の部分が変数展開される。</td>
 </tr>
-<tr class="row-odd"><td>Definition of Host Parameters</td>
+<tr class="row-even"><td>Definition of Host Parameters</td>
 <td>テンプレートで使用される変数（ホストパラメータと呼ぶ）の定義。変数名とデフォルト値、入力フォーマット（正規表現で指定）を指定する。</td>
 </tr>
-<tr class="row-even"><td>Executable simulators</td>
+<tr class="row-odd"><td>Executable simulators</td>
 <td>実行可能なシミュレータをチェックボックスで指定。</td>
 </tr>
 </tbody>
@@ -150,6 +154,10 @@
 <li>User: &lt;自分のユーザー名&gt;</li>
 <li>Work base dir: &lt;任意の新規作成したパス&gt;</li>
 </ul>
+<div class="line-block">
+<div class="line">ホストの登録後、一覧画面で登録したホストを確認する事ができる。</div>
+<div class="line">一覧画面の表の各行はドラッグして移動する事ができ、見やすい順番に整理する事ができる。</div>
+</div>
 </div>
 <div class="section" id="simulator">
 <h2>Simulator登録<a class="headerlink" href="#simulator" title="Permalink to this headline">¶</a></h2>
@@ -186,7 +194,7 @@
 </li>
 <li><dl class="first docutils">
 <dt>JSON形式の場合、実行時に次のような形式のJSONファイルを <em>_input.json</em> というファイル名でOACISが実行時に配置する。シミュレータはカレントディレクトリの <em>_input.json</em> パースするように実装する必要がある。</dt>
-<dd><div class="first highlight-json"><div class="highlight"><pre><span class="p">{</span><span class="nt">&quot;param1&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span><span class="nt">&quot;param2&quot;</span><span class="p">:</span><span class="mf">3.0</span><span class="p">,</span><span class="nt">&quot;_seed&quot;</span><span class="p">:</span><span class="mi">12345</span><span class="p">}</span>
+<dd><div class="first highlight-javascript"><div class="highlight"><pre><span class="p">{</span><span class="s2">&quot;param1&quot;</span><span class="o">:</span><span class="mi">100</span><span class="p">,</span><span class="s2">&quot;param2&quot;</span><span class="o">:</span><span class="mf">3.0</span><span class="p">,</span><span class="s2">&quot;_seed&quot;</span><span class="o">:</span><span class="mi">12345</span><span class="p">}</span>
 </pre></div>
 </div>
 <ul class="last">
@@ -259,21 +267,24 @@
 <td>ジョブの前に実行されるプリプロセスを記述するスクリプト。空の場合はプリプロセスは実行されない。</td>
 </tr>
 <tr class="row-odd"><td>Command</td>
-<td>シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. <em>~/path/to/simulator.out</em>）</td>
+<td>シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. <em>~/path/to/simulator.out</em> ）</td>
 </tr>
-<tr class="row-even"><td>Input type</td>
+<tr class="row-even"><td>Pirnt version command</td>
+<td>シミュレータのversionを標準出力に出力するコマンド。（例. <em>~/path/to/simulator.out &#8211;version</em> ）</td>
+</tr>
+<tr class="row-odd"><td>Input type</td>
 <td>パラメータを引数で渡すか、JSONで渡すか指定する。</td>
 </tr>
-<tr class="row-odd"><td>Support mpi</td>
+<tr class="row-even"><td>Support mpi</td>
 <td>シミュレータがMPIで実行されるか。チェックを入れた場合、mpiexecコマンド付きで実行される。</td>
 </tr>
-<tr class="row-even"><td>Support omp</td>
+<tr class="row-odd"><td>Support omp</td>
 <td>シミュレータがOpenMPで並列化されているか。チェックを入れた場合、環境変数OMP_NUM_THREADSで並列数を指定して実行される。</td>
 </tr>
-<tr class="row-odd"><td>Description</td>
+<tr class="row-even"><td>Description</td>
 <td>シミュレータの説明を入力する。（markdownフォーマット[<a class="reference external" href="http://daringfireball.net/projects/markdown/syntax">http://daringfireball.net/projects/markdown/syntax</a>]で入力できる。）</td>
 </tr>
-<tr class="row-even"><td>Executable_on</td>
+<tr class="row-odd"><td>Executable_on</td>
 <td>実行可能Hostを指定する。</td>
 </tr>
 </tbody>
@@ -287,6 +298,10 @@
 <li>Command: ~/path/to/simulator.out</li>
 <li>Executable_on: localhostにチェック</li>
 </ul>
+<div class="line-block">
+<div class="line">シミュレータの登録後、一覧画面で登録したシミュレータを確認する事ができる。</div>
+<div class="line">一覧画面の表の各行はドラッグして移動する事ができ、見やすい順番に整理する事ができる。</div>
+</div>
 </div>
 <div class="section" id="parameterset">
 <h2>ParameterSet登録<a class="headerlink" href="#parameterset" title="Permalink to this headline">¶</a></h2>
@@ -423,12 +438,12 @@
         <li class="right" >
           <a href="installation.html" title="インストール"
              >previous</a> |</li>
-        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 1.9.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+        &copy; Copyright 2013, 2014, RIKEN AICS.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

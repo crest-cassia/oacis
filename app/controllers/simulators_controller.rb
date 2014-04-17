@@ -2,7 +2,7 @@ class SimulatorsController < ApplicationController
   # GET /simulators
   # GET /simulators.json
   def index
-    @simulators = Simulator.all
+    @simulators = Simulator.asc(:position).all
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @simulators }
@@ -147,5 +147,12 @@ class SimulatorsController < ApplicationController
     respond_to do |format|
       format.html
     end
+  end
+
+  def _sort
+    params[:simulator].each_with_index do |sim_id, index|
+      Simulator.find(sim_id).timeless.update_attribute(:position, index)
+    end
+    render nothing: true
   end
 end

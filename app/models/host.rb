@@ -8,12 +8,14 @@ class Host
   field :ssh_key, type: String, default: '~/.ssh/id_rsa'
   field :scheduler_type, type: String, default: "none"
   field :work_base_dir, type: String, default: '~'
+  field :mounted_work_base_dir, type: String, default: ""
   field :max_num_jobs, type: Integer, default: 1
   field :min_mpi_procs, type: Integer, default: 1
   field :max_mpi_procs, type: Integer, default: 1
   field :min_omp_threads, type: Integer, default: 1
   field :max_omp_threads, type: Integer, default: 1
   field :template, type: String, default: JobScriptUtil::DEFAULT_TEMPLATE
+  field :position, type: Integer # position in the table. start from zero
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
   embeds_many :host_parameter_definitions
@@ -35,6 +37,7 @@ class Host
   validate :min_is_not_larger_than_max
   validate :template_conform_to_host_parameter_definitions
 
+  before_create :set_position
   before_destroy :validate_destroyable
 
   CONNECTION_EXCEPTIONS = [
@@ -42,7 +45,8 @@ class Host
     Errno::ENETUNREACH,
     SocketError,
     Net::SSH::Exception,
-    OpenSSL::PKey::RSAError
+    OpenSSL::PKey::RSAError,
+    Timeout::Error
   ]
 
   public
@@ -63,7 +67,7 @@ class Host
   def status
     ret = nil
     start_ssh do |ssh|
-      wrapper = SchedulerWrapper.new(self.scheduler_type)
+      wrapper = SchedulerWrapper.new(self)
       cmd = wrapper.all_status_command
       ret = SSHUtil.execute(ssh, cmd)
     end
@@ -162,4 +166,9 @@ class Host
       return false
     end
   end
+
+  def set_position
+    self.position = Host.count
+  end
 end
+

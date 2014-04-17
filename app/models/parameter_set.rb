@@ -3,6 +3,7 @@ class ParameterSet
   include Mongoid::Timestamps
   field :v, type: Hash
   field :runs_status_count_cache, type: Hash
+  field :progress_rate_cache, type: Integer # used for sorting by progress. updated at the same time with the run_status_count_cache
   index({ v: 1 }, { name: "v_index" })
   belongs_to :simulator, autosave: false
   has_many :runs, dependent: :destroy
@@ -40,6 +41,7 @@ class ParameterSet
     # I do not know why but reload is necessary. Otherwise, _cache is always nil.
     reload
     if runs_status_count_cache
+      update_progress_rate_cache unless progress_rate_cache
       return Hash[ runs_status_count_cache.map {|key,val| [key.to_sym, val]} ]
     end
 
@@ -60,6 +62,9 @@ class ParameterSet
     # disable automatic time-stamp update when updating cache
     # See http://mongoid.org/en/mongoid/docs/extras.html#timestamps
     timeless.update_attribute(:runs_status_count_cache, counts)
+
+    update_progress_rate_cache
+
     counts
   end
 
@@ -101,5 +106,14 @@ class ParameterSet
     if self.simulator and File.directory?(self.dir)
       FileUtils.rm_r(self.dir)
     end
+  end
+
+  def update_progress_rate_cache
+    # make it negative in order to show all-finished-ps on top when sorted in ascending order
+    counts = Hash[ runs_status_count_cache.map {|key,val| [key.to_sym, val]} ]
+    total = counts.inject(0) {|sum, v| sum += v[1]}
+    rate = 0
+    rate = - (counts[:finished]*1000000/total).to_i - (counts[:failed]*10000/total).to_i - (counts[:running]*100/total).to_i  if total > 0
+    timeless.update_attribute(:progress_rate_cache, rate)
   end
 end

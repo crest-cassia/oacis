@@ -18,7 +18,7 @@ class ParameterSetsListDatatable
   def self.header(simulator)
     header = [ '<th style="min-width: 18px; width: 1%"></th>',
                '<th class="span1" style="min-width: 150px;">Progress</th>',
-               '<th class="span1" style="min-width: 50px;">ID</th>',
+               '<th class="span1" style="min-width: 50px;">ParamSetID</th>',
                '<th class="span1">Updated_at</th>'
              ]
     header += simulator.parameter_definitions.map do |pd|
@@ -30,7 +30,7 @@ class ParameterSetsListDatatable
 
 private
   def sort_by
-    ["id", "id", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
+    ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
   end
 
   def data
@@ -39,7 +39,7 @@ private
       tmp << @view.image_tag("/assets/expand.png", parameter_set_id: param.id.to_s, align: "center", state: "close", class: "treebtn")
       counts = param.runs_status_count
       counts.delete(:cancelled)
-      progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:running], counts[:failed] )
+      progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running] )
       tmp << @view.raw(progress)
       tmp << "<tt>"+@view.link_to( @view.shortened_id(param.id), @view.parameter_set_path(param) )+"</tt>"
       tmp << @view.distance_to_now_in_words(param.updated_at)

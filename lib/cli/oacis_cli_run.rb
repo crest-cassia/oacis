@@ -68,7 +68,8 @@ class OacisCli < Thor
     end
 
     runs = []
-    parameter_sets.each_with_index.map do |ps, idx|
+    # no_timeout enables creation of 10000 or more runs
+    parameter_sets.no_timeout.each_with_index.map do |ps, idx|
       sim = ps.simulator
       mpi_procs = sim.support_mpi ? job_parameters["mpi_procs"] : 1
       omp_threads = sim.support_omp ? job_parameters["omp_threads"] : 1
@@ -116,7 +117,7 @@ class OacisCli < Thor
     runs = get_runs(options[:run_ids])
     counts = {total: runs.count}
     [:created,:submitted,:running,:failed,:finished].each do |status|
-      counts[status] = runs.count {|run| run.status == status}
+      counts[status] = runs.where(status: status).count
     end
     $stdout.puts JSON.pretty_generate(counts)
   end
@@ -147,7 +148,8 @@ class OacisCli < Thor
 
     if yes?("Destroy #{runs.count} runs?")
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
-      runs.each do |run|
+      # no_timeout enables destruction of 10000 or more runs
+      runs.no_timeout.each do |run|
         run.destroy
         progressbar.increment
       end
@@ -180,7 +182,8 @@ class OacisCli < Thor
 
     if yes?("Replace #{runs.count} runs with new ones?")
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
-      runs.each do |run|
+      # no_timeout enables replacement of 10000 or more runs
+      runs.no_timeout.each do |run|
         run_attr = { submitted_to: run.submitted_to,
                      mpi_procs: run.mpi_procs,
                      omp_threads: run.omp_threads,

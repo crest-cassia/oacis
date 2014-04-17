@@ -12,6 +12,7 @@ describe AnalyzerRunner do
     @arn = @run.analyses.first
     @azr = @arn.analyzer
     @azr.update_attribute(:command, 'echo hello')
+    @azr.update_attribute(:print_version_command, 'echo "v0.1.0"')
 
     @logger = Logger.new($stderr)
   end
@@ -166,6 +167,51 @@ describe AnalyzerRunner do
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
         status[:result]["xxx"].should eq(0.1)
         status[:result]["yyy"].should eq(12345)
+      end
+
+      it "updates result of Analysis when result is a Float" do
+        result = 0.12345
+        output_json = File.join(@work_dir, '_output.json')
+        File.open(output_json, 'w') {|io| io.puts result}
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:result].should eq({"result"=>result})
+      end
+
+      it "updates result of Analysis when result is a Boolean" do
+        result = false
+        output_json = File.join(@work_dir, '_output.json')
+        File.open(output_json, 'w') {|io| io.puts result.to_s}
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:result].should eq({"result"=>result})
+      end
+
+      it "updates result of Analysis when result is a String" do
+        result = "0.12345"
+        output_json = File.join(@work_dir, '_output.json')
+        File.open(output_json, 'w') {|io| io.puts "\"#{result}\""}
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:result].should eq({"result"=>result})
+      end
+ 
+      it "updates result of Analysis when result is a Array" do
+        result = [1,2,3]
+        output_json = File.join(@work_dir, '_output.json')
+        File.open(output_json, 'w') {|io| io.puts result.to_json}
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:result].should eq({"result"=>result})
+      end
+
+      it "write '_version.txt'" do
+        status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        version_text = '_version.txt'
+        File.exist?( File.join(@work_dir, version_text) ).should be_true
+        version = File.open(File.join(@work_dir, version_text) ).read.chomp
+        version.should eq("v0.1.0")
+      end
+
+      it "update analyzer_version if print_version_command exists" do
+        status= AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        status[:analyzer_version].should eq("v0.1.0")
       end
     end
 

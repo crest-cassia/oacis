@@ -15,5 +15,12 @@ namespace :db do
       end
       progressbar.increment
     end
+
+    q = Run.where(priority: nil)
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |run|
+      run.timeless.update_attribute(:priority, 1)
+      progressbar.increment
+    end
   end
 end

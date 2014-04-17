@@ -4,14 +4,14 @@ module SSHUtil
     rpath = expand_remote_home_path(ssh, remote_path)
     sftp = ssh.sftp
     sftp.connect! if sftp.closed?
-    sftp.download!(rpath, local_path)
+    sftp.download!(rpath, local_path.to_s) # .to_s is necessary for Ruby2.1.0. See https://github.com/crest-cassia/cassia/pull/124
   end
 
   def self.download_recursive(ssh, remote_path, local_path)
     rpath = expand_remote_home_path(ssh, remote_path)
     sftp = ssh.sftp
     sftp.connect! if sftp.closed?
-    sftp.download!(rpath, local_path, {recursive: true})
+    sftp.download!(rpath, local_path.to_s, {recursive: true}) # .to_s is necessary for Ruby2.1.0. See https://github.com/crest-cassia/cassia/pull/124
   end
 
   def self.upload(ssh, local_path, remote_path)

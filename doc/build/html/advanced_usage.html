@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>高度な使い方 &mdash; OACIS 0.0.1 documentation</title>
+    <title>高度な使い方 &mdash; OACIS 1.9.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.0.1',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="OACIS 0.0.1 documentation" href="index.html" />
+    <link rel="top" title="OACIS 1.9.0 documentation" href="index.html" />
     <link rel="next" title="Command Line Interface(CLI)の使い方" href="cli.html" />
     <link rel="prev" title="基本的な使い方" href="basic_usage.html" /> 
   </head>
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="basic_usage.html" title="基本的な使い方"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 1.9.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -352,8 +352,8 @@ echo &quot;}&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
 </div>
 <a class="reference internal image-reference" href="_images/run_results.png"><img alt="_images/run_results.png" class="align-center" src="_images/run_results.png" style="width: 40%;" /></a>
 </div>
-<div class="section" id="id6">
-<h2>シミュレーターのバージョンを記録する<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="manage-simulator-version">
+<span id="id6"></span><h2>シミュレーターのバージョンを記録する<a class="headerlink" href="#manage-simulator-version" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">シミュレーションの実行時にどのバージョンのシミュレーターで実行したかOACISに記録をさせておくことができる。</div>
 <div class="line">RunとSimulatorのバージョンをひもづけて記録する事により、例えば、あるバージョンの実行結果の一括削除などの操作ができる様になる。</div>
@@ -451,7 +451,7 @@ echo &quot;}&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
 <div class="line">Simulatorの場合と同じように、実行日時や実行時間などの情報が保存され、結果はブラウザ経由で確認できる。</div>
 </div>
 <div class="line-block">
-<div class="line">またAnalyzer実行時に解析用のパラメータを指定して実行することもできる。</div>
+<div class="line">また、Analyzerは実行時に解析用のパラメータを指定して実行することもできる。</div>
 <div class="line">例えば、時系列データを解析するときに最初の何ステップを除外するか指定したい場合などに使える。</div>
 <div class="line">Analyzerの登録時にパラメータの定義を登録することができる。</div>
 </div>
@@ -518,12 +518,15 @@ plot &quot;_input/time_series.dat&quot; w l
 <td>解析時に指定するパラメータがあれば登録する。空でもよい。</td>
 </tr>
 <tr class="row-odd"><td>Command</td>
-<td>実行するコマンド</td>
+<td>Analyzerを実行するコマンド。</td>
 </tr>
-<tr class="row-even"><td>Auto Run</td>
+<tr class="row-even"><td>Pring version command</td>
+<td>Analyzerのバージョンを標準出力に出力するコマンド。</td>
+</tr>
+<tr class="row-odd"><td>Auto Run</td>
 <td>Runの終了後に解析が自動実行されるか指定する。</td>
 </tr>
-<tr class="row-odd"><td>Description</td>
+<tr class="row-even"><td>Description</td>
 <td>Analyzerに対する説明。入力は任意。</td>
 </tr>
 </tbody>
@@ -555,20 +558,20 @@ plot &quot;_input/time_series.dat&quot; w l
 <div class="line">Runに対する解析の場合、 <cite>_input.json</cite> のフォーマットは以下の通りである。</div>
 <div class="line">&#8220;analysis_parameters&#8221;, &#8220;simulation_parameters&#8221;, &#8220;result&#8221; はそれぞれ解析パラメータ、シミュレーションパラメータ、Runの結果を表す。</div>
 </div>
-<div class="highlight-json"><div class="highlight"><pre><span class="p">{</span>
- <span class="nt">&quot;analysis_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
-   <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-   <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mi">2</span>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+ <span class="s2">&quot;analysis_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;x&quot;</span><span class="o">:</span> <span class="mf">0.1</span><span class="p">,</span>
+   <span class="s2">&quot;y&quot;</span><span class="o">:</span> <span class="mi">2</span>
  <span class="p">},</span>
- <span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
-   <span class="nt">&quot;L&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
-   <span class="nt">&quot;T&quot;</span><span class="p">:</span> <span class="mf">0.5</span>
+ <span class="s2">&quot;simulation_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;L&quot;</span><span class="o">:</span> <span class="mi">32</span><span class="p">,</span>
+   <span class="s2">&quot;T&quot;</span><span class="o">:</span> <span class="mf">0.5</span>
  <span class="p">},</span>
- <span class="nt">&quot;result&quot;</span><span class="p">:</span> <span class="p">{</span>
-   <span class="nt">&quot;magnetization&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
-   <span class="nt">&quot;energy&quot;</span><span class="p">:</span> <span class="mf">24.5</span><span class="p">,</span>
-   <span class="nt">&quot;another_analysis&quot;</span><span class="p">:</span> <span class="p">{</span>
-       <span class="nt">&quot;maximum_energy&quot;</span><span class="p">:</span> <span class="mf">28.1</span>
+ <span class="s2">&quot;result&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.5</span><span class="p">,</span>
+   <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">24.5</span><span class="p">,</span>
+   <span class="s2">&quot;another_analysis&quot;</span><span class="o">:</span> <span class="p">{</span>
+       <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">28.1</span>
    <span class="p">}</span>
  <span class="p">}</span>
 <span class="p">}</span>
@@ -597,35 +600,35 @@ plot &quot;_input/time_series.dat&quot; w l
 <div class="line-block">
 <div class="line"><cite>_input.json</cite> の形式は以下の通り</div>
 </div>
-<div class="highlight-json"><div class="highlight"><pre><span class="p">{</span>
- <span class="nt">&quot;analysis_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
-   <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-   <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mi">2</span>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+ <span class="s2">&quot;analysis_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;x&quot;</span><span class="o">:</span> <span class="mf">0.1</span><span class="p">,</span>
+   <span class="s2">&quot;y&quot;</span><span class="o">:</span> <span class="mi">2</span>
  <span class="p">},</span>
- <span class="nt">&quot;simulation_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
-   <span class="nt">&quot;L&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
-   <span class="nt">&quot;T&quot;</span><span class="p">:</span> <span class="mf">0.5</span>
+ <span class="s2">&quot;simulation_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;L&quot;</span><span class="o">:</span> <span class="mi">32</span><span class="p">,</span>
+   <span class="s2">&quot;T&quot;</span><span class="o">:</span> <span class="mf">0.5</span>
  <span class="p">},</span>
- <span class="nt">&quot;result&quot;</span><span class="p">:</span> <span class="p">{</span>
-   <span class="nt">&quot;run_id1&quot;</span><span class="p">:</span> <span class="p">{</span>
-     <span class="nt">&quot;magnetization&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
-     <span class="nt">&quot;energy&quot;</span><span class="p">:</span> <span class="mf">24.5</span><span class="p">,</span>
-     <span class="nt">&quot;analysis1&quot;</span><span class="p">:</span> <span class="p">{</span>
-         <span class="nt">&quot;maximum_energy&quot;</span><span class="p">:</span> <span class="mf">28.1</span>
+ <span class="s2">&quot;result&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;run_id1&quot;</span><span class="o">:</span> <span class="p">{</span>
+     <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.5</span><span class="p">,</span>
+     <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">24.5</span><span class="p">,</span>
+     <span class="s2">&quot;analysis1&quot;</span><span class="o">:</span> <span class="p">{</span>
+         <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">28.1</span>
      <span class="p">}</span>
    <span class="p">},</span>
-   <span class="nt">&quot;run_id2&quot;</span><span class="p">:</span> <span class="p">{</span>
-     <span class="nt">&quot;magnetization&quot;</span><span class="p">:</span> <span class="mf">0.32</span><span class="p">,</span>
-     <span class="nt">&quot;energy&quot;</span><span class="p">:</span> <span class="mf">25.1</span><span class="p">,</span>
-     <span class="nt">&quot;analysis1&quot;</span><span class="p">:</span> <span class="p">{</span>
-         <span class="nt">&quot;maximum_energy&quot;</span><span class="p">:</span> <span class="mf">27.9</span>
+   <span class="s2">&quot;run_id2&quot;</span><span class="o">:</span> <span class="p">{</span>
+     <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.32</span><span class="p">,</span>
+     <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">25.1</span><span class="p">,</span>
+     <span class="s2">&quot;analysis1&quot;</span><span class="o">:</span> <span class="p">{</span>
+         <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">27.9</span>
      <span class="p">}</span>
    <span class="p">},</span>
-   <span class="nt">&quot;run_id3&quot;</span><span class="p">:</span> <span class="p">{</span>
-     <span class="nt">&quot;magnetization&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
-     <span class="nt">&quot;energy&quot;</span><span class="p">:</span> <span class="mf">20.7</span><span class="p">,</span>
-     <span class="nt">&quot;analysis1&quot;</span><span class="p">:</span> <span class="p">{</span>
-         <span class="nt">&quot;maximum_energy&quot;</span><span class="p">:</span> <span class="mf">26.8</span>
+   <span class="s2">&quot;run_id3&quot;</span><span class="o">:</span> <span class="p">{</span>
+     <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.2</span><span class="p">,</span>
+     <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">20.7</span><span class="p">,</span>
+     <span class="s2">&quot;analysis1&quot;</span><span class="o">:</span> <span class="p">{</span>
+         <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">26.8</span>
      <span class="p">}</span>
    <span class="p">}</span>
  <span class="p">}</span>
@@ -635,6 +638,24 @@ plot &quot;_input/time_series.dat&quot; w l
 <div class="line-block">
 <div class="line">ParaemterSetに対する解析の場合、Auto Runのフラグはyes, noの２択から選択可能である。</div>
 <div class="line">yesの場合、ParameterSet内のすべてのRunが :finished または :failed になったときに自動実行される。</div>
+</div>
+</div>
+<div class="section" id="id8">
+<h3>Analyzerのバージョンを記録する<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">Analyzer実行時に、どのバージョンのAnalyzerを実行したかをanalysisとひもづけてOACISに記録させておくことができる。</div>
+<div class="line">バージョンを記録することにより、例えば、あるバージョンのanalysisを一括削除などの操作ができる様になる。</div>
+</div>
+<div class="line-block">
+<div class="line">Analyzerのバージョンを保存するには、Analyzerのバージョンを出力させるコマンドをOACISに登録する。</div>
+<div class="line">例えば、</div>
+</div>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">&quot;v0.1.0&quot;</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">というコマンドでバージョン情報を出力する場合、このコマンドをAnalyzer登録時に&#8221;Print version command&#8221; というフィールドに入力する。</div>
+<div class="line">その他、登録できるコマンドの書式は、 <a class="reference internal" href="#manage-simulator-version"><em>シミュレーターのバージョンを記録する</em></a> を参照。</div>
 </div>
 </div>
 </div>
@@ -658,11 +679,12 @@ plot &quot;_input/time_series.dat&quot; w l
 </li>
 <li><a class="reference internal" href="#id5">手動でジョブを実行する</a></li>
 <li><a class="reference internal" href="#mongodb">結果をMongoDB内に格納する</a></li>
-<li><a class="reference internal" href="#id6">シミュレーターのバージョンを記録する</a></li>
+<li><a class="reference internal" href="#manage-simulator-version">シミュレーターのバージョンを記録する</a></li>
 <li><a class="reference internal" href="#id7">プリプロセスの定義</a></li>
 <li><a class="reference internal" href="#analyzer">Analyzerの登録と実行</a><ul>
 <li><a class="reference internal" href="#run">Runに対する解析</a></li>
 <li><a class="reference internal" href="#parameterset">ParameterSetに対する解析</a></li>
+<li><a class="reference internal" href="#id8">Analyzerのバージョンを記録する</a></li>
 </ul>
 </li>
 </ul>
@@ -709,12 +731,12 @@ plot &quot;_input/time_series.dat&quot; w l
         <li class="right" >
           <a href="basic_usage.html" title="基本的な使い方"
              >previous</a> |</li>
-        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 1.9.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+        &copy; Copyright 2013, 2014, RIKEN AICS.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

@@ -14,7 +14,7 @@
           = text_field_tag(property, value, class: 'text_field')
         = pd.description
   .control-group
-    = label_tag('num_runs', '# of Runs', class: 'control-label')
+    = label_tag('num_runs', 'Target # of Runs', class: 'control-label')
     .controls
       = select_tag('num_runs', options_for_select([0,1,2,3,4,5,10,20], selected: @num_runs))
   #runs_fields
@@ -25,14 +25,15 @@
     = link_to "Cancel", simulator_path(parameter_set.simulator), :class => 'btn'
 
 :javascript
-  $('#runs_fields').hide();
   $(function() {
-    $('#num_runs').change(function() {
-      if( $(this).val() == 0 ) {
+    var hide_show_runs_field = function () {
+      if( $('#num_runs').val() == 0 ) {
         $('#runs_fields').hide("normal");
       }
       else {
         $('#runs_fields').show("normal");
       }
-    });
+    }
+    hide_show_runs_field();
+    $('#num_runs').change(hide_show_runs_field);
   });

@@ -43,16 +43,15 @@ OACIS とはシミュレーションのジョブおよび結果を効率的に�
 | 本ドキュメントの構成は以下のようになっている。
 
 - システム概要
-- インストール方法
+- インストール
 - 基本的な使い方
 - 高度な使い方
-- APIの使い方
-    - （準備中）
+- Command Line Interface(CLI)の使い方
+- Tips
 
 | とりあえず使ってみたい場合は「基本的な使い方」の章までを見れば使い始められるようになっている。
 | それ以降の章は必要に応じて読めばよい。
 
 Infomation
 ====
-* CASSIA project since 2013
-* ソースリポジトリ: https://github.com/crest-cassia/cassia
+* ソースリポジトリ: https://github.com/crest-cassia/oacis

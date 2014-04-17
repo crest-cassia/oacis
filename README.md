@@ -28,10 +28,10 @@ gem install bundler
 - clone the git repository
 
     ```sh:clone.sh
-git clone -b master git@github.com:crest-cassia/cassia.git
+git clone -b master git@github.com:crest-cassia/oacis.git
 ```
 - install dependent gems using bundle command
-    - cd to the project root directory `cassia`, and run the following command
+    - cd to the project root directory `oacis`, and run the following command
 
       ```sh:install_sh
   bundle install --path=vendor/bundle
@@ -63,7 +63,7 @@ bundle exec rake daemon:stop
 
 The MIT License (MIT)
 
-Copyright (c) 2013 Yohsuke Murase, Takeshi Uchitane
+Copyright (c) 2013,2014 RIKEN, AICS
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

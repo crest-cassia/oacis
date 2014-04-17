@@ -13,9 +13,14 @@ module JobIncluder
         download_remote_file(host, run, ssh)
         include_archive(run)
       else
-        download_work_dir_if_exists(host, run, ssh)
         run.status = :failed
         run.save!
+        if host.mounted_work_base_dir.present?
+          move_local_file(host, run)
+        else
+          download_work_dir_if_exists(host, run, ssh)
+        end
+        include_work_dir(run)
       end
 
       remove_remote_files( ssh, RemoteFilePath.all_file_paths(host, run) )
@@ -25,7 +30,12 @@ module JobIncluder
 
   private
   def self.include_archive(run)
-    JobScriptUtil.expand_result_file_and_update_run(run)
+    JobScriptUtil.expand_result_file(run)
+    JobScriptUtil.update_run(run)
+  end
+
+  def self.include_work_dir(run)
+    JobScriptUtil.update_run(run)
   end
 
   def self.create_auto_run_analyses(run)
@@ -74,6 +84,14 @@ module JobIncluder
         SSHUtil.rm_r(ssh, path)
       end
     end
+  end
+
+  def self.move_local_file(host, run)
+    work_dir = Pathname.new(host.mounted_work_base_dir).join(run.id.to_s)
+    archive = Pathname.new(host.mounted_work_base_dir).join("#{run.id}.tar.bz2")
+    cmd = "rm -rf #{run.dir}; mv #{work_dir} #{run.dir}; mv #{archive} #{run.dir.join("..")}/"
+    system(cmd)
+    raise "can not move work_directory from #{work_dir}" unless $?.exitstatus == 0
   end
 
   def self.download_work_dir_if_exists(host, run, ssh)

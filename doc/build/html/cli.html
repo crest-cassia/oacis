@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Command Line Interface(CLI)の使い方 &mdash; OACIS 0.0.1 documentation</title>
+    <title>Command Line Interface(CLI)の使い方 &mdash; OACIS 1.9.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.0.1',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="OACIS 0.0.1 documentation" href="index.html" />
+    <link rel="top" title="OACIS 1.9.0 documentation" href="index.html" />
+    <link rel="next" title="Tips" href="tips.html" />
     <link rel="prev" title="高度な使い方" href="advanced_usage.html" /> 
   </head>
   <body>
@@ -34,9 +35,12 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="tips.html" title="Tips"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
           <a href="advanced_usage.html" title="高度な使い方"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 1.9.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -65,10 +69,19 @@
 <li>Run作成 (create_runs)</li>
 <li>作成済みRunのステータス確認 (run_status)</li>
 <li>手動実行したジョブの実行結果の取り込み (job_include)</li>
+<li>Run削除（destroy_runs）</li>
+<li>Run再作成（replace_runs）</li>
+<li>Analysis作成用テンプレート作成 (analyses_template)</li>
+<li>Analysis作成（create_analyses）</li>
+<li>作成済みAnalysisのステータス確認（analysis_status）</li>
+<li>Analysis削除（destroy_analyses）</li>
+<li>Analysis再作成（replace_analyses）</li>
+<li>既存SimulatorへのParameterDefinition追加 (append_parameter_definition)</li>
 </ul>
 <p>OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行する操作を指定する。
 例えば</p>
-<div class="highlight-python"><pre>./bin/oacis_cli usage</pre>
+<div class="highlight-python"><div class="highlight"><pre>./bin/oacis_cli usage
+</pre></div>
 </div>
 <p>このドキュメント内ではOACISのチェックアウトディレクトリから実行することを想定してコマンド例を示すが、どのディレクトリから実行しても良い。</p>
 <div class="section" id="usage">
@@ -127,14 +140,14 @@
 <dt>出力</dt>
 <dd><ul class="first simple">
 <li>以下の様に、登録済みhostの情報をObjectの配列としてJSON形式で出力する。</li>
-<li>hostにはid, name, hostname, userの情報のみ出力される</li>
+<li>hostにはid, name, hostname, userの情報のみ出力される。</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">[</span>
   <span class="p">{</span>
-    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;522fe89a899e53ec05000005&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;hostname&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;user&quot;</span><span class="p">:</span> <span class="s2">&quot;murase&quot;</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="s2">&quot;522fe89a899e53ec05000005&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hostname&quot;</span><span class="o">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user&quot;</span><span class="o">:</span> <span class="s2">&quot;murase&quot;</span>
   <span class="p">}</span>
 <span class="p">]</span>
 </pre></div>
@@ -190,18 +203,18 @@
 <dd><ul class="first simple">
 <li>Simulatorの属性情報のテンプレートを出力する</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;b_sample_simulator&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/murase/program/oacis/lib/lib/samples/tutorial/simulator/simulator.out&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;support_input_json&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&quot;support_mpi&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&quot;support_omp&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&quot;print_version_command&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-  <span class="nt">&quot;pre_process_script&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-  <span class="nt">&quot;executable_on_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
-  <span class="nt">&quot;parameter_definitions&quot;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="p">{</span><span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;p1&quot;</span><span class="p">,</span><span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Integer&quot;</span><span class="p">,</span><span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span><span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;parameter1&quot;</span><span class="p">},</span>
-    <span class="p">{</span><span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;p2&quot;</span><span class="p">,</span><span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Float&quot;</span><span class="p">,</span><span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span><span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;parameter2&quot;</span><span class="p">}</span>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;b_sample_simulator&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;command&quot;</span><span class="o">:</span> <span class="s2">&quot;/Users/murase/program/oacis/lib/lib/samples/tutorial/simulator/simulator.out&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;support_input_json&quot;</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="s2">&quot;support_mpi&quot;</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="s2">&quot;support_omp&quot;</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="s2">&quot;print_version_command&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+  <span class="s2">&quot;pre_process_script&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+  <span class="s2">&quot;executable_on_ids&quot;</span><span class="o">:</span> <span class="p">[],</span>
+  <span class="s2">&quot;parameter_definitions&quot;</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="o">:</span> <span class="s2">&quot;p1&quot;</span><span class="p">,</span><span class="s2">&quot;type&quot;</span><span class="o">:</span> <span class="s2">&quot;Integer&quot;</span><span class="p">,</span><span class="s2">&quot;default&quot;</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span><span class="s2">&quot;description&quot;</span><span class="o">:</span> <span class="s2">&quot;parameter1&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="o">:</span> <span class="s2">&quot;p2&quot;</span><span class="p">,</span><span class="s2">&quot;type&quot;</span><span class="o">:</span> <span class="s2">&quot;Float&quot;</span><span class="p">,</span><span class="s2">&quot;default&quot;</span><span class="o">:</span> <span class="mf">5.0</span><span class="p">,</span><span class="s2">&quot;description&quot;</span><span class="o">:</span> <span class="s2">&quot;parameter2&quot;</span><span class="p">}</span>
   <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -273,8 +286,8 @@
 <li><p class="first">入力ファイル</p>
 <blockquote>
 <div><ul class="simple">
-<li>hostファイルは show_host で出力されるJSON形式のファイルを指定する</li>
-<li>inputファイルは simulator_template で出力されるJSON形式のファイルを指定する</li>
+<li>hostファイルは show_host で出力されるJSON形式のファイルを指定する。</li>
+<li>inputファイルは simulator_template で出力されるJSON形式のファイルを指定する。</li>
 </ul>
 </div></blockquote>
 </li>
@@ -283,8 +296,8 @@
 <dd><ul class="first simple">
 <li>新規作成されたsimulatorのidをObjectとしてJSON形式で出力する。</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nt">&quot;simulator_id&quot;</span><span class="p">:</span> <span class="s2">&quot;52b3bcd7b93f964178000001&quot;</span>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+  <span class="s2">&quot;simulator_id&quot;</span><span class="o">:</span> <span class="s2">&quot;52b3bcd7b93f964178000001&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -298,7 +311,7 @@
 <p>create_parameter_setsの時に使用するparameter_sets.jsonファイルのテンプレートを作成する</p>
 <ul>
 <li><p class="first">実行方法</p>
-<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli parameter_sets_template -o simulator.json
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli parameter_sets_template -s simulator.json -o parameter_sets.json
 </pre></div>
 </div>
 </li>
@@ -346,17 +359,17 @@
 <li><p class="first">入力ファイル</p>
 <blockquote>
 <div><ul class="simple">
-<li>simulatorファイルは create_simulator で出力されるJSON形式のファイルを指定する</li>
+<li>simulatorファイルは create_simulator で出力されるJSON形式のファイルを指定する。</li>
 </ul>
 </div></blockquote>
 </li>
 <li><dl class="first docutils">
 <dt>出力</dt>
 <dd><ul class="first simple">
-<li>ParameterSet作成時に使用するパラメータ指定ファイルのテンプレートを出力する</li>
+<li>ParameterSet作成時に使用するパラメータ指定ファイルのテンプレートを出力する。</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
-  <span class="p">{</span><span class="nt">&quot;p1&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="nt">&quot;p2&quot;</span><span class="p">:</span><span class="mf">5.0</span><span class="p">}</span>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span><span class="s2">&quot;p1&quot;</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;p2&quot;</span><span class="o">:</span><span class="mf">5.0</span><span class="p">}</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -427,8 +440,8 @@
 <li><p class="first">入力ファイル</p>
 <blockquote>
 <div><ul class="simple">
-<li>simulatorファイルは create_simulator で出力されるJSON形式のファイルを指定する</li>
-<li>inputファイルは parameter_sets_template で出力されるJSON形式のファイルを指定する</li>
+<li>simulatorファイルは create_simulator で出力されるJSON形式のファイルを指定する。</li>
+<li>inputファイルは parameter_sets_template で出力されるJSON形式のファイルを指定する。</li>
 </ul>
 </div></blockquote>
 </li>
@@ -437,8 +450,8 @@
 <dd><ul class="first simple">
 <li>新規作成されたParameterSetのidをObjectの配列としてJSON形式で出力する。</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
-  <span class="p">{</span><span class="nt">&quot;parameter_set_id&quot;</span><span class="p">:</span><span class="s2">&quot;52b3ddc7b93f969b8c000001&quot;</span><span class="p">}</span>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span><span class="s2">&quot;parameter_set_id&quot;</span><span class="o">:</span><span class="s2">&quot;52b3ddc7b93f969b8c000001&quot;</span><span class="p">}</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -508,7 +521,7 @@
 <li><dl class="first docutils">
 <dt>入力</dt>
 <dd><ul class="first last simple">
-<li>host idはHostのidを文字列で指定する。指定が無い場合はmanualでのジョブ投入。</li>
+<li>host idはHostのidを文字列で指定する。指定が無い場合はmanualでのジョブを投入する。</li>
 </ul>
 </dd>
 </dl>
@@ -516,17 +529,17 @@
 <li><dl class="first docutils">
 <dt>出力</dt>
 <dd><ul class="first simple">
-<li>Run作成時に使用するジョブパラメータ指定ファイルのテンプレートを出力する</li>
+<li>Run作成時に使用するジョブパラメータ指定ファイルのテンプレートを出力する。</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nt">&quot;host_id&quot;</span><span class="p">:</span> <span class="s2">&quot;522fe89a899e53ec05000005&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;host_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;nodes&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;ppn&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;walltime&quot;</span><span class="p">:</span> <span class="s2">&quot;10:00&quot;</span>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+  <span class="s2">&quot;host_id&quot;</span><span class="o">:</span> <span class="s2">&quot;522fe89a899e53ec05000005&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;host_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s2">&quot;nodes&quot;</span><span class="o">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ppn&quot;</span><span class="o">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;walltime&quot;</span><span class="o">:</span> <span class="s2">&quot;10:00&quot;</span>
   <span class="p">},</span>
-  <span class="nt">&quot;mpi_procs&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-  <span class="nt">&quot;omp_threads&quot;</span><span class="p">:</span> <span class="mi">1</span>
+  <span class="s2">&quot;mpi_procs&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;omp_threads&quot;</span><span class="o">:</span> <span class="mi">1</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -606,8 +619,8 @@
 <li><p class="first">入力ファイル</p>
 <blockquote>
 <div><ul class="simple">
-<li>parameter_setsファイルは create_parameter_sets で出力されるJSON形式のファイルを指定する</li>
-<li>job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルを指定する</li>
+<li>parameter_setsファイルは create_parameter_sets で出力されるJSON形式のファイルを指定する。</li>
+<li>job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルを指定する。</li>
 <li>number_of_runs はRunの数を数値で指定する。各ParameterSetごとに、ここで指定された数になるまでRunが作られる。デフォルトは1。</li>
 </ul>
 </div></blockquote>
@@ -616,10 +629,10 @@
 <dt>出力</dt>
 <dd><ul class="first simple">
 <li>RunのidをObjectの配列としてJSON形式で出力する。</li>
-<li>新規作成されていないRunについても、各ParameterSetごとにnで指定された数の分だけRunのidを出力する</li>
+<li>新規作成されていないRunについても、各ParameterSetごとにnで指定された数の分だけRunのidを出力する。</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">[</span>
-  <span class="p">{</span><span class="nt">&quot;run_id&quot;</span><span class="p">:</span><span class="s2">&quot;52b3eaebb93f96933f000001&quot;</span><span class="p">}</span>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span><span class="s2">&quot;run_id&quot;</span><span class="o">:</span><span class="s2">&quot;52b3eaebb93f96933f000001&quot;</span><span class="p">}</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -689,13 +702,13 @@
 <dd><ul class="first simple">
 <li>指定されたRunのステータスを集計し、標準出力に表示する</li>
 </ul>
-<div class="last highlight-json"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nt">&quot;total&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-  <span class="nt">&quot;created&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-  <span class="nt">&quot;submitted&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-  <span class="nt">&quot;running&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-  <span class="nt">&quot;failed&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-  <span class="nt">&quot;finished&quot;</span><span class="p">:</span> <span class="mi">0</span>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+  <span class="s2">&quot;total&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;created&quot;</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="s2">&quot;submitted&quot;</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="s2">&quot;running&quot;</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="s2">&quot;failed&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;finished&quot;</span><span class="o">:</span> <span class="mi">0</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -708,7 +721,7 @@
 <h3>job_include<a class="headerlink" href="#job-include" title="Permalink to this headline">¶</a></h3>
 <p>手動実行したRunの実行結果を取り込む</p>
 <ul>
-<li><p class="first">実効方法</p>
+<li><p class="first">実行方法</p>
 <div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli job_include -i 52cde935b93f969b07000005.tar.bz2
 </pre></div>
 </div>
@@ -749,9 +762,9 @@
 <blockquote>
 <div><ul>
 <li><dl class="first docutils">
-<dt>inputファイルは手動実行後に生成される結果のアーカイブファイル(.tar.bz2)を指定する</dt>
+<dt>inputファイルは手動実行後に生成される結果のアーカイブファイル(.tar.bz2)を指定する。</dt>
 <dd><ul class="first last simple">
-<li>空白区切り、またはコンマ区切りで複数指定可能</li>
+<li>アーカイブファイルは空白区切り、またはコンマ区切りで複数指定可能。</li>
 </ul>
 </dd>
 </dl>
@@ -837,13 +850,13 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li>simulator_version が存在しないRunを削除する</li>
+<li>simulator_version が存在しないRunを削除する。</li>
 </ul>
 <div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:
 </pre></div>
 </div>
 <ul class="simple">
-<li>statusが &#8220;created&#8221; （ジョブ投入前）のRunを削除する</li>
+<li>statusが &#8220;created&#8221; （ジョブ投入前）のRunを削除する。</li>
 </ul>
 <div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:created
 </pre></div>
@@ -854,12 +867,18 @@
 </div>
 <div class="section" id="replace-runs">
 <h3>replace_runs<a class="headerlink" href="#replace-runs" title="Permalink to this headline">¶</a></h3>
-<div class="line-block">
-<div class="line">指定したRunを削除して、同じ設定で新しいRunを再作成する。</div>
+<p>指定したRunを削除して、同じ設定で新しいRunを再作成する</p>
+<ul>
+<li><dl class="first docutils">
+<dt>ユースケース</dt>
+<dd><div class="first last line-block">
 <div class="line">例えば、ジョブを大量に流したが古いコードにバグが見つかり再実験が必要になった場合などに使える。</div>
 <div class="line">以前のRunと同じジョブパラメータ（投入ホスト、MPIプロセス数、OMPスレッド数、ホストパラメータ）で実行される。</div>
+<div class="line">ただし、乱数の種 _seed は変更される。</div>
 </div>
-<ul>
+</dd>
+</dl>
+</li>
 <li><p class="first">実行方法</p>
 <div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:0.0.1
 </pre></div>
@@ -936,6 +955,563 @@
 </li>
 </ul>
 </div>
+<div class="section" id="analyses-template">
+<h3>analyses_template<a class="headerlink" href="#analyses-template" title="Permalink to this headline">¶</a></h3>
+<p>create_analysesの時に使用するanalysis_parameters.jsonファイルのテンプレートを作成する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli analyses_template -a 5226f430899e532cf6000009 -o analysis_parameters.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="12%" />
+<col width="49%" />
+<col width="17%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;analyzer_id</p>
+</td>
+<td><p class="first last">-a</p>
+</td>
+<td><p class="first last">analyzer id</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;output</p>
+</td>
+<td><p class="first last">-o</p>
+</td>
+<td><p class="first last">output file path</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力ファイル</p>
+<blockquote>
+<div><ul class="simple">
+<li>analyzer_id はIDの文字列を指定する。</li>
+</ul>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>Analysis作成時に使用するパラメータ指定ファイルのテンプレートを出力する。</li>
+</ul>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span><span class="s2">&quot;parameter1&quot;</span><span class="o">:</span><span class="mi">50</span><span class="p">,</span><span class="s2">&quot;parametr2&quot;</span><span class="o">:</span><span class="mf">1.0</span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="create-analyses">
+<h3>create_analyses<a class="headerlink" href="#create-analyses" title="Permalink to this headline">¶</a></h3>
+<p>Analysisを新規作成する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="9%" />
+<col width="59%" />
+<col width="13%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;analyzer</p>
+</td>
+<td><p class="first last">-a</p>
+</td>
+<td><p class="first last">analyzer id</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;input</p>
+</td>
+<td><p class="first last">-i</p>
+</td>
+<td><p class="first last">input file path</p>
+</td>
+<td><p class="first last">no</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">&#8211;output</p>
+</td>
+<td><p class="first last">-o</p>
+</td>
+<td><p class="first last">output file path</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;first_run_only</p>
+</td>
+<td>&nbsp;</td>
+<td><p class="first last">only on first runs</p>
+</td>
+<td><p class="first last">no</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">&#8211;target</p>
+</td>
+<td><p class="first last">-t</p>
+</td>
+<td><p class="first last">on targets(parmeter_set_ids.json or run_ids.json)</p>
+</td>
+<td><p class="first last">no</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力ファイル</p>
+<blockquote>
+<div><ul class="simple">
+<li>analyzerはanalyzerのIDを指定する。</li>
+<li>inputは analyses_template で出力されるJSON形式のファイルを指定する。デフォルトは、Analyzerに登録されたパラメータのデフォルト値。</li>
+</ul>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>AnalysisのidをObjectの配列としてJSON形式で出力する。</li>
+<li>新規作成されていないAnalysisについても、Analysisのidを出力する</li>
+</ul>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span><span class="s2">&quot;analysis_id&quot;</span><span class="o">:</span><span class="s2">&quot;52b3eaebb93f96933f00000d&quot;</span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>実行例</dt>
+<dd><ul class="first last">
+<li><p class="first">各ParameterSet のRun 1つに対してのみanalyzer を実行する。</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json --first_run_only
+</pre></div>
+</div>
+</li>
+<li><p class="first">指定したParameterSet に対してanalyzer(:on_parameter_set) を実行する。</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json -t parameter_set_ids.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">指定したRun に対してanalyzer(:on_run) を実行する。</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json -t run_ids.json
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>その他</dt>
+<dd><ul class="first last simple">
+<li>既にAnalysisが存在する場合には、新規にAnalysisを作成せずに既存のAnalysisのidを出力として返す。エラーにはならない。</li>
+<li>ParamterSetに対するAnalyzerを実行するとき、status:finished のRunが存在しないParameterSetを対象としたAnalysisは作成されない。</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="analysis-status">
+<h3>analysis_status<a class="headerlink" href="#analysis-status" title="Permalink to this headline">¶</a></h3>
+<p>Analysisの実行状況を確認する</p>
+<ul>
+<li><p class="first">実効方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli analysis_status -a analysis_ids.json
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="12%" />
+<col width="48%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;analysis_ids</p>
+</td>
+<td><p class="first last">-a</p>
+</td>
+<td><p class="first last">analysis id file</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力ファイル</p>
+<blockquote>
+<div><ul class="simple">
+<li>analysis_idsファイルは create_analyses で出力されるJSON形式のファイルを指定する</li>
+</ul>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>出力</dt>
+<dd><ul class="first simple">
+<li>指定されたAnalysisのステータスを集計し、標準出力に表示する</li>
+</ul>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+  <span class="s2">&quot;total&quot;</span><span class="o">:</span> <span class="mi">100</span><span class="p">,</span>
+  <span class="s2">&quot;created&quot;</span><span class="o">:</span> <span class="mi">50</span><span class="p">,</span>
+  <span class="s2">&quot;running&quot;</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="s2">&quot;failed&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;finished&quot;</span><span class="o">:</span> <span class="mi">49</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="destroy-analyses">
+<h3>destroy_analyses<a class="headerlink" href="#destroy-analyses" title="Permalink to this headline">¶</a></h3>
+<p>Analysisを削除する</p>
+<ul>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="11%" />
+<col width="54%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;analyzer_id</p>
+</td>
+<td><p class="first last">-a</p>
+</td>
+<td><p class="first last">analyzer id</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;query</p>
+</td>
+<td><p class="first last">-q</p>
+</td>
+<td><p class="first last">query for analyses(Hash)</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力形式</p>
+<blockquote>
+<div><ul>
+<li><p class="first">analyzer_id はIDの文字列を指定する。</p>
+</li>
+<li><dl class="first docutils">
+<dt>queryは連想配列で指定する。</dt>
+<dd><ul class="first last simple">
+<li>連想配列は {key}:{value} という形式で指定する。</li>
+<li>keyとして可能な値は&#8221;status&#8221;のみ。</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">実行例</p>
+<blockquote>
+<div><ul>
+<li><p class="first">statusが &#8220;failed&#8221; （解析失敗）のAnalysisを削除する</p>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="replace-analyses">
+<h3>replace_analyses<a class="headerlink" href="#replace-analyses" title="Permalink to this headline">¶</a></h3>
+<p>指定したAnalysisを削除して、同じ設定で新しいAnalysisを再作成する</p>
+<ul>
+<li><dl class="first docutils">
+<dt>ユースケース</dt>
+<dd><div class="first last line-block">
+<div class="line">例えば、Analyzerを更新して、結果の図を差し替える場合などに使える。</div>
+<div class="line">以前のAnalysisと同じAnalyzer、同じパラメータで実行される。</div>
+</div>
+</dd>
+</dl>
+</li>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="11%" />
+<col width="54%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;analzyer_id</p>
+</td>
+<td><p class="first last">-a</p>
+</td>
+<td><p class="first last">analyzer id</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;query</p>
+</td>
+<td><p class="first last">-q</p>
+</td>
+<td><p class="first last">query for analyses(Hash)</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力形式</p>
+<blockquote>
+<div><ul>
+<li><p class="first">analyzer_id はIDの文字列を指定する。</p>
+</li>
+<li><dl class="first docutils">
+<dt>queryは連想配列で指定する。</dt>
+<dd><ul class="first last simple">
+<li>連想配列は {key}:{value} という形式で指定する。</li>
+<li>keyとして可能な値は&#8221;status&#8221;のみ。</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">実行例</p>
+<blockquote>
+<div><ul>
+<li><p class="first">statusが&#8221;finished&#8221;のAnalysisを削除し、同じ設定で新しいAnalysisを再作成する。</p>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="append-parameter-definition">
+<h3>append_parameter_definition<a class="headerlink" href="#append-parameter-definition" title="Permalink to this headline">¶</a></h3>
+<p>指定したSimulatorに、新しいParameterを追加する。</p>
+<ul>
+<li><dl class="first docutils">
+<dt>ユースケース</dt>
+<dd><div class="first last line-block">
+<div class="line">既存のSimulatorを拡張したいが、既存のデータを破棄したくない場合に使用する。</div>
+</div>
+</dd>
+</dl>
+</li>
+<li><p class="first">実行方法</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli append_parameter_definition -s 522442de899e53dd8d000034 -n <span class="s2">&quot;new_param&quot;</span> -t Float -d 0.0
+</pre></div>
+</div>
+</li>
+<li><p class="first">オプション</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="11%" />
+<col width="54%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">Option</p>
+</th>
+<th class="head"><p class="first last">alias</p>
+</th>
+<th class="head"><p class="first last">description</p>
+</th>
+<th class="head"><p class="first last">required?</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">&#8211;simulator_id</p>
+</td>
+<td><p class="first last">-s</p>
+</td>
+<td><p class="first last">simulator id or path to simulator_id.json</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;name</p>
+</td>
+<td><p class="first last">-n</p>
+</td>
+<td><p class="first last">name of the new parameter</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">&#8211;type</p>
+</td>
+<td><p class="first last">-t</p>
+</td>
+<td><p class="first last">type of the new parameter</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;default</p>
+</td>
+<td><p class="first last">-e</p>
+</td>
+<td><p class="first last">default value of the new parameter</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">入力形式</p>
+<blockquote>
+<div><ul>
+<li><p class="first">simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。</p>
+</li>
+<li><p class="first">name は新規パラメータの名前を指定する。既存のパラメータと重複するとエラー。</p>
+</li>
+<li><p class="first">type は新規パラメータの型を指定する。指定可能な値は &#8220;Integer&#8221;, &#8220;Float&#8221;, &#8220;String&#8221;, &#8220;Boolean&#8221; の４種類。</p>
+</li>
+<li><dl class="first docutils">
+<dt>default は新規パラメータのデフォルト値を指定する。</dt>
+<dd><ul class="first last simple">
+<li>type と整合性が取れていない場合はエラー</li>
+<li>既存のパラメータセットのパラメータはこの値で保存される。</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">実行例</p>
+<blockquote>
+<div><ul>
+<li><p class="first">&#8220;p3&#8221; という名前の整数型のパラメータ（デフォルト値 0）を追加する。</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli append_parameter_definition -s 522442de899e53dd8d000034 -n p3 -t Integer -d 0
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>注意事項</dt>
+<dd><ul class="first last simple">
+<li>既に作成済みのRunについては更新されない。</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
 </div>
 </div>
 
@@ -961,6 +1537,12 @@
 <li><a class="reference internal" href="#job-include">job_include</a></li>
 <li><a class="reference internal" href="#destroy-runs">destroy_runs</a></li>
 <li><a class="reference internal" href="#replace-runs">replace_runs</a></li>
+<li><a class="reference internal" href="#analyses-template">analyses_template</a></li>
+<li><a class="reference internal" href="#create-analyses">create_analyses</a></li>
+<li><a class="reference internal" href="#analysis-status">analysis_status</a></li>
+<li><a class="reference internal" href="#destroy-analyses">destroy_analyses</a></li>
+<li><a class="reference internal" href="#replace-analyses">replace_analyses</a></li>
+<li><a class="reference internal" href="#append-parameter-definition">append_parameter_definition</a></li>
 </ul>
 </li>
 </ul>
@@ -970,6 +1552,9 @@
   <h4>Previous topic</h4>
   <p class="topless"><a href="advanced_usage.html"
                         title="previous chapter">高度な使い方</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tips.html"
+                        title="next chapter">Tips</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/cli.txt"
@@ -999,14 +1584,17 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="tips.html" title="Tips"
+             >next</a> |</li>
+        <li class="right" >
           <a href="advanced_usage.html" title="高度な使い方"
              >previous</a> |</li>
-        <li><a href="index.html">OACIS 0.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">OACIS 1.9.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2013, Yohsuke Murase and Takeshi Uchitane.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+        &copy; Copyright 2013, 2014, RIKEN AICS.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

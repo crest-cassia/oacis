@@ -30,7 +30,7 @@ class OacisCli < Thor
     aliases:  '-s',
     desc:     'simulator ID or path to simulator_id.json',
     required: true
-    method_option :input,
+  method_option :input,
     type:     :string,
     aliases:  '-i',
     desc:     'input file',

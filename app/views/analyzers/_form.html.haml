@@ -22,6 +22,10 @@
     .controls
       = f.text_field(:command)
   .control-group
+    = f.label(:print_version_command, class: 'control-label')
+    .controls
+      = f.text_field(:print_version_command)
+  .control-group
     = f.label(:auto_run, class: 'control-label')
     .controls
       = f.select(:auto_run, [:no,:yes,:first_run_only], id: "auto_run")
@@ -39,10 +43,13 @@
       var selected = $(this).val();
       var auto_run = $('select#analyzer_auto_run');
       if(selected == "on_run") {
-        auto_run.append( $('<option>').val('first_run_only').text('first_run_only') );
+        if( auto_run.children('[value=first_run_only]').size() == 0 ) {
+          auto_run.append( $('<option>').val('first_run_only').text('first_run_only') );
+        }
       }
       else if(selected == "on_parameter_set") {
         auto_run.children('[value=first_run_only]').remove();
       }
     });
+    $('select#analyzer_type').trigger('change');
   });

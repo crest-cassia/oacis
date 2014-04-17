@@ -11,6 +11,7 @@ class Analysis
   field :finished_at, type: DateTime
   field :included_at, type: DateTime
   field :result
+  field :analyzer_version, type: String
   index({ status: 1 }, { name: "analysis_status_index" })
 
   belongs_to :analyzer
@@ -65,6 +66,7 @@ class Analysis
     self.result = status[:result] if status.has_key?(:result)
     self.finished_at = status[:finished_at]
     self.status = :finished
+    self.analyzer_version = status[:analyzer_version] if status.has_key?(:analyzer_version)
     self.included_at = DateTime.now
     self.save
   end

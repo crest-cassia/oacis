@@ -132,7 +132,24 @@ describe Run do
       run.should be_valid
     end
 
-    describe "'host_parameters' field" do
+    it "assigns a priority by default" do
+      run = @param_set.runs.create
+      run.priority.should be_a(Integer)
+    end
+
+    it "automatically assigned priority is 1" do
+      run = @param_set.runs.create
+      run.priority.should eq 1
+    end
+
+    it "priority is an accessible attribute" do
+      @valid_attribute.update(priority: 0)
+      run = @param_set.runs.create!(@valid_attribute)
+      run.should be_valid
+      run.priority.should eq 0
+    end
+
+   describe "'host_parameters' field" do
 
       before(:each) do
         header = <<-EOS

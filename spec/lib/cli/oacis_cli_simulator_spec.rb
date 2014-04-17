@@ -168,4 +168,106 @@ describe OacisCli do
       end
     end
   end
+
+  describe "#append_parameter_definition" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 3)
+    end
+
+    it "append a new parameter definition to the simulator" do
+      at_temp_dir {
+        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
+        OacisCli.new.invoke(:append_parameter_definition, [], option)
+        @sim.reload
+        @sim.parameter_definitions.should have(3).items
+        new_param_def = @sim.parameter_definitions.last
+        new_param_def.key.should eq "NEW_PARAM"
+        new_param_def.type.should eq "Float"
+        new_param_def.default.should eq 0.5
+      }
+    end
+
+    it "updates the existing parameter sets so as to have the new parameter key with the default value" do
+      at_temp_dir {
+        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
+        OacisCli.new.invoke(:append_parameter_definition, [], option)
+        @sim.reload.parameter_sets.all? do |ps|
+          ps.v["NEW_PARAM"].should eq 0.5
+        end
+      }
+    end
+
+    it "adds Boolean parameter correctly" do
+      at_temp_dir {
+        option = {simulator: @sim.id.to_s, name: "NEW_PARAM", type: "Boolean", default: false}
+        OacisCli.new.invoke(:append_parameter_definition, [], option)
+        new_param_def = @sim.reload.parameter_definitions.last
+        new_param_def.default.should eq false
+      }
+    end
+
+    describe "error case" do
+
+      context "when invalid simulator ID is given" do
+
+        it "throws an exception" do
+          at_temp_dir {
+            option = {simulator: "INVALID", name: 'NEW_PARAM', type: "Float", default: 0.5}
+            expect {
+              OacisCli.new.invoke(:append_parameter_definition, [], option)
+            }.to raise_error
+          }
+        end
+      end
+
+      context "when name is duplicated" do
+
+        it "throws an exception" do
+          at_temp_dir {
+            option = {simulator: @sim.id.to_s, name: 'L', type: "Float", default: 0.5}
+            expect {
+              OacisCli.new.invoke(:append_parameter_definition, [], option)
+            }.to raise_error
+          }
+        end
+      end
+
+      context "when name is invalid" do
+
+        it "throws an exception" do
+          at_temp_dir {
+            option = {simulator: @sim.id.to_s, name: 'L', type: "Float", default: 0.5}
+            expect {
+              OacisCli.new.invoke(:append_parameter_definition, [], option)
+            }.to raise_error
+          }
+        end
+      end
+
+      context "when type is neither 'Integer', 'Float', 'String', nor 'Boolean'" do
+
+        it "throws an exception" do
+          at_temp_dir {
+            option = {simulator: @sim.id.to_s, name: 'L', type: "Double", default: 0.5}
+            expect {
+              OacisCli.new.invoke(:append_parameter_definition, [], option)
+            }.to raise_error
+          }
+        end
+      end
+
+      context "when default value is not compatible with the type" do
+
+        it "throws an exception" do
+          at_temp_dir {
+            option = {simulator: @sim.id.to_s, name: 'L', type: "Integer", default: 0.5}
+            expect {
+              OacisCli.new.invoke(:append_parameter_definition, [], option)
+            }.to raise_error
+          }
+        end
+      end
+    end
+  end
 end

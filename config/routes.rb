@@ -8,6 +8,9 @@ AcmProto::Application.routes.draw do
 
   # Simulator-ParameterSet-Run relations
   resources :simulators, shallow: true, only: ["index", "show", "new", "create", "edit", "update", "destroy"] do
+    collection do
+      post "_sort" # for ajax, update order of the table
+    end
     member do
       get 'duplicate'
       get 'explore'
@@ -46,7 +49,11 @@ AcmProto::Application.routes.draw do
     end
   end
 
-  resources :hosts
+  resources :hosts do
+    collection do
+      post "_sort" # for ajax, update order of the table
+    end
+  end
 
   root :to => "simulators#index"
 end

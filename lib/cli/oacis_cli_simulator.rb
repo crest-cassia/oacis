@@ -85,4 +85,49 @@ EOS
       io.flush
     }
   end
+
+  public
+  desc 'append_parameter_definition', "append parameter definition"
+  method_option :simulator,
+    type:     :string,
+    aliases:  '-s',
+    desc:     'simulator ID or path to simulator_id.json',
+    required: true
+  method_option :name,
+    type:     :string,
+    aliases:  '-n',
+    desc:     'name of the new parameter',
+    required: true
+  method_option :type,
+    type:     :string,
+    aliases:  '-t',
+    desc:     'type of the new parameter',
+    required: true
+  method_option :default,
+    type:     :string,
+    aliases:  '-e',
+    desc:     'default value of the new parameter',
+    required: true
+  def append_parameter_definition
+    simulator = get_simulator(options[:simulator])
+
+    new_param_def = simulator.parameter_definitions.build(key: options[:name], type: options[:type], default: options[:default])
+
+    if new_param_def.valid?
+      unless options[:dry_run]
+        total = simulator.parameter_sets.count
+        progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
+        simulator.parameter_sets.each do |ps|
+          ps.v[ new_param_def.key ] = new_param_def.default
+          ps.timeless.save!
+          progressbar.increment
+        end
+        new_param_def.save!
+      end
+    else
+      $stderr.puts new_param_def.inspect
+      $stderr.puts new_param_def.errors.full_messages
+      raise "validation of new parameter definition failed"
+    end
+  end
 end

@@ -52,6 +52,7 @@ Port                          ssh接続先のポート番号。デフォルト�
 SSH key                       ssh接続時の鍵認証で使用する秘密鍵ファイルへのパス。デフォルトは *~/.ssh/id_rsa*
 Scheduler Type                ジョブスケジューラのタイプ。none(スケジューラ無し)、torque、pjm、pjm_kの4種類から選択する。
 Work base dir                 ワークディレクトリとして利用するホスト上のパス。ここで指定したパス以下でジョブが実行される。
+Mounted work base dir         localhostでジョブを実行する場合やホームディレクトリがNFSで共有されている場合など、直接ワークディレクトリが参照できる場合、ここで指定したディレクトリから直接ジョブの取り込みが行われパフォーマンスが向上する。
 Max num jobs                  このホストに投入可能なジョブの最大数。
 MPI processes                 MPIプロセス数の最小値と最大値。Runを作成するときにここで指定した範囲外の値を指定しようとするとエラーになる。
 OMP threads                   OMPスレッド数の最小値と最大値。Runを作成するときにここで指定した範囲外の値を指定しようとするとエラーになる。
@@ -67,6 +68,9 @@ Executable simulators         実行可能なシミュレータをチェック�
 - Hostname: localhost
 - User: <自分のユーザー名>
 - Work base dir: <任意の新規作成したパス>
+
+| ホストの登録後、一覧画面で登録したホストを確認する事ができる。
+| 一覧画面の表の各行はドラッグして移動する事ができ、見やすい順番に整理する事ができる。
 
 Simulator登録
 ================================================
@@ -84,7 +88,7 @@ Simulator登録
               ~/path/to/simulator.out 100 3.0 12345
 
     - JSON形式の場合、実行時に次のような形式のJSONファイルを *_input.json* というファイル名でOACISが実行時に配置する。シミュレータはカレントディレクトリの *_input.json* パースするように実装する必要がある。
-        .. code-block:: json
+        .. code-block:: javascript
 
           {"param1":100,"param2":3.0,"_seed":12345}
 
@@ -118,7 +122,8 @@ Simulator登録
 Name                      シミュレータの名前。Ascii文字、数字、アンダースコアのみ使用可。一意でなくてはならない。
 Definition of Parameters  シミュレータの入力パラメータの定義。パラメータの名前、型(Integer, Float, String, Boolean)、デフォルト値、パラメータの説明（任意）を入力する。
 Preprocess Script         ジョブの前に実行されるプリプロセスを記述するスクリプト。空の場合はプリプロセスは実行されない。
-Command                   シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. *~/path/to/simulator.out*）
+Command                   シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. *~/path/to/simulator.out* ）
+Pirnt version command     シミュレータのversionを標準出力に出力するコマンド。（例. *~/path/to/simulator.out --version* ）
 Input type                パラメータを引数で渡すか、JSONで渡すか指定する。
 Support mpi               シミュレータがMPIで実行されるか。チェックを入れた場合、mpiexecコマンド付きで実行される。
 Support omp               シミュレータがOpenMPで並列化されているか。チェックを入れた場合、環境変数OMP_NUM_THREADSで並列数を指定して実行される。
@@ -132,6 +137,9 @@ Executable_on             実行可能Hostを指定する。
 - Definition of Parameters: [[param1, Integer, 0], [param2, Float, 5.0]]
 - Command: ~/path/to/simulator.out
 - Executable_on: localhostにチェック
+
+| シミュレータの登録後、一覧画面で登録したシミュレータを確認する事ができる。
+| 一覧画面の表の各行はドラッグして移動する事ができ、見やすい順番に整理する事ができる。
 
 ParameterSet登録
 ==============================================================

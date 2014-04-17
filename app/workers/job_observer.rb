@@ -14,6 +14,7 @@ class JobObserver
   def self.observe_host(host, logger)
     # host.check_submitted_job_status(logger)
     return if host.submitted_runs.count == 0
+    return unless is_enough_disk_space_left?(logger)
     host.start_ssh do |ssh|
       handler = RemoteJobHandler.new(host)
       # check if job is finished
@@ -45,4 +46,18 @@ class JobObserver
       end
     end
   end
+
+  def self.is_enough_disk_space_left?(logger)
+    stat= Sys::Filesystem.stat(ResultDirectory.root.to_s)
+    rate = 1.0 - stat.blocks_available.to_f / stat.blocks.to_f
+    b = true
+    if rate > 0.95
+      b = false
+      logger.error("Error: No enough space left on device.")
+    elsif rate > 0.9
+      logger.warn("Warn: Too little space left on device.")
+    end
+    b
+  end
 end
+

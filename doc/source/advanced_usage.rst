@@ -116,6 +116,7 @@ MPI, OpenMPのジョブ
 | 以下では、実行時ディレクトリからみて、 ./signals/ 以下の設定ファイルを読み込み、 ./result/inst/ 以下に結果を出力するシミュレータでの例を示す。(シミュレータ依存の操作はOptionalと示される。)
 
 0. プリプロセスでの処理
+
   - 下記(1. 2. 3.)に続くジョブスクリプトへの修正を行うことで、プリプロセスが実行されるディレクトリ以下をステージイン可能となる。しかし、実行に必要なバイナリや設定ファイルをジョブスクリプト実行ディレクトリ以下に配置する作業や実行コマンドの微修正などをあらかじめ実行しておく必要がある。
   - 例えば、バイナリの移動(need)や設定ファイル群の移動(optional)には、下記のようにコマンドをプリプロセスに追加する。
 
@@ -131,6 +132,7 @@ MPI, OpenMPのジョブ
     echo "./simulator.out" > SIMCMD.txt
 
 1. ステージングへの対応
+
   - PJM --vset は、PJM内で利用する変数を定義する。ここでは、OACIS_RUN_IDとOACIS_WORK_BASE_DIRを定義している。
   - PJM --stgin-dir "./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/"は、_input.jsonや設定ファイルを転送する。
   - PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}は、ステージインするベースディレクトリを指示する。
@@ -156,6 +158,7 @@ MPI, OpenMPのジョブ
     LANG=C
 
 2. PRE-PROCESSへの修正
+
   - mkdir -p result/instは、シミュレータの実行結果を出力するのに必要なフォルダを生成する。(Optional)
 
   .. code-block:: diff
@@ -175,6 +178,7 @@ MPI, OpenMPのジョブ
     echo "  \"hostname\": \"`hostname`\"," >> ../${OACIS_RUN_ID}_status.json
 
 3. JOB EXECUTIONへの修正
+
   - SIMCMD=`cat SIMCMD.txt`は、シミュレータ実行コマンドを *SIMCMD.txt* から読み込む。SIMCMD.txtは、Simulatorのプリプロセスで生成しておく。(Optional)
 
   .. code-block:: diff
@@ -250,6 +254,8 @@ MPI, OpenMPのジョブ
 .. image:: images/run_results.png
   :width: 40%
   :align: center
+
+.. _manage_simulator_version:
 
 シミュレーターのバージョンを記録する
 ==============================================
@@ -330,7 +336,7 @@ Analyzerの登録と実行
 | ユーザーはAnalyzerの登録時に実行されるコマンドを入力する。そのコマンドがバックグラウンドで呼ばれて解析が実行されることになる。
 | Simulatorの場合と同じように、実行日時や実行時間などの情報が保存され、結果はブラウザ経由で確認できる。
 
-| またAnalyzer実行時に解析用のパラメータを指定して実行することもできる。
+| また、Analyzerは実行時に解析用のパラメータを指定して実行することもできる。
 | 例えば、時系列データを解析するときに最初の何ステップを除外するか指定したい場合などに使える。
 | Analyzerの登録時にパラメータの定義を登録することができる。
 
@@ -381,7 +387,8 @@ Runに対する解析
 Name                          OACISの中で使われるAnalyzerの名前。任意の名前を指定できる。各Simulator内で一意でなくてはならない。
 Type                          Runに対する解析(on_run)、ParameterSetに対する解析(on_parameter_set)のどちらかから選ぶ
 Definition of Parameters      解析時に指定するパラメータがあれば登録する。空でもよい。
-Command                       実行するコマンド
+Command                       Analyzerを実行するコマンド。
+Pring version command         Analyzerのバージョンを標準出力に出力するコマンド。
 Auto Run                      Runの終了後に解析が自動実行されるか指定する。
 Description                   Analyzerに対する説明。入力は任意。
 ============================= ======================================================================
@@ -407,7 +414,7 @@ Description                   Analyzerに対する説明。入力は任意。
 | Runに対する解析の場合、 `_input.json` のフォーマットは以下の通りである。
 | "analysis_parameters", "simulation_parameters", "result" はそれぞれ解析パラメータ、シミュレーションパラメータ、Runの結果を表す。
 
-.. code-block:: json
+.. code-block:: javascript
 
   {
    "analysis_parameters": {
@@ -448,7 +455,7 @@ ParameterSetに対する解析
 
 | `_input.json` の形式は以下の通り
 
-.. code-block:: json
+.. code-block:: javascript
 
   {
    "analysis_parameters": {
@@ -486,3 +493,20 @@ ParameterSetに対する解析
 
 | ParaemterSetに対する解析の場合、Auto Runのフラグはyes, noの２択から選択可能である。
 | yesの場合、ParameterSet内のすべてのRunが :finished または :failed になったときに自動実行される。
+
+Analyzerのバージョンを記録する
+----------------------------------------------
+
+| Analyzer実行時に、どのバージョンのAnalyzerを実行したかをanalysisとひもづけてOACISに記録させておくことができる。
+| バージョンを記録することにより、例えば、あるバージョンのanalysisを一括削除などの操作ができる様になる。
+
+| Analyzerのバージョンを保存するには、Analyzerのバージョンを出力させるコマンドをOACISに登録する。
+| 例えば、
+
+.. code-block:: sh
+
+  echo "v0.1.0"
+
+| というコマンドでバージョン情報を出力する場合、このコマンドをAnalyzer登録時に"Print version command" というフィールドに入力する。
+| その他、登録できるコマンドの書式は、 :ref:`シミュレーターのバージョンを記録する<manage_simulator_version>` を参照。
+

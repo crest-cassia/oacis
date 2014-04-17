@@ -109,90 +109,264 @@ EOS
     end
   end
 
-  describe ".expand_result_file_and_update_run" do
+  describe ".expand_result" do
 
-    it "expand results and parse _status.json" do
-      @sim.command = "echo '[1,2,3]' > _output.json"
+    it "expand results" do
+      @sim.command = "echo '{\"timeline\":[1,2,3]}' > _output.json"
       @sim.support_input_json = true
       @sim.save!
       run_test_script_in_temp_dir
       Dir.chdir(@temp_dir) {
         result_file = "#{@run.id}.tar.bz2"
         FileUtils.mv( result_file, @run.dir.join('..') )
-        JobScriptUtil.expand_result_file_and_update_run(@run)
+        JobScriptUtil.expand_result_file(@run)
 
         # expand result properly
         File.exist?(@run.dir.join('_stdout.txt')).should be_true
         File.exist?(@run.dir.join('_output.json')).should be_true
         File.exist?(@run.dir.join('..', "#{@run.id}.tar")).should be_false
         File.exist?(@run.dir.join('..', "#{@run.id}.tar.bz2")).should be_true
-
-        # parse status
-        @run.reload
-        @run.status.should eq :finished
-        @run.hostname.should_not be_empty
-        @run.started_at.should be_a(DateTime)
-        @run.finished_at.should be_a(DateTime)
-        @run.real_time.should_not be_nil
-        @run.cpu_time.should_not be_nil
-        @run.included_at.should be_a(DateTime)
-        @run.result.should eq [1,2,3]
       }
     end
 
-    it "parse elapsed times" do
-      @sim.command = "sleep 1"
+    context "when archive is invalid archive" do
+      it "raise error" do
+        Dir.chdir(@temp_dir) {
+          system("echo 1.2345 > #{@run.id}.tar.bz2")
+          result_file = "#{@run.id}.tar.bz2"
+          FileUtils.mv( result_file, @run.dir.join('..') )
+          expect {
+            JobScriptUtil.expand_result_file(@run)
+          }.to raise_error
+        }
+      end
+    end
+  end
+
+  describe ".update_run" do
+
+    before(:each) do
+      @sim.command = "echo '{\"timeline\":[1,2,3]}' > _output.json"
       @sim.support_input_json = true
       @sim.save!
       run_test_script_in_temp_dir
       Dir.chdir(@temp_dir) {
         result_file = "#{@run.id}.tar.bz2"
         FileUtils.mv( result_file, @run.dir.join('..') )
-        JobScriptUtil.expand_result_file_and_update_run(@run)
-
-        @run.reload
-        @run.cpu_time.should be_within(0.2).of(0.0)
-        @run.real_time.should be_within(0.2).of(1.0)
       }
+      JobScriptUtil.expand_result_file(@run)
     end
 
-    it "parse failed jobs" do
-      @sim.command = "INVALID"
-      @sim.save!
-      run_test_script_in_temp_dir
-      Dir.chdir(@temp_dir) {
-        result_file = "#{@run.id}.tar.bz2"
-        FileUtils.mv( result_file, @run.dir.join('..') )
-        JobScriptUtil.expand_result_file_and_update_run(@run)
+    it "parse _status.json" do
 
+      JobScriptUtil.update_run(@run)
+
+      # parse status
+      @run.reload
+      @run.status.should eq :finished
+      @run.hostname.should_not be_empty
+      @run.started_at.should be_a(DateTime)
+      @run.finished_at.should be_a(DateTime)
+      @run.real_time.should_not be_nil
+      @run.cpu_time.should_not be_nil
+      @run.included_at.should be_a(DateTime)
+    end
+
+    context "when _status.json has invalid json format" do
+
+      it "do not update status" do
+
+        parsed = JSON.load(File.open(@run.dir.join("_status.json")))
+        File.open(@run.dir.join("_status.json"), "w") do |io|
+          #puts a part of string
+          io.puts parsed.to_json[0..10]
+        end
+
+        JobScriptUtil.update_run(@run)
+
+        # parse status
         @run.reload
-        @run.status.should eq :failed
-        @run.hostname.should_not be_empty
+        @run.status.should eq :created
+        @run.hostname.should be_nil
+        @run.started_at.should be_nil
+        @run.finished_at.should be_nil
+        @run.real_time.should_not be_nil
+        @run.cpu_time.should_not be_nil
+        @run.included_at.should be_a(DateTime)
+      end
+    end
+
+    it "parse _output.json which is not a Hash but a Float" do
+
+      Dir.chdir(@run.dir) {
+        result = 0.12345
+        system("echo #{result} > _output.json")
+      }
+
+      JobScriptUtil.update_run(@run)
+
+      # expand result properly
+      File.exist?(@run.dir.join('_output.json')).should be_true
+
+      # parse status
+      @run.reload
+      @run.result.should eq Hash["result",0.12345]
+    end
+
+    it "parse _output.json which is not a Hash but a Boolean" do
+
+      Dir.chdir(@run.dir) {
+        result = false
+        system("echo #{result} > _output.json")
+      }
+
+      JobScriptUtil.update_run(@run)
+
+      # expand result properly
+      File.exist?(@run.dir.join('_output.json')).should be_true
+
+      # parse status
+      @run.reload
+      @run.result.should eq Hash["result",false]
+    end
+
+    it "parse _output.json which is not a Hash but a String" do
+
+      Dir.chdir(@run.dir) {
+        result = "12345"
+        system("echo \\\"#{result}\\\" > _output.json")
+      }
+
+      JobScriptUtil.update_run(@run)
+
+      # expand result properly
+      File.exist?(@run.dir.join('_output.json')).should be_true
+
+      # parse status
+      @run.reload
+      @run.result.should eq Hash["result","12345"]
+    end
+
+    it "parse _output.json which is not a Hash but a Array" do
+
+      Dir.chdir(@run.dir) {
+        result = [1,2,3]
+        system("echo #{result} > _output.json")
+      }
+
+      JobScriptUtil.update_run(@run)
+
+      # expand result properly
+      File.exist?(@run.dir.join('_output.json')).should be_true
+
+      # parse status
+      @run.reload
+      @run.result.should eq Hash["result",[1,2,3]]
+    end
+
+    context "when _output.json has invalid json format" do
+
+      it "do not update result" do
+
+        parsed = JSON.load(File.open(@run.dir.join("_output.json")))
+        File.open(@run.dir.join("_output.json"), "w") do |io|
+          #puts a part of string
+          io.puts parsed.to_json[0..10]
+        end
+
+        expect {
+          JobScriptUtil.update_run(@run)
+        }.not_to change { @run.result }
+
+        # parse status
+        @run.reload
+        @run.status.should eq :finished
+        @run.hostname.should_not be_nil
         @run.started_at.should be_a(DateTime)
         @run.finished_at.should be_a(DateTime)
         @run.real_time.should_not be_nil
         @run.cpu_time.should_not be_nil
         @run.included_at.should be_a(DateTime)
-        File.exist?(@run.dir.join('_stdout.txt')).should be_true
-      }
+      end
     end
 
-    context "when print_version_command is not nil" do
+    it "parse elapsed times" do
 
-      it "parses simulator version printed by Simulator#print_version_command" do
-        @sim.command = "echo '[1,2,3]' > _output.json"
-        @sim.support_input_json = true
-        @sim.print_version_command = 'echo "simulator version: 1.0.0"'
-        @sim.save!
-        run_test_script_in_temp_dir
-        Dir.chdir(@temp_dir) {
-          result_file = "#{@run.id}.tar.bz2"
-          FileUtils.mv( result_file, @run.dir.join('..') )
-          JobScriptUtil.expand_result_file_and_update_run(@run)
-
-          @run.simulator_version.should eq "simulator version: 1.0.0"
-        }
+      time_str=<<EOS
+real 0.30
+user 0.20
+sys 0.10
+EOS
+      File.open(@run.dir.join("_time.txt"), "w") do |io|
+        io.puts time_str
       end
+
+      JobScriptUtil.update_run(@run)
+
+      @run.reload
+      @run.cpu_time.should eq 0.2
+      @run.real_time.should eq 0.3
+    end
+
+    context "when _time.txt has invalid format" do
+
+      it "do not update result" do
+
+        time_str=<<EOS
+user 0.20
+sys 0.10
+EOS
+        File.open(@run.dir.join("_time.txt"), "w") do |io|
+          io.puts time_str
+        end
+
+        expect {
+          JobScriptUtil.update_run(@run)
+        }.not_to change { @run.real_time }
+
+        # parse status
+        @run.reload
+        @run.status.should eq :finished
+        @run.hostname.should_not be_nil
+        @run.started_at.should be_a(DateTime)
+        @run.finished_at.should be_a(DateTime)
+        @run.real_time.should be_nil
+        @run.cpu_time.should_not be_nil
+        @run.included_at.should be_a(DateTime)
+      end
+    end
+
+    it "parse failed jobs" do
+
+      parsed = JSON.load(File.open(@run.dir.join("_status.json")))
+      parsed["rc"] = "-1"
+      File.open(@run.dir.join("_status.json"), "w") do |io|
+        io.puts parsed.to_json
+      end
+
+      JobScriptUtil.update_run(@run)
+
+      @run.reload
+      @run.status.should eq :failed
+      @run.hostname.should_not be_empty
+      @run.started_at.should be_a(DateTime)
+      @run.finished_at.should be_a(DateTime)
+      @run.real_time.should_not be_nil
+      @run.cpu_time.should_not be_nil
+      @run.included_at.should be_a(DateTime)
+      File.exist?(@run.dir.join('_stdout.txt')).should be_true
+    end
+
+    it "parses simulator version printed by Simulator#print_version_command" do
+
+      File.open(@run.dir.join("_version.txt"), "w") do |io|
+        io.puts "simulator version: 1.0.0"
+      end
+
+      JobScriptUtil.update_run(@run)
+
+      @run.reload
+      @run.simulator_version.should eq "simulator version: 1.0.0"
     end
   end
 end

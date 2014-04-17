@@ -7,14 +7,14 @@
       %th Name
       %th Updated_at
       %th Progress
-  %tbody
+  %tbody.sortable{data: {'sort-url' => _sort_simulators_url }}
     - @simulators.each do |simulator|
-      %tr
+      = content_tag_for :tr, simulator do
         %td= link_to h(simulator.name), simulator_path(simulator)
-        %td= distance_of_time_in_words_to_now(simulator.updated_at)
+        %td= distance_to_now_in_words(simulator.updated_at)
         - counts = simulator.runs_status_count
         - counts.delete(:cancelled)
-        %td#progress= progress_bar(counts.values.inject(:+), counts[:finished], counts[:running], counts[:failed])
+        %td#progress= progress_bar(counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running])
 
 .form-actions
   %a.btn.btn-primary{href: new_simulator_path} New Simulator

@@ -7,6 +7,7 @@ class Analyzer
   field :command, type: String
   field :auto_run, type: Symbol, default: :no
   field :description, type: String
+  field :print_version_command, type: String
 
   embeds_many :parameter_definitions
   belongs_to :simulator
@@ -19,7 +20,7 @@ class Analyzer
   validates :auto_run, inclusion: {in: [:yes, :no, :first_run_only]}
 
   accepts_nested_attributes_for :parameter_definitions, allow_destroy: true
-  attr_accessible :name, :type, :command, :description, :auto_run, :parameter_definitions_attributes, :simulator
+  attr_accessible :name, :type, :command, :description, :auto_run, :parameter_definitions_attributes, :print_version_command, :simulator
 
   public
   def parameter_definition_for(key)
