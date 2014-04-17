@@ -154,8 +154,3 @@ Analysis on 5327fbc281e31e035f000001       ./public/Result_development/526638c78
 * MongoDB mongodump: http://docs.mongodb.org/manual/reference/program/mongodump/
 * MongoDB mongorestore: http://docs.mongodb.org/manual/reference/program/mongorestore/
 * MongoDB ObjectID: http://docs.mongodb.org/manual/reference/object-id/
-
-Infomation
-==========================
-* CASSIA project since 2013
-* ソースリポジトリ: https://github.com/crest-cassia/cassia

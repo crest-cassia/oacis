@@ -63,7 +63,7 @@ bundle exec rake daemon:stop
 
 The MIT License (MIT)
 
-Copyright (c) 2013 Yohsuke Murase, Takeshi Uchitane
+Copyright (c) 2013,2014 RIKEN, AICS
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
