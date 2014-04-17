@@ -2,7 +2,7 @@ class HostsController < ApplicationController
   # GET /hosts
   # GET /hosts.json
   def index
-    @hosts = Host.all
+    @hosts = Host.asc(:position).all
 
     respond_to do |format|
       format.html # index.html.erb
@@ -90,5 +90,12 @@ class HostsController < ApplicationController
         format.json {render json: @host.errors, status: :undestroyable_entity }
       end
     end
+  end
+
+  def _sort
+    params[:host].each_with_index do |host_id, index|
+      Host.find(host_id).timeless.update_attribute(:position, index)
+    end
+    render nothing: true
   end
 end

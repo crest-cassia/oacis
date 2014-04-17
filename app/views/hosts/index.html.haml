@@ -2,40 +2,40 @@
   %h1 Hosts
 
 %table.table.table-striped
-  %tr
-    %th Name
-    %th Hostname
-    %th User
-    %th Port
-    %th Ssh key
-    %th Scheduler type
-    %th Work base dir
-    %th Mounted work base dir
-    %th Max # of jobs
-    %th
-      = '# of Runs'
-      %br
-      (running/total)
-    %th
-
-  - @hosts.each do |host|
+  %thead
     %tr
-      %td= link_to(host.name, host)
-      %td= host.hostname
-      %td= host.user
-      %td= host.port
-      %td= host.ssh_key
-      %td= host.scheduler_type
-      %td= host.work_base_dir
-      %td= host.mounted_work_base_dir
-      %td= host.max_num_jobs
-      %td
-        = Run.where(submitted_to: host, status: :running).count
-        = " / "
-        = Run.where(submitted_to: host).in(status: [:created, :submitted, :running]).count
-      %td
-        = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if host.destroyable?
+      %th Name
+      %th Hostname
+      %th User
+      %th Port
+      %th Ssh key
+      %th Scheduler type
+      %th Work base dir
+      %th Mounted work base dir
+      %th Max # of jobs
+      %th
+        = '# of Runs'
+        %br
+        (running/total)
+      %th
+  %tbody.sortable{data: {'sort-url' => _sort_hosts_url }}
+    - @hosts.each do |host|
+      = content_tag_for :tr, host do
+        %td= link_to(host.name, host)
+        %td= host.hostname
+        %td= host.user
+        %td= host.port
+        %td= host.ssh_key
+        %td= host.scheduler_type
+        %td= host.work_base_dir
+        %td= host.mounted_work_base_dir
+        %td= host.max_num_jobs
+        %td
+          = Run.where(submitted_to: host, status: :running).count
+          = " / "
+          = Run.where(submitted_to: host).in(status: [:created, :submitted, :running]).count
+        %td
+          = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if host.destroyable?
 
 .form-actions
   %a.btn.btn-primary{href: new_host_path} New Host
-

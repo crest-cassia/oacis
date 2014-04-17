@@ -42,11 +42,21 @@ describe SimulatorsController do
   end
 
   describe "GET index" do
+
     it "assigns all simulators as @simulators" do
       simulator = Simulator.create! valid_attributes
       get :index, {}, valid_session
       response.should be_success
       assigns(:simulators).should eq([simulator])
+    end
+
+    it "@simulators are sorted by the position" do
+      simulators = FactoryGirl.create_list(:simulator, 3)
+      simulators.first.update_attribute(:position, 2)
+      simulators.last.update_attribute(:position, 0)
+      sorted = simulators.sort_by {|sim| sim.position }
+      get :index, {}, valid_session
+      assigns(:simulators).should eq sorted
     end
   end
 
@@ -362,6 +372,21 @@ describe SimulatorsController do
       @parsed_body["parameters"].should eq ["L", "T"]
       @parsed_body["parameter_values"].should be_a(Array)
       @parsed_body["num_runs"].should be_a(Array)
+    end
+  end
+
+  describe "POST _sort" do
+
+    before(:each) do
+      FactoryGirl.create_list(:simulator, 3)
+    end
+
+    it "updates position of the simulators" do
+      simulators = Simulator.asc(:position).to_a
+      expect {
+        post :_sort, {simulator: simulators.reverse }
+        response.should be_success
+      }.to change { simulators.first.reload.position }.from(0).to(2)
     end
   end
 end

@@ -97,6 +97,18 @@ describe Simulator do
     end
   end
 
+  describe "'position' field" do
+
+    before(:each) do
+      FactoryGirl.create_list(:simulator, 2)
+    end
+
+    it "the largest number within existing simulators is assigned when created" do
+      Simulator.create!(@valid_fields.update(name: 'simulatorC')).position.should eq 2
+      Simulator.all.map(&:position).should =~ [0,1,2]
+    end
+  end
+
   describe "#destroy" do
 
     before(:each) do

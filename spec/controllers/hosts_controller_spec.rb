@@ -26,6 +26,14 @@ describe HostsController do
       get :index, {}, valid_session
       assigns(:hosts).should eq([host])
     end
+
+    it "@hosts are sorted by position" do
+      hosts = FactoryGirl.create_list(:host, 3)
+      hosts.first.update_attribute(:position, 2)
+      hosts.last.update_attribute(:position, 0)
+      get :index, {}, valid_session
+      assigns(:hosts).map(&:position).should eq [0,1,2]
+    end
   end
 
   describe "GET show" do
@@ -152,6 +160,21 @@ describe HostsController do
         delete :destroy, {id: @host.to_param}, valid_session
         response.should render_template('show')
       end
+    end
+  end
+
+  describe "POST _sort" do
+
+    before(:each) do
+      FactoryGirl.create_list(:host, 3)
+    end
+
+    it "updates position of the simulators" do
+      hosts = Host.asc(:position).to_a
+      expect {
+        post :_sort, {host: hosts.reverse }
+        response.should be_success
+      }.to change { hosts.first.reload.position }.from(0).to(2)
     end
   end
 end
