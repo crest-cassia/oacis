@@ -28,10 +28,10 @@ gem install bundler
 - clone the git repository
 
     ```sh:clone.sh
-git clone -b master git@github.com:crest-cassia/cassia.git
+git clone -b master git@github.com:crest-cassia/oacis.git
 ```
 - install dependent gems using bundle command
-    - cd to the project root directory `cassia`, and run the following command
+    - cd to the project root directory `oacis`, and run the following command
 
       ```sh:install_sh
   bundle install --path=vendor/bundle
