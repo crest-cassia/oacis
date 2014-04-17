@@ -137,7 +137,7 @@ Executable_on             実行可能Hostを指定する。
 - Command: ~/path/to/simulator.out
 - Executable_on: localhostにチェック
 
-| シミュレータの登録後、覧画面で登録したシミュレータを確認する事ができる。
+| シミュレータの登録後、一覧画面で登録したシミュレータを確認する事ができる。
 | 一覧画面の表の各行はドラッグして移動する事ができ、見やすい順番に整理する事ができる。
 
 ParameterSet登録
