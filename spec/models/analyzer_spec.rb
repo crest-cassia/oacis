@@ -16,6 +16,7 @@ describe Analyzer do
           { key: "initial_skip", type: "Integer", default: "0", description: "Number of inital step" }
         ],
         command: "ruby ~/path/to/time_series_analyzer.rb",
+        print_version_command: "echo \"v0.1.0\"",
         description: "time series analysis"
       }
     end
@@ -75,6 +76,15 @@ describe Analyzer do
         invalid_attr.delete(:command)
         azr = @sim.analyzers.build(invalid_attr)
         azr.should_not be_valid
+      end
+    end
+
+    describe "'print_version_command' field" do
+
+      it "can be blank" do
+        fields = @valid_fields
+        fields.delete(:print_version_command)
+        @sim.analyzers.build(fields).should be_valid
       end
     end
 

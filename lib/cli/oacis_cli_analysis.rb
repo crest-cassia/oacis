@@ -160,7 +160,8 @@ class OacisCli < Thor
 
     if yes?("Destroy #{analyses.count} analyses?")
       progressbar = ProgressBar.create(total: analyses.count, format: "%t %B %p%% (%c/%C)")
-      analyses.each do |anl|
+      # no_timeout enables destruction of 10000 or more analyses
+      analyses.no_timeout.each do |anl|
         anl.destroy
         progressbar.increment
       end
@@ -193,7 +194,8 @@ class OacisCli < Thor
 
     if yes?("Replace #{analyses.count} analyses with new ones?")
       progressbar = ProgressBar.create(total: analyses.count, format: "%t %B %p%% (%c/%C)")
-      analyses.each do |anl|
+      # no_timeout enables replacement of 10000 or more analyses
+      analyses.no_timeout.each do |anl|
         if anl.analyzable_type == "Run"
           new_analysis = Run.find(anl.analyzable_id).analyses.build
           new_analysis.parameters = anl.parameters

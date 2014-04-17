@@ -123,6 +123,7 @@ Name                      シミュレータの名前。Ascii文字、数字、�
 Definition of Parameters  シミュレータの入力パラメータの定義。パラメータの名前、型(Integer, Float, String, Boolean)、デフォルト値、パラメータの説明（任意）を入力する。
 Preprocess Script         ジョブの前に実行されるプリプロセスを記述するスクリプト。空の場合はプリプロセスは実行されない。
 Command                   シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。（例. *~/path/to/simulator.out* ）
+Pirnt version command     シミュレータのversionを標準出力に出力するコマンド。（例. *~/path/to/simulator.out --version* ）
 Input type                パラメータを引数で渡すか、JSONで渡すか指定する。
 Support mpi               シミュレータがMPIで実行されるか。チェックを入れた場合、mpiexecコマンド付きで実行される。
 Support omp               シミュレータがOpenMPで並列化されているか。チェックを入れた場合、環境変数OMP_NUM_THREADSで並列数を指定して実行される。

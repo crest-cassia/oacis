@@ -42,13 +42,15 @@ class AnalyzerRunner
     tms = Benchmark.measure {
       Dir.chdir(work_dir) {
         prepare_inputs(arn)
+        put_version_text(arn)
         cmd = "#{arn.analyzer.command} 1> _stdout.txt 2> _stderr.txt"
         system(cmd)
         unless $?.to_i == 0
-          raise "Rc of the simulator is not 0, but #{$?.to_i}"
+          raise "Rc of the analyzer is not 0, but #{$?.to_i}"
         end
         output[:result] = parse_output_json
         output[:result] = {"result"=>parse_output_json} unless output[:result].is_a?(Hash)
+        output[:analyzer_version] = File.open("_version.txt").read.chomp if File.exist?("_version.txt")
         remove_inputs
       }
     }
@@ -69,6 +71,17 @@ class AnalyzerRunner
       FileUtils.mkdir_p(output_dir)
       inputs.each do |input|
         FileUtils.ln_s(input, output_dir)
+      end
+    end
+  end
+
+  # put _version.txt on the current directory
+  def self.put_version_text(arn)
+    if arn.analyzer.print_version_command.present?
+      cmd = "#{arn.analyzer.print_version_command} > _version.txt"
+      system(cmd)
+      unless $?.to_i == 0
+        raise "Rc of the analyzer print version command is not 0, but #{$?.to_i}"
       end
     end
   end
