@@ -200,6 +200,7 @@ DEPENDENCIES
   haml-rails
   jquery-datatables-rails
   jquery-rails
+  jquery-ui-rails
   less-rails (= 2.3.3)
   mongoid
   mongoid-rspec
