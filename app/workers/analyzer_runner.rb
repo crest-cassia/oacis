@@ -78,7 +78,7 @@ class AnalyzerRunner
   # put _version.txt on the current directory
   def self.put_version_text(arn)
     if arn.analyzer.print_version_command.present?
-      cmd = "#{arn.analyzer.print_version_command} > _version.txt"
+      cmd = "#{arn.analyzer.print_version_command} > #{Dir.pwd}/_version.txt"
       system(cmd)
       unless $?.to_i == 0
         raise "Rc of the analyzer print version command is not 0, but #{$?.to_i}"
