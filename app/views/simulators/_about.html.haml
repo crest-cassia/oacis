@@ -56,3 +56,17 @@
     %br
     %pre
       = simulator.print_version_command
+
+%h3 List of Simulator Versions
+%table.table.table-striped
+  %thead
+    %tr
+      %th Version
+      %th Oldest started_at
+      %th Latest started_at
+  %tbody
+    - simulator.simulator_versions.each do |sim_version|
+      %tr
+        %td= sim_version['_id'] || "---"
+        %td= sim_version['oldest_started_at']
+        %td= sim_version['latest_started_at']
