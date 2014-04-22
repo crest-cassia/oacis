@@ -367,4 +367,45 @@ describe Simulator do
       end
     end
   end
+
+  describe "#simulator_versions" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 0, finished_runs_count: 5)
+      runs = @sim.runs.asc(&:id)
+
+      runs[0].update_attribute(:started_at, 3.days.ago)
+      runs[0].update_attribute(:simulator_version, "v1")
+      runs[1].update_attribute(:started_at, 2.days.ago)
+      runs[1].update_attribute(:simulator_version, "v1")
+      runs[2].update_attribute(:started_at, 3.days.ago)
+      runs[2].update_attribute(:simulator_version, "v2")
+      runs[3].update_attribute(:started_at, 2.days.ago)
+      runs[3].update_attribute(:simulator_version, "v2")
+      runs[4].update_attribute(:started_at, 1.days.ago)
+      runs[4].update_attribute(:simulator_version, "v2")
+    end
+
+    it "returns list of simulator_versions in Array" do
+      @sim.simulator_versions.should be_a(Array)
+    end
+
+    it "returns array of hash whose '_id' field is simulator_versions" do
+      @sim.simulator_versions.map {|h| h['_id']}.should =~ ["v1", "v2"]
+    end
+
+    it "returns array of documents which has 'oldest_started_at' and 'latest_started_at' fields" do
+      runs = @sim.runs.asc(&:id)
+      expected = [
+        {"_id" => "v1", "oldest_started_at" => runs[0].started_at, "latest_started_at" => runs[1].started_at},
+        {"_id" => "v2", "oldest_started_at" => runs[2].started_at, "latest_started_at" => runs[4].started_at}
+      ]
+      @sim.simulator_versions.should =~ expected
+    end
+
+    it "returns array which is sorted by 'latest_started_at' in ascending order" do
+      @sim.simulator_versions.map {|h| h['_id']}.should eq ["v1", "v2"]
+    end
+  end
 end

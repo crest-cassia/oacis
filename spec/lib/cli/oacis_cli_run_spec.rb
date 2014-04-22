@@ -319,9 +319,11 @@ describe OacisCli do
       ps = @sim.parameter_sets.first
       FactoryGirl.create(:run, parameter_set: ps).update_attribute(:simulator_version, "1.0.0")
       FactoryGirl.create(:run, parameter_set: ps).update_attribute(:simulator_version, "1.0.1")
-      FactoryGirl.create(:finished_run, parameter_set: ps)
+      FactoryGirl.create(:finished_run, parameter_set: ps).update_attribute(:simulator_version, nil)
       @failed_run = FactoryGirl.create(:finished_run, parameter_set: ps)
-        .update_attribute(:status, :failed)
+        .tap {|r| r.update_attribute(:status, :failed) }
+        .tap {|r| r.update_attribute(:simulator_version, nil) }
+
     end
 
     it "destroys runs specified by 'status'" do

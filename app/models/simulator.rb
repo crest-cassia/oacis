@@ -261,4 +261,23 @@ EOS
   def set_position
     self.position = Simulator.count
   end
+
+  public
+  def simulator_versions
+    # Output should look like follows
+    # [{"_id"=>"v1",
+    #   "oldest_started_at"=>2014-04-19 02:10:08 UTC,
+    #   "latest_started_at"=>2014-04-20 02:10:08 UTC},
+    #  {"_id"=>"v2",
+    #   "oldest_started_at"=>2014-04-19 02:10:08 UTC,
+    #   "latest_started_at"=>2014-04-21 02:10:08 UTC}]
+    query = Run.where(simulator: self)
+    Run.collection.aggregate(
+      {'$match' => query.selector },
+      { '$group' => {'_id' => '$simulator_version',
+                     oldest_started_at: { '$min' => '$started_at'},
+                     latest_started_at: { '$max' => '$started_at'}}},
+      { '$sort' => {'latest_started_at' => 1} }
+      )
+  end
 end
