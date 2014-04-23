@@ -612,7 +612,7 @@ Analysisを削除する
 
   .. code-block:: sh
 
-    ../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed
+    ../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:v0.1.0
 
 - オプション
 
@@ -629,15 +629,16 @@ Analysisを削除する
     - analyzer_id はIDの文字列を指定する。
     - queryは連想配列で指定する。
         - 連想配列は {key}:{value} という形式で指定する。
-        - keyとして可能な値は"status"のみ。
+        - keyとして可能な値は"status","analyzer_version"のみ。
+        - “analyzer_version” が空のものを指定したい場合には “analyzer_version:” と指定する。
 
 - 実行例
 
-    - statusが "failed" （解析失敗）のAnalysisを削除する
+    - statusが "failed" （解析失敗）かつanalyzer_versionが "nil"のAnalysisを削除する
 
       .. code-block:: sh
 
-        ../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed
+        ../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:
 
 replace_analyses
 --------------------------------
@@ -652,7 +653,7 @@ replace_analyses
 
   .. code-block:: sh
 
-    ../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
+    ../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished analyzer_version:v0.1.0
 
 - オプション
 
@@ -669,7 +670,8 @@ replace_analyses
     - analyzer_id はIDの文字列を指定する。
     - queryは連想配列で指定する。
         - 連想配列は {key}:{value} という形式で指定する。
-        - keyとして可能な値は"status"のみ。
+        - keyとして可能な値は"status","analyzer_version"のみ。
+        - “analyzer_version” が空のものを指定したい場合には “analyzer_version:” と指定する。
 
 - 実行例
 

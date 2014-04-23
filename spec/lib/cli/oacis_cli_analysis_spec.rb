@@ -272,6 +272,39 @@ describe OacisCli do
       }
     end
 
+    it "destroys analyses specified by 'analyzer_version'" do
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+      at_temp_dir {
+        invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
+        Analysis.limit(3).each do |anl|
+          anl.update_attribute(:status, :finished)
+          anl.update_attribute(:analyzer_version, "v0.1.0")
+        end
+        options = {analyzer_id: analyzer_id, query: {"analyzer_version" => "v0.1.0"} }
+        expect {
+          OacisCli.new.invoke(:destroy_analyses, [], options)
+        }.to change { Analysis.where(analyzer_version: "v0.1.0").count }.by(-3)
+      }
+    end
+
+    it "destroys analyses of analyzer_version=nil when analyzer_version is empty" do
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+      at_temp_dir {
+        invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
+        Analysis.each do |anl|
+          anl.update_attribute(:status, :finished)
+        end
+        Analysis.limit(2).each do |anl|
+          anl.update_attribute(:analyzer_version, "v0.1.0")
+        end
+        options = {analyzer_id: analyzer_id, query: {"analyzer_version" => ""} }
+        specified_analyses_count = Analysis.where(analyzer_version: nil).count
+        expect {
+          OacisCli.new.invoke(:destroy_analyses, [], options)
+        }.to change { Analysis.where(analyzer_version: nil).count }.by(-specified_analyses_count)
+      }
+    end
+
     context "when query option is invalid" do
       it "raises an exception" do
         analyzer_id = @sim.analyzers.where(type: :on_run).first.id
@@ -282,6 +315,10 @@ describe OacisCli do
             OacisCli.new.invoke(:destroy_analyses, [], options)
           }.to raise_error
           options = {analyzer_id: analyzer_id, query: { "status" => "DO_NOT_EXIST" } }
+          expect {
+            OacisCli.new.invoke(:destroy_analyses, [], options)
+          }.to raise_error
+          options = {analyzer_id: analyzer_id, query: { "analyzer_version" => "DO_NOT_EXIST" } }
           expect {
             OacisCli.new.invoke(:destroy_analyses, [], options)
           }.to raise_error
