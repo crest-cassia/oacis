@@ -367,4 +367,60 @@ describe Simulator do
       end
     end
   end
+
+  describe "#simulator_versions" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 1, finished_runs_count: 5)
+      runs = @sim.runs.in(status: [:finished, :failed]).asc(&:id)
+
+      runs[0].update_attribute(:started_at, 3.days.ago)
+      runs[0].update_attribute(:simulator_version, "v1")
+      runs[1].update_attribute(:started_at, 2.days.ago)
+      runs[1].update_attribute(:simulator_version, "v1")
+      runs[2].update_attribute(:started_at, 3.days.ago)
+      runs[2].update_attribute(:simulator_version, "v2")
+      runs[3].update_attribute(:started_at, 2.days.ago)
+      runs[3].update_attribute(:simulator_version, "v2")
+      runs[4].update_attribute(:started_at, 1.days.ago)
+      runs[4].update_attribute(:simulator_version, "v2")
+      runs[4].update_attribute(:status, :failed)
+    end
+
+    it "returns list of simulator_versions in Array" do
+      @sim.simulator_versions.should be_a(Array)
+    end
+
+    it "returns array of hash whose 'version' field is simulator_versions" do
+      @sim.simulator_versions.map {|h| h['version']}.should =~ ["v1", "v2"]
+    end
+
+    it "returns array of hash which has 'oldest_started_at' and 'latest_started_at' fields" do
+      runs = @sim.runs.in(status: [:finished, :failed]).asc(&:id)
+      expected = [
+        { "version" => "v1",
+          "oldest_started_at" => runs[0].started_at,
+          "latest_started_at" => runs[1].started_at,
+          "count" => {finished: 2} },
+        { "version" => "v2",
+          "oldest_started_at" => runs[2].started_at,
+          "latest_started_at" => runs[4].started_at,
+          "count" => {finished: 2, failed: 1} }
+      ]
+      @sim.simulator_versions.should =~ expected
+    end
+
+    it "returns array which is sorted by 'latest_started_at' in ascending order" do
+      @sim.simulator_versions.map {|h| h['version']}.should eq ["v1", "v2"]
+    end
+
+    it "counts runs for each status" do
+      finished_count = @sim.runs.where(status: :finished).count
+      failed_count = @sim.runs.where(status: :failed).count
+      output = @sim.simulator_versions
+      output.map {|h| h['count'][:finished].to_i }.inject(:+).should eq finished_count
+      output.map {|h| h['count'][:failed].to_i }.inject(:+).should eq failed_count
+    end
+  end
 end

@@ -261,4 +261,43 @@ EOS
   def set_position
     self.position = Simulator.count
   end
+
+  public
+  def simulator_versions
+    # Output should look like follows
+    # [{"_id"=>"v1",
+    #   "oldest_started_at"=>2014-04-19 02:10:08 UTC,
+    #   "latest_started_at"=>2014-04-20 02:10:08 UTC,
+    #   "count" => {:finished => 2} },
+    #  {"_id"=>"v2",
+    #   "oldest_started_at"=>2014-04-19 02:10:08 UTC,
+    #   "latest_started_at"=>2014-04-21 02:10:08 UTC,
+    #   "count"=> {:finished => 2, :failed => 1} }]
+    query = Run.where(simulator: self).exists(started_at: true)
+    aggregated = Run.collection.aggregate(
+      {'$match' => query.selector },
+      { '$group' => {'_id' => { version: '$simulator_version', status: '$status'},
+                     oldest_started_at: { '$min' => '$started_at'},
+                     latest_started_at: { '$max' => '$started_at'},
+                     count: {'$sum' => 1}
+                     }})
+
+    sim_versions = {}
+    aggregated.each do |h|
+      version = h['_id']['version']
+      merged = (sim_versions[version] or {})
+      if merged['oldest_started_at'].nil? or merged['oldest_started_at'] > h['oldest_started_at']
+        merged['oldest_started_at'] = h['oldest_started_at']
+      end
+      if merged['latest_started_at'].nil? or merged['latest_started_at'] < h['latest_started_at']
+        merged['latest_started_at'] = h['latest_started_at']
+      end
+      merged['count'] ||= {}
+      status = h['_id']['status']
+      merged['count'][status] = h['count']
+      sim_versions[version] = merged
+    end
+
+    sim_versions.map {|key,val| val['version'] = key; val }.sort_by {|a| a['latest_started_at']}
+  end
 end
