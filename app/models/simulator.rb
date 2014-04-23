@@ -273,7 +273,7 @@ EOS
     #   "oldest_started_at"=>2014-04-19 02:10:08 UTC,
     #   "latest_started_at"=>2014-04-21 02:10:08 UTC,
     #   "count"=> {:finished => 2, :failed => 1} }]
-    query = Run.where(simulator: self).exists(simulator_version: true)
+    query = Run.where(simulator: self).in(status: [:finished, :failed])
     aggregated = Run.collection.aggregate(
       {'$match' => query.selector },
       { '$group' => {'_id' => { version: '$simulator_version', status: '$status'},
