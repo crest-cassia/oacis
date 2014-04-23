@@ -385,38 +385,42 @@ describe Simulator do
       runs[3].update_attribute(:simulator_version, "v2")
       runs[4].update_attribute(:started_at, 1.days.ago)
       runs[4].update_attribute(:simulator_version, "v2")
+      runs[4].update_attribute(:status, :failed)
     end
 
     it "returns list of simulator_versions in Array" do
       @sim.simulator_versions.should be_a(Array)
     end
 
-    it "returns array of hash whose '_id' field is simulator_versions" do
-      @sim.simulator_versions.map {|h| h['_id']}.should =~ ["v1", "v2"]
+    it "returns array of hash whose 'version' field is simulator_versions" do
+      @sim.simulator_versions.map {|h| h['version']}.should =~ ["v1", "v2"]
     end
 
     it "returns array of hash which has 'oldest_started_at' and 'latest_started_at' fields" do
       runs = @sim.runs.in(status: [:finished, :failed]).asc(&:id)
       expected = [
-        { "_id" => "v1",
+        { "version" => "v1",
           "oldest_started_at" => runs[0].started_at,
           "latest_started_at" => runs[1].started_at,
-          "count" => 2 },
-        { "_id" => "v2",
+          "count" => {finished: 2} },
+        { "version" => "v2",
           "oldest_started_at" => runs[2].started_at,
           "latest_started_at" => runs[4].started_at,
-          "count" => 3 }
+          "count" => {finished: 2, failed: 1} }
       ]
       @sim.simulator_versions.should =~ expected
     end
 
     it "returns array which is sorted by 'latest_started_at' in ascending order" do
-      @sim.simulator_versions.map {|h| h['_id']}.should eq ["v1", "v2"]
+      @sim.simulator_versions.map {|h| h['version']}.should eq ["v1", "v2"]
     end
 
-    it "includes only 'finished' or 'failed' runs" do
-      expected = @sim.runs.in(status: [:finished, :failed]).count
-      @sim.simulator_versions.map {|h| h['count'] }.inject(:+).should eq expected
+    it "counts runs for each status" do
+      finished_count = @sim.runs.where(status: :finished).count
+      failed_count = @sim.runs.where(status: :failed).count
+      output = @sim.simulator_versions
+      output.map {|h| h['count'][:finished].to_i }.inject(:+).should eq finished_count
+      output.map {|h| h['count'][:failed].to_i }.inject(:+).should eq failed_count
     end
   end
 end
