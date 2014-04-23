@@ -64,13 +64,15 @@
       %th Version
       %th Oldest started_at
       %th Latest started_at
-      %th # of Runs
+      %th= raw(status_label(:finished))
+      %th= raw(status_label(:failed))
   %tbody
     - simulator.simulator_versions.each do |sim_version|
       %tr
-        %td= sim_version['_id'] || "---"
+        %td= sim_version['version'] || "---"
         - d = sim_version['oldest_started_at']
         %td= d ? "#{d} (#{distance_to_now_in_words(d)})" : '---'
         - d = sim_version['latest_started_at']
         %td= d ? "#{d} (#{distance_to_now_in_words(d)})" : '---'
-        %td= sim_version['count']
+        %td= sim_version['count'][:finished].to_i
+        %td= sim_version['count'][:failed].to_i
