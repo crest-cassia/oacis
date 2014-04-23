@@ -143,16 +143,11 @@ class OacisCli < Thor
   method_option :query,
     type:     :hash,
     aliases:  '-q',
-    desc:     'query of analysis specified as Hash (e.g. --query=status:failed)',
+    desc:     'query of analysis specified as Hash (e.g. --query=status:failed analyzer_version:0.0.1)',
     required: true
   def destroy_analyses
     anz = Analyzer.find(options[:analyzer_id])
     analyses = find_analyses(anz, options[:query])
-
-    if analyses.count == 0
-      say("No analyses are found.")
-      return
-    end
 
     if options[:verbose]
       say("Found analyses: #{analyses.map(&:id).to_json}")
@@ -177,16 +172,11 @@ class OacisCli < Thor
   method_option :query,
     type:     :hash,
     aliases:  '-q',
-    desc:     'query of analysis specified as Hash (e.g. --query=status:failed)',
+    desc:     'query of analysis specified as Hash (e.g. --query=status:failed analyzer_version:0.0.1)',
     required: true
   def replace_analyses
     anz = Analyzer.find(options[:analyzer_id])
     analyses = find_analyses(anz, options[:query])
-
-    if analyses.count == 0
-      say("No analyses are found.")
-      return
-    end
 
     if options[:verbose]
       say("Found analyses: #{analyses.map(&:id).to_json}")
@@ -217,13 +207,19 @@ class OacisCli < Thor
 
   private
   def find_analyses(analyzer, query)
-    unless query["status"]
-      say("query must have 'status' key", :red)
+    unless query["status"] or query["analyzer_version"]
+      say("query must have 'status' key or 'analyzer_version' key", :red)
       raise "invalid query"
     end
     analyses = Analysis.where(analyzer_id: analyzer.id.to_s)
-    analyses = analyses.where(status: query["status"].to_sym)
-    raise "No analysis is found with status:#{query["status"]}" if analyses.count == 0
+    if stat = query["status"]
+      analyses = analyses.where(status: stat.to_sym)
+    end
+    if version = query["analyzer_version"]
+      version = nil if version == ""
+      analyses = analyses.where(analyzer_version: version)
+    end
+    raise "No analysis is found with query:#{query}" if analyses.count == 0
     analyses
   end
 end
