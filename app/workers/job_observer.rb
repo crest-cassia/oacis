@@ -1,7 +1,7 @@
 class JobObserver
 
   def self.perform(logger)
-    Host.all.each do |host|
+    Host.where(status: :enabled).each do |host|
       begin
         observe_host(host, logger)
       rescue => ex

@@ -13,7 +13,7 @@ describe Host do
         ssh_key: '~/.ssh/id_rsa',
         scheduler_type: 'none',
         work_base_dir: '~/__cm_work__',
-        status: :submittable
+        status: :enabled
       }
     end
 
@@ -129,8 +129,8 @@ describe Host do
       host.should_not be_valid
     end
 
-    it "status must be either ':submittable' or ':stopping'" do
-      @valid_attr.update(status: :stopping)
+    it "status must be either ':enabled' or ':disabled'" do
+      @valid_attr.update(status: :disabled)
       host = Host.new(@valid_attr)
       host.should be_valid
       @valid_attr.update(status: :running)

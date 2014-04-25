@@ -34,6 +34,18 @@ describe JobSubmitter do
       }.to_not raise_error
     end
 
+    it "do nothing if there is no 'enabled' hosts" do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @host.update_attribute(:status, :disabled)
+      @sim.executable_on.push @host
+      expect {
+        JobSubmitter.perform(@logger)
+      }.to change { Run.where(status: :created).count }.by(0)
+      expect {
+        JobSubmitter.perform(@logger)
+      }.to_not raise_error
+    end
+
     it "enqueus jobs to remote host in order of priorities on runs" do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @sim.executable_on.push @host

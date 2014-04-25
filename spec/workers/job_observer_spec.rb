@@ -2,6 +2,41 @@ require 'spec_helper'
 
 describe JobObserver do
 
+  describe ".perform" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 1)
+      @temp_dir = Pathname.new('__temp__')
+      FileUtils.mkdir_p(@temp_dir)
+      @host = @sim.executable_on.where(name: "localhost").first
+      @host.work_base_dir = @temp_dir.expand_path
+      @host.save!
+
+      @run = @sim.parameter_sets.first.runs.first
+      @run.status = :submitted
+      @run.submitted_to = @host
+      @run.save!
+
+      @logger = Logger.new( @temp_dir.join('log.txt') )
+    end
+
+    after(:each) do
+      FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it "do observe_host if host status is 'enabled'" do
+      JobObserver.should_receive(:observe_host).and_return(nil)
+      JobObserver.perform(@logger)
+    end
+
+    it "do nothing if host status is 'disabled'" do
+      @host.update_attribute(:status, :disabled)
+      JobObserver.should_not_receive(:observe_host)
+      JobObserver.perform(@logger)
+    end
+  end
+
   describe ".observe_host" do
 
     before(:each) do
@@ -28,7 +63,7 @@ describe JobObserver do
     it "do nothing if remote_status is 'submitted'" do
       RemoteJobHandler.any_instance.should_receive(:remote_status).and_return(:submitted)
       JobObserver.__send__(:observe_host, @host, @logger)
-      @run.status.should eq :submitted
+      @run.reload.status.should eq :submitted
     end
 
     it "update status to 'running' when remote_status of Run is 'running'" do

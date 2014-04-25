@@ -4,9 +4,9 @@ class Host
   field :name, type: String
   field :hostname, type: String
 
-  HOST_STATUS = [:submittable, :stopping]
+  HOST_STATUS = [:enabled, :disabled]
 
-  field :status, type: Symbol, default: HOST_STATUS[0] # either :submittable, :stopping
+  field :status, type: Symbol, default: HOST_STATUS[0]
   field :user, type: String
   field :port, type: Integer, default: 22
   field :ssh_key, type: String, default: '~/.ssh/id_rsa'
