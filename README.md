@@ -76,3 +76,9 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+## Mailing List
+
+- You can post questions and feature requests to the following Google group.
+    - [OACIS-users](https://groups.google.com/forum/#!forum/oacis-users)
+- Announcements of new releases are also available.
+
