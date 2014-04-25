@@ -15,7 +15,7 @@ class HostsController < ApplicationController
   def show
     @host = Host.find(params[:id])
     if (@host.connected? rescue false)
-      @status = @host.status
+      @status = @host.scheduler_status
     else
       flash.now[:alert] = "Failed to establish connection. Check host information."
       @status = @host.connection_error.inspect

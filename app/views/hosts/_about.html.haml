@@ -8,6 +8,9 @@
       %th Hostname
       %td= @host.hostname
     %tr
+      %th Status
+      %td= raw(host_status_label(@host.status))
+    %tr
       %th User
       %td= @host.user
     %tr
