@@ -267,7 +267,7 @@ describe ParameterSetsController do
       it "respond to simulator show" do
         request.stub(:referer).and_return("http://localhost:3000/simulators/53216ec881e31ec599000001")
         delete :destroy, {id: @ps.to_param}, valid_session
-        response.should_not redirect_to(simulator_path(@sim))
+        response.should_not redirect_to(@sim)
       end
     end
 
