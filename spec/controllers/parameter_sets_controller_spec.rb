@@ -261,6 +261,24 @@ describe ParameterSetsController do
         delete :destroy, {id: @ps.to_param}, valid_session
       }.to change(ParameterSet, :count).by(-1)
     end
+
+    context "called by simulator#show" do
+
+      it "respond to simulator show" do
+        request.stub(:referer).and_return("http://localhost:3000/simulators/53216ec881e31ec599000001")
+        delete :destroy, {id: @ps.to_param}, valid_session
+        response.should_not redirect_to(simulator_path(@sim))
+      end
+    end
+
+    context "called by parameter_set#show" do
+
+      it "respond to simulator show" do
+        request.stub(:referer).and_return("http://localhost:3000/parameter_sets/5321780f81e31eb781000178")
+        delete :destroy, {id: @ps.to_param}, valid_session
+        response.should redirect_to(@sim)
+      end
+    end
   end
 
   describe "GET _runs_list" do
