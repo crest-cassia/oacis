@@ -81,7 +81,7 @@ class ParameterSetsController < ApplicationController
     request_from = Rails.application.routes.recognize_path(request.referer)
     respond_to do |format|
       if request_from[:action] == "show" and request_from[:controller] == "simulators"
-        # delete from datatables in :action => "show" and :controller => "simulators"
+        # called by datatables in :action => "show" and :controller => "simulators"
         format.json { head :no_content }
         format.js
       else
