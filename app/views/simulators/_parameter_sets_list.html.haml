@@ -101,13 +101,8 @@
   });
 
 :javascript
-  var oPsTable;
-  function reload_parameter_sets_table() {
-    oPsTable.fnReloadAjax();
-  }
-
   $(function() {
-    oPsTable = $('#params_list').dataTable({
+    var oPsTable = $('#params_list').dataTable({
       bProcessing: true,
       bServerSide: true,
       bFilter: false,
@@ -122,7 +117,9 @@
       '<i class="icon-refresh" id="params_list_refresh"></i>'
     );
     var refresh_icon = $('#params_list_length').children('#params_list_refresh')
-    refresh_icon.on('click', reload_parameter_sets_table);
+    refresh_icon.on('click', function() {
+      oPsTable.fnReloadAjax();
+    });
   })
 
   $(function() {
