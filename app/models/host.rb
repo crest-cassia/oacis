@@ -3,6 +3,10 @@ class Host
   include Mongoid::Timestamps
   field :name, type: String
   field :hostname, type: String
+
+  HOST_STATUS = [:enabled, :disabled]
+
+  field :status, type: Symbol, default: HOST_STATUS[0]
   field :user, type: String
   field :port, type: Integer, default: 22
   field :ssh_key, type: String, default: '~/.ssh/id_rsa'
@@ -33,6 +37,8 @@ class Host
   validates :max_mpi_procs, numericality: {greater_than_or_equal_to: 1}
   validates :min_omp_threads, numericality: {greater_than_or_equal_to: 1}
   validates :max_omp_threads, numericality: {greater_than_or_equal_to: 1}
+  validates :status, presence: true,
+                     inclusion: {in: HOST_STATUS}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
   validate :template_conform_to_host_parameter_definitions
@@ -64,7 +70,7 @@ class Host
 
   attr_reader :connection_error
 
-  def status
+  def scheduler_status
     ret = nil
     start_ssh do |ssh|
       wrapper = SchedulerWrapper.new(self)

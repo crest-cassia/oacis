@@ -1,4 +1,4 @@
-%h3 Host Status
+%h3 Job Status
 
 %table.table.table-striped{style: "table-layout: fixed;"}
   %thead
@@ -25,4 +25,6 @@
       %td= "#{stat_count[:submitted]} (#{(100.0*stat_count[:submitted]/total.to_f).round(1)} %)"
       %td= "#{stat_count[:created]} (#{(100.0*stat_count[:created]/total.to_f).round(1)} %)"
 
-%pre= @status
+%h3 Scheduler status
+
+%pre= @scheduler_status

@@ -6,6 +6,7 @@
     %tr
       %th Name
       %th Hostname
+      %th Status
       %th User
       %th Port
       %th Ssh key
@@ -23,6 +24,7 @@
       = content_tag_for :tr, host do
         %td= link_to(host.name, host)
         %td= host.hostname
+        %td= raw(host_status_label(host.status))
         %td= host.user
         %td= host.port
         %td= host.ssh_key

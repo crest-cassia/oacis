@@ -1,7 +1,7 @@
 class JobSubmitter
 
   def self.perform(logger)
-    Host.all.each do |host|
+    Host.where(status: :enabled).each do |host|
       begin
         num = host.max_num_jobs - host.submitted_runs.count
         if num > 0
