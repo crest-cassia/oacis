@@ -106,6 +106,14 @@ class ParameterSetsController < ApplicationController
     render json: AnalysesListDatatable.new(view_context, parameter_set.analyses)
   end
 
+  def _similar_parameter_sets_list
+    base_ps = ParameterSet.find(params[:id])
+    keys = base_ps.simulator.parameter_definitions.map(&:key)
+    selectors = keys.map {|key| base_ps.parameter_sets_with_different(key).selector }
+    parameter_sets = ParameterSet.or(*selectors)
+    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, base_ps)
+  end
+
   def _line_plot
     ps = ParameterSet.find(params[:id])
 

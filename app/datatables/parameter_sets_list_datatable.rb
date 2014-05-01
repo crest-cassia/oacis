@@ -1,9 +1,10 @@
 class ParameterSetsListDatatable
 
-  def initialize(parameter_sets, parameter_definition_keys, view)
+  def initialize(parameter_sets, parameter_definition_keys, view, base_ps = nil)
     @view = view
     @param_sets = parameter_sets
     @param_keys = parameter_definition_keys
+    @base_ps = base_ps
   end
 
   def as_json(options = {})

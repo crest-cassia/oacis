@@ -304,6 +304,45 @@ describe ParameterSetsController do
     end
   end
 
+  describe "GET _similar_parameter_sets_list" do
+
+    before(:each) do
+      parameter_definitions = [
+        ParameterDefinition.new(key: "I", type: "Integer", default: 0),
+        ParameterDefinition.new(key: "F", type: "Float", default: 1.0),
+        ParameterDefinition.new(key: "S", type: "String", default: 'abc'),
+        ParameterDefinition.new(key: "B", type: "Boolean", default: false)
+      ]
+
+      @simulator = FactoryGirl.create(:simulator,
+                                      parameter_definitions: parameter_definitions,
+                                      parameter_sets_count: 0
+                                      )
+      [0,1,2].each do |i|
+        [0.0, 1.0, 2.0].each do |f|
+          ['a', 'b', 'c'].each do |s|
+            [true, false].each do |b|
+              @simulator.parameter_sets.create!(v: {'I'=>i,'F'=>f,'S'=>s,'B'=>b})
+            end
+          end
+        end
+      end
+      @param_set = @simulator.parameter_sets.where('v.I'=>1,'v.F'=>1.0,'v.S'=>'b','v.B'=>true).first
+      get :_similar_parameter_sets_list, {id: @param_set.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      @parsed_body = JSON.parse(response.body)
+    end
+
+    it "return json format" do
+      response.should be_success
+      response.header['Content-Type'].should include 'application/json'
+    end
+
+    it "returns correct number of parameter sets" do
+      parsed_body = JSON.parse(response.body)
+      parsed_body['iTotalRecords'].should eq 8
+    end
+  end
+
   describe "GET _line_plot" do
 
     before(:each) do
