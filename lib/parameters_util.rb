@@ -9,7 +9,8 @@ module ParametersUtil
     definitions.each do |pdef|
       key = pdef.key
       type = pdef.type
-      val = parameters[key] || pdef.default
+      val = parameters.has_key?(key) ? parameters[key] : pdef.default
+      # parameters[key] can be false. Do not write 'val = parameters[key] || pdef.default'
 
       # neither parameter and defualt value is specified
       if val.nil?

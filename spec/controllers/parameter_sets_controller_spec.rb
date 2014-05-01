@@ -247,6 +247,25 @@ describe ParameterSetsController do
         end
       end
     end
+
+    describe "when Boolean parameters are included" do
+
+      before(:each) do
+        pds = [ {key: "I", type: "Integer", default: 50},
+                {key: "B", type: "Boolean", default: true}]
+        pds.map! {|h| ParameterDefinition.new(h) }
+        @sim = FactoryGirl.create(:simulator,
+                                  parameter_definitions: pds,
+                                  parameter_sets_count: 0,
+                                  analyzers_count: 0)
+      end
+
+      it "creates a parameter_sets correctly when the boolean parameter is false" do
+        valid_param = {simulator_id: @sim, v: {"B" => "false"}}
+        post :create, valid_param, valid_session
+        @sim.parameter_sets.first.v["B"].should eq false
+      end
+    end
   end
 
   describe "DELETE destroy" do

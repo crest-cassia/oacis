@@ -380,7 +380,7 @@ class ParameterSetsController < ApplicationController
         }
         casted.compact.uniq.sort
       else
-        (parameters[key] || defn["default"]).to_a
+        [ parameters.has_key?(key) ? parameters[key] : defn["default"] ]
       end
     end
 
