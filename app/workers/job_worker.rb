@@ -1,6 +1,6 @@
 class JobWorker < DaemonSpawn::Base
 
-  INTERVAL = 5
+  INTERVAL = 60 
 
   WORKER_PID_FILE = Rails.root.join('tmp', 'pids', "job_worker_#{Rails.env}.pid")
   WORKER_LOG_FILE = Rails.root.join('log', "job_worker_#{Rails.env}.log")
@@ -11,25 +11,34 @@ class JobWorker < DaemonSpawn::Base
     @logger.info("starting")
 
     @term_received = false
-    trap('TERM') {
+    Signal.trap('TERM') {
       @term_received = true
       @logger.info("TERM received. stopping")
     }
 
-    loop do
+    @pids = []
+    @pids << Process.fork {
       JobSubmitter.perform(@logger)
-      break if @term_received
+    }
+#    @pids << Process.fork {
+#      JobObserver.perform(@logger)
+#    }
+
+    loop do
       JobObserver.perform(@logger)
-      break if @term_received
       sleep INTERVAL
       break if @term_received
     end
 
-    @logger.info("stopped")
+    @pids.each do |pid|
+      Process.kill( "TERM", pid )
+    end
+    Process.waitall
   end
 
   def stop
     @logger.info("stopping")
+    Process.waitall
   end
 
   def self.alive?

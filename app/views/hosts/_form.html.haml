@@ -14,6 +14,10 @@
     .controls
       = f.select(:status, Host::HOST_STATUS)
   .control-group
+    = f.label(:polling_interval, class: 'control-label')
+    .controls
+      = f.text_field(:polling_interval, class: 'text_field')
+  .control-group
     = f.label(:user, class: 'control-label')
     .controls
       = f.text_field(:user, class: 'text_field')
