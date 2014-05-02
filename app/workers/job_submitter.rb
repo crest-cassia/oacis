@@ -32,7 +32,7 @@ class JobSubmitter
     end
 
     kill_host_process(logger, @host_pids.keys)
-    logger.info("JobSubmitter waits host porcess stopping")
+    logger.info("JobSubmitter: waiting host porcess stopping")
     Process.waitall
   end
 
@@ -73,12 +73,12 @@ class JobSubmitter
     @host_pids.each do |host_id, pid|
       next unless pid.nil?
       @host_pids[host_id] = fork do
-        logger.info("#{host_id} host process is forked")
+        logger.info("JobSubmitter: #{host_id} host process is forked")
         @term_received_host ||= {}
         @term_received_host[host_id] = false
         trap('TERM') {
           @term_received_host[host_id] = true
-          logger.info("TERM received by host #{host_id}. stopping")
+          logger.info("JobSubmitter: TERM received by host #{host_id}. stopping")
         }
 
         begin
@@ -93,7 +93,7 @@ class JobSubmitter
             break if @term_received
             break if @term_received_host[host_id]
           end
-          logger.info("host process(#{host_id}) is finished")
+          logger.info("JobSubmitter: host process(#{host_id}) is finished")
         rescue => ex
           logger.error("Error in JobSubmitter#host_process: #{ex.inspect}")
           logger.error(ex.backtrace)
@@ -112,7 +112,7 @@ class JobSubmitter
 
   def self.kill_host_process(logger, host_ids)
     @host_pids.keys.select {|enabled_host_id| host_ids.include?(enabled_host_id)}.each do |kill_host_id|
-      logger.info("TERM submitted to host #{kill_host_id}(#{@host_pids[kill_host_id]})")
+      logger.info("JobSubmitter: TERM submitted to host #{kill_host_id}(#{@host_pids[kill_host_id]})")
       Process.kill( "TERM", @host_pids[kill_host_id] )
     end
   end
