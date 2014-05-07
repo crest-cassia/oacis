@@ -1,9 +1,10 @@
 class ParameterSetsListDatatable
 
-  def initialize(parameter_sets, parameter_definition_keys, view)
+  def initialize(parameter_sets, parameter_definition_keys, view, base_ps = nil)
     @view = view
     @param_sets = parameter_sets
     @param_keys = parameter_definition_keys
+    @base_ps = base_ps
   end
 
   def as_json(options = {})
@@ -44,10 +45,34 @@ private
       tmp << "<tt>"+@view.link_to( @view.shortened_id(param.id), @view.parameter_set_path(param) )+"</tt>"
       tmp << @view.distance_to_now_in_words(param.updated_at)
       @param_keys.each do |key|
-        tmp <<  ERB::Util.html_escape(param.v[key])
+        if @base_ps
+          tmp << colorize_param_value(param.v[key], @base_ps.v[key])
+        else
+          tmp <<  ERB::Util.html_escape(param.v[key])
+        end
       end
       tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
       tmp
+    end
+  end
+
+  def colorize_param_value(val, compared_val)
+    escaped = ERB::Util.html_escape(val)
+    red = '<font color="red">' + escaped + '</font>'
+    blue = '<font color="blue">' + escaped + '</font>'
+
+    if val == compared_val
+      escaped
+    elsif val == true and compared_val == false
+      red
+    elsif val == false and compared_val == true
+      blue
+    elsif val < compared_val
+      blue
+    elsif val > compared_val
+      red
+    else
+      escaped
     end
   end
 
