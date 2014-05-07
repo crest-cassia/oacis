@@ -53,6 +53,19 @@ describe ParametersUtil do
     it "accept nil as the first argument" do
       casted = ParametersUtil.cast_parameter_values(nil, @definitions)
     end
+
+    context "when the default value of a boolean parameter is true" do
+
+      it "correctly casts false" do
+        @definitions[2].default = true
+
+        casted = ParametersUtil.cast_parameter_values({"param1" => 0, "param3" => false}, @definitions)
+        casted["param3"].should be_false
+
+        casted = ParametersUtil.cast_parameter_values({"param1" => 0}, @definitions)
+        casted["param3"].should eq true
+      end
+    end
   end
 
   describe ".cast_value" do

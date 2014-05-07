@@ -13,6 +13,7 @@ describe Host do
         ssh_key: '~/.ssh/id_rsa',
         scheduler_type: 'none',
         work_base_dir: '~/__cm_work__',
+        status: :enabled
       }
     end
 
@@ -124,6 +125,15 @@ describe Host do
 
     it "max_omp_threads must be larger than min_omp_threads" do
       @valid_attr.update(min_omp_threads: 2, max_omp_threads: 1)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
+    it "status must be either ':enabled' or ':disabled'" do
+      @valid_attr.update(status: :disabled)
+      host = Host.new(@valid_attr)
+      host.should be_valid
+      @valid_attr.update(status: :running)
       host = Host.new(@valid_attr)
       host.should_not be_valid
     end

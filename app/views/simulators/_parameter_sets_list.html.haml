@@ -101,64 +101,7 @@
   });
 
 :javascript
-  var oPsTable;
-  function reload_parameter_sets_table() {
-    oPsTable.fnReloadAjax();
-  }
-
-  $(function() {
-    oPsTable = $('#params_list').dataTable({
-      bProcessing: true,
-      bServerSide: true,
-      bFilter: false,
-      aaSorting: [[ 3, "desc" ]],
-      bAutoWidth: false,
-      iDisplayLength: 100,
-      sAjaxSource: $('#params_list').data('source'),
-      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-      sPaginationType: "bootstrap"
-    });
-    $('#params_list_length').append(
-      '<i class="icon-refresh" id="params_list_refresh"></i>'
-    );
-    var refresh_icon = $('#params_list_length').children('#params_list_refresh')
-    refresh_icon.on('click', reload_parameter_sets_table);
-  })
-
-  $(function() {
-    $("#params_list").on("click", "img.treebtn[parameter_set_id]", function() {
-      if ($(this).attr("state") == "close") {
-        $("img.treebtn[state='open']", $(this).closest("tbody") ).each(function(){
-          $(this).trigger("click");
-        });
-        var td_element = $(this).closest("td");
-        var tr_element = $(this).closest("tr");
-        var param_id = $(this).attr("parameter_set_id");
-        var table_cols = tr_element.children("td").length;
-        $(this)
-          .attr("state", "open")
-          .attr("src", "/assets/collapse.png")
-        $.get("/parameter_sets/"+param_id+"/_runs_and_analyses", function(data) {
-          tr_element.after(
-            $("<tr>").attr("id", "ps_"+param_id).html(
-              $("<td>").attr({colspan: table_cols}).html(
-                $("<div>").attr("class", "well").html(data)
-              )
-            )
-          );
-          $("#runs_list" ,tr_element.next()).trigger("change");
-        });
-      } else {
-        $(this)
-          .attr("state", "close")
-          .attr("src", "/assets/expand.png")
-        var td_element = $(this).closest("td")
-        var param_id = $(this).attr("parameter_set_id")
-        var run_list = $(this).closest("tr").siblings("tr#ps_"+param_id)
-        run_list.remove()
-      }
-    });
-  })
+  $(create_parameter_sets_list('#params_list', 100) );
 
 :javascript
   $(function() {

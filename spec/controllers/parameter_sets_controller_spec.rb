@@ -247,6 +247,25 @@ describe ParameterSetsController do
         end
       end
     end
+
+    describe "when Boolean parameters are included" do
+
+      before(:each) do
+        pds = [ {key: "I", type: "Integer", default: 50},
+                {key: "B", type: "Boolean", default: true}]
+        pds.map! {|h| ParameterDefinition.new(h) }
+        @sim = FactoryGirl.create(:simulator,
+                                  parameter_definitions: pds,
+                                  parameter_sets_count: 0,
+                                  analyzers_count: 0)
+      end
+
+      it "creates a parameter_sets correctly when the boolean parameter is false" do
+        valid_param = {simulator_id: @sim, v: {"B" => "false"}}
+        post :create, valid_param, valid_session
+        @sim.parameter_sets.first.v["B"].should eq false
+      end
+    end
   end
 
   describe "DELETE destroy" do
@@ -260,6 +279,24 @@ describe ParameterSetsController do
       expect {
         delete :destroy, {id: @ps.to_param}, valid_session
       }.to change(ParameterSet, :count).by(-1)
+    end
+
+    context "called by simulator#show" do
+
+      it "respond to simulator show" do
+        request.stub(:referer).and_return("http://localhost:3000/simulators/53216ec881e31ec599000001")
+        delete :destroy, {id: @ps.to_param}, valid_session
+        response.should_not redirect_to(@sim)
+      end
+    end
+
+    context "called by parameter_set#show" do
+
+      it "respond to simulator show" do
+        request.stub(:referer).and_return("http://localhost:3000/parameter_sets/5321780f81e31eb781000178")
+        delete :destroy, {id: @ps.to_param}, valid_session
+        response.should redirect_to(@sim)
+      end
     end
   end
 
@@ -283,6 +320,45 @@ describe ParameterSetsController do
 
     it "paginates the list of parameters" do
       @parsed_body["aaData"].size.should == 25
+    end
+  end
+
+  describe "GET _similar_parameter_sets_list" do
+
+    before(:each) do
+      parameter_definitions = [
+        ParameterDefinition.new(key: "I", type: "Integer", default: 0),
+        ParameterDefinition.new(key: "F", type: "Float", default: 1.0),
+        ParameterDefinition.new(key: "S", type: "String", default: 'abc'),
+        ParameterDefinition.new(key: "B", type: "Boolean", default: false)
+      ]
+
+      @simulator = FactoryGirl.create(:simulator,
+                                      parameter_definitions: parameter_definitions,
+                                      parameter_sets_count: 0
+                                      )
+      [0,1,2].each do |i|
+        [0.0, 1.0, 2.0].each do |f|
+          ['a', 'b', 'c'].each do |s|
+            [true, false].each do |b|
+              @simulator.parameter_sets.create!(v: {'I'=>i,'F'=>f,'S'=>s,'B'=>b})
+            end
+          end
+        end
+      end
+      @param_set = @simulator.parameter_sets.where('v.I'=>1,'v.F'=>1.0,'v.S'=>'b','v.B'=>true).first
+      get :_similar_parameter_sets_list, {id: @param_set.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      @parsed_body = JSON.parse(response.body)
+    end
+
+    it "return json format" do
+      response.should be_success
+      response.header['Content-Type'].should include 'application/json'
+    end
+
+    it "returns correct number of parameter sets" do
+      parsed_body = JSON.parse(response.body)
+      parsed_body['iTotalRecords'].should eq 8
     end
   end
 

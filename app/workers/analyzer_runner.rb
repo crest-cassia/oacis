@@ -43,7 +43,7 @@ class AnalyzerRunner
       Dir.chdir(work_dir) {
         prepare_inputs(arn)
         put_version_text(arn)
-        cmd = "#{arn.analyzer.command} 1> _stdout.txt 2> _stderr.txt"
+        cmd = "(#{arn.analyzer.command}) 1> _stdout.txt 2> _stderr.txt"
         system(cmd)
         unless $?.to_i == 0
           raise "Rc of the analyzer is not 0, but #{$?.to_i}"
@@ -78,7 +78,7 @@ class AnalyzerRunner
   # put _version.txt on the current directory
   def self.put_version_text(arn)
     if arn.analyzer.print_version_command.present?
-      cmd = "#{arn.analyzer.print_version_command} > _version.txt"
+      cmd = "#{arn.analyzer.print_version_command} > #{Dir.pwd}/_version.txt"
       system(cmd)
       unless $?.to_i == 0
         raise "Rc of the analyzer print version command is not 0, but #{$?.to_i}"

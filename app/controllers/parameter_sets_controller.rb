@@ -75,11 +75,19 @@ class ParameterSetsController < ApplicationController
 
   def destroy
     @ps = ParameterSet.find(params[:id])
+    simulator = Simulator.find(@ps.simulator_id)
     @ps.destroy
 
+    request_from = Rails.application.routes.recognize_path(request.referer)
     respond_to do |format|
-      format.json { head :no_content }
-      format.js
+      if request_from[:action] == "show" and request_from[:controller] == "simulators"
+        # called by datatables in :action => "show" and :controller => "simulators"
+        format.json { head :no_content }
+        format.js
+      else
+        format.html { redirect_to simulator_path(simulator) }
+        format.json { head :no_content }
+      end
     end
   end
 
@@ -96,6 +104,14 @@ class ParameterSetsController < ApplicationController
   def _analyses_list
     parameter_set = ParameterSet.find(params[:id])
     render json: AnalysesListDatatable.new(view_context, parameter_set.analyses)
+  end
+
+  def _similar_parameter_sets_list
+    base_ps = ParameterSet.find(params[:id])
+    keys = base_ps.simulator.parameter_definitions.map(&:key)
+    selectors = keys.map {|key| base_ps.parameter_sets_with_different(key).selector }
+    parameter_sets = ParameterSet.or(*selectors)
+    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, base_ps)
   end
 
   def _line_plot
@@ -372,7 +388,7 @@ class ParameterSetsController < ApplicationController
         }
         casted.compact.uniq.sort
       else
-        (parameters[key] || defn["default"]).to_a
+        [ parameters.has_key?(key) ? parameters[key] : defn["default"] ]
       end
     end
 
