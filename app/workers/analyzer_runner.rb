@@ -43,7 +43,7 @@ class AnalyzerRunner
       Dir.chdir(work_dir) {
         prepare_inputs(arn)
         put_version_text(arn)
-        cmd = "#{arn.analyzer.command} 1> _stdout.txt 2> _stderr.txt"
+        cmd = "(#{arn.analyzer.command}) 1> _stdout.txt 2> _stderr.txt"
         system(cmd)
         unless $?.to_i == 0
           raise "Rc of the analyzer is not 0, but #{$?.to_i}"

@@ -145,6 +145,13 @@ describe AnalyzerRunner do
         File.exist?( File.join(@work_dir, '_stderr.txt') ).should be_true
       end
 
+      it "analyzer_command may include redirection of stdout or stderr" do
+        @azr.update_attribute(:command, 'pwd > pwd.txt')
+        AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        dir = File.open(File.join(@work_dir, 'pwd.txt')).read.chomp
+        dir.should eq(File.expand_path(@work_dir))
+      end
+
       it "raises an exception if return code of the analyzer is not zero" do
         @azr.update_attribute(:command, 'invalid_command')
         lambda {
