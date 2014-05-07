@@ -22,5 +22,12 @@ namespace :db do
       run.timeless.update_attribute(:priority, 1)
       progressbar.increment
     end
+
+    q = Host.where(status: nil)
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |host|
+      host.timeless.update_attribute(:status, :enabled)
+      progressbar.increment
+    end
   end
 end
