@@ -179,6 +179,7 @@ EOS
     max_mpi_procs 8
     min_omp_threads 1
     max_omp_threads 8
+    polling_interval 5
     user {ENV['USER']}
   end
 end
