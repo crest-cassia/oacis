@@ -1,6 +1,6 @@
 module JobWorkerUtil
 
-  # method needs 2 garguments, like method(host, logger)
+  # method needs 2 arguments, like method(host, logger)
   def self.perform(logger, method)
     @term_received = false
     trap('TERM') {
