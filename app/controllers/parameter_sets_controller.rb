@@ -264,8 +264,9 @@ class ParameterSetsController < ApplicationController
     end
 
     aggregated.map do |h|
-      error = h["count"] > 1 ?
-        Math.sqrt( (h["square_average"] - h["average"]**2) / (h["count"] - 1) ) : nil
+      d = h["square_average"]-h["average"]**2
+      error = (h["count"] > 1 and d > 0.0) ?
+        Math.sqrt( d / (h["count"] - 1) ) : nil
       { "_id" => h["_id"], "average" => h["average"], "error" => error, "count" => h["count"] }
     end
   end
