@@ -119,6 +119,10 @@ class ParameterSetsController < ApplicationController
 
     x_axis_key = params[:x_axis_key]
     irrelevant_keys = params[:irrelevants].split(',')
+    logscale_axis = params[:logscales].split(',') # logscale_keys = ["x_axis", "y_axis"]
+    scales = {}
+    scales["xscale"] = logscale_axis.include?("x_axis") ? "log" :  "linear"
+    scales["yscale"] = logscale_axis.include?("y_axis") ? "log" :  "linear"
 
     series = (params[:series] != x_axis_key) ? params[:series] : nil
     if series.present?
@@ -152,7 +156,7 @@ class ParameterSetsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: { xlabel: x_axis_key, ylabel: ylabel,
-                       series: series, series_values: series_values, data: data}
+                       series: series, series_values: series_values, data: data, xscale: scales["xscale"], yscale: scales["yscale"]}
       }
       format.plt {
         if series.blank?
@@ -292,6 +296,10 @@ class ParameterSetsController < ApplicationController
     analyzer_name = params[:result].split('.')[0]
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
+    logscale_axis = params[:logscales].split(',') # logscale_keys = ["x_axis", "y_axis"]
+    scales = {}
+    scales["xscale"] = logscale_axis.include?("x_axis") ? "log" :  "linear"
+    scales["yscale"] = logscale_axis.include?("y_axis") ? "log" :  "linear"
     ranges = params[:range] ? JSON.load(params[:range]) : {}
 
     found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
@@ -341,7 +349,7 @@ class ParameterSetsController < ApplicationController
 
     respond_to do |format|
       format.json {
-        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result, data: data}
+        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result, data: data, xscale: scales["xscale"], yscale: scales["yscale"]}
       }
     end
   end
