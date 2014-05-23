@@ -119,7 +119,7 @@ class ParameterSetsController < ApplicationController
 
     x_axis_key = params[:x_axis_key]
     irrelevant_keys = params[:irrelevants].split(',')
-    logscale_axis = params[:logscales].split(',') # logscale_keys = ["x_axis", "y_axis"]
+    logscale_axis = params[:logscales].split(',') # logscale_axis = ["x_axis", "y_axis"]
     scales = {}
     scales["xscale"] = logscale_axis.include?("x_axis") ? "log" :  "linear"
     scales["yscale"] = logscale_axis.include?("y_axis") ? "log" :  "linear"
@@ -296,7 +296,7 @@ class ParameterSetsController < ApplicationController
     analyzer_name = params[:result].split('.')[0]
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
-    logscale_axis = params[:logscales].split(',') # logscale_keys = ["x_axis", "y_axis"]
+    logscale_axis = params[:logscales].split(',') # logscale_axis = ["x_axis", "y_axis"]
     scales = {}
     scales["xscale"] = logscale_axis.include?("x_axis") ? "log" :  "linear"
     scales["yscale"] = logscale_axis.include?("y_axis") ? "log" :  "linear"
