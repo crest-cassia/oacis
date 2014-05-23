@@ -106,6 +106,14 @@ class ParameterSetsController < ApplicationController
     render json: AnalysesListDatatable.new(view_context, parameter_set.analyses)
   end
 
+  def _similar_parameter_sets_list
+    base_ps = ParameterSet.find(params[:id])
+    keys = base_ps.simulator.parameter_definitions.map(&:key)
+    selectors = keys.map {|key| base_ps.parameter_sets_with_different(key).selector }
+    parameter_sets = ParameterSet.or(*selectors)
+    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, base_ps)
+  end
+
   def _line_plot
     ps = ParameterSet.find(params[:id])
 
@@ -256,8 +264,9 @@ class ParameterSetsController < ApplicationController
     end
 
     aggregated.map do |h|
-      error = h["count"] > 1 ?
-        Math.sqrt( (h["square_average"] - h["average"]**2) / (h["count"] - 1) ) : nil
+      d = h["square_average"]-h["average"]**2
+      error = (h["count"] > 1 and d > 0.0) ?
+        Math.sqrt( d / (h["count"] - 1) ) : nil
       { "_id" => h["_id"], "average" => h["average"], "error" => error, "count" => h["count"] }
     end
   end
@@ -380,7 +389,7 @@ class ParameterSetsController < ApplicationController
         }
         casted.compact.uniq.sort
       else
-        (parameters[key] || defn["default"]).to_a
+        [ parameters.has_key?(key) ? parameters[key] : defn["default"] ]
       end
     end
 

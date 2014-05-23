@@ -76,9 +76,13 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+## Publications
+- A list of publications about OACIS is available at this [wiki page](https://github.com/crest-cassia/oacis/wiki/List-of-publications).
+- We would also like to create a list of researches to which OACIS contributed to.
+    - We will be happy if you are willing to include your work. Let us know about your work when your paper is published.
+
 ## Mailing List
 
-- You can post questions and feature requests to the following Google group.
+- You can post questions or feature requests to the following Google group.
     - [OACIS-users](https://groups.google.com/forum/#!forum/oacis-users)
-- Announcements of new releases are also available.
-
+- Announcements of new releases are also available there.
