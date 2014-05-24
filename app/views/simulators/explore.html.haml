@@ -51,6 +51,13 @@
         - @simulator.parameter_definitions.map(&:key).each do |key|
           = label_tag key, key
           = check_box_tag key
+      #plot-logscales
+        %br
+        Set log scale :
+        %br
+        - ["x_axis", "y_axis"].each do |key|
+          = label_tag key, key
+          = check_box_tag key
   .span8
     - urls = {"scatter-plot-url" => _scatter_plot_parameter_set_path('PSID') + '.json',
               "ps-url" => parameter_set_path('PSID')+'.json'}
@@ -93,6 +100,7 @@
 
   $('#scatter-plot-form').change( on_select_change );
   $('#irrelevant-params').change( on_select_change );
+  $('#plot-logscales').change( on_select_change );
 
   $('i.icon-arrow-down[id^="ps_down_"]').on('click', function () {
     var url = $(this).data('neighbor-url');

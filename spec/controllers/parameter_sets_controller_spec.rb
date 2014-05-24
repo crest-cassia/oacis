@@ -396,13 +396,13 @@ describe ParameterSetsController do
 
     it "returns in json format" do
       get :_line_plot,
-        {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: "", format: :json}
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: "", logscales: "", format: :json}
       response.header['Content-Type'].should include 'application/json'
     end
 
     it "returns valid json" do
       get :_line_plot,
-        {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: "", format: :json}
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: "", logscales: "", format: :json}
       expected = {
         xlabel: "L", ylabel: "ResultKey1", series: "", series_values: [],
         data: [
@@ -411,14 +411,36 @@ describe ParameterSetsController do
             [2, 99.0, nil, @ps_array[1].id],
             [3, 99.0, nil, @ps_array[2].id],
           ]
-        ]
+        ],
+        xscale: "linear",
+        yscale: "linear"
       }.to_json
       response.body.should eq expected
     end
 
+    context "when parameter 'logscales' is given" do
+      it "returns valid json" do
+        get :_line_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: "", logscales: "x_axis,y_axis", format: :json}
+        expected = {
+          xlabel: "L", ylabel: "ResultKey1", series: "", series_values: [],
+          data: [
+            [
+              [1, 99.0, nil, @ps_array[0].id],
+              [2, 99.0, nil, @ps_array[1].id],
+              [3, 99.0, nil, @ps_array[2].id],
+            ]
+          ],
+          xscale: "log",
+          yscale: "log"
+        }.to_json
+        response.body.should eq expected
+      end
+    end
+
     it "returns elapsed times when 'real_time' or 'cpu_time' is specified as y_axis_key" do
       get :_line_plot,
-        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "cpu_time", series: "", irrelevants: "", format: :json}
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "cpu_time", series: "", irrelevants: "", logscales: "", format: :json}
       expected = {
         xlabel: "L", ylabel: "cpu_time", series: "", series_values: [],
         data: [
@@ -427,7 +449,9 @@ describe ParameterSetsController do
             [2, 10.0, nil, @ps_array[1].id],
             [3, 10.0, nil, @ps_array[2].id],
           ]
-        ]
+        ],
+        xscale: "linear",
+        yscale: "linear"
       }.to_json
       response.body.should eq expected
     end
@@ -436,7 +460,7 @@ describe ParameterSetsController do
 
       it "returns series of data when parameter 'series' is given" do
         get :_line_plot,
-          {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "", format: :json}
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "", logscales: "", format: :json}
         expected = {
           xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0],
           data: [
@@ -449,7 +473,9 @@ describe ParameterSetsController do
               [2, 99.0, nil, @ps_array[1].id],
               [3, 99.0, nil, @ps_array[2].id]
             ]
-          ]
+          ],
+          xscale: "linear",
+          yscale: "linear"
         }.to_json
         response.body.should eq expected
       end
@@ -459,7 +485,7 @@ describe ParameterSetsController do
 
       it "data includes parameter sets having different irrelevant parameters " do
         get :_line_plot,
-          {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "P", format: :json}
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "P", logscales: "", format: :json}
         expected = {
           xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0],
           data: [
@@ -473,7 +499,9 @@ describe ParameterSetsController do
               [2, 99.0, nil, @ps_array[1].id],
               [3, 99.0, nil, @ps_array[2].id]
             ]
-          ]
+          ],
+          xscale: "linear",
+          yscale: "linear"
         }.to_json
         response.body.should eq expected
       end
@@ -514,13 +542,13 @@ describe ParameterSetsController do
 
     it "returns in json format" do
       get :_scatter_plot,
-        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", format: :json}
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", logscales: "", format: :json}
       response.header['Content-Type'].should include 'application/json'
     end
 
     it "returns valid json" do
       get :_scatter_plot,
-        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", format: :json}
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", logscales: "", format: :json}
       expected_data = [
         [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s],
         [@ps_array[3].v, 99.0, nil, @ps_array[3].id.to_s],
@@ -536,11 +564,31 @@ describe ParameterSetsController do
       loaded["data"].should =~ expected_data
     end
 
+    context "when parameter 'logscales' is given" do
+      it "returns valid json" do
+        get :_scatter_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", logscales: "", format: :json}
+        expected_data = [
+          [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s],
+          [@ps_array[3].v, 99.0, nil, @ps_array[3].id.to_s],
+          [@ps_array[1].v, 99.0, nil, @ps_array[1].id.to_s],
+          [@ps_array[4].v, 99.0, nil, @ps_array[4].id.to_s],
+          [@ps_array[2].v, 99.0, nil, @ps_array[2].id.to_s]
+        ]
+
+        loaded = JSON.load(response.body)
+        loaded["xlabel"].should eq "L"
+        loaded["ylabel"].should eq "T"
+        loaded["result"].should eq "ResultKey1"
+        loaded["data"].should =~ expected_data
+      end
+    end
+
     it "returns records specified by range" do
       get :_scatter_plot,
         { id: @ps_array.first,
           x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1",
-          irrelevants: "", range: {"L" => [1,2]}.to_json,
+          irrelevants: "", logscales: ["linear", "linear"], range: {"L" => [1,2]}.to_json,
           format: :json}
       expected_data = [
         [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s],
@@ -558,7 +606,7 @@ describe ParameterSetsController do
 
     it "returns elapsed time when params[:result] is 'cpu_time' or 'real_time'" do
       get :_scatter_plot,
-        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "", format: :json}
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "", logscales: "", format: :json}
       expected_data = [
         [@ps_array[0].v, 10.0, nil, @ps_array[0].id.to_s],
         [@ps_array[3].v, 10.0, nil, @ps_array[3].id.to_s],
