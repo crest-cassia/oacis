@@ -122,9 +122,9 @@ function draw_progress_overview(url) {
       vbox_height = vbox_default_height * zoom_scale;
       vbox_x = center[0] - vbox_width/2;
       vbox_y = center[1] - vbox_height/2;
-      var vboxs = adjust_boundary_conditions(vbox_x, vbox_y);
-      vbox_x=vboxs[0];
-      vbox_y=vboxs[1];
+      var vboxes = adjust_boundary_conditions(vbox_x, vbox_y);
+      vbox_x=vboxes[0];
+      vbox_y=vboxes[1];
       set_view_box(vbox_x,vbox_y);
       d3.select('g#rowLabelRegion')
         .attr("font-size",fontsize*Math.sqrt(zoom_scale));
@@ -148,9 +148,9 @@ function draw_progress_overview(url) {
           mousedragY = d3.event.pageY - mousedownY;
           vbox_x -= mousedragX * zoom_scale;
           vbox_y -= mousedragY * zoom_scale;
-          var vboxs = adjust_boundary_conditions(vbox_x, vbox_y);
-          vbox_x=vboxs[0];
-          vbox_y=vboxs[1];
+          var vboxes = adjust_boundary_conditions(vbox_x, vbox_y);
+          vbox_x=vboxes[0];
+          vbox_y=vboxes[1];
           set_view_box(vbox_x,vbox_y);
         }
       })
