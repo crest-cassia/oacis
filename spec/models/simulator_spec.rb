@@ -423,4 +423,28 @@ describe Simulator do
       output.map {|h| h['count'][:failed].to_i }.inject(:+).should eq failed_count
     end
   end
+
+  describe "#figure_files" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1,
+                                run_analysis: true)
+      run = @sim.parameter_sets.first.runs.first
+      run.update_attribute(:status, :finished)
+      FileUtils.touch(run.dir.join("fig1.png"))
+      FileUtils.touch(run.dir.join("dummy.txt"))
+
+      anl = @sim.analyzers.first.analyses.first
+      anl.update_attribute(:status, :finished)
+      FileUtils.touch(anl.dir.join("fig2.jpg"))
+    end
+
+    it "return array of PNG and JPG filenames in the result directory" do
+      analyzer_name = @sim.analyzers.first.name
+      @sim.figure_files.should =~ ["/fig1.png", "#{analyzer_name}/fig2.jpg"]
+    end
+  end
 end
