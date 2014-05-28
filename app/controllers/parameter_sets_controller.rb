@@ -363,6 +363,10 @@ class ParameterSetsController < ApplicationController
     analyzer_name, figure_filename = params[:result].split('/')
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
+    logscale_axis = params[:logscales].split(',') # logscale_axis = ["x_axis", "y_axis"]
+    scales = {}
+    scales["xscale"] = logscale_axis.include?("x_axis") ? "log" :  "linear"
+    scales["yscale"] = logscale_axis.include?("y_axis") ? "log" :  "linear"
 
     found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
 
@@ -388,7 +392,8 @@ class ParameterSetsController < ApplicationController
 
     respond_to do |format|
       format.json {
-        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: figure_filename, data: data}
+        render json: { xlabel: x_axis_key, ylabel: y_axis_key,
+                       result: figure_filename, data: data, xscale: scales["xscale"], yscale: scales["yscale"]}
       }
     end
   end
