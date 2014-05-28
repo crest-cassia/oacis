@@ -450,6 +450,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
   var margin = {top: 10, right: 100, bottom: 100, left: 100};
   var width = 560;
   var height = 460;
+  var image_scale = "middle";
 
   var row = d3.select("#plot").insert("div","div").attr("class", "row");
   var plot_region = row.append("div").attr("class", "span8");
@@ -512,18 +513,19 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
     }
     draw_axes(dat.xlabel, dat.ylabel);
 
-    function draw_points() {
+    var mapped = dat.data.map(function(v) {
+      return { x: v[0], y: v[1], path:v[2], psid: v[3] };
+    });
+
+    function draw_figures() {
       var tooltip = d3.select("#plot-tooltip");
-      var mapped = dat.data.map(function(v) {
-        return { x: v[0], y: v[1], path:v[2], psid: v[3] };
-      });
-      var point = svg.selectAll("circle")
-        .data(mapped).enter();
-      point.append("circle")
-        .attr("cx", function(d) { return xScale(d.x);})
-        .attr("cy", function(d) { return yScale(d.y);})
-        .style("fill", function(d) { return "black";})
-        .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;})
+      var imgs = svg.selectAll("image").data(mapped).enter();
+      imgs.append("svg:image")
+        .attr("x", function(d) { return xScale(d.x);})
+        .attr("y", function(d) { return yScale(d.y);})
+        .attr("xlink:href", function(d) {return d.path})
+        .attr("width", width/10)
+        .attr("height", height/10)
         .on("mouseover", function(d) {
           tooltip.transition()
             .duration(200)
@@ -536,7 +538,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
         })
         .on("mousemove", function() {
           tooltip
-            .style("top", (d3.event.pageY-10) + "px")
+            .style("top", (d3.event.pageY) + "px")
             .style("left", (d3.event.pageX+10) + "px");
         })
         .on("mouseout", function() {
@@ -548,7 +550,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
           window.open(parameter_set_base_url + d.psid, '_blank');
         });
     }
-    draw_points();
+    draw_figures();
 
     function add_description() {
       // description for the specification of the plot
@@ -560,6 +562,95 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
       dl.append("dt").text("Result");
       dl.append("dd").text(dat.result);
       description.append("a").attr({target: "_blank", href: url}).text("show data in json");
+      description.append("br");
+      var tooltip = d3.select("#plot-tooltip");
+      description.append("a").text("show small image").on("click", function() {
+        if(image_scale == "middle") {
+          image_scale = "point";
+          var imgs = svg.selectAll("image");
+          imgs.remove();
+          var points = svg.selectAll("circle").data(mapped).enter();
+          points.append("circle")
+            .attr("cx", function(d) { return xScale(d.x);})
+            .attr("cy", function(d) { return yScale(d.y);})
+            .style("fill", function(d) { return "black";})
+            .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;})
+            .on("mouseover", function(d) {
+              tooltip.transition()
+                .duration(200)
+                .style("opacity", .8);
+              tooltip.html(
+                dat.xlabel + " : " + d.x + "<br/>" +
+                dat.ylabel + " : " + d.y + "<br/>" +
+                "ID: " + d.psid + "<br />" +
+                '<img src="' + d.path + '" width="300px" />');
+            })
+            .on("mousemove", function() {
+              tooltip
+                .style("top", (d3.event.pageY) + "px")
+                .style("left", (d3.event.pageX+10) + "px");
+            })
+            .on("mouseout", function() {
+              tooltip.transition()
+                .duration(300)
+                .style("opacity", 0);
+            })
+            .on("dblclick", function(d) {
+              window.open(parameter_set_base_url + d.psid, '_blank');
+            });
+        }
+        else if (image_scale == "large") {
+          image_scale = "middle";
+          var imgs = svg.selectAll("image");
+          imgs.attr("width", width/10)
+              .attr("height", height/10);
+        }
+      });
+      description.append("br");
+      description.append("a").text("show large image").on("click", function() {
+        if(image_scale == "point") {
+          image_scale = "middle";
+          var imgs = svg.selectAll("circle");
+          imgs.remove();
+          var imgs = svg.selectAll("image").data(mapped).enter();
+          imgs.append("svg:image")
+            .attr("x", function(d) { return xScale(d.x);})
+            .attr("y", function(d) { return yScale(d.y);})
+            .attr("xlink:href", function(d) {return d.path})
+            .attr("width", width/10)
+            .attr("height", height/10)
+            .on("mouseover", function(d) {
+              tooltip.transition()
+                .duration(200)
+                .style("opacity", .8);
+              tooltip.html(
+                dat.xlabel + " : " + d.x + "<br/>" +
+                dat.ylabel + " : " + d.y + "<br/>" +
+                "ID: " + d.psid + "<br />" +
+                '<img src="' + d.path + '" width="300px" />');
+            })
+            .on("mousemove", function() {
+              tooltip
+                .style("top", (d3.event.pageY) + "px")
+                .style("left", (d3.event.pageX+10) + "px");
+            })
+            .on("mouseout", function() {
+              tooltip.transition()
+                .duration(300)
+                .style("opacity", 0);
+            })
+            .on("dblclick", function(d) {
+              window.open(parameter_set_base_url + d.psid, '_blank');
+            });
+        }
+        else if(image_scale == "middle") {
+          image_scale = "large";
+          var imgs = svg.selectAll("image");
+          imgs.attr("width", width/5)
+              .attr("height", height/5);
+        }
+      });
+
       description.append("br");
       description.append("a").text("delete plot").on("click", function() {
         row.remove();
