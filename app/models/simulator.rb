@@ -122,6 +122,21 @@ class Simulator
     all_domains
   end
 
+  def figure_files
+    figures_filenames = "*.{png,Png,PNG,jpg,Jpg,JPG,bmp,Bmp,BMP,gif,Gif,GIF,svg,Svg,SVG}"
+    run = runs.where(status: :finished).order_by(:updated_at.desc).first
+    list = Dir.glob( run.dir.join(figures_filenames) ).map {|f| "/#{File.basename(f)}" }
+
+    analyzers.each do |azr|
+      next unless azr.analyses
+      anl = azr.analyses.where(status: :finished).first
+      list += Dir.glob( anl.dir.join(figures_filenames) ).map do |f|
+        "#{azr.name}/#{File.basename(f)}"
+      end
+    end
+    list
+  end
+
   private
   def domains(collection_class, query, result_keys)
     group = {_id: 0}

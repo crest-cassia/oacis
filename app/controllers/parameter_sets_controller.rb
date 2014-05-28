@@ -355,6 +355,44 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  def _figure_viewer
+    base_ps = ParameterSet.find(params[:id])
+
+    x_axis_key = params[:x_axis_key]
+    y_axis_key = params[:y_axis_key]
+    analyzer_name, figure_filename = params[:result].split('/')
+    analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
+    irrelevant_keys = params[:irrelevants].split(',')
+
+    found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
+
+    data = found_ps.map do |ps|
+      found = nil
+      if analyzer and analyzer.type == :on_parameter_set
+        found = ps.analyses.where(analyzer: analyzer).to_a.find do |anl|
+          File.exist?( anl.dir.join(figure_filename) )
+        end
+      elsif analyzer and analyzer.type == :on_run
+        found = ps.runs.map {|run| run.analyses.to_a }.flatten.find do |anl|
+          File.exist?( anl.dir.join(figure_filename) )
+        end
+      else
+        found = ps.runs.to_a.find do |run|
+          File.exist?( run.dir.join(figure_filename) )
+        end
+      end
+      fig_path = found ? ApplicationController.helpers.file_path_to_link_path( found.dir.join(figure_filename)) : nil
+
+      [ ps.v[x_axis_key], ps.v[y_axis_key], fig_path.to_s, ps.id.to_s ]
+    end
+
+    respond_to do |format|
+      format.json {
+        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: figure_filename, data: data}
+      }
+    end
+  end
+
   def _neighbor
     current = ParameterSet.find(params[:id])
     simulator = current.simulator

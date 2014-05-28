@@ -7,6 +7,7 @@
     %select#plot-type
       %option{value: 'line'} line plot
       %option{value: 'scatter'} scatter plot
+      %option{value: 'figures'} figure viewer
   %br
   .form-inline
     - simulator = @param_set.simulator
@@ -29,6 +30,15 @@
       = label_tag 'result', "Result"
       = select_tag 'result', options_for_select(plottable), id: 'result'
       %a.btn.btn-primary#add_scatter_plot_button Add Scatter Plot
+    #figure-viewer-form
+      - parameter_keys = simulator.parameter_definitions.map(&:key)
+      = label_tag 'x_axis_key', "X-Axis"
+      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key'
+      = label_tag 'y_axis_key', "Y-Axis"
+      = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
+      = label_tag 'result', "Result"
+      = select_tag 'result', options_for_select(simulator.figure_files), id: 'result'
+      %a.btn.btn-primary#add_figure_viewer_button Add Figure Viewer
     #irrelevant-params
       %br
       Irrelevant parameters :
@@ -73,10 +83,17 @@
     if( $('#plot-type').val() == 'line' ) {
       $('#line-plot-form').show();
       $('#scatter-plot-form').hide();
+      $('#figure-viewer-form').hide();
     }
-    else {
+    else if( $('#plot-type').val() == 'scatter' ) {
       $('#line-plot-form').hide();
       $('#scatter-plot-form').show();
+      $('#figure-viewer-form').hide();
+    }
+    else if( $('#plot-type').val() == 'figures' ) {
+      $('#line-plot-form').hide();
+      $('#scatter-plot-form').hide();
+      $('#figure-viewer-form').show();
     }
   }
   $(show_form_for_plots);
@@ -158,3 +175,24 @@
 
     add_scatter_plot(x, y, result, irrelevants, logscales);
   });
+
+  function add_figure_viewer(x, y, result, irrelevants) {
+    var url = "#{_figure_viewer_parameter_set_path(@param_set)}" + ".json";
+    var url_with_param = url +
+      "?x_axis_key=" + encodeURIComponent(x) +
+      "&y_axis_key=" + encodeURIComponent(y) +
+      "&result=" + encodeURIComponent(result) +
+      "&irrelevants=" + encodeURIComponent(irrelevants);
+    var ps_base_url = "#{parameter_set_path('')}";
+    draw_figure_viewer(url_with_param, ps_base_url, "#{@param_set.id.to_s}");
+  }
+  $('#add_figure_viewer_button').on('click', function() {
+    var x = $('#figure-viewer-form #x_axis_key').val();
+    var y = $('#figure-viewer-form #y_axis_key').val();
+    var result = $('#figure-viewer-form #result').val();
+    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
+      return this.id;
+      }).get().join(',');
+    add_figure_viewer(x, y, result, irrelevants);
+  });
+
