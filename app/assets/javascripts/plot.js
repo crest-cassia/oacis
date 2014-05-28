@@ -450,7 +450,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
   var margin = {top: 10, right: 100, bottom: 100, left: 100};
   var width = 560;
   var height = 460;
-  var image_scale = "middle";
+  var image_scale = "middle"; // [{"point"=>3 or 5 px},{"middle"=>width/10 px},{"large"=>width/5 px}]
 
   var row = d3.select("#plot").insert("div","div").attr("class", "row");
   var plot_region = row.append("div").attr("class", "span8");
@@ -517,16 +517,28 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
       return { x: v[0], y: v[1], path:v[2], psid: v[3] };
     });
 
-    function draw_figures() {
-      var tooltip = d3.select("#plot-tooltip");
-      var imgs = svg.selectAll("image").data(mapped).enter();
-      imgs.append("svg:image")
+    function append_figure(elements, divide) {
+      var image = elements.append("svg:image")
         .attr("x", function(d) { return xScale(d.x);})
-        .attr("y", function(d) { return yScale(d.y);})
+        .attr("y", function(d) { return yScale(d.y) - height/divide;})
         .attr("xlink:href", function(d) {return d.path})
-        .attr("width", width/10)
-        .attr("height", height/10)
-        .on("mouseover", function(d) {
+        .attr("width", width/divide)
+        .attr("height", height/divide);
+      assign_mouse_event(image);
+    }
+
+    function append_circle(elements) {
+      var circle = elements.append("circle")
+        .attr("cx", function(d) { return xScale(d.x);})
+        .attr("cy", function(d) { return yScale(d.y);})
+        .style("fill", function(d) { return "black";})
+        .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;});
+      assign_mouse_event(circle);
+    }
+
+    function assign_mouse_event(elements) {
+      var tooltip = d3.select("#plot-tooltip");
+      elements.on("mouseover", function(d) {
           tooltip.transition()
             .duration(200)
             .style("opacity", .8);
@@ -538,8 +550,8 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
         })
         .on("mousemove", function() {
           tooltip
-            .style("top", (d3.event.pageY) + "px")
-            .style("left", (d3.event.pageX+10) + "px");
+            .style("top", (d3.event.pageY-300) + "px")
+            .style("left", (d3.event.pageX-150) + "px");
         })
         .on("mouseout", function() {
           tooltip.transition()
@@ -549,6 +561,11 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
         .on("dblclick", function(d) {
           window.open(parameter_set_base_url + d.psid, '_blank');
         });
+    }
+
+    function draw_figures() {
+      var imgs = svg.selectAll("image").data(mapped).enter();
+      append_figure(imgs, 10);
     }
     draw_figures();
 
@@ -570,84 +587,31 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
           var imgs = svg.selectAll("image");
           imgs.remove();
           var points = svg.selectAll("circle").data(mapped).enter();
-          points.append("circle")
-            .attr("cx", function(d) { return xScale(d.x);})
-            .attr("cy", function(d) { return yScale(d.y);})
-            .style("fill", function(d) { return "black";})
-            .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;})
-            .on("mouseover", function(d) {
-              tooltip.transition()
-                .duration(200)
-                .style("opacity", .8);
-              tooltip.html(
-                dat.xlabel + " : " + d.x + "<br/>" +
-                dat.ylabel + " : " + d.y + "<br/>" +
-                "ID: " + d.psid + "<br />" +
-                '<img src="' + d.path + '" width="300px" />');
-            })
-            .on("mousemove", function() {
-              tooltip
-                .style("top", (d3.event.pageY) + "px")
-                .style("left", (d3.event.pageX+10) + "px");
-            })
-            .on("mouseout", function() {
-              tooltip.transition()
-                .duration(300)
-                .style("opacity", 0);
-            })
-            .on("dblclick", function(d) {
-              window.open(parameter_set_base_url + d.psid, '_blank');
-            });
+            append_circle(points);
         }
         else if (image_scale == "large") {
           image_scale = "middle";
           var imgs = svg.selectAll("image");
-          imgs.attr("width", width/10)
-              .attr("height", height/10);
+          imgs.remove();
+          var imgs = svg.selectAll("image").data(mapped).enter();
+          append_figure(imgs, 10);
         }
       });
       description.append("br");
       description.append("a").text("show large image").on("click", function() {
         if(image_scale == "point") {
           image_scale = "middle";
-          var imgs = svg.selectAll("circle");
-          imgs.remove();
+          var points = svg.selectAll("circle");
+          points.remove();
           var imgs = svg.selectAll("image").data(mapped).enter();
-          imgs.append("svg:image")
-            .attr("x", function(d) { return xScale(d.x);})
-            .attr("y", function(d) { return yScale(d.y);})
-            .attr("xlink:href", function(d) {return d.path})
-            .attr("width", width/10)
-            .attr("height", height/10)
-            .on("mouseover", function(d) {
-              tooltip.transition()
-                .duration(200)
-                .style("opacity", .8);
-              tooltip.html(
-                dat.xlabel + " : " + d.x + "<br/>" +
-                dat.ylabel + " : " + d.y + "<br/>" +
-                "ID: " + d.psid + "<br />" +
-                '<img src="' + d.path + '" width="300px" />');
-            })
-            .on("mousemove", function() {
-              tooltip
-                .style("top", (d3.event.pageY) + "px")
-                .style("left", (d3.event.pageX+10) + "px");
-            })
-            .on("mouseout", function() {
-              tooltip.transition()
-                .duration(300)
-                .style("opacity", 0);
-            })
-            .on("dblclick", function(d) {
-              window.open(parameter_set_base_url + d.psid, '_blank');
-            });
+          append_figure(imgs, 10);
         }
         else if(image_scale == "middle") {
           image_scale = "large";
           var imgs = svg.selectAll("image");
-          imgs.attr("width", width/5)
-              .attr("height", height/5);
+          imgs.remove();
+          var imgs = svg.selectAll("image").data(mapped).enter();
+          append_figure(imgs, 5);
         }
       });
 
