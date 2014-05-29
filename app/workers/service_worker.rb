@@ -27,7 +27,7 @@ class ServiceWorker < DaemonSpawn::Base
   end
 
   def stop
-    @logger.info("stopping")
+    # Never called because trap('TERM') is overwritten
   end
 
   def self.alive?
@@ -55,6 +55,7 @@ if $0 == __FILE__
                       pid_file: ServiceWorker::WORKER_PID_FILE,
                        sync_log: true,
                        working_dir: Rails.root,
-                       singleton: true
+                       singleton: true,
+                       timeout: 30
                        )
 end
