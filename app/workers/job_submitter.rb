@@ -1,7 +1,9 @@
 class JobSubmitter
 
   def self.perform(logger)
+    @last_performed_at ||= {}
     Host.where(status: :enabled).each do |host|
+      next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
       begin
         num = host.max_num_jobs - host.submitted_runs.count
         if num > 0
@@ -17,6 +19,7 @@ class JobSubmitter
         logger.error("Error in JobSubmitter: #{ex.inspect}")
         logger.error(ex.backtrace)
       end
+      @last_performed_at[host.id] = DateTime.now
     end
   end
 

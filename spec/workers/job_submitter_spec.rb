@@ -57,5 +57,9 @@ describe JobSubmitter do
       }.to change { Run.where(status: :submitted, priority: 0).count }.by(1)
       Run.where(status: :submitted, priority: 1).count.should eq 0
     end
+
+    it "does not enqueue a job until polling interval has passed since the last submission" do
+      pending "not yet implemented"
+    end
   end
 end
