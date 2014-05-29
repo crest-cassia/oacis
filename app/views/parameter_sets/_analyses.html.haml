@@ -3,7 +3,7 @@
 
 - sim = parameter_set.simulator
 - azrs = sim.analyzers_on_parameter_set
-- unless azrs.empty?
+- unless OACIS_READ_ONLY or azrs.empty?
   = form_for( parameter_set.analyses.build, :url => parameter_set_analyses_path(parameter_set) ) do |f|
     = f.label :analyzer
     = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }
