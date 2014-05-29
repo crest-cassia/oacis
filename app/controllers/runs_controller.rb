@@ -9,7 +9,11 @@ class RunsController < ApplicationController
         flash.now[:alert] = "Worker process exists, but may be hanging up"
       end
     else
-      flash.now[:alert] = "Worker process is not running"
+      if OACIS_READ_ONLY
+        flash.now[:notice] = "READ_ONLY mode. Worker is not running"
+      else
+        flash.now[:alert] = "Worker process is not running"
+      end
     end
 
     respond_to do |format|

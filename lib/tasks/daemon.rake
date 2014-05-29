@@ -13,12 +13,16 @@ namespace :daemon do
       system(cmd)
     end
 
-    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'job_worker.rb')} start"
-    system(cmd)
-    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'analyzer_worker.rb')} start"
-    system(cmd)
-    cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'service_worker.rb')} start"
-    system(cmd)
+    if ENV['OACIS_READ_ONLY'] == '1'
+      $stderr.puts "OACIS_READ_ONLY mode is enabled"
+    else
+      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'job_worker.rb')} start"
+      system(cmd)
+      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'analyzer_worker.rb')} start"
+      system(cmd)
+      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'service_worker.rb')} start"
+      system(cmd)
+    end
   end
 
   desc "stop daemons"
