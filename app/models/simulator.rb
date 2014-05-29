@@ -125,13 +125,18 @@ class Simulator
   def figure_files
     figures_filenames = "*.{png,Png,PNG,jpg,Jpg,JPG,jpeg,Jpeg,JPEG,bmp,Bmp,BMP,gif,Gif,GIF,svg,Svg,SVG}"
     run = runs.where(status: :finished).order_by(:updated_at.desc).first
-    list = Dir.glob( run.dir.join(figures_filenames) ).map {|f| "/#{File.basename(f)}" }
+    list = []
+    if run
+      list += Dir.glob( run.dir.join(figures_filenames) ).map {|f| "/#{File.basename(f)}" }
+    end
 
     analyzers.each do |azr|
       next unless azr.analyses
       anl = azr.analyses.where(status: :finished).first
-      list += Dir.glob( anl.dir.join(figures_filenames) ).map do |f|
-        "#{azr.name}/#{File.basename(f)}"
+      if anl
+        list += Dir.glob( anl.dir.join(figures_filenames) ).map do |f|
+          "#{azr.name}/#{File.basename(f)}"
+        end
       end
     end
     list

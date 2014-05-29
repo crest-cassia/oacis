@@ -451,5 +451,18 @@ describe Simulator do
       expected_files += ["#{analyzer_name}/fig2.jpg"]
       @sim.figure_files.should =~ expected_files
     end
+
+    context "when there is no finished run or analysis" do
+
+      it "does not include the result for a failed run" do
+        @sim.runs.first.update_attribute(:status, :failed)
+        @sim.figure_files.any? {|f| f =~ /fig1/ }.should be_false
+      end
+
+      it "does not include the result for a failed analysis" do
+        @sim.analyzers.first.analyses.first.update_attribute(:status, :failed)
+        @sim.figure_files.any? {|f| f =~ /fig2/ }.should be_false
+      end
+    end
   end
 end
