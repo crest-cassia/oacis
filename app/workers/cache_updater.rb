@@ -1,5 +1,5 @@
 class CacheUpdater
-  MAX_PS_NUM_TO_UPDATE = 100
+  MAX_PS_NUM_TO_UPDATE = 10
 
   def self.perform(logger)
     logger.info "updating cache for parameter sets"
