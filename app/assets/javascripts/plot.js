@@ -446,7 +446,7 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
 }
 
 function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
-  var margin = {top: 10, right: 100, bottom: 100, left: 100};
+  var margin = {top: 10+92, right: 100+112, bottom: 100, left: 100};
   var width = 560;
   var height = 460;
   var image_scale = "middle"; // [{"point"=>3 or 5 px},{"middle"=>width/10 px},{"large"=>width/5 px}]
