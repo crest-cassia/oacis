@@ -25,10 +25,11 @@ ps aux | grep "mongod"
 gem install bundler
     ```
 
-- clone the git repository
+- clone the git repository and checkout the master branch
 
     ```sh:clone.sh
 git clone -b master git@github.com:crest-cassia/oacis.git
+git checkout master
 ```
 - install dependent gems using bundle command
     - cd to the project root directory `oacis`, and run the following command
