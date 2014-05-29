@@ -434,7 +434,10 @@ describe Simulator do
                                 run_analysis: true)
       run = @sim.parameter_sets.first.runs.first
       run.update_attribute(:status, :finished)
-      FileUtils.touch(run.dir.join("fig1.png"))
+      @figure_extensions = ["png","Png","PNG","jpg","Jpg","JPG","jpeg","Jpeg","JPEG","bmp","Bmp","BMP","svg","Svg","SVG"]
+      @figure_extensions.each do |fe|
+        FileUtils.touch(run.dir.join("fig1."+fe))
+      end
       FileUtils.touch(run.dir.join("dummy.txt"))
 
       anl = @sim.analyzers.first.analyses.first
@@ -442,9 +445,11 @@ describe Simulator do
       FileUtils.touch(anl.dir.join("fig2.jpg"))
     end
 
-    it "return array of PNG and JPG filenames in the result directory" do
+    it "return array of PNG, JPG, BMP, SVG filenames in the result directory" do
       analyzer_name = @sim.analyzers.first.name
-      @sim.figure_files.should =~ ["/fig1.png", "#{analyzer_name}/fig2.jpg"]
+      expected_files = @figure_extensions.map {|fe| "/fig1."+fe}
+      expected_files += ["#{analyzer_name}/fig2.jpg"]
+      @sim.figure_files.should =~ expected_files
     end
   end
 end

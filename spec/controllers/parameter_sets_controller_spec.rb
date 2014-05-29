@@ -655,7 +655,7 @@ describe ParameterSetsController do
 
     it "returns in json format" do
       get :_figure_viewer,
-        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "", format: :json}
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "", logscales: "", format: :json}
       response.header['Content-Type'].should include 'application/json'
     end
 
@@ -666,7 +666,7 @@ describe ParameterSetsController do
 
     it "returns valid json" do
       get :_figure_viewer,
-        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "", format: :json}
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "", logscales: "", format: :json}
       expected_data = [
         [1, 1.0, path_to_fig(@ps_array[0]), @ps_array[0].id.to_s],
         [1, 2.0, path_to_fig(@ps_array[3]), @ps_array[3].id.to_s],

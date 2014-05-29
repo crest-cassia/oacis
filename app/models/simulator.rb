@@ -123,7 +123,7 @@ class Simulator
   end
 
   def figure_files
-    figures_filenames = "*.{png,Png,PNG,jpg,Jpg,JPG,bmp,Bmp,BMP,gif,Gif,GIF,svg,Svg,SVG}"
+    figures_filenames = "*.{png,Png,PNG,jpg,Jpg,JPG,jpeg,Jpeg,JPEG,bmp,Bmp,BMP,gif,Gif,GIF,svg,Svg,SVG}"
     run = runs.where(status: :finished).order_by(:updated_at.desc).first
     list = Dir.glob( run.dir.join(figures_filenames) ).map {|f| "/#{File.basename(f)}" }
 
