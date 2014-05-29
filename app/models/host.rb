@@ -14,6 +14,7 @@ class Host
   field :work_base_dir, type: String, default: '~'
   field :mounted_work_base_dir, type: String, default: ""
   field :max_num_jobs, type: Integer, default: 1
+  field :polling_interval, type: Integer, default: 60
   field :min_mpi_procs, type: Integer, default: 1
   field :max_mpi_procs, type: Integer, default: 1
   field :min_omp_threads, type: Integer, default: 1
@@ -33,6 +34,7 @@ class Host
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
+  validates :polling_interval, numericality: {greater_than_or_equal_to: 5}
   validates :min_mpi_procs, numericality: {greater_than_or_equal_to: 1}
   validates :max_mpi_procs, numericality: {greater_than_or_equal_to: 1}
   validates :min_omp_threads, numericality: {greater_than_or_equal_to: 1}
