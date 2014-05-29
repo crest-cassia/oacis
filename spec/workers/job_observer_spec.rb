@@ -11,6 +11,7 @@ describe JobObserver do
       FileUtils.mkdir_p(@temp_dir)
       @host = @sim.executable_on.where(name: "localhost").first
       @host.work_base_dir = @temp_dir.expand_path
+      @host.polling_interval = 5
       @host.save!
 
       @run = @sim.parameter_sets.first.runs.first
@@ -26,14 +27,24 @@ describe JobObserver do
     end
 
     it "do observe_host if host status is 'enabled'" do
-      JobObserver.should_receive(:observe_host).and_return(nil)
-      JobObserver.perform(@logger)
+      pid = Process.fork do
+        JobObserver.should_receive(:observe_host).and_return(nil)
+        JobObserver.perform(@logger)
+      end
+      sleep 1 # sleep is necessary to call perform before terminating the process
+      Process.kill( "TERM", pid )
+      Process.waitall
     end
 
     it "do nothing if host status is 'disabled'" do
       @host.update_attribute(:status, :disabled)
-      JobObserver.should_not_receive(:observe_host)
-      JobObserver.perform(@logger)
+      pid = Process.fork do
+        JobObserver.should_not_receive(:observe_host)
+        JobObserver.perform(@logger)
+      end
+      sleep 1 # sleep is necessary to call perform before terminating the process
+      Process.kill( "TERM", pid )
+      Process.waitall
     end
   end
 

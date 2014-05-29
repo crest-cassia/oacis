@@ -138,6 +138,12 @@ describe Host do
       host.should_not be_valid
     end
 
+    it "polling_interval must be larger than or equal to 5" do
+      @valid_attr.update(polling_interval: 0)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
     it "cannot change when submitted runs exist" do
       host = FactoryGirl.create(:host)
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)

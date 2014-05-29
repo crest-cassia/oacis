@@ -23,14 +23,20 @@ describe JobSubmitter do
       @sim.executable_on.push @host
       @sim.save!
       expect {
-        JobSubmitter.perform(@logger)
+        pid = Process.fork do JobSubmitter.perform(@logger) end
+        sleep 1 # sleep is necessary to call perform before terminating the process
+        Process.kill( "TERM", pid )
+        Process.waitall
       }.to change { Run.where(status: :submitted).count }.by(1)
     end
 
     it "do nothing if there is no 'created' jobs" do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       expect {
-        JobSubmitter.perform(@logger)
+        pid = Process.fork do JobSubmitter.perform(@logger) end
+        sleep 1 # sleep is necessary to call perform before terminating the process
+        Process.kill( "TERM", pid )
+        Process.waitall
       }.to_not raise_error
     end
 
@@ -39,10 +45,16 @@ describe JobSubmitter do
       @host.update_attribute(:status, :disabled)
       @sim.executable_on.push @host
       expect {
-        JobSubmitter.perform(@logger)
       }.to change { Run.where(status: :created).count }.by(0)
+        pid = Process.fork do JobSubmitter.perform(@logger) end
+        sleep 1 # sleep is necessary to call perform before terminating the process
+        Process.kill( "TERM", pid )
+        Process.waitall
       expect {
-        JobSubmitter.perform(@logger)
+        pid = Process.fork do JobSubmitter.perform(@logger) end
+        sleep 1 # sleep is necessary to call perform before terminating the process
+        Process.kill( "TERM", pid )
+        Process.waitall
       }.to_not raise_error
     end
 
@@ -53,7 +65,10 @@ describe JobSubmitter do
       run = @sim.parameter_sets.first.runs.create(priority: 0, submitted_to: @host.to_param)
       run.save!
       expect {
-        JobSubmitter.perform(@logger)
+        pid = Process.fork do JobSubmitter.perform(@logger) end
+        sleep 1 # sleep is necessary to call perform before terminating the process
+        Process.kill( "TERM", pid )
+        Process.waitall
       }.to change { Run.where(status: :submitted, priority: 0).count }.by(1)
       Run.where(status: :submitted, priority: 1).count.should eq 0
     end

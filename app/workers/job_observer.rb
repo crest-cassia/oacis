@@ -1,13 +1,7 @@
 class JobObserver
 
   def self.perform(logger)
-    Host.where(status: :enabled).each do |host|
-      begin
-        observe_host(host, logger)
-      rescue => ex
-        logger.error("Error in JobObserver: #{ex.inspect}")
-      end
-    end
+    JobWorkerUtil.perform(logger, JobObserver.method(:observe_host))
   end
 
   private
@@ -18,6 +12,7 @@ class JobObserver
     host.start_ssh do |ssh|
       handler = RemoteJobHandler.new(host)
       # check if job is finished
+      observed_runs = {}
       host.submitted_runs.each do |run|
         begin
           if run.status == :cancelled
@@ -43,7 +38,10 @@ class JobObserver
           run.status = :failed
           run.save!
         end
+        observed_runs[run.status] ||= []
+        observed_runs[run.status] << run.id
       end
+      logger.info("observed jobs from #{host.name}: #{observed_runs.inspect}")
     end
   end
 

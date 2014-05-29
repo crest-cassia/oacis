@@ -11,6 +11,9 @@
       %th Status
       %td= raw(host_status_label(@host.status))
     %tr
+      %th Polling interval
+      %td= @host.polling_interval
+    %tr
       %th User
       %td= @host.user
     %tr

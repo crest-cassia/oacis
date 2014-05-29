@@ -20,6 +20,7 @@ class Host
   field :max_omp_threads, type: Integer, default: 1
   field :template, type: String, default: JobScriptUtil::DEFAULT_TEMPLATE
   field :position, type: Integer # position in the table. start from zero
+  field :polling_interval, type: Integer, default: 60
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
   embeds_many :host_parameter_definitions
@@ -39,6 +40,7 @@ class Host
   validates :max_omp_threads, numericality: {greater_than_or_equal_to: 1}
   validates :status, presence: true,
                      inclusion: {in: HOST_STATUS}
+  validates :polling_interval, numericality: {greater_than_or_equal_to: 5}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
   validate :template_conform_to_host_parameter_definitions

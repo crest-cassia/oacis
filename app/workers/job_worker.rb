@@ -11,25 +11,34 @@ class JobWorker < DaemonSpawn::Base
     @logger.info("starting")
 
     @term_received = false
-    trap('TERM') {
+    Signal.trap('TERM') {
       @term_received = true
-      @logger.info("TERM received. stopping")
+      @logger.info("TERM received by JobWorker. stopping")
+    }
+
+    @pids = []
+    @pids << Process.fork {
+      JobSubmitter.perform(@logger)
+    }
+    @pids << Process.fork {
+      JobObserver.perform(@logger)
     }
 
     loop do
-      JobSubmitter.perform(@logger)
-      break if @term_received
-      JobObserver.perform(@logger)
-      break if @term_received
       sleep INTERVAL
       break if @term_received
     end
 
-    @logger.info("stopped")
+    @pids.each do |pid|
+      Process.kill( "TERM", pid )
+    end
   end
 
   def stop
     @logger.info("stopping")
+    @pids.each do |pid|
+      Process.waitpid(pid)
+    end
   end
 
   def self.alive?
