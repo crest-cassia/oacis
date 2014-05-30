@@ -350,6 +350,9 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
     .on("load", function(dat) {
     progress.remove();
 
+    var scales = ["linear","log"];
+    var xScale_current = 0;
+    var yScale_current = 0;
     var xScale = d3.scale.linear().range([0, width]);
     var yScale = d3.scale.linear().range([height, 0]);
 
@@ -398,19 +401,20 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
     }
     draw_color_map(colorMapG);
 
+    var vertices = dat.data.map(function(v) {
+      return [
+        xScale(v[0][xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
+        yScale(v[0][ylabel]) + Math.random() * 1.0 - 0.5
+      ];
+    });
+    var voronoi = d3.geom.voronoi()
+      .clipExtent([[0, 0], [width, height]]);
+    var voronoi_group = svg.append("g");
+    var path = voronoi_group.selectAll("path")
+      .data(voronoi(vertices));
     function draw_voronoi_heat_map() {
       // add noise to coordinates of vertices in order to prevent hang-up.
       // hanging-up sometimes happen when duplicated points are included.
-      var vertices = dat.data.map(function(v) {
-        return [
-          xScale(v[0][xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
-          yScale(v[0][ylabel]) + Math.random() * 1.0 - 0.5
-        ];
-      });
-      var voronoi = d3.geom.voronoi()
-        .clipExtent([[0, 0], [width, height]]);
-      var path = svg.append("g").selectAll("path")
-        .data(voronoi(vertices));
       path.enter().append("path")
         .style("fill", function(d, i) { return colorScale(dat.data[i][1]);})
         .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
@@ -425,9 +429,11 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
       console.log(e);
     }
 
+    var xAxis = d3.svg.axis();
+    var yAxis = d3.svg.axis();
     function draw_axes(xlabel, ylabel) {
       // X-Axis
-      var xAxis = d3.svg.axis()
+      xAxis
         .scale(xScale)
         .orient("bottom");
       svg.append("g")
@@ -441,7 +447,7 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
           .text(xlabel);
 
       // Y-Axis
-      var yAxis = d3.svg.axis()
+      yAxis
         .scale(yScale)
         .orient("left");
       svg.append("g")
@@ -456,16 +462,16 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
     }
     draw_axes(dat.xlabel, dat.ylabel);
 
+    var mapped = dat.data.map(function(v) {
+      return {
+        x: v[0][xlabel], y: v[0][ylabel],
+        average: v[1], error: v[2], psid: v[3]
+      };
+    });
+    var tooltip = d3.select("#plot-tooltip");
+    var point = svg.selectAll("circle")
+      .data(mapped).enter();
     function draw_points() {
-      var tooltip = d3.select("#plot-tooltip");
-      var mapped = dat.data.map(function(v) {
-        return {
-          x: v[0][xlabel], y: v[0][ylabel],
-          average: v[1], error: v[2], psid: v[3]
-        };
-      });
-      var point = svg.selectAll("circle")
-        .data(mapped).enter();
       point.append("circle")
         .attr("cx", function(d) { return xScale(d.x);})
         .attr("cy", function(d) { return yScale(d.y);})
@@ -499,6 +505,28 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
     }
     draw_points();
 
+    function update_plot() {
+      svg.selectAll("circle").remove();
+      draw_points();
+      voronoi_group.selectAll("path").remove();
+      //svg.selectAll("path").remove();
+      vertices = dat.data.map(function(v) {
+        return [
+          xScale(v[0][xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
+          yScale(v[0][ylabel]) + Math.random() * 1.0 - 0.5
+        ];
+      });
+      path = voronoi_group.selectAll("path")
+            .data(voronoi(vertices));
+      try {
+        draw_voronoi_heat_map();
+        // Voronoi division fails when duplicate points are included.
+        // In that case, just ignore creating voronoi heatmap and continue plotting.
+      } catch(e) {
+        console.log(e);
+      }
+    }
+
     function add_description() {
       // description for the specification of the plot
       var dl = description.append("dl");
@@ -513,6 +541,61 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
       description.append("a").text("delete plot").on("click", function() {
         row.remove();
       });
+      description.append("br");
+      description.append("br");
+      description.append("br");
+      description.append("br");
+      description.append("input").attr("type", "checkbox").on("change", function() {
+          xScale_current = 1 - xScale_current;
+          switch(scales[xScale_current]) {
+          case "linear":
+          xScale = d3.scale.linear().range([0, width]);
+          xScale.domain([
+            d3.min( dat.data, function(d) { return d[0][xlabel];}),
+            d3.max( dat.data, function(d) { return d[0][xlabel];})
+            ]).nice();
+          break;
+          case "log":
+          xScale = d3.scale.log().clamp(true).range([0, width]);
+          var min = d3.min( dat.data, function(d) { return d[0][xlabel];});
+          xScale.domain([
+            (min<0.1 ? 0.1 : min),
+            d3.max( dat.data, function(d) { return d[0][xlabel];})
+            ]).nice();
+          break;
+          }
+
+          update_plot();
+          xAxis.scale(xScale);
+          svg.select(".x.axis").call(xAxis);
+      });
+      description.append("span").html("log scale on x axis");
+      description.append("br");
+      description.append("input").attr("type", "checkbox").on("change", function() {
+          yScale_current = 1 - yScale_current;
+          switch(scales[yScale_current]) {
+          case "linear":
+          yScale = d3.scale.linear().range([height, 0]);
+          yScale.domain([
+            d3.min( dat.data, function(d) { return d[0][ylabel];}),
+            d3.max( dat.data, function(d) { return d[0][ylabel];})
+            ]).nice();
+          break;
+          case "log":
+          yScale = d3.scale.log().clamp(true).range([height, 0]);
+          var min = d3.min( dat.data, function(d) { return d[0][ylabel];});
+          yScale.domain([
+            (min<0.1 ? 0.1 : min),
+            d3.max( dat.data, function(d) { return d[0][ylabel];})
+            ]).nice();
+          break;
+          }
+
+          update_plot();
+          yAxis.scale(yScale);
+          svg.select(".y.axis").call(yAxis);
+      });
+      description.append("span").html("log scale on y axis");
     }
     add_description();
   })
