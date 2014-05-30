@@ -435,25 +435,8 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
     .on("load", function(dat) {
     progress.remove();
 
-    var xScale;
-    var yScale;
-
-    if (dat.xscale == "linear") {
-      xScale = d3.scale.linear().range([0, width]);
-    } else if (dat.xscale == "log") {
-      xScale = d3.scale.log().range([0, width]);
-    } else {
-      alert("xscale:"+ dat.xscale +" is not defined.");
-      xScale = d3.scale.linear().range([0, width]);
-    }
-    if (dat.yscale == "linear") {
-      yScale = d3.scale.linear().range([height, 0]);
-    } else if (dat.yscale == "log") {
-      yScale = d3.scale.log().range([height, 0]);
-    } else {
-      alert("yscale:"+ dat.yscale +" is not defined.");
-      yScale = d3.scale.linear().range([height, 0]);
-    }
+    var xScale = d3.scale.linear().range([0, width]);
+    var yScale = d3.scale.linear().range([height, 0]);
 
     xScale.domain([
       d3.min( dat.data, function(d) { return d[0];}),
