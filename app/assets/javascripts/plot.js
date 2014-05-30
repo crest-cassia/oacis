@@ -22,12 +22,11 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
     .on("load", function(dat) {
     progress.remove();
 
-    var scales = ["linear","log"]
+    var scales = ["linear","log"];
     var xScale_current = 0;
     var yScale_current = 0;
     var xScale = d3.scale.linear().range([0, width]);
     var yScale = d3.scale.linear().range([height, 0]);
-
 
     xScale.domain([
       d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
@@ -189,27 +188,29 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
       .attr("dy", "0.3em")
       .text( function(d,i) { return d; });
 
-
     function update_plot() {
+      // draw line path
       series.select("path").attr("d", function(d) { return line(d);});
 
+      // draw data point
       svg.selectAll("circle")
         .attr("cx", function(d) { return xScale(d.x);})
         .attr("cy", function(d) { return yScale(d.y);})
         .style("fill", function(d) { return colorScale(d.series_index);})
         .on("mouseover", function(d) {
-            tooltip.transition()
+          tooltip.transition()
             .duration(200)
             .style("opacity", .8);
-            tooltip.html(
-              dat.xlabel + " : " + d.x + "<br/>" +
-              dat.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
-              " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
-              (dat.series ? (dat.series + " : " + d.series_value + "<br/>") : "") +
-              "ID: " + d.psid);
-            });
+          tooltip.html(
+            dat.xlabel + " : " + d.x + "<br/>" +
+            dat.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
+            " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
+            (dat.series ? (dat.series + " : " + d.series_value + "<br/>") : "") +
+            "ID: " + d.psid);
+          });
 
-      svg.selectAll("line").remove();
+      // draw error bar
+      series.selectAll("line").remove();
       point.insert("line", "circle")
         .filter(function(d) { return d.yerror;})
         .attr("clip-path", "url(#clip)")
