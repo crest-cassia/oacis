@@ -3,6 +3,7 @@ class JobObserver
   def self.perform(logger)
     @last_performed_at ||= {}
     Host.where(status: :enabled).each do |host|
+      break if $term_received
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
       begin
         logger.info("observing #{host.name}")
@@ -23,6 +24,7 @@ class JobObserver
       handler = RemoteJobHandler.new(host)
       # check if job is finished
       host.submitted_runs.each do |run|
+        break if $term_received
         begin
           if run.status == :cancelled
             handler.cancel_remote_job(run)
