@@ -423,4 +423,46 @@ describe Simulator do
       output.map {|h| h['count'][:failed].to_i }.inject(:+).should eq failed_count
     end
   end
+
+  describe "#figure_files" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1,
+                                run_analysis: true)
+      run = @sim.parameter_sets.first.runs.first
+      run.update_attribute(:status, :finished)
+      @figure_extensions = ["png","Png","PNG","jpg","Jpg","JPG","jpeg","Jpeg","JPEG","bmp","Bmp","BMP","svg","Svg","SVG"]
+      @figure_extensions.each do |fe|
+        FileUtils.touch(run.dir.join("fig1."+fe))
+      end
+      FileUtils.touch(run.dir.join("dummy.txt"))
+
+      anl = @sim.analyzers.first.analyses.first
+      anl.update_attribute(:status, :finished)
+      FileUtils.touch(anl.dir.join("fig2.jpg"))
+    end
+
+    it "return array of PNG, JPG, BMP, SVG filenames in the result directory" do
+      analyzer_name = @sim.analyzers.first.name
+      expected_files = @figure_extensions.map {|fe| "/fig1."+fe}
+      expected_files += ["#{analyzer_name}/fig2.jpg"]
+      @sim.figure_files.should =~ expected_files
+    end
+
+    context "when there is no finished run or analysis" do
+
+      it "does not include the result for a failed run" do
+        @sim.runs.first.update_attribute(:status, :failed)
+        @sim.figure_files.any? {|f| f =~ /fig1/ }.should be_false
+      end
+
+      it "does not include the result for a failed analysis" do
+        @sim.analyzers.first.analyses.first.update_attribute(:status, :failed)
+        @sim.figure_files.any? {|f| f =~ /fig2/ }.should be_false
+      end
+    end
+  end
 end

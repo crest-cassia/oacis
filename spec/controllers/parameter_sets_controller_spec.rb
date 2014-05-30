@@ -622,4 +622,64 @@ describe ParameterSetsController do
       loaded["data"].should =~ expected_data
     end
   end
+
+  describe "GET _figure_viewer" do
+
+    before(:each) do
+      pds = [ {key: "L", type: "Integer", default: 50, description: "First parameter"},
+              {key: "T", type: "Float", default: 1.0, description: "Second parameter"},
+              {key: "P", type: "Float", default: 1.0, description: "Third parameter"}]
+      pds.map! {|h| ParameterDefinition.new(h) }
+      @sim = FactoryGirl.create(:simulator,
+                               parameter_definitions: pds,
+                               parameter_sets_count: 0,
+                               analyzers_count: 0)
+      param_values = [ {"L" => 1, "T" => 1.0, "P" => 1.0},
+                       {"L" => 2, "T" => 1.0, "P" => 1.0},
+                       {"L" => 3, "T" => 1.0, "P" => 1.0},
+                       {"L" => 1, "T" => 2.0, "P" => 1.0},
+                       {"L" => 2, "T" => 2.0, "P" => 1.0},
+                       {"L" => 3, "T" => 2.0, "P" => 2.0}  # P is different from others
+                     ]
+      host = FactoryGirl.create(:host)
+      @ps_array = param_values.map do |v|
+        ps = @sim.parameter_sets.create(v: v)
+        run = ps.runs.create
+        run.status = :finished
+        run.submitted_to = host
+        run.save!
+        FileUtils.touch( run.dir.join("fig1.png") )
+        ps
+      end
+    end
+
+    it "returns in json format" do
+      get :_figure_viewer,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "", logscales: "", format: :json}
+      response.header['Content-Type'].should include 'application/json'
+    end
+
+    def path_to_fig(ps)
+      path = ps.runs.first.dir.join("fig1.png")
+      ApplicationController.helpers.file_path_to_link_path(path).to_s
+    end
+
+    it "returns valid json" do
+      get :_figure_viewer,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "", logscales: "", format: :json}
+      expected_data = [
+        [1, 1.0, path_to_fig(@ps_array[0]), @ps_array[0].id.to_s],
+        [1, 2.0, path_to_fig(@ps_array[3]), @ps_array[3].id.to_s],
+        [2, 1.0, path_to_fig(@ps_array[1]), @ps_array[1].id.to_s],
+        [2, 2.0, path_to_fig(@ps_array[4]), @ps_array[4].id.to_s],
+        [3, 1.0, path_to_fig(@ps_array[2]), @ps_array[2].id.to_s]
+      ]
+
+      loaded = JSON.load(response.body)
+      loaded["xlabel"].should eq "L"
+      loaded["ylabel"].should eq "T"
+      loaded["result"].should eq "fig1.png"
+      loaded["data"].should =~ expected_data
+    end
+  end
 end

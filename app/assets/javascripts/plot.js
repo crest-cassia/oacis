@@ -42,7 +42,6 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
       yScale = d3.scale.linear().range([height, 0]);
     }
 
-
     xScale.domain([
       d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
       d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
@@ -431,6 +430,211 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
       dl.append("dt").text("Result");
       dl.append("dd").text(dat.result);
       description.append("a").attr({target: "_blank", href: url}).text("show data in json");
+      description.append("br");
+      description.append("a").text("delete plot").on("click", function() {
+        row.remove();
+      });
+    }
+    add_description();
+  })
+  .on("error", function() {progress.remove();})
+  .get();
+  progress.on("mousedown", function(){
+    xhr.abort();
+    row.remove();
+  });
+}
+
+function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
+  var margin = {top: 10+92, right: 100+112, bottom: 100, left: 100};
+  var width = 560;
+  var height = 460;
+  var image_scale = "middle"; // [{"point"=>3 or 5 px},{"middle"=>width/10 px},{"large"=>width/5 px}]
+
+  var row = d3.select("#plot").insert("div","div").attr("class", "row");
+  var plot_region = row.append("div").attr("class", "span8");
+  var description = row.append("div").attr("class", "span4");
+
+  var svg = plot_region.insert("svg")
+    .attr({
+      "width": width + margin.left + margin.right,
+      "height": height + margin.top + margin.bottom
+    });
+  var svg = svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  var progress = show_loading_spin_arc(svg, width, height);
+
+  var xhr = d3.json(url)
+    .on("load", function(dat) {
+    progress.remove();
+
+    var xScale;
+    var yScale;
+
+    if (dat.xscale == "linear") {
+      xScale = d3.scale.linear().range([0, width]);
+    } else if (dat.xscale == "log") {
+      xScale = d3.scale.log().range([0, width]);
+    } else {
+      alert("xscale:"+ dat.xscale +" is not defined.");
+      xScale = d3.scale.linear().range([0, width]);
+    }
+    if (dat.yscale == "linear") {
+      yScale = d3.scale.linear().range([height, 0]);
+    } else if (dat.yscale == "log") {
+      yScale = d3.scale.log().range([height, 0]);
+    } else {
+      alert("yscale:"+ dat.yscale +" is not defined.");
+      yScale = d3.scale.linear().range([height, 0]);
+    }
+
+    xScale.domain([
+      d3.min( dat.data, function(d) { return d[0];}),
+      d3.max( dat.data, function(d) { return d[0];})
+    ]).nice();
+    yScale.domain([
+      d3.min( dat.data, function(d) { return d[1];}),
+      d3.max( dat.data, function(d) { return d[1];})
+    ]).nice();
+
+    function draw_axes(xlabel, ylabel) {
+      // X-Axis
+      var xAxis = d3.svg.axis()
+        .scale(xScale)
+        .orient("bottom");
+      svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+        .append("text")
+          .style("text-anchor", "middle")
+          .attr("x", width / 2.0)
+          .attr("y", 50.0)
+          .text(xlabel);
+
+      // Y-Axis
+      var yAxis = d3.svg.axis()
+        .scale(yScale)
+        .orient("left");
+      svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+        .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("x", -height/2)
+          .attr("y", -50.0)
+          .style("text-anchor", "middle")
+          .text(ylabel);
+    }
+    draw_axes(dat.xlabel, dat.ylabel);
+
+    var mapped = dat.data.map(function(v) {
+      return { x: v[0], y: v[1], path:v[2], psid: v[3] };
+    });
+
+    function append_figure(elements, divide) {
+      var image = elements.append("svg:image")
+        .attr("x", function(d) { return xScale(d.x);})
+        .attr("y", function(d) { return yScale(d.y) - height/divide;})
+        .attr("xlink:href", function(d) { return d.path; })
+        .attr("width", width/divide)
+        .attr("height", height/divide);
+      assign_mouse_event(image);
+    }
+
+    function append_circle(elements) {
+      var circle = elements.append("circle")
+        .attr("cx", function(d) { return xScale(d.x);})
+        .attr("cy", function(d) { return yScale(d.y);})
+        .style("fill", function() { return "black";})
+        .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;});
+      assign_mouse_event(circle);
+    }
+
+    function assign_mouse_event(elements) {
+      var tooltip = d3.select("#plot-tooltip");
+      elements.on("mouseover", function(d) {
+          tooltip.transition()
+            .duration(200)
+            .style("opacity", 0.8);
+          tooltip.html(function() {
+            var str = dat.xlabel + " : " + d.x + "<br/>" +
+            dat.ylabel + " : " + d.y + "<br/>" +
+            "ID: " + d.psid + "<br />";
+            if(d.path) {
+              str += '<img src="' + d.path + '" width="300px" />';
+            } else {
+              str += "<br />"+"<br />"+"NO IMAGE"+"<br />"+"<br />";
+            }
+            return str;
+          });
+        })
+        .on("mousemove", function() {
+          tooltip
+            .style("top", (d3.event.pageY-300) + "px")
+            .style("left", (d3.event.pageX-150) + "px");
+        })
+        .on("mouseout", function() {
+          tooltip.transition()
+            .duration(300)
+            .style("opacity", 0);
+        })
+        .on("dblclick", function(d) {
+          window.open(parameter_set_base_url + d.psid, '_blank');
+        });
+    }
+
+    function draw_figures() {
+      var imgs = svg.selectAll("image").data(mapped).enter();
+      append_figure(imgs, 10);
+    }
+    draw_figures();
+
+    function add_description() {
+      // description for the specification of the plot
+      var dl = description.append("dl");
+      dl.append("dt").text("X-Axis");
+      dl.append("dd").text(dat.xlabel);
+      dl.append("dt").text("Y-Axis");
+      dl.append("dd").text(dat.ylabel);
+      dl.append("dt").text("Result");
+      dl.append("dd").text(dat.result);
+      description.append("a").attr({target: "_blank", href: url}).text("show data in json");
+      description.append("br");
+      description.append("a").text("show small image").on("click", function() {
+        var imgs = svg.selectAll("image");
+        if(image_scale == "middle") {
+          image_scale = "point";
+          imgs.remove();
+          var points = svg.selectAll("circle").data(mapped).enter();
+          append_circle(points);
+        }
+        else if (image_scale == "large") {
+          image_scale = "middle";
+          imgs.remove();
+          imgs = svg.selectAll("image").data(mapped).enter();
+          append_figure(imgs, 10);
+        }
+      });
+      description.append("br");
+      description.append("a").text("show large image").on("click", function() {
+        var imgs = svg.selectAll("image");
+        var points = svg.selectAll("circle");
+        if(image_scale == "point") {
+          image_scale = "middle";
+          points.remove();
+          imgs = svg.selectAll("image").data(mapped).enter();
+          append_figure(imgs, 10);
+        }
+        else if(image_scale == "middle") {
+          image_scale = "large";
+          imgs.remove();
+          imgs = svg.selectAll("image").data(mapped).enter();
+          append_figure(imgs, 5);
+        }
+      });
+
       description.append("br");
       description.append("a").text("delete plot").on("click", function() {
         row.remove();
