@@ -631,6 +631,9 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
     .on("load", function(dat) {
     progress.remove();
 
+    var scales = ["linear","log"];
+    var xScale_current = 0;
+    var yScale_current = 0;
     var xScale = d3.scale.linear().range([0, width]);
     var yScale = d3.scale.linear().range([height, 0]);
 
@@ -643,9 +646,11 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
       d3.max( dat.data, function(d) { return d[1];})
     ]).nice();
 
+    var xAxis;
+    var yAxis;
     function draw_axes(xlabel, ylabel) {
       // X-Axis
-      var xAxis = d3.svg.axis()
+      xAxis = d3.svg.axis()
         .scale(xScale)
         .orient("bottom");
       svg.append("g")
@@ -659,7 +664,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
           .text(xlabel);
 
       // Y-Axis
-      var yAxis = d3.svg.axis()
+      yAxis = d3.svg.axis()
         .scale(yScale)
         .orient("left");
       svg.append("g")
@@ -730,11 +735,30 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
         });
     }
 
+    var imgs = svg.selectAll("image").data(mapped).enter();
     function draw_figures() {
-      var imgs = svg.selectAll("image").data(mapped).enter();
       append_figure(imgs, 10);
     }
     draw_figures();
+
+    function update_plot() {
+      switch(image_scale) {
+        case "point":
+          var points = svg.selectAll("circle");
+          points.remove();
+          points = svg.selectAll("circle").data(mapped).enter();
+          append_circle(points);
+          break;
+        case "middle":
+          svg.selectAll("image").remove();
+          append_figure(imgs, 10);
+          break;
+        case "large":
+          svg.selectAll("image").remove();
+          append_figure(imgs, 5);
+          break;
+      }
+    }
 
     function add_description() {
       // description for the specification of the plot
@@ -784,6 +808,62 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
       description.append("a").text("delete plot").on("click", function() {
         row.remove();
       });
+      description.append("br");
+      description.append("br");
+      description.append("br");
+      description.append("br");
+      description.append("input").attr("type", "checkbox").on("change", function() {
+        xScale_current = 1 - xScale_current;
+        switch(scales[xScale_current]) {
+          case "linear":
+          xScale = d3.scale.linear().range([0, width]);
+          xScale.domain([
+            d3.min( dat.data, function(d) { return d[0];}),
+            d3.max( dat.data, function(d) { return d[0];})
+          ]).nice();
+          break;
+
+          case "log":
+          xScale = d3.scale.log().clamp(true).range([0, width]);
+          var min = d3.min( dat.data, function(d) { return d[0];});
+          xScale.domain([
+            (min<0.1 ? 0.1 : min),
+            d3.max( dat.data, function(d) { return d[0];})
+            ]).nice();
+          break;
+        }
+
+        update_plot();
+        xAxis.scale(xScale);
+        svg.select(".x.axis").call(xAxis);
+      });
+      description.append("span").html("log scale on x axis");
+      description.append("br");
+      description.append("input").attr("type", "checkbox").on("change", function() {
+          yScale_current = 1 - yScale_current;
+          switch(scales[yScale_current]) {
+          case "linear":
+          yScale = d3.scale.linear().range([height, 0]);
+          yScale.domain([
+            d3.min( dat.data, function(d) { return d[1];}),
+            d3.max( dat.data, function(d) { return d[1];})
+            ]).nice();
+          break;
+          case "log":
+          yScale = d3.scale.log().clamp(true).range([height, 0]);
+          var min = d3.min( dat.data, function(d) { return d[1];});
+          yScale.domain([
+            (min<0.1 ? 0.1 : min),
+            d3.max( dat.data, function(d) { return d[1];})
+            ]).nice();
+          break;
+          }
+
+          update_plot();
+          yAxis.scale(yScale);
+          svg.select(".y.axis").call(yAxis);
+      });
+      description.append("span").html("log scale on y axis");
     }
     add_description();
   })
