@@ -22,8 +22,12 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
     .on("load", function(dat) {
     progress.remove();
 
+    var scales = ["linear","log"]
+    var xScale_current = 0;
+    var yScale_current = 0;
     var xScale = d3.scale.linear().range([0, width]);
     var yScale = d3.scale.linear().range([height, 0]);
+
 
     xScale.domain([
       d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
@@ -185,6 +189,59 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
       .attr("dy", "0.3em")
       .text( function(d,i) { return d; });
 
+
+    function update_plot() {
+      series.select("path").attr("d", function(d) { return line(d);});
+
+      svg.selectAll("circle")
+        .attr("cx", function(d) { return xScale(d.x);})
+        .attr("cy", function(d) { return yScale(d.y);})
+        .style("fill", function(d) { return colorScale(d.series_index);})
+        .on("mouseover", function(d) {
+            tooltip.transition()
+            .duration(200)
+            .style("opacity", .8);
+            tooltip.html(
+              dat.xlabel + " : " + d.x + "<br/>" +
+              dat.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
+              " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
+              (dat.series ? (dat.series + " : " + d.series_value + "<br/>") : "") +
+              "ID: " + d.psid);
+            });
+
+      svg.selectAll("line").remove();
+      point.insert("line", "circle")
+        .filter(function(d) { return d.yerror;})
+        .attr("clip-path", "url(#clip)")
+        .attr({
+          x1: function(d) { return xScale(d.x);},
+          x2: function(d) { return xScale(d.x);},
+          y1: function(d) { return yScale(d.y - d.yerror);},
+          y2: function(d) { return yScale(d.y + d.yerror);},
+          stroke: function(d) { return colorScale(d.series_index); }
+        });
+      point.insert("line", "circle")
+        .filter(function(d) { return d.yerror;})
+        .attr("clip-path", "url(#clip)")
+        .attr({
+          x1: function(d) { return xScale(d.x) - 3;},
+          x2: function(d) { return xScale(d.x) + 3;},
+          y1: function(d) { return yScale(d.y - d.yerror);},
+          y2: function(d) { return yScale(d.y - d.yerror);},
+          stroke: function(d) { return colorScale(d.series_index); }
+        });
+      point.insert("line", "circle")
+        .filter(function(d) { return d.yerror;})
+        .attr("clip-path", "url(#clip)")
+        .attr({
+          x1: function(d) { return xScale(d.x) - 3;},
+          x2: function(d) { return xScale(d.x) + 3;},
+          y1: function(d) { return yScale(d.y + d.yerror);},
+          y2: function(d) { return yScale(d.y + d.yerror);},
+          stroke: function(d) { return colorScale(d.series_index); }
+        });
+    }
+
     // description for the specification of the plot
     var dl = description.append("dl");
     dl.append("dt").text("X-Axis");
@@ -199,10 +256,65 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
     description.append("br");
     plt_url = url.replace(/\.json/, '.plt')
     description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
-    description.append("br")
+    description.append("br");
     description.append("a").text("delete plot").on("click", function() {
       row.remove();
     });
+    description.append("br");
+    description.append("br");
+    description.append("br");
+    description.append("br");
+    description.append("input").attr("type", "checkbox").on("change", function() {
+    xScale_current = 1 - xScale_current;
+    switch(scales[xScale_current]) {
+      case "linear":
+        xScale = d3.scale.linear().range([0, width]);
+        xScale.domain([
+          d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
+          d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
+        ]).nice();
+        break;
+      case "log":
+        xScale = d3.scale.log().clamp(true).range([0, width]);
+        var min = d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})})
+        xScale.domain([
+          (min<0.1 ? 0.1 : min),
+          d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
+        ]).nice();
+        break;
+    }
+
+      update_plot();
+      xAxis.scale(xScale);
+      svg.select(".x.axis").call(xAxis);
+    });
+    description.append("span").html("log scale on x axis");
+    description.append("br");
+    description.append("input").attr("type", "checkbox").on("change", function() {
+    yScale_current = 1 - yScale_current;
+    switch(scales[yScale_current]) {
+      case "linear":
+        yScale = d3.scale.linear().range([height, 0]);
+        yScale.domain([
+          d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) }),
+          d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
+        ]).nice();
+        break;
+      case "log":
+        yScale = d3.scale.log().clamp(true).range([height, 0]);
+        var min = d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) });
+        yScale.domain([
+          (min<0.1 ? 0.1 : min),
+          d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
+        ]).nice();
+        break;
+    }
+
+      update_plot();
+      yAxis.scale(yScale);
+      svg.select(".y.axis").call(yAxis);
+    });
+    description.append("span").html("log scale on y axis");
   })
   .on("error", function() {progress.remove();})
   .get();
