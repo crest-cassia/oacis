@@ -558,11 +558,17 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
           tooltip.transition()
             .duration(200)
             .style("opacity", 0.8);
-          tooltip.html(
-            dat.xlabel + " : " + d.x + "<br/>" +
+          tooltip.html(function() {
+            var str = dat.xlabel + " : " + d.x + "<br/>" +
             dat.ylabel + " : " + d.y + "<br/>" +
-            "ID: " + d.psid + "<br />" +
-            '<img src="' + d.path + '" width="300px" />');
+            "ID: " + d.psid + "<br />";
+            if(d.path) {
+              str += '<img src="' + d.path + '" width="300px" />';
+            } else {
+              str += "<br />"+"<br />"+"NO IMAGE"+"<br />"+"<br />";
+            }
+            return str;
+          });
         })
         .on("mousemove", function() {
           tooltip
