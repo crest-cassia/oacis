@@ -217,7 +217,7 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
     plt_url = url.replace(/\.json/, '.plt')
     description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
     description.append("br")
-    description.append("a").text("delete plot").on("click", function() {
+    description.append("a").text("delete plot").style('cursor', 'pointer').on("click", function() {
       row.remove();
     });
   })
@@ -431,7 +431,7 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
       dl.append("dd").text(dat.result);
       description.append("a").attr({target: "_blank", href: url}).text("show data in json");
       description.append("br");
-      description.append("a").text("delete plot").on("click", function() {
+      description.append("a").text("delete plot").style('cursor', 'pointer').on("click", function() {
         row.remove();
       });
     }
@@ -602,7 +602,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
       dl.append("dd").text(dat.result);
       description.append("a").attr({target: "_blank", href: url}).text("show data in json");
       description.append("br");
-      description.append("a").text("show small image").on("click", function() {
+      description.append("a").text("show smaller image").style('cursor', 'pointer').on("click", function() {
         var imgs = svg.selectAll("image");
         if(image_scale == "middle") {
           image_scale = "point";
@@ -618,7 +618,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
         }
       });
       description.append("br");
-      description.append("a").text("show large image").on("click", function() {
+      description.append("a").text("show larger image").style('cursor', 'pointer').on("click", function() {
         var imgs = svg.selectAll("image");
         var points = svg.selectAll("circle");
         if(image_scale == "point") {
@@ -636,7 +636,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
       });
 
       description.append("br");
-      description.append("a").text("delete plot").on("click", function() {
+      description.append("a").text("delete plot").style('cursor', 'pointer').on("click", function() {
         row.remove();
       });
     }
