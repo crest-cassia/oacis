@@ -537,7 +537,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
       var image = elements.append("svg:image")
         .attr("x", function(d) { return xScale(d.x);})
         .attr("y", function(d) { return yScale(d.y) - height/divide;})
-        .attr("xlink:href", function(d) {return d.path})
+        .attr("xlink:href", function(d) { return d.path; })
         .attr("width", width/divide)
         .attr("height", height/divide);
       assign_mouse_event(image);
@@ -547,7 +547,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
       var circle = elements.append("circle")
         .attr("cx", function(d) { return xScale(d.x);})
         .attr("cy", function(d) { return yScale(d.y);})
-        .style("fill", function(d) { return "black";})
+        .style("fill", function() { return "black";})
         .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;});
       assign_mouse_event(circle);
     }
@@ -557,7 +557,7 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
       elements.on("mouseover", function(d) {
           tooltip.transition()
             .duration(200)
-            .style("opacity", .8);
+            .style("opacity", 0.8);
           tooltip.html(
             dat.xlabel + " : " + d.x + "<br/>" +
             dat.ylabel + " : " + d.y + "<br/>" +
@@ -597,35 +597,34 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
       description.append("a").attr({target: "_blank", href: url}).text("show data in json");
       description.append("br");
       description.append("a").text("show small image").on("click", function() {
+        var imgs = svg.selectAll("image");
         if(image_scale == "middle") {
           image_scale = "point";
-          var imgs = svg.selectAll("image");
           imgs.remove();
           var points = svg.selectAll("circle").data(mapped).enter();
-            append_circle(points);
+          append_circle(points);
         }
         else if (image_scale == "large") {
           image_scale = "middle";
-          var imgs = svg.selectAll("image");
           imgs.remove();
-          var imgs = svg.selectAll("image").data(mapped).enter();
+          imgs = svg.selectAll("image").data(mapped).enter();
           append_figure(imgs, 10);
         }
       });
       description.append("br");
       description.append("a").text("show large image").on("click", function() {
+        var imgs = svg.selectAll("image");
+        var points = svg.selectAll("circle");
         if(image_scale == "point") {
           image_scale = "middle";
-          var points = svg.selectAll("circle");
           points.remove();
-          var imgs = svg.selectAll("image").data(mapped).enter();
+          imgs = svg.selectAll("image").data(mapped).enter();
           append_figure(imgs, 10);
         }
         else if(image_scale == "middle") {
           image_scale = "large";
-          var imgs = svg.selectAll("image");
           imgs.remove();
-          var imgs = svg.selectAll("image").data(mapped).enter();
+          imgs = svg.selectAll("image").data(mapped).enter();
           append_figure(imgs, 5);
         }
       });
