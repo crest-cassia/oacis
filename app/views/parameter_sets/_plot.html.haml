@@ -46,13 +46,6 @@
       - simulator.parameter_definitions.map(&:key).each do |key|
         = label_tag key, key
         = check_box_tag key
-    #plot-logscales
-      %br
-      Set log scale :
-      %br
-      - ["x_axis", "y_axis"].each do |key|
-        = label_tag key, key
-        = check_box_tag key
 %hr
 
 #plot
@@ -99,14 +92,13 @@
   $(show_form_for_plots);
   $('#plot-type').change(show_form_for_plots);
 
-  function add_line_plot(x, y, series, irrelevants, logscales) {
+  function add_line_plot(x, y, series, irrelevants) {
     var url = "#{_line_plot_parameter_set_path(@param_set)}" + ".json";
     var url_with_param = url + 
       "?x_axis_key=" + encodeURIComponent(x) +
       "&y_axis_key=" + encodeURIComponent(y) +
       "&series=" + encodeURIComponent(series) +
-      "&irrelevants=" + encodeURIComponent(irrelevants) +
-      "&logscales=" + encodeURIComponent(logscales);
+      "&irrelevants=" + encodeURIComponent(irrelevants);
     var ps_base_url = "#{parameter_set_path('')}";
     draw_line_plot(url_with_param, ps_base_url, "#{@param_set.id.to_s}");
   }
@@ -115,9 +107,6 @@
     var y = $('#line-plot-form #y_axis_key').val();
     var series = $('#line-plot-form #series').val();
     var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
-      return this.id;
-      }).get().join(',');
-    var logscales = $('#plot-logscales').children("input:checkbox:checked").map(function() {
       return this.id;
       }).get().join(',');
 
@@ -146,19 +135,18 @@
 
     x.forEach(function(xval) {
       y.forEach(function(yval) {
-        add_line_plot(xval, yval, series, irrelevants, logscales);
+        add_line_plot(xval, yval, series, irrelevants);
       })
     })
   });
 
-  function add_scatter_plot(x, y, result, irrelevants, logscales) {
+  function add_scatter_plot(x, y, result, irrelevants) {
     var url = "#{_scatter_plot_parameter_set_path(@param_set)}" + ".json";
     var url_with_param = url +
       "?x_axis_key=" + encodeURIComponent(x) +
       "&y_axis_key=" + encodeURIComponent(y) +
       "&result=" + encodeURIComponent(result) +
-      "&irrelevants=" + encodeURIComponent(irrelevants) +
-      "&logscales=" + encodeURIComponent(logscales);
+      "&irrelevants=" + encodeURIComponent(irrelevants);
     var ps_base_url = "#{parameter_set_path('')}";
     draw_scatter_plot(url_with_param, ps_base_url, "#{@param_set.id.to_s}");
   }
@@ -169,11 +157,8 @@
     var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
       return this.id;
       }).get().join(',');
-    var logscales = $('#plot-logscales').children("input:checkbox:checked").map(function() {
-      return this.id;
-      }).get().join(',');
 
-    add_scatter_plot(x, y, result, irrelevants, logscales);
+    add_scatter_plot(x, y, result, irrelevants);
   });
 
   function add_figure_viewer(x, y, result, irrelevants, logscales) {

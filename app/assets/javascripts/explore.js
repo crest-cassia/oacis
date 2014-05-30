@@ -53,10 +53,6 @@ function build_scatter_plot_url(ps_id) {
     return this.id;
   }).get();
   irrelevants = irrelevants.concat(range_modified_keys()).join(',');
-  var logscales = $('#plot-logscales').children("input:checkbox:checked").map(function() {
-    return this.id;
-  }).get().join(',');
-
 
   var url = $('#plot').data('scatter-plot-url').replace('PSID', ps_id);
   var range = {};
@@ -68,8 +64,7 @@ function build_scatter_plot_url(ps_id) {
     "&y_axis_key=" + encodeURIComponent(y) +
     "&result=" + encodeURIComponent(result) +
     "&irrelevants=" + encodeURIComponent(irrelevants) +
-    "&range=" + encodeURIComponent( JSON.stringify(range) ) +
-    "&logscales=" + encodeURIComponent(logscales);
+    "&range=" + encodeURIComponent( JSON.stringify(range) );
   return url_with_param;
 }
 
@@ -156,25 +151,8 @@ function update_explorer(current_ps_id) {
     .on("load", function(dat) {
     progress.remove();
 
-    var xScale;
-    var yScale;
-
-    if (dat.xscale == "linear") {
-      xScale = d3.scale.linear().range([0, width]);
-    } else if (dat.xscale == "log") {
-      xScale = d3.scale.log().range([0, width]);
-    } else {
-      alert("xscale:"+ dat.xscale +" is not defined.");
-      xScale = d3.scale.linear().range([0, width]);
-    }
-    if (dat.yscale == "linear") {
-      yScale = d3.scale.linear().range([height, 0]);
-    } else if (dat.yscale == "log") {
-      yScale = d3.scale.log().range([height, 0]);
-    } else {
-      alert("yscale:"+ dat.yscale +" is not defined.");
-      yScale = d3.scale.linear().range([height, 0]);
-    }
+    var xScale = d3.scale.linear().range([0, width]);
+    var yScale = d3.scale.linear().range([height, 0]);
 
     var xlabel = $('select#x_axis_key option:selected').text();
     var xDomain = get_current_range_for(xlabel);
