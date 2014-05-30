@@ -93,6 +93,12 @@ describe Host do
       host.should_not be_valid
     end
 
+    it "polling_interval must greater than or equal to 5" do
+      @valid_attr.update(polling_interval: 4)
+      host = Host.new(@valid_attr)
+      host.should_not be_valid
+    end
+
     it "min_mpi_procs must be 1 or positive" do
       @valid_attr.update(min_mpi_procs: 0)
       host = Host.new(@valid_attr)

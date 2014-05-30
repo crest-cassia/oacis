@@ -46,6 +46,10 @@
     .controls
       = f.text_field(:max_num_jobs, class: 'text_field')
   .control-group
+    = f.label(:polling_interval, class: 'control-label')
+    .controls
+      = f.text_field(:polling_interval, class: 'text_field')
+  .control-group
     = f.label(:min_mpi_procs, 'MPI processes', class: 'control-label')
     .controls
       = f.number_field(:min_mpi_procs, class: 'number_field')

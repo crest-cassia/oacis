@@ -80,6 +80,10 @@ describe JobObserver do
       JobObserver.__send__(:observe_host, @host, @logger)
     end
 
+    it "does not check remote host until polling interval has passed since the last observation" do
+      pending "not yet implemented"
+    end
+
     context "when run is cancelled" do
 
       before(:each) do

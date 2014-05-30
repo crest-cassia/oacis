@@ -1,12 +1,16 @@
 class JobObserver
 
   def self.perform(logger)
+    @last_performed_at ||= {}
     Host.where(status: :enabled).each do |host|
+      next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
       begin
+        logger.info("observing #{host.name}")
         observe_host(host, logger)
       rescue => ex
         logger.error("Error in JobObserver: #{ex.inspect}")
       end
+      @last_performed_at[host.id] = DateTime.now
     end
   end
 
