@@ -33,18 +33,19 @@ LinePlot.prototype.xScale = null;
 LinePlot.prototype.yScale = null;
 LinePlot.prototype.xAxis = null;
 LinePlot.prototype.yAxis = null;
+LinePlot.prototype.colorScale = null;
 
 LinePlot.prototype.Init = function(data, url, parameter_set_base_url, current_ps_id) {
   this.data = data;
-  this.SetXScale("linear");
-  this.SetYScale("linear");
-  this.xAxis = d3.svg.axis().orient("bottom");
-  this.yAxis = d3.svg.axis().orient("left");
-  this.xAxis.scale(this.xScale);
-  this.yAxis.scale(this.yScale);
   this.url = url;
   this.parameter_set_base_url = parameter_set_base_url;
   this.current_ps_id = current_ps_id;
+
+  this.SetXScale("linear");
+  this.SetYScale("linear");
+  this.xAxis = d3.svg.axis().scale(this.xScale).orient("bottom");
+  this.yAxis = d3.svg.axis().scale(this.yScale).orient("left");
+  this.colorScale = d3.scale.category10();
 };
 
 LinePlot.prototype.SetXScale = function(xscale) {
@@ -138,7 +139,6 @@ LinePlot.prototype.UpdateAxis = function() {
 
 LinePlot.prototype.AddPlot = function() {
     var plot = this;
-    var colorScale = d3.scale.category10();
     // group for each series
     var series = this.svg
       .selectAll(".series")
@@ -148,7 +148,7 @@ LinePlot.prototype.AddPlot = function() {
     series.append("path")
       .attr("class", "line")
       .style({
-        "stroke": function(d, i) { return colorScale(i);},
+        "stroke": function(d, i) { return plot.colorScale(i);},
         "fill": "none",
         "stroke-width": "1.5px"
       });
@@ -165,7 +165,7 @@ LinePlot.prototype.AddPlot = function() {
         });
       }).enter();
     point.append("circle")
-      .style("fill", function(d) { return colorScale(d.series_index);})
+      .style("fill", function(d) { return plot.colorScale(d.series_index);})
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .on("mousemove", function() {
         tooltip
@@ -184,13 +184,10 @@ LinePlot.prototype.AddPlot = function() {
 
     // draw error bar
     point.insert("line", "circle")
-      .filter(function(d) { return d.yerror;})
       .attr("class", "line yerror bar");
     point.insert("line", "circle")
-      .filter(function(d) { return d.yerror;})
       .attr("class", "line yerror top");
     point.insert("line", "circle")
-      .filter(function(d) { return d.yerror;})
       .attr("class", "line yerror bottom");
 
     // draw legend
@@ -217,7 +214,7 @@ LinePlot.prototype.AddPlot = function() {
     legendItem.append("rect")
       .attr("width", 15)
       .attr("height", 15)
-      .style("fill", function(d,i) { return colorScale(i);});
+      .style("fill", function(d,i) { return plot.colorScale(i);});
     legendItem.append("text")
       .attr("x", 20)
       .attr("y", 7.5)
@@ -229,7 +226,6 @@ LinePlot.prototype.AddPlot = function() {
 
 LinePlot.prototype.UpdatePlot = function() {
     var plot = this;
-    var colorScale = d3.scale.category10();
     var line = d3.svg.line()
       .x( function(d) { return plot.xScale(d[0]);} )
       .y( function(d) { return plot.yScale(d[1]);} );
@@ -241,7 +237,7 @@ LinePlot.prototype.UpdatePlot = function() {
     this.svg.selectAll("circle")
       .attr("cx", function(d) { return plot.xScale(d.x);})
       .attr("cy", function(d) { return plot.yScale(d.y);})
-      .style("fill", function(d) { return colorScale(d.series_index);})
+      .style("fill", function(d) { return plot.colorScale(d.series_index);})
       .on("mouseover", function(d) {
         tooltip.transition()
           .duration(200)
@@ -262,7 +258,7 @@ LinePlot.prototype.UpdatePlot = function() {
         x2: function(d) { return plot.xScale(d.x);},
         y1: function(d) { return plot.yScale(d.y - d.yerror);},
         y2: function(d) { return plot.yScale(d.y + d.yerror);},
-        stroke: function(d) { return colorScale(d.series_index); }
+        stroke: function(d) { return plot.colorScale(d.series_index); }
       });
     this.svg.selectAll(".line.yerror.top")
       .filter(function(d) { return d.yerror;})
@@ -271,7 +267,7 @@ LinePlot.prototype.UpdatePlot = function() {
         x2: function(d) { return plot.xScale(d.x) + 3;},
         y1: function(d) { return plot.yScale(d.y - d.yerror);},
         y2: function(d) { return plot.yScale(d.y - d.yerror);},
-        stroke: function(d) { return colorScale(d.series_index); }
+        stroke: function(d) { return plot.colorScale(d.series_index); }
       });
     this.svg.selectAll(".line.yerror.bottom")
       .filter(function(d) { return d.yerror;})
@@ -280,12 +276,13 @@ LinePlot.prototype.UpdatePlot = function() {
         x2: function(d) { return plot.xScale(d.x) + 3;},
         y1: function(d) { return plot.yScale(d.y + d.yerror);},
         y2: function(d) { return plot.yScale(d.y + d.yerror);},
-        stroke: function(d) { return colorScale(d.series_index); }
+        stroke: function(d) { return plot.colorScale(d.series_index); }
       });
 };
 
 LinePlot.prototype.AddDescription = function() {
     var plot = this;
+
     // description for the specification of the plot
     var dl = this.description.append("dl");
     dl.append("dt").text("X-Axis");
@@ -305,9 +302,8 @@ LinePlot.prototype.AddDescription = function() {
       plot.row.remove();
     });
     this.description.append("br");
-    this.description.append("br");
-    this.description.append("br");
-    this.description.append("br");
+
+    this.description.append("br").style("line-height", "400%");
     this.description.append("input").attr("type", "checkbox").on("change", function() {
       var new_scale;
       if(this.checked) {
@@ -322,6 +318,7 @@ LinePlot.prototype.AddDescription = function() {
     });
     this.description.append("span").html("log scale on x axis");
     this.description.append("br");
+
     this.description.append("input").attr("type", "checkbox").on("change", function() {
       var new_scale;
       if(this.checked) {
