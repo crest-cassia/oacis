@@ -166,6 +166,17 @@ LinePlot.prototype.AddPlot = function() {
     point.append("circle")
       .style("fill", function(d) { return plot.colorScale(d.series_index);})
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
+      .on("mouseover", function(d) {
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", .8);
+        tooltip.html(
+          plot.data.xlabel + " : " + d.x + "<br/>" +
+          plot.data.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
+          " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
+          (plot.data.series ? (plot.data.series + " : " + d.series_value + "<br/>") : "") +
+          "ID: " + d.psid);
+      })
       .on("mousemove", function() {
         tooltip
           .style("top", (d3.event.pageY-10) + "px")
@@ -235,19 +246,7 @@ LinePlot.prototype.UpdatePlot = function() {
     // draw data point
     this.svg.selectAll("circle")
       .attr("cx", function(d) { return plot.xScale(d.x);})
-      .attr("cy", function(d) { return plot.yScale(d.y);})
-      .style("fill", function(d) { return plot.colorScale(d.series_index);})
-      .on("mouseover", function(d) {
-        tooltip.transition()
-          .duration(200)
-          .style("opacity", .8);
-        tooltip.html(
-          plot.data.xlabel + " : " + d.x + "<br/>" +
-          plot.data.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
-          " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
-          (plot.data.series ? (plot.data.series + " : " + d.series_value + "<br/>") : "") +
-          "ID: " + d.psid);
-      });
+      .attr("cy", function(d) { return plot.yScale(d.y);});
 
     // draw error bar
     this.svg.selectAll(".line.yerror.bar")
