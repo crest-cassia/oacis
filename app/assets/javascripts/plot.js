@@ -14,7 +14,6 @@ function Plot() {
 Plot.prototype.margin = {top: 10, right: 100, bottom: 100, left: 100};
 Plot.prototype.width = 560;
 Plot.prototype.height = 460;
-Plot.prototype.scales = ["linear","log"];
 Plot.prototype.data = null;
 Plot.prototype.url = null;
 Plot.prototype.current_ps_id = null;
@@ -50,15 +49,15 @@ LinePlot.prototype.Init = function(data, url, parameter_set_base_url, current_ps
 
 LinePlot.prototype.SetXScale = function(xscale) {
   var scale = null;
-  switch(this.scales.indexOf(xscale)) {
-    case 0: // "linear"
+  switch(xscale) {
+    case "linear":
       scale = d3.scale.linear().range([0, this.width]);
       scale.domain([
         d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
         d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[0];})})
       ]).nice();
       break;
-    case 1: // "log"
+    case "log":
       scale = d3.scale.log().clamp(true).range([0, this.width]);
       var min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[0];})})
       scale.domain([
@@ -66,7 +65,7 @@ LinePlot.prototype.SetXScale = function(xscale) {
         d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[0];})})
       ]).nice();
       break;
-    case -1: // undefined
+    default: // undefined
       scale = d3.scale.linear().range([0, this.width]);
       console.log(xscale + "is not defined as scale. Set linear scale for x-axis.");
       scale.domain([
@@ -80,15 +79,15 @@ LinePlot.prototype.SetXScale = function(xscale) {
 
 LinePlot.prototype.SetYScale = function(yscale) {
   var scale = null;
-  switch(this.scales.indexOf(yscale)) {
-    case 0: // "linear"
+  switch(yscale) {
+    case "linear":
       scale = d3.scale.linear().range([this.height, 0]);
       scale.domain([
         d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) }),
         d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
       ]).nice();
       break;
-    case 1: // "log"
+    case "log":
       scale = d3.scale.log().clamp(true).range([this.height, 0]);
       var min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];})})
       scale.domain([
@@ -96,7 +95,7 @@ LinePlot.prototype.SetYScale = function(yscale) {
         d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];})})
       ]).nice();
       break;
-    case -1: // undefined
+    default: // undefined
       console.log(scale + "is not defined as scale. Set linear scale for y-axis.");
       scale = d3.scale.linear().range([this.height, 0]);
       scale.domain([
