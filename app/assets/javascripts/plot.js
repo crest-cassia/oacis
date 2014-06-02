@@ -15,50 +15,10 @@ Plot.prototype.margin = {top: 10, right: 100, bottom: 100, left: 100};
 Plot.prototype.width = 560;
 Plot.prototype.height = 460;
 Plot.prototype.scales = ["linear","log"];
-
-Plot.prototype.getXScale = function(dat, scales_index) {
-  var scale;
-  switch(this.scales[scales_index]) {
-    case "linear":
-      scale = d3.scale.linear().range([0, this.width]);
-      scale.domain([
-        d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
-        d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
-      ]).nice();
-      break;
-    case "log":
-      scale = d3.scale.clamp(true).log().range([0, this.width])
-      var min = d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})})
-      scale.domain([
-        (min<0.1 ? 0.1 : min),
-        d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
-      ]).nice();
-      break;
-  }
-  return scale;
-};
-
-Plot.prototype.getYScale = function(dat, scales_index) {
-  var scale;
-  switch(this.scales[scales_index]) {
-    case "linear":
-      scale = d3.scale.linear().range([this.height, 0]);
-      scale.domain([
-        d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) }),
-        d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
-      ]).nice();
-      break;
-    case "log":
-      scale = d3.scale.clamp(true).log().range([this.height, 0])
-      var min = d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];})})
-      scale.domain([
-        (min<0.1 ? 0.1 : min),
-        d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];})})
-      ]).nice();
-      break;
-  }
-  return scale;
-};
+Plot.prototype.data = null;
+Plot.prototype.url = null;
+Plot.prototype.current_ps_id = null;
+Plot.prototype.parameter_set_base_url = null;
 
 Plot.prototype.Destructor = function() { this.row.remove(); };
 
@@ -68,71 +28,125 @@ function LinePlot() {
 
 LinePlot.prototype = Object.create(Plot.prototype);// LinePlot is sub class of Plot
 LinePlot.prototype.constructor = LinePlot;// override constructor
+LinePlot.prototype.data = null;
+LinePlot.prototype.xScale = null;
+LinePlot.prototype.yScale = null;
+LinePlot.prototype.xAxis = null;
+LinePlot.prototype.yAxis = null;
 
-LinePlot.prototype.draw = function(url, parameter_set_base_url, current_ps_id, progress) {
+LinePlot.prototype.Init = function(data, url, parameter_set_base_url, current_ps_id) {
+  this.data = data;
+  this.SetXScale("linear");
+  this.SetYScale("linear");
+  this.xAxis = d3.svg.axis().orient("bottom");
+  this.yAxis = d3.svg.axis().orient("left");
+  this.xAxis.scale(this.xScale);
+  this.yAxis.scale(this.yScale);
+  this.url = url;
+  this.parameter_set_base_url = parameter_set_base_url;
+  this.current_ps_id = current_ps_id;
+};
 
-  var plot = this;
-  var xhr = d3.json(url)
-    .on("load", function(dat) {
-    progress.remove();
+LinePlot.prototype.SetXScale = function(xscale) {
+  var scale = null;
+  switch(this.scales.indexOf(xscale)) {
+    case 0: // "linear"
+      scale = d3.scale.linear().range([0, this.width]);
+      scale.domain([
+        d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
+        d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[0];})})
+      ]).nice();
+      break;
+    case 1: // "log"
+      scale = d3.scale.log().clamp(true).range([0, this.width]);
+      var min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[0];})})
+      scale.domain([
+        (min<0.1 ? 0.1 : min),
+        d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[0];})})
+      ]).nice();
+      break;
+    case -1: // undefined
+      scale = d3.scale.linear().range([0, this.width]);
+      console.log(xscale + "is not defined as scale. Set linear scale for x-axis.");
+      scale.domain([
+        d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
+        d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[0];})})
+      ]).nice();
+      break;
+  }
+  this.xScale = scale;
+};
 
-    var xScale_current = 0;
-    var yScale_current = 0;
-    var xScale = plot.getXScale(dat, xScale_current);
-    var yScale = plot.getYScale(dat, yScale_current);
+LinePlot.prototype.SetYScale = function(yscale) {
+  var scale = null;
+  switch(this.scales.indexOf(yscale)) {
+    case 0: // "linear"
+      scale = d3.scale.linear().range([this.height, 0]);
+      scale.domain([
+        d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) }),
+        d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
+      ]).nice();
+      break;
+    case 1: // "log"
+      scale = d3.scale.log().clamp(true).range([this.height, 0]);
+      var min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];})})
+      scale.domain([
+        (min<0.1 ? 0.1 : min),
+        d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];})})
+      ]).nice();
+      break;
+    case -1: // undefined
+      console.log(scale + "is not defined as scale. Set linear scale for y-axis.");
+      scale = d3.scale.linear().range([this.height, 0]);
+      scale.domain([
+        d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) }),
+        d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
+      ]).nice();
+      break;
+  }
+  this.yScale = scale;
+};
 
-    xScale.domain([
-      d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
-      d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
-    ]).nice();
-    yScale.domain([
-      d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) }),
-      d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
-    ]).nice();
+LinePlot.prototype.AddAxis = function() {
+  // X-Axis
+  this.svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + this.height + ")")
+    .append("text")
+      .style("text-anchor", "middle")
+      .attr("x", this.width / 2.0)
+      .attr("y", 50.0)
+      .text(this.data.xlabel);
 
-    // X-Axis
-    var xAxis = d3.svg.axis()
-      .scale(xScale)
-      .orient("bottom");
-    plot.svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + plot.height + ")")
-      .call(xAxis)
-      .append("text")
-        .style("text-anchor", "middle")
-        .attr("x", plot.width / 2.0)
-        .attr("y", 50.0)
-        .text(dat.xlabel);
+  // Y-Axis
+  this.svg.append("g")
+      .attr("class", "y axis")
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -this.height/2)
+      .attr("y", -50.0)
+      .style("text-anchor", "middle")
+      .text(this.data.ylabel);
 
-    // Y-Axis
-    var yAxis = d3.svg.axis()
-      .scale(yScale)
-      .orient("left");
-    plot.svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis)
-      .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -plot.height/2)
-        .attr("y", -50.0)
-        .style("text-anchor", "middle")
-        .text(dat.ylabel);
+  this.UpdateAxis();
+};
 
+LinePlot.prototype.UpdateAxis = function() {
+  this.svg.select(".x.axis").call(this.xAxis);
+  this.svg.select(".y.axis").call(this.yAxis);
+}
+
+LinePlot.prototype.AddPlot = function() {
+    var plot = this;
+    var colorScale = d3.scale.category10();
     // group for each series
-    var series = plot.svg
+    var series = this.svg
       .selectAll(".series")
-      .data(dat.data)
+      .data(this.data.data)
       .enter().append("g")
         .attr("class", "series");
-
-    // draw line plot
-    var colorScale = d3.scale.category10();
-    var line = d3.svg.line()
-      .x( function(d) { return xScale(d[0]);} )
-      .y( function(d) { return yScale(d[1]);} );
     series.append("path")
       .attr("class", "line")
-      .attr("d", function(d) { return line(d);} )
       .style({
         "stroke": function(d, i) { return colorScale(i);},
         "fill": "none",
@@ -146,26 +160,13 @@ LinePlot.prototype.draw = function(url, parameter_set_base_url, current_ps_id, p
         return d.map(function(v) {
           return {
             x: v[0], y: v[1], yerror: v[2],
-            series_index: i, series_value: dat.series_values[i], psid: v[3]
+            series_index: i, series_value: plot.data.series_values[i], psid: v[3]
           };
         });
       }).enter();
     point.append("circle")
-      .attr("cx", function(d) { return xScale(d.x);})
-      .attr("cy", function(d) { return yScale(d.y);})
       .style("fill", function(d) { return colorScale(d.series_index);})
-      .attr("r", function(d) { return (d.psid == current_ps_id) ? 5 : 3;})
-      .on("mouseover", function(d) {
-        tooltip.transition()
-          .duration(200)
-          .style("opacity", .8);
-        tooltip.html(
-          dat.xlabel + " : " + d.x + "<br/>" +
-          dat.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
-          " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
-          (dat.series ? (dat.series + " : " + d.series_value + "<br/>") : "") +
-          "ID: " + d.psid);
-      })
+      .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .on("mousemove", function() {
         tooltip
           .style("top", (d3.event.pageY-10) + "px")
@@ -178,59 +179,41 @@ LinePlot.prototype.draw = function(url, parameter_set_base_url, current_ps_id, p
       })
       .on("dblclick", function(d) {
         // open a link in a background window
-        window.open(parameter_set_base_url + d.psid, '_blank');
+        window.open(plot.parameter_set_base_url + d.psid, '_blank');
       });
 
     // draw error bar
     point.insert("line", "circle")
       .filter(function(d) { return d.yerror;})
-      .attr({
-        x1: function(d) { return xScale(d.x);},
-        x2: function(d) { return xScale(d.x);},
-        y1: function(d) { return yScale(d.y - d.yerror);},
-        y2: function(d) { return yScale(d.y + d.yerror);},
-        stroke: function(d) { return colorScale(d.series_index); }
-      });
+      .attr("class", "line yerror bar");
     point.insert("line", "circle")
       .filter(function(d) { return d.yerror;})
-      .attr({
-        x1: function(d) { return xScale(d.x) - 3;},
-        x2: function(d) { return xScale(d.x) + 3;},
-        y1: function(d) { return yScale(d.y - d.yerror);},
-        y2: function(d) { return yScale(d.y - d.yerror);},
-        stroke: function(d) { return colorScale(d.series_index); }
-      });
+      .attr("class", "line yerror top");
     point.insert("line", "circle")
       .filter(function(d) { return d.yerror;})
-      .attr({
-        x1: function(d) { return xScale(d.x) - 3;},
-        x2: function(d) { return xScale(d.x) + 3;},
-        y1: function(d) { return yScale(d.y + d.yerror);},
-        y2: function(d) { return yScale(d.y + d.yerror);},
-        stroke: function(d) { return colorScale(d.series_index); }
-      });
-
-    // draw legend title
-    plot.svg.append("text")
-      .attr({
-        x: plot.width,
-        y: 0,
-        dx: ".8em",
-        dy: ".8em"
-      })
-      .text(dat.series);
+      .attr("class", "line yerror bottom");
 
     // draw legend
-    var legend = plot.svg.append("g")
+    var legend = this.svg.append("g")
       .attr("class", "legend")
-      .attr("transform", "translate(" + plot.width + "," + 20 + ")");
+      .attr("transform", "translate(" + this.width + "," + 20 + ")");
     var legendItem = legend.selectAll("g")
-      .data(dat.series_values)
+      .data(this.data.series_values)
       .enter().append("g")
       .attr("class", "legend-item")
       .attr("transform", function(d,i) {
         return "translate(10," + (i*20) + ")";
       });
+
+    // draw legend title
+    this.svg.append("text")
+      .attr({
+        x: this.width,
+        y: 0,
+        dx: ".8em",
+        dy: ".8em"
+      })
+      .text(this.data.series);
     legendItem.append("rect")
       .attr("width", 15)
       .attr("height", 15)
@@ -241,149 +224,140 @@ LinePlot.prototype.draw = function(url, parameter_set_base_url, current_ps_id, p
       .attr("dy", "0.3em")
       .text( function(d,i) { return d; });
 
-    function update_plot() {
-      // draw line path
-      series.select("path").attr("d", function(d) { return line(d);});
+    this.UpdatePlot();
+};
 
-      // draw data point
-      plot.svg.selectAll("circle")
-        .attr("cx", function(d) { return xScale(d.x);})
-        .attr("cy", function(d) { return yScale(d.y);})
-        .style("fill", function(d) { return colorScale(d.series_index);})
-        .on("mouseover", function(d) {
-          tooltip.transition()
-            .duration(200)
-            .style("opacity", .8);
-          tooltip.html(
-            dat.xlabel + " : " + d.x + "<br/>" +
-            dat.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
-            " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
-            (dat.series ? (dat.series + " : " + d.series_value + "<br/>") : "") +
-            "ID: " + d.psid);
-          });
+LinePlot.prototype.UpdatePlot = function() {
+    var plot = this;
+    var colorScale = d3.scale.category10();
+    var line = d3.svg.line()
+      .x( function(d) { return plot.xScale(d[0]);} )
+      .y( function(d) { return plot.yScale(d[1]);} );
+    var tooltip = d3.select("#plot-tooltip");
+    // draw line path
+    this.svg.selectAll("path").attr("d", function(d) { return line(d);});
 
-      // draw error bar
-      series.selectAll("line").remove();
-      point.insert("line", "circle")
-        .filter(function(d) { return d.yerror;})
-        .attr("clip-path", "url(#clip)")
-        .attr({
-          x1: function(d) { return xScale(d.x);},
-          x2: function(d) { return xScale(d.x);},
-          y1: function(d) { return yScale(d.y - d.yerror);},
-          y2: function(d) { return yScale(d.y + d.yerror);},
-          stroke: function(d) { return colorScale(d.series_index); }
-        });
-      point.insert("line", "circle")
-        .filter(function(d) { return d.yerror;})
-        .attr("clip-path", "url(#clip)")
-        .attr({
-          x1: function(d) { return xScale(d.x) - 3;},
-          x2: function(d) { return xScale(d.x) + 3;},
-          y1: function(d) { return yScale(d.y - d.yerror);},
-          y2: function(d) { return yScale(d.y - d.yerror);},
-          stroke: function(d) { return colorScale(d.series_index); }
-        });
-      point.insert("line", "circle")
-        .filter(function(d) { return d.yerror;})
-        .attr("clip-path", "url(#clip)")
-        .attr({
-          x1: function(d) { return xScale(d.x) - 3;},
-          x2: function(d) { return xScale(d.x) + 3;},
-          y1: function(d) { return yScale(d.y + d.yerror);},
-          y2: function(d) { return yScale(d.y + d.yerror);},
-          stroke: function(d) { return colorScale(d.series_index); }
-        });
-    }
+    // draw data point
+    this.svg.selectAll("circle")
+      .attr("cx", function(d) { return plot.xScale(d.x);})
+      .attr("cy", function(d) { return plot.yScale(d.y);})
+      .style("fill", function(d) { return colorScale(d.series_index);})
+      .on("mouseover", function(d) {
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", .8);
+        tooltip.html(
+          plot.data.xlabel + " : " + d.x + "<br/>" +
+          plot.data.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
+          " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
+          (plot.data.series ? (plot.data.series + " : " + d.series_value + "<br/>") : "") +
+          "ID: " + d.psid);
+      });
 
+    // draw error bar
+    this.svg.selectAll(".line.yerror.bar")
+      .filter(function(d) { return d.yerror;})
+      .attr({
+        x1: function(d) { return plot.xScale(d.x);},
+        x2: function(d) { return plot.xScale(d.x);},
+        y1: function(d) { return plot.yScale(d.y - d.yerror);},
+        y2: function(d) { return plot.yScale(d.y + d.yerror);},
+        stroke: function(d) { return colorScale(d.series_index); }
+      });
+    this.svg.selectAll(".line.yerror.top")
+      .filter(function(d) { return d.yerror;})
+      .attr({
+        x1: function(d) { return plot.xScale(d.x) - 3;},
+        x2: function(d) { return plot.xScale(d.x) + 3;},
+        y1: function(d) { return plot.yScale(d.y - d.yerror);},
+        y2: function(d) { return plot.yScale(d.y - d.yerror);},
+        stroke: function(d) { return colorScale(d.series_index); }
+      });
+    this.svg.selectAll(".line.yerror.bottom")
+      .filter(function(d) { return d.yerror;})
+      .attr({
+        x1: function(d) { return plot.xScale(d.x) - 3;},
+        x2: function(d) { return plot.xScale(d.x) + 3;},
+        y1: function(d) { return plot.yScale(d.y + d.yerror);},
+        y2: function(d) { return plot.yScale(d.y + d.yerror);},
+        stroke: function(d) { return colorScale(d.series_index); }
+      });
+};
+
+LinePlot.prototype.AddDescription = function() {
+    var plot = this;
     // description for the specification of the plot
-    var dl = plot.description.append("dl");
+    var dl = this.description.append("dl");
     dl.append("dt").text("X-Axis");
-    dl.append("dd").text(dat.xlabel);
+    dl.append("dd").text(this.data.xlabel);
     dl.append("dt").text("Y-Axis");
-    dl.append("dd").text(dat.ylabel);
-    if(dat.series) {
+    dl.append("dd").text(this.data.ylabel);
+    if(this.data.series) {
       dl.append("dt").text("Series");
-      dl.append("dd").text(dat.series);
+      dl.append("dd").text(this.data.series);
     }
-    plot.description.append("a").attr({target: "_blank", href: url}).text("show data in json");
-    plot.description.append("br");
-    plt_url = url.replace(/\.json/, '.plt')
-    plot.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
-    plot.description.append("br");
-    plot.description.append("a").text("delete plot").on("click", function() {
+    this.description.append("a").attr({target: "_blank", href: this.url}).text("show data in json");
+    this.description.append("br");
+    plt_url = this.url.replace(/\.json/, '.plt')
+    this.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
+    this.description.append("br");
+    this.description.append("a").text("delete plot").on("click", function() {
       plot.row.remove();
     });
-    plot.description.append("br");
-    plot.description.append("br");
-    plot.description.append("br");
-    plot.description.append("br");
-    plot.description.append("input").attr("type", "checkbox").on("change", function() {
-    xScale_current = 1 - xScale_current;
-    switch(scales[xScale_current]) {
-      case "linear":
-        xScale = d3.scale.linear().range([0, plot.width]);
-        xScale.domain([
-          d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
-          d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
-        ]).nice();
-        break;
-      case "log":
-        xScale = d3.scale.log().clamp(true).range([0, plot.width]);
-        var min = d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})})
-        xScale.domain([
-          (min<0.1 ? 0.1 : min),
-          d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
-        ]).nice();
-        break;
-    }
-
-      update_plot();
-      xAxis.scale(xScale);
-      svg.select(".x.axis").call(xAxis);
+    this.description.append("br");
+    this.description.append("br");
+    this.description.append("br");
+    this.description.append("br");
+    this.description.append("input").attr("type", "checkbox").on("change", function() {
+      var new_scale;
+      if(this.checked) {
+        new_scale = "log";
+      } else {
+        new_scale = "linear";
+      }
+      plot.SetXScale(new_scale);
+      plot.xAxis.scale(plot.xScale);
+      plot.UpdatePlot();
+      plot.UpdateAxis();
     });
-    plot.description.append("span").html("log scale on x axis");
-    plot.description.append("br");
-    plot.description.append("input").attr("type", "checkbox").on("change", function() {
-    yScale_current = 1 - yScale_current;
-    switch(scales[yScale_current]) {
-      case "linear":
-        yScale = d3.scale.linear().range([plot.height, 0]);
-        yScale.domain([
-          d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) }),
-          d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
-        ]).nice();
-        break;
-      case "log":
-        yScale = d3.scale.log().clamp(true).range([plot.height, 0]);
-        var min = d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) });
-        yScale.domain([
-          (min<0.1 ? 0.1 : min),
-          d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
-        ]).nice();
-        break;
-    }
-
-      update_plot();
-      yAxis.scale(yScale);
-      plot.svg.select(".y.axis").call(yAxis);
+    this.description.append("span").html("log scale on x axis");
+    this.description.append("br");
+    this.description.append("input").attr("type", "checkbox").on("change", function() {
+      var new_scale;
+      if(this.checked) {
+        new_scale = "log";
+      } else {
+        new_scale = "linear";
+      }
+      plot.SetYScale(new_scale);
+      plot.yAxis.scale(plot.yScale);
+      plot.UpdatePlot();
+      plot.UpdateAxis();
     });
-    plot.description.append("span").html("log scale on y axis");
+    this.description.append("span").html("log scale on y axis");
+};
+
+LinePlot.prototype.Draw = function() {
+  this.AddPlot();
+  this.AddAxis();
+  this.AddDescription();
+};
+
+function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
+  var plot = new LinePlot();
+  var progress = show_loading_spin_arc(plot.svg, plot.width, plot.height);
+  var xhr = d3.json(url)
+    .on("load", function(dat) {
+    progress.remove();
+    plot.Init(dat, url, parameter_set_base_url, current_ps_id);
+    plot.Draw(dat);
   })
   .on("error", function() {progress.remove();})
   .get();
   progress.on("mousedown", function(){
     xhr.abort();
-//    row.remove();
     plot.Destructor();
   });
-};
-
-function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
-
-  var plot = new LinePlot();
-  var progress = show_loading_spin_arc(plot.svg, plot.width, plot.height);
-  plot.draw(url, parameter_set_base_url, current_ps_id, progress);
 }
 
 function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
