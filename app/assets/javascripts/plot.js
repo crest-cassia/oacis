@@ -1,32 +1,85 @@
-function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
-
-  var margin = {top: 10, right: 100, bottom: 100, left: 100},
-    width = 560;
-    height = 460;
-
-  var row = d3.select("#plot").insert("div","div").attr("class", "row");
-  var plot_region = row.append("div").attr("class", "span8");
-  var description = row.append("div").attr("class", "span4");
-
-  var svg = plot_region.insert("svg")
+function Plot() {
+  this.row = d3.select("#plot").insert("div","div").attr("class", "row");
+  this.plot_region = this.row.append("div").attr("class", "span8");
+  this.description = this.row.append("div").attr("class", "span4");
+  this.svg = this.plot_region.insert("svg")
     .attr({
-      "width": width + margin.left + margin.right,
-      "height": height + margin.top + margin.bottom
+      "width": this.width + this.margin.left + this.margin.right,
+      "height": this.height + this.margin.top + this.margin.bottom
     })
     .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+}
 
-  var progress = show_loading_spin_arc(svg, width, height);
+Plot.prototype.margin = {top: 10, right: 100, bottom: 100, left: 100};
+Plot.prototype.width = 560;
+Plot.prototype.height = 460;
+Plot.prototype.scales = ["linear","log"];
 
+Plot.prototype.getXScale = function(dat, scales_index) {
+  var scale;
+  switch(this.scales[scales_index]) {
+    case "linear":
+      scale = d3.scale.linear().range([0, this.width]);
+      scale.domain([
+        d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
+        d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
+      ]).nice();
+      break;
+    case "log":
+      scale = d3.scale.clamp(true).log().range([0, this.width])
+      var min = d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})})
+      scale.domain([
+        (min<0.1 ? 0.1 : min),
+        d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
+      ]).nice();
+      break;
+  }
+  return scale;
+};
+
+Plot.prototype.getYScale = function(dat, scales_index) {
+  var scale;
+  switch(this.scales[scales_index]) {
+    case "linear":
+      scale = d3.scale.linear().range([this.height, 0]);
+      scale.domain([
+        d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) }),
+        d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
+      ]).nice();
+      break;
+    case "log":
+      scale = d3.scale.clamp(true).log().range([this.height, 0])
+      var min = d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];})})
+      scale.domain([
+        (min<0.1 ? 0.1 : min),
+        d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];})})
+      ]).nice();
+      break;
+  }
+  return scale;
+};
+
+Plot.prototype.Destructor = function() { this.row.remove(); };
+
+function LinePlot() {
+  Plot.call(this);// call constructor of Plot
+}
+
+LinePlot.prototype = Object.create(Plot.prototype);// LinePlot is sub class of Plot
+LinePlot.prototype.constructor = LinePlot;// override constructor
+
+LinePlot.prototype.draw = function(url, parameter_set_base_url, current_ps_id, progress) {
+
+  var plot = this;
   var xhr = d3.json(url)
     .on("load", function(dat) {
     progress.remove();
 
-    var scales = ["linear","log"];
     var xScale_current = 0;
     var yScale_current = 0;
-    var xScale = d3.scale.linear().range([0, width]);
-    var yScale = d3.scale.linear().range([height, 0]);
+    var xScale = plot.getXScale(dat, xScale_current);
+    var yScale = plot.getYScale(dat, yScale_current);
 
     xScale.domain([
       d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
@@ -41,13 +94,13 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
     var xAxis = d3.svg.axis()
       .scale(xScale)
       .orient("bottom");
-    svg.append("g")
+    plot.svg.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", "translate(0," + plot.height + ")")
       .call(xAxis)
       .append("text")
         .style("text-anchor", "middle")
-        .attr("x", width / 2.0)
+        .attr("x", plot.width / 2.0)
         .attr("y", 50.0)
         .text(dat.xlabel);
 
@@ -55,18 +108,18 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
     var yAxis = d3.svg.axis()
       .scale(yScale)
       .orient("left");
-    svg.append("g")
+    plot.svg.append("g")
         .attr("class", "y axis")
         .call(yAxis)
       .append("text")
         .attr("transform", "rotate(-90)")
-        .attr("x", -height/2)
+        .attr("x", -plot.height/2)
         .attr("y", -50.0)
         .style("text-anchor", "middle")
         .text(dat.ylabel);
 
     // group for each series
-    var series = svg
+    var series = plot.svg
       .selectAll(".series")
       .data(dat.data)
       .enter().append("g")
@@ -158,9 +211,9 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
       });
 
     // draw legend title
-    svg.append("text")
+    plot.svg.append("text")
       .attr({
-        x: width,
+        x: plot.width,
         y: 0,
         dx: ".8em",
         dy: ".8em"
@@ -168,9 +221,9 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
       .text(dat.series);
 
     // draw legend
-    var legend = svg.append("g")
+    var legend = plot.svg.append("g")
       .attr("class", "legend")
-      .attr("transform", "translate(" + width + "," + 20 + ")");
+      .attr("transform", "translate(" + plot.width + "," + 20 + ")");
     var legendItem = legend.selectAll("g")
       .data(dat.series_values)
       .enter().append("g")
@@ -193,7 +246,7 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
       series.select("path").attr("d", function(d) { return line(d);});
 
       // draw data point
-      svg.selectAll("circle")
+      plot.svg.selectAll("circle")
         .attr("cx", function(d) { return xScale(d.x);})
         .attr("cy", function(d) { return yScale(d.y);})
         .style("fill", function(d) { return colorScale(d.series_index);})
@@ -244,7 +297,7 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
     }
 
     // description for the specification of the plot
-    var dl = description.append("dl");
+    var dl = plot.description.append("dl");
     dl.append("dt").text("X-Axis");
     dl.append("dd").text(dat.xlabel);
     dl.append("dt").text("Y-Axis");
@@ -253,30 +306,30 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
       dl.append("dt").text("Series");
       dl.append("dd").text(dat.series);
     }
-    description.append("a").attr({target: "_blank", href: url}).text("show data in json");
-    description.append("br");
+    plot.description.append("a").attr({target: "_blank", href: url}).text("show data in json");
+    plot.description.append("br");
     plt_url = url.replace(/\.json/, '.plt')
-    description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
-    description.append("br");
-    description.append("a").text("delete plot").on("click", function() {
-      row.remove();
+    plot.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
+    plot.description.append("br");
+    plot.description.append("a").text("delete plot").on("click", function() {
+      plot.row.remove();
     });
-    description.append("br");
-    description.append("br");
-    description.append("br");
-    description.append("br");
-    description.append("input").attr("type", "checkbox").on("change", function() {
+    plot.description.append("br");
+    plot.description.append("br");
+    plot.description.append("br");
+    plot.description.append("br");
+    plot.description.append("input").attr("type", "checkbox").on("change", function() {
     xScale_current = 1 - xScale_current;
     switch(scales[xScale_current]) {
       case "linear":
-        xScale = d3.scale.linear().range([0, width]);
+        xScale = d3.scale.linear().range([0, plot.width]);
         xScale.domain([
           d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})}),
           d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[0];})})
         ]).nice();
         break;
       case "log":
-        xScale = d3.scale.log().clamp(true).range([0, width]);
+        xScale = d3.scale.log().clamp(true).range([0, plot.width]);
         var min = d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[0];})})
         xScale.domain([
           (min<0.1 ? 0.1 : min),
@@ -289,20 +342,20 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
       xAxis.scale(xScale);
       svg.select(".x.axis").call(xAxis);
     });
-    description.append("span").html("log scale on x axis");
-    description.append("br");
-    description.append("input").attr("type", "checkbox").on("change", function() {
+    plot.description.append("span").html("log scale on x axis");
+    plot.description.append("br");
+    plot.description.append("input").attr("type", "checkbox").on("change", function() {
     yScale_current = 1 - yScale_current;
     switch(scales[yScale_current]) {
       case "linear":
-        yScale = d3.scale.linear().range([height, 0]);
+        yScale = d3.scale.linear().range([plot.height, 0]);
         yScale.domain([
           d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) }),
           d3.max( dat.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];}) })
         ]).nice();
         break;
       case "log":
-        yScale = d3.scale.log().clamp(true).range([height, 0]);
+        yScale = d3.scale.log().clamp(true).range([plot.height, 0]);
         var min = d3.min( dat.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];}) });
         yScale.domain([
           (min<0.1 ? 0.1 : min),
@@ -313,16 +366,24 @@ function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
 
       update_plot();
       yAxis.scale(yScale);
-      svg.select(".y.axis").call(yAxis);
+      plot.svg.select(".y.axis").call(yAxis);
     });
-    description.append("span").html("log scale on y axis");
+    plot.description.append("span").html("log scale on y axis");
   })
   .on("error", function() {progress.remove();})
   .get();
   progress.on("mousedown", function(){
     xhr.abort();
-    row.remove();
+//    row.remove();
+    plot.Destructor();
   });
+};
+
+function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
+
+  var plot = new LinePlot();
+  var progress = show_loading_spin_arc(plot.svg, plot.width, plot.height);
+  plot.draw(url, parameter_set_base_url, current_ps_id, progress);
 }
 
 function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
