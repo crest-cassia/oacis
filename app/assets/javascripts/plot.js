@@ -297,7 +297,7 @@ LinePlot.prototype.AddDescription = function() {
     this.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
     this.description.append("br");
     this.description.append("a").text("delete plot").on("click", function() {
-      plot.row.remove();
+      plot.Destructor();
     });
     this.description.append("br");
 
