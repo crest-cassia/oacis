@@ -375,7 +375,7 @@ ScatterPlot.prototype.Init = function(data, url, parameter_set_base_url, current
   this.SetYScale("linear");
   this.xAxis = d3.svg.axis().scale(this.xScale).orient("bottom");
   this.yAxis = d3.svg.axis().scale(this.yScale).orient("left");
-  this.colorScale = d3.scale.category10();
+//  this.colorScale = d3.scale.category10();
 };
 
 ScatterPlot.prototype.SetXScale = function(xscale) {
@@ -391,10 +391,10 @@ ScatterPlot.prototype.SetXScale = function(xscale) {
       break;
     case "log":
       scale = d3.scale.log().clamp(true).range([0, this.width]);
-      var min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[0];})})
+      var min = d3.min( this.data.data, function(d) { return d[0][plot.data.xlabel];})
       scale.domain([
         (min<0.1 ? 0.1 : min),
-        d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[0];})})
+        d3.max( this.data.data, function(d) { return d[0][plot.data.xlabel];})
       ]).nice();
       break;
     default: // undefined
@@ -422,10 +422,10 @@ ScatterPlot.prototype.SetYScale = function(yscale) {
       break;
     case "log":
       scale = d3.scale.log().clamp(true).range([this.height, 0]);
-      var min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];})})
+      var min = d3.min( this.data.data, function(d) { return d[0][plot.data.ylabel];})
       scale.domain([
         (min<0.1 ? 0.1 : min),
-        d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];})})
+        d3.max( this.data.data, function(d) { return d[0][plot.data.ylabel];})
       ]).nice();
       break;
     default: // undefined
@@ -450,14 +450,18 @@ ScatterPlot.prototype.AddPlot = function() {
   colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
   colorScalePoint.domain( colorScale.domain() ).nice();
 
-  var colorMapG = d3.select("g#color-map-group");
-  function draw_color_map(g) {
+  function add_color_map_group() {
+    var color_map_group = plot.svg.append("g")
+      .attr({
+        "transform": "translate(" + plot.width + "," + plot.margin.top + ")",
+        "id": "color-map-group"
+      });
     var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(colorScale.range());
-    g.append("text")
+    color_map_group.append("text")
       .attr({x: 10.0, y: 20.0, dx: "0.1em", dy: "-0.4em"})
       .style("text-anchor", "begin")
       .text("Result");
-    g.selectAll("rect")
+    color_map_group.selectAll("rect")
       .data([1.0, 0.8, 0.6, 0.4, 0.2, 0.0])
       .enter().append("rect")
       .attr({
@@ -467,58 +471,36 @@ ScatterPlot.prototype.AddPlot = function() {
         height: 19,
         fill: function(d) { return scale(d); }
       });
-    g.append("text")
+    color_map_group.append("text")
       .attr({x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
       .text( colorScale.domain()[2] );
-    g.append("text")
+    color_map_group.append("text")
       .attr({x: 30.0, y: 140.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
       .text( colorScale.domain()[0] );
   }
-  draw_color_map(colorMapG);
+  add_color_map_group();
 
-  var vertices = this.data.data.map(function(v) {
-    return [
-      plot.xScale(v[0][plot.data.xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
-      plot.yScale(v[0][plot.data.ylabel]) + Math.random() * 1.0 - 0.5
-    ];
-  });
-  var voronoi = d3.geom.voronoi()
-    .clipExtent([[0, 0], [this.width, this.height]]);
-  var voronoi_group = this.svg.append("g");
-  var path = voronoi_group.selectAll("path")
-    .data(voronoi(vertices));
-  function draw_voronoi_heat_map() {
-    // add noise to coordinates of vertices in order to prevent hang-up.
-    // hanging-up sometimes happen when duplicated points are included.
-    path.enter().append("path")
-      .style("fill", function(d, i) { return colorScale(plot.data.data[i][1]);})
-      .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
-      .style("fill-opacity", 0.7)
-      .style("stroke", "none");
+  function add_voronoi_group() {
+    var voronoi_group = plot.svg.append("g")
+      .attr("id", "voronoi-group");
   }
-  try {
-    draw_voronoi_heat_map();
-    // Voronoi division fails when duplicate points are included.
-    // In that case, just ignore creating voronoi heatmap and continue plotting.
-  } catch(e) {
-    console.log(e);
-  }
+  add_voronoi_group();
 
-  var mapped = this.data.data.map(function(v) {
-    return {
-      x: v[0][plot.data.xlabel], y: v[0][plot.data.ylabel],
-      average: v[1], error: v[2], psid: v[3]
-    };
-  });
-  var tooltip = d3.select("#plot-tooltip");
-  var point = this.svg.selectAll("circle")
-    .data(mapped).enter();
-  function draw_points() {
+  function add_point_group() {
+    var tooltip = d3.select("#plot-tooltip");
+    var mapped = plot.data.data.map(function(v) {
+      return {
+        x: v[0][plot.data.xlabel], y: v[0][plot.data.ylabel],
+        average: v[1], error: v[2], psid: v[3]
+      };
+    });
+    var point_group = plot.svg.append("g")
+      .attr("id", "point-group");
+    var point = point_group.selectAll("circle")
+      .data(mapped).enter();
     point.append("circle")
-      .attr("cx", function(d) { return plot.xScale(d.x);})
-      .attr("cy", function(d) { return plot.yScale(d.y);})
       .style("fill", function(d) { return colorScalePoint(d.average);})
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .on("mouseover", function(d) {
@@ -547,30 +529,57 @@ ScatterPlot.prototype.AddPlot = function() {
         window.open(plot.parameter_set_base_url + d.psid, '_blank');
       });
   }
-  draw_points();
+  add_point_group();
+
   this.UpdatePlot();
 };
 
 ScatterPlot.prototype.UpdatePlot = function() {
   var plot = this;
-  //draw_points();
-  //voronoi_group.selectAll("path").remove();
-  //svg.selectAll("path").remove();
-  vertices = this.data.data.map(function(v) {
-    return [
-      plot.xScale(v[0][plot.data.xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
-      plot.yScale(v[0][plot.data.ylabel]) + Math.random() * 1.0 - 0.5
-    ];
-  });
-  //path = voronoi_group.selectAll("path")
-  //      .data(voronoi(vertices));
-  try {
-    //draw_voronoi_heat_map();
-    // Voronoi division fails when duplicate points are included.
-    // In that case, just ignore creating voronoi heatmap and continue plotting.
-  } catch(e) {
-    console.log(e);
+
+  function update_voronoi_group() {
+    var result_min_val = d3.min( plot.data.data, function(d) { return d[1];});
+    var result_max_val = d3.max( plot.data.data, function(d) { return d[1];});
+    var colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
+    colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
+    var voronoi_group = plot.svg.select("g#voronoi-group");
+    var voronoi = d3.geom.voronoi()
+      .clipExtent([[0, 0], [plot.width, plot.height]]);
+    var vertices = plot.data.data.map(function(v) {
+      return [
+        plot.xScale(v[0][plot.data.xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
+        plot.yScale(v[0][plot.data.ylabel]) + Math.random() * 1.0 - 0.5
+      ];
+    });
+    function draw_voronoi_heat_map() {
+      // add noise to coordinates of vertices in order to prevent hang-up.
+      // hanging-up sometimes happen when duplicated points are included.
+      var path = voronoi_group.selectAll("path")
+        .data(voronoi(vertices));
+      path.enter().append("path")
+        .style("fill", function(d, i) { return colorScale(plot.data.data[i][1]);})
+        .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
+        .style("fill-opacity", 0.7)
+        .style("stroke", "none");
+    }
+    try {
+      voronoi_group.selectAll("path").remove();
+      draw_voronoi_heat_map();
+      // Voronoi division fails when duplicate points are included.
+      // In that case, just ignore creating voronoi heatmap and continue plotting.
+    } catch(e) {
+      console.log(e);
+    }
   }
+  update_voronoi_group();
+
+  function update_point_group() {
+    var point_group = plot.svg.select("g#point-group");
+    point_group.selectAll("circle")
+      .attr("cx", function(d) { return plot.xScale(d.x);})
+      .attr("cy", function(d) { return plot.yScale(d.y);});
+  }
+  update_point_group();
 };
 
 ScatterPlot.prototype.AddDescription = function() {
@@ -589,15 +598,35 @@ ScatterPlot.prototype.AddDescription = function() {
   this.description.append("a").text("delete plot").on("click", function() {
     plot.Destructor();
   });
+
   this.description.append("br");
-  this.description.append("br");
-  this.description.append("br");
-  this.description.append("br");
+  this.description.append("br").style("line-height", "400%");
   this.description.append("input").attr("type", "checkbox").on("change", function() {
+    var new_scale;
+    if(this.checked) {
+      new_scale = "log";
+    } else {
+      new_scale = "linear";
+    }
+    plot.SetXScale(new_scale);
+    plot.xAxis.scale(plot.xScale);
+    plot.UpdatePlot();
+    plot.UpdateAxis();
   });
   this.description.append("span").html("log scale on x axis");
   this.description.append("br");
+
   this.description.append("input").attr("type", "checkbox").on("change", function() {
+    var new_scale;
+    if(this.checked) {
+      new_scale = "log";
+    } else {
+      new_scale = "linear";
+    }
+    plot.SetYScale(new_scale);
+    plot.yAxis.scale(plot.yScale);
+    plot.UpdatePlot();
+    plot.UpdateAxis();
   });
   this.description.append("span").html("log scale on y axis");
 };
