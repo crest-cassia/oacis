@@ -138,98 +138,110 @@ LinePlot.prototype.AddPlot = function() {
   var plot = this;
   var colorScale = d3.scale.category10();
 
-  // group for each series
-  var series = this.svg
-    .selectAll(".series")
-    .data(this.data.data)
-    .enter().append("g")
-      .attr("class", "series");
-  series.append("path")
-    .attr("class", "line")
-    .style({
-      "stroke": function(d, i) { return colorScale(i);},
-      "fill": "none",
-      "stroke-width": "1.5px"
-    });
+  function add_series_group() {
+    var series = plot.svg
+      .selectAll("g")
+      .data(plot.data.data)
+      .enter().append("g")
+        .attr("class", function(d, i) { return "series group-"+i;});
 
-  // draw circles
-  var tooltip = d3.select("#plot-tooltip");
-  var point = series.selectAll("circle")
-    .data(function(d,i) {
-      return d.map(function(v) {
-        return {
-          x: v[0], y: v[1], yerror: v[2],
-          series_index: i, series_value: plot.data.series_values[i], psid: v[3]
-        };
+    // add line
+    series.append("path")
+      .style({
+        "stroke": function(d, i) { return colorScale(i);},
+        "fill": "none",
+        "stroke-width": "1.5px"
       });
-    }).enter();
-  point.append("circle")
-    .style("fill", function(d) { return colorScale(d.series_index);})
-    .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
-    .on("mouseover", function(d) {
-      tooltip.transition()
-        .duration(200)
-        .style("opacity", .8);
-      tooltip.html(
-        plot.data.xlabel + " : " + d.x + "<br/>" +
-        plot.data.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
-        " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
-        (plot.data.series ? (plot.data.series + " : " + d.series_value + "<br/>") : "") +
-        "ID: " + d.psid);
-    })
-    .on("mousemove", function() {
-      tooltip
-        .style("top", (d3.event.pageY-10) + "px")
-        .style("left", (d3.event.pageX+10) + "px");
-    })
-    .on("mouseout", function() {
-      tooltip.transition()
-        .duration(300)
-        .style("opacity", 0);
-    })
-    .on("dblclick", function(d) {
-      // open a link in a background window
-      window.open(plot.parameter_set_base_url + d.psid, '_blank');
-    });
 
-  // draw error bar
-  point.insert("line", "circle")
-    .attr("class", "line yerror bar");
-  point.insert("line", "circle")
-    .attr("class", "line yerror top");
-  point.insert("line", "circle")
-    .attr("class", "line yerror bottom");
+    // add circle
+    var tooltip = d3.select("#plot-tooltip");
+    var point = series.selectAll("circle")
+      .data(function(d,i) {
+        return d.map(function(v) {
+          return {
+            x: v[0], y: v[1], yerror: v[2],
+            series_index: i, series_value: plot.data.series_values[i], psid: v[3]
+          };
+        });
+      }).enter();
+    point.append("circle")
+      .style("fill", function(d) { return colorScale(d.series_index);})
+      .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
+      .on("mouseover", function(d) {
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", .8);
+        tooltip.html(
+          plot.data.xlabel + " : " + d.x + "<br/>" +
+          plot.data.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
+          " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
+          (plot.data.series ? (plot.data.series + " : " + d.series_value + "<br/>") : "") +
+          "ID: " + d.psid);
+      })
+      .on("mousemove", function() {
+        tooltip
+          .style("top", (d3.event.pageY-10) + "px")
+          .style("left", (d3.event.pageX+10) + "px");
+      })
+      .on("mouseout", function() {
+        tooltip.transition()
+          .duration(300)
+          .style("opacity", 0);
+      })
+      .on("dblclick", function(d) {
+        // open a link in a background window
+        window.open(plot.parameter_set_base_url + d.psid, '_blank');
+      });
 
-  // draw legend
-  var legend = this.svg.append("g")
-    .attr("class", "legend")
-    .attr("transform", "translate(" + this.width + "," + 20 + ")");
-  var legendItem = legend.selectAll("g")
-    .data(this.data.series_values)
-    .enter().append("g")
-    .attr("class", "legend-item")
-    .attr("transform", function(d,i) {
-      return "translate(10," + (i*20) + ")";
-    });
+    // add error bar
+    point.insert("line", "circle")
+      .attr("class", "line yerror bar");
+    point.insert("line", "circle")
+      .attr("class", "line yerror top");
+    point.insert("line", "circle")
+      .attr("class", "line yerror bottom");
+  }
+  add_series_group();
 
-  // draw legend title
-  this.svg.append("text")
-    .attr({
-      x: this.width,
-      y: 0,
-      dx: ".8em",
-      dy: ".8em"
-    })
-    .text(this.data.series);
-  legendItem.append("rect")
-    .attr("width", 15)
-    .attr("height", 15)
-    .style("fill", function(d,i) { return colorScale(i);});
-  legendItem.append("text")
-    .attr("x", 20)
-    .attr("y", 7.5)
-    .attr("dy", "0.3em")
-    .text( function(d,i) { return d; });
+  function add_legend_group() {
+    var legend_region = plot.svg.append("g")
+      .attr("id", "legend-group")
+      .attr("transform", "translate(" + plot.width + "," + 0 + ")");
+    var legend = legend_region.append("g")
+      .attr("id", "legend")
+      .attr("transform", "translate(" + 0 + "," + 20 + ")");
+
+    // add legend
+    var legendItem = legend.selectAll("g")
+      .data(plot.data.series_values)
+      .enter().append("g")
+      .attr("class", "legend-item")
+      .attr("transform", function(d,i) {
+        return "translate(10," + (i*20) + ")";
+      });
+    legendItem.append("rect")
+      .attr("width", 15)
+      .attr("height", 15)
+      .style("fill", function(d,i) { return colorScale(i);});
+    legendItem.append("text")
+      .attr("x", 20)
+      .attr("y", 7.5)
+      .attr("dy", "0.3em")
+      .text( function(d,i) { return d; });
+
+    // add legend title
+    var legend_title = legend_region.append("g")
+      .attr("id", "legend-title");
+    legend_title.append("text")
+      .attr({
+        x: 0,
+        y: 0,
+        dx: ".8em",
+        dy: ".8em"
+      })
+      .text(plot.data.series);
+  }
+  add_legend_group();
 
   this.UpdatePlot();
 };
@@ -242,96 +254,107 @@ LinePlot.prototype.UpdatePlot = function() {
     .y( function(d) { return plot.yScale(d[1]);} );
   var tooltip = d3.select("#plot-tooltip");
 
-  // draw line path
-  this.svg.selectAll("path").attr("d", function(d) { return line(d);});
+  function update_series() {
+    var series = plot.svg.selectAll("g.series");
+    // draw line path
+    series.selectAll("path").attr("d", function(d) { return line(d);});
 
-  // draw data point
-  this.svg.selectAll("circle")
-    .attr("cx", function(d) { return plot.xScale(d.x);})
-    .attr("cy", function(d) { return plot.yScale(d.y);});
+    // draw data point
+    series.selectAll("circle")
+      .attr("cx", function(d) { return plot.xScale(d.x);})
+      .attr("cy", function(d) { return plot.yScale(d.y);});
 
-  // draw error bar
-  this.svg.selectAll(".line.yerror.bar")
-    .filter(function(d) { return d.yerror;})
-    .attr({
-      x1: function(d) { return plot.xScale(d.x);},
-      x2: function(d) { return plot.xScale(d.x);},
-      y1: function(d) { return plot.yScale(d.y - d.yerror);},
-      y2: function(d) { return plot.yScale(d.y + d.yerror);},
-      stroke: function(d) { return colorScale(d.series_index); }
-    });
-  this.svg.selectAll(".line.yerror.top")
-    .filter(function(d) { return d.yerror;})
-    .attr({
-      x1: function(d) { return plot.xScale(d.x) - 3;},
-      x2: function(d) { return plot.xScale(d.x) + 3;},
-      y1: function(d) { return plot.yScale(d.y - d.yerror);},
-      y2: function(d) { return plot.yScale(d.y - d.yerror);},
-      stroke: function(d) { return colorScale(d.series_index); }
-    });
-  this.svg.selectAll(".line.yerror.bottom")
-    .filter(function(d) { return d.yerror;})
-    .attr({
-      x1: function(d) { return plot.xScale(d.x) - 3;},
-      x2: function(d) { return plot.xScale(d.x) + 3;},
-      y1: function(d) { return plot.yScale(d.y + d.yerror);},
-      y2: function(d) { return plot.yScale(d.y + d.yerror);},
-      stroke: function(d) { return colorScale(d.series_index); }
-    });
+    // draw error bar
+    series.selectAll(".line.yerror.bar")
+      .filter(function(d) { return d.yerror;})
+      .attr({
+        x1: function(d) { return plot.xScale(d.x);},
+        x2: function(d) { return plot.xScale(d.x);},
+        y1: function(d) { return plot.yScale(d.y - d.yerror);},
+        y2: function(d) { return plot.yScale(d.y + d.yerror);},
+        stroke: function(d) { return colorScale(d.series_index); }
+      });
+    series.selectAll(".line.yerror.top")
+      .filter(function(d) { return d.yerror;})
+      .attr({
+        x1: function(d) { return plot.xScale(d.x) - 3;},
+        x2: function(d) { return plot.xScale(d.x) + 3;},
+        y1: function(d) { return plot.yScale(d.y - d.yerror);},
+        y2: function(d) { return plot.yScale(d.y - d.yerror);},
+        stroke: function(d) { return colorScale(d.series_index); }
+      });
+    series.selectAll(".line.yerror.bottom")
+      .filter(function(d) { return d.yerror;})
+      .attr({
+        x1: function(d) { return plot.xScale(d.x) - 3;},
+        x2: function(d) { return plot.xScale(d.x) + 3;},
+        y1: function(d) { return plot.yScale(d.y + d.yerror);},
+        y2: function(d) { return plot.yScale(d.y + d.yerror);},
+        stroke: function(d) { return colorScale(d.series_index); }
+      });
+  };
+  update_series();
 };
 
 LinePlot.prototype.AddDescription = function() {
   var plot = this;
 
   // description for the specification of the plot
-  var dl = this.description.append("dl");
-  dl.append("dt").text("X-Axis");
-  dl.append("dd").text(this.data.xlabel);
-  dl.append("dt").text("Y-Axis");
-  dl.append("dd").text(this.data.ylabel);
-  if(this.data.series) {
-    dl.append("dt").text("Series");
-    dl.append("dd").text(this.data.series);
+  function add_label_table() {
+  var dl = plot.description.append("dl");
+    dl.append("dt").text("X-Axis");
+    dl.append("dd").text(plot.data.xlabel);
+    dl.append("dt").text("Y-Axis");
+    dl.append("dd").text(plot.data.ylabel);
+    if(plot.data.series) {
+      dl.append("dt").text("Series");
+      dl.append("dd").text(plot.data.series);
+    }
   }
-  this.description.append("a").attr({target: "_blank", href: this.url}).text("show data in json");
-  this.description.append("br");
-  plt_url = this.url.replace(/\.json/, '.plt')
-  this.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
-  this.description.append("br");
-  this.description.append("a").text("delete plot").on("click", function() {
-    plot.Destructor();
-  });
-  this.description.append("br");
+  add_label_table();
 
-  this.description.append("br").style("line-height", "400%");
-  this.description.append("input").attr("type", "checkbox").on("change", function() {
-    var new_scale;
-    if(this.checked) {
-      new_scale = "log";
-    } else {
-      new_scale = "linear";
-    }
-    plot.SetXScale(new_scale);
-    plot.xAxis.scale(plot.xScale);
-    plot.UpdatePlot();
-    plot.UpdateAxis();
-  });
-  this.description.append("span").html("log scale on x axis");
-  this.description.append("br");
+  function add_tools() {
+    plot.description.append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
+    plot.description.append("br");
+    plt_url = plot.url.replace(/\.json/, '.plt')
+    plot.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
+    plot.description.append("br");
+    plot.description.append("a").text("delete plot").on("click", function() {
+      plot.Destructor();
+    });
+    plot.description.append("br");
 
-  this.description.append("input").attr("type", "checkbox").on("change", function() {
-    var new_scale;
-    if(this.checked) {
-      new_scale = "log";
-    } else {
-      new_scale = "linear";
+    plot.description.append("br").style("line-height", "400%");
+    plot.description.append("input").attr("type", "checkbox").on("change", function() {
+      var new_scale;
+      if(this.checked) {
+        new_scale = "log";
+      } else {
+        new_scale = "linear";
+      }
+      plot.SetXScale(new_scale);
+      plot.xAxis.scale(plot.xScale);
+      plot.UpdatePlot();
+      plot.UpdateAxis();
+    });
+    plot.description.append("span").html("log scale on x axis");
+    plot.description.append("br");
+
+    plot.description.append("input").attr("type", "checkbox").on("change", function() {
+      var new_scale;
+      if(this.checked) {
+        new_scale = "log";
+      } else {
+        new_scale = "linear";
+      }
+      plot.SetYScale(new_scale);
+      plot.yAxis.scale(plot.yScale);
+      plot.UpdatePlot();
+      plot.UpdateAxis();
+    });
+    plot.description.append("span").html("log scale on y axis");
     }
-    plot.SetYScale(new_scale);
-    plot.yAxis.scale(plot.yScale);
-    plot.UpdatePlot();
-    plot.UpdateAxis();
-  });
-  this.description.append("span").html("log scale on y axis");
+  add_tools();
 };
 
 LinePlot.prototype.Draw = function() {
@@ -363,7 +386,6 @@ function ScatterPlot() {
 
 ScatterPlot.prototype = Object.create(Plot.prototype);// ScatterPlot is sub class of Plot
 ScatterPlot.prototype.constructor = ScatterPlot;// override constructor
-ScatterPlot.prototype.data = null;
 
 ScatterPlot.prototype.SetXScale = function(xscale) {
   var plot = this;
@@ -438,17 +460,17 @@ ScatterPlot.prototype.AddPlot = function() {
   colorScalePoint.domain( colorScale.domain() ).nice();
 
   function add_color_map_group() {
-    var color_map_group = plot.svg.append("g")
+    var color_map = plot.svg.append("g")
       .attr({
         "transform": "translate(" + plot.width + "," + plot.margin.top + ")",
         "id": "color-map-group"
       });
     var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(colorScale.range());
-    color_map_group.append("text")
+    color_map.append("text")
       .attr({x: 10.0, y: 20.0, dx: "0.1em", dy: "-0.4em"})
       .style("text-anchor", "begin")
       .text("Result");
-    color_map_group.selectAll("rect")
+    color_map.selectAll("rect")
       .data([1.0, 0.8, 0.6, 0.4, 0.2, 0.0])
       .enter().append("rect")
       .attr({
@@ -458,11 +480,11 @@ ScatterPlot.prototype.AddPlot = function() {
         height: 19,
         fill: function(d) { return scale(d); }
       });
-    color_map_group.append("text")
+    color_map.append("text")
       .attr({x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
       .text( colorScale.domain()[2] );
-    color_map_group.append("text")
+    color_map.append("text")
       .attr({x: 30.0, y: 140.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
       .text( colorScale.domain()[0] );
@@ -483,38 +505,39 @@ ScatterPlot.prototype.AddPlot = function() {
         average: v[1], error: v[2], psid: v[3]
       };
     });
-    var point_group = plot.svg.append("g")
+    var point = plot.svg.append("g")
       .attr("id", "point-group");
-    var point = point_group.selectAll("circle")
-      .data(mapped).enter();
-    point.append("circle")
-      .style("fill", function(d) { return colorScalePoint(d.average);})
-      .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
-      .on("mouseover", function(d) {
-        tooltip.transition()
-          .duration(200)
-          .style("opacity", .8);
-        tooltip.html(
-          plot.data.xlabel + " : " + d.x + "<br/>" +
-          plot.data.ylabel + " : " + d.y + "<br/>" +
-          "Result : " + Math.round(d.average*1000000)/1000000 +
-          " (" + Math.round(d.error*1000000)/1000000 + ")<br/>" +
-          "ID: " + d.psid);
-      })
-      .on("mousemove", function() {
-        tooltip
-          .style("top", (d3.event.pageY-10) + "px")
-          .style("left", (d3.event.pageX+10) + "px");
-      })
-      .on("mouseout", function() {
-        tooltip.transition()
-          .duration(300)
-          .style("opacity", 0);
-      })
-      .on("dblclick", function(d) {
-        // open a link in a background window
-        window.open(plot.parameter_set_base_url + d.psid, '_blank');
-      });
+    point.selectAll("circle")
+      .data(mapped)
+      .enter()
+        .append("circle")
+        .style("fill", function(d) { return colorScalePoint(d.average);})
+        .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
+        .on("mouseover", function(d) {
+          tooltip.transition()
+            .duration(200)
+            .style("opacity", .8);
+          tooltip.html(
+            plot.data.xlabel + " : " + d.x + "<br/>" +
+            plot.data.ylabel + " : " + d.y + "<br/>" +
+            "Result : " + Math.round(d.average*1000000)/1000000 +
+            " (" + Math.round(d.error*1000000)/1000000 + ")<br/>" +
+            "ID: " + d.psid);
+        })
+        .on("mousemove", function() {
+          tooltip
+            .style("top", (d3.event.pageY-10) + "px")
+            .style("left", (d3.event.pageX+10) + "px");
+        })
+        .on("mouseout", function() {
+          tooltip.transition()
+            .duration(300)
+            .style("opacity", 0);
+        })
+        .on("dblclick", function(d) {
+          // open a link in a background window
+          window.open(plot.parameter_set_base_url + d.psid, '_blank');
+        });
   }
   add_point_group();
 
@@ -529,8 +552,8 @@ ScatterPlot.prototype.UpdatePlot = function() {
     var result_max_val = d3.max( plot.data.data, function(d) { return d[1];});
     var colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
     colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
-    var voronoi_group = plot.svg.select("g#voronoi-group");
-    var voronoi = d3.geom.voronoi()
+    var voronoi = plot.svg.select("g#voronoi-group");
+    var d3voronoi = d3.geom.voronoi()
       .clipExtent([[0, 0], [plot.width, plot.height]]);
     var vertices = plot.data.data.map(function(v) {
       return [
@@ -541,16 +564,17 @@ ScatterPlot.prototype.UpdatePlot = function() {
     function draw_voronoi_heat_map() {
       // add noise to coordinates of vertices in order to prevent hang-up.
       // hanging-up sometimes happen when duplicated points are included.
-      var path = voronoi_group.selectAll("path")
-        .data(voronoi(vertices));
-      path.enter().append("path")
-        .style("fill", function(d, i) { return colorScale(plot.data.data[i][1]);})
-        .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
-        .style("fill-opacity", 0.7)
-        .style("stroke", "none");
+      var path = voronoi.selectAll("path")
+        .data(d3voronoi(vertices))
+        .enter()
+          .append("path")
+          .style("fill", function(d, i) { return colorScale(plot.data.data[i][1]);})
+          .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
+          .style("fill-opacity", 0.7)
+          .style("stroke", "none");
     }
     try {
-      voronoi_group.selectAll("path").remove();
+      voronoi.selectAll("path").remove();
       draw_voronoi_heat_map();
       // Voronoi division fails when duplicate points are included.
       // In that case, just ignore creating voronoi heatmap and continue plotting.
@@ -561,8 +585,8 @@ ScatterPlot.prototype.UpdatePlot = function() {
   update_voronoi_group();
 
   function update_point_group() {
-    var point_group = plot.svg.select("g#point-group");
-    point_group.selectAll("circle")
+    var point = plot.svg.select("g#point-group");
+    point.selectAll("circle")
       .attr("cx", function(d) { return plot.xScale(d.x);})
       .attr("cy", function(d) { return plot.yScale(d.y);});
   }
@@ -573,49 +597,56 @@ ScatterPlot.prototype.AddDescription = function() {
   var plot = this;
 
   // description for the specification of the plot
-  var dl = this.description.append("dl");
-  dl.append("dt").text("X-Axis");
-  dl.append("dd").text(this.data.xlabel);
-  dl.append("dt").text("Y-Axis");
-  dl.append("dd").text(this.data.ylabel);
-  dl.append("dt").text("Result");
-  dl.append("dd").text(this.data.result);
-  this.description.append("a").attr({target: "_blank", href: this.url}).text("show data in json");
-  this.description.append("br");
-  this.description.append("a").text("delete plot").on("click", function() {
-    plot.Destructor();
-  });
+  function add_label_table() {
+  var dl = plot.description.append("dl");
+    dl.append("dt").text("X-Axis");
+    dl.append("dd").text(plot.data.xlabel);
+    dl.append("dt").text("Y-Axis");
+    dl.append("dd").text(plot.data.ylabel);
+    dl.append("dt").text("Result");
+    dl.append("dd").text(plot.data.result);
+  }
+  add_label_table();
 
-  this.description.append("br");
-  this.description.append("br").style("line-height", "400%");
-  this.description.append("input").attr("type", "checkbox").on("change", function() {
-    var new_scale;
-    if(this.checked) {
-      new_scale = "log";
-    } else {
-      new_scale = "linear";
-    }
-    plot.SetXScale(new_scale);
-    plot.xAxis.scale(plot.xScale);
-    plot.UpdatePlot();
-    plot.UpdateAxis();
-  });
-  this.description.append("span").html("log scale on x axis");
-  this.description.append("br");
+  function add_tools() {
+    plot.description.append("a").attr({target: "_blank", href: this.url}).text("show data in json");
+    plot.description.append("br");
+    plot.description.append("a").text("delete plot").on("click", function() {
+      plot.Destructor();
+    });
 
-  this.description.append("input").attr("type", "checkbox").on("change", function() {
-    var new_scale;
-    if(this.checked) {
-      new_scale = "log";
-    } else {
-      new_scale = "linear";
-    }
-    plot.SetYScale(new_scale);
-    plot.yAxis.scale(plot.yScale);
-    plot.UpdatePlot();
-    plot.UpdateAxis();
-  });
-  this.description.append("span").html("log scale on y axis");
+    plot.description.append("br");
+    plot.description.append("br").style("line-height", "400%");
+    plot.description.append("input").attr("type", "checkbox").on("change", function() {
+      var new_scale;
+      if(this.checked) {
+        new_scale = "log";
+      } else {
+        new_scale = "linear";
+      }
+      plot.SetXScale(new_scale);
+      plot.xAxis.scale(plot.xScale);
+      plot.UpdatePlot();
+      plot.UpdateAxis();
+    });
+    plot.description.append("span").html("log scale on x axis");
+    plot.description.append("br");
+
+    plot.description.append("input").attr("type", "checkbox").on("change", function() {
+      var new_scale;
+      if(this.checked) {
+        new_scale = "log";
+      } else {
+        new_scale = "linear";
+      }
+      plot.SetYScale(new_scale);
+      plot.yAxis.scale(plot.yScale);
+      plot.UpdatePlot();
+      plot.UpdateAxis();
+    });
+    plot.description.append("span").html("log scale on y axis");
+    };
+  add_tools();
 };
 
 ScatterPlot.prototype.Draw = function() {
@@ -648,8 +679,8 @@ function FigureViewer() {
 
 FigureViewer.prototype = Object.create(ScatterPlot.prototype);// ScatterPlot is sub class of Plot
 FigureViewer.prototype.constructor = FigureViewer;// override constructor
+FigureViewer.prototype.margin = {top: 10+92, right: 100+112, bottom: 100, left: 100};// override margin
 FigureViewer.prototype.figure_size = "small";
-FigureViewer.prototype.margin = {top: 10+92, right: 100+112, bottom: 100, left: 100};
 
 FigureViewer.prototype.SetXScale = function(xscale) {
   var plot = this;
