@@ -82,25 +82,19 @@
   }
 
 :javascript
+  var parameter_exploer = new ParameterExplore();
   $(function() {
-    var ps_id = $('td#current_ps_id').text();
-    initialize_pc_plot();
-    draw_explorer(ps_id);
+    parameter_exploer.Init();
   });
 
-  function on_select_change() {
-    var ps_id = $('td#current_ps_id').text();
-    update_explorer(ps_id, {});
-  }
-
-  $('#scatter-plot-form').change( on_select_change );
-  $('#irrelevant-params').change( on_select_change );
+  $('#scatter-plot-form').change( function() {parameter_exploer.Update();} );
+  $('#irrelevant-params').change( function() {parameter_exploer.Update();} );
 
   $('i.icon-arrow-down[id^="ps_down_"]').on('click', function () {
     var url = $(this).data('neighbor-url');
-    move_current_ps(url);
+    parameter_exploer.move_current_ps(url);
   });
   $('i.icon-arrow-up[id^="ps_up_"]').on('click', function () {
     var url = $(this).data('neighbor-url');
-    move_current_ps(url);
+    parameter_exploer.move_current_ps(url);
   });

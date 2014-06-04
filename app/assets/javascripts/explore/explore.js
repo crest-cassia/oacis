@@ -1,8 +1,107 @@
-function get_current_ps() {
-  return $('#current_ps_id').text();
+function ParameterExplore() {
+};
+
+ParameterExplore.prototype.pc_plot = null;
+ParameterExplore.prototype.scatter_plot = null;
+
+ParameterExplore.prototype.Init = function() {
+  var plot = this;
+  this.scatter_plot = new ScatterPlot();
+  this.pc_plot = new ParallelCoordinatePlot(this);
+  var current_ps_id = this.get_current_ps();
+  var url = build_scatter_plot_url(current_ps_id);
+
+  function show_progress_arc() {
+    var g = d3.select('#progress_arc_group');
+    var spin_size = 100;
+    var progress = show_loading_spin_arc(g, spin_size, spin_size);
+    return progress;
+  }
+  var progress = show_progress_arc();
+
+  var xhr = d3.json(url)
+    .on("load", function(dat) {
+    progress.remove();
+    plot.scatter_plot.Init(dat, url, "/parameter_set/", current_ps_id);
+    plot.scatter_plot.Draw();
+    plot.pc_plot.Init(dat);
+    plot.pc_plot.Update();
+  })
+  .on("error", function() { console.log("error"); })
+  .get();
+  progress.on("mousedown", function(){
+    xhr.abort();
+    progress.remove();
+  });
 }
 
-function set_current_ps(ps_id) {
+ParameterExplore.prototype.Update = function() {
+  var plot = this;
+  var current_ps_id = this.get_current_ps();
+  var url = build_scatter_plot_url(current_ps_id);
+
+  function show_progress_arc() {
+    var g = d3.select('#progress_arc_group');
+    var spin_size = 100;
+    var progress = show_loading_spin_arc(g, spin_size, spin_size);
+    return progress;
+  }
+  var progress = show_progress_arc();
+
+  var xhr = d3.json(url)
+    .on("load", function(dat) {
+    progress.remove();
+    plot.scatter_plot.Destructor();
+    plot.scatter_plot = new ScatterPlot();
+    plot.scatter_plot.Init(dat, url, "/parameter_set/", current_ps_id);
+    plot.scatter_plot.Draw();
+    plot.pc_plot.Destructor();
+    plot.pc_plot = new ParallelCoordinatePlot();
+    plot.pc_plot.Init(dat);
+    plot.pc_plot.Update();
+  })
+  .on("error", function() { console.log("error"); })
+  .get();
+  progress.on("mousedown", function(){
+    xhr.abort();
+    progress.remove();
+  });
+};
+
+ParameterExplore.prototype.UpdateScatterPlot = function() {
+  var plot = this;
+  var current_ps_id = this.get_current_ps();
+  var url = build_scatter_plot_url(current_ps_id);
+
+  function show_progress_arc() {
+    var g = d3.select('#progress_arc_group');
+    var spin_size = 100;
+    var progress = show_loading_spin_arc(g, spin_size, spin_size);
+    return progress;
+  }
+  var progress = show_progress_arc();
+
+  var xhr = d3.json(url)
+    .on("load", function(dat) {
+    progress.remove();
+    plot.scatter_plot.Destructor();
+    plot.scatter_plot = new ScatterPlot();
+    plot.scatter_plot.Init(dat, url, "/parameter_set/", current_ps_id);
+    plot.scatter_plot.Draw();
+  })
+  .on("error", function() { console.log("error"); })
+  .get();
+  progress.on("mousedown", function(){
+    xhr.abort();
+    progress.remove();
+  });
+};
+
+ParameterExplore.prototype.get_current_ps = function() {
+  return $('#current_ps_id').text();
+};
+
+ParameterExplore.prototype.set_current_ps = function(ps_id) {
   $('#current_ps_id').text(ps_id);
 
   d3.selectAll("circle")
@@ -15,19 +114,20 @@ function set_current_ps(ps_id) {
       $('#ps_v_'+key).text(param_values[key]);
     }
   });
-}
+};
 
-function get_current_parameter_values() {
+ParameterExplore.prototype.get_current_parameter_values = function() {
   var parameter_values = {};
   $('td[id^="ps_v_"]').each( function(){
     var key = $(this).attr('id').replace('ps_v_', '');
     parameter_values[key] = $(this).text();
   });
   return parameter_values;
-}
+};
 
-function move_current_ps(neighbor_ps_url) {
-  var current_ps_id = get_current_ps();
+ParameterExplore.prototype.move_current_ps = function(neighbor_ps_url) {
+  var plot = this;
+  var current_ps_id = this.get_current_ps();
   var url = neighbor_ps_url.replace('PSID', current_ps_id);
 
   d3.json(url, function(error, json) {
@@ -40,9 +140,9 @@ function move_current_ps(neighbor_ps_url) {
     }
 
     // update scatter plot
-    update_explorer(ps_id);
+    plot.UpdateScatterPlot();
   });
-}
+};
 
 function build_scatter_plot_url(ps_id) {
   ps_id = ps_id || $('td#current_ps_id').text();
@@ -68,49 +168,6 @@ function build_scatter_plot_url(ps_id) {
   return url_with_param;
 }
 
-function draw_explorer(current_ps_id) {
-  var margin = {top: 10, right: 100, bottom: 100, left: 100};
-  var width = 560;
-  var height = 460;
-
-  var plot_region = d3.select("#plot");
-
-  var svg = plot_region.insert("svg")
-    .attr({
-      "width": width + margin.left + margin.right,
-      "height": height + margin.top + margin.bottom,
-      "id": "plot-svg"
-    });
-
-  // add group for color map
-  svg.append("g")
-    .attr({
-      "transform": "translate(" + (margin.left + width) + "," + margin.top + ")",
-      "id": "color-map-group"
-    });
-  // add group for plot region
-  svg.append("g")
-    .attr({
-      "transform": "translate(" + margin.left + "," + margin.top + ")",
-      "id": "plot-group"
-    });
-
-  // add group for loading spin
-  var color_map_group_height = 180;
-  svg.append("g")
-    .attr({
-      "transform": "translate(" + (margin.left + width) + "," + (margin.top + color_map_group_height) + ")",
-      "id": "progress_arc_group"
-    });
-
-  update_explorer(current_ps_id, {});
-}
-
-// to clear current range, set range to null
-function set_current_range_for(parameter_key, range) {
-  $('td#ps_v_' + parameter_key).data('current-range', range);
-}
-
 function get_current_range_for(parameter_key) {
   var current = $('td#ps_v_' + parameter_key).data('current-range');
   if( !current ) {
@@ -129,7 +186,7 @@ function range_modified_keys() {
   });
   return modified_key;
 }
-
+/*
 function update_explorer(current_ps_id) {
   var width = 560;
   var height = 460;
@@ -354,118 +411,12 @@ function update_explorer(current_ps_id) {
 
     update_pc_plot(dat.data, current_ps_id);
   })
-  .on("error", function() { console.log("error"); /*progress.remove(); */})
+  .on("error", function() { console.log("error");})
   .get();
   progress.on("mousedown", function(){
     xhr.abort();
     progress.remove();
   });
 }
+*/
 
-function initialize_pc_plot() {
-  var margin = {top: 50, right: 100, bottom: 50, left: 100};
-  var width = 1000;
-  var height = 200;
-
-  var plot_region = d3.select("#pc-plot");
-
-  var svg = plot_region.insert("svg")
-    .attr({
-      "width": width + margin.left + margin.right,
-      "height": height + margin.top + margin.bottom,
-      "id": "pc-plot-svg"
-    })
-    .append("g")
-    .attr({
-      "transform": "translate(" + margin.left + "," + margin.top + ")",
-      "id": "pc-plot-group"
-    });
-
-  var dimensions = [];
-  var yScales = {};
-  function set_scales_and_dimensions() {
-    $('select#x_axis_key option').each(function() {
-      var key = $(this).text();
-      var domain = get_current_range_for(key);
-      var scale = d3.scale.linear().domain(domain).range([height, 0]).nice();
-      yScales[key] = scale;
-      dimensions.push(key);
-    });
-  }
-  set_scales_and_dimensions();
-
-  window.pcp_x_scale = d3.scale.ordinal().rangePoints([0,width], 1).domain( dimensions );
-  window.pcp_y_scales = yScales;
-
-  function draw_axis() {
-    var xScale = window.pcp_x_scale;
-    var dimension_g = svg.selectAll(".dimension")
-      .data(dimensions)
-      .enter().append("svg:g")
-      .attr("class", "dimension")
-      .attr("transform", function(d) { return "translate(" + xScale(d) + ")"; });
-
-    var axis = d3.svg.axis().orient("left");
-    dimension_g.append("svg:g")
-      .attr("class", "pcp-axis")
-      .each(function(d) {
-        d3.select(this).call( axis.scale(yScales[d]) );
-      })
-      .append("svg:text")
-      .attr("text-anchor", "middle")
-      .attr("y", -9)
-      .text(String); // set text to the data values
-  }
-  draw_axis();
-
-  function set_brsuh() {
-    svg.selectAll(".dimension").each(function(d) {
-      var brush = d3.svg.brush().y( window.pcp_y_scales[d] ).on("brushend", on_brush_end);
-      function on_brush_end() {
-        var domain = brush.empty() ? null : brush.extent();
-        set_current_range_for( d, domain );
-        update_explorer();
-      }
-      d3.select(this).append("svg:g")
-        .attr("class", "brush")
-        .call(brush)
-        .selectAll("rect")
-        .attr("x", -8)
-        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
-        .attr("width", 16);
-    });
-  }
-  set_brsuh();
-}
-
-function update_pc_plot(data, current_ps_id) {
-  var svg = d3.select('#pc-plot-group');
-  var dimensions = svg.selectAll(".dimension").data();
-  var xScale = window.pcp_x_scale;
-  var yScales = window.pcp_y_scales;
-
-  function redraw_path() {
-    d3.selectAll('g.pcp-path').remove();
-    var pcp_path = svg.append("svg:g")
-      .attr("class", "pcp-path")
-      .selectAll("path")
-      .data(data);
-    pcp_path.enter().append("svg:path");
-    pcp_path
-      .style({ "fill": "none", "stroke-opacity": 0.7})
-      .attr("d", function(d) {
-        var points = dimensions.map( function(p) {
-          return [ xScale(p), yScales[p]( d[0][p] ) ];
-        });
-        return d3.svg.line()(points);
-      })
-      .attr("stroke-width", function(d) {
-        return d[3] == current_ps_id ? 3 : 1;
-      })
-      .attr("stroke", function(d) {
-        if( window.color_scale ) { return window.color_scale(d[1]); }
-        else { return "steelblue"; }
-      });
-  }
-  redraw_path();
-}
