@@ -3,6 +3,9 @@ function ParallelCoordinatePlot(ps_plot) {
   this.ps_plot = ps_plot;
 };
 
+ParallelCoordinatePlot.prototype.margin = {top: 50, right: 100, bottom: 50, left: 100};
+ParallelCoordinatePlot.prototype.width = 1000;
+ParallelCoordinatePlot.prototype.height = 200;
 ParallelCoordinatePlot.prototype.data = null;
 ParallelCoordinatePlot.prototype.UpdateParameterExplore = null;
 
@@ -10,19 +13,15 @@ ParallelCoordinatePlot.prototype.Init = function(data) {
   var plot = this;
   this.data = data;
 
-  var margin = {top: 50, right: 100, bottom: 50, left: 100};
-  var width = 1000;
-  var height = 200;
-
   var svg = this.row.insert("svg")
     .attr({
-      "width": width + margin.left + margin.right,
-      "height": height + margin.top + margin.bottom,
+      "width": this.width + this.margin.left + this.margin.right,
+      "height": this.height + this.margin.top + this.margin.bottom,
       "id": "pc-plot-svg"
     })
     .append("g")
     .attr({
-      "transform": "translate(" + margin.left + "," + margin.top + ")",
+      "transform": "translate(" + this.margin.left + "," + this.margin.top + ")",
       "id": "pc-plot-group"
     });
 
@@ -31,15 +30,15 @@ ParallelCoordinatePlot.prototype.Init = function(data) {
   function set_scales_and_dimensions() {
     $('select#x_axis_key option').each(function() {
       var key = $(this).text();
-      var domain = get_current_range_for(key);
-      var scale = d3.scale.linear().domain(domain).range([height, 0]).nice();
+      var domain = plot.ps_plot.get_current_range_for(key);
+      var scale = d3.scale.linear().domain(domain).range([plot.height, 0]).nice();
       yScales[key] = scale;
       dimensions.push(key);
     });
   }
   set_scales_and_dimensions();
 
-  window.pcp_x_scale = d3.scale.ordinal().rangePoints([0,width], 1).domain( dimensions );
+  window.pcp_x_scale = d3.scale.ordinal().rangePoints([0,this.width], 1).domain( dimensions );
   window.pcp_y_scales = yScales;
 
   function draw_axis() {
@@ -67,15 +66,22 @@ ParallelCoordinatePlot.prototype.Init = function(data) {
     svg.selectAll(".dimension").each(function(d) {
       var brush = d3.svg.brush().y( window.pcp_y_scales[d] ).on("brushend", on_brush_end);
       function on_brush_end() {
-        var domain = brush.empty() ? null : brush.extent();
-        set_current_range_for( d, domain );
-        plot.ps_plot.Update();
+        var domain = brush.empty() ? yScales[d].domain() : brush.extent();
+        plot.ps_plot.set_current_range_for(d, brush.empty() ? null : domain );
+        if(d == $("select#x_axis_key").val()) {
+          plot.ps_plot.scatter_plot.xScale.domain(domain);
+          plot.ps_plot.scatter_plot.UpdatePlot();
+          plot.ps_plot.scatter_plot.UpdateAxis();
+          plot.Update();
+        } else if(d == $("select#y_axis_key").val()) {
+          plot.ps_plot.scatter_plot.yScale.domain(domain);
+          plot.ps_plot.scatter_plot.UpdatePlot();
+          plot.ps_plot.scatter_plot.UpdateAxis();
+          plot.Update();
+        } else {
+          plot.ps_plot.UpdateScatterPlot();
+        }
       }
-      // to clear current range, set range to null
-      function set_current_range_for(parameter_key, range) {
-        $('td#ps_v_' + parameter_key).data('current-range', range);
-      }
-
       d3.select(this).append("svg:g")
         .attr("class", "brush")
         .call(brush)
@@ -113,15 +119,23 @@ ParallelCoordinatePlot.prototype.Update = function() {
       .data(plot.data.data);
     pcp_path.enter().append("svg:path");
     pcp_path
+      .filter(function(d) {
+        var is_in_range=true, key;
+        Object.keys(d[0]).forEach( function(key) {
+          var domain = plot.ps_plot.get_current_range_for(key);
+          is_in_range &= (!domain) || (domain[0] <= d[0][key] && domain[1] >= d[0][key]);
+        });
+        return is_in_range;
+      })
       .style({ "fill": "none", "stroke-opacity": 0.7})
       .attr("d", function(d) {
-        var points = dimensions.map( function(p) {
+        var points = Object.keys(d[0]).map( function(p) {
           return [ xScale(p), yScales[p]( d[0][p] ) ];
         });
         return d3.svg.line()(points);
       })
       .attr("stroke-width", function(d) {
-        return d[3] == current_ps_id ? 3 : 1;
+        return d[3] == plot.ps_plot.get_current_ps() ? 3 : 1;
       })
       .attr("stroke", function(d) {
         if( colorScale ) { return colorScale(d[1]); }
