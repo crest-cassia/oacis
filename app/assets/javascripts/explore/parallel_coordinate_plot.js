@@ -7,7 +7,9 @@ ParallelCoordinatePlot.prototype.margin = {top: 50, right: 100, bottom: 50, left
 ParallelCoordinatePlot.prototype.width = 1000;
 ParallelCoordinatePlot.prototype.height = 200;
 ParallelCoordinatePlot.prototype.data = null;
-ParallelCoordinatePlot.prototype.UpdateParameterExplore = null;
+ParallelCoordinatePlot.prototype.brushes = {};
+ParallelCoordinatePlot.prototype.xScale = null;
+ParallelCoordinatePlot.prototype.yScales = {};
 
 ParallelCoordinatePlot.prototype.Init = function(data) {
   var plot = this;
@@ -25,35 +27,32 @@ ParallelCoordinatePlot.prototype.Init = function(data) {
       "id": "pc-plot-group"
     });
 
-  var dimensions = [];
-  var yScales = {};
+  var dimensions = Object.keys(data.data[0][0]);
   function set_scales_and_dimensions() {
-    $('select#x_axis_key option').each(function() {
-      var key = $(this).text();
-      var domain = plot.ps_plot.get_current_range_for(key);
+    dimensions.forEach(function(key) {
+      var domain = plot.ps_plot.GetCurrentRangeFor(key);
       var scale = d3.scale.linear().domain(domain).range([plot.height, 0]).nice();
-      yScales[key] = scale;
+      plot.yScales[key] = scale;
       dimensions.push(key);
     });
   }
   set_scales_and_dimensions();
 
-  window.pcp_x_scale = d3.scale.ordinal().rangePoints([0,this.width], 1).domain( dimensions );
-  window.pcp_y_scales = yScales;
+  this.xScale = d3.scale.ordinal().rangePoints([0,this.width], 1).domain( dimensions );
 
   function draw_axis() {
-    var xScale = window.pcp_x_scale;
+    var xScale = plot.xScale;
     var dimension_g = svg.selectAll(".dimension")
       .data(dimensions)
       .enter().append("svg:g")
       .attr("class", "dimension")
-      .attr("transform", function(d) { return "translate(" + xScale(d) + ")"; });
+      .attr("transform", function(key) { return "translate(" + xScale(key) + ")"; });
 
     var axis = d3.svg.axis().orient("left");
     dimension_g.append("svg:g")
       .attr("class", "pcp-axis")
-      .each(function(d) {
-        d3.select(this).call( axis.scale(yScales[d]) );
+      .each(function(key) {
+        d3.select(this).call( axis.scale(plot.yScales[key]) );
       })
       .append("svg:text")
       .attr("text-anchor", "middle")
@@ -64,10 +63,10 @@ ParallelCoordinatePlot.prototype.Init = function(data) {
 
   function set_brsuh() {
     svg.selectAll(".dimension").each(function(d) {
-      var brush = d3.svg.brush().y( window.pcp_y_scales[d] ).on("brushend", on_brush_end);
+      plot.brushes[d] = d3.svg.brush().y( plot.yScales[d] ).on("brushend", on_brush_end);
       function on_brush_end() {
-        var domain = brush.empty() ? yScales[d].domain() : brush.extent();
-        plot.ps_plot.set_current_range_for(d, brush.empty() ? null : domain );
+        var domain = plot.brushes[d].empty() ? plot.yScales[d].domain() : plot.brushes[d].extent();
+        plot.ps_plot.SetCurrentRangeFor(d, plot.brushes[d].empty() ? null : domain );
         if(d == $("select#x_axis_key").val()) {
           plot.ps_plot.scatter_plot.xScale.domain(domain);
           plot.ps_plot.scatter_plot.UpdatePlot();
@@ -84,7 +83,7 @@ ParallelCoordinatePlot.prototype.Init = function(data) {
       }
       d3.select(this).append("svg:g")
         .attr("class", "brush")
-        .call(brush)
+        .call(plot.brushes[d])
         .selectAll("rect")
         .attr("x", -8)
         .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
@@ -102,8 +101,8 @@ ParallelCoordinatePlot.prototype.Update = function() {
   var plot = this;
   var svg = d3.select('#pc-plot-group');
   var dimensions = svg.selectAll(".dimension").data();
-  var xScale = window.pcp_x_scale;
-  var yScales = window.pcp_y_scales;
+  var xScale = this.xScale;
+  var yScales = this.yScales;
   var colorScale = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
   var min = d3.min( this.data.data, function(v) { return v[1];});
   var max = d3.max( this.data.data, function(v) { return v[1];});
@@ -122,7 +121,7 @@ ParallelCoordinatePlot.prototype.Update = function() {
       .filter(function(d) {
         var is_in_range=true, key;
         Object.keys(d[0]).forEach( function(key) {
-          var domain = plot.ps_plot.get_current_range_for(key);
+          var domain = plot.ps_plot.GetCurrentRangeFor(key);
           is_in_range &= (!domain) || (domain[0] <= d[0][key] && domain[1] >= d[0][key]);
         });
         return is_in_range;

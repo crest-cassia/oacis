@@ -54,9 +54,7 @@ ParameterExplore.prototype.Update = function() {
     plot.scatter_plot = new ScatterPlot();
     plot.scatter_plot.Init(dat, url, "/parameter_set/", current_ps_id);
     plot.scatter_plot.Draw();
-    plot.pc_plot.Destructor();
-    plot.pc_plot = new ParallelCoordinatePlot(plot);
-    plot.pc_plot.Init(dat);
+    plot.pc_plot.data = dat;
     plot.pc_plot.Update();
   })
   .on("error", function() { console.log("error"); })
@@ -149,12 +147,20 @@ ParameterExplore.prototype.BuildScatterPlotURL = function(ps_id) {
   var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
     return this.id;
   }).get();
-  irrelevants = irrelevants.concat(this.range_modified_keys()).join(',');
+
+  function range_modified_keys() {
+    return Object.keys(plot.current_ranges).filter(function(key){
+      return (!plot.pc_plot.brushes[key].empty());
+    });
+  }
+  irrelevants = irrelevants.concat(range_modified_keys()).join(',');
 
   var url = $('#plot').data('scatter-plot-url').replace('PSID', ps_id);
   var range = {};
-  this.range_modified_keys().forEach( function(key) {
-    range[key] = plot.get_current_range_for(key);
+  range_modified_keys().forEach( function(key) {
+    if(key != x && key != y) {
+      range[key] = plot.GetCurrentRangeFor(key);
+    }
   });
   var url_with_param = url +
     "?x_axis_key=" + encodeURIComponent(x) +
@@ -165,20 +171,16 @@ ParameterExplore.prototype.BuildScatterPlotURL = function(ps_id) {
   return url_with_param;
 };
 
-ParameterExplore.prototype.get_current_range_for = function(parameter_key) {
+ParameterExplore.prototype.GetCurrentRangeFor = function(parameter_key) {
   if(!this.current_ranges[parameter_key]) {
     this.current_ranges[parameter_key] = $('td#ps_v_' + parameter_key).data('range');
   }
   return this.current_ranges[parameter_key];
 };
 
-ParameterExplore.prototype.set_current_range_for = function(parameter_key, range) {
+ParameterExplore.prototype.SetCurrentRangeFor = function(parameter_key, range) {
   var new_range = (range) ? range : $('td#ps_v_' + parameter_key).data('range');
   this.current_ranges[parameter_key] = new_range;
 };
 
-ParameterExplore.prototype.range_modified_keys = function() {
-  var plot = this;
-  return Object.keys(this.current_ranges).filter(function(key){ return plot.current_ranges[key].toString()!=$('td#ps_v_' + key).data('range').toString(); });
-};
 
