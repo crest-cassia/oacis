@@ -94,31 +94,7 @@ ParameterExplore.prototype.get_current_ps = function() {
   return $('#current_ps_id').text();
 };
 
-ParameterExplore.prototype.set_current_ps = function(ps_id) {
-  $('#current_ps_id').text(ps_id);
-
-  d3.selectAll("circle")
-    .attr("r", function(d) { return (d.psid == ps_id) ? 5 : 3;});
-
-  var url = $('#plot').data('ps-url').replace('PSID', ps_id);
-  d3.json(url, function(error, json) {
-    var param_values = json.v;
-    for(var key in param_values) {
-      $('#ps_v_'+key).text(param_values[key]);
-    }
-  });
-};
-
-ParameterExplore.prototype.get_current_parameter_values = function() {
-  var parameter_values = {};
-  $('td[id^="ps_v_"]').each( function(){
-    var key = $(this).attr('id').replace('ps_v_', '');
-    parameter_values[key] = $(this).text();
-  });
-  return parameter_values;
-};
-
-ParameterExplore.prototype.move_current_ps = function(neighbor_ps_url) {
+ParameterExplore.prototype.MoveCurrentPs = function(neighbor_ps_url) {
   var plot = this;
   var current_ps_id = this.get_current_ps();
   var url = neighbor_ps_url.replace('PSID', current_ps_id);
@@ -134,7 +110,11 @@ ParameterExplore.prototype.move_current_ps = function(neighbor_ps_url) {
 
     plot.pc_plot.Update();
     // update scatter plot
-    plot.UpdateScatterPlot();
+    if(neighbor_ps_url.search($("select#x_axis_key").val())!=-1 || neighbor_ps_url.search($("select#y_axis_key").val())!=-1) {
+      plot.scatter_plot.current_ps_id = ps_id;
+    } else {
+      plot.UpdateScatterPlot();
+    }
   });
 };
 
