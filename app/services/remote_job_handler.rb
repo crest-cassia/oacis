@@ -99,7 +99,9 @@ class RemoteJobHandler
       run.status = :submitted
       run.job_id = out.chomp
 
-      if @host.scheduler_type == "pjm_k"
+      if @host.scheduler_type == "xscheduler"
+        run.job_id = JSON.load(out.chomp)["job_id"]
+      elsif @host.scheduler_type == "pjm_k"
         #success: out = STDOUT:[INFO] PJM 0000 pjsub Job 2275991 submitted.
         #         rc  = 0
         #failed:  out = [ERR.] PJM 0007 pjsub Staging option error (3).
