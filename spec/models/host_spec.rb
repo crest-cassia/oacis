@@ -76,6 +76,11 @@ describe Host do
       Host.new(@valid_attr).ssh_key.should eq('~/.ssh/id_rsa')
     end
 
+    it "'scheduler_type' must be either [none, torque, pjm, pjm_k, xscheduler]" do
+      @valid_attr.update(scheduler_type: "foobar")
+      Host.new(@valid_attr).should_not be_valid
+    end
+
     it "default of 'work_base_dir' is '~'" do
       @valid_attr.delete(:work_base_dir)
       Host.new(@valid_attr).work_base_dir.should eq('~')

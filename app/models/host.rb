@@ -34,6 +34,7 @@ class Host
   validates :user, presence: true, format: {with: /^[A-Za-z0-9. _-]+$/}
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
+  validates :scheduler_type, inclusion: {in: SchedulerWrapper::TYPES }
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
   validates :polling_interval, numericality: {greater_than_or_equal_to: 5}
   validates :min_mpi_procs, numericality: {greater_than_or_equal_to: 1}
