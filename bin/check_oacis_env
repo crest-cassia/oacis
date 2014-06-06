@@ -36,7 +36,7 @@ end
 
 def verify_mongodb_version
   print "checking mongodb version ...     "
-  v = `mongo --verion`
+  v = `mongo --version`
   if v =~ /2\.4\.\d/
     puts_ok
     return true
