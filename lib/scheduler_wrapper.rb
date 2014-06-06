@@ -1,6 +1,6 @@
 class SchedulerWrapper
 
-  TYPES = ["none", "torque", "pjm", "pjm_k"]
+  TYPES = ["none", "torque", "pjm", "pjm_k", "xscheduler"]
 
   attr_reader :type
 
@@ -22,6 +22,8 @@ class SchedulerWrapper
       "cd #{@work_base_dir}; pjsub #{script}"
     when "pjm_k"
       ". /etc/bashrc; cd #{@work_base_dir}; pjsub #{script} < /dev/null"
+    when "xscheduler"
+      "xsub #{script} -d #{@work_base_dir}"
     else
       raise "not supported"
     end
@@ -35,6 +37,8 @@ class SchedulerWrapper
       "qstat; pbsnodes -a"
     when "pjm", "pjm_k"
       "pjstat"
+    when "xscheduler"
+      "xstat"
     else
       raise "not supported"
     end
@@ -48,6 +52,8 @@ class SchedulerWrapper
       "qstat #{job_id}"
     when "pjm", "pjm_k"
       "pjstat #{job_id}"
+    when "xscheduler"
+      "xstat #{job_id}"
     else
       raise "not supported"
     end
@@ -84,6 +90,17 @@ class SchedulerWrapper
       else
         :unknown
       end
+    when "xscheduler"
+      case JSON.load(stdout)["status"]
+      when "queued"
+        :submitted
+      when "running"
+        :running
+      when "finished"
+        :includable
+      else
+        raise "unknown status"
+      end
     else
       raise "not supported"
     end
@@ -97,6 +114,8 @@ class SchedulerWrapper
       "qdel #{job_id}"
     when "pjm", "pjm_k"
       "pjdel #{job_id}"
+    when "xscheduler"
+      "xdel #{job_id}"
     else
       raise "not supported"
     end
