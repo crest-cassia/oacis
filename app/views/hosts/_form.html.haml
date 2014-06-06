@@ -30,6 +30,10 @@
     .controls
       = f.select(:scheduler_type, SchedulerWrapper::TYPES)
   .control-group
+    = f.label(:scheduler_path, class: 'control-label')
+    .controls
+      = f.text_field(:scheduler_path, class: 'text_field')
+  .control-group
     = f.label(:work_base_dir, class: 'control-label')
     .controls
       - if @host.work_base_dir_is_not_editable?
