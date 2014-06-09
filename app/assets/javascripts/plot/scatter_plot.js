@@ -7,29 +7,27 @@ ScatterPlot.prototype.constructor = ScatterPlot;// override constructor
 
 ScatterPlot.prototype.SetXScale = function(xscale) {
   var plot = this;
-  var scale = null;
+  var scale = null, min, max;
   switch(xscale) {
     case "linear":
       scale = d3.scale.linear().range([0, this.width]);
+      min = d3.min( this.data.data, function(r) { return r[0][plot.data.xlabel];});
+      max = d3.max( this.data.data, function(r) { return r[0][plot.data.xlabel];});
       scale.domain([
-        d3.min( this.data.data, function(d) { return d[0][plot.data.xlabel];}),
-        d3.max( this.data.data, function(d) { return d[0][plot.data.xlabel];})
+        min,
+        max
       ]).nice();
       break;
     case "log":
+      var data_in_logscale = this.data.data.filter(function(element, index, array) {
+        return element[0][plot.data.xlabel] > 0.0;
+      });
       scale = d3.scale.log().clamp(true).range([0, this.width]);
-      var min = d3.min( this.data.data, function(d) { return d[0][plot.data.xlabel];})
+      min = d3.min( data_in_logscale, function(r) { return r[0][plot.data.xlabel];});
+      max = d3.max( data_in_logscale, function(r) { return r[0][plot.data.xlabel];});
       scale.domain([
-        (min<0.1 ? 0.1 : min),
-        d3.max( this.data.data, function(d) { return d[0][plot.data.xlabel];})
-      ]).nice();
-      break;
-    default: // undefined
-      scale = d3.scale.linear().range([0, this.width]);
-      console.log(xscale + "is not defined as scale. Set linear scale for x-axis.");
-      scale.domain([
-        d3.min( this.data.data, function(d) { return d[0][plot.data.xlabel];}),
-        d3.max( this.data.data, function(d) { return d[0][plot.data.xlabel];})
+        (!min || min<0.0) ? 0.1 : min,
+        (!max || max<0.0) ? 1.0 : max
       ]).nice();
       break;
   }
@@ -38,29 +36,27 @@ ScatterPlot.prototype.SetXScale = function(xscale) {
 
 ScatterPlot.prototype.SetYScale = function(yscale) {
   var plot = this;
-  var scale = null;
+  var scale = null, min, max;
   switch(yscale) {
     case "linear":
       scale = d3.scale.linear().range([this.height, 0]);
+      min = d3.min( this.data.data, function(r) { return r[0][plot.data.ylabel];});
+      max = d3.max( this.data.data, function(r) { return r[0][plot.data.ylabel];});
       scale.domain([
-        d3.min( this.data.data, function(d) { return d[0][plot.data.ylabel];}),
-        d3.max( this.data.data, function(d) { return d[0][plot.data.ylabel];})
+        min,
+        max
       ]).nice();
       break;
     case "log":
+      var data_in_logscale = this.data.data.filter(function(element, index, array) {
+        return element[0][plot.data.ylabel] > 0.0;
+      });
       scale = d3.scale.log().clamp(true).range([this.height, 0]);
-      var min = d3.min( this.data.data, function(d) { return d[0][plot.data.ylabel];})
+      min = d3.min( data_in_logscale, function(r) { return r[0][plot.data.ylabel];});
+      max = d3.max( data_in_logscale, function(r) { return r[0][plot.data.ylabel];});
       scale.domain([
-        (min<0.1 ? 0.1 : min),
-        d3.max( this.data.data, function(d) { return d[0][plot.data.ylabel];})
-      ]).nice();
-      break;
-    default: // undefined
-      console.log(scale + "is not defined as scale. Set linear scale for y-axis.");
-      scale = d3.scale.linear().range([this.height, 0]);
-      scale.domain([
-        d3.min( this.data.data, function(d) { return d[0][plot.data.ylabel];}),
-        d3.max( this.data.data, function(d) { return d[0][plot.data.ylabel];})
+        (!min || min<0.0) ? 0.1 : min,
+        (!max || max<0.0) ? 1.0 : max
       ]).nice();
       break;
   }
@@ -130,11 +126,10 @@ ScatterPlot.prototype.AddPlot = function() {
       .enter()
         .append("circle")
         .style("fill", function(d) { return colorScalePoint(d.average);})
-        .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
         .on("mouseover", function(d) {
           tooltip.transition()
             .duration(200)
-            .style("opacity", .8);
+            .style("opacity", 0.8);
           tooltip.html(
             plot.data.xlabel + " : " + d.x + "<br/>" +
             plot.data.ylabel + " : " + d.y + "<br/>" +
@@ -205,6 +200,7 @@ ScatterPlot.prototype.UpdatePlot = function() {
   function update_point_group() {
     var point = plot.svg.select("g#point-group");
     point.selectAll("circle")
+      .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .attr("cx", function(d) { return plot.xScale(d.x);})
       .attr("cy", function(d) { return plot.yScale(d.y);});
   }
@@ -263,7 +259,7 @@ ScatterPlot.prototype.AddDescription = function() {
       plot.UpdateAxis();
     });
     plot.description.append("span").html("log scale on y axis");
-    };
+    }
   add_tools();
 };
 
@@ -279,15 +275,15 @@ function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
 
   var xhr = d3.json(url)
     .on("load", function(dat) {
-    progress.remove();
-    plot.Init(dat, url, parameter_set_base_url, current_ps_id);
-    plot.Draw();
-  })
+      progress.remove();
+      plot.Init(dat, url, parameter_set_base_url, current_ps_id);
+      plot.Draw();
+    })
   .on("error", function() {progress.remove();})
   .get();
   progress.on("mousedown", function(){
     xhr.abort();
     plot.Destructor();
   });
-};
+}
 

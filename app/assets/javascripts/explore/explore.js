@@ -1,9 +1,13 @@
-function ParameterExplore() {
-};
+ScatterPlot.prototype.AddDescription = function(){};
+
+function ParameterExplore() {}
 
 ParameterExplore.prototype.pc_plot = null;
 ParameterExplore.prototype.scatter_plot = null;
 ParameterExplore.prototype.current_ranges = {};
+ParameterExplore.prototype.current_ps_id = null;
+ParameterExplore.prototype.current_xaxis_key = null;
+ParameterExplore.prototype.current_yaxis_key = null;
 
 ParameterExplore.prototype.show_progress_arc = function() {
   var g = this.scatter_plot.svg.append("g")
@@ -19,31 +23,30 @@ ParameterExplore.prototype.Init = function() {
   var plot = this;
   this.scatter_plot = new ScatterPlot();
   this.pc_plot = new ParallelCoordinatePlot(this);
-  var current_ps_id = this.get_current_ps();
-  var url = this.BuildScatterPlotURL(current_ps_id);
+  this.current_ps_id = $('td#current_ps_id').text();
+  var url = this.BuildScatterPlotURL(this.current_ps_id);
 
   var progress = this.show_progress_arc();
 
   var xhr = d3.json(url)
     .on("load", function(dat) {
-    progress.remove();
-    plot.scatter_plot.Init(dat, url, "/parameter_set/", current_ps_id);
-    plot.scatter_plot.Draw();
-    plot.pc_plot.Init(dat);
-    plot.pc_plot.Update();
-  })
-  .on("error", function() { console.log("error"); })
-  .get();
+      progress.remove();
+      plot.scatter_plot.Init(dat, url, "/parameter_set/", plot.current_ps_id);
+      plot.scatter_plot.Draw();
+      plot.pc_plot.Init(dat);
+      plot.pc_plot.Update();
+    })
+    .on("error", function() { console.log("error"); })
+    .get();
   progress.on("mousedown", function(){
     xhr.abort();
     progress.remove();
   });
-}
+};
 
 ParameterExplore.prototype.Update = function() {
   var plot = this;
-  var current_ps_id = this.get_current_ps();
-  var url = this.BuildScatterPlotURL(current_ps_id);
+  var url = this.BuildScatterPlotURL(this.current_ps_id);
 
   var progress = this.show_progress_arc();
 
@@ -52,7 +55,7 @@ ParameterExplore.prototype.Update = function() {
     progress.remove();
     plot.scatter_plot.Destructor();
     plot.scatter_plot = new ScatterPlot();
-    plot.scatter_plot.Init(dat, url, "/parameter_set/", current_ps_id);
+    plot.scatter_plot.Init(dat, url, "/parameter_set/", plot.current_ps_id);
     plot.scatter_plot.Draw();
     plot.pc_plot.data = dat;
     plot.pc_plot.Update();
@@ -65,44 +68,15 @@ ParameterExplore.prototype.Update = function() {
   });
 };
 
-ParameterExplore.prototype.UpdateScatterPlot = function() {
+ParameterExplore.prototype.MoveCurrentPs = function(e) {
   var plot = this;
-  var current_ps_id = this.get_current_ps();
-  var url = this.BuildScatterPlotURL(current_ps_id);
-
-  var progress = this.show_progress_arc();
-
-  var xhr = d3.json(url)
-    .on("load", function(dat) {
-    progress.remove();
-    plot.scatter_plot.Destructor();
-    plot.scatter_plot = new ScatterPlot();
-    plot.scatter_plot.Init(dat, url, "/parameter_set/", current_ps_id);
-    plot.scatter_plot.Draw();
-    plot.pc_plot.data = dat;
-    plot.pc_plot.Update();
-  })
-  .on("error", function() { console.log("error"); })
-  .get();
-  progress.on("mousedown", function(){
-    xhr.abort();
-    progress.remove();
-  });
-};
-
-ParameterExplore.prototype.get_current_ps = function() {
-  return $('#current_ps_id').text();
-};
-
-ParameterExplore.prototype.MoveCurrentPs = function(neighbor_ps_url) {
-  var plot = this;
-  var current_ps_id = this.get_current_ps();
-  var url = neighbor_ps_url.replace('PSID', current_ps_id);
+  var url = $(e).data('neighbor-url').replace('PSID', this.current_ps_id);
+  var target_key = $(e).attr("id").replace(/^ps_donw_/,"").replace(/^ps_up_/,"");
 
   d3.json(url, function(error, json) {
     // update table
     var ps_id = json._id;
-    $('#current_ps_id').text(ps_id);
+    plot.current_ps_id = ps_id;
     var param_values = json.v;
     for(var key in param_values) {
       $('#ps_v_'+key).text(param_values[key]);
@@ -110,19 +84,19 @@ ParameterExplore.prototype.MoveCurrentPs = function(neighbor_ps_url) {
 
     plot.pc_plot.Update();
     // update scatter plot
-    if(neighbor_ps_url.search($("select#x_axis_key").val())!=-1 || neighbor_ps_url.search($("select#y_axis_key").val())!=-1) {
+    if(target_key == plot.current_xaxis_key || target_key == plot.current_yaxis_key) {
       plot.scatter_plot.current_ps_id = ps_id;
+      plot.scatter_plot.UpdatePlot();
     } else {
-      plot.UpdateScatterPlot();
+      plot.Update();
     }
   });
 };
 
 ParameterExplore.prototype.BuildScatterPlotURL = function(ps_id) {
   var plot = this;
-  ps_id = ps_id || $('td#current_ps_id').text();
-  var x = $('#scatter-plot-form #x_axis_key').val();
-  var y = $('#scatter-plot-form #y_axis_key').val();
+  this.current_xaxis_key = $('#scatter-plot-form #x_axis_key').val();
+  this.current_yaxis_key = $('#scatter-plot-form #y_axis_key').val();
   var result = $('#scatter-plot-form #result').val();
   var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
     return this.id;
@@ -138,13 +112,13 @@ ParameterExplore.prototype.BuildScatterPlotURL = function(ps_id) {
   var url = $('#plot').data('scatter-plot-url').replace('PSID', ps_id);
   var range = {};
   range_modified_keys().forEach( function(key) {
-    if(key != x && key != y) {
+    if(key != plot.current_xaxis_key && key != plot.current_yaxis_key) {
       range[key] = plot.GetCurrentRangeFor(key);
     }
   });
   var url_with_param = url +
-    "?x_axis_key=" + encodeURIComponent(x) +
-    "&y_axis_key=" + encodeURIComponent(y) +
+    "?x_axis_key=" + encodeURIComponent(this.current_xaxis_key) +
+    "&y_axis_key=" + encodeURIComponent(this.current_yaxis_key) +
     "&result=" + encodeURIComponent(result) +
     "&irrelevants=" + encodeURIComponent(irrelevants) +
     "&range=" + encodeURIComponent( JSON.stringify(range) );

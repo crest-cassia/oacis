@@ -9,29 +9,27 @@ FigureViewer.prototype.figure_size = "small";
 
 FigureViewer.prototype.SetXScale = function(xscale) {
   var plot = this;
-  var scale = null;
+  var scale = null, min, max;
   switch(xscale) {
     case "linear":
       scale = d3.scale.linear().range([0, this.width]);
+      min = d3.min( this.data.data, function(d) { return d[0];});
+      max = d3.max( this.data.data, function(d) { return d[0];});
       scale.domain([
-        d3.min( this.data.data, function(d) { return d[0];}),
-        d3.max( this.data.data, function(d) { return d[0];})
+        min,
+        max
       ]).nice();
       break;
     case "log":
+      var data_in_logscale = this.data.data.filter(function(element, index, array) {
+        return element[0] > 0.0;
+      });
       scale = d3.scale.log().clamp(true).range([0, this.width]);
-      var min = d3.min( this.data.data, function(d) { return d[0];});
+      min = d3.min( data_in_logscale, function(d) { return d[0];});
+      max = d3.max( data_in_logscale, function(d) { return d[0];});
       scale.domain([
-        (min<0.1 ? 0.1 : min),
-        d3.max( this.data.data, function(d) { return d[0];})
-      ]).nice();
-      break;
-    default: // undefined
-      scale = d3.scale.linear().range([0, this.width]);
-      console.log(xscale + "is not defined as scale. Set linear scale for x-axis.");
-      scale.domain([
-        d3.min( this.data.data, function(d) { return d[0];}),
-        d3.max( this.data.data, function(d) { return d[0];})
+        (!min || min<0.0) ? 0.1 : min,
+        (!max || max<0.0) ? 1.0 : max
       ]).nice();
       break;
   }
@@ -40,29 +38,27 @@ FigureViewer.prototype.SetXScale = function(xscale) {
 
 FigureViewer.prototype.SetYScale = function(yscale) {
   var plot = this;
-  var scale = null;
+  var scale = null, min, max;
   switch(yscale) {
     case "linear":
       scale = d3.scale.linear().range([this.height, 0]);
+      min = d3.min( this.data.data, function(d) { return d[1];});
+      max = d3.max( this.data.data, function(d) { return d[1];});
       scale.domain([
-        d3.min( this.data.data, function(d) { return d[1];}),
-        d3.max( this.data.data, function(d) { return d[1];})
+        min,
+        max
       ]).nice();
       break;
     case "log":
+      var data_in_logscale = this.data.data.filter(function(element, index, array) {
+        return element[0] > 0.0;
+      });
       scale = d3.scale.log().clamp(true).range([this.height, 0]);
-      var min = d3.min( this.data.data, function(d) { return d[1];})
+      min = d3.min( data_in_logscale, function(d) { return d[1];});
+      max = d3.max( data_in_logscale, function(d) { return d[1];});
       scale.domain([
-        (min<0.1 ? 0.1 : min),
-        d3.max( this.data.data, function(d) { return d[1];})
-      ]).nice();
-      break;
-    default: // undefined
-      console.log(scale + "is not defined as scale. Set linear scale for y-axis.");
-      scale = d3.scale.linear().range([this.height, 0]);
-      scale.domain([
-        d3.min( this.data.data, function(d) { return d[1];}),
-        d3.max( this.data.data, function(d) { return d[1];})
+        (!min || min<0.0) ? 0.1 : min,
+        (!max || max<0.0) ? 1.0 : max
       ]).nice();
       break;
   }
@@ -82,24 +78,24 @@ FigureViewer.prototype.AddPlot = function() {
 
 delete FigureViewer.prototype.UpdatePlot; // delete ScatterPlot.UpdatePlot() from FigureViewer
 FigureViewer.prototype.UpdatePlot = function(new_size) {
-  switch(new_size) {
+  switch(this.figure_size) {
     case "point":
-      if(new_size == this.figuer_size) {
+      this.figure_size = new_size;
+      if(new_size == "point") {
         this.UpdatePointPlot();
       } else {
-        this.figure_size = new_size;
-        this.svg.select("g#figure-group").remove();
+        this.svg.select("g#point-group").remove();
         this.AddPlot();
       }
       break;
     case "small":
     case "large":
-      if(new_size == this.figuer_size) {
-        this.UpdateFigurePlot();
-      } else {
-        this.figure_size = new_size;
-        this.svg.select("g#point-group").remove();
+      this.figure_size = new_size;
+      if(new_size == "point") {
+        this.svg.select("g#figure-group").remove();
         this.AddPlot();
+      } else {
+        this.UpdateFigurePlot();
       }
       break;
   }
@@ -317,15 +313,15 @@ function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
 
   var xhr = d3.json(url)
     .on("load", function(dat) {
-    progress.remove();
-    plot.Init(dat, url, parameter_set_base_url, current_ps_id);
-    plot.Draw();
-  })
+      progress.remove();
+      plot.Init(dat, url, parameter_set_base_url, current_ps_id);
+      plot.Draw();
+    })
   .on("error", function() {progress.remove();})
   .get();
   progress.on("mousedown", function(){
     xhr.abort();
     plot.Destructor();
   });
-};
+}
 

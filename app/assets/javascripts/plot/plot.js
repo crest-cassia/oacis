@@ -61,8 +61,11 @@ Plot.prototype.AddAxis = function() {
   this.UpdateAxis();
 };
 
+Plot.prototype.SetXScale = null;// IMPLEMENE ME
+Plot.prototype.SetYScale = null;// IMPLEMENT ME
+
 Plot.prototype.UpdateAxis = function() {
   this.svg.select(".x.axis").call(this.xAxis);
   this.svg.select(".y.axis").call(this.yAxis);
-}
+};
 

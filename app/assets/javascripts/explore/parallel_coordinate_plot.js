@@ -1,7 +1,7 @@
 function ParallelCoordinatePlot(ps_plot) {
   this.row = d3.select("#pc-plot").insert("div","div").attr("class", "row");
   this.ps_plot = ps_plot;
-};
+}
 
 ParallelCoordinatePlot.prototype.margin = {top: 50, right: 100, bottom: 50, left: 100};
 ParallelCoordinatePlot.prototype.width = 1000;
@@ -33,7 +33,6 @@ ParallelCoordinatePlot.prototype.Init = function(data) {
       var domain = plot.ps_plot.GetCurrentRangeFor(key);
       var scale = d3.scale.linear().domain(domain).range([plot.height, 0]).nice();
       plot.yScales[key] = scale;
-      dimensions.push(key);
     });
   }
   set_scales_and_dimensions();
@@ -62,28 +61,28 @@ ParallelCoordinatePlot.prototype.Init = function(data) {
   draw_axis();
 
   function set_brsuh() {
-    svg.selectAll(".dimension").each(function(d) {
-      plot.brushes[d] = d3.svg.brush().y( plot.yScales[d] ).on("brushend", on_brush_end);
+    svg.selectAll(".dimension").each(function(key) {
+      plot.brushes[key] = d3.svg.brush().y( plot.yScales[key] ).on("brushend", on_brush_end);
       function on_brush_end() {
-        var domain = plot.brushes[d].empty() ? plot.yScales[d].domain() : plot.brushes[d].extent();
-        plot.ps_plot.SetCurrentRangeFor(d, plot.brushes[d].empty() ? null : domain );
-        if(d == $("select#x_axis_key").val()) {
+        var domain = plot.brushes[key].empty() ? plot.yScales[key].domain() : plot.brushes[key].extent();
+        plot.ps_plot.SetCurrentRangeFor(key, plot.brushes[key].empty() ? null : domain );
+        if(key == plot.ps_plot.current_xaxis_key) {
           plot.ps_plot.scatter_plot.xScale.domain(domain);
           plot.ps_plot.scatter_plot.UpdatePlot();
           plot.ps_plot.scatter_plot.UpdateAxis();
           plot.Update();
-        } else if(d == $("select#y_axis_key").val()) {
+        } else if(key == plot.ps_plot.current_yaxis_key) {
           plot.ps_plot.scatter_plot.yScale.domain(domain);
           plot.ps_plot.scatter_plot.UpdatePlot();
           plot.ps_plot.scatter_plot.UpdateAxis();
           plot.Update();
         } else {
-          plot.ps_plot.UpdateScatterPlot();
+          plot.ps_plot.Update();
         }
       }
       d3.select(this).append("svg:g")
         .attr("class", "brush")
-        .call(plot.brushes[d])
+        .call(plot.brushes[key])
         .selectAll("rect")
         .attr("x", -8)
         .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
@@ -122,7 +121,7 @@ ParallelCoordinatePlot.prototype.Update = function() {
         var is_in_range=true, key;
         Object.keys(d[0]).forEach( function(key) {
           var domain = plot.ps_plot.GetCurrentRangeFor(key);
-          is_in_range &= (!domain) || (domain[0] <= d[0][key] && domain[1] >= d[0][key]);
+          is_in_range &= (domain[0] <= d[0][key] && domain[1] >= d[0][key]);
         });
         return is_in_range;
       })
@@ -134,7 +133,7 @@ ParallelCoordinatePlot.prototype.Update = function() {
         return d3.svg.line()(points);
       })
       .attr("stroke-width", function(d) {
-        return d[3] == plot.ps_plot.get_current_ps() ? 3 : 1;
+        return d[3] == plot.ps_plot.current_ps_id ? 3 : 1;
       })
       .attr("stroke", function(d) {
         if( colorScale ) { return colorScale(d[1]); }

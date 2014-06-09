@@ -91,10 +91,9 @@
   $('#irrelevant-params').change( function() {parameter_exploer.Update();} );
 
   $('i.icon-arrow-down[id^="ps_down_"]').on('click', function () {
-    var url = $(this).data('neighbor-url');
-    parameter_exploer.MoveCurrentPs(url);
+    parameter_exploer.MoveCurrentPs(this);
   });
   $('i.icon-arrow-up[id^="ps_up_"]').on('click', function () {
-    var url = $(this).data('neighbor-url');
-    parameter_exploer.MoveCurrentPs(url);
+    parameter_exploer.MoveCurrentPs(this);
   });
+
