@@ -30,6 +30,14 @@ class SchedulerWrapper
     end
   end
 
+  def get_host_parameters_command
+    if @type == "xscheduler"
+      "#{@scheduler_path}xsub -t"
+    else
+      raise "invalid"
+    end
+  end
+
   def all_status_command
     case @type
     when "none"

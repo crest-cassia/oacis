@@ -45,8 +45,11 @@ class Host
                      inclusion: {in: HOST_STATUS}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
-  validate :template_conform_to_host_parameter_definitions
+  validate :template_conform_to_host_parameter_definitions,
+           :unless => lambda { scheduler_type == "xscheduler" }
 
+  before_validation :get_host_parameters_for_xscheduler,
+                    :if => lambda {scheduler_type == "xscheduler" and scheduler_type_changed? }
   before_create :set_position
   before_destroy :validate_destroyable
 
@@ -166,6 +169,22 @@ class Host
         errors[:base] << "'#{var}' is defined as a host parameter, but does not appear in template"
       end
     end
+  end
+
+  def get_host_parameters_for_xscheduler
+    start_ssh do |ssh|
+      wrapper = SchedulerWrapper.new(self)
+      cmd = wrapper.get_host_parameters_command
+      ret = SSHUtil.execute(ssh, cmd)
+      self.host_parameter_definitions = JSON.load(ret)["parameters"].map do |key,val|
+        unless key == "mpi_procs" or key == "omp_threads"
+          HostParameterDefinition.new(key: key, default: val["default"])
+        end
+      end
+    end
+
+  rescue => ex
+    errors.add(:base, "Error while getting host parameters: #{ex.message}")
   end
 
   def validate_destroyable

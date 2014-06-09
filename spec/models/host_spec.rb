@@ -356,6 +356,35 @@ EOS
     end
   end
 
+  describe "when 'xscheduler' is selected as the scheduler_type" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:localhost)
+    end
+
+    it "gets host parameters by invoking 'get_host_parameters_for_xscheduler' when scheduler_type is updated" do
+      @host.scheduler_type = "xscheduler"
+      @host.should_receive(:get_host_parameters_for_xscheduler)
+      @host.save!
+    end
+
+    it "parse output of 'xsub -t' and set it to host_parameter_definitions" do
+      hp = {"parameters" => {"foo" => {"default"=>1}, "bar" => {"default"=>"abc"} } }
+      SSHUtil.stub(:execute).and_return(hp.to_json)
+      @host.scheduler_type = "xscheduler"
+      @host.save!
+      @host.host_parameter_definitions.size.should eq 2
+      @host.host_parameter_definitions[0].key.should eq "foo"
+      @host.host_parameter_definitions[0].default.should eq "1"
+    end
+
+    it "'xsub' command fails, validation fails" do
+      SSHUtil.stub(:execute).and_return("{invalid:...")
+      @host.scheduler_type = "xscheduler"
+      @host.should_not be_valid
+    end
+  end
+
   describe "'position' field" do
 
     before(:each) do
