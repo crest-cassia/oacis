@@ -10,7 +10,6 @@ class SchedulerWrapper
     end
     @type = host.scheduler_type
     @work_base_dir = Pathname.new(host.work_base_dir)
-    @scheduler_path = host.scheduler_path + '/'
   end
 
   def submit_command(script)
@@ -18,13 +17,13 @@ class SchedulerWrapper
     when "none"
       "nohup bash #{script} > /dev/null 2>&1 < /dev/null & basename #{script}"
     when "torque"
-      "cd #{@work_base_dir}; #{@scheduler_path}qsub #{script}"
+      "cd #{@work_base_dir}; qsub #{script}"
     when "pjm"
-      "cd #{@work_base_dir}; #{@scheduler_path}pjsub #{script}"
+      "cd #{@work_base_dir}; pjsub #{script}"
     when "pjm_k"
-      ". /etc/bashrc; cd #{@work_base_dir}; #{@scheduler_path}pjsub #{script} < /dev/null"
+      ". /etc/bashrc; cd #{@work_base_dir}; pjsub #{script} < /dev/null"
     when "xscheduler"
-      "#{@scheduler_path}xsub #{script} -d #{@work_base_dir}"
+      "xsub #{script} -d #{@work_base_dir}"
     else
       raise "not supported"
     end
@@ -60,7 +59,7 @@ class SchedulerWrapper
 
   def get_host_parameters_command
     if @type == "xscheduler"
-      "#{@scheduler_path}xsub -t"
+      "xsub -t"
     else
       raise "invalid"
     end
@@ -71,11 +70,11 @@ class SchedulerWrapper
     when "none"
       "ps ux"
     when "torque"
-      "#{@scheduler_path}qstat; #{@scheduler_path}pbsnodes -a"
+      "qstat; pbsnodes -a"
     when "pjm", "pjm_k"
-      "#{@scheduler_path}pjstat"
+      "pjstat"
     when "xscheduler"
-      "#{@scheduler_path}xstat"
+      "xstat"
     else
       raise "not supported"
     end
@@ -86,11 +85,11 @@ class SchedulerWrapper
     when "none"
       "ps ux | grep \"[#{job_id[0]}]#{job_id[1..-1]}\""
     when "torque"
-      "#{@scheduler_path}qstat #{job_id}"
+      "qstat #{job_id}"
     when "pjm", "pjm_k"
-      "#{@scheduler_path}pjstat #{job_id}"
+      "pjstat #{job_id}"
     when "xscheduler"
-      "#{@scheduler_path}xstat #{job_id}"
+      "xstat #{job_id}"
     else
       raise "not supported"
     end
@@ -148,11 +147,11 @@ class SchedulerWrapper
     when "none"
       "kill -- -`ps x -o \"pgid pid command\" | grep \"[#{job_id[0]}]#{job_id[1..-1]}\" | awk '{print $1}'`"
     when "torque"
-      "#{@scheduler_path}qdel #{job_id}"
+      "qdel #{job_id}"
     when "pjm", "pjm_k"
-      "#{@scheduler_path}pjdel #{job_id}"
+      "pjdel #{job_id}"
     when "xscheduler"
-      "#{@scheduler_path}xdel #{job_id}"
+      "xdel #{job_id}"
     else
       raise "not supported"
     end

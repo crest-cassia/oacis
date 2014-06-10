@@ -11,7 +11,6 @@ class Host
   field :port, type: Integer, default: 22
   field :ssh_key, type: String, default: '~/.ssh/id_rsa'
   field :scheduler_type, type: String, default: "none"
-  field :scheduler_path, type: String, default: ""
   field :work_base_dir, type: String, default: '~'
   field :mounted_work_base_dir, type: String, default: ""
   field :max_num_jobs, type: Integer, default: 1

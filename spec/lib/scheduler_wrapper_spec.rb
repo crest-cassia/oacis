@@ -8,8 +8,7 @@ describe SchedulerWrapper do
 
   it "is initialized with a correct type" do
     possible_types = SchedulerWrapper::TYPES.each do |type|
-      @host.scheduler_type = type
-      @host.save!
+      @host.update_attribute(:scheduler_type, type)
       expect {
         SchedulerWrapper.new(@host)
       }.to_not raise_error
