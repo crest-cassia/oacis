@@ -156,4 +156,30 @@ class SchedulerWrapper
       raise "not supported"
     end
   end
+
+  def scheduler_log_file_path(work_base_dir, run)
+    paths = []
+    dir = Pathname.new(work_base_dir)
+    case @type
+    when "none"
+      # No log-file is created
+    when "torque"
+      paths << dir.join("#{run.id}.sh.o#{run.job_id.to_i}") # run.job_id = 12345.host
+      paths << dir.join("#{run.id}.sh.e#{run.job_id.to_i}")
+    when "pjm"
+      paths << dir.join("#{run.id}.sh.o#{run.job_id}")
+      paths << dir.join("#{run.id}.sh.e#{run.job_id}")
+      paths << dir.join("#{run.id}.sh.i#{run.job_id}")
+    when "pjm_k"
+      paths << dir.join("J#{run.id}.sh.o#{run.job_id}")
+      paths << dir.join("J#{run.id}.sh.e#{run.job_id}")
+      paths << dir.join("J#{run.id}.sh.i#{run.job_id}")
+      paths << dir.join("J#{run.id}.sh.s#{run.job_id}")
+    when "xscheduler"
+      # TODO
+    else
+      raise "not supported type"
+    end
+    paths
+  end
 end
