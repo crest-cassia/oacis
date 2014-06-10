@@ -82,18 +82,18 @@
   }
 
 :javascript
-  var parameter_exploer = new ParameterExplore();
+  var parameter_explorer = new ParameterExplorer();
   $(function() {
-    parameter_exploer.Init();
+    parameter_explorer.Init();
   });
 
-  $('#scatter-plot-form').change( function() {parameter_exploer.Update();} );
-  $('#irrelevant-params').change( function() {parameter_exploer.Update();} );
+  $('#scatter-plot-form').change( function() {parameter_explorer.Update();} );
+  $('#irrelevant-params').change( function() {parameter_explorer.Update();} );
 
   $('i.icon-arrow-down[id^="ps_down_"]').on('click', function () {
-    parameter_exploer.MoveCurrentPs(this);
+    parameter_explorer.MoveCurrentPs(this);
   });
   $('i.icon-arrow-up[id^="ps_up_"]').on('click', function () {
-    parameter_exploer.MoveCurrentPs(this);
+    parameter_explorer.MoveCurrentPs(this);
   });
 

@@ -1,15 +1,15 @@
 ScatterPlot.prototype.AddDescription = function(){};
 
-function ParameterExplore() {}
+function ParameterExplorer() {}
 
-ParameterExplore.prototype.pc_plot = null;
-ParameterExplore.prototype.scatter_plot = null;
-ParameterExplore.prototype.current_ranges = {};
-ParameterExplore.prototype.current_ps_id = null;
-ParameterExplore.prototype.current_xaxis_key = null;
-ParameterExplore.prototype.current_yaxis_key = null;
+ParameterExplorer.prototype.pc_plot = null;
+ParameterExplorer.prototype.scatter_plot = null;
+ParameterExplorer.prototype.current_ranges = {};
+ParameterExplorer.prototype.current_ps_id = null;
+ParameterExplorer.prototype.current_xaxis_key = null;
+ParameterExplorer.prototype.current_yaxis_key = null;
 
-ParameterExplore.prototype.show_progress_arc = function() {
+ParameterExplorer.prototype.show_progress_arc = function() {
   var g = this.scatter_plot.svg.append("g")
     .attr({
       "transform": "translate(" + (this.scatter_plot.margin.left) + "," + (this.scatter_plot.margin.top) + ")",
@@ -19,7 +19,7 @@ ParameterExplore.prototype.show_progress_arc = function() {
   return progress;
 };
 
-ParameterExplore.prototype.Init = function() {
+ParameterExplorer.prototype.Init = function() {
   var plot = this;
   this.scatter_plot = new ScatterPlot();
   this.pc_plot = new ParallelCoordinatePlot(this);
@@ -44,7 +44,7 @@ ParameterExplore.prototype.Init = function() {
   });
 };
 
-ParameterExplore.prototype.Update = function() {
+ParameterExplorer.prototype.Update = function() {
   var plot = this;
   var url = this.BuildScatterPlotURL(this.current_ps_id);
 
@@ -68,7 +68,7 @@ ParameterExplore.prototype.Update = function() {
   });
 };
 
-ParameterExplore.prototype.MoveCurrentPs = function(e) {
+ParameterExplorer.prototype.MoveCurrentPs = function(e) {
   var plot = this;
   var url = $(e).data('neighbor-url').replace('PSID', this.current_ps_id);
   var target_key = $(e).attr("id").replace(/^ps_donw_/,"").replace(/^ps_up_/,"");
@@ -93,7 +93,7 @@ ParameterExplore.prototype.MoveCurrentPs = function(e) {
   });
 };
 
-ParameterExplore.prototype.BuildScatterPlotURL = function(ps_id) {
+ParameterExplorer.prototype.BuildScatterPlotURL = function(ps_id) {
   var plot = this;
   this.current_xaxis_key = $('#scatter-plot-form #x_axis_key').val();
   this.current_yaxis_key = $('#scatter-plot-form #y_axis_key').val();
@@ -125,14 +125,14 @@ ParameterExplore.prototype.BuildScatterPlotURL = function(ps_id) {
   return url_with_param;
 };
 
-ParameterExplore.prototype.GetCurrentRangeFor = function(parameter_key) {
+ParameterExplorer.prototype.GetCurrentRangeFor = function(parameter_key) {
   if(!this.current_ranges[parameter_key]) {
     this.current_ranges[parameter_key] = $('td#ps_v_' + parameter_key).data('range');
   }
   return this.current_ranges[parameter_key];
 };
 
-ParameterExplore.prototype.SetCurrentRangeFor = function(parameter_key, range) {
+ParameterExplorer.prototype.SetCurrentRangeFor = function(parameter_key, range) {
   var new_range = (range) ? range : $('td#ps_v_' + parameter_key).data('range');
   this.current_ranges[parameter_key] = new_range;
 };
