@@ -30,6 +30,34 @@ class SchedulerWrapper
     end
   end
 
+  def parse_jobid_from_submit_command(output)
+    case @type
+    when "none"
+      output.chomp
+    when "torque"
+      output.chomp
+    when "pjm"
+      output.chomp
+    when "pjm_k"
+      #success: out = STDOUT:[INFO] PJM 0000 pjsub Job 2275991 submitted.
+      #         rc  = 0
+      #failed:  out = [ERR.] PJM 0007 pjsub Staging option error (3).
+      #               Refer to the staging information file. (J5333b14881e31ebcd2000001.sh.s2366652)
+      #         rc  = 0
+      if output =~ /submitted/
+        output.split(" ")[5]
+      else
+        output =~ /\(J(\d|[a-f])+\.sh\.s(\d+)\)/  #=> matches (J5333b14881e31ebcd2000001.sh.s2366652)
+        raise "not supported format" unless $2
+        $2
+      end
+    when "xscheduler"
+      JSON.load(out.chomp)["job_id"]
+    else
+      raise "not supported"
+    end
+  end
+
   def get_host_parameters_command
     if @type == "xscheduler"
       "#{@scheduler_path}xsub -t"

@@ -92,29 +92,15 @@ class RemoteJobHandler
   end
 
   def submit_to_scheduler(run, job_script_path)
-    cmd = SchedulerWrapper.new(@host).submit_command(job_script_path)
+    wrapper = SchedulerWrapper.new(@host)
+    cmd = wrapper.submit_command(job_script_path)
     @host.start_ssh do |ssh|
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
       raise RemoteOperationError, "#{cmd} failed : #{rc}, #{err}" unless rc == 0
       run.status = :submitted
-      run.job_id = out.chomp
 
-      if @host.scheduler_type == "xscheduler"
-        run.job_id = JSON.load(out.chomp)["job_id"]
-      elsif @host.scheduler_type == "pjm_k"
-        #success: out = STDOUT:[INFO] PJM 0000 pjsub Job 2275991 submitted.
-        #         rc  = 0
-        #failed:  out = [ERR.] PJM 0007 pjsub Staging option error (3).
-        #               Refer to the staging information file. (J5333b14881e31ebcd2000001.sh.s2366652)
-        #         rc  = 0
-        if out =~ /submitted/
-          run.job_id = out.chomp.split(" ")[5]
-        else
-          scriptname_s_jobid = out.chomp.split(" ").last
-          job_id = scriptname_s_jobid.sub("(J#{run.id}.sh.s", "").sub(")", "")
-          run.job_id = job_id
-        end
-      end
+      job_id = wrapper.parse_jobid_from_submit_command(out)
+      run.job_id = job_id
       run.submitted_at = DateTime.now
       run.save!
     end
