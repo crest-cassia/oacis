@@ -92,8 +92,15 @@ class RemoteJobHandler
   end
 
   def submit_to_scheduler(run, job_script_path)
+    if @host.scheduler_type == "xscheduler"
+      job_parameters = run.host_parameters || {}
+      job_parameters["mpi_procs"] = run.mpi_procs
+      job_parameters["omp_threads"] = run.omp_threads
+    end
+
+    job_parameters ||= {}
     wrapper = SchedulerWrapper.new(@host)
-    cmd = wrapper.submit_command(job_script_path)
+    cmd = wrapper.submit_command(job_script_path, job_parameters)
     @host.start_ssh do |ssh|
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
       raise RemoteOperationError, "#{cmd} failed : #{rc}, #{err}" unless rc == 0

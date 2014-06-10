@@ -12,7 +12,7 @@ class SchedulerWrapper
     @work_base_dir = Pathname.new(host.work_base_dir)
   end
 
-  def submit_command(script)
+  def submit_command(script, job_parameters = {})
     case @type
     when "none"
       "nohup bash #{script} > /dev/null 2>&1 < /dev/null & basename #{script}"
@@ -23,7 +23,8 @@ class SchedulerWrapper
     when "pjm_k"
       ". /etc/bashrc; cd #{@work_base_dir}; pjsub #{script} < /dev/null"
     when "xscheduler"
-      "xsub #{script} -d #{@work_base_dir}"
+      "xsub #{script} -d #{@work_base_dir} -p #{Shellwords.shellescape(job_parameters.to_json)}"
+      # Shellwords.shelljoin(["xsub", script.to_s, "-d", @work_base_dir.to_s, "-p", job_parameters.to_json])
     else
       raise "not supported"
     end
@@ -51,7 +52,7 @@ class SchedulerWrapper
         $2
       end
     when "xscheduler"
-      JSON.load(out.chomp)["job_id"]
+      JSON.load(output.chomp)["job_id"]
     else
       raise "not supported"
     end
