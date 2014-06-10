@@ -20,28 +20,11 @@ ParameterExplorer.prototype.show_progress_arc = function() {
 };
 
 ParameterExplorer.prototype.Init = function() {
-  var plot = this;
   this.scatter_plot = new ScatterPlot();
   this.pc_plot = new ParallelCoordinatePlot(this);
+  this.EventBind();
   this.current_ps_id = $('td#current_ps_id').text();
-  var url = this.BuildScatterPlotURL(this.current_ps_id);
-
-  var progress = this.show_progress_arc();
-
-  var xhr = d3.json(url)
-    .on("load", function(dat) {
-      progress.remove();
-      plot.scatter_plot.Init(dat, url, "/parameter_set/", plot.current_ps_id);
-      plot.scatter_plot.Draw();
-      plot.pc_plot.Init(dat);
-      plot.pc_plot.Update();
-    })
-    .on("error", function() { console.log("error"); })
-    .get();
-  progress.on("mousedown", function(){
-    xhr.abort();
-    progress.remove();
-  });
+  this.Update();
 };
 
 ParameterExplorer.prototype.Update = function() {
@@ -57,7 +40,12 @@ ParameterExplorer.prototype.Update = function() {
     plot.scatter_plot = new ScatterPlot();
     plot.scatter_plot.Init(dat, url, "/parameter_set/", plot.current_ps_id);
     plot.scatter_plot.Draw();
-    plot.pc_plot.data = dat;
+    if(plot.pc_plot.data) {
+      plot.pc_plot.data = dat;
+      plot.pc_plot.current_ps_id = plot.current_ps_id;
+    } else {
+      plot.pc_plot.Init(dat, plot.current_ps_id);
+    }
     plot.pc_plot.Update();
   })
   .on("error", function() { console.log("error"); })
@@ -82,6 +70,7 @@ ParameterExplorer.prototype.MoveCurrentPs = function(e) {
       $('#ps_v_'+key).text(param_values[key]);
     }
 
+    plot.pc_plot.current_ps_id = ps_id;
     plot.pc_plot.Update();
     // update scatter plot
     if(target_key == plot.current_xaxis_key || target_key == plot.current_yaxis_key) {
@@ -137,4 +126,30 @@ ParameterExplorer.prototype.SetCurrentRangeFor = function(parameter_key, range) 
   this.current_ranges[parameter_key] = new_range;
 };
 
+ParameterExplorer.prototype.EventBind = function() {
+  var plot = this;
+  var pc_plot_brush_event = this.pc_plot.BrushEvent;
+  ParallelCoordinatePlot.prototype.BrushEvent = function(key) {
+    pc_plot_brush_event.call(plot.pc_plot, key);
+    if(key == plot.current_xaxis_key) {
+      if(plot.pc_plot.modified_domains[key]) {
+        plot.scatter_plot.xScale.domain(plot.pc_plot.modified_domains[key]);
+      } else {
+        plot.scatter_plot.xScale.domain(plot.pc_plot.yScales[key].domain());
+      }
+      plot.scatter_plot.UpdatePlot();
+      plot.scatter_plot.UpdateAxis();
+    } else if(key == plot.current_yaxis_key) {
+      if(plot.pc_plot.modified_domains[key]) {
+        plot.scatter_plot.yScale.domain(plot.pc_plot.modified_domains[key]);
+      } else {
+        plot.scatter_plot.yScale.domain(plot.pc_plot.yScales[key].domain());
+      }
+      plot.scatter_plot.UpdatePlot();
+      plot.scatter_plot.UpdateAxis();
+    } else {
+      plot.Update();
+    }
+  };
+};
 
