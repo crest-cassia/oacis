@@ -23,8 +23,8 @@ class SchedulerWrapper
     when "pjm_k"
       ". /etc/bashrc; cd #{@work_base_dir}; pjsub #{script} < /dev/null"
     when "xscheduler"
-      "xsub #{script} -d #{@work_base_dir} -p #{Shellwords.shellescape(job_parameters.to_json)}"
-      # Shellwords.shelljoin(["xsub", script.to_s, "-d", @work_base_dir.to_s, "-p", job_parameters.to_json])
+      scheduler_work_dir = File.basename(script, '.sh') + "_sw"
+      "xsub #{script} -d #{scheduler_work_dir} -p #{Shellwords.shellescape(job_parameters.to_json)}"
     else
       raise "not supported"
     end
@@ -177,7 +177,7 @@ class SchedulerWrapper
       paths << dir.join("J#{run.id}.sh.i#{run.job_id}")
       paths << dir.join("J#{run.id}.sh.s#{run.job_id}")
     when "xscheduler"
-      # TODO
+      paths << dir.join("#{run.id}_sw")
     else
       raise "not supported type"
     end
