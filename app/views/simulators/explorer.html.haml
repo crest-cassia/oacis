@@ -53,6 +53,13 @@
         - @simulator.parameter_definitions.map(&:key).each do |key|
           = label_tag key, key
           = check_box_tag key
+      #checkboxes.form-inline
+        %br
+        Set log scale :
+        %br
+        - @simulator.parameter_definitions.map(&:key).each do |key|
+          = label_tag key, key
+          = check_box_tag key
   .span8
     - urls = {"scatter-plot-url" => _scatter_plot_parameter_set_path('PSID') + '.json',
               "ps-url" => parameter_set_path('PSID')+'.json'}

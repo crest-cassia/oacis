@@ -22,6 +22,7 @@ ParameterExplorer.prototype.show_progress_arc = function() {
 ParameterExplorer.prototype.Init = function() {
   this.scatter_plot = new ScatterPlot();
   this.pc_plot = new ParallelCoordinatePlot(this);
+  this.SetLogscaleCheckbox();
   this.EventBind();
   this.current_ps_id = $('td#current_ps_id').text();
   this.Update();
@@ -40,6 +41,10 @@ ParameterExplorer.prototype.Update = function() {
     plot.scatter_plot = new ScatterPlot();
     plot.scatter_plot.Init(dat, url, "/parameter_set/", plot.current_ps_id);
     plot.scatter_plot.Draw();
+    var checkboxes = $("#checkboxes input");
+    checkboxes.each(function() {
+      plot.LogscaleEvent($(this).attr("id"), this.checked);
+    });
     if(plot.pc_plot.data) {
       plot.pc_plot.data = dat;
       plot.pc_plot.current_ps_id = plot.current_ps_id;
@@ -151,5 +156,41 @@ ParameterExplorer.prototype.EventBind = function() {
       plot.Update();
     }
   };
+
+  ParameterExplorer.prototype.LogscaleEvent = function(key, checked) {
+    if(key == plot.current_xaxis_key) {
+      if(checked) {
+        plot.scatter_plot.SetXScale("log");
+        plot.scatter_plot.xAxis.scale(plot.scatter_plot.xScale);
+      } else {
+        plot.scatter_plot.SetXScale("linear");
+        plot.scatter_plot.xAxis.scale(plot.scatter_plot.xScale);
+      }
+      plot.scatter_plot.UpdatePlot();
+      plot.scatter_plot.UpdateAxis();
+    }
+    if(key == plot.current_yaxis_key) {
+      if(checked) {
+        plot.scatter_plot.SetYScale("log");
+        plot.scatter_plot.yAxis.scale(plot.scatter_plot.yScale);
+      } else {
+        plot.scatter_plot.SetYScale("linear");
+        plot.scatter_plot.yAxis.scale(plot.scatter_plot.yScale);
+      }
+      plot.scatter_plot.UpdatePlot();
+      plot.scatter_plot.UpdateAxis();
+    }
+  };
 };
 
+ParameterExplorer.prototype.SetLogscaleCheckbox = function() {
+  var plot = this;
+  function set_logscale_checkbox() {
+    var checkboxes = $("#checkboxes input");
+    checkboxes.each(function() {
+      var checkbox = this;
+      $(this).on("change", function() { plot.LogscaleEvent($(checkbox).attr("id"), checkbox.checked); });
+    });
+  }
+  set_logscale_checkbox();
+};

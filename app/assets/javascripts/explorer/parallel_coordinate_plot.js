@@ -77,6 +77,17 @@ ParallelCoordinatePlot.prototype.Init = function(data, current_ps_id) {
     });
   }
   set_brsuh();
+
+  function set_logscale_checkbox() {
+    svg.selectAll(".dimension").each(function(key) {
+      d3.select(this).append("svg:g").append("svg:input")
+        .attr("type", "checkbox")
+        .attr("class", "checkbox-log-scale")
+        .attr("y", 10+plot.yScales[key])
+        .on("change", function() { plot.LogScaleEvent(key, this.checked); });
+    });
+  }
+  set_logscale_checkbox();
 };
 
 ParallelCoordinatePlot.prototype.BrushEvent = function(key) {
