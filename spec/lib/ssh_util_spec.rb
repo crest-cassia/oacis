@@ -48,6 +48,15 @@ describe SSHUtil do
       File.directory?(local_path).should be_true
       File.exist?(local_path.join('file')).should be_true
     end
+
+    it "download file if the remote_path is not directory but file" do
+      remote_path = @temp_dir.join('file').expand_path
+      FileUtils.touch(remote_path)
+
+      local_path = @temp_dir.join('local')
+      SSHUtil.download_recursive(@ssh, remote_path, local_path)
+      File.exist?(local_path).should be_true
+    end
   end
 
   describe ".upload" do

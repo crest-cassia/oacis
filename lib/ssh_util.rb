@@ -9,9 +9,10 @@ module SSHUtil
 
   def self.download_recursive(ssh, remote_path, local_path)
     rpath = expand_remote_home_path(ssh, remote_path)
+    is_dir = directory?(ssh, rpath)
     sftp = ssh.sftp
     sftp.connect! if sftp.closed?
-    sftp.download!(rpath, local_path.to_s, {recursive: true}) # .to_s is necessary for Ruby2.1.0. See https://github.com/crest-cassia/cassia/pull/124
+    sftp.download!(rpath, local_path.to_s, {recursive: is_dir}) # .to_s is necessary for Ruby2.1.0. See https://github.com/crest-cassia/cassia/pull/124
   end
 
   def self.upload(ssh, local_path, remote_path)
