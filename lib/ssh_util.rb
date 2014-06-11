@@ -98,6 +98,20 @@ module SSHUtil
     return false
   end
 
+  def self.directory?(ssh, remote_path)
+    rpath = expand_remote_home_path(ssh, remote_path)
+    begin
+      sftp = ssh.sftp
+      sftp.connect! if sftp.closed?
+      sftp.stat!(rpath) do |response|
+        return (response.ok? and response[:attrs].directory?)
+      end
+    rescue Net::SFTP::StatusException => ex
+      raise ex unless ex.code == 2  # no such file
+    end
+    return false
+  end
+
   private
   # Net::SSH and Net::SFTP can't interpret '~' as a home directory
   # a relative path is recognized as a relative path from home directory
