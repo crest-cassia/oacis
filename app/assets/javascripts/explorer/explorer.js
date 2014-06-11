@@ -54,6 +54,29 @@ ParameterExplorer.prototype.Update = function() {
       plot.pc_plot.Init(dat, plot.current_ps_id);
     }
     plot.pc_plot.Update();
+    function range_modified_keys() {
+      return Object.keys(plot.pc_plot.ranges).filter(function(key){
+        return (!plot.pc_plot.brushes[key].empty());
+      });
+    }
+    range_modified_keys().forEach( function(key) {
+      if(key == plot.current_xaxis_key || key == plot.current_yaxis_key) {
+        var domain = plot.pc_plot.GetCurrentRangeFor(key).concat();
+        if($("#checkboxes input#"+key).prop('checked')) {
+          domain[0] = domain[0] < 0.0 ? 0.1 : domain[0];
+          domain[1] = domain[1] < 0.0 ? 1.0 : domain[1];
+        }
+        if(key == plot.current_xaxis_key) {
+          plot.scatter_plot.xScale.domain(domain);
+          plot.scatter_plot.UpdatePlot();
+          plot.scatter_plot.UpdateAxis();
+        } else if(key == plot.current_yaxis_key) {
+          plot.scatter_plot.yScale.domain(domain);
+          plot.scatter_plot.UpdatePlot();
+          plot.scatter_plot.UpdateAxis();
+        }
+      }
+    });
   })
   .on("error", function() { console.log("error"); })
   .get();
