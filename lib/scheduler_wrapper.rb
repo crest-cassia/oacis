@@ -158,9 +158,9 @@ class SchedulerWrapper
     end
   end
 
-  def scheduler_log_file_path(work_base_dir, run)
+  def scheduler_log_file_paths(run)
     paths = []
-    dir = Pathname.new(work_base_dir)
+    dir = Pathname.new(@work_base_dir)
     case @type
     when "none"
       # No log-file is created
