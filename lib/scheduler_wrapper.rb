@@ -23,7 +23,7 @@ class SchedulerWrapper
     when "pjm_k"
       ". /etc/bashrc; cd #{@work_base_dir}; pjsub #{script} < /dev/null"
     when "xscheduler"
-      scheduler_work_dir = File.basename(script, '.sh') + "_sw"
+      scheduler_work_dir = @work_base_dir.join( File.basename(script, '.sh') + "_sw" )
       "xsub #{script} -d #{scheduler_work_dir} -p #{Shellwords.shellescape(job_parameters.to_json)}"
     else
       raise "not supported"
