@@ -4,7 +4,6 @@ function ParameterExplorer() {}
 
 ParameterExplorer.prototype.pc_plot = null;
 ParameterExplorer.prototype.scatter_plot = null;
-ParameterExplorer.prototype.current_ranges = {};
 ParameterExplorer.prototype.current_ps_id = null;
 ParameterExplorer.prototype.current_xaxis_key = null;
 ParameterExplorer.prototype.current_yaxis_key = null;
@@ -49,6 +48,9 @@ ParameterExplorer.prototype.Update = function() {
       plot.pc_plot.data = dat;
       plot.pc_plot.current_ps_id = plot.current_ps_id;
     } else {
+      Object.keys(dat.data[0][0]).forEach(function(key) {
+        plot.pc_plot.ranges[key] = $('td#ps_v_' + key).data('range');
+      });
       plot.pc_plot.Init(dat, plot.current_ps_id);
     }
     plot.pc_plot.Update();
@@ -97,7 +99,7 @@ ParameterExplorer.prototype.BuildScatterPlotURL = function(ps_id) {
   }).get();
 
   function range_modified_keys() {
-    return Object.keys(plot.current_ranges).filter(function(key){
+    return Object.keys(plot.pc_plot.ranges).filter(function(key){
       return (!plot.pc_plot.brushes[key].empty());
     });
   }
@@ -107,7 +109,7 @@ ParameterExplorer.prototype.BuildScatterPlotURL = function(ps_id) {
   var range = {};
   range_modified_keys().forEach( function(key) {
     if(key != plot.current_xaxis_key && key != plot.current_yaxis_key) {
-      range[key] = plot.GetCurrentRangeFor(key);
+      range[key] = plot.pc_plot.GetCurrentRangeFor(key);
     }
   });
   var url_with_param = url +
@@ -119,37 +121,24 @@ ParameterExplorer.prototype.BuildScatterPlotURL = function(ps_id) {
   return url_with_param;
 };
 
-ParameterExplorer.prototype.GetCurrentRangeFor = function(parameter_key) {
-  if(!this.current_ranges[parameter_key]) {
-    this.current_ranges[parameter_key] = $('td#ps_v_' + parameter_key).data('range');
-  }
-  return this.current_ranges[parameter_key];
-};
-
-ParameterExplorer.prototype.SetCurrentRangeFor = function(parameter_key, range) {
-  var new_range = (range) ? range : $('td#ps_v_' + parameter_key).data('range');
-  this.current_ranges[parameter_key] = new_range;
-};
-
 ParameterExplorer.prototype.EventBind = function() {
   var plot = this;
   var pc_plot_brush_event = this.pc_plot.BrushEvent;
   ParallelCoordinatePlot.prototype.BrushEvent = function(key) {
+
     pc_plot_brush_event.call(plot.pc_plot, key);
+
+    var domain = plot.pc_plot.GetCurrentRangeFor(key).concat();
+    if($("#checkboxes input#"+key).prop('checked')) {
+      domain[0] = domain[0] < 0.0 ? 0.1 : domain[0];
+      domain[1] = domain[1] < 0.0 ? 1.0 : domain[1];
+    }
     if(key == plot.current_xaxis_key) {
-      if(plot.pc_plot.modified_domains[key]) {
-        plot.scatter_plot.xScale.domain(plot.pc_plot.modified_domains[key]);
-      } else {
-        plot.scatter_plot.xScale.domain(plot.pc_plot.yScales[key].domain());
-      }
+      plot.scatter_plot.xScale.domain(domain);
       plot.scatter_plot.UpdatePlot();
       plot.scatter_plot.UpdateAxis();
     } else if(key == plot.current_yaxis_key) {
-      if(plot.pc_plot.modified_domains[key]) {
-        plot.scatter_plot.yScale.domain(plot.pc_plot.modified_domains[key]);
-      } else {
-        plot.scatter_plot.yScale.domain(plot.pc_plot.yScales[key].domain());
-      }
+      plot.scatter_plot.yScale.domain(domain);
       plot.scatter_plot.UpdatePlot();
       plot.scatter_plot.UpdateAxis();
     } else {

@@ -11,6 +11,7 @@ ParallelCoordinatePlot.prototype.brushes = {};
 ParallelCoordinatePlot.prototype.xScale = null;
 ParallelCoordinatePlot.prototype.yScales = {};
 ParallelCoordinatePlot.prototype.current_ps_id = null;
+ParallelCoordinatePlot.prototype.ranges = {};
 ParallelCoordinatePlot.prototype.modified_domains = {};
 
 ParallelCoordinatePlot.prototype.Init = function(data, current_ps_id) {
@@ -30,13 +31,12 @@ ParallelCoordinatePlot.prototype.Init = function(data, current_ps_id) {
       "id": "pc-plot-group"
     });
 
-  var dimensions = Object.keys(data.data[0][0]);
+  var dimensions = Object.keys(this.ranges);
   function set_scales_and_dimensions() {
     dimensions.forEach(function(key) {
-      var domain = plot.pe_plot.GetCurrentRangeFor(key);
+      var domain = plot.GetCurrentRangeFor(key);
       var scale = d3.scale.linear().domain(domain).range([plot.height, 0]).nice();
       plot.yScales[key] = scale;
-      plot.modified_domains[key] = domain;
     });
   }
   set_scales_and_dimensions();
@@ -77,23 +77,11 @@ ParallelCoordinatePlot.prototype.Init = function(data, current_ps_id) {
     });
   }
   set_brsuh();
-
-  function set_logscale_checkbox() {
-    svg.selectAll(".dimension").each(function(key) {
-      d3.select(this).append("svg:g").append("svg:input")
-        .attr("type", "checkbox")
-        .attr("class", "checkbox-log-scale")
-        .attr("y", 10+plot.yScales[key])
-        .on("change", function() { plot.LogScaleEvent(key, this.checked); });
-    });
-  }
-  set_logscale_checkbox();
 };
 
 ParallelCoordinatePlot.prototype.BrushEvent = function(key) {
   var plot = this;
-  var domain = plot.brushes[key].empty() ? plot.yScales[key].domain() : plot.brushes[key].extent();
-  plot.pe_plot.SetCurrentRangeFor(key, plot.brushes[key].empty() ? null : domain );
+  var domain = plot.brushes[key].empty() ? plot.ranges[key] : plot.brushes[key].extent();
   if(!plot.brushes[key].empty()) {
     plot.modified_domains[key] = domain;
   } else {
@@ -130,7 +118,7 @@ ParallelCoordinatePlot.prototype.Update = function() {
       .filter(function(d) {
         var is_in_range=true, key;
         Object.keys(d[0]).forEach( function(key) {
-          var domain = plot.pe_plot.GetCurrentRangeFor(key);
+          var domain = plot.GetCurrentRangeFor(key);
           is_in_range &= (domain[0] <= d[0][key] && domain[1] >= d[0][key]);
         });
         return is_in_range;
@@ -151,5 +139,13 @@ ParallelCoordinatePlot.prototype.Update = function() {
       });
   }
   redraw_path();
+};
+
+ParallelCoordinatePlot.prototype.GetCurrentRangeFor = function(key) {
+  if(this.modified_domains[key]) {
+    return this.modified_domains[key];
+  } else {
+    return this.ranges[key];
+  }
 };
 
