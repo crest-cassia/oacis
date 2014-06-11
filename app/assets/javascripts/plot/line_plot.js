@@ -96,6 +96,7 @@ LinePlot.prototype.AddPlot = function() {
         });
       }).enter();
     point.append("circle")
+      .attr("clip-path", "url(#clip)")
       .style("fill", function(d) { return colorScale(d.series_index);})
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .on("mouseover", function(d) {
@@ -126,10 +127,13 @@ LinePlot.prototype.AddPlot = function() {
 
     // add error bar
     point.insert("line", "circle")
+      .attr("clip-path", "url(#clip)")
       .attr("class", "line yerror bar");
     point.insert("line", "circle")
+      .attr("clip-path", "url(#clip)")
       .attr("class", "line yerror top");
     point.insert("line", "circle")
+      .attr("clip-path", "url(#clip)")
       .attr("class", "line yerror bottom");
   }
   add_series_group();

@@ -125,6 +125,7 @@ ScatterPlot.prototype.AddPlot = function() {
       .data(mapped)
       .enter()
         .append("circle")
+        .attr("clip-path", "url(#clip)")
         .style("fill", function(d) { return colorScalePoint(d.average);})
         .on("mouseover", function(d) {
           tooltip.transition()
@@ -181,6 +182,7 @@ ScatterPlot.prototype.UpdatePlot = function() {
         .data(d3voronoi(vertices))
         .enter()
           .append("path")
+          .attr("clip-path", "url(#clip)")
           .style("fill", function(d, i) { return colorScale(plot.data.data[i][1]);})
           .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
           .style("fill-opacity", 0.7)

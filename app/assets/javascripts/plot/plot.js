@@ -33,6 +33,14 @@ Plot.prototype.Init = function(data, url, parameter_set_base_url, current_ps_id)
   this.SetYScale("linear");
   this.xAxis = d3.svg.axis().scale(this.xScale).orient("bottom");
   this.yAxis = d3.svg.axis().scale(this.yScale).orient("left");
+
+  this.svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+    .append("rect")
+    .attr("x", -5) // 5 is radius of large point
+    .attr("y", -5) // 5 is radius of large point
+    .attr("width", this.width+10) // (this.width + 5) + 5
+    .attr("height", this.height+10); // (this.width + 5) + 5
 };
 
 Plot.prototype.Destructor = function() { this.row.remove(); };

@@ -7,6 +7,14 @@ FigureViewer.prototype.constructor = FigureViewer;// override constructor
 FigureViewer.prototype.margin = {top: 10+92, right: 100+112, bottom: 100, left: 100};// override margin
 FigureViewer.prototype.figure_size = "small";
 
+FigureViewer.prototype.Init = function(data, url, parameter_set_base_url, current_ps_id) {
+  Plot.prototype.Init.call(this, data, url, parameter_set_base_url, current_ps_id);
+  d3.select("#clip rect")
+    .attr("y", -5-92)
+    .attr("width", this.width+10+112)
+    .attr("height", this.height+10+92);
+};
+
 FigureViewer.prototype.SetXScale = function(xscale) {
   var plot = this;
   var scale = null, min, max;
@@ -114,6 +122,7 @@ FigureViewer.prototype.AddFigurePlot = function() {
     var figure = figure_group.selectAll("image")
       .data(mapped).enter();
     figure.append("svg:image")
+      .attr("clip-path", "url(#clip)")
       .attr("xlink:href", function(d) { return d.path; })
       .on("mouseover", function(d) {
         tooltip.transition()
@@ -177,6 +186,7 @@ FigureViewer.prototype.AddPointPlot = function() {
     var point = point_group.selectAll("circle")
       .data(mapped).enter();
     point.append("circle")
+      .attr("clip-path", "url(#clip)")
       .style("fill", function(d) { return "black";})
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .on("mouseover", function(d) {
