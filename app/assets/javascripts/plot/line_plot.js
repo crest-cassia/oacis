@@ -33,6 +33,7 @@ LinePlot.prototype.SetXScale = function(xscale) {
       break;
   }
   this.xScale = scale;
+  this.xAxis.scale(this.xScale);
 };
 
 LinePlot.prototype.SetYScale = function(yscale) {
@@ -63,6 +64,7 @@ LinePlot.prototype.SetYScale = function(yscale) {
       break;
   }
   this.yScale = scale;
+  this.yAxis.scale(this.yScale);
 };
 
 LinePlot.prototype.AddPlot = function() {
@@ -268,7 +270,6 @@ LinePlot.prototype.AddDescription = function() {
         new_scale = "linear";
       }
       plot.SetXScale(new_scale);
-      plot.xAxis.scale(plot.xScale);
       plot.UpdatePlot();
       plot.UpdateAxis();
     });
@@ -283,7 +284,6 @@ LinePlot.prototype.AddDescription = function() {
         new_scale = "linear";
       }
       plot.SetYScale(new_scale);
-      plot.yAxis.scale(plot.yScale);
       plot.UpdatePlot();
       plot.UpdateAxis();
     });

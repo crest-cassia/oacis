@@ -29,10 +29,10 @@ Plot.prototype.Init = function(data, url, parameter_set_base_url, current_ps_id)
   this.parameter_set_base_url = parameter_set_base_url;
   this.current_ps_id = current_ps_id;
 
+  this.xAxis = d3.svg.axis().orient("bottom");
+  this.yAxis = d3.svg.axis().orient("left");
   this.SetXScale("linear");
   this.SetYScale("linear");
-  this.xAxis = d3.svg.axis().scale(this.xScale).orient("bottom");
-  this.yAxis = d3.svg.axis().scale(this.yScale).orient("left");
 
   this.svg.append("defs").append("clipPath")
     .attr("id", "clip")

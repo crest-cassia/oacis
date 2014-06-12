@@ -42,6 +42,7 @@ FigureViewer.prototype.SetXScale = function(xscale) {
       break;
   }
   this.xScale = scale;
+  this.xAxis.scale(this.xScale);
 };
 
 FigureViewer.prototype.SetYScale = function(yscale) {
@@ -71,6 +72,7 @@ FigureViewer.prototype.SetYScale = function(yscale) {
       break;
   }
   this.yScale = scale;
+  this.yAxis.scale(this.yScale);
 };
 FigureViewer.prototype.AddPlot = function() {
   switch(this.figure_size) {
@@ -287,7 +289,6 @@ FigureViewer.prototype.AddDescription = function() {
         new_scale = "linear";
       }
       plot.SetXScale(new_scale);
-      plot.xAxis.scale(plot.xScale);
       plot.UpdatePlot(plot.figure_size);
       plot.UpdateAxis();
     });
@@ -302,7 +303,6 @@ FigureViewer.prototype.AddDescription = function() {
         new_scale = "linear";
       }
       plot.SetYScale(new_scale);
-      plot.yAxis.scale(plot.yScale);
       plot.UpdatePlot(plot.figure_size);
       plot.UpdateAxis();
     });

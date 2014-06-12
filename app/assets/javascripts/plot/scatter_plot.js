@@ -32,6 +32,7 @@ ScatterPlot.prototype.SetXScale = function(xscale) {
       break;
   }
   this.xScale = scale;
+  this.xAxis.scale(this.xScale);
 };
 
 ScatterPlot.prototype.SetYScale = function(yscale) {
@@ -61,6 +62,7 @@ ScatterPlot.prototype.SetYScale = function(yscale) {
       break;
   }
   this.yScale = scale;
+  this.yAxis.scale(this.yScale);
 };
 
 ScatterPlot.prototype.AddPlot = function() {
@@ -248,7 +250,6 @@ ScatterPlot.prototype.AddDescription = function() {
         new_scale = "linear";
       }
       plot.SetXScale(new_scale);
-      plot.xAxis.scale(plot.xScale);
       plot.UpdatePlot();
       plot.UpdateAxis();
     });
@@ -263,7 +264,6 @@ ScatterPlot.prototype.AddDescription = function() {
         new_scale = "linear";
       }
       plot.SetYScale(new_scale);
-      plot.yAxis.scale(plot.yScale);
       plot.UpdatePlot();
       plot.UpdateAxis();
     });

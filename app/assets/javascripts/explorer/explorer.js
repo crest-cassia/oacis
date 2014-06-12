@@ -173,19 +173,15 @@ ParameterExplorer.prototype.LogscaleEvent = function(axis, checked) {
   if(axis == "x") {
     if(checked) {
       plot.scatter_plot.SetXScale("log");
-      plot.scatter_plot.xAxis.scale(plot.scatter_plot.xScale);
     } else {
       plot.scatter_plot.SetXScale("linear");
-      plot.scatter_plot.xAxis.scale(plot.scatter_plot.xScale);
     }
   }
   if(axis == "y") {
     if(checked) {
       plot.scatter_plot.SetYScale("log");
-      plot.scatter_plot.yAxis.scale(plot.scatter_plot.yScale);
     } else {
       plot.scatter_plot.SetYScale("linear");
-      plot.scatter_plot.yAxis.scale(plot.scatter_plot.yScale);
     }
   }
 };
