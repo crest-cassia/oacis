@@ -125,10 +125,7 @@ ParameterExplorer.prototype.BuildScatterPlotURL = function(ps_id) {
 
 ParameterExplorer.prototype.EventBind = function() {
   var plot = this;
-  var pc_plot_brush_event = this.pc_plot.BrushEvent;
-  ParallelCoordinatePlot.prototype.BrushEvent = function(key) {
-
-    pc_plot_brush_event.call(plot.pc_plot, key);
+  this.pc_plot.on_brush_change = function(key) {
     plot.BrushEvent(key);
   };
 };

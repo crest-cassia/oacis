@@ -13,6 +13,7 @@ ParallelCoordinatePlot.prototype.yScales = {};
 ParallelCoordinatePlot.prototype.current_ps_id = null;
 ParallelCoordinatePlot.prototype.ranges = {};
 ParallelCoordinatePlot.prototype.modified_domains = {};
+ParallelCoordinatePlot.prototype.on_brush_change = null;
 
 ParallelCoordinatePlot.prototype.Init = function(data, current_ps_id) {
   var plot = this;
@@ -66,7 +67,19 @@ ParallelCoordinatePlot.prototype.Init = function(data, current_ps_id) {
 
   function set_brsuh() {
     svg.selectAll(".dimension").each(function(key) {
-      plot.brushes[key] = d3.svg.brush().y( plot.yScales[key] ).on("brushend", function() { plot.BrushEvent(key); });
+      function update_modified_domain(key) {
+        var domain = plot.brushes[key].empty() ? plot.ranges[key] : plot.brushes[key].extent();
+        if(!plot.brushes[key].empty()) {
+          plot.modified_domains[key] = domain;
+        } else {
+          delete plot.modified_domains[key];
+        }
+        plot.Update();
+      }
+      plot.brushes[key] = d3.svg.brush().y( plot.yScales[key] ).on("brushend", function() {
+        update_modified_domain(key);
+        if( plot.on_brush_change ) { plot.on_brush_change(key); }
+      });
       d3.select(this).append("svg:g")
         .attr("class", "brush")
         .call(plot.brushes[key])
@@ -77,17 +90,6 @@ ParallelCoordinatePlot.prototype.Init = function(data, current_ps_id) {
     });
   }
   set_brsuh();
-};
-
-ParallelCoordinatePlot.prototype.BrushEvent = function(key) {
-  var plot = this;
-  var domain = plot.brushes[key].empty() ? plot.ranges[key] : plot.brushes[key].extent();
-  if(!plot.brushes[key].empty()) {
-    plot.modified_domains[key] = domain;
-  } else {
-    delete plot.modified_domains[key];
-  }
-  plot.Update();
 };
 
 ParallelCoordinatePlot.prototype.Destructor = function() {
