@@ -91,7 +91,7 @@ ParameterExplorer.prototype.MoveCurrentPs = function(e) {
 
 ParameterExplorer.prototype.BuildScatterPlotURL = function(ps_id) {
   var plot = this;
-    this.current_xaxis_key = $('#scatter-plot-form #x_axis_key').val();
+  this.current_xaxis_key = $('#scatter-plot-form #x_axis_key').val();
   this.current_yaxis_key = $('#scatter-plot-form #y_axis_key').val();
   var result = $('#scatter-plot-form #result').val();
   var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
