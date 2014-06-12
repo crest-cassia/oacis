@@ -169,12 +169,20 @@ ScatterPlot.prototype.UpdatePlot = function() {
     var voronoi = plot.svg.select("g#voronoi-group");
     var d3voronoi = d3.geom.voronoi()
       .clipExtent([[0, 0], [plot.width, plot.height]]);
-    var vertices = plot.data.data.map(function(v) {
+    var filtered_data = plot.data.data.filter(function(v) {
+      var x = v[0][plot.data.xlabel];
+      var y = v[0][plot.data.ylabel];
+      var xdomain = plot.xScale.domain();
+      var ydomain = plot.yScale.domain();
+      return (x >= xdomain[0] && x <= xdomain[1] && y >= ydomain[0] && y <= ydomain[1]);
+    });
+    var vertices = filtered_data.map(function(v) {
       return [
         plot.xScale(v[0][plot.data.xlabel]) + Math.random() * 1.0 - 0.5, // noise size 1.0 is a good value
         plot.yScale(v[0][plot.data.ylabel]) + Math.random() * 1.0 - 0.5
       ];
     });
+
     function draw_voronoi_heat_map() {
       // add noise to coordinates of vertices in order to prevent hang-up.
       // hanging-up sometimes happen when duplicated points are included.
@@ -182,9 +190,8 @@ ScatterPlot.prototype.UpdatePlot = function() {
         .data(d3voronoi(vertices))
         .enter()
           .append("path")
-          .attr("clip-path", "url(#clip)")
-          .style("fill", function(d, i) { return colorScale(plot.data.data[i][1]);})
-          .attr("d", function(d) { return "M" + d.join("L") + "Z"; })
+          .style("fill", function(d, i) { return colorScale(filtered_data[i][1]);})
+          .attr("d", function(d) { return "M" + d.join('L') + "Z"; })
           .style("fill-opacity", 0.7)
           .style("stroke", "none");
     }
