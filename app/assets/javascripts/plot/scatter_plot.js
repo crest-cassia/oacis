@@ -216,6 +216,8 @@ ScatterPlot.prototype.UpdatePlot = function() {
       .attr("cy", function(d) { return plot.yScale(d.y);});
   }
   update_point_group();
+
+  this.UpdateAxis();
 };
 
 ScatterPlot.prototype.AddDescription = function() {
@@ -251,7 +253,6 @@ ScatterPlot.prototype.AddDescription = function() {
       }
       plot.SetXScale(new_scale);
       plot.UpdatePlot();
-      plot.UpdateAxis();
     });
     plot.description.append("span").html("log scale on x axis");
     plot.description.append("br");
@@ -265,7 +266,6 @@ ScatterPlot.prototype.AddDescription = function() {
       }
       plot.SetYScale(new_scale);
       plot.UpdatePlot();
-      plot.UpdateAxis();
     });
     plot.description.append("span").html("log scale on y axis");
     }

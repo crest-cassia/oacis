@@ -107,6 +107,8 @@ FigureViewer.prototype.UpdatePlot = function(new_size) {
     }
     break;
   }
+
+  this.UpdateAxis();
 };
 
 FigureViewer.prototype.AddFigurePlot = function() {
@@ -288,7 +290,6 @@ FigureViewer.prototype.AddDescription = function() {
       }
       plot.SetXScale(new_scale);
       plot.UpdatePlot(plot.figure_size);
-      plot.UpdateAxis();
     });
     plot.description.append("span").html("log scale on x axis");
     plot.description.append("br");
@@ -302,7 +303,6 @@ FigureViewer.prototype.AddDescription = function() {
       }
       plot.SetYScale(new_scale);
       plot.UpdatePlot(plot.figure_size);
-      plot.UpdateAxis();
     });
     plot.description.append("span").html("log scale on y axis");
   }

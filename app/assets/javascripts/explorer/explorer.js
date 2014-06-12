@@ -146,7 +146,6 @@ ParameterExplorer.prototype.BrushEvent = function(key) {
     }
     plot.scatter_plot.xScale.domain(domain);
     plot.scatter_plot.UpdatePlot();
-    plot.scatter_plot.UpdateAxis();
   } else if(key == plot.current_yaxis_key) {
     if($("#ylog").prop('checked')) {
       plot.LogscaleEvent(key, true);
@@ -162,7 +161,6 @@ ParameterExplorer.prototype.BrushEvent = function(key) {
     }
     plot.scatter_plot.yScale.domain(domain);
     plot.scatter_plot.UpdatePlot();
-    plot.scatter_plot.UpdateAxis();
   } else {
     plot.Update();
   }

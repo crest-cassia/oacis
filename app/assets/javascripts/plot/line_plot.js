@@ -230,6 +230,8 @@ LinePlot.prototype.UpdatePlot = function() {
       });
   }
   update_series();
+
+  this.UpdateAxis();
 };
 
 LinePlot.prototype.AddDescription = function() {
@@ -270,7 +272,6 @@ LinePlot.prototype.AddDescription = function() {
       }
       plot.SetXScale(new_scale);
       plot.UpdatePlot();
-      plot.UpdateAxis();
     });
     plot.description.append("span").html("log scale on x axis");
     plot.description.append("br");
@@ -284,7 +285,6 @@ LinePlot.prototype.AddDescription = function() {
       }
       plot.SetYScale(new_scale);
       plot.UpdatePlot();
-      plot.UpdateAxis();
     });
     plot.description.append("span").html("log scale on y axis");
   }
