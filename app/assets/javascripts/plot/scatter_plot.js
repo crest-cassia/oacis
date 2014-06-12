@@ -9,27 +9,27 @@ ScatterPlot.prototype.SetXScale = function(xscale) {
   var plot = this;
   var scale = null, min, max;
   switch(xscale) {
-    case "linear":
-      scale = d3.scale.linear().range([0, this.width]);
-      min = d3.min( this.data.data, function(r) { return r[0][plot.data.xlabel];});
-      max = d3.max( this.data.data, function(r) { return r[0][plot.data.xlabel];});
-      scale.domain([
-        min,
-        max
-      ]).nice();
-      break;
-    case "log":
-      var data_in_logscale = this.data.data.filter(function(element, index, array) {
-        return element[0][plot.data.xlabel] > 0.0;
-      });
-      scale = d3.scale.log().clamp(true).range([0, this.width]);
-      min = d3.min( data_in_logscale, function(r) { return r[0][plot.data.xlabel];});
-      max = d3.max( data_in_logscale, function(r) { return r[0][plot.data.xlabel];});
-      scale.domain([
-        (!min || min<0.0) ? 0.1 : min,
-        (!max || max<0.0) ? 1.0 : max
-      ]).nice();
-      break;
+  case "linear":
+    scale = d3.scale.linear().range([0, this.width]);
+    min = d3.min( this.data.data, function(r) { return r[0][plot.data.xlabel];});
+    max = d3.max( this.data.data, function(r) { return r[0][plot.data.xlabel];});
+    scale.domain([
+      min,
+      max
+    ]).nice();
+    break;
+  case "log":
+    var data_in_logscale = this.data.data.filter(function(element, index, array) {
+      return element[0][plot.data.xlabel] > 0.0;
+    });
+    scale = d3.scale.log().clamp(true).range([0, this.width]);
+    min = d3.min( data_in_logscale, function(r) { return r[0][plot.data.xlabel];});
+    max = d3.max( data_in_logscale, function(r) { return r[0][plot.data.xlabel];});
+    scale.domain([
+      (!min || min<0.0) ? 0.1 : min,
+      (!max || max<0.0) ? 1.0 : max
+    ]).nice();
+    break;
   }
   this.xScale = scale;
   this.xAxis.scale(this.xScale);
@@ -39,27 +39,27 @@ ScatterPlot.prototype.SetYScale = function(yscale) {
   var plot = this;
   var scale = null, min, max;
   switch(yscale) {
-    case "linear":
-      scale = d3.scale.linear().range([this.height, 0]);
-      min = d3.min( this.data.data, function(r) { return r[0][plot.data.ylabel];});
-      max = d3.max( this.data.data, function(r) { return r[0][plot.data.ylabel];});
-      scale.domain([
-        min,
-        max
-      ]).nice();
-      break;
-    case "log":
-      var data_in_logscale = this.data.data.filter(function(element, index, array) {
-        return element[0][plot.data.ylabel] > 0.0;
-      });
-      scale = d3.scale.log().clamp(true).range([this.height, 0]);
-      min = d3.min( data_in_logscale, function(r) { return r[0][plot.data.ylabel];});
-      max = d3.max( data_in_logscale, function(r) { return r[0][plot.data.ylabel];});
-      scale.domain([
-        (!min || min<0.0) ? 0.1 : min,
-        (!max || max<0.0) ? 1.0 : max
-      ]).nice();
-      break;
+  case "linear":
+    scale = d3.scale.linear().range([this.height, 0]);
+    min = d3.min( this.data.data, function(r) { return r[0][plot.data.ylabel];});
+    max = d3.max( this.data.data, function(r) { return r[0][plot.data.ylabel];});
+    scale.domain([
+      min,
+      max
+    ]).nice();
+    break;
+  case "log":
+    var data_in_logscale = this.data.data.filter(function(element, index, array) {
+      return element[0][plot.data.ylabel] > 0.0;
+    });
+    scale = d3.scale.log().clamp(true).range([this.height, 0]);
+    min = d3.min( data_in_logscale, function(r) { return r[0][plot.data.ylabel];});
+    max = d3.max( data_in_logscale, function(r) { return r[0][plot.data.ylabel];});
+    scale.domain([
+      (!min || min<0.0) ? 0.1 : min,
+      (!max || max<0.0) ? 1.0 : max
+    ]).nice();
+    break;
   }
   this.yScale = scale;
   this.yAxis.scale(this.yScale);

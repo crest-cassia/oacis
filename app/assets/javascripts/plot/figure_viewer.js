@@ -16,98 +16,96 @@ FigureViewer.prototype.Init = function(data, url, parameter_set_base_url, curren
 };
 
 FigureViewer.prototype.SetXScale = function(xscale) {
-  var plot = this;
   var scale = null, min, max;
   switch(xscale) {
-    case "linear":
-      scale = d3.scale.linear().range([0, this.width]);
-      min = d3.min( this.data.data, function(d) { return d[0];});
-      max = d3.max( this.data.data, function(d) { return d[0];});
-      scale.domain([
-        min,
-        max
-      ]).nice();
-      break;
-    case "log":
-      var data_in_logscale = this.data.data.filter(function(element, index, array) {
-        return element[0] > 0.0;
-      });
-      scale = d3.scale.log().clamp(true).range([0, this.width]);
-      min = d3.min( data_in_logscale, function(d) { return d[0];});
-      max = d3.max( data_in_logscale, function(d) { return d[0];});
-      scale.domain([
-        (!min || min<0.0) ? 0.1 : min,
-        (!max || max<0.0) ? 1.0 : max
-      ]).nice();
-      break;
+  case "linear":
+    scale = d3.scale.linear().range([0, this.width]);
+    min = d3.min( this.data.data, function(d) { return d[0];});
+    max = d3.max( this.data.data, function(d) { return d[0];});
+    scale.domain([
+      min,
+      max
+    ]).nice();
+    break;
+  case "log":
+    var data_in_logscale = this.data.data.filter(function(element) {
+      return element[0] > 0.0;
+    });
+    scale = d3.scale.log().clamp(true).range([0, this.width]);
+    min = d3.min( data_in_logscale, function(d) { return d[0];});
+    max = d3.max( data_in_logscale, function(d) { return d[0];});
+    scale.domain([
+      (!min || min<0.0) ? 0.1 : min,
+      (!max || max<0.0) ? 1.0 : max
+    ]).nice();
+    break;
   }
   this.xScale = scale;
   this.xAxis.scale(this.xScale);
 };
 
 FigureViewer.prototype.SetYScale = function(yscale) {
-  var plot = this;
   var scale = null, min, max;
   switch(yscale) {
-    case "linear":
-      scale = d3.scale.linear().range([this.height, 0]);
-      min = d3.min( this.data.data, function(d) { return d[1];});
-      max = d3.max( this.data.data, function(d) { return d[1];});
-      scale.domain([
-        min,
-        max
-      ]).nice();
-      break;
-    case "log":
-      var data_in_logscale = this.data.data.filter(function(element, index, array) {
-        return element[0] > 0.0;
-      });
-      scale = d3.scale.log().clamp(true).range([this.height, 0]);
-      min = d3.min( data_in_logscale, function(d) { return d[1];});
-      max = d3.max( data_in_logscale, function(d) { return d[1];});
-      scale.domain([
-        (!min || min<0.0) ? 0.1 : min,
-        (!max || max<0.0) ? 1.0 : max
-      ]).nice();
-      break;
+  case "linear":
+    scale = d3.scale.linear().range([this.height, 0]);
+    min = d3.min( this.data.data, function(d) { return d[1];});
+    max = d3.max( this.data.data, function(d) { return d[1];});
+    scale.domain([
+      min,
+      max
+    ]).nice();
+    break;
+  case "log":
+    var data_in_logscale = this.data.data.filter(function(element) {
+      return element[0] > 0.0;
+    });
+    scale = d3.scale.log().clamp(true).range([this.height, 0]);
+    min = d3.min( data_in_logscale, function(d) { return d[1];});
+    max = d3.max( data_in_logscale, function(d) { return d[1];});
+    scale.domain([
+      (!min || min<0.0) ? 0.1 : min,
+      (!max || max<0.0) ? 1.0 : max
+    ]).nice();
+    break;
   }
   this.yScale = scale;
   this.yAxis.scale(this.yScale);
 };
 FigureViewer.prototype.AddPlot = function() {
   switch(this.figure_size) {
-    case "point":
-      this.AddPointPlot();
-      break;
-    case "small":
-    case "large":
-      this.AddFigurePlot();
-      break;
+  case "point":
+    this.AddPointPlot();
+    break;
+  case "small":
+  case "large":
+    this.AddFigurePlot();
+    break;
   }
 };
 
 delete FigureViewer.prototype.UpdatePlot; // delete ScatterPlot.UpdatePlot() from FigureViewer
 FigureViewer.prototype.UpdatePlot = function(new_size) {
   switch(this.figure_size) {
-    case "point":
-      this.figure_size = new_size;
-      if(new_size == "point") {
-        this.UpdatePointPlot();
-      } else {
-        this.svg.select("g#point-group").remove();
-        this.AddPlot();
-      }
-      break;
-    case "small":
-    case "large":
-      this.figure_size = new_size;
-      if(new_size == "point") {
-        this.svg.select("g#figure-group").remove();
-        this.AddPlot();
-      } else {
-        this.UpdateFigurePlot();
-      }
-      break;
+  case "point":
+    this.figure_size = new_size;
+    if(new_size == "point") {
+      this.UpdatePointPlot();
+    } else {
+      this.svg.select("g#point-group").remove();
+      this.AddPlot();
+    }
+    break;
+  case "small":
+  case "large":
+    this.figure_size = new_size;
+    if(new_size == "point") {
+      this.svg.select("g#figure-group").remove();
+      this.AddPlot();
+    } else {
+      this.UpdateFigurePlot();
+    }
+    break;
   }
 };
 
@@ -189,23 +187,23 @@ FigureViewer.prototype.AddPointPlot = function() {
       .data(mapped).enter();
     point.append("circle")
       .attr("clip-path", "url(#clip)")
-      .style("fill", function(d) { return "black";})
+      .style("fill", function() { return "black";})
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .on("mouseover", function(d) {
-          tooltip.transition()
-            .duration(200)
-            .style("opacity", 0.8);
-          tooltip.html(function() {
-            var str = plot.data.xlabel + " : " + d.x + "<br/>" +
-            plot.data.ylabel + " : " + d.y + "<br/>" +
-            "ID: " + d.psid + "<br />";
-            if(d.path) {
-              str += '<img src="' + d.path + '" width="300px" />';
-            } else {
-              str += "<br />"+"<br />"+"NO IMAGE"+"<br />"+"<br />";
-            }
-            return str;
-          });
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", 0.8);
+        tooltip.html(function() {
+          var str = plot.data.xlabel + " : " + d.x + "<br/>" +
+          plot.data.ylabel + " : " + d.y + "<br/>" +
+          "ID: " + d.psid + "<br />";
+          if(d.path) {
+            str += '<img src="' + d.path + '" width="300px" />';
+          } else {
+            str += "<br />"+"<br />"+"NO IMAGE"+"<br />"+"<br />";
+          }
+          return str;
+        });
       })
       .on("mousemove", function() {
         tooltip
@@ -243,7 +241,7 @@ FigureViewer.prototype.AddDescription = function() {
 
   // description for the specification of the plot
   function add_label_table() {
-  var dl = plot.description.append("dl");
+    var dl = plot.description.append("dl");
     dl.append("dt").text("X-Axis");
     dl.append("dd").text(plot.data.xlabel);
     dl.append("dt").text("Y-Axis");

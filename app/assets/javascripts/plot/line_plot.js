@@ -8,29 +8,29 @@ LinePlot.prototype.constructor = LinePlot;// override constructor
 LinePlot.prototype.SetXScale = function(xscale) {
   var scale = null, min, max;
   switch(xscale) {
-    case "linear":
-      scale = d3.scale.linear().range([0, this.width]);
-      min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[0];});});
-      max = d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[0];});});
-      scale.domain([
-        min,
-        max
-      ]).nice();
-      break;
-    case "log":
-      var data_in_logscale = this.data.data.map(function(element, index, array) {
-        return element.filter(function(element, index, array){
-          return element[0] > 0.0;
-        });
+  case "linear":
+    scale = d3.scale.linear().range([0, this.width]);
+    min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[0];});});
+    max = d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[0];});});
+    scale.domain([
+      min,
+      max
+    ]).nice();
+    break;
+  case "log":
+    var data_in_logscale = this.data.data.map(function(element) {
+      return element.filter(function(element){
+        return element[0] > 0.0;
       });
-      scale = d3.scale.log().clamp(true).range([0, this.width]);
-      min = d3.min( data_in_logscale, function(r) { return d3.min(r, function(v) { return v[0];});});
-      max = d3.max( data_in_logscale, function(r) { return d3.max(r, function(v) { return v[0];});});
-      scale.domain([
-        (!min || min<0.0) ? 0.1 : min,
-        (!max || max<0.0) ? 1.0 : max
-      ]).nice();
-      break;
+    });
+    scale = d3.scale.log().clamp(true).range([0, this.width]);
+    min = d3.min( data_in_logscale, function(r) { return d3.min(r, function(v) { return v[0];});});
+    max = d3.max( data_in_logscale, function(r) { return d3.max(r, function(v) { return v[0];});});
+    scale.domain([
+      (!min || min<0.0) ? 0.1 : min,
+      (!max || max<0.0) ? 1.0 : max
+    ]).nice();
+    break;
   }
   this.xScale = scale;
   this.xAxis.scale(this.xScale);
@@ -39,29 +39,29 @@ LinePlot.prototype.SetXScale = function(xscale) {
 LinePlot.prototype.SetYScale = function(yscale) {
   var scale = null, min, max;
   switch(yscale) {
-    case "linear":
-      scale = d3.scale.linear().range([this.height, 0]);
-      min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];});});
-      max = d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];});});
-      scale.domain([
-        min,
-        max
-      ]).nice();
-      break;
-    case "log":
-      var data_in_logscale = this.data.data.map(function(element, index, array) {
-        return element.filter(function(element, index, array){
-          return element[0] > 0.0;
-        });
+  case "linear":
+    scale = d3.scale.linear().range([this.height, 0]);
+    min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];});});
+    max = d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];});});
+    scale.domain([
+      min,
+      max
+    ]).nice();
+    break;
+  case "log":
+    var data_in_logscale = this.data.data.map(function(element) {
+      return element.filter(function(element){
+        return element[0] > 0.0;
       });
-      scale = d3.scale.log().clamp(true).range([this.height, 0]);
-      min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];});});
-      max = d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];});});
-      scale.domain([
-        (!min || min<0.0) ? 0.1 : min,
-        (!max || max<0.0) ? 1.0 : max
-      ]).nice();
-      break;
+    });
+    scale = d3.scale.log().clamp(true).range([this.height, 0]);
+    min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];});});
+    max = d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];});});
+    scale.domain([
+      (!min || min<0.0) ? 0.1 : min,
+      (!max || max<0.0) ? 1.0 : max
+    ]).nice();
+    break;
   }
   this.yScale = scale;
   this.yAxis.scale(this.yScale);
@@ -164,7 +164,7 @@ LinePlot.prototype.AddPlot = function() {
       .attr("x", 20)
       .attr("y", 7.5)
       .attr("dy", "0.3em")
-      .text( function(d,i) { return d; });
+      .text( function(d) { return d; });
 
     // add legend title
     var legend_title = legend_region.append("g")
@@ -189,7 +189,6 @@ LinePlot.prototype.UpdatePlot = function() {
   var line = d3.svg.line()
     .x( function(d) { return plot.xScale(d[0]);} )
     .y( function(d) { return plot.yScale(d[1]);} );
-  var tooltip = d3.select("#plot-tooltip");
 
   function update_series() {
     var series = plot.svg.selectAll("g.series");
@@ -238,7 +237,7 @@ LinePlot.prototype.AddDescription = function() {
 
   // description for the specification of the plot
   function add_label_table() {
-  var dl = plot.description.append("dl");
+    var dl = plot.description.append("dl");
     dl.append("dt").text("X-Axis");
     dl.append("dd").text(plot.data.xlabel);
     dl.append("dt").text("Y-Axis");
@@ -253,7 +252,7 @@ LinePlot.prototype.AddDescription = function() {
   function add_tools() {
     plot.description.append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
     plot.description.append("br");
-    plt_url = plot.url.replace(/\.json/, '.plt');
+    var plt_url = plot.url.replace(/\.json/, '.plt');
     plot.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
     plot.description.append("br");
     plot.description.append("a").text("delete plot").on("click", function() {
@@ -288,7 +287,7 @@ LinePlot.prototype.AddDescription = function() {
       plot.UpdateAxis();
     });
     plot.description.append("span").html("log scale on y axis");
-    }
+  }
   add_tools();
 };
 
