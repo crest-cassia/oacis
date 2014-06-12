@@ -4,6 +4,7 @@ function ScatterPlot() {
 
 ScatterPlot.prototype = Object.create(Plot.prototype);// ScatterPlot is sub class of Plot
 ScatterPlot.prototype.constructor = ScatterPlot;// override constructor
+ScatterPlot.prototype.IsLog = [false, false];   // true if x/y scale is log
 
 ScatterPlot.prototype.SetXScale = function(xscale) {
   var plot = this;
@@ -17,6 +18,7 @@ ScatterPlot.prototype.SetXScale = function(xscale) {
       min,
       max
     ]).nice();
+    plot.IsLog[0] = false;
     break;
   case "log":
     var data_in_logscale = this.data.data.filter(function(element, index, array) {
@@ -29,6 +31,7 @@ ScatterPlot.prototype.SetXScale = function(xscale) {
       (!min || min<0.0) ? 0.1 : min,
       (!max || max<0.0) ? 1.0 : max
     ]).nice();
+    plot.IsLog[0] = true;
     break;
   }
   this.xScale = scale;
@@ -47,6 +50,7 @@ ScatterPlot.prototype.SetYScale = function(yscale) {
       min,
       max
     ]).nice();
+    plot.IsLog[1] = false;
     break;
   case "log":
     var data_in_logscale = this.data.data.filter(function(element, index, array) {
@@ -59,11 +63,41 @@ ScatterPlot.prototype.SetYScale = function(yscale) {
       (!min || min<0.0) ? 0.1 : min,
       (!max || max<0.0) ? 1.0 : max
     ]).nice();
+    plot.IsLog[1] = true;
     break;
   }
   this.yScale = scale;
   this.yAxis.scale(this.yScale);
 };
+
+ScatterPlot.prototype.SetXDomain = function(xmin, xmax) {
+  var plot = this;
+  if( plot.IsLog[0] ) {
+    if( xmin <= 0.0 ) {
+      plot.SetXScale("log"); // call this to calculate auto-domain
+      xmin = plot.xScale.domain()[0];
+      if( xmax <= 0.0 ) {
+        xmax = xmin + 0.000001;
+      }
+    }
+  }
+  plot.xScale.domain([xmin, xmax]);
+}
+
+ScatterPlot.prototype.SetYDomain = function(ymin, ymax) {
+  var plot = this;
+  if( plot.IsLog[1] ) {
+    if( ymin <= 0.0 ) {
+      plot.SetYScale("log"); // call this to calculate auto-domain
+      ymin = plot.yScale.domain()[0];
+      if( ymax <= 0.0 ) {
+        ymax = ymin + 0.000001;
+      }
+    }
+  }
+  plot.yScale.domain([ymin, ymax]);
+}
+
 
 ScatterPlot.prototype.AddPlot = function() {
   var plot = this;

@@ -132,34 +132,10 @@ ParameterExplorer.prototype.BrushEvent = function(key) {
   var plot = this;
   var domain = plot.pc_plot.GetCurrentRangeFor(key).concat();
   if(key == plot.current_xaxis_key) {
-    if($("#xlog").prop('checked')) {
-      plot.LogscaleEvent(key, true);
-      if(domain[0] < plot.scatter_plot.xScale.domain()[0]) {
-        domain[0] = plot.scatter_plot.xScale.domain()[0];
-      }
-      if(domain[1] > plot.scatter_plot.xScale.domain()[1]) {
-        domain[1] = plot.scatter_plot.xScale.domain()[1];
-      }
-      if(domain[1] <= 0.0) {
-        domain[1] = domain[0]+0.000001;
-      }
-    }
-    plot.scatter_plot.xScale.domain(domain);
+    plot.scatter_plot.SetXDomain(domain[0], domain[1]);
     plot.scatter_plot.UpdatePlot();
   } else if(key == plot.current_yaxis_key) {
-    if($("#ylog").prop('checked')) {
-      plot.LogscaleEvent(key, true);
-      if(domain[0] < plot.scatter_plot.yScale.domain()[0]) {
-        domain[0] = plot.scatter_plot.yScale.domain()[0];
-      }
-      if(domain[1] > plot.scatter_plot.yScale.domain()[1]) {
-        domain[1] = plot.scatter_plot.yScale.domain()[1];
-      }
-      if(domain[1] <= 0.0) {
-        domain[1] = domain[0]+0.000001;
-      }
-    }
-    plot.scatter_plot.yScale.domain(domain);
+    plot.scatter_plot.SetYDomain(domain[0], domain[1]);
     plot.scatter_plot.UpdatePlot();
   } else {
     plot.Update();
