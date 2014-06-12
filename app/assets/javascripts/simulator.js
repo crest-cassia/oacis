@@ -1,3 +1,5 @@
+//= require d3
+
 function draw_color_map() {
   var colorScale = d3.scale.linear().domain([0.0,1.0])
     .range(["#dddddd", "#0041ff"]);
