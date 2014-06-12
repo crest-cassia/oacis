@@ -50,10 +50,8 @@ ParameterExplorer.prototype.Update = function() {
       plot.pc_plot.Init(dat, plot.current_ps_id);
     }
     plot.pc_plot.Update();
-    var checkboxes = $("#checkboxes input");
-    checkboxes.each(function() {
-      plot.LogscaleEvent($(this).attr("id"), this.checked);
-    });
+    plot.LogscaleEvent("x", $("#xlog").prop('checked') );
+    plot.LogscaleEvent("y", $("#ylog").prop('checked') );
     plot.BrushEvent(plot.current_xaxis_key);
     plot.BrushEvent(plot.current_yaxis_key);
   })
@@ -134,7 +132,7 @@ ParameterExplorer.prototype.BrushEvent = function(key) {
   var plot = this;
   var domain = plot.pc_plot.GetCurrentRangeFor(key).concat();
   if(key == plot.current_xaxis_key) {
-    if($("#checkboxes input#"+key).prop('checked')) {
+    if($("#xlog").prop('checked')) {
       plot.LogscaleEvent(key, true);
       if(domain[0] < plot.scatter_plot.xScale.domain()[0]) {
         domain[0] = plot.scatter_plot.xScale.domain()[0];
@@ -150,7 +148,7 @@ ParameterExplorer.prototype.BrushEvent = function(key) {
     plot.scatter_plot.UpdatePlot();
     plot.scatter_plot.UpdateAxis();
   } else if(key == plot.current_yaxis_key) {
-    if($("#checkboxes input#"+key).prop('checked')) {
+    if($("#ylog").prop('checked')) {
       plot.LogscaleEvent(key, true);
       if(domain[0] < plot.scatter_plot.yScale.domain()[0]) {
         domain[0] = plot.scatter_plot.yScale.domain()[0];
@@ -170,9 +168,9 @@ ParameterExplorer.prototype.BrushEvent = function(key) {
   }
 };
 
-ParameterExplorer.prototype.LogscaleEvent = function(key, checked) {
+ParameterExplorer.prototype.LogscaleEvent = function(axis, checked) {
   var plot = this;
-  if(key == plot.current_xaxis_key) {
+  if(axis == "x") {
     if(checked) {
       plot.scatter_plot.SetXScale("log");
       plot.scatter_plot.xAxis.scale(plot.scatter_plot.xScale);
@@ -181,7 +179,7 @@ ParameterExplorer.prototype.LogscaleEvent = function(key, checked) {
       plot.scatter_plot.xAxis.scale(plot.scatter_plot.xScale);
     }
   }
-  if(key == plot.current_yaxis_key) {
+  if(axis == "y") {
     if(checked) {
       plot.scatter_plot.SetYScale("log");
       plot.scatter_plot.yAxis.scale(plot.scatter_plot.yScale);
@@ -194,16 +192,14 @@ ParameterExplorer.prototype.LogscaleEvent = function(key, checked) {
 
 ParameterExplorer.prototype.SetLogscaleCheckbox = function() {
   var plot = this;
-  function set_logscale_checkbox() {
-    var checkboxes = $("#checkboxes input");
-    checkboxes.each(function() {
-      var checkbox = this;
-      $(this).on("change", function() {
-        var key = $(checkbox).attr("id");
-        plot.LogscaleEvent(key, checkbox.checked);
-        plot.BrushEvent(key);
-      });
-    });
-  }
-  set_logscale_checkbox();
+  $("#xlog").on("change", function() {
+    plot.LogscaleEvent("x", $(this).prop('checked'));
+    var key = $('#scatter-plot-form #x_axis_key').val();
+    plot.BrushEvent(key);
+  });
+  $("#ylog").on("change", function() {
+    plot.LogscaleEvent("y", $(this).prop('checked'));
+    var key = $('#scatter-plot-form #y_axis_key').val();
+    plot.BrushEvent(key);
+  });
 };

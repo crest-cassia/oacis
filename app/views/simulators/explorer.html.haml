@@ -30,32 +30,28 @@
             %td{style: "padding-left: 0; padding-right: 0;"}
               - url = _neighbor_parameter_set_path('PSID') +".json?key=#{key}&direction=up"
               %i.icon-arrow-up{id: "ps_up_#{key}", data: {"neighbor-url" => url}}
-    %form.form-horizontal
-      #scatter-plot-form
-        - opts = @simulator.parameter_definitions.map(&:key)
-        .control-group
-          = label_tag 'x_axis_key', "X-Axis", class: 'control-label scatter-plot-label'
-          .controls
-            = select_tag 'x_axis_key', options_for_select(opts), id: 'x_axis_key'
-        .control-group
-          = label_tag 'y_axis_key', "Y-Axis", class: 'control-label scatter-plot-label'
-          .controls
-            = select_tag 'y_axis_key', options_for_select(opts, selected: opts[1]), id: 'y_axis_key'
-        .control-group
-          = label_tag 'result', "Result", class: 'control-label'
-          .controls
-            - opts = @simulator.plottable_domains.map {|key,domain| [key, key, {:"data-domain" => domain}] }
-            = select_tag 'result', options_for_select(opts), id: 'result', include_blank: true
-      #irrelevant-params.form-inline
+    %form.form-inline#scatter-plot-form{style: "line-height: 15px;"}
+      - opts = @simulator.parameter_definitions.map(&:key)
+      #forms-x
+        %br
+        = label_tag 'x_axis_key', "X-Axis: ", class: 'control-label scatter-plot-label'
+        = select_tag 'x_axis_key', options_for_select(opts), id: 'x_axis_key'
+        %label.checkbox.inline
+          %input#xlog{type: "checkbox"} Log Scale
+      #forms-y
+        %br
+        = label_tag 'y_axis_key', "Y-Axis: ", class: 'control-label scatter-plot-label'
+        = select_tag 'y_axis_key', options_for_select(opts, selected: opts[1]), id: 'y_axis_key'
+        %label.checkbox.inline
+          %input#ylog{type: "checkbox"} Log Scale
+      #form-result
+        %br
+        = label_tag 'result', "Result:", class: 'control-label'
+        - opts = @simulator.plottable_domains.map {|key,domain| [key, key, {:"data-domain" => domain}] }
+        = select_tag 'result', options_for_select(opts), id: 'result', include_blank: true
+      #irrelevant-params
         %br
         Irrelevant parameters :
-        %br
-        - @simulator.parameter_definitions.map(&:key).each do |key|
-          = label_tag key, key
-          = check_box_tag key
-      #checkboxes.form-inline
-        %br
-        Set log scale :
         %br
         - @simulator.parameter_definitions.map(&:key).each do |key|
           = label_tag key, key
