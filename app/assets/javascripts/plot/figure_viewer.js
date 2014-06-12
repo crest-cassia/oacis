@@ -153,7 +153,7 @@ FigureViewer.prototype.AddFigurePlot = function() {
           .style("opacity", 0);
       })
       .on("dblclick", function(d) {
-        window.open(parameter_set_base_url + d.psid, '_blank');
+        window.open(plot.parameter_set_base_url + d.psid, '_blank');
       });
   }
   add_figure_group();
@@ -218,7 +218,7 @@ FigureViewer.prototype.AddPointPlot = function() {
           .style("opacity", 0);
       })
       .on("dblclick", function(d) {
-        window.open(parameter_set_base_url + d.psid, '_blank');
+        window.open(plot.parameter_set_base_url + d.psid, '_blank');
       });
   }
   add_point_group();
