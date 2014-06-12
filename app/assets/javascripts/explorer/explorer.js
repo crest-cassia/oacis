@@ -40,10 +40,6 @@ ParameterExplorer.prototype.Update = function() {
     plot.scatter_plot = new ScatterPlot();
     plot.scatter_plot.Init(dat, url, "/parameter_set/", plot.current_ps_id);
     plot.scatter_plot.Draw();
-    var checkboxes = $("#checkboxes input");
-    checkboxes.each(function() {
-      plot.LogscaleEvent($(this).attr("id"), this.checked);
-    });
     if(plot.pc_plot.data) {
       plot.pc_plot.data = dat;
       plot.pc_plot.current_ps_id = plot.current_ps_id;
@@ -54,29 +50,12 @@ ParameterExplorer.prototype.Update = function() {
       plot.pc_plot.Init(dat, plot.current_ps_id);
     }
     plot.pc_plot.Update();
-    function range_modified_keys() {
-      return Object.keys(plot.pc_plot.ranges).filter(function(key){
-        return (!plot.pc_plot.brushes[key].empty());
-      });
-    }
-    range_modified_keys().forEach( function(key) {
-      if(key == plot.current_xaxis_key || key == plot.current_yaxis_key) {
-        var domain = plot.pc_plot.GetCurrentRangeFor(key).concat();
-        if($("#checkboxes input#"+key).prop('checked')) {
-          domain[0] = domain[0] < 0.0 ? 0.1 : domain[0];
-          domain[1] = domain[1] < 0.0 ? 1.0 : domain[1];
-        }
-        if(key == plot.current_xaxis_key) {
-          plot.scatter_plot.xScale.domain(domain);
-          plot.scatter_plot.UpdatePlot();
-          plot.scatter_plot.UpdateAxis();
-        } else if(key == plot.current_yaxis_key) {
-          plot.scatter_plot.yScale.domain(domain);
-          plot.scatter_plot.UpdatePlot();
-          plot.scatter_plot.UpdateAxis();
-        }
-      }
+    var checkboxes = $("#checkboxes input");
+    checkboxes.each(function() {
+      plot.LogscaleEvent($(this).attr("id"), this.checked);
     });
+    plot.BrushEvent(plot.current_xaxis_key);
+    plot.BrushEvent(plot.current_yaxis_key);
   })
   .on("error", function() { console.log("error"); })
   .get();
@@ -89,7 +68,7 @@ ParameterExplorer.prototype.Update = function() {
 ParameterExplorer.prototype.MoveCurrentPs = function(e) {
   var plot = this;
   var url = $(e).data('neighbor-url').replace('PSID', this.current_ps_id);
-  var target_key = $(e).attr("id").replace(/^ps_donw_/,"").replace(/^ps_up_/,"");
+  var target_key = $(e).attr("id").replace(/^ps_down_/,"").replace(/^ps_up_/,"");
 
   d3.json(url, function(error, json) {
     // update table
@@ -114,7 +93,7 @@ ParameterExplorer.prototype.MoveCurrentPs = function(e) {
 
 ParameterExplorer.prototype.BuildScatterPlotURL = function(ps_id) {
   var plot = this;
-  this.current_xaxis_key = $('#scatter-plot-form #x_axis_key').val();
+    this.current_xaxis_key = $('#scatter-plot-form #x_axis_key').val();
   this.current_yaxis_key = $('#scatter-plot-form #y_axis_key').val();
   var result = $('#scatter-plot-form #result').val();
   var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
@@ -150,49 +129,70 @@ ParameterExplorer.prototype.EventBind = function() {
   ParallelCoordinatePlot.prototype.BrushEvent = function(key) {
 
     pc_plot_brush_event.call(plot.pc_plot, key);
+    plot.BrushEvent(key);
+  };
+};
 
-    var domain = plot.pc_plot.GetCurrentRangeFor(key).concat();
+ParameterExplorer.prototype.BrushEvent = function(key) {
+  var plot = this;
+  var domain = plot.pc_plot.GetCurrentRangeFor(key).concat();
+  if(key == plot.current_xaxis_key) {
     if($("#checkboxes input#"+key).prop('checked')) {
-      domain[0] = domain[0] < 0.0 ? 0.1 : domain[0];
-      domain[1] = domain[1] < 0.0 ? 1.0 : domain[1];
+      plot.LogscaleEvent(key, true);
+      if(domain[0] < plot.scatter_plot.xScale.domain()[0]) {
+        domain[0] = plot.scatter_plot.xScale.domain()[0];
+      }
+      if(domain[1] > plot.scatter_plot.xScale.domain()[1]) {
+        domain[1] = plot.scatter_plot.xScale.domain()[1];
+      }
+      if(domain[1] <= 0.0) {
+        domain[1] = domain[0]+0.000001;
+      }
     }
-    if(key == plot.current_xaxis_key) {
-      plot.scatter_plot.xScale.domain(domain);
-      plot.scatter_plot.UpdatePlot();
-      plot.scatter_plot.UpdateAxis();
-    } else if(key == plot.current_yaxis_key) {
-      plot.scatter_plot.yScale.domain(domain);
-      plot.scatter_plot.UpdatePlot();
-      plot.scatter_plot.UpdateAxis();
-    } else {
-      plot.Update();
+    plot.scatter_plot.xScale.domain(domain);
+    plot.scatter_plot.UpdatePlot();
+    plot.scatter_plot.UpdateAxis();
+  } else if(key == plot.current_yaxis_key) {
+    if($("#checkboxes input#"+key).prop('checked')) {
+      plot.LogscaleEvent(key, true);
+      if(domain[0] < plot.scatter_plot.yScale.domain()[0]) {
+        domain[0] = plot.scatter_plot.yScale.domain()[0];
+      }
+      if(domain[1] > plot.scatter_plot.yScale.domain()[1]) {
+        domain[1] = plot.scatter_plot.yScale.domain()[1];
+      }
+      if(domain[1] <= 0.0) {
+        domain[1] = domain[0]+0.000001;
+      }
     }
-  };
+    plot.scatter_plot.yScale.domain(domain);
+    plot.scatter_plot.UpdatePlot();
+    plot.scatter_plot.UpdateAxis();
+  } else {
+    plot.Update();
+  }
+};
 
-  ParameterExplorer.prototype.LogscaleEvent = function(key, checked) {
-    if(key == plot.current_xaxis_key) {
-      if(checked) {
-        plot.scatter_plot.SetXScale("log");
-        plot.scatter_plot.xAxis.scale(plot.scatter_plot.xScale);
-      } else {
-        plot.scatter_plot.SetXScale("linear");
-        plot.scatter_plot.xAxis.scale(plot.scatter_plot.xScale);
-      }
-      plot.scatter_plot.UpdatePlot();
-      plot.scatter_plot.UpdateAxis();
+ParameterExplorer.prototype.LogscaleEvent = function(key, checked) {
+  var plot = this;
+  if(key == plot.current_xaxis_key) {
+    if(checked) {
+      plot.scatter_plot.SetXScale("log");
+      plot.scatter_plot.xAxis.scale(plot.scatter_plot.xScale);
+    } else {
+      plot.scatter_plot.SetXScale("linear");
+      plot.scatter_plot.xAxis.scale(plot.scatter_plot.xScale);
     }
-    if(key == plot.current_yaxis_key) {
-      if(checked) {
-        plot.scatter_plot.SetYScale("log");
-        plot.scatter_plot.yAxis.scale(plot.scatter_plot.yScale);
-      } else {
-        plot.scatter_plot.SetYScale("linear");
-        plot.scatter_plot.yAxis.scale(plot.scatter_plot.yScale);
-      }
-      plot.scatter_plot.UpdatePlot();
-      plot.scatter_plot.UpdateAxis();
+  }
+  if(key == plot.current_yaxis_key) {
+    if(checked) {
+      plot.scatter_plot.SetYScale("log");
+      plot.scatter_plot.yAxis.scale(plot.scatter_plot.yScale);
+    } else {
+      plot.scatter_plot.SetYScale("linear");
+      plot.scatter_plot.yAxis.scale(plot.scatter_plot.yScale);
     }
-  };
+  }
 };
 
 ParameterExplorer.prototype.SetLogscaleCheckbox = function() {
@@ -201,7 +201,11 @@ ParameterExplorer.prototype.SetLogscaleCheckbox = function() {
     var checkboxes = $("#checkboxes input");
     checkboxes.each(function() {
       var checkbox = this;
-      $(this).on("change", function() { plot.LogscaleEvent($(checkbox).attr("id"), checkbox.checked); });
+      $(this).on("change", function() {
+        var key = $(checkbox).attr("id");
+        plot.LogscaleEvent(key, checkbox.checked);
+        plot.BrushEvent(key);
+      });
     });
   }
   set_logscale_checkbox();
