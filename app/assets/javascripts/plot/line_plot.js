@@ -257,7 +257,7 @@ LinePlot.prototype.AddDescription = function() {
     var plt_url = plot.url.replace(/\.json/, '.plt');
     plot.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
     plot.description.append("br");
-    plot.description.append("a").text("delete plot").on("click", function() {
+    plot.description.append("a").text("delete plot").style('cursor','pointer').on("click", function() {
       plot.Destructor();
     });
     plot.description.append("br");

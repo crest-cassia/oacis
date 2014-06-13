@@ -256,7 +256,7 @@ FigureViewer.prototype.AddDescription = function() {
   function add_tools() {
     plot.description.append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
     plot.description.append("br");
-    plot.description.append("a").text("show smaller image").on("click", function() {
+    plot.description.append("a").text("show smaller image").style('cursor','pointer').on("click", function() {
       if(plot.figure_size == "small") {
         plot.UpdatePlot("point");
       }
@@ -265,7 +265,7 @@ FigureViewer.prototype.AddDescription = function() {
       }
     });
     plot.description.append("br");
-    plot.description.append("a").text("show larger image").on("click", function() {
+    plot.description.append("a").text("show larger image").style('cursor','pointer').on("click", function() {
       if(plot.figure_size == "point") {
         plot.UpdatePlot("small");
       }
@@ -275,7 +275,7 @@ FigureViewer.prototype.AddDescription = function() {
     });
     plot.description.append("br");
 
-    plot.description.append("a").text("delete plot").on("click", function() {
+    plot.description.append("a").text("delete plot").style('cursor','pointer').on("click", function() {
       plot.Destructor();
     });
     plot.description.append("br");

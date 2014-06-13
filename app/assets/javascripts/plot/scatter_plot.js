@@ -270,9 +270,9 @@ ScatterPlot.prototype.AddDescription = function() {
   add_label_table();
 
   function add_tools() {
-    plot.description.append("a").attr({target: "_blank", href: this.url}).text("show data in json");
+    plot.description.append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
     plot.description.append("br");
-    plot.description.append("a").text("delete plot").on("click", function() {
+    plot.description.append("a").text("delete plot").style('cursor','pointer').on("click", function() {
       plot.Destructor();
     });
 
