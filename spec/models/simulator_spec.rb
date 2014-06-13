@@ -434,7 +434,7 @@ describe Simulator do
                                 run_analysis: true)
       run = @sim.parameter_sets.first.runs.first
       run.update_attribute(:status, :finished)
-      @figure_extensions = ["png","Png","PNG","jpg","Jpg","JPG","jpeg","Jpeg","JPEG","bmp","Bmp","BMP","svg","Svg","SVG"]
+      @figure_extensions = ["png","Jpg","JPEG","bmp","SVG"]
       @figure_extensions.each do |fe|
         FileUtils.touch(run.dir.join("fig1."+fe))
       end
