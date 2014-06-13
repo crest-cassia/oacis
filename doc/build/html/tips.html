@@ -52,7 +52,7 @@
 <div class="section" id="oacis">
 <h3>OACISのバックアップとレストア方法について<a class="headerlink" href="#oacis" title="Permalink to this headline">¶</a></h3>
 <div class="line-block">
-<div class="line">OACISによって管理されているデータは、DB上のレコード(MongoDBではコレクションと呼ぶ。)とファイルシステム上のpublicディレクトリに保存されている。</div>
+<div class="line">OACISによって管理されているデータは、DB上のレコード(MongoDBではコレクションと呼ぶ。)とファイルシステム上のpublicディレクトリ以下に保存されている。</div>
 <div class="line">以下では、コレクションとpublicディレクトリそれぞれに対して、バックアップ・レストア手順を示す。</div>
 </div>
 <p><tt class="docutils literal"><span class="pre">注意:バックアップ・レストア方法の十分な検証が済んでいないため、自己責任でお願いします。(v1.8.0-2014/03/28)</span></tt></p>
@@ -93,14 +93,18 @@ mongodump --db oacis_development --collection analyses -q <span class="s1">&#39;
 </div>
 </div></blockquote>
 </li>
-<li><dl class="first docutils">
-<dt>補足</dt>
-<dd><ul class="first last simple">
-<li>あるSimulatorに関連したコレクションをすべてバックアップするには、上記のように、simulators, parameter_sets, runs, analyzers, analysesをmongodumpする。</li>
-<li>すでにバックアップデータがある状態でmongodumpを行うと、既存のバックアップデータは上書きされる。</li>
+<li><p class="first">特定のシミュレータに関するコレクション(Simulator, ParameterSet, Run, Analyzer, Analysis)をバックアップ</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/db_backup.rb
+&gt;Enter a name of Simulator
+SampleSimulator<span class="o">[</span>Enter<span class="o">]</span>
+</pre></div>
+</div>
+<p>dump_SampleSimualtor/oacis_development フォルダが生成される。</p>
+<ul>
+<li><p class="first">補足</p>
+<p>データベース名をoacis_development から変更している場合は、db_backupのdb_nameを修正する必要がある。</p>
+</li>
 </ul>
-</dd>
-</dl>
 </li>
 </ul>
 </dd>
@@ -109,7 +113,7 @@ mongodump --db oacis_development --collection analyses -q <span class="s1">&#39;
 <li><dl class="first docutils">
 <dt>DBのレストア</dt>
 <dd><ul class="first last">
-<li><p class="first">レコードをレストア</p>
+<li><p class="first">コレクションをレストア</p>
 <blockquote>
 <div><div class="highlight-sh"><div class="highlight"><pre>mongorestore --db oacis_development /path/to/DB_data/dump/oacis_development
 </pre></div>
