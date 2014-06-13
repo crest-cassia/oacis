@@ -8,7 +8,7 @@ Tips
 ------------------------------------------
 OACISのバックアップとレストア方法について
 ------------------------------------------
-| OACISによって管理されているデータは、DB上のレコード(MongoDBではコレクションと呼ぶ。)とファイルシステム上のpublicディレクトリに保存されている。
+| OACISによって管理されているデータは、DB上のレコード(MongoDBではコレクションと呼ぶ。)とファイルシステム上のpublicディレクトリ以下に保存されている。
 | 以下では、コレクションとpublicディレクトリそれぞれに対して、バックアップ・レストア手順を示す。
 
 ``注意:バックアップ・レストア方法の十分な検証が済んでいないため、自己責任でお願いします。(v1.8.0-2014/03/28)``
@@ -32,24 +32,34 @@ OACISのバックアップとレストア方法について
           #get ObjectId of Simulator
           mongo oacis_development --eval 'db.simulators.find( { name: "ToyProblem01"}).map( function(u) { return u._id; } )'
           > ObjectId("526638c781e31e98cf000001")
-           
+
           mongodump --db oacis_development --collection simulators -q '{_id: ObjectId("526638c781e31e98cf000001")}'
           mongodump --db oacis_development --collection parameter_sets -q '{simulator_id: ObjectId("526638c781e31e98cf000001")}'
           mongodump --db oacis_development --collection runs -q '{simulator_id: ObjectId("526638c781e31e98cf000001")}'
-          
+
           #get ObjectIds of Analyzers
           mongo oacis_development --eval 'db.analyzers.find( { simulator_id: ObjectId("526638c781e31e98cf000001")} ).map( function(u) { return u._id; } )'
           > ObjectId("526638c781e31e98cf000004"),ObjectId("52fde12081e31ed67f00008b")
-          
+
           mongodump --db oacis_development --collection analyzers -q '{_id: { $in: [ObjectId("526638c781e31e98cf000004"),ObjectId("52fde12081e31ed67f00008b")]} }'
           mongodump --db oacis_development --collection analyses -q '{analyzer_id: { $in: [ObjectId("526638c781e31e98cf000004"),ObjectId("52fde12081e31ed67f00008b")]} }'
 
-    -  補足
-        - あるSimulatorに関連したコレクションをすべてバックアップするには、上記のように、simulators, parameter_sets, runs, analyzers, analysesをmongodumpする。
-        - すでにバックアップデータがある状態でmongodumpを行うと、既存のバックアップデータは上書きされる。
+    - 特定のシミュレータに関するコレクション(Simulator, ParameterSet, Run, Analyzer, Analysis)をバックアップ
+
+      .. code-block:: sh
+
+       ./bin/db_backup.rb
+       >Enter a name of Simulator
+       SampleSimulator[Enter]
+
+      dump_SampleSimualtor/oacis_development フォルダが生成される。
+
+      - 補足
+
+        データベース名をoacis_development から変更している場合は、db_backupのdb_nameを修正する必要がある。
 
 2. DBのレストア
-    - レコードをレストア
+    - コレクションをレストア
 
         .. code-block:: sh
 
@@ -85,7 +95,7 @@ OACISのバックアップとレストア方法について
               #change directory to OACIS directory
               cd /path/to/OACIS
               vim config/mongoid.yml
-        
+
             .. code-block:: diff
 
               - database: oacis_development
