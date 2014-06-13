@@ -14,12 +14,17 @@
 //= require jquery.ui.sortable
 //= require jquery_ujs
 //= require twitter/bootstrap
-//= require_tree .
+//= require analyses.js
+//= require analyzers.js
+//= require bootstrap.js
+//= require parameter_set.js
+//= require runs.js
+//= require simulator.js
+//= require sortable.js
 //= require dataTables/jquery.dataTables
 //= require dataTables/jquery.dataTables.bootstrap
 //= require dataTables/jquery.dataTables.api.fnReloadAjax
 //= require datatables_extends
-//= require d3
 
 // Handle back button issues with Twitter Bootstrap's tab component.
 // Based on: http://stackoverflow.com/a/10120221/81769
