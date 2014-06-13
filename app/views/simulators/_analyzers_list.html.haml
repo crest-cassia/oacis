@@ -5,8 +5,9 @@
       - AnalyzersListDatatable.header(@simulator).each do |th_element|
         = raw(th_element)
   %tbody
-.form-actions
-  = link_to 'New Analyzer', new_simulator_analyzer_path(@simulator), class: 'btn btn-primary'
+- unless OACIS_READ_ONLY
+  .form-actions
+    = link_to 'New Analyzer', new_simulator_analyzer_path(@simulator), class: 'btn btn-primary'
 
 :javascript
   var oAzrTable;

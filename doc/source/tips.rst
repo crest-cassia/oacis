@@ -72,7 +72,7 @@ OACISのバックアップとレストア方法について
             - ParameterSetやRunの新規追加
             - 結果archive(.tar.bz2)の取得
             - 結果ファイルの閲覧（図の参照を含む）、... など
-            （別のマシンに移植する場合には、Hostの再設定が必要。）
+                - （別のマシンに移植する場合には、Hostの再設定が必要。）
         - (非推奨)レコードの上書
             | 既存のデータベースにレストアした場合、OACISによるコレクションのvalidationが働かないため、最悪OACISが機能しなくなる。
             | よって、レストア先のデータベースは空であることが望ましい。（OACISのweb browser front endまたはCLIからsimulator単位で削除する。）
@@ -149,8 +149,27 @@ Analysis on 5327fbc281e31e035f000001       ./public/Result_development/526638c78
 
               rm -rf /path/to/OACIS/public/Result_development/*
 
+--------------------------
 参考
-==========================
+--------------------------
 * MongoDB mongodump: http://docs.mongodb.org/manual/reference/program/mongodump/
 * MongoDB mongorestore: http://docs.mongodb.org/manual/reference/program/mongorestore/
 * MongoDB ObjectID: http://docs.mongodb.org/manual/reference/object-id/
+
+READ_ONLY モード
+==========================
+
+地理的に離れた研究者とデータの共有をする場合など、データを共有のサーバーにアップロードしてOACISを経由してシミュレーション結果を見てもらいたい場合がある。
+この場合アップロードしたサーバー上でOACISを起動する事になるが、その際には閲覧のみを可能にし、リモートジョブの実行や新規シミュレーターの登録などはできないようにした方が安全である。
+OACISを閲覧専用モードで起動すると結果の閲覧のみが可能な状態で利用できる。
+
+起動時に
+
+.. code-block:: sh
+
+  bundle exec rake daemon:start OACIS_READ_ONLY=1
+
+として起動する。
+このように起動するとバックグラウンドのワーカープロセスは起動せず、ブラウザ上からの新規レコードの作成や編集もできなくなる。
+
+ローカルマシンで起動したOACISからジョブを実行しつつ共有マシンではREAD_ONLYモードで起動しておき、定期的に共有サーバーにバックアップコマンドでデータを同期するとデータの共有が容易にできる。

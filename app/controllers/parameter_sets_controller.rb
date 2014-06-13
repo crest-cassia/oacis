@@ -264,8 +264,9 @@ class ParameterSetsController < ApplicationController
     end
 
     aggregated.map do |h|
-      error = h["count"] > 1 ?
-        Math.sqrt( (h["square_average"] - h["average"]**2) / (h["count"] - 1) ) : nil
+      d = h["square_average"]-h["average"]**2
+      error = (h["count"] > 1 and d > 0.0) ?
+        Math.sqrt( d / (h["count"] - 1) ) : nil
       { "_id" => h["_id"], "average" => h["average"], "error" => error, "count" => h["count"] }
     end
   end
@@ -342,6 +343,49 @@ class ParameterSetsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result, data: data}
+      }
+    end
+  end
+
+  def _figure_viewer
+    base_ps = ParameterSet.find(params[:id])
+
+    x_axis_key = params[:x_axis_key]
+    y_axis_key = params[:y_axis_key]
+    analyzer_name, figure_filename = params[:result].split('/')
+    analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
+    irrelevant_keys = params[:irrelevants].split(',')
+    logscale_axis = params[:logscales].split(',') # logscale_axis = ["x_axis", "y_axis"]
+    scales = {}
+    scales["xscale"] = logscale_axis.include?("x_axis") ? "log" :  "linear"
+    scales["yscale"] = logscale_axis.include?("y_axis") ? "log" :  "linear"
+
+    found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
+
+    data = found_ps.map do |ps|
+      found = nil
+      if analyzer and analyzer.type == :on_parameter_set
+        found = ps.analyses.where(analyzer: analyzer).to_a.find do |anl|
+          File.exist?( anl.dir.join(figure_filename) )
+        end
+      elsif analyzer and analyzer.type == :on_run
+        found = ps.runs.map {|run| run.analyses.to_a }.flatten.find do |anl|
+          File.exist?( anl.dir.join(figure_filename) )
+        end
+      else
+        found = ps.runs.to_a.find do |run|
+          File.exist?( run.dir.join(figure_filename) )
+        end
+      end
+      fig_path = found ? ApplicationController.helpers.file_path_to_link_path( found.dir.join(figure_filename)) : nil
+
+      [ ps.v[x_axis_key], ps.v[y_axis_key], fig_path.to_s, ps.id.to_s ]
+    end
+
+    respond_to do |format|
+      format.json {
+        render json: { xlabel: x_axis_key, ylabel: y_axis_key,
+                       result: figure_filename, data: data, xscale: scales["xscale"], yscale: scales["yscale"]}
       }
     end
   end

@@ -140,7 +140,7 @@ class SimulatorsController < ApplicationController
     render json: data
   end
 
-  def explore
+  def explorer
     @simulator = Simulator.find(params[:id])
     @param_set = @simulator.parameter_sets.first
 

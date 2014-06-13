@@ -10,26 +10,26 @@ class JobWorker < DaemonSpawn::Base
     @logger.level = Logger::INFO
     @logger.info("starting")
 
-    @term_received = false
+    $term_received = false
     trap('TERM') {
-      @term_received = true
+      $term_received = true
       @logger.info("TERM received. stopping")
     }
 
     loop do
       JobSubmitter.perform(@logger)
-      break if @term_received
+      break if $term_received
       JobObserver.perform(@logger)
-      break if @term_received
+      break if $term_received
       sleep INTERVAL
-      break if @term_received
+      break if $term_received
     end
 
     @logger.info("stopped")
   end
 
   def stop
-    @logger.info("stopping")
+    # Never called because trap('TERM') is overwritten
   end
 
   def self.alive?
@@ -54,9 +54,10 @@ end
 
 if $0 == __FILE__
   JobWorker.spawn!(log_file: JobWorker::WORKER_LOG_FILE,
-                  pid_file: JobWorker::WORKER_PID_FILE,
-                  sync_log: true,
-                  working_dir: Rails.root,
-                  singleton: true
-                  )
+                   pid_file: JobWorker::WORKER_PID_FILE,
+                   sync_log: true,
+                   working_dir: Rails.root,
+                   singleton: true,
+                   timeout: 30
+                   )
 end

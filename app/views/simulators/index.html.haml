@@ -16,5 +16,6 @@
         - counts.delete(:cancelled)
         %td#progress= progress_bar(counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running])
 
-.form-actions
-  %a.btn.btn-primary{href: new_simulator_path} New Simulator
+- unless OACIS_READ_ONLY
+  .form-actions
+    %a.btn.btn-primary{href: new_simulator_path} New Simulator

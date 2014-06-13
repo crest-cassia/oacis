@@ -32,6 +32,9 @@
       %th Maximum number of jobs
       %td= @host.max_num_jobs
     %tr
+      %th Polling interval
+      %td= @host.polling_interval
+    %tr
       %th MPI procs
       %td
         - if @host.min_mpi_procs == @host.max_mpi_procs

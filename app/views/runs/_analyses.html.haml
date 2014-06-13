@@ -1,9 +1,9 @@
 = render partial: 'shared/analyses', locals: {run: run}
 
 - if @run.status == :finished
-  %h3 Run analysis
   - @sim = @param_set.simulator
-  - unless @sim.analyzers_on_run.empty?
+  - unless @sim.analyzers_on_run.empty? or OACIS_READ_ONLY
+    %h3 Run analysis
     = form_for( @run.analyses.build, :url => run_analyses_path(@run) ) do |f|
       = f.label :analyzer
       = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }

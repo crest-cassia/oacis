@@ -1,3 +1,5 @@
+= javascript_include_tag "plot/application"
+
 - param_string = @param_set.v.map {|key,val| "#{key}=#{val}" }.join(', ')
 %h3= "Plot on (#{param_string})"
 
@@ -7,6 +9,7 @@
     %select#plot-type
       %option{value: 'line'} line plot
       %option{value: 'scatter'} scatter plot
+      %option{value: 'figures'} figure viewer
   %br
   .form-inline
     - simulator = @param_set.simulator
@@ -29,6 +32,15 @@
       = label_tag 'result', "Result"
       = select_tag 'result', options_for_select(plottable), id: 'result'
       %a.btn.btn-primary#add_scatter_plot_button Add Scatter Plot
+    #figure-viewer-form
+      - parameter_keys = simulator.parameter_definitions.map(&:key)
+      = label_tag 'x_axis_key', "X-Axis"
+      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key'
+      = label_tag 'y_axis_key', "Y-Axis"
+      = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
+      = label_tag 'result', "Result"
+      = select_tag 'result', options_for_select(simulator.figure_files), id: 'result'
+      %a.btn.btn-primary#add_figure_viewer_button Add Figure Viewer
     #irrelevant-params
       %br
       Irrelevant parameters :
@@ -36,7 +48,6 @@
       - simulator.parameter_definitions.map(&:key).each do |key|
         = label_tag key, key
         = check_box_tag key
-
 %hr
 
 #plot
@@ -67,10 +78,17 @@
     if( $('#plot-type').val() == 'line' ) {
       $('#line-plot-form').show();
       $('#scatter-plot-form').hide();
+      $('#figure-viewer-form').hide();
     }
-    else {
+    else if( $('#plot-type').val() == 'scatter' ) {
       $('#line-plot-form').hide();
       $('#scatter-plot-form').show();
+      $('#figure-viewer-form').hide();
+    }
+    else if( $('#plot-type').val() == 'figures' ) {
+      $('#line-plot-form').hide();
+      $('#scatter-plot-form').hide();
+      $('#figure-viewer-form').show();
     }
   }
   $(show_form_for_plots);
@@ -78,7 +96,11 @@
 
   function add_line_plot(x, y, series, irrelevants) {
     var url = "#{_line_plot_parameter_set_path(@param_set)}" + ".json";
-    var url_with_param = url + "?x_axis_key=" + encodeURIComponent(x) + "&y_axis_key=" + encodeURIComponent(y) + "&series=" + encodeURIComponent(series) + "&irrelevants=" + encodeURIComponent(irrelevants);
+    var url_with_param = url + 
+      "?x_axis_key=" + encodeURIComponent(x) +
+      "&y_axis_key=" + encodeURIComponent(y) +
+      "&series=" + encodeURIComponent(series) +
+      "&irrelevants=" + encodeURIComponent(irrelevants);
     var ps_base_url = "#{parameter_set_path('')}";
     draw_line_plot(url_with_param, ps_base_url, "#{@param_set.id.to_s}");
   }
@@ -89,6 +111,7 @@
     var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
       return this.id;
       }).get().join(',');
+
     if( x == "" ) {
       x = new Array();
       $('#x_axis_key').children('option').each(function() {
@@ -136,5 +159,32 @@
     var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
       return this.id;
       }).get().join(',');
+
     add_scatter_plot(x, y, result, irrelevants);
   });
+
+  function add_figure_viewer(x, y, result, irrelevants, logscales) {
+    var url = "#{_figure_viewer_parameter_set_path(@param_set)}" + ".json";
+    var url_with_param = url +
+      "?x_axis_key=" + encodeURIComponent(x) +
+      "&y_axis_key=" + encodeURIComponent(y) +
+      "&result=" + encodeURIComponent(result) +
+      "&irrelevants=" + encodeURIComponent(irrelevants) +
+      "&logscales=" + encodeURIComponent(logscales);
+    var ps_base_url = "#{parameter_set_path('')}";
+    draw_figure_viewer(url_with_param, ps_base_url, "#{@param_set.id.to_s}");
+  }
+  $('#add_figure_viewer_button').on('click', function() {
+    var x = $('#figure-viewer-form #x_axis_key').val();
+    var y = $('#figure-viewer-form #y_axis_key').val();
+    var result = $('#figure-viewer-form #result').val();
+    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
+      return this.id;
+      }).get().join(',');
+    var logscales = $('#plot-logscales').children("input:checkbox:checked").map(function() {
+      return this.id;
+      }).get().join(',');
+
+    add_figure_viewer(x, y, result, irrelevants, logscales);
+  });
+

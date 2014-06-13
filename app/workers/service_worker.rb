@@ -1,6 +1,6 @@
 class ServiceWorker < DaemonSpawn::Base
 
-  INTERVAL = 60
+  INTERVAL = 5
 
   WORKER_PID_FILE = Rails.root.join('tmp', 'pids', "service_worker_#{Rails.env}.pid")
   WORKER_LOG_FILE = Rails.root.join('log', "service_worker_#{Rails.env}.log")
@@ -27,7 +27,7 @@ class ServiceWorker < DaemonSpawn::Base
   end
 
   def stop
-    @logger.info("stopping")
+    # Never called because trap('TERM') is overwritten
   end
 
   def self.alive?
@@ -52,9 +52,10 @@ end
 
 if $0 == __FILE__
   ServiceWorker.spawn!(log_file: ServiceWorker::WORKER_LOG_FILE,
-                      pid_file: ServiceWorker::WORKER_PID_FILE,
+                       pid_file: ServiceWorker::WORKER_PID_FILE,
                        sync_log: true,
                        working_dir: Rails.root,
-                       singleton: true
+                       singleton: true,
+                       timeout: 30
                        )
 end

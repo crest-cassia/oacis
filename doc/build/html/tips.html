@@ -137,12 +137,20 @@ mongodump --db oacis_development --collection analyses -q <span class="s1">&#39;
 </li>
 <li><dl class="first docutils">
 <dt>publicディレクトリのレストアも必要な項目</dt>
-<dd><ul class="first simple">
-<li>ParameterSetやRunの新規追加</li>
-<li>結果archive(.tar.bz2)の取得</li>
-<li>結果ファイルの閲覧（図の参照を含む）、... など</li>
+<dd><ul class="first last">
+<li><p class="first">ParameterSetやRunの新規追加</p>
+</li>
+<li><p class="first">結果archive(.tar.bz2)の取得</p>
+</li>
+<li><dl class="first docutils">
+<dt>結果ファイルの閲覧（図の参照を含む）、... など</dt>
+<dd><ul class="first last simple">
+<li>（別のマシンに移植する場合には、Hostの再設定が必要。）</li>
 </ul>
-<p class="last">（別のマシンに移植する場合には、Hostの再設定が必要。）</p>
+</dd>
+</dl>
+</li>
+</ul>
 </dd>
 </dl>
 </li>
@@ -282,14 +290,27 @@ vim config/mongoid.yml
 </li>
 </ol>
 </div>
-</div>
 <div class="section" id="id3">
-<h2>参考<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<h3>参考<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>MongoDB mongodump: <a class="reference external" href="http://docs.mongodb.org/manual/reference/program/mongodump/">http://docs.mongodb.org/manual/reference/program/mongodump/</a></li>
 <li>MongoDB mongorestore: <a class="reference external" href="http://docs.mongodb.org/manual/reference/program/mongorestore/">http://docs.mongodb.org/manual/reference/program/mongorestore/</a></li>
 <li>MongoDB ObjectID: <a class="reference external" href="http://docs.mongodb.org/manual/reference/object-id/">http://docs.mongodb.org/manual/reference/object-id/</a></li>
 </ul>
+</div>
+</div>
+<div class="section" id="read-only">
+<h2>READ_ONLY モード<a class="headerlink" href="#read-only" title="Permalink to this headline">¶</a></h2>
+<p>地理的に離れた研究者とデータの共有をする場合など、データを共有のサーバーにアップロードしてOACISを経由してシミュレーション結果を見てもらいたい場合がある。
+この場合アップロードしたサーバー上でOACISを起動する事になるが、その際には閲覧のみを可能にし、リモートジョブの実行や新規シミュレーターの登録などはできないようにした方が安全である。
+OACISを閲覧専用モードで起動すると結果の閲覧のみが可能な状態で利用できる。</p>
+<p>起動時に</p>
+<div class="highlight-sh"><div class="highlight"><pre>bundle <span class="nb">exec </span>rake daemon:start <span class="nv">OACIS_READ_ONLY</span><span class="o">=</span>1
+</pre></div>
+</div>
+<p>として起動する。
+このように起動するとバックグラウンドのワーカープロセスは起動せず、ブラウザ上からの新規レコードの作成や編集もできなくなる。</p>
+<p>ローカルマシンで起動したOACISからジョブを実行しつつ共有マシンではREAD_ONLYモードで起動しておき、定期的に共有サーバーにバックアップコマンドでデータを同期するとデータの共有が容易にできる。</p>
 </div>
 </div>
 
@@ -306,9 +327,10 @@ vim config/mongoid.yml
 <li><a class="reference internal" href="#oacis">OACISのバックアップとレストア方法について</a></li>
 <li><a class="reference internal" href="#id2">コレクションのバックアップ・レストア</a></li>
 <li><a class="reference internal" href="#public">publicディレクトリのバックアップ・レストア</a></li>
+<li><a class="reference internal" href="#id3">参考</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id3">参考</a></li>
+<li><a class="reference internal" href="#read-only">READ_ONLY モード</a></li>
 </ul>
 </li>
 </ul>
