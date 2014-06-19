@@ -51,7 +51,11 @@ private
           tmp <<  ERB::Util.html_escape(param.v[key])
         end
       end
-      tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+      if param == @base_ps
+        tmp << ''
+      else
+        tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+      end
       tmp
     end
   end

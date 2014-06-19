@@ -78,16 +78,10 @@ class ParameterSetsController < ApplicationController
     simulator = Simulator.find(@ps.simulator_id)
     @ps.destroy
 
-    request_from = Rails.application.routes.recognize_path(request.referer)
     respond_to do |format|
-      if request_from[:action] == "show" and request_from[:controller] == "simulators"
-        # called by datatables in :action => "show" and :controller => "simulators"
-        format.json { head :no_content }
-        format.js
-      else
-        format.html { redirect_to simulator_path(simulator) }
-        format.json { head :no_content }
-      end
+      format.json { head :no_content }
+      format.js
+      format.html { redirect_to simulator_path(simulator) }
     end
   end
 
