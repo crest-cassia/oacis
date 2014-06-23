@@ -6,6 +6,7 @@ LinePlot.prototype = Object.create(Plot.prototype);// LinePlot is sub class of P
 LinePlot.prototype.constructor = LinePlot;// override constructor
 LinePlot.prototype.on_xaxis_brush_change = null;
 LinePlot.prototype.on_yaxis_brush_change = null;
+LinePlot.prototype.IsLog = [false,false];
 
 LinePlot.prototype.SetXScale = function(xscale) {
   var scale = null, min, max;
@@ -67,6 +68,34 @@ LinePlot.prototype.SetYScale = function(yscale) {
   }
   this.yScale = scale;
   this.yAxis.scale(this.yScale);
+};
+
+LinePlot.prototype.SetXDomain = function(xmin, xmax) {
+  var plot = this;
+  if( plot.IsLog[0] ) {
+    if( xmin <= 0.0 ) {
+      plot.SetXScale("log"); // call this to calculate auto-domain
+      xmin = plot.xScale.domain()[0];
+      if( xmax <= 0.0 ) {
+        xmax = xmin + 0.000001;
+      }
+    }
+  }
+  plot.xScale.domain([xmin, xmax]);
+};
+
+LinePlot.prototype.SetYDomain = function(ymin, ymax) {
+  var plot = this;
+  if( plot.IsLog[1] ) {
+    if( ymin <= 0.0 ) {
+      plot.SetYScale("log"); // call this to calculate auto-domain
+      ymin = plot.yScale.domain()[0];
+      if( ymax <= 0.0 ) {
+        ymax = ymin + 0.000001;
+      }
+    }
+  }
+  plot.yScale.domain([ymin, ymax]);
 };
 
 LinePlot.prototype.AddPlot = function() {
@@ -270,8 +299,10 @@ LinePlot.prototype.AddDescription = function() {
       var new_scale;
       if(this.checked) {
         new_scale = "log";
+        plot.IsLog[0]=true;
       } else {
         new_scale = "linear";
+        plot.IsLog[0]=false;
       }
       plot.SetXScale(new_scale);
       plot.UpdatePlot();
@@ -286,8 +317,10 @@ LinePlot.prototype.AddDescription = function() {
       var new_scale;
       if(this.checked) {
         new_scale = "log";
+        plot.IsLog[1]=true;
       } else {
         new_scale = "linear";
+        plot.IsLog[1]=false;
       }
       plot.SetYScale(new_scale);
       plot.UpdatePlot();
@@ -339,7 +372,8 @@ LinePlot.prototype.AddDescription = function() {
         .call(xAxisBottom);
 
       plot.on_xaxis_brush_change = function() {
-        plot.xScale.domain(brush.empty() ? xScaleBottom.domain() : brush.extent());
+        var domain = brush.empty() ? xScaleBottom.domain() : brush.extent();
+        plot.SetXDomain(domain[0], domain[1]);
         plot.UpdatePlot();
         plot.svg.select(".x.axis").call(plot.xAxis);
       };
@@ -357,6 +391,7 @@ LinePlot.prototype.AddDescription = function() {
         .attr("height", 16);
     }
     add_xaxis_controller();
+
     function add_yaxis_controller() {
       var width_left = -plot.margin.left + 30;
       var YScaleLeft = null;
@@ -399,7 +434,8 @@ LinePlot.prototype.AddDescription = function() {
         .call(yAxisLeft);
 
       plot.on_yaxis_brush_change = function() {
-        plot.yScale.domain(brush.empty() ? yScaleLeft.domain() : brush.extent());
+        var domain = brush.empty() ? yScaleLeft.domain() : brush.extent();
+        plot.SetYDomain(domain[0], domain[1]);
         plot.UpdatePlot();
         plot.svg.select(".y.axis").call(plot.yAxis);
       };

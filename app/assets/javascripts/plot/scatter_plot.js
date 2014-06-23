@@ -82,7 +82,7 @@ ScatterPlot.prototype.SetXDomain = function(xmin, xmax) {
     }
   }
   plot.xScale.domain([xmin, xmax]);
-}
+};
 
 ScatterPlot.prototype.SetYDomain = function(ymin, ymax) {
   var plot = this;
@@ -96,8 +96,7 @@ ScatterPlot.prototype.SetYDomain = function(ymin, ymax) {
     }
   }
   plot.yScale.domain([ymin, ymax]);
-}
-
+};
 
 ScatterPlot.prototype.AddPlot = function() {
   var plot = this;
