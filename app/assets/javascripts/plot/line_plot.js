@@ -80,6 +80,7 @@ LinePlot.prototype.AddPlot = function() {
 
     // add line
     series.append("path")
+      .attr("clip-path", "url(#clip)")
       .style({
         "stroke": function(d, i) { return colorScale(i);},
         "fill": "none",
@@ -287,6 +288,62 @@ LinePlot.prototype.AddDescription = function() {
       plot.UpdatePlot();
     });
     plot.description.append("span").html("log scale on y axis");
+
+    var height_bottom = plot.margin.top + plot.height +plot.margin.bottom -50;
+    var xScaleBottom = null;
+    var xAxisBottom = d3.svg.axis().orient("bottom");
+    var SetXScaleBottom = function(xscale) {
+      var scale = null, min, max;
+      switch(xscale) {
+        case "linear":
+          scale = d3.scale.linear().range([0, plot.width]);
+          min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[0];});});
+          max = d3.max( plot.data.data, function(r) { return d3.max(r, function(v) { return v[0];});});
+          scale.domain([
+              min,
+              max
+              ]).nice();
+          break;
+        case "log":
+          var data_in_logscale = plot.data.data.map(function(element) {
+            return element.filter(function(element){
+              return element[0] > 0.0;
+            });
+          });
+          scale = d3.scale.log().clamp(true).range([0, plot.width]);
+          min = d3.min( data_in_logscale, function(r) { return d3.min(r, function(v) { return v[0];});});
+          max = d3.max( data_in_logscale, function(r) { return d3.max(r, function(v) { return v[0];});});
+          scale.domain([
+              (!min || min<0.0) ? 0.1 : min,
+              (!max || max<0.0) ? 1.0 : max
+              ]).nice();
+          break;
+      }
+      xScaleBottom = scale;
+      xAxisBottom.scale(xScaleBottom);
+    };
+    SetXScaleBottom("linear");
+    plot.svg.append("g")
+      .attr("class", "x axis bottom")
+      .attr("transform", "translate(0," + height_bottom + ")")
+      .call(xAxisBottom);
+    function bottom_axis_brushed() {
+      plot.xScale.domain(brush.empty() ? xScaleBottom.domain() : brush.extent());
+      plot.UpdatePlot();
+      plot.svg.select(".x.axis").call(plot.xAxis);
+    }
+
+    var brush = d3.svg.brush()
+      .x(xScaleBottom)
+      .on("brush", bottom_axis_brushed);
+
+    plot.svg.append("g")
+      .attr("class", "x brush")
+      .call(brush)
+      .selectAll("rect")
+      .attr("y", height_bottom-8)
+      .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
+      .attr("height", 16);
   }
   add_tools();
 };
