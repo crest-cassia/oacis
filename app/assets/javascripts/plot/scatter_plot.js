@@ -4,7 +4,10 @@ function ScatterPlot() {
 
 ScatterPlot.prototype = Object.create(Plot.prototype);// ScatterPlot is sub class of Plot
 ScatterPlot.prototype.constructor = ScatterPlot;// override constructor
+LinePlot.prototype.on_xaxis_brush_change = null;
+LinePlot.prototype.on_yaxis_brush_change = null;
 ScatterPlot.prototype.IsLog = [false, false];   // true if x/y scale is log
+ScatterPlot.prototype.colorScale = null;
 
 ScatterPlot.prototype.SetXScale = function(xscale) {
   var plot = this;
@@ -103,10 +106,10 @@ ScatterPlot.prototype.AddPlot = function() {
 
   var result_min_val = d3.min( this.data.data, function(d) { return d[1];});
   var result_max_val = d3.max( this.data.data, function(d) { return d[1];});
-  var colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
+  this.colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
   var colorScalePoint = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
-  colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
-  colorScalePoint.domain( colorScale.domain() ).nice();
+  this.colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
+  colorScalePoint.domain( this.colorScale.domain() ).nice();
 
   function add_color_map_group() {
     var color_map = plot.svg.append("g")
@@ -114,13 +117,14 @@ ScatterPlot.prototype.AddPlot = function() {
         "transform": "translate(" + plot.width + "," + plot.margin.top + ")",
         "id": "color-map-group"
       });
-    var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(colorScale.range());
+    var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(plot.colorScale.range());
     color_map.append("text")
       .attr({x: 10.0, y: 20.0, dx: "0.1em", dy: "-0.4em"})
       .style("text-anchor", "begin")
       .text("Result");
     color_map.selectAll("rect")
-      .data([1.0, 0.8, 0.6, 0.4, 0.2, 0.0])
+      .attr("class", "result color rect")
+      .data([1.0, 0.8, 0.6, 0.5, 0.4, 0.2, 0.0])
       .enter().append("rect")
       .attr({
         x: 10.0,
@@ -130,13 +134,17 @@ ScatterPlot.prototype.AddPlot = function() {
         fill: function(d) { return scale(d); }
       });
     color_map.append("text")
-      .attr({x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
+      .attr({id:"result-range-max", x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
-      .text( colorScale.domain()[2] );
+      .text( plot.colorScale.domain()[2] );
     color_map.append("text")
-      .attr({x: 30.0, y: 140.0, dx: "0.2em", dy: "-0.3em"})
+      .attr({id:"result-range-middle", x: 30.0, y: 100.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
-      .text( colorScale.domain()[0] );
+      .text( plot.colorScale.domain()[1] );
+    color_map.append("text")
+      .attr({id:"result-range-min", x: 30.0, y: 160.0, dx: "0.2em", dy: "-0.3em"})
+      .style("text-anchor", "begin")
+      .text( plot.colorScale.domain()[0] );
   }
   add_color_map_group();
 
@@ -196,11 +204,23 @@ ScatterPlot.prototype.AddPlot = function() {
 ScatterPlot.prototype.UpdatePlot = function() {
   var plot = this;
 
+  function update_color_scale() {
+    var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(plot.colorScale.range());
+    plot.svg.select("g#color-map-group").selectAll("rect")
+      .attr("fill", function(d) { return scale(d); });
+
+    plot.svg.select("#result-range-max")
+      .text( plot.colorScale.domain()[2] );
+    plot.svg.select("#result-range-middle")
+      .text( plot.colorScale.domain()[1] );
+    plot.svg.select("#result-range-min")
+      .text( plot.colorScale.domain()[0] );
+  }
+  update_color_scale();
+
   function update_voronoi_group() {
     var result_min_val = d3.min( plot.data.data, function(d) { return d[1];});
     var result_max_val = d3.max( plot.data.data, function(d) { return d[1];});
-    var colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
-    colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
     var voronoi = plot.svg.select("g#voronoi-group");
     var d3voronoi = d3.geom.voronoi()
       .clipExtent([[0, 0], [plot.width, plot.height]]);
@@ -225,7 +245,12 @@ ScatterPlot.prototype.UpdatePlot = function() {
         .data(d3voronoi(vertices))
         .enter()
           .append("path")
-          .style("fill", function(d, i) { return colorScale(filtered_data[i][1]);})
+          .attr("fill", function(d, i) {
+          //.style("fill", function(d, i) {
+            if(filtered_data[i][1] < plot.colorScale.domain()[0]) {return "url(#TrianglePattern)";}
+            if(filtered_data[i][1] > plot.colorScale.domain()[2]) {return "url(#TrianglePattern)";}
+            return plot.colorScale(filtered_data[i][1]);
+          })
           .attr("d", function(d) { return "M" + d.join('L') + "Z"; })
           .style("fill-opacity", 0.7)
           .style("stroke", "none");
@@ -301,7 +326,219 @@ ScatterPlot.prototype.AddDescription = function() {
       plot.UpdatePlot();
     });
     plot.description.append("span").html("log scale on y axis");
+
+    function add_xaxis_controller() {
+      var height_bottom = plot.margin.top + plot.height +plot.margin.bottom -50;
+      var xScaleBottom = null;
+      var xAxisBottom = d3.svg.axis().orient("bottom");
+      var scale = null, min, max;
+      scale = d3.scale.linear().range([0, plot.width]);
+      min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+      max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+      scale.domain([
+          min,
+          max
+          ]).nice();
+      xScaleBottom = scale;
+      xAxisBottom.scale(xScaleBottom);
+
+      plot.svg.append("g")
+        .attr("class", "x axis bottom")
+        .attr("transform", "translate(0," + height_bottom + ")")
+        .call(xAxisBottom);
+
+      plot.on_xaxis_brush_change = function() {
+        var domain = brush.empty() ? xScaleBottom.domain() : brush.extent();
+        plot.SetXDomain(domain[0], domain[1]);
+        plot.UpdatePlot();
+        plot.svg.select(".x.axis").call(plot.xAxis);
+      };
+
+      var brush = d3.svg.brush()
+        .x(xScaleBottom)
+        .on("brush", plot.on_xaxis_brush_change);
+
+      plot.svg.append("g")
+        .attr("class", "x brush")
+        .call(brush)
+        .selectAll("rect")
+        .attr("y", height_bottom-8)
+        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
+        .attr("height", 16);
     }
+    add_xaxis_controller();
+
+    function add_yaxis_controller() {
+      var width_left = -plot.margin.left + 30;
+      var YScaleLeft = null;
+      var yAxisLeft = d3.svg.axis().orient("left");
+      var scale = null, min, max;
+      scale = d3.scale.linear().range([plot.height, 0]);
+      min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+      max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+      scale.domain([
+          min,
+          max
+          ]).nice();
+      yScaleLeft = scale;
+      yAxisLeft.scale(yScaleLeft);
+
+      plot.svg.append("g")
+        .attr("class", "y axis left")
+        .attr("transform", "translate(" + width_left + ",0)")
+        .call(yAxisLeft);
+
+      plot.on_yaxis_brush_change = function() {
+        var domain = brush.empty() ? yScaleLeft.domain() : brush.extent();
+        plot.SetYDomain(domain[0], domain[1]);
+        plot.UpdatePlot();
+        plot.svg.select(".y.axis").call(plot.yAxis);
+      };
+
+      var brush = d3.svg.brush()
+        .y(yScaleLeft)
+        .on("brush", plot.on_yaxis_brush_change);
+
+      plot.svg.append("g")
+        .attr("class", "y brush")
+        .call(brush)
+        .selectAll("rect")
+        .attr("x", width_left-8)
+        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
+        .attr("width", 16);
+    }
+    add_yaxis_controller();
+
+    function add_result_scale_controller() {
+      var pattern = plot.svg.select("defs").append("pattern");
+      pattern
+        .attr("id", "TrianglePattern")
+        .attr("patternUnits", "userSpaceOnUse")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 4)
+        .attr("height", 4);
+      pattern.append("rect")
+        .attr("x", 1)
+        .attr("y", 1)
+        .attr("width", 2)
+        .attr("height", 2)
+        .attr("fill", "black");
+
+      plot.description.append("br");
+      plot.description.append("input").attr("type", "color")
+        .attr("value", plot.colorScale.range()[2])
+        .style("width", "25px")
+        .on("change", function() {
+          var range = plot.colorScale.range();
+          try{
+            range[2] = this.value;
+            plot.colorScale.range(range);
+            plot.UpdatePlot();
+          } catch(e) {
+            alert(e);
+          }
+        });
+      plot.description.append("input").attr("type", "text")
+        .attr("value", plot.colorScale.domain()[2])
+        .style("width", "2em")
+        .on("change", function() {
+          var domain = plot.colorScale.domain();
+          try{
+          if( isNaN(Number(this.value)) ) {
+            alert(this.value + " is not a number");
+            this.value=""+domain[2];
+          } else if( Number(this.value) < domain[1] ) {
+            alert(this.value + " is not larger value than or equal to range middle");
+            this.value=""+domain[2];
+          } else {
+            domain[2] = Number(this.value);
+            plot.colorScale.domain(domain);
+            plot.UpdatePlot();
+          }
+          } catch(e) {
+            alert(e);
+          }
+        });
+      plot.description.append("span").html("range max");
+      plot.description.append("br");
+      plot.description.append("input").attr("type", "color")
+        .attr("value", plot.colorScale.range()[1])
+        .style("width", "25px")
+        .on("change", function() {
+          var range = plot.colorScale.range();
+          try{
+            range[1] = this.value;
+            plot.colorScale.range(range);
+            plot.UpdatePlot();
+          } catch(e) {
+            alert(e);
+          }
+        });
+      plot.description.append("input").attr("type", "text")
+        .attr("value", plot.colorScale.domain()[1])
+        .style("width", "2em")
+        .on("change", function() {
+          var domain = plot.colorScale.domain();
+          try{
+          if( isNaN(Number(this.value)) ) {
+            alert(this.value + " is not a number");
+            this.value=""+domain[1];
+          } else if( Number(this.value) < domain[0] ) {
+            alert(this.value + " is not larger value than or equal to range min");
+            this.value=""+domain[1];
+          } else if( Number(this.value) > domain[2] ) {
+            alert(this.value + " is not smaller value than or equal to range max");
+            this.value=""+domain[1];
+          } else {
+            domain[1] = Number(this.value);
+            plot.colorScale.domain(domain);
+            plot.UpdatePlot();
+          }
+          } catch(e) {
+            alert(e);
+          }
+        });
+      plot.description.append("span").html("range middle");
+      plot.description.append("br");
+      plot.description.append("input").attr("type", "color")
+        .attr("value", plot.colorScale.range()[0])
+        .style("width", "25px")
+        .on("change", function() {
+          var range = plot.colorScale.range();
+          try{
+            range[0] = this.value;
+            plot.colorScale.range(range);
+            plot.UpdatePlot();
+          } catch(e) {
+            alert(e);
+          }
+        });
+      plot.description.append("input").attr("type", "text")
+        .attr("value", plot.colorScale.domain()[0])
+        .style("width", "2em")
+        .on("change", function() {
+          var domain = plot.colorScale.domain();
+          try{
+          if( isNaN(Number(this.value)) ) {
+            alert(this.value + " is not a number");
+            this.value=""+domain[0];
+          } else if( Number(this.value) > domain[1] ) {
+            alert(this.value + " is not smaller value than or equal to range middle");
+            this.value=""+domain[0];
+          } else {
+            domain[0] = Number(this.value);
+            plot.colorScale.domain(domain);
+            plot.UpdatePlot();
+          }
+          } catch(e) {
+            alert(e);
+          }
+        });
+      plot.description.append("span").html("range min");
+    }
+    add_result_scale_controller();
+  }
   add_tools();
 };
 

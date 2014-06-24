@@ -393,7 +393,7 @@ LinePlot.prototype.AddDescription = function() {
     add_xaxis_controller();
 
     function add_yaxis_controller() {
-      var width_left = -plot.margin.left + 30;
+      var width_left = -plot.margin.left + 80;
       var YScaleLeft = null;
       var yAxisLeft = d3.svg.axis().orient("left");
       var SetYScaleLeft = function(yscale) {
