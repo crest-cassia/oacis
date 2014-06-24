@@ -331,7 +331,7 @@ LinePlot.prototype.AddDescription = function() {
     plot.description.append("span").html("log scale on y axis");
 
     function add_xaxis_controller() {
-      var height_bottom = plot.margin.top + plot.height +plot.margin.bottom -50;
+      var height_bottom = plot.height +plot.margin.bottom - 40;
       var xScaleBottom = null;
       var xAxisBottom = d3.svg.axis().orient("bottom");
       var SetXScaleBottom = function(xscale) {
@@ -393,7 +393,7 @@ LinePlot.prototype.AddDescription = function() {
     add_xaxis_controller();
 
     function add_yaxis_controller() {
-      var width_left = -plot.margin.left + 80;
+      var width_left = -plot.margin.left + 50;
       var YScaleLeft = null;
       var yAxisLeft = d3.svg.axis().orient("left");
       var SetYScaleLeft = function(yscale) {

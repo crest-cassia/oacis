@@ -4,7 +4,9 @@ function FigureViewer() {
 
 FigureViewer.prototype = Object.create(ScatterPlot.prototype);// ScatterPlot is sub class of Plot
 FigureViewer.prototype.constructor = FigureViewer;// override constructor
-FigureViewer.prototype.margin = {top: 10+92, right: 100+112, bottom: 100, left: 100};// override margin
+FigureViewer.prototype.on_xaxis_brush_change = null;
+FigureViewer.prototype.on_yaxis_brush_change = null;
+FigureViewer.prototype.margin = {top: 10+92, right: 100+112, bottom: 100, left: 120};// override margin
 FigureViewer.prototype.figure_size = "small";
 
 FigureViewer.prototype.Init = function(data, url, parameter_set_base_url, current_ps_id) {
@@ -72,6 +74,7 @@ FigureViewer.prototype.SetYScale = function(yscale) {
   this.yScale = scale;
   this.yAxis.scale(this.yScale);
 };
+
 FigureViewer.prototype.AddPlot = function() {
   switch(this.figure_size) {
   case "point":
@@ -162,15 +165,32 @@ FigureViewer.prototype.AddFigurePlot = function() {
 
 FigureViewer.prototype.UpdateFigurePlot = function() {
   var plot = this;
-  var figure_scale = (this.figure_size == "small") ? 0.1 : 0.2;
+  var x_figure_scale = (this.figure_size == "small") ? 0.1 : 0.2;
+  var y_figure_scale = (this.figure_size == "small") ? 0.1 : 0.2;
+  var xdomain = plot.xScale.domain();
+  var ydomain = plot.yScale.domain();
+  var xdomainbottom;
+  if(plot.xScaleBottom) {
+    xdomainbottom = plot.xScaleBottom.domain();
+  } else {
+    xdomainbottom = plot.xScale.domain();
+  }
+  var ydomainleft;
+  if(plot.yScaleLeft) {
+    ydomainleft = plot.yScaleLeft.domain();
+  } else {
+    ydomainleft = plot.yScale.domain();
+  }
+  x_figure_scale*=(xdomainbottom[1] - xdomainbottom[0])/(xdomain[1] - xdomain[0]);
+  y_figure_scale*=(ydomainleft[1] - ydomainleft[0])/(ydomain[1] - ydomain[0]);
   function update_figure_plot() {
     var figure_group = plot.svg.select("g#figure-group");
     figure_group.selectAll("image")
       .attr("x", function(d) { return plot.xScale(d.x);})
-      .attr("y", function(d) { return plot.yScale(d.y) - plot.height*figure_scale;})
+      .attr("y", function(d) { return plot.yScale(d.y) - plot.height*y_figure_scale;})
       .attr("xlink:href", function(d) { return d.path; })
-      .attr("width", plot.width*figure_scale)
-      .attr("height", plot.height*figure_scale);
+      .attr("width", plot.width*x_figure_scale)
+      .attr("height", plot.height*y_figure_scale);
   }
   update_figure_plot();
 };
@@ -305,6 +325,88 @@ FigureViewer.prototype.AddDescription = function() {
       plot.UpdatePlot(plot.figure_size);
     });
     plot.description.append("span").html("log scale on y axis");
+
+    function add_xaxis_controller() {
+      var height_bottom = plot.height + plot.margin.bottom - 40;
+      FigureViewer.prototype.xScaleBottom = null;
+      var xAxisBottom = d3.svg.axis().orient("bottom");
+      var scale = null, min, max;
+      scale = d3.scale.linear().range([0, plot.width]);
+      min = d3.min( plot.data.data, function(d) { return d[0];});
+      max = d3.max( plot.data.data, function(d) { return d[0];});
+      scale.domain([
+          min,
+          max
+          ]).nice();
+      plot.xScaleBottom = scale;
+      xAxisBottom.scale(plot.xScaleBottom);
+
+      plot.svg.append("g")
+        .attr("class", "x axis bottom")
+        .attr("transform", "translate(0," + height_bottom + ")")
+        .call(xAxisBottom);
+
+      plot.on_xaxis_brush_change = function() {
+        var domain = brush.empty() ? plot.xScaleBottom.domain() : brush.extent();
+        plot.SetXDomain(domain[0], domain[1]);
+        plot.UpdatePlot(plot.figure_size);
+        plot.svg.select(".x.axis").call(plot.xAxis);
+      };
+
+      var brush = d3.svg.brush()
+        .x(plot.xScaleBottom)
+        .on("brush", plot.on_xaxis_brush_change);
+
+      plot.svg.append("g")
+        .attr("class", "x brush")
+        .call(brush)
+        .selectAll("rect")
+        .attr("y", height_bottom-8)
+        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
+        .attr("height", 16);
+    }
+    add_xaxis_controller();
+
+    function add_yaxis_controller() {
+      var width_left = -plot.margin.left + 50;
+      FigureViewer.prototype.YScaleLeft = null;
+      var yAxisLeft = d3.svg.axis().orient("left");
+      var scale = null, min, max;
+      scale = d3.scale.linear().range([plot.height, 0]);
+      min = d3.min( plot.data.data, function(d) { return d[1];});
+      max = d3.max( plot.data.data, function(d) { return d[1];});
+      scale.domain([
+          min,
+          max
+          ]).nice();
+      plot.yScaleLeft = scale;
+      yAxisLeft.scale(plot.yScaleLeft);
+
+      plot.svg.append("g")
+        .attr("class", "y axis left")
+        .attr("transform", "translate(" + width_left + ",0)")
+        .call(yAxisLeft);
+
+      plot.on_yaxis_brush_change = function() {
+        var domain = brush.empty() ? plot.yScaleLeft.domain() : brush.extent();
+        plot.SetYDomain(domain[0], domain[1]);
+        plot.UpdatePlot(plot.figure_size);
+        plot.svg.select(".y.axis").call(plot.yAxis);
+      };
+
+      var brush = d3.svg.brush()
+        .y(plot.yScaleLeft)
+        .on("brush", plot.on_yaxis_brush_change);
+
+      plot.svg.append("g")
+        .attr("class", "y brush")
+        .call(brush)
+        .selectAll("rect")
+        .attr("x", width_left-8)
+        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
+        .attr("width", 16);
+    }
+    add_yaxis_controller();
   }
   add_tools();
 };

@@ -11,7 +11,7 @@ function Plot() {
       .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 }
 
-Plot.prototype.margin = {top: 10, right: 100, bottom: 100, left: 100};
+Plot.prototype.margin = {top: 10, right: 100, bottom: 100, left: 120};
 Plot.prototype.width = 560;
 Plot.prototype.height = 460;
 Plot.prototype.xScale = null;

@@ -4,8 +4,8 @@ function ScatterPlot() {
 
 ScatterPlot.prototype = Object.create(Plot.prototype);// ScatterPlot is sub class of Plot
 ScatterPlot.prototype.constructor = ScatterPlot;// override constructor
-LinePlot.prototype.on_xaxis_brush_change = null;
-LinePlot.prototype.on_yaxis_brush_change = null;
+ScatterPlot.prototype.on_xaxis_brush_change = null;
+ScatterPlot.prototype.on_yaxis_brush_change = null;
 ScatterPlot.prototype.IsLog = [false, false];   // true if x/y scale is log
 ScatterPlot.prototype.colorScale = null;
 
@@ -328,7 +328,7 @@ ScatterPlot.prototype.AddDescription = function() {
     plot.description.append("span").html("log scale on y axis");
 
     function add_xaxis_controller() {
-      var height_bottom = plot.margin.top + plot.height +plot.margin.bottom -50;
+      var height_bottom = plot.height +plot.margin.bottom - 40;
       var xScaleBottom = null;
       var xAxisBottom = d3.svg.axis().orient("bottom");
       var scale = null, min, max;
@@ -369,7 +369,7 @@ ScatterPlot.prototype.AddDescription = function() {
     add_xaxis_controller();
 
     function add_yaxis_controller() {
-      var width_left = -plot.margin.left + 30;
+      var width_left = -plot.margin.left + 50;
       var YScaleLeft = null;
       var yAxisLeft = d3.svg.axis().orient("left");
       var scale = null, min, max;
