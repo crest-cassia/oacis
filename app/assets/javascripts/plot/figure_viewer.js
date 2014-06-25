@@ -95,7 +95,7 @@ FigureViewer.prototype.UpdatePlot = function(new_size) {
     if(new_size == "point") {
       this.UpdatePointPlot();
     } else {
-      this.svg.select("g#point-group").remove();
+      this.main_group.select("g#point-group").remove();
       this.AddPlot();
     }
     break;
@@ -103,7 +103,7 @@ FigureViewer.prototype.UpdatePlot = function(new_size) {
   case "large":
     this.figure_size = new_size;
     if(new_size == "point") {
-      this.svg.select("g#figure-group").remove();
+      this.main_group.select("g#figure-group").remove();
       this.AddPlot();
     } else {
       this.UpdateFigurePlot();
@@ -122,7 +122,7 @@ FigureViewer.prototype.AddFigurePlot = function() {
     var mapped = plot.data.data.map(function(v) {
       return { x: v[0], y: v[1], path:v[2], psid: v[3] };
     });
-    var figure_group = plot.svg.append("g")
+    var figure_group = plot.main_group.append("g")
       .attr("id", "figure-group");
     var figure = figure_group.selectAll("image")
       .data(mapped).enter();
@@ -184,7 +184,7 @@ FigureViewer.prototype.UpdateFigurePlot = function() {
   x_figure_scale*=(xdomainbottom[1] - xdomainbottom[0])/(xdomain[1] - xdomain[0]);
   y_figure_scale*=(ydomainleft[1] - ydomainleft[0])/(ydomain[1] - ydomain[0]);
   function update_figure_plot() {
-    var figure_group = plot.svg.select("g#figure-group");
+    var figure_group = plot.main_group.select("g#figure-group");
     figure_group.selectAll("image")
       .attr("x", function(d) { return plot.xScale(d.x);})
       .attr("y", function(d) { return plot.yScale(d.y) - plot.height*y_figure_scale;})
@@ -203,7 +203,7 @@ FigureViewer.prototype.AddPointPlot = function() {
     var mapped = plot.data.data.map(function(v) {
       return { x: v[0], y: v[1], path:v[2], psid: v[3] };
     });
-    var point_group = plot.svg.append("g")
+    var point_group = plot.main_group.append("g")
       .attr("id", "point-group");
     var point = point_group.selectAll("circle")
       .data(mapped).enter();
@@ -250,7 +250,7 @@ FigureViewer.prototype.UpdatePointPlot = function() {
   var plot = this;
 
   function update_point_group() {
-    var point_group = plot.svg.select("g#point-group");
+    var point_group = plot.main_group.select("g#point-group");
     point_group.selectAll("circle")
       .attr("cx", function(d) { return plot.xScale(d.x);})
       .attr("cy", function(d) { return plot.yScale(d.y);});
@@ -341,7 +341,7 @@ FigureViewer.prototype.AddDescription = function() {
       plot.xScaleBottom = scale;
       xAxisBottom.scale(plot.xScaleBottom);
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "x axis bottom")
         .attr("transform", "translate(0," + height_bottom + ")")
         .call(xAxisBottom);
@@ -350,14 +350,14 @@ FigureViewer.prototype.AddDescription = function() {
         var domain = brush.empty() ? plot.xScaleBottom.domain() : brush.extent();
         plot.SetXDomain(domain[0], domain[1]);
         plot.UpdatePlot(plot.figure_size);
-        plot.svg.select(".x.axis").call(plot.xAxis);
+        plot.main_group.select(".x.axis").call(plot.xAxis);
       };
 
       var brush = d3.svg.brush()
         .x(plot.xScaleBottom)
         .on("brush", plot.on_xaxis_brush_change);
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "x brush")
         .call(brush)
         .selectAll("rect")
@@ -382,7 +382,7 @@ FigureViewer.prototype.AddDescription = function() {
       plot.yScaleLeft = scale;
       yAxisLeft.scale(plot.yScaleLeft);
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "y axis left")
         .attr("transform", "translate(" + width_left + ",0)")
         .call(yAxisLeft);
@@ -391,14 +391,14 @@ FigureViewer.prototype.AddDescription = function() {
         var domain = brush.empty() ? plot.yScaleLeft.domain() : brush.extent();
         plot.SetYDomain(domain[0], domain[1]);
         plot.UpdatePlot(plot.figure_size);
-        plot.svg.select(".y.axis").call(plot.yAxis);
+        plot.main_group.select(".y.axis").call(plot.yAxis);
       };
 
       var brush = d3.svg.brush()
         .y(plot.yScaleLeft)
         .on("brush", plot.on_yaxis_brush_change);
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "y brush")
         .call(brush)
         .selectAll("rect")
@@ -419,7 +419,7 @@ FigureViewer.prototype.Draw = function() {
 
 function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
   var plot = new FigureViewer();
-  var progress = show_loading_spin_arc(plot.svg, plot.width, plot.height);
+  var progress = show_loading_spin_arc(plot.main_group, plot.width, plot.height);
 
   var xhr = d3.json(url)
     .on("load", function(dat) {

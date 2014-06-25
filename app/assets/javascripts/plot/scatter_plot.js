@@ -112,7 +112,7 @@ ScatterPlot.prototype.AddPlot = function() {
   colorScalePoint.domain( this.colorScale.domain() ).nice();
 
   function add_color_map_group() {
-    var color_map = plot.svg.append("g")
+    var color_map = plot.main_group.append("g")
       .attr({
         "transform": "translate(" + plot.width + "," + plot.margin.top + ")",
         "id": "color-map-group"
@@ -149,7 +149,7 @@ ScatterPlot.prototype.AddPlot = function() {
   add_color_map_group();
 
   function add_voronoi_group() {
-    var voronoi_group = plot.svg.append("g")
+    var voronoi_group = plot.main_group.append("g")
       .attr("id", "voronoi-group");
   }
   add_voronoi_group();
@@ -162,7 +162,7 @@ ScatterPlot.prototype.AddPlot = function() {
         average: v[1], error: v[2], psid: v[3]
       };
     });
-    var point = plot.svg.append("g")
+    var point = plot.main_group.append("g")
       .attr("id", "point-group");
     point.selectAll("circle")
       .data(mapped)
@@ -206,14 +206,14 @@ ScatterPlot.prototype.UpdatePlot = function() {
 
   function update_color_scale() {
     var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(plot.colorScale.range());
-    plot.svg.select("g#color-map-group").selectAll("rect")
+    plot.main_group.select("g#color-map-group").selectAll("rect")
       .attr("fill", function(d) { return scale(d); });
 
-    plot.svg.select("#result-range-max")
+    plot.main_group.select("#result-range-max")
       .text( plot.colorScale.domain()[2] );
-    plot.svg.select("#result-range-middle")
+    plot.main_group.select("#result-range-middle")
       .text( plot.colorScale.domain()[1] );
-    plot.svg.select("#result-range-min")
+    plot.main_group.select("#result-range-min")
       .text( plot.colorScale.domain()[0] );
   }
   update_color_scale();
@@ -221,7 +221,7 @@ ScatterPlot.prototype.UpdatePlot = function() {
   function update_voronoi_group() {
     var result_min_val = d3.min( plot.data.data, function(d) { return d[1];});
     var result_max_val = d3.max( plot.data.data, function(d) { return d[1];});
-    var voronoi = plot.svg.select("g#voronoi-group");
+    var voronoi = plot.main_group.select("g#voronoi-group");
     var d3voronoi = d3.geom.voronoi()
       .clipExtent([[0, 0], [plot.width, plot.height]]);
     var filtered_data = plot.data.data.filter(function(v) {
@@ -267,7 +267,7 @@ ScatterPlot.prototype.UpdatePlot = function() {
   update_voronoi_group();
 
   function update_point_group() {
-    var point = plot.svg.select("g#point-group");
+    var point = plot.main_group.select("g#point-group");
     point.selectAll("circle")
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .attr("cx", function(d) { return plot.xScale(d.x);})
@@ -342,7 +342,7 @@ ScatterPlot.prototype.AddDescription = function() {
       xScaleBottom = scale;
       xAxisBottom.scale(xScaleBottom);
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "x axis bottom")
         .attr("transform", "translate(0," + height_bottom + ")")
         .call(xAxisBottom);
@@ -351,14 +351,14 @@ ScatterPlot.prototype.AddDescription = function() {
         var domain = brush.empty() ? xScaleBottom.domain() : brush.extent();
         plot.SetXDomain(domain[0], domain[1]);
         plot.UpdatePlot();
-        plot.svg.select(".x.axis").call(plot.xAxis);
+        plot.main_group.select(".x.axis").call(plot.xAxis);
       };
 
       var brush = d3.svg.brush()
         .x(xScaleBottom)
         .on("brush", plot.on_xaxis_brush_change);
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "x brush")
         .call(brush)
         .selectAll("rect")
@@ -366,7 +366,7 @@ ScatterPlot.prototype.AddDescription = function() {
         .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
         .attr("height", 16);
     }
-    add_xaxis_controller();
+    //add_xaxis_controller();
 
     function add_yaxis_controller() {
       var width_left = -plot.margin.left + 50;
@@ -383,7 +383,7 @@ ScatterPlot.prototype.AddDescription = function() {
       yScaleLeft = scale;
       yAxisLeft.scale(yScaleLeft);
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "y axis left")
         .attr("transform", "translate(" + width_left + ",0)")
         .call(yAxisLeft);
@@ -392,14 +392,14 @@ ScatterPlot.prototype.AddDescription = function() {
         var domain = brush.empty() ? yScaleLeft.domain() : brush.extent();
         plot.SetYDomain(domain[0], domain[1]);
         plot.UpdatePlot();
-        plot.svg.select(".y.axis").call(plot.yAxis);
+        plot.main_group.select(".y.axis").call(plot.yAxis);
       };
 
       var brush = d3.svg.brush()
         .y(yScaleLeft)
         .on("brush", plot.on_yaxis_brush_change);
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "y brush")
         .call(brush)
         .selectAll("rect")
@@ -407,10 +407,10 @@ ScatterPlot.prototype.AddDescription = function() {
         .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
         .attr("width", 16);
     }
-    add_yaxis_controller();
+    //add_yaxis_controller();
 
     function add_result_scale_controller() {
-      var pattern = plot.svg.select("defs").append("pattern");
+      var pattern = plot.main_group.select("defs").append("pattern");
       pattern
         .attr("id", "TrianglePattern")
         .attr("patternUnits", "userSpaceOnUse")
@@ -540,6 +540,59 @@ ScatterPlot.prototype.AddDescription = function() {
     add_result_scale_controller();
   }
   add_tools();
+
+  function add_brush() {
+    plot.description.append("br");
+    var control_plot = plot.description.append("div");
+    var clone = plot.svg.node().cloneNode(true);
+    var control_svg = d3.select(clone);
+    control_svg
+      .attr("width","240")
+      .attr("height","215")
+      .attr("viewBox","0 0 780 580");
+
+    control_plot[0][0].appendChild(clone);
+    var x = d3.scale.linear().range([0, plot.width]);
+    var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+    var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+    x.domain(
+      [
+        x_min,
+        x_max
+      ]).nice();
+
+    var y = d3.scale.linear().range([plot.height, 0]);
+    var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+    var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+    y.domain(
+      [
+        y_min,
+        y_max
+      ]).nice();
+
+    var brush = d3.svg.brush()
+      .x(x)
+      .y(y)
+      .on("brush", brushed);
+
+    var cloned_main_group = d3.select(clone.children[0])
+      .attr("transform", "translate(20,0)");
+    cloned_main_group.append("g")
+      .attr("class", "brush")
+      .call(brush)
+      .selectAll("rect")
+      .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
+
+    function brushed() {
+      var domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
+      plot.SetXDomain(domain[0][0], domain[1][0]);
+      plot.SetYDomain(domain[0][1], domain[1][1]);
+      plot.UpdatePlot();
+      plot.main_group.select(".x.axis").call(plot.xAxis);
+      plot.main_group.select(".y.axis").call(plot.yAxis);
+    }
+  }
+  add_brush();
 };
 
 ScatterPlot.prototype.Draw = function() {
@@ -550,7 +603,7 @@ ScatterPlot.prototype.Draw = function() {
 
 function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
   var plot = new ScatterPlot();
-  var progress = show_loading_spin_arc(plot.svg, plot.width, plot.height);
+  var progress = show_loading_spin_arc(plot.main_group, plot.width, plot.height);
 
   var xhr = d3.json(url)
     .on("load", function(dat) {

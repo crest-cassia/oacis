@@ -6,7 +6,8 @@ function Plot() {
     .attr({
       "width": this.width + this.margin.left + this.margin.right,
       "height": this.height + this.margin.top + this.margin.bottom
-    })
+    });
+  this.main_group = this.svg
     .append("g")
       .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 }
@@ -34,7 +35,7 @@ Plot.prototype.Init = function(data, url, parameter_set_base_url, current_ps_id)
   this.SetXScale("linear");
   this.SetYScale("linear");
 
-  this.svg.append("defs").append("clipPath")
+  this.main_group.append("defs").append("clipPath")
     .attr("id", "clip")
     .append("rect")
     .attr("x", -5) // 5 is radius of large point
@@ -47,7 +48,7 @@ Plot.prototype.Destructor = function() { this.row.remove(); };
 
 Plot.prototype.AddAxis = function() {
   // X-Axis
-  this.svg.append("g")
+  this.main_group.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + this.height + ")")
     .append("text")
@@ -57,7 +58,7 @@ Plot.prototype.AddAxis = function() {
       .text(this.data.xlabel);
 
   // Y-Axis
-  this.svg.append("g")
+  this.main_group.append("g")
     .attr("class", "y axis")
     .append("text")
       .attr("transform", "rotate(-90)")
@@ -73,7 +74,7 @@ Plot.prototype.SetXScale = null;// IMPLEMENE ME
 Plot.prototype.SetYScale = null;// IMPLEMENT ME
 
 Plot.prototype.UpdateAxis = function() {
-  this.svg.select(".x.axis").call(this.xAxis);
-  this.svg.select(".y.axis").call(this.yAxis);
+  this.main_group.select(".x.axis").call(this.xAxis);
+  this.main_group.select(".y.axis").call(this.yAxis);
 };
 

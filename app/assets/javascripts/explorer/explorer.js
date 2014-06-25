@@ -9,7 +9,7 @@ ParameterExplorer.prototype.current_xaxis_key = null;
 ParameterExplorer.prototype.current_yaxis_key = null;
 
 ParameterExplorer.prototype.show_progress_arc = function() {
-  var g = this.scatter_plot.svg.append("g")
+  var g = this.scatter_plot.main_group.append("g")
     .attr({
       "transform": "translate(" + (this.scatter_plot.margin.left) + "," + (this.scatter_plot.margin.top) + ")",
       "id": "progress_arc_group"

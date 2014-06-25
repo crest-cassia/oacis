@@ -103,7 +103,7 @@ LinePlot.prototype.AddPlot = function() {
   var colorScale = d3.scale.category10();
 
   function add_series_group() {
-    var series = plot.svg
+    var series = plot.main_group
       .selectAll("g")
       .data(plot.data.data)
       .enter().append("g")
@@ -173,7 +173,7 @@ LinePlot.prototype.AddPlot = function() {
   add_series_group();
 
   function add_legend_group() {
-    var legend_region = plot.svg.append("g")
+    var legend_region = plot.main_group.append("g")
       .attr("id", "legend-group")
       .attr("transform", "translate(" + plot.width + "," + 0 + ")");
     var legend = legend_region.append("g")
@@ -223,7 +223,7 @@ LinePlot.prototype.UpdatePlot = function() {
     .y( function(d) { return plot.yScale(d[1]);} );
 
   function update_series() {
-    var series = plot.svg.selectAll("g.series");
+    var series = plot.main_group.selectAll("g.series");
     // draw line path
     series.selectAll("path").attr("d", function(d) { return line(d);});
 
@@ -366,7 +366,7 @@ LinePlot.prototype.AddDescription = function() {
       };
       SetXScaleBottom("linear");
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "x axis bottom")
         .attr("transform", "translate(0," + height_bottom + ")")
         .call(xAxisBottom);
@@ -375,14 +375,14 @@ LinePlot.prototype.AddDescription = function() {
         var domain = brush.empty() ? xScaleBottom.domain() : brush.extent();
         plot.SetXDomain(domain[0], domain[1]);
         plot.UpdatePlot();
-        plot.svg.select(".x.axis").call(plot.xAxis);
+        plot.main_group.select(".x.axis").call(plot.xAxis);
       };
 
       var brush = d3.svg.brush()
         .x(xScaleBottom)
         .on("brush", plot.on_xaxis_brush_change);
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "x brush")
         .call(brush)
         .selectAll("rect")
@@ -390,7 +390,7 @@ LinePlot.prototype.AddDescription = function() {
         .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
         .attr("height", 16);
     }
-    add_xaxis_controller();
+    //add_xaxis_controller();
 
     function add_yaxis_controller() {
       var width_left = -plot.margin.left + 50;
@@ -428,7 +428,7 @@ LinePlot.prototype.AddDescription = function() {
       };
       SetYScaleLeft("linear");
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "y axis left")
         .attr("transform", "translate(" + width_left + ",0)")
         .call(yAxisLeft);
@@ -437,14 +437,14 @@ LinePlot.prototype.AddDescription = function() {
         var domain = brush.empty() ? yScaleLeft.domain() : brush.extent();
         plot.SetYDomain(domain[0], domain[1]);
         plot.UpdatePlot();
-        plot.svg.select(".y.axis").call(plot.yAxis);
+        plot.main_group.select(".y.axis").call(plot.yAxis);
       };
 
       var brush = d3.svg.brush()
         .y(yScaleLeft)
         .on("brush", plot.on_yaxis_brush_change);
 
-      plot.svg.append("g")
+      plot.main_group.append("g")
         .attr("class", "y brush")
         .call(brush)
         .selectAll("rect")
@@ -452,9 +452,62 @@ LinePlot.prototype.AddDescription = function() {
         .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
         .attr("width", 16);
     }
-    add_yaxis_controller();
+    //add_yaxis_controller();
   }
   add_tools();
+
+  function add_brush() {
+    plot.description.append("br");
+    var control_plot = plot.description.append("div");
+    var clone = plot.svg.node().cloneNode(true);
+    var control_svg = d3.select(clone);
+    control_svg
+      .attr("width","240")
+      .attr("height","215")
+      .attr("viewBox","0 0 780 580");
+
+    control_plot[0][0].appendChild(clone);
+    var x = d3.scale.linear().range([0, plot.width]);
+    var x_min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[0];});});
+    var x_max = d3.max( plot.data.data, function(r) { return d3.max(r, function(v) { return v[0];});});
+    x.domain(
+      [
+        x_min,
+        x_max
+      ]).nice();
+
+    var y = d3.scale.linear().range([plot.height, 0]);
+    var y_min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];});});
+    var y_max = d3.max( plot.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];});});
+    y.domain(
+      [
+        y_min,
+        y_max
+      ]).nice();
+
+    var brush = d3.svg.brush()
+      .x(x)
+      .y(y)
+      .on("brush", brushed);
+
+    var cloned_main_group = d3.select(clone.children[0])
+      .attr("transform", "translate(20,0)");
+    cloned_main_group.append("g")
+      .attr("class", "brush")
+      .call(brush)
+      .selectAll("rect")
+      .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
+
+    function brushed() {
+      var domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
+      plot.SetXDomain(domain[0][0], domain[1][0]);
+      plot.SetYDomain(domain[0][1], domain[1][1]);
+      plot.UpdatePlot();
+      plot.main_group.select(".x.axis").call(plot.xAxis);
+      plot.main_group.select(".y.axis").call(plot.yAxis);
+    }
+  }
+  add_brush();
 };
 
 LinePlot.prototype.Draw = function() {
@@ -465,7 +518,7 @@ LinePlot.prototype.Draw = function() {
 
 function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
   var plot = new LinePlot();
-  var progress = show_loading_spin_arc(plot.svg, plot.width, plot.height);
+  var progress = show_loading_spin_arc(plot.main_group, plot.width, plot.height);
   var xhr = d3.json(url)
     .on("load", function(dat) {
       progress.remove();
