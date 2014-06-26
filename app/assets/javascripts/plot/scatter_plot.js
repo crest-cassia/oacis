@@ -1,13 +1,12 @@
 function ScatterPlot() {
   Plot.call(this);// call constructor of Plot
+  this.colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
+  this.colorScalePoint = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
 }
 
 ScatterPlot.prototype = Object.create(Plot.prototype);// ScatterPlot is sub class of Plot
 ScatterPlot.prototype.constructor = ScatterPlot;// override constructor
-ScatterPlot.prototype.on_xaxis_brush_change = null;
-ScatterPlot.prototype.on_yaxis_brush_change = null;
 ScatterPlot.prototype.IsLog = [false, false];   // true if x/y scale is log
-ScatterPlot.prototype.colorScale = null;
 
 ScatterPlot.prototype.SetXScale = function(xscale) {
   var plot = this;
@@ -106,10 +105,8 @@ ScatterPlot.prototype.AddPlot = function() {
 
   var result_min_val = d3.min( this.data.data, function(d) { return d[1];});
   var result_max_val = d3.max( this.data.data, function(d) { return d[1];});
-  this.colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
-  var colorScalePoint = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
   this.colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
-  colorScalePoint.domain( this.colorScale.domain() ).nice();
+  this.colorScalePoint.domain( this.colorScale.domain() ).nice();
 
   function add_color_map_group() {
     var color_map = plot.main_group.append("g")
@@ -169,7 +166,7 @@ ScatterPlot.prototype.AddPlot = function() {
       .enter()
         .append("circle")
         .attr("clip-path", "url(#clip)")
-        .style("fill", function(d) { return colorScalePoint(d.average);})
+        .style("fill", function(d) { return plot.colorScalePoint(d.average);})
         .on("mouseover", function(d) {
           tooltip.transition()
             .duration(200)
@@ -215,6 +212,9 @@ ScatterPlot.prototype.UpdatePlot = function() {
       .text( plot.colorScale.domain()[1] );
     plot.main_group.select("#result-range-min")
       .text( plot.colorScale.domain()[0] );
+
+    plot.main_group.selectAll("circle")
+      .style("fill", function(d) { return plot.colorScalePoint(d.average);});
   }
   update_color_scale();
 
@@ -309,8 +309,19 @@ ScatterPlot.prototype.AddDescription = function() {
       } else {
         new_scale = "linear";
       }
+      var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+      var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+      var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+      var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+      var axis_domain = [[x_min,y_min],[x_max, y_max]];
+      plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
+      plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
       plot.SetXScale(new_scale);
       plot.UpdatePlot();
+      while (control_plot[0][0].firstChild) {
+        control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+      }
+      add_brush();
     });
     plot.description.append("span").html("log scale on x axis");
     plot.description.append("br");
@@ -322,92 +333,73 @@ ScatterPlot.prototype.AddDescription = function() {
       } else {
         new_scale = "linear";
       }
+      var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+      var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+      var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+      var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+      var axis_domain = [[x_min,y_min],[x_max, y_max]];
+      plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
+      plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
       plot.SetYScale(new_scale);
       plot.UpdatePlot();
+      while (control_plot[0][0].firstChild) {
+        control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+      }
+      add_brush();
     });
     plot.description.append("span").html("log scale on y axis");
 
-    function add_xaxis_controller() {
-      var height_bottom = plot.height +plot.margin.bottom - 40;
-      var xScaleBottom = null;
-      var xAxisBottom = d3.svg.axis().orient("bottom");
-      var scale = null, min, max;
-      scale = d3.scale.linear().range([0, plot.width]);
-      min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-      max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-      scale.domain([
-          min,
-          max
+    plot.description.append("br");
+    var control_plot = plot.description.append("div");
+    function add_brush() {
+      var clone = plot.svg.node().cloneNode(true);
+      d3.select(clone)
+        .attr("width","240")
+        .attr("height","215")
+        .attr("viewBox","0 0 780 580");
+
+      control_plot[0][0].appendChild(clone);
+      var x = d3.scale.linear().range([0, plot.width]);
+      var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+      var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+      x.domain(
+          [
+          x_min,
+          x_max
           ]).nice();
-      xScaleBottom = scale;
-      xAxisBottom.scale(xScaleBottom);
 
-      plot.main_group.append("g")
-        .attr("class", "x axis bottom")
-        .attr("transform", "translate(0," + height_bottom + ")")
-        .call(xAxisBottom);
+      var y = d3.scale.linear().range([plot.height, 0]);
+      var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+      var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+      y.domain(
+          [
+          y_min,
+          y_max
+          ]).nice();
 
-      plot.on_xaxis_brush_change = function() {
-        var domain = brush.empty() ? xScaleBottom.domain() : brush.extent();
-        plot.SetXDomain(domain[0], domain[1]);
+      var brush = d3.svg.brush()
+        .x(x)
+        .y(y)
+        .on("brush", brushed);
+
+      var cloned_main_group = d3.select(clone.children[0])
+        .attr("transform", "translate(20,0)");
+      cloned_main_group.append("g")
+        .attr("class", "brush")
+        .call(brush)
+        .selectAll("rect")
+        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
+
+      function brushed() {
+        var domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
+        plot.SetXDomain(domain[0][0], domain[1][0]);
+        plot.SetYDomain(domain[0][1], domain[1][1]);
         plot.UpdatePlot();
         plot.main_group.select(".x.axis").call(plot.xAxis);
-      };
-
-      var brush = d3.svg.brush()
-        .x(xScaleBottom)
-        .on("brush", plot.on_xaxis_brush_change);
-
-      plot.main_group.append("g")
-        .attr("class", "x brush")
-        .call(brush)
-        .selectAll("rect")
-        .attr("y", height_bottom-8)
-        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
-        .attr("height", 16);
-    }
-    //add_xaxis_controller();
-
-    function add_yaxis_controller() {
-      var width_left = -plot.margin.left + 50;
-      var YScaleLeft = null;
-      var yAxisLeft = d3.svg.axis().orient("left");
-      var scale = null, min, max;
-      scale = d3.scale.linear().range([plot.height, 0]);
-      min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-      max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-      scale.domain([
-          min,
-          max
-          ]).nice();
-      yScaleLeft = scale;
-      yAxisLeft.scale(yScaleLeft);
-
-      plot.main_group.append("g")
-        .attr("class", "y axis left")
-        .attr("transform", "translate(" + width_left + ",0)")
-        .call(yAxisLeft);
-
-      plot.on_yaxis_brush_change = function() {
-        var domain = brush.empty() ? yScaleLeft.domain() : brush.extent();
-        plot.SetYDomain(domain[0], domain[1]);
-        plot.UpdatePlot();
         plot.main_group.select(".y.axis").call(plot.yAxis);
-      };
-
-      var brush = d3.svg.brush()
-        .y(yScaleLeft)
-        .on("brush", plot.on_yaxis_brush_change);
-
-      plot.main_group.append("g")
-        .attr("class", "y brush")
-        .call(brush)
-        .selectAll("rect")
-        .attr("x", width_left-8)
-        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"})
-        .attr("width", 16);
+      }
     }
-    //add_yaxis_controller();
+    add_brush();
 
     function add_result_scale_controller() {
       var pattern = plot.main_group.select("defs").append("pattern");
@@ -426,22 +418,20 @@ ScatterPlot.prototype.AddDescription = function() {
         .attr("fill", "black");
 
       plot.description.append("br");
-      plot.description.append("input").attr("type", "color")
-        .attr("value", plot.colorScale.range()[2])
-        .style("width", "25px")
-        .on("change", function() {
-          var range = plot.colorScale.range();
-          try{
-            range[2] = this.value;
-            plot.colorScale.range(range);
-            plot.UpdatePlot();
-          } catch(e) {
-            alert(e);
-          }
-        });
-      plot.description.append("input").attr("type", "text")
+      plot.description.append("div").text("Result range :");
+      var table = plot.description.append("table");
+      var tr = table.append("tr");
+      tr.append("td").text("Max.");
+      tr.append("td").append("input").attr("type", "text").attr("id", "range-max");
+      tr = table.append("tr");
+      tr.append("td").text("Mid.");
+      tr.append("td").append("input").attr("type", "text").attr("id", "range-mid");
+      tr = table.append("tr");
+      tr.append("td").text("Min.");
+      tr.append("td").append("input").attr("type", "text").attr("id", "range-min");
+
+      plot.description.select("#range-max")
         .attr("value", plot.colorScale.domain()[2])
-        .style("width", "2em")
         .on("change", function() {
           var domain = plot.colorScale.domain();
           try{
@@ -453,31 +443,27 @@ ScatterPlot.prototype.AddDescription = function() {
             this.value=""+domain[2];
           } else {
             domain[2] = Number(this.value);
+            var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+            var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+            var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+            var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+            var axis_domain = [[x_min,y_min],[x_max, y_max]];
+            plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
+            plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
             plot.colorScale.domain(domain);
+            plot.colorScalePoint.domain(domain);
             plot.UpdatePlot();
+            while (control_plot[0][0].firstChild) {
+                  control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+            }
+            add_brush();
           }
           } catch(e) {
             alert(e);
           }
         });
-      plot.description.append("span").html("range max");
-      plot.description.append("br");
-      plot.description.append("input").attr("type", "color")
-        .attr("value", plot.colorScale.range()[1])
-        .style("width", "25px")
-        .on("change", function() {
-          var range = plot.colorScale.range();
-          try{
-            range[1] = this.value;
-            plot.colorScale.range(range);
-            plot.UpdatePlot();
-          } catch(e) {
-            alert(e);
-          }
-        });
-      plot.description.append("input").attr("type", "text")
+      plot.description.select("#range-mid")
         .attr("value", plot.colorScale.domain()[1])
-        .style("width", "2em")
         .on("change", function() {
           var domain = plot.colorScale.domain();
           try{
@@ -492,31 +478,27 @@ ScatterPlot.prototype.AddDescription = function() {
             this.value=""+domain[1];
           } else {
             domain[1] = Number(this.value);
+            var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+            var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+            var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+            var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+            var axis_domain = [[x_min,y_min],[x_max, y_max]];
+            plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
+            plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
             plot.colorScale.domain(domain);
+            plot.colorScalePoint.domain(domain);
             plot.UpdatePlot();
+            while (control_plot[0][0].firstChild) {
+                  control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+            }
+            add_brush();
           }
           } catch(e) {
             alert(e);
           }
         });
-      plot.description.append("span").html("range middle");
-      plot.description.append("br");
-      plot.description.append("input").attr("type", "color")
-        .attr("value", plot.colorScale.range()[0])
-        .style("width", "25px")
-        .on("change", function() {
-          var range = plot.colorScale.range();
-          try{
-            range[0] = this.value;
-            plot.colorScale.range(range);
-            plot.UpdatePlot();
-          } catch(e) {
-            alert(e);
-          }
-        });
-      plot.description.append("input").attr("type", "text")
+      plot.description.select("#range-min")
         .attr("value", plot.colorScale.domain()[0])
-        .style("width", "2em")
         .on("change", function() {
           var domain = plot.colorScale.domain();
           try{
@@ -528,71 +510,30 @@ ScatterPlot.prototype.AddDescription = function() {
             this.value=""+domain[0];
           } else {
             domain[0] = Number(this.value);
+            var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+            var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+            var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+            var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+            var axis_domain = [[x_min,y_min],[x_max, y_max]];
+            plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
+            plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
             plot.colorScale.domain(domain);
+            plot.colorScalePoint.domain(domain);
             plot.UpdatePlot();
+            while (control_plot[0][0].firstChild) {
+                  control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+            }
+            add_brush();
           }
           } catch(e) {
             alert(e);
           }
         });
-      plot.description.append("span").html("range min");
     }
     add_result_scale_controller();
   }
   add_tools();
 
-  function add_brush() {
-    plot.description.append("br");
-    var control_plot = plot.description.append("div");
-    var clone = plot.svg.node().cloneNode(true);
-    var control_svg = d3.select(clone);
-    control_svg
-      .attr("width","240")
-      .attr("height","215")
-      .attr("viewBox","0 0 780 580");
-
-    control_plot[0][0].appendChild(clone);
-    var x = d3.scale.linear().range([0, plot.width]);
-    var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-    var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-    x.domain(
-      [
-        x_min,
-        x_max
-      ]).nice();
-
-    var y = d3.scale.linear().range([plot.height, 0]);
-    var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-    var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-    y.domain(
-      [
-        y_min,
-        y_max
-      ]).nice();
-
-    var brush = d3.svg.brush()
-      .x(x)
-      .y(y)
-      .on("brush", brushed);
-
-    var cloned_main_group = d3.select(clone.children[0])
-      .attr("transform", "translate(20,0)");
-    cloned_main_group.append("g")
-      .attr("class", "brush")
-      .call(brush)
-      .selectAll("rect")
-      .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
-
-    function brushed() {
-      var domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
-      plot.SetXDomain(domain[0][0], domain[1][0]);
-      plot.SetYDomain(domain[0][1], domain[1][1]);
-      plot.UpdatePlot();
-      plot.main_group.select(".x.axis").call(plot.xAxis);
-      plot.main_group.select(".y.axis").call(plot.yAxis);
-    }
-  }
-  add_brush();
 };
 
 ScatterPlot.prototype.Draw = function() {

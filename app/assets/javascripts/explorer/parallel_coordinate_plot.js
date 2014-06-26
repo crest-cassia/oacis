@@ -1,6 +1,7 @@
 function ParallelCoordinatePlot(pe_plot) {
   this.row = d3.select("#pc-plot").insert("div","div").attr("class", "row");
   this.pe_plot = pe_plot;
+  this.colorScale = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
 }
 
 ParallelCoordinatePlot.prototype.margin = {top: 50, right: 100, bottom: 50, left: 100};
@@ -109,12 +110,12 @@ ParallelCoordinatePlot.prototype.Update = function() {
   var dimensions = main_group.selectAll(".dimension").data();
   var xScale = this.xScale;
   var yScales = this.yScales;
-  var colorScale = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
   var min = d3.min( this.data.data, function(v) { return v[1];});
   var max = d3.max( this.data.data, function(v) { return v[1];});
   var middle = (min + max) / 2.0;
   var domain = [ min, middle, max ];
-  colorScale.domain(domain).nice();
+  //this.colorScale.domain(domain).nice();
+  this.colorScale.domain(this.pe_plot.scatter_plot.colorScale.domain());
 
   function redraw_path() {
     d3.selectAll('g.pcp-path').remove();
@@ -143,7 +144,7 @@ ParallelCoordinatePlot.prototype.Update = function() {
         return d[3] == plot.current_ps_id ? 3 : 1;
       })
       .attr("stroke", function(d) {
-        if( colorScale ) { return colorScale(d[1]); }
+        if( plot.colorScale ) { return plot.colorScale(d[1]); }
         else { return "steelblue"; }
       });
   }
