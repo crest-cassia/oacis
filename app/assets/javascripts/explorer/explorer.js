@@ -38,7 +38,7 @@ ParameterExplorer.prototype.Update = function() {
     progress.remove();
     plot.scatter_plot.Destructor();
     plot.scatter_plot = new ScatterPlot();
-    plot.scatter_plot.Init(dat, url, "/parameter_set/", plot.current_ps_id);
+    plot.scatter_plot.Init(dat, url, "/parameter_sets/", plot.current_ps_id);
     plot.scatter_plot.Draw();
     if(plot.pc_plot.data) {
       plot.pc_plot.data = dat;
