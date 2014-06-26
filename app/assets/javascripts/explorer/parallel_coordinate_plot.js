@@ -25,7 +25,8 @@ ParallelCoordinatePlot.prototype.Init = function(data, current_ps_id) {
       "width": this.width + this.margin.left + this.margin.right,
       "height": this.height + this.margin.top + this.margin.bottom,
       "id": "pc-plot-svg"
-    })
+    });
+  var main_group = svg
     .append("g")
     .attr({
       "transform": "translate(" + this.margin.left + "," + this.margin.top + ")",
@@ -46,7 +47,7 @@ ParallelCoordinatePlot.prototype.Init = function(data, current_ps_id) {
 
   function draw_axis() {
     var xScale = plot.xScale;
-    var dimension_g = svg.selectAll(".dimension")
+    var dimension_g = main_group.selectAll(".dimension")
       .data(dimensions)
       .enter().append("svg:g")
       .attr("class", "dimension")
@@ -64,9 +65,15 @@ ParallelCoordinatePlot.prototype.Init = function(data, current_ps_id) {
       .text(String); // set text to the data values
   }
   draw_axis();
+  svg.selectAll('.pcp-axis path, .pcp-axis line')
+    .style({
+      "fill": "none",
+      "stroke": "#000",
+      "shape-rendering": "crispEdges"
+    });
 
   function set_brsuh() {
-    svg.selectAll(".dimension").each(function(key) {
+    main_group.selectAll(".dimension").each(function(key) {
       function update_modified_domain(key) {
         var domain = plot.brushes[key].empty() ? plot.ranges[key] : plot.brushes[key].extent();
         if(!plot.brushes[key].empty()) {
@@ -98,8 +105,8 @@ ParallelCoordinatePlot.prototype.Destructor = function() {
 
 ParallelCoordinatePlot.prototype.Update = function() {
   var plot = this;
-  var svg = d3.select('#pc-plot-group');
-  var dimensions = svg.selectAll(".dimension").data();
+  var main_group = d3.select('#pc-plot-group');
+  var dimensions = main_group.selectAll(".dimension").data();
   var xScale = this.xScale;
   var yScales = this.yScales;
   var colorScale = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
@@ -111,7 +118,7 @@ ParallelCoordinatePlot.prototype.Update = function() {
 
   function redraw_path() {
     d3.selectAll('g.pcp-path').remove();
-    var pcp_path = svg.append("svg:g")
+    var pcp_path = main_group.append("svg:g")
       .attr("class", "pcp-path")
       .selectAll("path")
       .data(plot.data.data);

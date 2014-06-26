@@ -62,28 +62,6 @@
     #plot{data: urls }
       #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
 
-:css
-  .axis path,
-  .axis line,
-  .pcp-axis path,
-  .pcp-axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-  }
-  div.plot-tooltip {
-    position: absolute;
-    text-align: center;
-    padding: 2px;
-    font: 12px sans-serif;
-    background: black;
-    color: white;
-    border: 0px;
-    border-radius: 8px;
-    pointer-events: none;
-    z-index: 10;
-  }
-
 :javascript
   var parameter_explorer = new ParameterExplorer();
   $(function() {

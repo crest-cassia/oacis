@@ -7,6 +7,19 @@ function Plot() {
       "width": this.width + this.margin.left + this.margin.right,
       "height": this.height + this.margin.top + this.margin.bottom
     });
+  this.svg.selectAll("dvi.plot-tooltip")
+    .style({
+      "position": "absolute",
+      "text-align": "center",
+      "padding": "2px",
+      "font": "12px sans-serif",
+      "background": "black",
+      "color": "white",
+      "border": "0px",
+      "border-radius": "8px",
+      "pointer-events": "none",
+      "z-index": "10"
+    });
   this.main_group = this.svg
     .append("g")
       .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
@@ -68,6 +81,12 @@ Plot.prototype.AddAxis = function() {
       .text(this.data.ylabel);
 
   this.UpdateAxis();
+  this.svg.selectAll('.axis line, .axis path')
+    .style({
+      "fill": "none",
+      "stroke": "#000",
+      "shape-rendering": "crispEdges"
+    });
 };
 
 Plot.prototype.SetXScale = null;// IMPLEMENE ME
