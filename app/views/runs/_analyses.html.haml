@@ -14,9 +14,11 @@
 
   :javascript
     $(function() {
-      $('#analysis_analyzer').change(function(){
-        $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
+      var show_analysis_parameter_form = function() {
+        $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',$('#analysis_analyzer').val()), function(data) {
           $('#parameters_form').html(data)
         });
-      });
+      }
+      $('#analysis_analyzer').change(show_analysis_parameter_form);
+      show_analysis_parameter_form();
     });
