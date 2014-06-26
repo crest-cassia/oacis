@@ -15,7 +15,7 @@ class Simulator
   has_many :parameter_sets, dependent: :destroy
   has_many :runs
   has_many :parameter_set_queries, dependent: :destroy
-  has_many :analyzers, dependent: :destroy
+  has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
   has_and_belongs_to_many :executable_on, class_name: "Host", inverse_of: :executable_simulators
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}

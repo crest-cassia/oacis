@@ -42,7 +42,9 @@ class SimulatorsController < ApplicationController
 
   # GET /simulators/1/duplicate
   def duplicate
-    @simulator = Simulator.find(params[:id]).clone
+    @duplicating_simulator = Simulator.find(params[:id])
+    @copied_analyzers = @duplicating_simulator.analyzers
+    @simulator = @duplicating_simulator.clone
     render :new
   end
 
@@ -55,6 +57,13 @@ class SimulatorsController < ApplicationController
   # POST /simulators.json
   def create
     @simulator = Simulator.new(params[:simulator])
+    if params[:duplicating_simulator]
+      @duplicating_simulator = Simulator.find(params[:duplicating_simulator])
+      @copied_analyzers = params[:copied_analyzers].to_a.map {|azr_id| Analyzer.find(azr_id) }
+      @copied_analyzers.each do |azr|
+        @simulator.analyzers.push azr.clone
+      end
+    end
 
     respond_to do |format|
       if @simulator.save
