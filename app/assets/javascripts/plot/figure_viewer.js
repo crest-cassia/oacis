@@ -316,9 +316,9 @@ FigureViewer.prototype.AddDescription = function() {
     });
     plot.description.append("span").html("log scale on y axis");
 
+    plot.description.append("br");
+    var control_plot = plot.description.append("div");
     function add_brush() {
-      plot.description.append("br");
-      var control_plot = plot.description.append("div");
       var clone = plot.svg.node().cloneNode(true);
       var control_svg = d3.select(clone);
       control_svg
@@ -330,21 +330,13 @@ FigureViewer.prototype.AddDescription = function() {
       var x = d3.scale.linear().range([0, plot.width]);
       var x_min = d3.min( plot.data.data, function(d) { return d[0];});
       var x_max = d3.max( plot.data.data, function(d) { return d[0];});
-      x.domain(
-        [
-          x_min,
-          x_max
-        ]).nice();
+      x.domain([x_min, x_max]).nice();
       plot.xaxis_original_domain = x.domain().concat();
 
       var y = d3.scale.linear().range([plot.height, 0]);
       var y_min = d3.min( plot.data.data, function(d) { return d[1];});
       var y_max = d3.max( plot.data.data, function(d) { return d[1];});
-      y.domain(
-        [
-          y_min,
-          y_max
-        ]).nice();
+      y.domain([y_min, y_max]).nice();
       plot.yaxis_original_domain = y.domain().concat();
 
       var brush = d3.svg.brush()
@@ -358,7 +350,7 @@ FigureViewer.prototype.AddDescription = function() {
         .attr("class", "brush")
         .call(brush)
         .selectAll("rect")
-        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
+        .style({"stroke": "orange", "stroke-width": 4, "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
 
       function brushed() {
         var domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();

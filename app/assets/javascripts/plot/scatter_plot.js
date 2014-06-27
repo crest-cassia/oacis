@@ -362,20 +362,12 @@ ScatterPlot.prototype.AddDescription = function() {
       var x = d3.scale.linear().range([0, plot.width]);
       var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
       var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-      x.domain(
-          [
-          x_min,
-          x_max
-          ]).nice();
+      x.domain([x_min, x_max]).nice();
 
       var y = d3.scale.linear().range([plot.height, 0]);
       var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
       var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-      y.domain(
-          [
-          y_min,
-          y_max
-          ]).nice();
+      y.domain([y_min, y_max]).nice();
 
       var brush = d3.svg.brush()
         .x(x)
@@ -388,7 +380,7 @@ ScatterPlot.prototype.AddDescription = function() {
         .attr("class", "brush")
         .call(brush)
         .selectAll("rect")
-        .style({stroke: "orange", "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
+        .style({"stroke": "orange", "stroke-width": 4, "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
 
       function brushed() {
         var domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
