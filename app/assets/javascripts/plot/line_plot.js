@@ -287,6 +287,19 @@ LinePlot.prototype.AddDescription = function() {
     var plt_url = plot.url.replace(/\.json/, '.plt');
     plot.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
     plot.description.append("br");
+    var downloadAsFile = function(fileName, content) {
+      var blob = new Blob([content]);
+      var url = window.URL || window.webkitURL;
+      var blobURL = url.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.download = fileName;
+      a.href = blobURL;
+      return a;
+    };
+    var a_link = downloadAsFile("line_plot.svg", $(plot.svg.node()).parent().html());
+    $(a_link).text("download svg");
+    plot.description.node().appendChild(a_link);
+    plot.description.append("br");
     plot.description.append("a").text("delete plot").style('cursor','pointer').on("click", function() {
       plot.Destructor();
     });

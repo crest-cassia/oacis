@@ -296,6 +296,19 @@ ScatterPlot.prototype.AddDescription = function() {
   function add_tools() {
     plot.description.append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
     plot.description.append("br");
+    var downloadAsFile = function(fileName, content) {
+      var blob = new Blob([content]);
+      var url = window.URL || window.webkitURL;
+      var blobURL = url.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.download = fileName;
+      a.href = blobURL;
+      return a;
+    };
+    var a_link = downloadAsFile("scatter_plot.svg", $(plot.svg.node()).parent().html());
+    $(a_link).text("download svg");
+    plot.description.node().appendChild(a_link);
+    plot.description.append("br");
     plot.description.append("a").text("delete plot").style('cursor','pointer').on("click", function() {
       plot.Destructor();
     });
