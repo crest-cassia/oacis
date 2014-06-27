@@ -216,7 +216,9 @@ describe SimulatorsController do
 
       it "assigns @duplicating_simulator and @copied_analyzers when invalid param is given" do
         @valid_post_parameter[:simulator][:name] = @sim.name
+        # remove one in order to verify the checkboxes are maintained when error is happened
         @valid_post_parameter[:copied_analyzers].shift
+
         post :create, @valid_post_parameter, valid_session
         assigns(:duplicating_simulator).should eq @sim
         assigns(:copied_analyzers).should have(1).items
