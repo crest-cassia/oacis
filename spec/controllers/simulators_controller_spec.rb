@@ -85,12 +85,17 @@ describe SimulatorsController do
       get :new, {}, valid_session
       assigns(:simulator).should be_a_new(Simulator)
     end
+
+    it "@duplicating_simulator is nil" do
+      get :new, {}, valid_session
+      assigns(:duplicating_simulator).should be_nil
+    end
   end
 
   describe "GET duplicate" do
 
     before(:each) do
-      @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 2)
     end
 
     it "assigns a new simulator as @simulator" do
@@ -100,6 +105,16 @@ describe SimulatorsController do
       assigns(:simulator).command.should eq @simulator.command
       keys = @simulator.parameter_definitions.map(&:key)
       assigns(:simulator).parameter_definitions.map(&:key).should eq keys
+    end
+
+    it "assigns the original simulator to @duplicating_simulator" do
+      get :duplicate, {id: @simulator}, valid_session
+      assigns(:duplicating_simulator).should eq @simulator
+    end
+
+    it "assigns analyzers of the original simulator to @copied_analyzers" do
+      get :duplicate, {id: @simulator}, valid_session
+      assigns(:copied_analyzers).should =~ @simulator.analyzers
     end
   end
 
@@ -154,6 +169,59 @@ describe SimulatorsController do
       it "redirects to the created simulator" do
         post :create, @valid_post_parameter, valid_session
         response.should redirect_to(Simulator.last)
+      end
+    end
+
+    describe "when duplicating a simulator" do
+
+      before(:each) do
+        @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 2)
+        definitions = @sim.parameter_definitions.map {|pd| {key: pd.key, type: pd.type} }
+        simulator = {
+          name: "duplicated", command: @sim.command, support_input_json: "0",
+          support_mpi: "0", support_omp: "1",
+          parameter_definitions_attributes: definitions
+        }
+        @valid_post_parameter = {
+          simulator: simulator,
+          duplicating_simulator: @sim.id, copied_analyzers: @sim.analyzers.map(&:id)
+        }
+      end
+
+      it "creates a new Simulator" do
+        expect {
+          post :create, @valid_post_parameter, valid_session
+        }.to change(Simulator, :count).by(1)
+      end
+
+      it "creates a new Analyzer" do
+        expect {
+          post :create, @valid_post_parameter, valid_session
+        }.to change(Analyzer, :count).by(2)
+      end
+
+      it "does not create a new analyzer when copied_analyzers is nil" do
+        @valid_post_parameter[:copied_analyzers] = nil
+        expect {
+          post :create, @valid_post_parameter, valid_session
+        }.to_not change(Analyzer, :count)
+      end
+
+      it "does not create a new Analyzer when simulator is not created" do
+        @valid_post_parameter[:simulator][:name] = @sim.name
+        expect {
+          post :create, @valid_post_parameter, valid_session
+        }.to_not change(Analyzer, :count)
+      end
+
+      it "assigns @duplicating_simulator and @copied_analyzers when invalid param is given" do
+        @valid_post_parameter[:simulator][:name] = @sim.name
+        # remove one in order to verify the checkboxes are maintained when error is happened
+        @valid_post_parameter[:copied_analyzers].shift
+
+        post :create, @valid_post_parameter, valid_session
+        assigns(:duplicating_simulator).should eq @sim
+        assigns(:copied_analyzers).should have(1).items
       end
     end
 
