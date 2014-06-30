@@ -54,7 +54,7 @@ ParameterExplorer.prototype.Update = function() {
     plot.LogscaleEvent("y", $("#ylog").prop('checked') );
     plot.BrushEvent(plot.current_xaxis_key);
     plot.BrushEvent(plot.current_yaxis_key);
-    plot.SetResultRengeEvent();
+    plot.SetResultRangeEvent();
   })
   .on("error", function() { console.log("error"); })
   .get();
@@ -175,7 +175,7 @@ ParameterExplorer.prototype.SetLogscaleCheckbox = function() {
   });
 };
 
-ParameterExplorer.prototype.SetResultRengeEvent = function() {
+ParameterExplorer.prototype.SetResultRangeEvent = function() {
   var plot = this;
   $("#range-max")
     .val(plot.scatter_plot.colorScale.domain()[2])
@@ -186,7 +186,7 @@ ParameterExplorer.prototype.SetResultRengeEvent = function() {
           alert(this.value + " is not a number");
           this.value=""+domain[2];
         } else if( Number(this.value) < domain[1] ) {
-          alert(this.value + " is not larger value than or equal to range middle");
+          alert(this.value + " is not greater than or equal to range mid. value");
           this.value=""+domain[2];
         } else {
           domain[2] = Number(this.value);
@@ -209,10 +209,10 @@ ParameterExplorer.prototype.SetResultRengeEvent = function() {
           alert(this.value + " is not a number");
           this.value=""+domain[1];
         } else if( Number(this.value) < domain[0] ) {
-          alert(this.value + " is not larger value than or equal to range min");
+          alert(this.value + " is not greater than or equal to range min. value");
           this.value=""+domain[1];
         } else if( Number(this.value) > domain[2] ) {
-          alert(this.value + " is not smaller value than or equal to range max");
+          alert(this.value + " is not less than or equal to range max. value");
           this.value=""+domain[1];
         } else {
           domain[1] = Number(this.value);
@@ -235,7 +235,7 @@ ParameterExplorer.prototype.SetResultRengeEvent = function() {
           alert(this.value + " is not a number");
           this.value=""+domain[0];
         } else if( Number(this.value) > domain[1] ) {
-          alert(this.value + " is not smaller value than or equal to range middle");
+          alert(this.value + " is not less than or equal to range mid. value");
           this.value=""+domain[0];
         } else {
           domain[0] = Number(this.value);
