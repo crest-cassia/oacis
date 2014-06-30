@@ -292,26 +292,14 @@ FigureViewer.prototype.AddDescription = function() {
 
     plot.description.append("br").style("line-height", "400%");
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
-      var new_scale;
-      if(this.checked) {
-        new_scale = "log";
-      } else {
-        new_scale = "linear";
-      }
-      plot.SetXScale(new_scale);
+      plot.SetXScale(this.checked ? "log" : "linear");
       plot.UpdatePlot(plot.figure_size);
     });
     plot.description.append("span").html("log scale on x axis");
     plot.description.append("br");
 
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
-      var new_scale;
-      if(this.checked) {
-        new_scale = "log";
-      } else {
-        new_scale = "linear";
-      }
-      plot.SetYScale(new_scale);
+      plot.SetYScale(this.checked ? "log" : "linear");
       plot.UpdatePlot(plot.figure_size);
     });
     plot.description.append("span").html("log scale on y axis");
@@ -325,18 +313,20 @@ FigureViewer.prototype.AddDescription = function() {
         .attr("width","240")
         .attr("height","215")
         .attr("viewBox","0 0 780 580");
-
       control_plot.node().appendChild(clone);
-      var x = d3.scale.linear().range([0, plot.width]);
-      var x_min = d3.min( plot.data.data, function(d) { return d[0];});
-      var x_max = d3.max( plot.data.data, function(d) { return d[0];});
-      x.domain([x_min, x_max]).nice();
+
+      var x = plot.IsLog[0] ? d3.scale.log() : d3.scale.linear();
+      x.range([0, plot.width]);
+      x.domain(plot.xScale.domain());
+      var x_min = x.domain()[0];
+      var x_max = x.domain()[1];
       plot.xaxis_original_domain = x.domain().concat();
 
-      var y = d3.scale.linear().range([plot.height, 0]);
-      var y_min = d3.min( plot.data.data, function(d) { return d[1];});
-      var y_max = d3.max( plot.data.data, function(d) { return d[1];});
-      y.domain([y_min, y_max]).nice();
+      var y = plot.IsLog[1] ? d3.scale.log() : d3.scale.linear();
+      y.range([plot.height, 0]);
+      y.domain(plot.yScale.domain());
+      var y_min = y.domain()[0];
+      var y_max = y.domain()[1];
       plot.yaxis_original_domain = y.domain().concat();
 
       var brush = d3.svg.brush()
@@ -357,8 +347,7 @@ FigureViewer.prototype.AddDescription = function() {
         plot.SetXDomain(domain[0][0], domain[1][0]);
         plot.SetYDomain(domain[0][1], domain[1][1]);
         plot.UpdatePlot(plot.figure_size);
-        plot.main_group.select(".x.axis").call(plot.xAxis);
-        plot.main_group.select(".y.axis").call(plot.yAxis);
+        plot.UpdateAxis();
       }
     }
     add_brush();

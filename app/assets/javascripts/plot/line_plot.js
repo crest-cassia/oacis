@@ -17,6 +17,7 @@ LinePlot.prototype.SetXScale = function(xscale) {
       min,
       max
     ]).nice();
+    this.IsLog[0] = false;
     break;
   case "log":
     var data_in_logscale = this.data.data.map(function(element) {
@@ -31,6 +32,7 @@ LinePlot.prototype.SetXScale = function(xscale) {
       (!min || min<0.0) ? 0.1 : min,
       (!max || max<0.0) ? 1.0 : max
     ]).nice();
+    this.IsLog[0] = true;
     break;
   }
   this.xScale = scale;
@@ -48,6 +50,7 @@ LinePlot.prototype.SetYScale = function(yscale) {
       min,
       max
     ]).nice();
+    this.IsLog[1] = false;
     break;
   case "log":
     var data_in_logscale = this.data.data.map(function(element) {
@@ -62,6 +65,7 @@ LinePlot.prototype.SetYScale = function(yscale) {
       (!min || min<0.0) ? 0.1 : min,
       (!max || max<0.0) ? 1.0 : max
     ]).nice();
+    this.IsLog[1] = true;
     break;
   }
   this.yScale = scale;
@@ -307,22 +311,8 @@ LinePlot.prototype.AddDescription = function() {
 
     plot.description.append("br").style("line-height", "400%");
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
-      var new_scale;
-      if(this.checked) {
-        new_scale = "log";
-        plot.IsLog[0]=true;
-      } else {
-        new_scale = "linear";
-        plot.IsLog[0]=false;
-      }
-      var x_min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[0];});});
-      var x_max = d3.max( plot.data.data, function(r) { return d3.max(r, function(v) { return v[0];});});
-      var y_min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];});});
-      var y_max = d3.max( plot.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];});});
-      var axis_domain = [[x_min,y_min],[x_max, y_max]];
-      plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
-      plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
-      plot.SetXScale(new_scale);
+      plot.SetXScale(this.checked ? "log" : "linear");
+      plot.SetYScale(plot.IsLog[1] ? "log" : "linear"); // reset xScale domain to draw non expanded plot
       plot.UpdatePlot();
       while (control_plot.node().firstChild) {
         control_plot.node().removeChild(control_plot.node().firstChild);
@@ -333,22 +323,8 @@ LinePlot.prototype.AddDescription = function() {
     plot.description.append("br");
 
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
-      var new_scale;
-      if(this.checked) {
-        new_scale = "log";
-        plot.IsLog[1]=true;
-      } else {
-        new_scale = "linear";
-        plot.IsLog[1]=false;
-      }
-      var x_min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[0];});});
-      var x_max = d3.max( plot.data.data, function(r) { return d3.max(r, function(v) { return v[0];});});
-      var y_min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];});});
-      var y_max = d3.max( plot.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];});});
-      var axis_domain = [[x_min,y_min],[x_max, y_max]];
-      plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
-      plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
-      plot.SetYScale(new_scale);
+      plot.SetXScale(plot.IsLog[0] ? "log" : "linear"); // reset xScale domain to draw non expanded plot
+      plot.SetYScale(this.checked ? "log" : "linear");
       plot.UpdatePlot();
       while (control_plot.node().firstChild) {
         control_plot.node().removeChild(control_plot.node().firstChild);
@@ -365,17 +341,19 @@ LinePlot.prototype.AddDescription = function() {
         .attr("width","240")
         .attr("height","215")
         .attr("viewBox","0 0 780 580");
-
       control_plot.node().appendChild(clone);
-      var x = d3.scale.linear().range([0, plot.width]);
-      var x_min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[0];});});
-      var x_max = d3.max( plot.data.data, function(r) { return d3.max(r, function(v) { return v[0];});});
-      x.domain([x_min, x_max]).nice();
 
-      var y = d3.scale.linear().range([plot.height, 0]);
-      var y_min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];});});
-      var y_max = d3.max( plot.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];});});
-      y.domain([y_min, y_max]).nice();
+      var x = plot.IsLog[0] ? d3.scale.log() : d3.scale.linear();
+      x.range([0, plot.width]);
+      x.domain(plot.xScale.domain());
+      var x_min = x.domain()[0];
+      var x_max = x.domain()[1];
+
+      var y = plot.IsLog[1] ? d3.scale.log() : d3.scale.linear();
+      y.range([plot.height, 0]);
+      y.domain(plot.yScale.domain());
+      var y_min = y.domain()[0];
+      var y_max = y.domain()[1];
 
       var brush = d3.svg.brush()
         .x(x)
@@ -395,8 +373,7 @@ LinePlot.prototype.AddDescription = function() {
         plot.SetXDomain(domain[0][0], domain[1][0]);
         plot.SetYDomain(domain[0][1], domain[1][1]);
         plot.UpdatePlot();
-        plot.main_group.select(".x.axis").call(plot.xAxis);
-        plot.main_group.select(".y.axis").call(plot.yAxis);
+        plot.UpdateAxis();
       }
     }
     add_brush();
