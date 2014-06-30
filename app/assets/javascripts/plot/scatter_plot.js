@@ -424,7 +424,7 @@ ScatterPlot.prototype.AddDescription = function() {
             text_field.value=""+domain[index_table[key]];
           } else if(key == "max" && Number(text_field.value) < domain[1] ) {
             alert(text_field.value + " is not greater than or equal to range mid. value");
-            text_field.value=""+domain[index_table[key]];
+            text_field.value=""+domain[2];
           } else if(key == "mid" && Number(text_field.value) < domain[0] ) {
             alert(text_field.value + " is not greater than or equal to range min. value");
             text_field.value=""+domain[1];
