@@ -175,8 +175,12 @@ FigureViewer.prototype.UpdateFigurePlot = function() {
   var y_figure_scale = (this.figure_size == "small") ? 0.1 : 0.2;
   var xdomain = plot.xScale.domain();
   var ydomain = plot.yScale.domain();
-  x_figure_scale*=(plot.xaxis_original_domain[1] - plot.xaxis_original_domain[0])/(xdomain[1] - xdomain[0]);
-  y_figure_scale*=(plot.yaxis_original_domain[1] - plot.yaxis_original_domain[0])/(ydomain[1] - ydomain[0]);
+  if(xdomain[0] != xdomain[1]) {
+    x_figure_scale*=(plot.xaxis_original_domain[1] - plot.xaxis_original_domain[0])/(xdomain[1] - xdomain[0]);
+  }
+  if(ydomain[0] != ydomain[1]) {
+    y_figure_scale*=(plot.yaxis_original_domain[1] - plot.yaxis_original_domain[0])/(ydomain[1] - ydomain[0]);
+  }
   function update_figure_plot() {
     var figure_group = plot.main_group.select("g#figure-group");
     figure_group.selectAll("image")
