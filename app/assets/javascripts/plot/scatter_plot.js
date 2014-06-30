@@ -144,8 +144,10 @@ ScatterPlot.prototype.AddPlot = function() {
   }
   add_color_map_group();
 
+  var plot_group = plot.main_group.append("g").attr("id", "plot-group");
+
   function add_voronoi_group() {
-    var voronoi_group = plot.main_group.append("g")
+    var voronoi_group = plot_group.append("g")
       .attr("id", "voronoi-group");
   }
   add_voronoi_group();
@@ -158,7 +160,7 @@ ScatterPlot.prototype.AddPlot = function() {
         average: v[1], error: v[2], psid: v[3]
       };
     });
-    var point = plot.main_group.append("g")
+    var point = plot_group.append("g")
       .attr("id", "point-group");
     point.selectAll("circle")
       .data(mapped)
@@ -337,14 +339,14 @@ ScatterPlot.prototype.AddDescription = function() {
     plot.description.append("span").html("log scale on y axis");
 
     plot.description.append("br");
-    var control_plot = plot.description.append("div");
+    var control_plot = plot.description.append("div").style("margin-top", "10px");
     function add_brush() {
-      var clone = plot.svg.node().cloneNode(true);
-      d3.select(clone)
-        .attr("width","240")
-        .attr("height","215")
-        .attr("viewBox","0 0 780 580");
-      control_plot.node().appendChild(clone);
+      var clone = plot.main_group.select("g#plot-group").node().cloneNode(true);
+      control_plot.append("svg")
+        .attr("width","210")
+        .attr("height","155")
+        .attr("viewBox","0 0 574 473")
+        .node().appendChild(clone);
 
       var x = plot.IsLog[0] ? d3.scale.log() : d3.scale.linear();
       x.range([0, plot.width]);
@@ -363,8 +365,16 @@ ScatterPlot.prototype.AddDescription = function() {
         .y(y)
         .on("brush", brushed);
 
-      var cloned_main_group = d3.select(clone.children[0])
-        .attr("transform", "translate(20,0)");
+      var cloned_main_group = d3.select(clone)
+        .attr("transform", "translate(5,5)");
+      var line_shape = "M0,0V" + plot.height + "H" + plot.width;
+      cloned_main_group.append("path").attr("d", line_shape)
+        .style({
+          "fill": "none",
+          "stroke": "#000",
+          "shape-rendering": "crispEdges"
+        });
+
       cloned_main_group.append("g")
         .attr("class", "brush")
         .call(brush)

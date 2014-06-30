@@ -105,7 +105,8 @@ LinePlot.prototype.AddPlot = function() {
   var colorScale = d3.scale.category10();
 
   function add_series_group() {
-    var series = plot.main_group
+    var plot_group = plot.main_group.append("g").attr("id", "plot-group");
+    var series = plot_group
       .selectAll("g")
       .data(plot.data.data)
       .enter().append("g")
@@ -334,14 +335,14 @@ LinePlot.prototype.AddDescription = function() {
     plot.description.append("span").html("log scale on y axis");
 
     plot.description.append("br");
-    var control_plot = plot.description.append("div");
+    var control_plot = plot.description.append("div").style("margin-top", "10px");
     function add_brush() {
-      var clone = plot.svg.node().cloneNode(true);
-      d3.select(clone)
-        .attr("width","240")
-        .attr("height","215")
-        .attr("viewBox","0 0 780 580");
-      control_plot.node().appendChild(clone);
+      var clone = plot.main_group.select("g#plot-group").node().cloneNode(true);
+      control_plot.append("svg")
+        .attr("width","210")
+        .attr("height","155")
+        .attr("viewBox","0 0 574 473")
+        .node().appendChild(clone);
 
       var x = plot.IsLog[0] ? d3.scale.log() : d3.scale.linear();
       x.range([0, plot.width]);
@@ -360,8 +361,16 @@ LinePlot.prototype.AddDescription = function() {
         .y(y)
         .on("brush", brushed);
 
-      var cloned_main_group = d3.select(clone.children[0])
-        .attr("transform", "translate(20,0)");
+      var cloned_main_group = d3.select(clone)
+        .attr("transform", "translate(5,5)");
+      var line_shape = "M0,0V" + plot.height + "H" + plot.width;
+      cloned_main_group.append("path").attr("d", line_shape)
+        .style({
+          "fill": "none",
+          "stroke": "#000",
+          "shape-rendering": "crispEdges"
+        });
+
       cloned_main_group.append("g")
         .attr("class", "brush")
         .call(brush)
