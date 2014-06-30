@@ -204,8 +204,6 @@ ScatterPlot.prototype.UpdatePlot = function() {
 
   function update_color_scale() {
     var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(plot.colorScale.range());
-    plot.main_group.select("g#color-map-group").selectAll("rect")
-      .attr("fill", function(d) { return scale(d); });
 
     plot.main_group.select("#result-range-max")
       .text( plot.colorScale.domain()[2] );
