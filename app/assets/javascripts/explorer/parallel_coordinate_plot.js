@@ -1,6 +1,5 @@
-function ParallelCoordinatePlot(pe_plot) {
+function ParallelCoordinatePlot() {
   this.row = d3.select("#pc-plot").insert("div","div").attr("class", "row");
-  this.pe_plot = pe_plot;
   this.colorScale = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
 }
 
@@ -114,8 +113,6 @@ ParallelCoordinatePlot.prototype.Update = function() {
   var max = d3.max( this.data.data, function(v) { return v[1];});
   var middle = (min + max) / 2.0;
   var domain = [ min, middle, max ];
-  //this.colorScale.domain(domain).nice();
-  this.colorScale.domain(this.pe_plot.scatter_plot.colorScale.domain());
 
   function redraw_path() {
     d3.selectAll('g.pcp-path').remove();
@@ -144,7 +141,8 @@ ParallelCoordinatePlot.prototype.Update = function() {
         return d[3] == plot.current_ps_id ? 3 : 1;
       })
       .attr("stroke", function(d) {
-        if( plot.colorScale ) { return plot.colorScale(d[1]); }
+        var color = plot.colorScale(d[1]);
+        if( color.match(/^#[0-9A-Fa-f]{6}/) ) { return color; }
         else { return "steelblue"; }
       });
   }

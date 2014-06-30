@@ -331,8 +331,8 @@ ScatterPlot.prototype.AddDescription = function() {
       plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
       plot.SetXScale(new_scale);
       plot.UpdatePlot();
-      while (control_plot[0][0].firstChild) {
-        control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+      while (control_plot.node().firstChild) {
+        control_plot.node().removeChild(control_plot.node().firstChild);
       }
       add_brush();
     });
@@ -355,8 +355,8 @@ ScatterPlot.prototype.AddDescription = function() {
       plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
       plot.SetYScale(new_scale);
       plot.UpdatePlot();
-      while (control_plot[0][0].firstChild) {
-        control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+      while (control_plot.node().firstChild) {
+        control_plot.node().removeChild(control_plot.node().firstChild);
       }
       add_brush();
     });
@@ -371,7 +371,7 @@ ScatterPlot.prototype.AddDescription = function() {
         .attr("height","215")
         .attr("viewBox","0 0 780 580");
 
-      control_plot[0][0].appendChild(clone);
+      control_plot.node().appendChild(clone);
       var x = d3.scale.linear().range([0, plot.width]);
       var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
       var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
@@ -463,8 +463,8 @@ ScatterPlot.prototype.AddDescription = function() {
               plot.colorScale.domain(domain);
               plot.colorScalePoint.domain(domain);
               plot.UpdatePlot();
-              while (control_plot[0][0].firstChild) {
-                control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+              while (control_plot.node().firstChild) {
+                control_plot.node().removeChild(control_plot.node().firstChild);
               }
               add_brush();
             }
@@ -503,8 +503,8 @@ ScatterPlot.prototype.AddDescription = function() {
               plot.colorScale.domain(domain);
               plot.colorScalePoint.domain(domain);
               plot.UpdatePlot();
-              while (control_plot[0][0].firstChild) {
-                control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+              while (control_plot.node().firstChild) {
+                control_plot.node().removeChild(control_plot.node().firstChild);
               }
               add_brush();
             }
@@ -540,8 +540,8 @@ ScatterPlot.prototype.AddDescription = function() {
               plot.colorScale.domain(domain);
               plot.colorScalePoint.domain(domain);
               plot.UpdatePlot();
-              while (control_plot[0][0].firstChild) {
-                control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+              while (control_plot.node().firstChild) {
+                control_plot.node().removeChild(control_plot.node().firstChild);
               }
               add_brush();
             }

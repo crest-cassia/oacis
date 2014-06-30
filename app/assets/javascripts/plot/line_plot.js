@@ -324,8 +324,8 @@ LinePlot.prototype.AddDescription = function() {
       plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
       plot.SetXScale(new_scale);
       plot.UpdatePlot();
-      while (control_plot[0][0].firstChild) {
-        control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+      while (control_plot.node().firstChild) {
+        control_plot.node().removeChild(control_plot.node().firstChild);
       }
       add_brush();
     });
@@ -350,8 +350,8 @@ LinePlot.prototype.AddDescription = function() {
       plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
       plot.SetYScale(new_scale);
       plot.UpdatePlot();
-      while (control_plot[0][0].firstChild) {
-        control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+      while (control_plot.node().firstChild) {
+        control_plot.node().removeChild(control_plot.node().firstChild);
       }
       add_brush();
     });
@@ -366,11 +366,11 @@ LinePlot.prototype.AddDescription = function() {
         .attr("height","215")
         .attr("viewBox","0 0 780 580");
 
-      control_plot[0][0].appendChild(clone);
+      control_plot.node().appendChild(clone);
       var x = d3.scale.linear().range([0, plot.width]);
       var x_min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[0];});});
       var x_max = d3.max( plot.data.data, function(r) { return d3.max(r, function(v) { return v[0];});});
-      x.domain([x_min]).nice();
+      x.domain([x_min, x_max]).nice();
 
       var y = d3.scale.linear().range([plot.height, 0]);
       var y_min = d3.min( plot.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];});});

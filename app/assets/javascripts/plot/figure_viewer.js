@@ -326,7 +326,7 @@ FigureViewer.prototype.AddDescription = function() {
         .attr("height","215")
         .attr("viewBox","0 0 780 580");
 
-      control_plot[0][0].appendChild(clone);
+      control_plot.node().appendChild(clone);
       var x = d3.scale.linear().range([0, plot.width]);
       var x_min = d3.min( plot.data.data, function(d) { return d[0];});
       var x_max = d3.max( plot.data.data, function(d) { return d[0];});
