@@ -120,7 +120,6 @@ ScatterPlot.prototype.AddPlot = function() {
       .style("text-anchor", "begin")
       .text("Result");
     color_map.selectAll("rect")
-      .attr("class", "result color rect")
       .data([1.0, 0.8, 0.6, 0.5, 0.4, 0.2, 0.0])
       .enter().append("rect")
       .attr({
@@ -246,7 +245,6 @@ ScatterPlot.prototype.UpdatePlot = function() {
         .enter()
           .append("path")
           .attr("fill", function(d, i) {
-          //.style("fill", function(d, i) {
             if(filtered_data[i][1] < plot.colorScale.domain()[0]) {return "url(#TrianglePattern)";}
             if(filtered_data[i][1] > plot.colorScale.domain()[2]) {return "url(#TrianglePattern)";}
             return plot.colorScale(filtered_data[i][1]);
@@ -412,119 +410,60 @@ ScatterPlot.prototype.AddDescription = function() {
       tr.append("td").text("Min.");
       tr.append("td").append("input").attr("type", "text").attr("id", "range-min");
 
+      var range_change = function(key, text_field) {
+        var domain = plot.colorScale.domain();
+        var index_table = {"max": 2, "mid": 1, "min": 0};
+        try{
+          if(isNaN(domain[index_table[key]])) {
+            alert("Do not change tha value \"NaN\"");
+            text_field.value=""+domain[index_table[key]];
+            return;
+          }
+          if(isNaN(Number(text_field.value))) {
+            alert(text_field.value + " is not a number");
+            text_field.value=""+domain[index_table[key]];
+          } else if(key == "max" && Number(text_field.value) < domain[1] ) {
+            alert(text_field.value + " is not greater than or equal to range mid. value");
+            text_field.value=""+domain[index_table[key]];
+          } else if(key == "mid" && Number(text_field.value) < domain[0] ) {
+            alert(text_field.value + " is not greater than or equal to range min. value");
+            text_field.value=""+domain[1];
+          } else if(key == "mid" && Number(text_field.value) > domain[2] ) {
+            alert(text_field.value + " is not less than or equal to range max. value");
+            text_field.value=""+domain[1];
+          } else if(key == "min" && Number(text_field.value) > domain[1] ) {
+            alert(text_field.value + " is not less than or equal to range mid. value");
+            text_field.value=""+domain[0];
+          } else {
+            domain[index_table[key]] = Number(text_field.value);
+            plot.colorScale.domain(domain);
+            plot.colorScalePoint.domain(domain);
+            plot.SetXScale(plot.IsLog[0] ? "log" : "linear"); // reset xScale domain to draw non expanded plot
+            plot.SetYScale(plot.IsLog[1] ? "log" : "linear"); // reset xScale domain to draw non expanded plot
+            plot.UpdatePlot();
+            while (control_plot.node().firstChild) {
+              control_plot.node().removeChild(control_plot.node().firstChild);
+            }
+            add_brush();
+          }
+        } catch(e) {
+          alert(e);
+        }
+      };
       plot.description.select("#range-max")
         .attr("value", plot.colorScale.domain()[2])
         .on("change", function() {
-          var domain = plot.colorScale.domain();
-          try{
-            if(isNaN(domain[2])) {
-              alert("Do not change tha value \"NaN\"");
-              this.value=""+domain[2];
-              return;
-            }
-            if( isNaN(Number(this.value)) ) {
-              alert(this.value + " is not a number");
-              this.value=""+domain[2];
-            } else if( Number(this.value) < domain[1] ) {
-              alert(this.value + " is not greater than or equal to range mid. value");
-              this.value=""+domain[2];
-            } else {
-              domain[2] = Number(this.value);
-              var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-              var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-              var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-              var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-              var axis_domain = [[x_min,y_min],[x_max, y_max]];
-              plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
-              plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
-              plot.colorScale.domain(domain);
-              plot.colorScalePoint.domain(domain);
-              plot.UpdatePlot();
-              while (control_plot.node().firstChild) {
-                control_plot.node().removeChild(control_plot.node().firstChild);
-              }
-              add_brush();
-            }
-          } catch(e) {
-            alert(e);
-          }
+          range_change("max", this);
         });
       plot.description.select("#range-mid")
         .attr("value", plot.colorScale.domain()[1])
         .on("change", function() {
-          var domain = plot.colorScale.domain();
-          try{
-            if(isNaN(domain[1])) {
-              alert("Do not change tha value \"NaN\"");
-              this.value=""+domain[1];
-              return;
-            }
-            if( isNaN(Number(this.value)) ) {
-              alert(this.value + " is not a number");
-              this.value=""+domain[1];
-            } else if( Number(this.value) < domain[0] ) {
-              alert(this.value + " is not greater than or equal to range min. value");
-              this.value=""+domain[1];
-            } else if( Number(this.value) > domain[2] ) {
-              alert(this.value + " is not less than or equal to range max. value");
-              this.value=""+domain[1];
-            } else {
-              domain[1] = Number(this.value);
-              var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-              var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-              var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-              var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-              var axis_domain = [[x_min,y_min],[x_max, y_max]];
-              plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
-              plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
-              plot.colorScale.domain(domain);
-              plot.colorScalePoint.domain(domain);
-              plot.UpdatePlot();
-              while (control_plot.node().firstChild) {
-                control_plot.node().removeChild(control_plot.node().firstChild);
-              }
-              add_brush();
-            }
-          } catch(e) {
-            alert(e);
-          }
+          range_change("mid", this);
         });
       plot.description.select("#range-min")
         .attr("value", plot.colorScale.domain()[0])
         .on("change", function() {
-          var domain = plot.colorScale.domain();
-          try{
-            if(isNaN(domain[0])) {
-              alert("Do not change tha value \"NaN\"");
-              this.value=""+domain[0];
-              return;
-            }
-            if( isNaN(Number(this.value)) ) {
-              alert(this.value + " is not a number");
-              this.value=""+domain[0];
-            } else if( Number(this.value) > domain[1] ) {
-              alert(this.value + " is not less than or equal to range mid. value");
-              this.value=""+domain[0];
-            } else {
-              domain[0] = Number(this.value);
-              var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-              var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-              var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-              var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-              var axis_domain = [[x_min,y_min],[x_max, y_max]];
-              plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
-              plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
-              plot.colorScale.domain(domain);
-              plot.colorScalePoint.domain(domain);
-              plot.UpdatePlot();
-              while (control_plot.node().firstChild) {
-                control_plot.node().removeChild(control_plot.node().firstChild);
-              }
-              add_brush();
-            }
-          } catch(e) {
-            alert(e);
-          }
+          range_change("min", this);
         });
     }
     add_result_scale_controller();
