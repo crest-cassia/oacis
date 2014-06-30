@@ -30,6 +30,7 @@ FigureViewer.prototype.SetXScale = function(xscale) {
       min,
       max
     ]).nice();
+    this.IsLog[0] = false;
     break;
   case "log":
     var data_in_logscale = this.data.data.filter(function(element) {
@@ -42,6 +43,7 @@ FigureViewer.prototype.SetXScale = function(xscale) {
       (!min || min<0.0) ? 0.1 : min,
       (!max || max<0.0) ? 1.0 : max
     ]).nice();
+    this.IsLog[0] = true;
     break;
   }
   this.xScale = scale;
@@ -59,6 +61,7 @@ FigureViewer.prototype.SetYScale = function(yscale) {
       min,
       max
     ]).nice();
+    this.IsLog[1] = false;
     break;
   case "log":
     var data_in_logscale = this.data.data.filter(function(element) {
@@ -71,6 +74,7 @@ FigureViewer.prototype.SetYScale = function(yscale) {
       (!min || min<0.0) ? 0.1 : min,
       (!max || max<0.0) ? 1.0 : max
     ]).nice();
+    this.IsLog[1] = true;
     break;
   }
   this.yScale = scale;
