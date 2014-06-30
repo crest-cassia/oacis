@@ -440,29 +440,34 @@ ScatterPlot.prototype.AddDescription = function() {
         .on("change", function() {
           var domain = plot.colorScale.domain();
           try{
-          if( isNaN(Number(this.value)) ) {
-            alert(this.value + " is not a number");
-            this.value=""+domain[2];
-          } else if( Number(this.value) < domain[1] ) {
-            alert(this.value + " is not greater than or equal to range mid. value");
-            this.value=""+domain[2];
-          } else {
-            domain[2] = Number(this.value);
-            var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-            var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-            var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-            var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-            var axis_domain = [[x_min,y_min],[x_max, y_max]];
-            plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
-            plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
-            plot.colorScale.domain(domain);
-            plot.colorScalePoint.domain(domain);
-            plot.UpdatePlot();
-            while (control_plot[0][0].firstChild) {
-                  control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+            if(isNaN(domain[2])) {
+              alert("Do not change tha value \"NaN\"");
+              this.value=""+domain[2];
+              return;
             }
-            add_brush();
-          }
+            if( isNaN(Number(this.value)) ) {
+              alert(this.value + " is not a number");
+              this.value=""+domain[2];
+            } else if( Number(this.value) < domain[1] ) {
+              alert(this.value + " is not greater than or equal to range mid. value");
+              this.value=""+domain[2];
+            } else {
+              domain[2] = Number(this.value);
+              var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+              var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+              var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+              var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+              var axis_domain = [[x_min,y_min],[x_max, y_max]];
+              plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
+              plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
+              plot.colorScale.domain(domain);
+              plot.colorScalePoint.domain(domain);
+              plot.UpdatePlot();
+              while (control_plot[0][0].firstChild) {
+                control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+              }
+              add_brush();
+            }
           } catch(e) {
             alert(e);
           }
@@ -472,32 +477,37 @@ ScatterPlot.prototype.AddDescription = function() {
         .on("change", function() {
           var domain = plot.colorScale.domain();
           try{
-          if( isNaN(Number(this.value)) ) {
-            alert(this.value + " is not a number");
-            this.value=""+domain[1];
-          } else if( Number(this.value) < domain[0] ) {
-            alert(this.value + " is not greater than or equal to range min. value");
-            this.value=""+domain[1];
-          } else if( Number(this.value) > domain[2] ) {
-            alert(this.value + " is not less than or equal to range max. value");
-            this.value=""+domain[1];
-          } else {
-            domain[1] = Number(this.value);
-            var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-            var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-            var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-            var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-            var axis_domain = [[x_min,y_min],[x_max, y_max]];
-            plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
-            plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
-            plot.colorScale.domain(domain);
-            plot.colorScalePoint.domain(domain);
-            plot.UpdatePlot();
-            while (control_plot[0][0].firstChild) {
-                  control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+            if(isNaN(domain[1])) {
+              alert("Do not change tha value \"NaN\"");
+              this.value=""+domain[1];
+              return;
             }
-            add_brush();
-          }
+            if( isNaN(Number(this.value)) ) {
+              alert(this.value + " is not a number");
+              this.value=""+domain[1];
+            } else if( Number(this.value) < domain[0] ) {
+              alert(this.value + " is not greater than or equal to range min. value");
+              this.value=""+domain[1];
+            } else if( Number(this.value) > domain[2] ) {
+              alert(this.value + " is not less than or equal to range max. value");
+              this.value=""+domain[1];
+            } else {
+              domain[1] = Number(this.value);
+              var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+              var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+              var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+              var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+              var axis_domain = [[x_min,y_min],[x_max, y_max]];
+              plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
+              plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
+              plot.colorScale.domain(domain);
+              plot.colorScalePoint.domain(domain);
+              plot.UpdatePlot();
+              while (control_plot[0][0].firstChild) {
+                control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+              }
+              add_brush();
+            }
           } catch(e) {
             alert(e);
           }
@@ -507,29 +517,34 @@ ScatterPlot.prototype.AddDescription = function() {
         .on("change", function() {
           var domain = plot.colorScale.domain();
           try{
-          if( isNaN(Number(this.value)) ) {
-            alert(this.value + " is not a number");
-            this.value=""+domain[0];
-          } else if( Number(this.value) > domain[1] ) {
-            alert(this.value + " is not less than or equal to range mid. value");
-            this.value=""+domain[0];
-          } else {
-            domain[0] = Number(this.value);
-            var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-            var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
-            var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-            var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
-            var axis_domain = [[x_min,y_min],[x_max, y_max]];
-            plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
-            plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
-            plot.colorScale.domain(domain);
-            plot.colorScalePoint.domain(domain);
-            plot.UpdatePlot();
-            while (control_plot[0][0].firstChild) {
-                  control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+            if(isNaN(domain[0])) {
+              alert("Do not change tha value \"NaN\"");
+              this.value=""+domain[0];
+              return;
             }
-            add_brush();
-          }
+            if( isNaN(Number(this.value)) ) {
+              alert(this.value + " is not a number");
+              this.value=""+domain[0];
+            } else if( Number(this.value) > domain[1] ) {
+              alert(this.value + " is not less than or equal to range mid. value");
+              this.value=""+domain[0];
+            } else {
+              domain[0] = Number(this.value);
+              var x_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+              var x_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.xlabel];});
+              var y_min = d3.min( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+              var y_max = d3.max( plot.data.data, function(r) { return r[0][plot.data.ylabel];});
+              var axis_domain = [[x_min,y_min],[x_max, y_max]];
+              plot.SetXDomain(axis_domain[0][0], axis_domain[1][0]);
+              plot.SetYDomain(axis_domain[0][1], axis_domain[1][1]);
+              plot.colorScale.domain(domain);
+              plot.colorScalePoint.domain(domain);
+              plot.UpdatePlot();
+              while (control_plot[0][0].firstChild) {
+                control_plot[0][0].removeChild(control_plot[0][0].firstChild);
+              }
+              add_brush();
+            }
           } catch(e) {
             alert(e);
           }

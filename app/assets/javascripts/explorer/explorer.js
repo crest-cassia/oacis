@@ -182,6 +182,11 @@ ParameterExplorer.prototype.SetResultRangeEvent = function() {
     .on("change", function() {
       var domain = plot.scatter_plot.colorScale.domain();
       try{
+        if(isNaN(domain[2])) {
+          alert("Do not change tha value \"NaN\"");
+          this.value=""+domain[2];
+          return;
+        }
         if( isNaN(Number(this.value)) ) {
           alert(this.value + " is not a number");
           this.value=""+domain[2];
@@ -205,6 +210,11 @@ ParameterExplorer.prototype.SetResultRangeEvent = function() {
     .on("change", function() {
       var domain = plot.scatter_plot.colorScale.domain();
       try{
+        if(isNaN(domain[1])) {
+          alert("Do not change tha value \"NaN\"");
+          this.value=""+domain[1];
+          return;
+        }
         if( isNaN(Number(this.value)) ) {
           alert(this.value + " is not a number");
           this.value=""+domain[1];
@@ -231,6 +241,11 @@ ParameterExplorer.prototype.SetResultRangeEvent = function() {
     .on("change", function() {
       var domain = plot.scatter_plot.colorScale.domain();
       try{
+        if(isNaN(domain[0])) {
+          alert("Do not change tha value \"NaN\"");
+          this.value=""+domain[0];
+          return;
+        }
         if( isNaN(Number(this.value)) ) {
           alert(this.value + " is not a number");
           this.value=""+domain[0];
