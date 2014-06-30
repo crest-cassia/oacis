@@ -301,14 +301,28 @@ FigureViewer.prototype.AddDescription = function() {
     plot.description.append("br").style("line-height", "400%");
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
       plot.SetXScale(this.checked ? "log" : "linear");
-      plot.UpdatePlot(plot.figure_size);
+      plot.SetYScale(plot.IsLog[1] ? "log" : "linear"); // reset yScale domain to draw non expanded plot
+      var size = plot.figure_size;
+      plot.UpdatePlot("point");  // point plot is drawn for brush
+      while (control_plot.node().firstChild) {
+        control_plot.node().removeChild(control_plot.node().firstChild);
+      }
+      add_brush();
+      plot.UpdatePlot(size);
     });
     plot.description.append("span").html("log scale on x axis");
     plot.description.append("br");
 
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
+      plot.SetXScale(plot.IsLog[0] ? "log" : "linear"); // reset xScale domain to draw non expanded plot
       plot.SetYScale(this.checked ? "log" : "linear");
-      plot.UpdatePlot(plot.figure_size);
+      var size = plot.figure_size;
+      plot.UpdatePlot("point");  // point plot is drawn for brush
+      while (control_plot.node().firstChild) {
+        control_plot.node().removeChild(control_plot.node().firstChild);
+      }
+      add_brush();
+      plot.UpdatePlot(size);
     });
     plot.description.append("span").html("log scale on y axis");
 
