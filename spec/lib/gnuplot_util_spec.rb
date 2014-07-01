@@ -24,10 +24,7 @@ EOS
 unset key
 set xlabel "XXX"
 set ylabel "YYY"
-plot '-' u 1:2:3 w yerrorbars ls 1, '-' u 1:2 w lines ls 1
-0 1 0.1
-1 2 0.2
-e
+plot '-' u 1:2:3 w errorlines
 0 1 0.1
 1 2 0.2
 e
@@ -41,10 +38,7 @@ EOS
 unset key
 set xlabel "XXX"
 set ylabel "YYY"
-plot '-' u 1:2:3 w yerrorbars ls 1, '-' u 1:2 w lines ls 1
-0 1 0.1 aaa
-1 2 0 bbb
-e
+plot '-' u 1:2:3 w errorlines
 0 1 0.1 aaa
 1 2 0 bbb
 e
@@ -84,15 +78,9 @@ e
 set key
 set xlabel "XXX"
 set ylabel "YYY"
-plot '-' u 1:2:3 w yerrorbars ls 1 title 'ZZZ = 5', '-' u 1:2 w lines ls 1 notitle, '-' u 1:2:3 w yerrorbars ls 2 title '4', '-' u 1:2 w lines ls 2 notitle
+plot '-' u 1:2:3 w errorlines title 'ZZZ = 5', '-' u 1:2:3 w errorlines title '4'
 0 1 0.1
 1 2 0.2
-e
-0 1 0.1
-1 2 0.2
-e
-0 3 0.3
-1 4 0.4
 e
 0 3 0.3
 1 4 0.4
