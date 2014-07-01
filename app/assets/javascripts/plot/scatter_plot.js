@@ -409,45 +409,37 @@ ScatterPlot.prototype.AddDescription = function() {
         .attr("height", 2)
         .attr("fill", "black");
 
-      plot.description.append("br");
       plot.description.append("div").text("Result range :");
       var table = plot.description.append("table");
       var tr = table.append("tr");
       tr.append("td").text("Max.");
       tr.append("td").append("input").attr("type", "text").attr("id", "range-max");
       tr = table.append("tr");
-      tr.append("td").text("Mid.");
-      tr.append("td").append("input").attr("type", "text").attr("id", "range-mid");
-      tr = table.append("tr");
       tr.append("td").text("Min.");
       tr.append("td").append("input").attr("type", "text").attr("id", "range-min");
 
       var range_change = function(key, text_field) {
         var domain = plot.colorScale.domain();
-        var index_table = {"max": 2, "mid": 1, "min": 0};
+        var original = (key == "max") ? domain[2] : domain[0];
         try{
-          if(isNaN(domain[index_table[key]])) {
+          if(isNaN(original)) {
             alert("Do not change tha value \"NaN\"");
-            text_field.value=""+domain[index_table[key]];
+            text_field.value = "" + original;
             return;
           }
           if(isNaN(Number(text_field.value))) {
             alert(text_field.value + " is not a number");
-            text_field.value=""+domain[index_table[key]];
-          } else if(key == "max" && Number(text_field.value) < domain[1] ) {
-            alert(text_field.value + " is not greater than or equal to range mid. value");
-            text_field.value=""+domain[2];
-          } else if(key == "mid" && Number(text_field.value) < domain[0] ) {
-            alert(text_field.value + " is not greater than or equal to range min. value");
-            text_field.value=""+domain[1];
-          } else if(key == "mid" && Number(text_field.value) > domain[2] ) {
-            alert(text_field.value + " is not less than or equal to range max. value");
-            text_field.value=""+domain[1];
-          } else if(key == "min" && Number(text_field.value) > domain[1] ) {
-            alert(text_field.value + " is not less than or equal to range mid. value");
-            text_field.value=""+domain[0];
+            text_field.value = "" + original;
+          } else if(key == "max" && Number(text_field.value) < domain[0] ) {
+            alert(text_field.value + " must be larger than or equal to min.");
+            text_field.value = "" + original;
+          } else if(key == "min" && Number(text_field.value) > domain[2] ) {
+            alert(text_field.value + " must be less than or equal to max.");
+            text_field.value = "" + original;
           } else {
-            domain[index_table[key]] = Number(text_field.value);
+            if( key == "max" ) { domain[2] = Number(text_field.value); }
+            else { domain[0] = Number(text_field.value); }
+            domain[1] = (domain[0] + domain[2]) / 2.0;
             plot.colorScale.domain(domain);
             plot.colorScalePoint.domain(domain);
             plot.SetXScale(plot.IsLog[0] ? "log" : "linear"); // reset xScale domain to draw non expanded plot
@@ -466,11 +458,6 @@ ScatterPlot.prototype.AddDescription = function() {
         .attr("value", plot.colorScale.domain()[2])
         .on("change", function() {
           range_change("max", this);
-        });
-      plot.description.select("#range-mid")
-        .attr("value", plot.colorScale.domain()[1])
-        .on("change", function() {
-          range_change("mid", this);
         });
       plot.description.select("#range-min")
         .attr("value", plot.colorScale.domain()[0])
