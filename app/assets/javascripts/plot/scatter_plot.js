@@ -103,10 +103,14 @@ ScatterPlot.prototype.SetYDomain = function(ymin, ymax) {
 ScatterPlot.prototype.AddPlot = function() {
   var plot = this;
 
-  var result_min_val = d3.min( this.data.data, function(d) { return d[1];});
-  var result_max_val = d3.max( this.data.data, function(d) { return d[1];});
-  this.colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
-  this.colorScalePoint.domain( this.colorScale.domain() ).nice();
+  function set_color_map_scale() {
+    var result_min_val = d3.min( plot.data.data, function(d) { return d[1];});
+    var result_max_val = d3.max( plot.data.data, function(d) { return d[1];});
+    var niced = d3.scale.linear().domain([result_min_val, result_max_val]).nice().domain();
+    plot.colorScale.domain([ niced[0], (niced[0]+niced[1])/2.0, niced[1]]).nice();
+    plot.colorScalePoint.domain( plot.colorScale.domain() ).nice();
+  }
+  set_color_map_scale();
 
   function add_color_map_group() {
     var color_map = plot.main_group.append("g")
