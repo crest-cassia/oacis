@@ -312,25 +312,13 @@ LinePlot.prototype.AddDescription = function() {
 
     plot.description.append("br").style("line-height", "400%");
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
-      plot.SetXScale(this.checked ? "log" : "linear");
-      plot.SetYScale(plot.IsLog[1] ? "log" : "linear"); // reset xScale domain to draw non expanded plot
-      plot.UpdatePlot();
-      while (control_plot.node().firstChild) {
-        control_plot.node().removeChild(control_plot.node().firstChild);
-      }
-      add_brush();
+      reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
     });
     plot.description.append("span").html("log scale on x axis");
     plot.description.append("br");
 
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
-      plot.SetXScale(plot.IsLog[0] ? "log" : "linear"); // reset xScale domain to draw non expanded plot
-      plot.SetYScale(this.checked ? "log" : "linear");
-      plot.UpdatePlot();
-      while (control_plot.node().firstChild) {
-        control_plot.node().removeChild(control_plot.node().firstChild);
-      }
-      add_brush();
+      reset_brush(plot.IsLog[0] ? "log" : "linear", this.checked ? "log" : "linear");
     });
     plot.description.append("span").html("log scale on y axis");
 
@@ -386,6 +374,16 @@ LinePlot.prototype.AddDescription = function() {
       }
     }
     add_brush();
+
+    function reset_brush (x_linear_log, y_linear_log) {
+      plot.SetXScale(x_linear_log); // reset xScale domain to draw non expanded plot
+      plot.SetYScale(y_linear_log); // reset xScale domain to draw non expanded plot
+      plot.UpdatePlot();
+      while (control_plot.node().firstChild) {
+        control_plot.node().removeChild(control_plot.node().firstChild);
+      }
+      add_brush();
+    }
   }
   add_tools();
 
