@@ -440,11 +440,11 @@ ScatterPlot.prototype.AddDescription = function() {
           if(isNaN(Number(text_field.value))) {
             alert(text_field.value + " is not a number");
             text_field.value = "" + original;
-          } else if(key == "max" && Number(text_field.value) < domain[0] ) {
-            alert(text_field.value + " must be larger than or equal to min.");
+          } else if(key == "max" && Number(text_field.value) <= domain[0] ) {
+            alert(text_field.value + " must be larger than min.");
             text_field.value = "" + original;
-          } else if(key == "min" && Number(text_field.value) > domain[2] ) {
-            alert(text_field.value + " must be less than or equal to max.");
+          } else if(key == "min" && Number(text_field.value) >= domain[2] ) {
+            alert(text_field.value + " must be less than max.");
             text_field.value = "" + original;
           } else {
             if( key == "max" ) { domain[2] = Number(text_field.value); }
