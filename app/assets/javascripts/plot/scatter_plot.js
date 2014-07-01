@@ -311,12 +311,14 @@ ScatterPlot.prototype.AddDescription = function() {
     $(a_link).text("download svg");
     plot.description.node().appendChild(a_link);
     plot.description.append("br");
-    plot.description.append("a").text("delete plot").style('cursor','pointer').on("click", function() {
-      plot.Destructor();
-    });
-
+    plot.description.append("a").text("delete plot")
+      .style("cursor", "pointer")
+      .on("click", function() {
+        plot.Destructor();
+      });
     plot.description.append("br");
-    plot.description.append("br").style("line-height", "400%");
+    plot.description.append("div").style("padding-bottom", "50px");
+
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
       reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
     });
