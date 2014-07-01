@@ -56,25 +56,12 @@
         - @simulator.parameter_definitions.map(&:key).each do |key|
           = label_tag key, key
           = check_box_tag key
+      #result-range
         %br
-        #control-plot
-        %br
-    Result range :
-    %br
-      %table
-        %tbody
-          %tr
-            %td Max.
-            %td
-              %input#range-max{type: "text"}
-          %tr
-            %td Mid.
-            %td
-              %input#range-mid{type: "text"}
-          %tr
-            %td Min.
-            %td
-              %input#range-min{type: "text"}
+        %label
+          Result range:
+        %input.input-small#range-min{type: "text", placeholder: "min"}
+        %input.input-small#range-max{type: "text", placeholder: "max"}
   .span8
     - urls = {"scatter-plot-url" => _scatter_plot_parameter_set_path('PSID') + '.json',
               "ps-url" => parameter_set_path('PSID')+'.json'}
