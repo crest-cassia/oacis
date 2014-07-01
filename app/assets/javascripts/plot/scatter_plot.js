@@ -312,20 +312,13 @@ ScatterPlot.prototype.AddDescription = function() {
     plot.description.node().appendChild(a_link);
     plot.description.append("br");
 
-    plot.description.append("a").text("set color scale")
-      .style("cursor", "pointer")
-      .on("click", function() {
-        $('#color-scale-control').show();
-      });
-    plot.description.append("br");
-
     plot.description.append("a").text("delete plot")
       .style("cursor", "pointer")
       .on("click", function() {
         plot.Destructor();
       });
     plot.description.append("br");
-    plot.description.append("div").style("padding-bottom", "50px");
+    plot.description.append("div").style("margin-bottom", "20px");
 
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
       reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
@@ -417,16 +410,24 @@ ScatterPlot.prototype.AddDescription = function() {
         .attr("height", 2)
         .attr("fill", "black");
 
-      var color_scale_control = plot.description.append("div").attr("id","color-scale-control");
-      $(color_scale_control.node()).hide();
+      var color_scale_control = plot.description.append("div")
+        .attr("id","color-scale-control")
+        .style("margin-top", "10px");
+
       color_scale_control.text("Result range :");
-      var table = color_scale_control.append("table");
-      var tr = table.append("tr");
-      tr.append("td").text("Max.");
-      tr.append("td").append("input").attr("type", "text").attr("id", "range-max");
-      tr = table.append("tr");
-      tr.append("td").text("Min.");
-      tr.append("td").append("input").attr("type", "text").attr("id", "range-min");
+      var form = color_scale_control.append("form").attr("class", "form-inline");
+      form.append("input").attr({
+        "type": "text",
+        "class": "input-small",
+        "placeholder": "min",
+        "id": "range-min"
+      });
+      form.append("input").attr({
+        "type": "text",
+        "class": "input-small",
+        "placeholder": "max",
+        "id": "range-max"
+      });
 
       var range_change = function(key, text_field) {
         var domain = plot.colorScale.domain();
@@ -453,7 +454,6 @@ ScatterPlot.prototype.AddDescription = function() {
             plot.colorScale.domain(domain);
             plot.colorScalePoint.domain(domain);
             reset_brush(plot.IsLog[0] ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
-            $(color_scale_control.node()).hide();
           }
         } catch(e) {
           alert(e);
