@@ -70,6 +70,40 @@ describe OacisCli do
         }
       end
     end
+
+    context "when output file exists" do
+
+      it "asks a question to overwrite the output file" do
+        at_temp_dir {
+          create_simulator_id_json(@sim, 'simulator_id.json')
+          FileUtils.touch('parameter_sets.json')
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
+          OacisCli.new.invoke(:parameter_sets_template, [], option)
+          File.exist?('parameter_sets.json').should be_true
+          expect {
+            JSON.load(File.read('parameter_sets.json'))
+          }.not_to raise_error
+        }
+      end
+    end
+
+    context "with yes option when output file exists" do
+
+      it "does not ask a question to overwrite the output file" do
+        at_temp_dir {
+          create_simulator_id_json(@sim, 'simulator_id.json')
+          FileUtils.touch('parameter_sets.json')
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          option = {simulator: 'simulator_id.json', output: 'parameter_sets.json', yes: true}
+          OacisCli.new.invoke(:parameter_sets_template, [], option)
+          File.exist?('parameter_sets.json').should be_true
+          expect {
+            JSON.load(File.read('parameter_sets.json'))
+          }.not_to raise_error
+        }
+      end
+    end
   end
 
   describe "#create_parameter_sets" do
@@ -253,5 +287,35 @@ describe OacisCli do
         }
       end
     end
+
+    context "when output file exists" do
+
+      it "asks a question to overwrite the output file" do
+        at_temp_dir {
+          FileUtils.touch('parameter_set_ids.json')
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          invoke_create_parameter_sets
+        }
+      end
+    end
+
+    context "with yes option when output file exists" do
+
+      it "does not ask a question to overwrite the output file" do
+        at_temp_dir {
+          FileUtils.touch('parameter_set_ids.json')
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          create_simulator_id_json(@sim, 'simulator_id.json')
+          create_parameter_sets_json('parameter_sets.json')
+          option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json", yes: true}
+          OacisCli.new.invoke(:create_parameter_sets, [], option)
+          File.exist?('parameter_set_ids.json').should be_true
+          expect {
+            JSON.load(File.read('parameter_set_ids.json'))
+          }.not_to raise_error
+        }
+      end
+    end
   end
 end
+

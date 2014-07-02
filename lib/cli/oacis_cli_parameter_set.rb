@@ -17,6 +17,7 @@ class OacisCli < Thor
     parameter_set = Hash[mapped]
 
     return if options[:dry_run]
+    return unless options[:yes] or overwrite_file?(options[:output])
     File.open(options[:output], 'w') do |io|
       # for visibility, manually print the json object as follows
       io.puts "[", "  #{parameter_set.to_json}", "]"
@@ -69,7 +70,9 @@ class OacisCli < Thor
     end
 
   ensure
-    write_parameter_set_ids_to_file(options[:output], parameter_sets) unless options[:dry_run]
+    return if options[:dry_run]
+    return unless options[:yes] or overwrite_file?(options[:output])
+    write_parameter_set_ids_to_file(options[:output], parameter_sets)
   end
 
   private
@@ -87,3 +90,4 @@ class OacisCli < Thor
     end
   end
 end
+

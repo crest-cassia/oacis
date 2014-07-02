@@ -3,15 +3,6 @@ require File.join(Rails.root, 'lib/cli/oacis_cli')
 
 describe OacisCli do
 
-  before(:each) do
-    class OacisCli
-      private
-      def yes?(str)  # define as a private method otherwise mock will define the method as public
-        true
-      end
-    end
-  end
-
   describe "#job_parameter_template" do
 
     before(:each) do
@@ -67,6 +58,34 @@ describe OacisCli do
           }
           OacisCli.new.invoke(:job_parameter_template, [], options)
           File.exist?('job_parameters.json').should be_false
+        }
+      end
+    end
+
+    context "when output file exists" do
+
+      it "asks a question to overwrite the output file" do
+        at_temp_dir {
+          FileUtils.touch("job_parameters.json")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
+          OacisCli.new.invoke(:job_parameter_template, [], options)
+        }
+      end
+    end
+
+    context "with yes option when output file exists" do
+
+      it "does not ask a question to overwrite the output file" do
+        at_temp_dir {
+          FileUtils.touch("job_parameters.json")
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          options = { host_id: @host.id.to_s, output: 'job_parameters.json', yes: true}
+          OacisCli.new.invoke(:job_parameter_template, [], options)
+          File.exist?('job_parameters.json').should be_true
+          expect {
+            JSON.load(File.read('job_parameters.json'))
+          }.not_to raise_error
         }
       end
     end
@@ -279,6 +298,51 @@ describe OacisCli do
         }
       end
     end
+
+    context "when output file exists" do
+
+      it "asks a question to overwrite the output file" do
+        at_temp_dir {
+          FileUtils.touch("run_ids.json")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
+          create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
+          create_job_parameters_json('job_parameters.json')
+          options = {
+            parameter_sets: 'parameter_set_ids.json',
+            job_parameters: 'job_parameters.json',
+            number_of_runs: 3,
+            output: 'run_ids.json'
+          }
+          OacisCli.new.invoke(:create_runs, [], options)
+        }
+      end
+    end
+
+    context "with yes option when output file exists" do
+
+      it "does not ask a question to overwrite the output file" do
+        at_temp_dir {
+          FileUtils.touch("run_ids.json")
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
+          create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
+          create_job_parameters_json('job_parameters.json')
+          options = {
+            parameter_sets: 'parameter_set_ids.json',
+            job_parameters: 'job_parameters.json',
+            number_of_runs: 3,
+            output: 'run_ids.json',
+            yes: true
+          }
+          OacisCli.new.invoke(:create_runs, [], options)
+          File.exist?('run_ids.json').should be_true
+          expect {
+            JSON.load(File.read('run_ids.json'))
+          }.not_to raise_error
+        }
+      end
+    end
   end
 
   describe "#run_status" do
@@ -328,7 +392,7 @@ describe OacisCli do
 
     it "destroys runs specified by 'status'" do
       at_temp_dir {
-        options = {simulator: @sim.id.to_s, query: {"status" => "failed"} }
+        options = {simulator: @sim.id.to_s, query: {"status" => "failed"}, yes: true}
         expect {
           OacisCli.new.invoke(:destroy_runs, [], options)
         }.to change { Run.where(status: :failed).count }.by(-1)
@@ -337,7 +401,7 @@ describe OacisCli do
 
     it "destroys runs specified by 'simulator_version'" do
       at_temp_dir {
-        options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}}
+        options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}, yes: true}
         expect {
           OacisCli.new.invoke(:destroy_runs, [], options)
         }.to change { Run.where(simulator_version: "1.0.0").count }.by(-1)
@@ -346,7 +410,7 @@ describe OacisCli do
 
     it "destroys runs of simulator_version=nil when simulator_version is empty" do
       at_temp_dir {
-        options = {simulator: @sim.id.to_s, query: {"simulator_version" => ""}}
+        options = {simulator: @sim.id.to_s, query: {"simulator_version" => ""}, yes: true}
         expect {
           OacisCli.new.invoke(:destroy_runs, [], options)
         }.to change { Run.where(simulator_version: nil).count }.by(-2)
@@ -355,11 +419,39 @@ describe OacisCli do
 
     it "fails neither 'status' nor 'simulator_version' is given as the query-key" do
       at_temp_dir {
-        options = {simulator: @sim.id.to_s, query: {"hostname" => "localhost"}}
+        options = {simulator: @sim.id.to_s, query: {"hostname" => "localhost"}, yes: true}
         expect {
+          $stdout = StringIO.new # set new string stream not to write Thor#say message on test result
           OacisCli.new.invoke(:destroy_runs, [], options)
+          $stdout = STDOUT
         }.to raise_error
       }
+    end
+
+    context "if user say \"no\" not to destroy runs" do
+
+      it "destroys nothing" do
+        at_temp_dir {
+          expect(Thor::LineEditor).to receive(:readline).with("Destroy 1 runs? ", :add_to_history => false).and_return("n")
+          options = {simulator: @sim.id.to_s, query: {"status" => "failed"} }
+          expect {
+            OacisCli.new.invoke(:destroy_runs, [], options)
+          }.not_to change { Run.where(status: :failed).count }
+        }
+      end
+    end
+
+    context "with yes option" do
+
+      it "destroys runs without confirmation" do
+        at_temp_dir {
+          expect(Thor::LineEditor).not_to receive(:readline).with("Destroy 1 runs? ", :add_to_history => false)
+          options = {simulator: @sim.id.to_s, query: {"status" => "failed"}, yes: true}
+          expect {
+            OacisCli.new.invoke(:destroy_runs, [], options)
+          }.to change { Run.where(status: :failed).count }.by(-1)
+        }
+      end
     end
   end
 
@@ -377,7 +469,7 @@ describe OacisCli do
 
     it "newly create runs have the same attribute as old ones" do
       at_temp_dir {
-        options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"} }
+        options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}, yes: true}
         expect {
           OacisCli.new.invoke(:replace_runs, [], options)
         }.to change { Run.where(status: :created).count }.by(1)
@@ -387,11 +479,38 @@ describe OacisCli do
 
     it "destroys old run" do
       at_temp_dir {
-        options = { simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"} }
+        options = { simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}, yes: true}
         expect {
           OacisCli.new.invoke(:replace_runs, [], options)
         }.to change { Run.where(simulator_version: "1.0.0").count }.from(1).to(0)
       }
     end
+
+    context "if user say \"no\" not to replace runs" do
+
+      it "replaces nothing" do
+        at_temp_dir {
+          expect(Thor::LineEditor).to receive(:readline).with("Replace 1 runs with new ones? ", :add_to_history => false).and_return("n")
+          options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}}
+          expect {
+            OacisCli.new.invoke(:replace_runs, [], options)
+          }.not_to change { Run.where(status: :created).count }
+        }
+      end
+    end
+
+    context "with yes option" do
+
+      it "replaces runs without confirmation" do
+        at_temp_dir {
+          expect(Thor::LineEditor).not_to receive(:readline).with("Replace 1 runs with new ones? ", :add_to_history => false)
+          options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}, yes: true}
+          expect {
+            OacisCli.new.invoke(:replace_runs, [], options)
+          }.to change { Run.where(status: :created).count }.by(1)
+        }
+      end
+    end
   end
 end
+
