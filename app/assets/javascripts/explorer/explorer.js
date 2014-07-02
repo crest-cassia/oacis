@@ -2,14 +2,14 @@ ScatterPlot.prototype.AddDescription = function(){};
 
 function ParameterExplorer() {}
 
-ParameterExplorer.prototype.pc_plot = null;
+ParameterExplorer.prototype.parallel_coordinate_plot = null;
 ParameterExplorer.prototype.scatter_plot = null;
 ParameterExplorer.prototype.current_ps_id = null;
 ParameterExplorer.prototype.current_xaxis_key = null;
 ParameterExplorer.prototype.current_yaxis_key = null;
 
 ParameterExplorer.prototype.show_progress_arc = function() {
-  var g = this.scatter_plot.svg.append("g")
+  var g = this.scatter_plot.main_group.append("g")
     .attr({
       "transform": "translate(" + (this.scatter_plot.margin.left) + "," + (this.scatter_plot.margin.top) + ")",
       "id": "progress_arc_group"
@@ -20,7 +20,7 @@ ParameterExplorer.prototype.show_progress_arc = function() {
 
 ParameterExplorer.prototype.Init = function() {
   this.scatter_plot = new ScatterPlot();
-  this.pc_plot = new ParallelCoordinatePlot(this);
+  this.parallel_coordinate_plot = new ParallelCoordinatePlot();
   this.SetLogscaleCheckbox();
   this.EventBind();
   this.current_ps_id = $('td#current_ps_id').text();
@@ -40,20 +40,22 @@ ParameterExplorer.prototype.Update = function() {
     plot.scatter_plot = new ScatterPlot();
     plot.scatter_plot.Init(dat, url, "/parameter_sets/", plot.current_ps_id);
     plot.scatter_plot.Draw();
-    if(plot.pc_plot.data) {
-      plot.pc_plot.data = dat;
-      plot.pc_plot.current_ps_id = plot.current_ps_id;
+    if(plot.parallel_coordinate_plot.data) {
+      plot.parallel_coordinate_plot.data = dat;
+      plot.parallel_coordinate_plot.current_ps_id = plot.current_ps_id;
     } else {
       Object.keys(dat.data[0][0]).forEach(function(key) {
-        plot.pc_plot.ranges[key] = $('td#ps_v_' + key).data('range');
+        plot.parallel_coordinate_plot.ranges[key] = $('td#ps_v_' + key).data('range');
       });
-      plot.pc_plot.Init(dat, plot.current_ps_id);
+      plot.parallel_coordinate_plot.Init(dat, plot.current_ps_id);
     }
-    plot.pc_plot.Update();
+    plot.parallel_coordinate_plot.colorScale.domain(plot.scatter_plot.colorScale.domain());
+    plot.parallel_coordinate_plot.Update();
     plot.LogscaleEvent("x", $("#xlog").prop('checked') );
     plot.LogscaleEvent("y", $("#ylog").prop('checked') );
     plot.BrushEvent(plot.current_xaxis_key);
     plot.BrushEvent(plot.current_yaxis_key);
+    plot.SetResultRangeEvent();
   })
   .on("error", function() { console.log("error"); })
   .get();
@@ -77,8 +79,8 @@ ParameterExplorer.prototype.MoveCurrentPs = function(e) {
       $('#ps_v_'+key).text(param_values[key]);
     }
 
-    plot.pc_plot.current_ps_id = ps_id;
-    plot.pc_plot.Update();
+    plot.parallel_coordinate_plot.current_ps_id = ps_id;
+    plot.parallel_coordinate_plot.Update();
     // update scatter plot
     if(target_key == plot.current_xaxis_key || target_key == plot.current_yaxis_key) {
       plot.scatter_plot.current_ps_id = ps_id;
@@ -99,8 +101,8 @@ ParameterExplorer.prototype.BuildScatterPlotURL = function(ps_id) {
   }).get();
 
   function range_modified_keys() {
-    return Object.keys(plot.pc_plot.ranges).filter(function(key){
-      return (!plot.pc_plot.brushes[key].empty());
+    return Object.keys(plot.parallel_coordinate_plot.ranges).filter(function(key){
+      return (!plot.parallel_coordinate_plot.brushes[key].empty());
     });
   }
   irrelevants = irrelevants.concat(range_modified_keys()).join(',');
@@ -109,7 +111,7 @@ ParameterExplorer.prototype.BuildScatterPlotURL = function(ps_id) {
   var range = {};
   range_modified_keys().forEach( function(key) {
     if(key != plot.current_xaxis_key && key != plot.current_yaxis_key) {
-      range[key] = plot.pc_plot.GetCurrentRangeFor(key);
+      range[key] = plot.parallel_coordinate_plot.GetCurrentRangeFor(key);
     }
   });
   var url_with_param = url +
@@ -123,14 +125,14 @@ ParameterExplorer.prototype.BuildScatterPlotURL = function(ps_id) {
 
 ParameterExplorer.prototype.EventBind = function() {
   var plot = this;
-  this.pc_plot.on_brush_change = function(key) {
+  this.parallel_coordinate_plot.on_brush_change = function(key) {
     plot.BrushEvent(key);
   };
 };
 
 ParameterExplorer.prototype.BrushEvent = function(key) {
   var plot = this;
-  var domain = plot.pc_plot.GetCurrentRangeFor(key).concat();
+  var domain = plot.parallel_coordinate_plot.GetCurrentRangeFor(key).concat();
   if(key == plot.current_xaxis_key) {
     plot.scatter_plot.SetXDomain(domain[0], domain[1]);
     plot.scatter_plot.UpdatePlot();
@@ -173,3 +175,95 @@ ParameterExplorer.prototype.SetLogscaleCheckbox = function() {
     plot.BrushEvent(key);
   });
 };
+
+ParameterExplorer.prototype.SetResultRangeEvent = function() {
+  var plot = this;
+  $("#range-max")
+    .val(plot.scatter_plot.colorScale.domain()[2])
+    .on("change", function() {
+      var domain = plot.scatter_plot.colorScale.domain();
+      try{
+        if(isNaN(domain[2])) {
+          alert("Do not change tha value \"NaN\"");
+          this.value=""+domain[2];
+          return;
+        }
+        if( isNaN(Number(this.value)) ) {
+          alert(this.value + " is not a number");
+          this.value=""+domain[2];
+        } else if( Number(this.value) < domain[1] ) {
+          alert(this.value + " is not greater than or equal to range mid. value");
+          this.value=""+domain[2];
+        } else {
+          domain[2] = Number(this.value);
+          plot.scatter_plot.colorScale.domain(domain);
+          plot.scatter_plot.colorScalePoint.domain(domain);
+          plot.parallel_coordinate_plot.colorScale.domain(domain);
+          plot.scatter_plot.UpdatePlot();
+          plot.parallel_coordinate_plot.Update();
+        }
+      } catch(e) {
+        alert(e);
+      }
+    });
+  $("#range-mid")
+    .val(plot.scatter_plot.colorScale.domain()[1])
+    .on("change", function() {
+      var domain = plot.scatter_plot.colorScale.domain();
+      try{
+        if(isNaN(domain[1])) {
+          alert("Do not change tha value \"NaN\"");
+          this.value=""+domain[1];
+          return;
+        }
+        if( isNaN(Number(this.value)) ) {
+          alert(this.value + " is not a number");
+          this.value=""+domain[1];
+        } else if( Number(this.value) < domain[0] ) {
+          alert(this.value + " is not greater than or equal to range min. value");
+          this.value=""+domain[1];
+        } else if( Number(this.value) > domain[2] ) {
+          alert(this.value + " is not less than or equal to range max. value");
+          this.value=""+domain[1];
+        } else {
+          domain[1] = Number(this.value);
+          plot.scatter_plot.colorScale.domain(domain);
+          plot.scatter_plot.colorScalePoint.domain(domain);
+          plot.parallel_coordinate_plot.colorScale.domain(domain);
+          plot.scatter_plot.UpdatePlot();
+          plot.parallel_coordinate_plot.Update();
+        }
+      } catch(e) {
+        alert(e);
+      }
+    });
+  $("#range-min")
+    .val(plot.scatter_plot.colorScale.domain()[0])
+    .on("change", function() {
+      var domain = plot.scatter_plot.colorScale.domain();
+      try{
+        if(isNaN(domain[0])) {
+          alert("Do not change tha value \"NaN\"");
+          this.value=""+domain[0];
+          return;
+        }
+        if( isNaN(Number(this.value)) ) {
+          alert(this.value + " is not a number");
+          this.value=""+domain[0];
+        } else if( Number(this.value) > domain[1] ) {
+          alert(this.value + " is not less than or equal to range mid. value");
+          this.value=""+domain[0];
+        } else {
+          domain[0] = Number(this.value);
+          plot.scatter_plot.colorScale.domain(domain);
+          plot.scatter_plot.colorScalePoint.domain(domain);
+          plot.parallel_coordinate_plot.colorScale.domain(domain);
+          plot.scatter_plot.UpdatePlot();
+          plot.parallel_coordinate_plot.Update();
+        }
+      } catch(e) {
+        alert(e);
+      }
+    });
+};
+

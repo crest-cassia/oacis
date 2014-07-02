@@ -1,5 +1,7 @@
 function ScatterPlot() {
   Plot.call(this);// call constructor of Plot
+  this.colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
+  this.colorScalePoint = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
 }
 
 ScatterPlot.prototype = Object.create(Plot.prototype);// ScatterPlot is sub class of Plot
@@ -82,7 +84,7 @@ ScatterPlot.prototype.SetXDomain = function(xmin, xmax) {
     }
   }
   plot.xScale.domain([xmin, xmax]);
-}
+};
 
 ScatterPlot.prototype.SetYDomain = function(ymin, ymax) {
   var plot = this;
@@ -96,32 +98,33 @@ ScatterPlot.prototype.SetYDomain = function(ymin, ymax) {
     }
   }
   plot.yScale.domain([ymin, ymax]);
-}
-
+};
 
 ScatterPlot.prototype.AddPlot = function() {
   var plot = this;
 
-  var result_min_val = d3.min( this.data.data, function(d) { return d[1];});
-  var result_max_val = d3.max( this.data.data, function(d) { return d[1];});
-  var colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
-  var colorScalePoint = d3.scale.linear().range(["#0041ff", "#888888", "#ff2800"]);
-  colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
-  colorScalePoint.domain( colorScale.domain() ).nice();
+  function set_color_map_scale() {
+    var result_min_val = d3.min( plot.data.data, function(d) { return d[1];});
+    var result_max_val = d3.max( plot.data.data, function(d) { return d[1];});
+    var niced = d3.scale.linear().domain([result_min_val, result_max_val]).nice().domain();
+    plot.colorScale.domain([ niced[0], (niced[0]+niced[1])/2.0, niced[1]]).nice();
+    plot.colorScalePoint.domain( plot.colorScale.domain() ).nice();
+  }
+  set_color_map_scale();
 
   function add_color_map_group() {
-    var color_map = plot.svg.append("g")
+    var color_map = plot.main_group.append("g")
       .attr({
         "transform": "translate(" + plot.width + "," + plot.margin.top + ")",
         "id": "color-map-group"
       });
-    var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(colorScale.range());
+    var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(plot.colorScale.range());
     color_map.append("text")
       .attr({x: 10.0, y: 20.0, dx: "0.1em", dy: "-0.4em"})
       .style("text-anchor", "begin")
       .text("Result");
     color_map.selectAll("rect")
-      .data([1.0, 0.8, 0.6, 0.4, 0.2, 0.0])
+      .data([1.0, 0.8, 0.6, 0.5, 0.4, 0.2, 0.0])
       .enter().append("rect")
       .attr({
         x: 10.0,
@@ -131,18 +134,24 @@ ScatterPlot.prototype.AddPlot = function() {
         fill: function(d) { return scale(d); }
       });
     color_map.append("text")
-      .attr({x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
+      .attr({id:"result-range-max", x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
-      .text( colorScale.domain()[2] );
+      .text( plot.colorScale.domain()[2] );
     color_map.append("text")
-      .attr({x: 30.0, y: 140.0, dx: "0.2em", dy: "-0.3em"})
+      .attr({id:"result-range-middle", x: 30.0, y: 100.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
-      .text( colorScale.domain()[0] );
+      .text( plot.colorScale.domain()[1] );
+    color_map.append("text")
+      .attr({id:"result-range-min", x: 30.0, y: 160.0, dx: "0.2em", dy: "-0.3em"})
+      .style("text-anchor", "begin")
+      .text( plot.colorScale.domain()[0] );
   }
   add_color_map_group();
 
+  var plot_group = plot.main_group.append("g").attr("id", "plot-group");
+
   function add_voronoi_group() {
-    var voronoi_group = plot.svg.append("g")
+    var voronoi_group = plot_group.append("g")
       .attr("id", "voronoi-group");
   }
   add_voronoi_group();
@@ -155,14 +164,14 @@ ScatterPlot.prototype.AddPlot = function() {
         average: v[1], error: v[2], psid: v[3]
       };
     });
-    var point = plot.svg.append("g")
+    var point = plot_group.append("g")
       .attr("id", "point-group");
     point.selectAll("circle")
       .data(mapped)
       .enter()
         .append("circle")
         .attr("clip-path", "url(#clip)")
-        .style("fill", function(d) { return colorScalePoint(d.average);})
+        .style("fill", function(d) { return plot.colorScalePoint(d.average);})
         .on("mouseover", function(d) {
           tooltip.transition()
             .duration(200)
@@ -197,12 +206,25 @@ ScatterPlot.prototype.AddPlot = function() {
 ScatterPlot.prototype.UpdatePlot = function() {
   var plot = this;
 
+  function update_color_scale() {
+    var scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(plot.colorScale.range());
+
+    plot.main_group.select("#result-range-max")
+      .text( plot.colorScale.domain()[2] );
+    plot.main_group.select("#result-range-middle")
+      .text( plot.colorScale.domain()[1] );
+    plot.main_group.select("#result-range-min")
+      .text( plot.colorScale.domain()[0] );
+
+    plot.main_group.selectAll("circle")
+      .style("fill", function(d) { return plot.colorScalePoint(d.average);});
+  }
+  update_color_scale();
+
   function update_voronoi_group() {
     var result_min_val = d3.min( plot.data.data, function(d) { return d[1];});
     var result_max_val = d3.max( plot.data.data, function(d) { return d[1];});
-    var colorScale = d3.scale.linear().range(["#0041ff", "#ffffff", "#ff2800"]);
-    colorScale.domain([ result_min_val, (result_min_val+result_max_val)/2.0, result_max_val]).nice();
-    var voronoi = plot.svg.select("g#voronoi-group");
+    var voronoi = plot.main_group.select("g#voronoi-group");
     var d3voronoi = d3.geom.voronoi()
       .clipExtent([[0, 0], [plot.width, plot.height]]);
     var filtered_data = plot.data.data.filter(function(v) {
@@ -226,7 +248,11 @@ ScatterPlot.prototype.UpdatePlot = function() {
         .data(d3voronoi(vertices))
         .enter()
           .append("path")
-          .style("fill", function(d, i) { return colorScale(filtered_data[i][1]);})
+          .attr("fill", function(d, i) {
+            if(filtered_data[i][1] < plot.colorScale.domain()[0]) {return "url(#TrianglePattern)";}
+            if(filtered_data[i][1] > plot.colorScale.domain()[2]) {return "url(#TrianglePattern)";}
+            return plot.colorScale(filtered_data[i][1]);
+          })
           .attr("d", function(d) { return "M" + d.join('L') + "Z"; })
           .style("fill-opacity", 0.7)
           .style("stroke", "none");
@@ -243,7 +269,7 @@ ScatterPlot.prototype.UpdatePlot = function() {
   update_voronoi_group();
 
   function update_point_group() {
-    var point = plot.svg.select("g#point-group");
+    var point = plot.main_group.select("g#point-group");
     point.selectAll("circle")
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .attr("cx", function(d) { return plot.xScale(d.x);})
@@ -272,38 +298,182 @@ ScatterPlot.prototype.AddDescription = function() {
   function add_tools() {
     plot.description.append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
     plot.description.append("br");
-    plot.description.append("a").text("delete plot").style('cursor','pointer').on("click", function() {
-      plot.Destructor();
-    });
-
+    var downloadAsFile = function(fileName, content) {
+      var blob = new Blob([content]);
+      var url = window.URL || window.webkitURL;
+      var blobURL = url.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.download = fileName;
+      a.href = blobURL;
+      return a;
+    };
+    var a_link = downloadAsFile("scatter_plot.svg", $(plot.svg.node()).parent().html());
+    $(a_link).text("download svg");
+    plot.description.node().appendChild(a_link);
     plot.description.append("br");
-    plot.description.append("br").style("line-height", "400%");
+
+    plot.description.append("a").text("delete plot")
+      .style("cursor", "pointer")
+      .on("click", function() {
+        plot.Destructor();
+      });
+    plot.description.append("br");
+    plot.description.append("div").style("margin-bottom", "20px");
+
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
-      var new_scale;
-      if(this.checked) {
-        new_scale = "log";
-      } else {
-        new_scale = "linear";
-      }
-      plot.SetXScale(new_scale);
-      plot.UpdatePlot();
+      reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
     });
     plot.description.append("span").html("log scale on x axis");
     plot.description.append("br");
 
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
-      var new_scale;
-      if(this.checked) {
-        new_scale = "log";
-      } else {
-        new_scale = "linear";
-      }
-      plot.SetYScale(new_scale);
-      plot.UpdatePlot();
+      reset_brush(plot.IsLog[0] ? "log" : "linear", this.checked ? "log" : "linear");
     });
     plot.description.append("span").html("log scale on y axis");
+
+    plot.description.append("br");
+    var control_plot = plot.description.append("div").style("margin-top", "10px");
+    function add_brush() {
+      var clone = plot.main_group.select("g#plot-group").node().cloneNode(true);
+      control_plot.append("svg")
+        .attr("width","210")
+        .attr("height","155")
+        .attr("viewBox","0 0 574 473")
+        .node().appendChild(clone);
+
+      var x = plot.IsLog[0] ? d3.scale.log() : d3.scale.linear();
+      x.range([0, plot.width]);
+      x.domain(plot.xScale.domain());
+      var x_min = x.domain()[0];
+      var x_max = x.domain()[1];
+
+      var y = plot.IsLog[1] ? d3.scale.log() : d3.scale.linear();
+      y.range([plot.height, 0]);
+      y.domain(plot.yScale.domain());
+      var y_min = y.domain()[0];
+      var y_max = y.domain()[1];
+
+      var brush = d3.svg.brush()
+        .x(x)
+        .y(y)
+        .on("brush", brushed);
+
+      var cloned_main_group = d3.select(clone)
+        .attr("transform", "translate(5,5)");
+      var line_shape = "M0,0V" + plot.height + "H" + plot.width;
+      cloned_main_group.append("path").attr("d", line_shape)
+        .style({
+          "fill": "none",
+          "stroke": "#000",
+          "shape-rendering": "crispEdges"
+        });
+
+      cloned_main_group.append("g")
+        .attr("class", "brush")
+        .call(brush)
+        .selectAll("rect")
+        .style({"stroke": "orange", "stroke-width": 4, "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
+
+      function brushed() {
+        var domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
+        plot.SetXDomain(domain[0][0], domain[1][0]);
+        plot.SetYDomain(domain[0][1], domain[1][1]);
+        plot.UpdatePlot();
+        plot.UpdateAxis();
+      }
     }
+    add_brush();
+
+    function reset_brush (x_linear_log, y_linear_log) {
+      plot.SetXScale(x_linear_log); // reset xScale domain to draw non expanded plot
+      plot.SetYScale(y_linear_log); // reset xScale domain to draw non expanded plot
+      plot.UpdatePlot();
+      while (control_plot.node().firstChild) {
+        control_plot.node().removeChild(control_plot.node().firstChild);
+      }
+      add_brush();
+    }
+
+    function add_result_scale_controller() {
+      var pattern = plot.main_group.select("defs").append("pattern");
+      pattern
+        .attr("id", "TrianglePattern")
+        .attr("patternUnits", "userSpaceOnUse")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 4)
+        .attr("height", 4);
+      pattern.append("rect")
+        .attr("x", 1)
+        .attr("y", 1)
+        .attr("width", 2)
+        .attr("height", 2)
+        .attr("fill", "black");
+
+      var color_scale_control = plot.description.append("div")
+        .attr("id","color-scale-control")
+        .style("margin-top", "10px");
+
+      color_scale_control.text("Result range :");
+      var form = color_scale_control.append("form").attr("class", "form-inline");
+      form.append("input").attr({
+        "type": "text",
+        "class": "input-small",
+        "placeholder": "min",
+        "id": "range-min"
+      });
+      form.append("input").attr({
+        "type": "text",
+        "class": "input-small",
+        "placeholder": "max",
+        "id": "range-max"
+      });
+
+      var range_change = function(key, text_field) {
+        var domain = plot.colorScale.domain();
+        var original = (key == "max") ? domain[2] : domain[0];
+        try{
+          if(isNaN(original)) {
+            alert("Do not change tha value \"NaN\"");
+            text_field.value = "" + original;
+            return;
+          }
+          if(isNaN(Number(text_field.value))) {
+            alert(text_field.value + " is not a number");
+            text_field.value = "" + original;
+          } else if(key == "max" && Number(text_field.value) <= domain[0] ) {
+            alert(text_field.value + " must be larger than min.");
+            text_field.value = "" + original;
+          } else if(key == "min" && Number(text_field.value) >= domain[2] ) {
+            alert(text_field.value + " must be less than max.");
+            text_field.value = "" + original;
+          } else {
+            if( key == "max" ) { domain[2] = Number(text_field.value); }
+            else { domain[0] = Number(text_field.value); }
+            domain[1] = (domain[0] + domain[2]) / 2.0;
+            plot.colorScale.domain(domain);
+            plot.colorScalePoint.domain(domain);
+            reset_brush(plot.IsLog[0] ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
+          }
+        } catch(e) {
+          alert(e);
+        }
+      };
+      plot.description.select("#range-max")
+        .attr("value", plot.colorScale.domain()[2])
+        .on("change", function() {
+          range_change("max", this);
+        });
+      plot.description.select("#range-min")
+        .attr("value", plot.colorScale.domain()[0])
+        .on("change", function() {
+          range_change("min", this);
+        });
+    }
+    add_result_scale_controller();
+  }
   add_tools();
+
 };
 
 ScatterPlot.prototype.Draw = function() {
@@ -314,7 +484,7 @@ ScatterPlot.prototype.Draw = function() {
 
 function draw_scatter_plot(url, parameter_set_base_url, current_ps_id) {
   var plot = new ScatterPlot();
-  var progress = show_loading_spin_arc(plot.svg, plot.width, plot.height);
+  var progress = show_loading_spin_arc(plot.main_group, plot.width, plot.height);
 
   var xhr = d3.json(url)
     .on("load", function(dat) {

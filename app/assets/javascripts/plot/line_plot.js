@@ -4,6 +4,7 @@ function LinePlot() {
 
 LinePlot.prototype = Object.create(Plot.prototype);// LinePlot is sub class of Plot
 LinePlot.prototype.constructor = LinePlot;// override constructor
+LinePlot.prototype.IsLog = [false,false];
 
 LinePlot.prototype.SetXScale = function(xscale) {
   var scale = null, min, max;
@@ -16,6 +17,7 @@ LinePlot.prototype.SetXScale = function(xscale) {
       min,
       max
     ]).nice();
+    this.IsLog[0] = false;
     break;
   case "log":
     var data_in_logscale = this.data.data.map(function(element) {
@@ -30,6 +32,7 @@ LinePlot.prototype.SetXScale = function(xscale) {
       (!min || min<0.0) ? 0.1 : min,
       (!max || max<0.0) ? 1.0 : max
     ]).nice();
+    this.IsLog[0] = true;
     break;
   }
   this.xScale = scale;
@@ -47,6 +50,7 @@ LinePlot.prototype.SetYScale = function(yscale) {
       min,
       max
     ]).nice();
+    this.IsLog[1] = false;
     break;
   case "log":
     var data_in_logscale = this.data.data.map(function(element) {
@@ -61,10 +65,39 @@ LinePlot.prototype.SetYScale = function(yscale) {
       (!min || min<0.0) ? 0.1 : min,
       (!max || max<0.0) ? 1.0 : max
     ]).nice();
+    this.IsLog[1] = true;
     break;
   }
   this.yScale = scale;
   this.yAxis.scale(this.yScale);
+};
+
+LinePlot.prototype.SetXDomain = function(xmin, xmax) {
+  var plot = this;
+  if( plot.IsLog[0] ) {
+    if( xmin <= 0.0 ) {
+      plot.SetXScale("log"); // call this to calculate auto-domain
+      xmin = plot.xScale.domain()[0];
+      if( xmax <= 0.0 ) {
+        xmax = xmin + 0.000001;
+      }
+    }
+  }
+  plot.xScale.domain([xmin, xmax]);
+};
+
+LinePlot.prototype.SetYDomain = function(ymin, ymax) {
+  var plot = this;
+  if( plot.IsLog[1] ) {
+    if( ymin <= 0.0 ) {
+      plot.SetYScale("log"); // call this to calculate auto-domain
+      ymin = plot.yScale.domain()[0];
+      if( ymax <= 0.0 ) {
+        ymax = ymin + 0.000001;
+      }
+    }
+  }
+  plot.yScale.domain([ymin, ymax]);
 };
 
 LinePlot.prototype.AddPlot = function() {
@@ -72,7 +105,8 @@ LinePlot.prototype.AddPlot = function() {
   var colorScale = d3.scale.category10();
 
   function add_series_group() {
-    var series = plot.svg
+    var plot_group = plot.main_group.append("g").attr("id", "plot-group");
+    var series = plot_group
       .selectAll("g")
       .data(plot.data.data)
       .enter().append("g")
@@ -80,6 +114,7 @@ LinePlot.prototype.AddPlot = function() {
 
     // add line
     series.append("path")
+      .attr("clip-path", "url(#clip)")
       .style({
         "stroke": function(d, i) { return colorScale(i);},
         "fill": "none",
@@ -141,7 +176,7 @@ LinePlot.prototype.AddPlot = function() {
   add_series_group();
 
   function add_legend_group() {
-    var legend_region = plot.svg.append("g")
+    var legend_region = plot.main_group.append("g")
       .attr("id", "legend-group")
       .attr("transform", "translate(" + plot.width + "," + 0 + ")");
     var legend = legend_region.append("g")
@@ -191,7 +226,7 @@ LinePlot.prototype.UpdatePlot = function() {
     .y( function(d) { return plot.yScale(d[1]);} );
 
   function update_series() {
-    var series = plot.svg.selectAll("g.series");
+    var series = plot.main_group.selectAll("g.series");
     // draw line path
     series.selectAll("path").attr("d", function(d) { return line(d);});
 
@@ -257,38 +292,103 @@ LinePlot.prototype.AddDescription = function() {
     var plt_url = plot.url.replace(/\.json/, '.plt');
     plot.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
     plot.description.append("br");
-    plot.description.append("a").text("delete plot").style('cursor','pointer').on("click", function() {
-      plot.Destructor();
-    });
+    var downloadAsFile = function(fileName, content) {
+      var blob = new Blob([content]);
+      var url = window.URL || window.webkitURL;
+      var blobURL = url.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.download = fileName;
+      a.href = blobURL;
+      return a;
+    };
+    var a_link = downloadAsFile("line_plot.svg", $(plot.svg.node()).parent().html());
+    $(a_link).text("download svg");
+    plot.description.node().appendChild(a_link);
     plot.description.append("br");
+    plot.description.append("a").text("delete plot")
+      .style("cursor", "pointer")
+      .on("click", function() {
+        plot.Destructor();
+      });
+    plot.description.append("br");
+    plot.description.append("div").style("padding-bottom", "50px");
 
-    plot.description.append("br").style("line-height", "400%");
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
-      var new_scale;
-      if(this.checked) {
-        new_scale = "log";
-      } else {
-        new_scale = "linear";
-      }
-      plot.SetXScale(new_scale);
-      plot.UpdatePlot();
+      reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
     });
     plot.description.append("span").html("log scale on x axis");
     plot.description.append("br");
 
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
-      var new_scale;
-      if(this.checked) {
-        new_scale = "log";
-      } else {
-        new_scale = "linear";
-      }
-      plot.SetYScale(new_scale);
-      plot.UpdatePlot();
+      reset_brush(plot.IsLog[0] ? "log" : "linear", this.checked ? "log" : "linear");
     });
     plot.description.append("span").html("log scale on y axis");
+
+    plot.description.append("br");
+    var control_plot = plot.description.append("div").style("margin-top", "10px");
+    function add_brush() {
+      var clone = plot.main_group.select("g#plot-group").node().cloneNode(true);
+      control_plot.append("svg")
+        .attr("width","210")
+        .attr("height","155")
+        .attr("viewBox","0 0 574 473")
+        .node().appendChild(clone);
+
+      var x = plot.IsLog[0] ? d3.scale.log() : d3.scale.linear();
+      x.range([0, plot.width]);
+      x.domain(plot.xScale.domain());
+      var x_min = x.domain()[0];
+      var x_max = x.domain()[1];
+
+      var y = plot.IsLog[1] ? d3.scale.log() : d3.scale.linear();
+      y.range([plot.height, 0]);
+      y.domain(plot.yScale.domain());
+      var y_min = y.domain()[0];
+      var y_max = y.domain()[1];
+
+      var brush = d3.svg.brush()
+        .x(x)
+        .y(y)
+        .on("brush", brushed);
+
+      var cloned_main_group = d3.select(clone)
+        .attr("transform", "translate(5,5)");
+      var line_shape = "M0,0V" + plot.height + "H" + plot.width;
+      cloned_main_group.append("path").attr("d", line_shape)
+        .style({
+          "fill": "none",
+          "stroke": "#000",
+          "shape-rendering": "crispEdges"
+        });
+
+      cloned_main_group.append("g")
+        .attr("class", "brush")
+        .call(brush)
+        .selectAll("rect")
+        .style({"stroke": "orange", "stroke-width": 4, "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
+
+      function brushed() {
+        var domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
+        plot.SetXDomain(domain[0][0], domain[1][0]);
+        plot.SetYDomain(domain[0][1], domain[1][1]);
+        plot.UpdatePlot();
+        plot.UpdateAxis();
+      }
+    }
+    add_brush();
+
+    function reset_brush (x_linear_log, y_linear_log) {
+      plot.SetXScale(x_linear_log); // reset xScale domain to draw non expanded plot
+      plot.SetYScale(y_linear_log); // reset xScale domain to draw non expanded plot
+      plot.UpdatePlot();
+      while (control_plot.node().firstChild) {
+        control_plot.node().removeChild(control_plot.node().firstChild);
+      }
+      add_brush();
+    }
   }
   add_tools();
+
 };
 
 LinePlot.prototype.Draw = function() {
@@ -299,7 +399,7 @@ LinePlot.prototype.Draw = function() {
 
 function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
   var plot = new LinePlot();
-  var progress = show_loading_spin_arc(plot.svg, plot.width, plot.height);
+  var progress = show_loading_spin_arc(plot.main_group, plot.width, plot.height);
   var xhr = d3.json(url)
     .on("load", function(dat) {
       progress.remove();
