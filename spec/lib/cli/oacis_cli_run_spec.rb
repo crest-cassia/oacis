@@ -436,7 +436,7 @@ describe OacisCli do
           options = {simulator: @sim.id.to_s, query: {"status" => "failed"} }
           expect {
             OacisCli.new.invoke(:destroy_runs, [], options)
-          }.to change { Run.where(status: :failed).count }.by(0)
+          }.not_to change { Run.where(status: :failed).count }
         }
       end
     end
@@ -494,7 +494,7 @@ describe OacisCli do
           options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}}
           expect {
             OacisCli.new.invoke(:replace_runs, [], options)
-          }.to change { Run.where(status: :created).count }.by(0)
+          }.not_to change { Run.where(status: :created).count }
         }
       end
     end

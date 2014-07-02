@@ -389,7 +389,7 @@ describe OacisCli do
           options = {analyzer_id: analyzer_id, query: {"analyzer_version" => "v0.1.0"}}
           expect {
             OacisCli.new.invoke(:destroy_analyses, [], options)
-          }.to change { Analysis.where(analyzer_version: "v0.1.0").count }.by(0)
+          }.not_to change { Analysis.where(analyzer_version: "v0.1.0").count }
         }
       end
     end
@@ -464,7 +464,7 @@ describe OacisCli do
           options = {analyzer_id: analyzer_id, query: {"status" => "failed"}, input: "anz_parameters.json"}
           expect {
             OacisCli.new.invoke(:replace_analyses, [], options)
-          }.to change { Analysis.where(status: :created).count }.by(0)
+          }.not_to change { Analysis.where(status: :created).count }
         }
       end
     end

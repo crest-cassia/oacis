@@ -30,9 +30,7 @@ class OacisCli < Thor
     end
 
     return if options[:dry_run]
-    unless options[:yes]
-      return unless overwrite_file?(options[:output])
-    end
+    return unless options[:yes] or overwrite_file?(options[:output])
     File.open(options[:output], 'w') do |io|
       io.puts JSON.pretty_generate(job_parameters)
     end
@@ -97,9 +95,7 @@ class OacisCli < Thor
 
   ensure
     return if options[:dry_run]
-    unless options[:yes]
-      return unless overwrite_file?(options[:output])
-    end
+    return unless options[:yes] or overwrite_file?(options[:output])
     write_run_ids_to_file(options[:output], runs)
   end
 
