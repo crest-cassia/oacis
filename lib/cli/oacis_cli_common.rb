@@ -2,6 +2,7 @@ class OacisCli < Thor
 
   class_option :dry_run, type: :boolean, aliases: '-d', desc: 'dry run'
   class_option :verbose, type: :boolean, aliases: '-v', desc: 'verbose mode'
+  class_option :yes, type: :boolean, aliases: '-y', desc: 'say "yes" for all questions'
 
   USAGE = <<"EOS"
 usage:
@@ -148,4 +149,10 @@ EOS
       raise "Invalid json format. Key 'analysis_id' is necessary."
     end
   end
+
+  def overwrite_file?(path)
+    return yes?("Overwrite output file?") if File.exist?(path)
+    return true
+  end
 end
+

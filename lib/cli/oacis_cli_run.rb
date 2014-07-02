@@ -30,6 +30,9 @@ class OacisCli < Thor
     end
 
     return if options[:dry_run]
+    unless options[:yes]
+      return unless overwrite_file?(options[:output])
+    end
     File.open(options[:output], 'w') do |io|
       io.puts JSON.pretty_generate(job_parameters)
     end
@@ -93,7 +96,11 @@ class OacisCli < Thor
     end
 
   ensure
-    write_run_ids_to_file(options[:output], runs) unless options[:dry_run]
+    return if options[:dry_run]
+    unless options[:yes]
+      return unless overwrite_file?(options[:output])
+    end
+    write_run_ids_to_file(options[:output], runs)
   end
 
   private
@@ -146,7 +153,7 @@ class OacisCli < Thor
       say("Found runs: #{runs.map(&:id).to_json}")
     end
 
-    if yes?("Destroy #{runs.count} runs?")
+    if options[:yes] or yes?("Destroy #{runs.count} runs?")
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
       # no_timeout enables destruction of 10000 or more runs
       runs.no_timeout.each do |run|
@@ -180,7 +187,7 @@ class OacisCli < Thor
       say("Found runs: #{runs.map(&:id).to_json}")
     end
 
-    if yes?("Replace #{runs.count} runs with new ones?")
+    if options[:yes] or yes?("Replace #{runs.count} runs with new ones?")
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
       # no_timeout enables replacement of 10000 or more runs
       runs.no_timeout.each do |run|

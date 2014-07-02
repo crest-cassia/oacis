@@ -26,6 +26,9 @@ EOS
     required: true
   def simulator_template
     return if options[:dry_run]
+    unless options[:yes]
+      return unless overwrite_file?(options[:output])
+    end
     File.open(options[:output], 'w') {|io|
       io.puts SIMULATOR_TEMPLATE
       io.flush
@@ -67,6 +70,9 @@ EOS
 
     if sim.valid?
       unless options[:dry_run]
+        unless options[:yes]
+          return unless overwrite_file?(options[:output])
+        end
         sim.save!
         write_simulator_id_to_file(options[:output], sim)
       end

@@ -24,6 +24,32 @@ describe OacisCli do
         }
       end
     end
+
+    context "when output file exists" do
+
+      it "ask a question to overwrite the output file" do
+        at_temp_dir {
+          FileUtils.touch('simulator.json')
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          OacisCli.new.invoke(:simulator_template, [], {output: 'simulator.json'})
+        }
+      end
+    end
+
+    context "with yes option when output file exists" do
+
+      it "does not ask a question to overwrite the output file" do
+        at_temp_dir {
+          FileUtils.touch('simulator.json')
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          OacisCli.new.invoke(:simulator_template, [], {output: 'simulator.json', yes: true})
+          File.exist?('simulator.json').should be_true
+          expect {
+            JSON.load(File.read('simulator.json'))
+          }.not_to raise_error
+        }
+      end
+    end
   end
 
   describe "#create_simulator" do
@@ -164,6 +190,35 @@ describe OacisCli do
         at_temp_dir {
           invoke_create_simulator_with_dry_run
           File.exist?('simulator_id.json').should be_false
+        }
+      end
+    end
+
+    context "when output file exists" do
+
+      it "asks a question to overwrite the output file" do
+        at_temp_dir {
+          FileUtils.touch("simulator_id.json")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          create_simulator_json('simulator.json')
+          option = {input: 'simulator.json', output: 'simulator_id.json'}
+          OacisCli.new.invoke(:create_simulator, [], option)
+        }
+      end
+    end
+
+    context "with yes option when output file exists" do
+
+      it "does not ask a question to overwrite the output file" do
+        at_temp_dir {
+          FileUtils.touch("simulator_id.json")
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          create_simulator_json('simulator.json')
+          option = {input: 'simulator.json', output: 'simulator_id.json', yes: true}
+          expect {
+            OacisCli.new.invoke(:create_simulator, [], option)
+          }.to change { Simulator.count }.by(1)
+          File.exist?('simulator_id.json').should be_true
         }
       end
     end
