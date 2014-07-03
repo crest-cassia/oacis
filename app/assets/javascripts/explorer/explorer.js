@@ -74,6 +74,7 @@ ParameterExplorer.prototype.MoveCurrentPs = function(e) {
     // update table
     var ps_id = json._id;
     plot.current_ps_id = ps_id;
+    $('td#current_ps_id').text(ps_id);
     var param_values = json.v;
     for(var key in param_values) {
       $('#ps_v_'+key).text(param_values[key]);
