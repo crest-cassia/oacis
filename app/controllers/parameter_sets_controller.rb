@@ -341,6 +341,27 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  private
+  def collect_latest_analyses(ps_ids, analyzer)
+    Analysis.collection.aggregate(
+      { '$match' => Analysis.where(analyzer: analyzer).in(parameter_set_id: ps_ids).where(status: :finished).selector },
+      { '$sort' => { finished_at: -1 } },
+      { '$group' => { _id: '$parameter_set_id',
+                      analysis_id: {'$first' => '$_id'},
+                      analyzable_id: {'$first' => '$analyzable_id'}}}
+      )
+  end
+
+  def collect_latest_runs(ps_ids)
+    Run.collection.aggregate(
+      { '$match' => Run.in(parameter_set_id: ps_ids).where(status: :finished).selector },
+      { '$sort' => { finished_at: -1 } },
+      { '$group' => { _id: '$parameter_set_id',
+                      run_id: {'$first' => '$_id'}}}
+      )
+  end
+
+  public
   def _figure_viewer
     base_ps = ParameterSet.find(params[:id])
 
@@ -353,24 +374,35 @@ class ParameterSetsController < ApplicationController
 
     found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
 
-    data = found_ps.map do |ps|
-      found = nil
-      if analyzer and analyzer.type == :on_parameter_set
-        found = ps.analyses.where(analyzer: analyzer).to_a.find do |anl|
-          File.exist?( anl.dir.join(figure_filename) )
+    if analyzer
+      related_anls = collect_latest_analyses(found_ps.map(&:id), analyzer).map do |ps_anl|
+        [ps_anl["_id"], {analysis_id: ps_anl["analysis_id"], analyzable_id: ps_anl["analyzable_id"]}]
+      end
+      related_anls = Hash[*related_anls.flatten]
+
+      if analyzer.type == :on_parameter_set
+        data = found_ps.map do |ps|
+          path = ps.dir.join(related_anls[ps.id][:analysis_id]).join(figure_filename)
+          fig_path = File.exist?( path ) ? ApplicationController.helpers.file_path_to_link_path( path ) : nil
+          [ ps.v[x_axis_key], ps.v[y_axis_key], fig_path.to_s, ps.id.to_s ]
         end
-      elsif analyzer and analyzer.type == :on_run
-        found = ps.runs.map {|run| run.analyses.to_a }.flatten.find do |anl|
-          File.exist?( anl.dir.join(figure_filename) )
-        end
-      else
-        found = ps.runs.to_a.find do |run|
-          File.exist?( run.dir.join(figure_filename) )
+      elsif analyzer.type == :on_run
+        data = found_ps.map do |ps|
+          path = ps.dir.join(related_anls[ps.id][:analyzable_id]).join(related_anls[ps.id][:analysis_id]).join(figure_filename)
+          fig_path = File.exist?( path ) ? ApplicationController.helpers.file_path_to_link_path( path ) : nil
+          [ ps.v[x_axis_key], ps.v[y_axis_key], fig_path.to_s, ps.id.to_s ]
         end
       end
-      fig_path = found ? ApplicationController.helpers.file_path_to_link_path( found.dir.join(figure_filename)) : nil
-
-      [ ps.v[x_axis_key], ps.v[y_axis_key], fig_path.to_s, ps.id.to_s ]
+    else
+      related_runs = collect_latest_runs(found_ps.map(&:id)).map do |ps_run|
+        [ps_run["_id"], {run_id: ps_run["run_id"]}]
+      end
+      related_runs = Hash[*related_runs.flatten]
+      data = found_ps.map do |ps|
+        path = ps.dir.join(related_runs[ps.id][:run_id]).join(figure_filename)
+        fig_path = File.exist?( path ) ? ApplicationController.helpers.file_path_to_link_path( path ) : nil
+        [ ps.v[x_axis_key], ps.v[y_axis_key], fig_path.to_s, ps.id.to_s ]
+      end
     end
 
     respond_to do |format|
