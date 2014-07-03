@@ -40,6 +40,7 @@ ParameterExplorer.prototype.Update = function() {
     plot.scatter_plot = new ScatterPlot();
     plot.scatter_plot.Init(dat, url, "/parameter_sets/", plot.current_ps_id);
     plot.scatter_plot.Draw();
+    plot.AddMouseEventOnScatterPlot();
     if(plot.parallel_coordinate_plot.data) {
       plot.parallel_coordinate_plot.data = dat;
       plot.parallel_coordinate_plot.current_ps_id = plot.current_ps_id;
@@ -74,6 +75,7 @@ ParameterExplorer.prototype.MoveCurrentPs = function(e) {
     // update table
     var ps_id = json._id;
     plot.current_ps_id = ps_id;
+    $('td#current_ps_id').text(ps_id);
     var param_values = json.v;
     for(var key in param_values) {
       $('#ps_v_'+key).text(param_values[key]);
@@ -264,6 +266,21 @@ ParameterExplorer.prototype.SetResultRangeEvent = function() {
       } catch(e) {
         alert(e);
       }
+    });
+};
+
+ParameterExplorer.prototype.AddMouseEventOnScatterPlot = function() {
+  var plot = this;
+  this.scatter_plot.main_group.select("#point-group").selectAll("circle")
+    .on("click", function(d) {
+      plot.current_ps_id = d.psid;
+      $('td#current_ps_id').text(d.psid);
+      $('#ps_v_'+plot.current_xaxis_key).text(d.x);
+      $('#ps_v_'+plot.current_yaxis_key).text(d.y);
+      plot.parallel_coordinate_plot.current_ps_id = d.psid;
+      plot.parallel_coordinate_plot.Update();
+      plot.scatter_plot.current_ps_id = d.psid;
+      plot.scatter_plot.UpdatePlot();
     });
 };
 
