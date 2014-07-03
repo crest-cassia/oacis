@@ -59,7 +59,7 @@ class OacisCli < Thor
     required: true
   def create_runs
     parameter_sets = get_parameter_sets(options[:parameter_sets])
-    job_parameters = JSON.load( File.read(options[:job_parameters]) )
+    job_parameters = load_json_file_or_string(options[:job_parameters])
     num_runs = options[:number_of_runs]
     submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
     host_parameters = job_parameters["host_parameters"].to_hash
