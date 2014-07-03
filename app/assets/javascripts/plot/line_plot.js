@@ -292,19 +292,23 @@ LinePlot.prototype.AddDescription = function() {
     var plt_url = plot.url.replace(/\.json/, '.plt');
     plot.description.append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
     plot.description.append("br");
-    var downloadAsFile = function(fileName, content) {
+    var downloadAsFile = function(fileName, content, a_element) {
       var blob = new Blob([content]);
       var url = window.URL || window.webkitURL;
       var blobURL = url.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.download = fileName;
-      a.href = blobURL;
-      return a;
+      a_element.download = fileName;
+      a_element.href = blobURL;
     };
-    var a_link = downloadAsFile("line_plot.svg", $(plot.svg.node()).parent().html());
-    $(a_link).text("download svg");
-    plot.description.node().appendChild(a_link);
+    plot.description.append("a").text("download svg")
+      .on("click", function() {
+        var clone_region = document.createElement('div');
+        clone_region.appendChild(plot.svg.node().cloneNode(true));
+        d3.select(clone_region).select("svg")
+          .attr("xmlns", "http://www.w3.org/2000/svg");
+        downloadAsFile("line_plot.svg", $(clone_region).html(), this);
+      });
     plot.description.append("br");
+
     plot.description.append("a").text("delete plot")
       .style("cursor", "pointer")
       .on("click", function() {
