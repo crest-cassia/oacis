@@ -186,6 +186,41 @@ describe OacisCli do
       end
     end
 
+    context "when input parameter_sets is specified as object" do
+
+      def create_parameter_sets_json2(path)
+        File.open(path, 'w') {|io|
+          parameter_set_values = {"L" => [10,20], "T" => [0.1,0.2]}
+          io.puts parameter_set_values.to_json
+          io.flush
+        }
+      end
+
+      it "creates ParameterSets" do
+        at_temp_dir {
+          create_simulator_id_json(@sim, 'simulator_id.json')
+          create_parameter_sets_json2('parameter_sets.json')
+          option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
+          expect {
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+          }.to change { @sim.parameter_sets.count }.by(4)
+        }
+      end
+    end
+
+    context "when input parameter sets is given not by file but by json-string" do
+
+      it "creates parameter sets" do
+        at_temp_dir {
+          create_simulator_id_json(@sim, 'simulator_id.json')
+          option = {simulator: 'simulator_id.json', input: '{"L":[10,20],"T":[1.0,2.0]}', output: "parameter_set_ids.json"}
+          expect {
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+          }.to change { @sim.parameter_sets.count }.by(4)
+        }
+      end
+    end
+
     context "when simulator.json is invalid" do
 
       it "raises an exception when simulator.json is not found" do
@@ -217,7 +252,7 @@ describe OacisCli do
       end
     end
 
-    context "when invalid parameter_sets.json is invalid" do
+    context "when parameter_sets.json is invalid" do
 
       def create_invalid_parameter_sets_json(path)
         File.open(path, 'w') {|io|

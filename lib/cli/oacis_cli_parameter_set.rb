@@ -42,8 +42,10 @@ class OacisCli < Thor
     desc:     'output file',
     required: true
   def create_parameter_sets
-    input = JSON.load(File.read(options[:input]))
+    input = load_json_file_or_string(options[:input])
     simulator = get_simulator(options[:simulator])
+
+    input = expand_input(input)
 
     progressbar = ProgressBar.create(total: input.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
@@ -76,6 +78,39 @@ class OacisCli < Thor
   end
 
   private
+  def expand_input(input)
+    if input.is_a?(Array)
+      input.map {|ps_hash| expand_hash(ps_hash) }.flatten(1)
+    elsif input.is_a?(Hash)
+      expand_hash(input)
+    else
+      raise "invalid input format"
+    end
+  end
+
+  def expand_hash(ps_hash)
+    expanded = [ps_hash]
+    ps_hash.keys.each do |key|
+      expanded = expanded.map do |h|
+        expand_hash_for_key(h, key)
+      end
+      expanded.flatten!(1)
+    end
+    expanded
+  end
+
+  def expand_hash_for_key(h, key)
+    if h[key].is_a?(Array)
+      h[key].map do |val|
+        dupped = h.dup
+        dupped[key] = val
+        dupped
+      end
+    else
+      [h]
+    end
+  end
+
   def write_parameter_set_ids_to_file(path, parameter_sets)
     return unless parameter_sets.present?
     File.open(path, 'w') do |io|
