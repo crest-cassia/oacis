@@ -221,6 +221,55 @@ describe OacisCli do
       end
     end
 
+    context "when run option is given" do
+
+      before(:each) do
+        @host = FactoryGirl.create(:host_with_parameters)
+        @sim.executable_on.push @host
+        @sim.save!
+      end
+
+      it "creates both parameter sets and runs with host parameters" do
+        at_temp_dir {
+          input = {"L" => [0,1], "T" => [1.0,2.0]}
+          run_param = {
+            "num_runs" => 3, "host_id" => @host.id.to_s,
+            "host_parameters" => {"param1" => "XXX", "param2" => "YYY"}
+          }
+          option = {simulator: @sim.id.to_s, input: input.to_json,
+            output: "parameter_set_ids.json", run: run_param.to_json}
+
+          expect {
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+            }.to change { @sim.runs.count }.by(12)
+
+          @sim.reload.runs.last.host_parameters.should eq run_param["host_parameters"]
+        }
+      end
+
+      it "creates runs for existing ps" do
+        @ps = FactoryGirl.create(:parameter_set,
+                                 simulator: @sim,
+                                 v: {"L" => 1, "T" => 1.0},
+                                 runs_count: 1,
+                                 finished_runs_count: 0
+                                 )
+        at_temp_dir {
+          input = {"L" => [0,1], "T" => 1.0}
+          run_param = {
+            "num_runs" => 2, "host_id" => @host.id.to_s,
+            "host_parameters" => {"param1" => "XXX", "param2" => "YYY"}
+          }
+          option = {simulator: @sim.id.to_s, input: input.to_json,
+            output: "parameter_set_ids.json", run: run_param.to_json}
+
+          expect {
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+          }.to change { @sim.runs.count }.by(3)
+        }
+      end
+    end
+
     context "when simulator.json is invalid" do
 
       it "raises an exception when simulator.json is not found" do

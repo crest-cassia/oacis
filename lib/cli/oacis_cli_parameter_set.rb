@@ -41,6 +41,11 @@ class OacisCli < Thor
     aliases:  '-o',
     desc:     'output file',
     required: true
+  method_option :run,
+    type:     :string,
+    aliases:  '-r',
+    desc:     'run options',
+    required: false
   def create_parameter_sets
     input = load_json_file_or_string(options[:input])
     simulator = get_simulator(options[:simulator])
@@ -69,6 +74,18 @@ class OacisCli < Thor
         raise "validation of parameter_set failed"
       end
       progressbar.increment
+    end
+
+    if options[:run]
+      run_option = load_json_file_or_string(options[:run])
+      num_runs = run_option["num_runs"]
+      raise "num_runs must be an Integer" unless num_runs.is_a?(Integer)
+      submitted_to = run_option["host_id"] ? Host.find(run_option["host_id"]) : nil
+      host_parameters = run_option["host_parameters"] || {}
+      mpi_procs = run_option["mpi_procs"] || 1
+      omp_threads = run_option["omp_threads"] || 1
+
+      create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads)
     end
 
   ensure
