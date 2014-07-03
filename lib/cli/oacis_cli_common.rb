@@ -84,6 +84,14 @@ EOS
     end
   end
 
+  def load_json_file_or_string(str)
+    if File.exist?(str)
+      JSON.load( File.read(str) )
+    else
+      JSON.load(str)
+    end
+  end
+
   def get_parameter_sets(file)
     parsed = JSON.load( File.read(file) )
     validate_parameter_set_ids(parsed)
