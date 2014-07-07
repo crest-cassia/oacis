@@ -68,6 +68,7 @@
       %th Latest started_at
       %th= raw(status_label(:finished))
       %th= raw(status_label(:failed))
+      %th Edit
   %tbody
     - simulator.simulator_versions.each do |sim_version|
       %tr
@@ -78,3 +79,12 @@
         %td= d ? "#{d} (#{distance_to_now_in_words(d)})" : '---'
         %td= sim_version['count'][:finished].to_i
         %td= sim_version['count'][:failed].to_i
+        %td
+          = link_to _version_dialog_simulator_path(id: simulator.id, simulator_version: sim_version['version']), method: :get, remote: true do
+            %i.icon.icon-list
+
+#version_dialog_modal.modal.hide.fade
+  .modal-header
+    %a.close{:'data-dismiss' => "modal"}x</a>
+  .modal-body
+    #version_dialog

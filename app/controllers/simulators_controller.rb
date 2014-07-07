@@ -164,4 +164,14 @@ class SimulatorsController < ApplicationController
     end
     render nothing: true
   end
+
+  def _version_dialog
+    @sim = Simulator.find(params[:id])
+    @version = params[:simulator_version]
+    respond_to do |format|
+      format.js {
+        render action: "version_dialog"
+      }
+    end
+  end
 end

@@ -1,0 +1,5 @@
+$('#version_dialog').empty();
+$('#version_dialog').append('<%= j render partial: "version_dialog", locals: {sim: @sim, version: @version} %></div>');
+$('#version_dialog_modal').modal('show');
+
+
