@@ -17,6 +17,7 @@ class OacisCli < Thor
     anz_parameters = Hash[mapped]
 
     return if options[:dry_run]
+    return unless options[:yes] or overwrite_file?(options[:output])
     File.open(options[:output], 'w') do |io|
       # for visibility, manually print the json object as follows
       io.puts "[", "  #{anz_parameters.to_json}", "]"
@@ -104,7 +105,9 @@ class OacisCli < Thor
     end
 
   ensure
-    write_analysis_ids_to_file(options[:output], analyses) unless options[:dry_run]
+    return if options[:dry_run]
+    return unless options[:yes] or overwrite_file?(options[:output])
+    write_analysis_ids_to_file(options[:output], analyses)
   end
 
   private
@@ -153,7 +156,7 @@ class OacisCli < Thor
       say("Found analyses: #{analyses.map(&:id).to_json}")
     end
 
-    if yes?("Destroy #{analyses.count} analyses?")
+    if options[:yes] or yes?("Destroy #{analyses.count} analyses?")
       progressbar = ProgressBar.create(total: analyses.count, format: "%t %B %p%% (%c/%C)")
       # no_timeout enables destruction of 10000 or more analyses
       analyses.no_timeout.each do |anl|
@@ -182,7 +185,7 @@ class OacisCli < Thor
       say("Found analyses: #{analyses.map(&:id).to_json}")
     end
 
-    if yes?("Replace #{analyses.count} analyses with new ones?")
+    if options[:yes] or yes?("Replace #{analyses.count} analyses with new ones?")
       progressbar = ProgressBar.create(total: analyses.count, format: "%t %B %p%% (%c/%C)")
       # no_timeout enables replacement of 10000 or more analyses
       analyses.no_timeout.each do |anl|

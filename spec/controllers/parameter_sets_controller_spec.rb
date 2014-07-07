@@ -281,11 +281,10 @@ describe ParameterSetsController do
       }.to change(ParameterSet, :count).by(-1)
     end
 
-    context "called by simulator#show" do
+    context "called by remote:true" do
 
       it "respond to simulator show" do
-        request.stub(:referer).and_return("http://localhost:3000/simulators/53216ec881e31ec599000001")
-        delete :destroy, {id: @ps.to_param}, valid_session
+        delete :destroy, {id: @ps.to_param, format: :js}, valid_session
         response.should_not redirect_to(@sim)
       end
     end
@@ -293,8 +292,7 @@ describe ParameterSetsController do
     context "called by parameter_set#show" do
 
       it "respond to simulator show" do
-        request.stub(:referer).and_return("http://localhost:3000/parameter_sets/5321780f81e31eb781000178")
-        delete :destroy, {id: @ps.to_param}, valid_session
+        delete :destroy, {id: @ps.to_param, format: :html}, valid_session
         response.should redirect_to(@sim)
       end
     end
@@ -632,6 +630,27 @@ describe ParameterSetsController do
       loaded["ylabel"].should eq "T"
       loaded["result"].should eq "fig1.png"
       loaded["data"].should =~ expected_data
+    end
+
+    context "when run is not created for all runs" do
+
+      before(:each) do
+        @ps_array[1].runs.first.destroy
+      end
+
+      it "empty fig_path is returned for missing run" do
+        get :_figure_viewer,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "", logscales: "", format: :json}
+        expected_data = [
+          [1, 1.0, path_to_fig(@ps_array[0]), @ps_array[0].id.to_s],
+          [1, 2.0, path_to_fig(@ps_array[3]), @ps_array[3].id.to_s],
+          [2, 1.0, '', @ps_array[1].id.to_s],
+          [2, 2.0, path_to_fig(@ps_array[4]), @ps_array[4].id.to_s],
+          [3, 1.0, path_to_fig(@ps_array[2]), @ps_array[2].id.to_s]
+        ]
+
+        JSON.load(response.body)["data"].should =~ expected_data
+      end
     end
   end
 end

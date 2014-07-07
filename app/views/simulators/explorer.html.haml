@@ -56,22 +56,21 @@
         - @simulator.parameter_definitions.map(&:key).each do |key|
           = label_tag key, key
           = check_box_tag key
+      #result-range
+        %br
+        %label
+          Result range:
+        %input.input-small#range-min{type: "text", placeholder: "min"}
+        %input.input-small#range-max{type: "text", placeholder: "max"}
   .span8
     - urls = {"scatter-plot-url" => _scatter_plot_parameter_set_path('PSID') + '.json',
               "ps-url" => parameter_set_path('PSID')+'.json'}
     #plot{data: urls }
-      #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
+      #plot-tooltip.plot-tooltip
 
 :css
-  .axis path,
-  .axis line,
-  .pcp-axis path,
-  .pcp-axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-  }
   div.plot-tooltip {
+    opacity: 0;
     position: absolute;
     text-align: center;
     padding: 2px;
@@ -90,8 +89,8 @@
     parameter_explorer.Init();
   });
 
-  $('#scatter-plot-form').change( function() {parameter_explorer.Update();} );
-  $('#irrelevant-params').change( function() {parameter_explorer.Update();} );
+  $('#scatter-plot-form select').change( function() {parameter_explorer.Update();} );
+  $('#irrelevant-params input').change( function() {parameter_explorer.Update();} );
 
   $('i.icon-arrow-down[id^="ps_down_"]').on('click', function () {
     parameter_explorer.MoveCurrentPs(this);

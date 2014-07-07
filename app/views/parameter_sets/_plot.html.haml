@@ -51,16 +51,11 @@
 %hr
 
 #plot
-  #plot-tooltip.plot-tooltip{style: "opacity: 0;"}
+  #plot-tooltip.plot-tooltip
 
 :css
-  .axis path,
-  .axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-  }
   div.plot-tooltip {
+    opacity: 0;
     position: absolute;
     text-align: center;
     padding: 2px;
@@ -163,14 +158,13 @@
     add_scatter_plot(x, y, result, irrelevants);
   });
 
-  function add_figure_viewer(x, y, result, irrelevants, logscales) {
+  function add_figure_viewer(x, y, result, irrelevants) {
     var url = "#{_figure_viewer_parameter_set_path(@param_set)}" + ".json";
     var url_with_param = url +
       "?x_axis_key=" + encodeURIComponent(x) +
       "&y_axis_key=" + encodeURIComponent(y) +
       "&result=" + encodeURIComponent(result) +
-      "&irrelevants=" + encodeURIComponent(irrelevants) +
-      "&logscales=" + encodeURIComponent(logscales);
+      "&irrelevants=" + encodeURIComponent(irrelevants);
     var ps_base_url = "#{parameter_set_path('')}";
     draw_figure_viewer(url_with_param, ps_base_url, "#{@param_set.id.to_s}");
   }
@@ -181,10 +175,7 @@
     var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
       return this.id;
       }).get().join(',');
-    var logscales = $('#plot-logscales').children("input:checkbox:checked").map(function() {
-      return this.id;
-      }).get().join(',');
 
-    add_figure_viewer(x, y, result, irrelevants, logscales);
+    add_figure_viewer(x, y, result, irrelevants);
   });
 

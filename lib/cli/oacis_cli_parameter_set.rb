@@ -17,6 +17,7 @@ class OacisCli < Thor
     parameter_set = Hash[mapped]
 
     return if options[:dry_run]
+    return unless options[:yes] or overwrite_file?(options[:output])
     File.open(options[:output], 'w') do |io|
       # for visibility, manually print the json object as follows
       io.puts "[", "  #{parameter_set.to_json}", "]"
@@ -40,9 +41,16 @@ class OacisCli < Thor
     aliases:  '-o',
     desc:     'output file',
     required: true
+  method_option :run,
+    type:     :string,
+    aliases:  '-r',
+    desc:     'run options',
+    required: false
   def create_parameter_sets
-    input = JSON.load(File.read(options[:input]))
+    input = load_json_file_or_string(options[:input])
     simulator = get_simulator(options[:simulator])
+
+    input = expand_input(input)
 
     progressbar = ProgressBar.create(total: input.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
@@ -68,11 +76,58 @@ class OacisCli < Thor
       progressbar.increment
     end
 
+    if options[:run]
+      run_option = load_json_file_or_string(options[:run])
+      num_runs = run_option["num_runs"]
+      raise "num_runs must be an Integer" unless num_runs.is_a?(Integer)
+      submitted_to = run_option["host_id"] ? Host.find(run_option["host_id"]) : nil
+      host_parameters = run_option["host_parameters"] || {}
+      mpi_procs = run_option["mpi_procs"] || 1
+      omp_threads = run_option["omp_threads"] || 1
+
+      create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads)
+    end
+
   ensure
-    write_parameter_set_ids_to_file(options[:output], parameter_sets) unless options[:dry_run]
+    return if options[:dry_run]
+    return unless options[:yes] or overwrite_file?(options[:output])
+    write_parameter_set_ids_to_file(options[:output], parameter_sets)
   end
 
   private
+  def expand_input(input)
+    if input.is_a?(Array)
+      input.map {|ps_hash| expand_hash(ps_hash) }.flatten(1)
+    elsif input.is_a?(Hash)
+      expand_hash(input)
+    else
+      raise "invalid input format"
+    end
+  end
+
+  def expand_hash(ps_hash)
+    expanded = [ps_hash]
+    ps_hash.keys.each do |key|
+      expanded = expanded.map do |h|
+        expand_hash_for_key(h, key)
+      end
+      expanded.flatten!(1)
+    end
+    expanded
+  end
+
+  def expand_hash_for_key(h, key)
+    if h[key].is_a?(Array)
+      h[key].map do |val|
+        dupped = h.dup
+        dupped[key] = val
+        dupped
+      end
+    else
+      [h]
+    end
+  end
+
   def write_parameter_set_ids_to_file(path, parameter_sets)
     return unless parameter_sets.present?
     File.open(path, 'w') do |io|
@@ -87,3 +142,4 @@ class OacisCli < Thor
     end
   end
 end
+

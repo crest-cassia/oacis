@@ -30,6 +30,7 @@ class OacisCli < Thor
     end
 
     return if options[:dry_run]
+    return unless options[:yes] or overwrite_file?(options[:output])
     File.open(options[:output], 'w') do |io|
       io.puts JSON.pretty_generate(job_parameters)
     end
@@ -59,9 +60,22 @@ class OacisCli < Thor
   def create_runs
     parameter_sets = get_parameter_sets(options[:parameter_sets])
     job_parameters = JSON.load( File.read(options[:job_parameters]) )
+    num_runs = options[:number_of_runs]
     submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
     host_parameters = job_parameters["host_parameters"].to_hash
+    mpi_procs = job_parameters["mpi_procs"]
+    omp_threads = job_parameters["omp_threads"]
 
+    runs = create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads)
+
+  ensure
+    return if options[:dry_run]
+    return unless options[:yes] or overwrite_file?(options[:output])
+    write_run_ids_to_file(options[:output], runs)
+  end
+
+  private
+  def create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads)
     progressbar = ProgressBar.create(total: parameter_sets.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
       progressbar.log "Number of parameter_sets : #{parameter_sets.count}"
@@ -69,13 +83,14 @@ class OacisCli < Thor
 
     runs = []
     # no_timeout enables creation of 10000 or more runs
-    parameter_sets.no_timeout.each_with_index.map do |ps, idx|
+    # parameter_sets.no_timeout.each_with_index.map do |ps, idx|
+    parameter_sets.each_with_index.map do |ps, idx|
       sim = ps.simulator
-      mpi_procs = sim.support_mpi ? job_parameters["mpi_procs"] : 1
-      omp_threads = sim.support_omp ? job_parameters["omp_threads"] : 1
-      existing_runs = ps.runs.limit(options[:number_of_runs]).to_a
+      mpi_procs = sim.support_mpi ? mpi_procs : 1
+      omp_threads = sim.support_omp ? omp_threads : 1
+      existing_runs = ps.runs.limit(num_runs).to_a
       runs += existing_runs
-      (options[:number_of_runs] - existing_runs.count).times do |i|
+      (num_runs - existing_runs.count).times do |i|
         run = ps.runs.build(submitted_to: submitted_to,
                             mpi_procs: mpi_procs,
                             omp_threads: omp_threads,
@@ -91,9 +106,7 @@ class OacisCli < Thor
       end
       progressbar.increment
     end
-
-  ensure
-    write_run_ids_to_file(options[:output], runs) unless options[:dry_run]
+    runs
   end
 
   private
@@ -146,7 +159,7 @@ class OacisCli < Thor
       say("Found runs: #{runs.map(&:id).to_json}")
     end
 
-    if yes?("Destroy #{runs.count} runs?")
+    if options[:yes] or yes?("Destroy #{runs.count} runs?")
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
       # no_timeout enables destruction of 10000 or more runs
       runs.no_timeout.each do |run|
@@ -180,7 +193,7 @@ class OacisCli < Thor
       say("Found runs: #{runs.map(&:id).to_json}")
     end
 
-    if yes?("Replace #{runs.count} runs with new ones?")
+    if options[:yes] or yes?("Replace #{runs.count} runs with new ones?")
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
       # no_timeout enables replacement of 10000 or more runs
       runs.no_timeout.each do |run|

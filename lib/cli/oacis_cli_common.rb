@@ -2,6 +2,7 @@ class OacisCli < Thor
 
   class_option :dry_run, type: :boolean, aliases: '-d', desc: 'dry run'
   class_option :verbose, type: :boolean, aliases: '-v', desc: 'verbose mode'
+  class_option :yes, type: :boolean, aliases: '-y', desc: 'say "yes" for all questions'
 
   USAGE = <<"EOS"
 usage:
@@ -83,10 +84,18 @@ EOS
     end
   end
 
+  def load_json_file_or_string(str)
+    if File.exist?(str)
+      JSON.load( File.read(str) )
+    else
+      JSON.load(str)
+    end
+  end
+
   def get_parameter_sets(file)
     parsed = JSON.load( File.read(file) )
     validate_parameter_set_ids(parsed)
-    parameter_sets = ParameterSet.in(id: parsed.map {|h| h["parameter_set_id"] } )
+    parameter_sets = ParameterSet.in(id: parsed.map {|h| h["parameter_set_id"] } ).to_a
     raise "Invalid #{parsed.length - parameter_sets.count} prameter_set_ids are found" if parameter_sets.count != parsed.length
     parameter_sets
   end
@@ -148,4 +157,10 @@ EOS
       raise "Invalid json format. Key 'analysis_id' is necessary."
     end
   end
+
+  def overwrite_file?(path)
+    return yes?("Overwrite output file?") if File.exist?(path)
+    return true
+  end
 end
+

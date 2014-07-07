@@ -8,4 +8,10 @@
   %tbody
 
 :javascript
-  $(create_parameter_sets_list('#similar_params_list', 10));
+  var reload_parameter_sets_table;
+  $(function() {
+    var oPsTable = create_parameter_sets_list('#similar_params_list', 10);
+    reload_parameter_sets_table = function() {
+      oPsTable.fnReloadAjax();
+    }
+  });

@@ -46,4 +46,5 @@ function create_parameter_sets_list(selector, default_length) {
       run_list.remove();
     }
   });
+  return oPsTable;
 }

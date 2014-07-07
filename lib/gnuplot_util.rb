@@ -9,13 +9,11 @@ module GnuplotUtil
     commands = []
 
     if error_bar
-      commands += ["'-' u 1:2:3 w yerrorbars ls 1",
-                   "'-' u 1:2 w lines ls 1"]
-      data_string += convert_to_csv(data) * 2 # need to be written twice
+      commands += ["'-' u 1:2:3 w errorlines"]
     else
       commands += ["'-' u 1:2 w linespoints"]
-      data_string += convert_to_csv(data)
     end
+    data_string += convert_to_csv(data)
     script += "plot " + commands.join(', ') + "\n"
     script + data_string
   end
@@ -33,13 +31,11 @@ module GnuplotUtil
       ls_idx = idx + 1
       title = idx == 0 ? "#{series} = #{series_values[idx]}" : "#{series_values[idx]}"
       if error_bar
-        commands += ["'-' u 1:2:3 w yerrorbars ls #{ls_idx} title '#{title}'",
-                     "'-' u 1:2 w lines ls #{ls_idx} notitle"]
-        data_string += convert_to_csv(data) * 2 # need to be written twice
+        commands += ["'-' u 1:2:3 w errorlines title '#{title}'"]
       else
         commands += ["'-' u 1:2 w linespoints title '#{title}'"]
-        data_string += convert_to_csv(data)
       end
+      data_string += convert_to_csv(data)
     end
     script += "plot " + commands.join(', ') + "\n"
     script + data_string
