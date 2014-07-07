@@ -1230,7 +1230,7 @@
 <p>Analysisを削除する</p>
 <ul>
 <li><p class="first">実行方法</p>
-<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:v0.1.0
 </pre></div>
 </div>
 </li>
@@ -1284,7 +1284,8 @@
 <dt>queryは連想配列で指定する。</dt>
 <dd><ul class="first last simple">
 <li>連想配列は {key}:{value} という形式で指定する。</li>
-<li>keyとして可能な値は&#8221;status&#8221;のみ。</li>
+<li>keyとして可能な値は&#8221;status&#8221;,&#8221;analyzer_version&#8221;のみ。</li>
+<li>“analyzer_version” が空のものを指定したい場合には “analyzer_version:” と指定する。</li>
 </ul>
 </dd>
 </dl>
@@ -1295,8 +1296,8 @@
 <li><p class="first">実行例</p>
 <blockquote>
 <div><ul>
-<li><p class="first">statusが &#8220;failed&#8221; （解析失敗）のAnalysisを削除する</p>
-<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed
+<li><p class="first">statusが &#8220;failed&#8221; （解析失敗）かつanalyzer_versionが &#8220;nil&#8221;のAnalysisを削除する</p>
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:
 </pre></div>
 </div>
 </li>
@@ -1319,7 +1320,7 @@
 </dl>
 </li>
 <li><p class="first">実行方法</p>
-<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
+<div class="highlight-sh"><div class="highlight"><pre>../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished analyzer_version:v0.1.0
 </pre></div>
 </div>
 </li>
@@ -1373,7 +1374,8 @@
 <dt>queryは連想配列で指定する。</dt>
 <dd><ul class="first last simple">
 <li>連想配列は {key}:{value} という形式で指定する。</li>
-<li>keyとして可能な値は&#8221;status&#8221;のみ。</li>
+<li>keyとして可能な値は&#8221;status&#8221;,&#8221;analyzer_version&#8221;のみ。</li>
+<li>“analyzer_version” が空のものを指定したい場合には “analyzer_version:” と指定する。</li>
 </ul>
 </dd>
 </dl>
