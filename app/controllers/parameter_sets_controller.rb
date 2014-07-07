@@ -382,14 +382,21 @@ class ParameterSetsController < ApplicationController
 
       if analyzer.type == :on_parameter_set
         data = found_ps.map do |ps|
-          path = ps.dir.join(related_anls[ps.id][:analysis_id]).join(figure_filename)
-          fig_path = File.exist?( path ) ? ApplicationController.helpers.file_path_to_link_path( path ) : nil
+          fig_path = nil
+          if related_anls.has_key?(ps.id)
+            path = ps.dir.join(related_anls[ps.id][:analysis_id]).join(figure_filename)
+            fig_path = ApplicationController.helpers.file_path_to_link_path(path) if File.exist?(path)
+          end
           [ ps.v[x_axis_key], ps.v[y_axis_key], fig_path.to_s, ps.id.to_s ]
         end
       elsif analyzer.type == :on_run
         data = found_ps.map do |ps|
-          path = ps.dir.join(related_anls[ps.id][:analyzable_id]).join(related_anls[ps.id][:analysis_id]).join(figure_filename)
-          fig_path = File.exist?( path ) ? ApplicationController.helpers.file_path_to_link_path( path ) : nil
+          fig_path = nil
+          if related_anls.has_key?(ps.id)
+            path = ps.dir.join(related_anls[ps.id][:analyzable_id])
+              .join(related_anls[ps.id][:analysis_id]).join(figure_filename)
+            fig_path = ApplicationController.helpers.file_path_to_link_path(path) if File.exist?(path)
+          end
           [ ps.v[x_axis_key], ps.v[y_axis_key], fig_path.to_s, ps.id.to_s ]
         end
       end
@@ -399,8 +406,11 @@ class ParameterSetsController < ApplicationController
       end
       related_runs = Hash[*related_runs.flatten]
       data = found_ps.map do |ps|
-        path = ps.dir.join(related_runs[ps.id][:run_id]).join(figure_filename)
-        fig_path = File.exist?( path ) ? ApplicationController.helpers.file_path_to_link_path( path ) : nil
+        fig_path = nil
+        if related_runs.has_key?(ps.id)
+          path = ps.dir.join(related_runs[ps.id][:run_id]).join(figure_filename)
+          fig_path = ApplicationController.helpers.file_path_to_link_path(path) if File.exist?(path)
+        end
         [ ps.v[x_axis_key], ps.v[y_axis_key], fig_path.to_s, ps.id.to_s ]
       end
     end
