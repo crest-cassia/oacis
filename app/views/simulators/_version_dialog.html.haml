@@ -1,34 +1,42 @@
 %h3 CLI commands for #{sim.name}
+
+%h3 Destroy runs
+
 %ul
   %li
-    Destroy runs with simulator_version:#{version}
+    simulator_version:#{version}
     %br
     %pre ./bin/oacis_cli destroy_runs -s #{sim.id} -q simulator_version:#{version}
   %li
-    Destroy runs with simulator_version:#{version} and their status:
+    simulator_version:#{version}, status:
     %span.label.label-success
       finished
     %br
     %pre ./bin/oacis_cli destroy_runs -s #{sim.id} -q simulator_version:#{version},status:finished
   %li
-    Destroy runs with simulator_version:#{version} and their status:
+    simulator_version:#{version}, status:
     %span.label.label-important
       failed
     %br
     %pre ./bin/oacis_cli destroy_runs -s #{sim.id} -q simulator_version:#{version},status:failed
+
+%h3 Replace runs
+
+%ul
   %li
-    Replace runs with simulator_version:#{version}
+    simulator_version:#{version}
     %br
     %pre ./bin/oacis_cli replace_runs -s #{sim.id} -q simulator_version:#{version}
   %li
-    Replace runs with simulator_version:#{version} and their status:
+    simulator_version:#{version}, status:
     %span.label.label-success
       finished
     %br
     %pre ./bin/oacis_cli replace_runs -s #{sim.id} -q simulator_version:#{version},status:finished
   %li
-    Replace runs with simulator_version:#{version} and their status:
+    simulator_version:#{version}, status:
     %span.label.label-important
       failed
     %br
     %pre ./bin/oacis_cli replace_runs -s #{sim.id} -q simulator_version:#{version},status:failed
+

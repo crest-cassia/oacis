@@ -60,7 +60,7 @@
       = simulator.print_version_command
 
 %h3 List of Simulator Versions
-%table.table.table-striped
+%table.table.table-striped#simulator_version_table
   %thead
     %tr
       %th Version
@@ -80,11 +80,28 @@
         %td= sim_version['count'][:finished].to_i
         %td= sim_version['count'][:failed].to_i
         %td
-          = link_to _version_dialog_simulator_path(id: simulator.id, simulator_version: sim_version['version']), method: :get, remote: true do
-            %i.icon.icon-list
+          %i.icon.icon-list{data: raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['versino']}), style: {cursor: "pointer"}}
 
-#version_dialog_modal.modal.hide.fade
+:css
+  .modal.large {
+    width: 1000px;
+    height: 800px;
+    margin-left: -500px;
+  }
+  .modal-body.large {
+    overflow-y: auto;
+    max-height: 800px;
+  }
+
+#version_dialog_modal.modal.large.hide.fade
   .modal-header
     %a.close{:'data-dismiss' => "modal"}x</a>
-  .modal-body
+  .modal-body.large
     #version_dialog
+
+:javascript
+  $("#simulator_version_table i.icon.icon-list").on("click", function(){
+    $('#version_dialog').empty();
+    $('#version_dialog').append($(this).attr("data"));
+    $('#version_dialog_modal').modal('show');
+  });
