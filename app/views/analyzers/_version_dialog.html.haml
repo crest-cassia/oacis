@@ -1,0 +1,42 @@
+%h3 CLI commands for #{anl.name}
+
+%h3 Destroy analyses
+
+%ul
+  %li
+    anlyzer_version:#{version}
+    %br
+    %pre ./bin/oacis_cli destroy_runs -a #{anl.id} -q anlyzer_version:#{version}
+  %li
+    anlyzer_version:#{version}, status:
+    %span.label.label-success
+      finished
+    %br
+    %pre ./bin/oacis_cli destroy_runs -a #{anl.id} -q anlyzer_version:#{version},status:finished
+  %li
+    anlyzer_version:#{version}, status:
+    %span.label.label-important
+      failed
+    %br
+    %pre ./bin/oacis_cli destroy_runs -a #{anl.id} -q anlyzer_version:#{version},status:failed
+
+%h3 Replace analyses
+
+%ul
+  %li
+    anlyzer_version:#{version}
+    %br
+    %pre ./bin/oacis_cli replace_runs -a #{anl.id} -q anlyzer_version:#{version}
+  %li
+    anlyzer_version:#{version}, status:
+    %span.label.label-success
+      finished
+    %br
+    %pre ./bin/oacis_cli replace_runs -a #{anl.id} -q anlyzer_version:#{version},status:finished
+  %li
+    anlyzer_version:#{version}, status:
+    %span.label.label-important
+      failed
+    %br
+    %pre ./bin/oacis_cli replace_runs -a #{anl.id} -q anlyzer_version:#{version},status:failed
+

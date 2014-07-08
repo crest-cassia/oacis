@@ -80,7 +80,7 @@
         %td= sim_version['count'][:finished].to_i
         %td= sim_version['count'][:failed].to_i
         %td
-          %i.icon.icon-list{data: raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['versino']}), style: {cursor: "pointer"}}
+          %i.icon.icon-list{data: raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['version']})}
 
 :css
   .modal.large {
@@ -105,3 +105,4 @@
     $('#version_dialog').append($(this).attr("data"));
     $('#version_dialog_modal').modal('show');
   });
+
