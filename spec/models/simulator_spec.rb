@@ -373,7 +373,7 @@ describe Simulator do
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 1, finished_runs_count: 5)
-      runs = @sim.runs.in(status: [:finished, :failed]).asc(&:id)
+      runs = @sim.runs.in(status: [:finished, :failed]).asc(:id)
 
       runs[0].update_attribute(:started_at, 3.days.ago)
       runs[0].update_attribute(:simulator_version, "v1")
