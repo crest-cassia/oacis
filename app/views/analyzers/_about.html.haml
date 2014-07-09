@@ -57,7 +57,7 @@
         %td= anl_version['count'][:finished].to_i
         %td= anl_version['count'][:failed].to_i
         %td
-          %i.icon.icon-list{data: raw(render partial: "version_dialog", locals: {anl: analyzer, version: anl_version['version']})}
+          %i.icon.icon-list{data: raw(render partial: "version_dialog", locals: {azr: analyzer, version: anl_version['version']})}
 
 :css
   .modal.large {

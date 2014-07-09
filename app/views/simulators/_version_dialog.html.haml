@@ -12,13 +12,13 @@
     %span.label.label-success
       finished
     %br
-    %pre ./bin/oacis_cli destroy_runs -s #{sim.id} -q simulator_version:#{version},status:finished
+    %pre ./bin/oacis_cli destroy_runs -s #{sim.id} -q simulator_version:#{version} status:finished
   %li
     simulator_version:#{version}, status:
     %span.label.label-important
       failed
     %br
-    %pre ./bin/oacis_cli destroy_runs -s #{sim.id} -q simulator_version:#{version},status:failed
+    %pre ./bin/oacis_cli destroy_runs -s #{sim.id} -q simulator_version:#{version} status:failed
 
 %h3 Replace runs
 
@@ -32,11 +32,10 @@
     %span.label.label-success
       finished
     %br
-    %pre ./bin/oacis_cli replace_runs -s #{sim.id} -q simulator_version:#{version},status:finished
+    %pre ./bin/oacis_cli replace_runs -s #{sim.id} -q simulator_version:#{version} status:finished
   %li
     simulator_version:#{version}, status:
     %span.label.label-important
       failed
     %br
-    %pre ./bin/oacis_cli replace_runs -s #{sim.id} -q simulator_version:#{version},status:failed
-
+    %pre ./bin/oacis_cli replace_runs -s #{sim.id} -q simulator_version:#{version} status:failed
