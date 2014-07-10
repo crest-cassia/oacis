@@ -1,4 +1,4 @@
-= form_for([parameter_set.simulator, parameter_set], html: {class: 'form-horizontal'} ) do |f|
+= form_for([parameter_set.simulator, parameter_set], html: {class: 'form-horizontal', :'data-cli-url' => _create_cli_simulator_parameter_sets_url} ) do |f|
   = render partial: 'shared/error_messages', locals: {error_messages: parameter_set.errors.full_messages}
   = render partial: 'shared/error_messages', locals: {error_messages: run.errors.full_messages}
   - parameter_set.simulator.parameter_definitions.each do |pd|
@@ -22,7 +22,9 @@
       = render 'runs/fields', run: builder.object, f: builder
   .form-actions
     = submit_tag "Create", class: 'btn btn-primary'
-    = link_to "Cancel", simulator_path(parameter_set.simulator), :class => 'btn'
+    = link_to "Cancel", simulator_path(parameter_set.simulator), class: 'btn'
+  CLI command:
+  %pre#cli-command
 
 :javascript
   $(function() {
@@ -36,4 +38,15 @@
     }
     hide_show_runs_field();
     $('#num_runs').change(hide_show_runs_field);
+  });
+
+  $(function() {
+    var show_cli_command = function() {
+      var form = $('#new_parameter_set');
+      $.get(form.data('cli-url'), form.serialize(), function(data) {
+        $('#cli-command').text(data);
+      });
+    }
+    $('#new_parameter_set').change(show_cli_command);
+    show_cli_command();
   });

@@ -25,6 +25,9 @@ AcmProto::Application.routes.draw do
     parameter_set_actions = ["show"]
     parameter_set_actions += ["new", "create", "destroy"] unless OACIS_READ_ONLY
     resources :parameter_sets, only: parameter_set_actions do
+      collection do
+        get "_create_cli" # show CLI command for bulk creation
+      end
       member do
         get 'duplicate' unless OACIS_READ_ONLY
         get "_runs_and_analyses" # for ajax, get
