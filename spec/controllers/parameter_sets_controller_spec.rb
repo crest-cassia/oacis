@@ -662,5 +662,26 @@ describe ParameterSetsController do
       loaded["result"].should eq "fig1.png"
       loaded["data"].should =~ expected_data
     end
+
+    context "when run is not created for all runs" do
+
+      before(:each) do
+        @ps_array[1].runs.first.destroy
+      end
+
+      it "empty fig_path is returned for missing run" do
+        get :_figure_viewer,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "", logscales: "", format: :json}
+        expected_data = [
+          [1, 1.0, path_to_fig(@ps_array[0]), @ps_array[0].id.to_s],
+          [1, 2.0, path_to_fig(@ps_array[3]), @ps_array[3].id.to_s],
+          [2, 1.0, '', @ps_array[1].id.to_s],
+          [2, 2.0, path_to_fig(@ps_array[4]), @ps_array[4].id.to_s],
+          [3, 1.0, path_to_fig(@ps_array[2]), @ps_array[2].id.to_s]
+        ]
+
+        JSON.load(response.body)["data"].should =~ expected_data
+      end
+    end
   end
 end

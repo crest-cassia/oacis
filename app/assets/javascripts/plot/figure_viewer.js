@@ -138,7 +138,7 @@ FigureViewer.prototype.AddFigurePlot = function() {
       .on("mouseover", function(d) {
         tooltip.transition()
           .duration(200)
-          .style("opacity", 0.8);
+          .style("opacity", 1.0);
         tooltip.html(function() {
           var str = plot.data.xlabel + " : " + d.x + "<br/>" +
           plot.data.ylabel + " : " + d.y + "<br/>" +
