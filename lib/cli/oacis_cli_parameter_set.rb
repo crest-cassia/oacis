@@ -80,12 +80,13 @@ class OacisCli < Thor
       run_option = load_json_file_or_string(options[:run])
       num_runs = run_option["num_runs"]
       raise "num_runs must be an Integer" unless num_runs.is_a?(Integer)
-      submitted_to = run_option["host_id"] ? Host.find(run_option["host_id"]) : nil
+      submitted_to = run_option["submitted_to"] ? Host.find(run_option["submitted_to"]) : nil
       host_parameters = run_option["host_parameters"] || {}
       mpi_procs = run_option["mpi_procs"] || 1
       omp_threads = run_option["omp_threads"] || 1
+      priority = run_option["priority"] || 1
 
-      create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads)
+      create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority)
     end
 
   ensure

@@ -49,7 +49,7 @@ EOS
     desc:     'output file',
     required: true
   def create_simulator
-    input = JSON.load(File.read(options[:input]))
+    input = load_json_file_or_string(options[:input])
 
     # create a simulator
     sim = Simulator.new(input)

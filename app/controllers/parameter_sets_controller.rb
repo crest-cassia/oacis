@@ -73,6 +73,45 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  def _create_cli
+    simulator = Simulator.find(params[:simulator_id])
+    parameters = params[:v].dup
+
+    casted_parameters = {}
+    simulator.parameter_definitions.each do |defn|
+      key = defn.key
+      casted = nil
+      if parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
+        casted = parameters[key].split(',').map {|x|
+          ParametersUtil.cast_value( x.strip, defn["type"] )
+        }.compact.uniq
+      else
+        casted = parameters.has_key?(key) ? ParametersUtil.cast_value(parameters[key],defn["type"]) : defn["default"]
+      end
+      casted_parameters[key] = casted
+    end
+    ps_json_escaped = casted_parameters.to_json.gsub("'","'\\\\''")
+
+    cmd = "./bin/oacis_cli create_parameter_sets -s #{simulator.id} -i '#{ps_json_escaped}'"
+
+    num_runs = params[:num_runs].to_i
+    if num_runs > 0
+      run_option = {}
+      run_option[:num_runs] = num_runs
+      run_option[:mpi_procs] = params[:run][:mpi_procs].to_i
+      run_option[:omp_threads] = params[:run][:omp_threads].to_i
+      run_option[:priority] = params[:run][:priority].to_i
+      run_option[:submitted_to] = params[:run][:submitted_to]
+      run_option[:host_parameters] = params[:run][:host_parameters]
+      run_option_escaped = run_option.to_json.gsub("'", "'\\\\''")
+      cmd += " -r '#{run_option_escaped}'"
+    end
+
+    cmd += " -o ps.json"
+
+    render text: cmd
+  end
+
   def destroy
     @ps = ParameterSet.find(params[:id])
     simulator = Simulator.find(@ps.simulator_id)
