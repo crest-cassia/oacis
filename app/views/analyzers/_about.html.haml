@@ -83,7 +83,7 @@
     $('#version_dialog_modal').modal('show');
   });
 
-.form-actions
-  = link_to 'Edit', edit_analyzer_path(analyzer), class: 'btn btn-info'
-  = link_to 'Destroy', analyzer, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
-
+- unless OACIS_READ_ONLY
+  .form-actions
+    = link_to 'Edit', edit_analyzer_path(analyzer), class: 'btn btn-info'
+    = link_to 'Destroy', analyzer, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
