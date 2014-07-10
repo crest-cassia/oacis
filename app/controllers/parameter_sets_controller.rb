@@ -104,7 +104,7 @@ class ParameterSetsController < ApplicationController
       run_option[:submitted_to] = params[:run][:submitted_to]
       run_option[:host_parameters] = params[:run][:host_parameters]
       run_option_escaped = run_option.to_json.gsub("'", "'\\\\''")
-      cmd += " -r '#{run_option_escaped}'"
+      cmd += " -r '#{run_option_escaped}' -o ps.json"
     end
 
     render text: cmd
