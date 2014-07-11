@@ -1,4 +1,5 @@
-= form_for([parameter_set.simulator, parameter_set], html: {class: 'form-horizontal', :'data-cli-url' => _create_cli_simulator_parameter_sets_url} ) do |f|
+- simulator = parameter_set.simulator
+= form_for([simulator, parameter_set], html: {class: 'form-horizontal', :'data-cli-url' => _create_cli_simulator_parameter_sets_url(simulator) } ) do |f|
   = render partial: 'shared/error_messages', locals: {error_messages: parameter_set.errors.full_messages}
   = render partial: 'shared/error_messages', locals: {error_messages: run.errors.full_messages}
   - parameter_set.simulator.parameter_definitions.each do |pd|
@@ -22,7 +23,7 @@
       = render 'runs/fields', run: builder.object, f: builder
   .form-actions
     = submit_tag "Create", class: 'btn btn-primary'
-    = link_to "Cancel", simulator_path(parameter_set.simulator), class: 'btn'
+    = link_to "Cancel", simulator_path(simulator), class: 'btn'
   CLI command:
   %pre#cli-command
 
