@@ -37,7 +37,7 @@
           = " / "
           = Run.where(submitted_to: host).in(status: [:created, :submitted, :running]).count
         %td
-          = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if host.destroyable?
+          = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if host.destroyable? and (!OACIS_READ_ONLY)
 
 - unless OACIS_READ_ONLY
   .form-actions
