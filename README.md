@@ -8,6 +8,9 @@ See docs (doc/build/html/index.html) for the sequence of installation and usage.
 This is a minimal procedure to try OACIS.
 For the detailed installation process, please refer to the document.
 
+- Supported OS: you need unix like system such as Linux or MacOSX.
+    - If you are using Windows, we recommend using a virtual machine.
+
 - install [MongoDB](http://www.mongodb.org/) on your system.
     - using package management system such as yum or [homebrew](http://brew.sh/) will be easy for you.
     - check if MongoDB is running
@@ -17,7 +20,8 @@ ps aux | grep "mongod"
         ```
 
 - install ruby1.9.3 and [bundler](http://bundler.io/)
-    - Only version 1.9.3 is supported
+    - version 1.9.3 is supported
+        - probably version 2.0 or higher works as well, but is not extensively tested.
     - to install bundler gem, run the following command
         - when using Ruby installed to the system, you might need to run as `sudo`
 
