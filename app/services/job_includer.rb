@@ -10,16 +10,17 @@ module JobIncluder
   def self.include_remote_job(host, run)
     host.start_ssh {|ssh|
       if remote_file_is_ready_to_include(host, run, ssh)
-        download_remote_file(host, run, ssh)
-        include_archive(run)
+        if host.mounted_work_base_dir.present?
+          move_local_file(host, run)
+          include_work_dir(run)
+        else
+          download_remote_file(host, run, ssh)
+          include_archive(run)
+        end
       else
         run.status = :failed
         run.save!
-        if host.mounted_work_base_dir.present?
-          move_local_file(host, run)
-        else
-          download_work_dir_if_exists(host, run, ssh)
-        end
+        download_work_dir_if_exists(host, run, ssh)
         include_work_dir(run)
       end
 
