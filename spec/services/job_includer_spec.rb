@@ -33,6 +33,13 @@ describe JobIncluder do
     }
   end
 
+  def make_scheduler_log(host, run)
+    host.update_attribute(:scheduler_type, :xscheduler)
+    log_dir = @temp_dir.join(@run.id.to_s+'_log')
+    FileUtils.mkdir_p(log_dir)
+    FileUtils.touch(log_dir.join('scheduler_log'))
+  end
+
   before(:each) do
     @sim = FactoryGirl.create(:simulator,
                               parameter_sets_count: 1, runs_count: 0,
@@ -106,6 +113,7 @@ describe JobIncluder do
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
       @run = @sim.parameter_sets.first.runs.create(submitted_to: @host)
+      make_scheduler_log(@host, @run)
     end
 
     describe "correct case" do
@@ -121,6 +129,11 @@ describe JobIncluder do
       it "call SSHUtil.download" do
         expect(SSHUtil).to receive(:download).and_call_original
         include_job
+      end
+
+      it "includes scheduler_log" do
+        include_job
+        @run.dir.join(@run.id.to_s+'_log', 'scheduler_log').should be_exist
       end
     end
 
@@ -146,6 +159,11 @@ describe JobIncluder do
       it "does not call SSHUtil.download" do
         expect(SSHUtil).to_not receive(:download)
         include_job
+      end
+
+      it "includes scheduler_log" do
+        include_job
+        @run.dir.join(@run.id.to_s+'_log', 'scheduler_log').should be_exist
       end
     end
 

@@ -102,7 +102,7 @@ module JobIncluder
     logs = RemoteFilePath.scheduler_log_file_paths(host, run)
     logs.each do |path|
       if SSHUtil.exist?(ssh, path)
-        SSHUtil.download(ssh, path, run.dir.join(path.basename))
+        SSHUtil.download_recursive(ssh, path, run.dir.join(path.basename))
         SSHUtil.rm_r(ssh, path)
       end
     end
