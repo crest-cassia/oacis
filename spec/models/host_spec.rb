@@ -76,7 +76,7 @@ describe Host do
       Host.new(@valid_attr).ssh_key.should eq('~/.ssh/id_rsa')
     end
 
-    it "'scheduler_type' must be either [none, torque, pjm, pjm_k, xscheduler]" do
+    it "'scheduler_type' must be either [none, torque, pjm, pjm_k, xsub]" do
       @valid_attr.update(scheduler_type: "foobar")
       Host.new(@valid_attr).should_not be_valid
     end
@@ -356,22 +356,22 @@ EOS
     end
   end
 
-  describe "when 'xscheduler' is selected as the scheduler_type" do
+  describe "when 'xsub' is selected as the scheduler_type" do
 
     before(:each) do
       @host = FactoryGirl.create(:localhost)
     end
 
-    it "gets host parameters by invoking 'get_host_parameters_for_xscheduler' when scheduler_type is updated" do
-      @host.scheduler_type = "xscheduler"
-      @host.should_receive(:get_host_parameters_for_xscheduler)
+    it "gets host parameters by invoking 'get_host_parameters_for_xsub' when scheduler_type is updated" do
+      @host.scheduler_type = "xsub"
+      @host.should_receive(:get_host_parameters_for_xsub)
       @host.save!
     end
 
     it "parse output of 'xsub -t' and set it to host_parameter_definitions" do
       hp = {"parameters" => {"foo" => {"default"=>1}, "bar" => {"default"=>"abc"} } }
       SSHUtil.stub(:execute).and_return(hp.to_json)
-      @host.scheduler_type = "xscheduler"
+      @host.scheduler_type = "xsub"
       @host.save!
       @host.host_parameter_definitions.size.should eq 2
       @host.host_parameter_definitions[0].key.should eq "foo"
@@ -380,7 +380,7 @@ EOS
 
     it "'xsub' command fails, validation fails" do
       SSHUtil.stub(:execute).and_return("{invalid:...")
-      @host.scheduler_type = "xscheduler"
+      @host.scheduler_type = "xsub"
       @host.should_not be_valid
     end
   end

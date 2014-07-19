@@ -45,10 +45,10 @@ class Host
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
   validate :template_conform_to_host_parameter_definitions,
-           :if => lambda { scheduler_type != "xscheduler" and scheduler_type_changed? }
+           :if => lambda { scheduler_type != "xsub" and scheduler_type_changed? }
 
-  before_validation :get_host_parameters_for_xscheduler,
-                    :if => lambda {scheduler_type == "xscheduler" and scheduler_type_changed? }
+  before_validation :get_host_parameters_for_xsub,
+                    :if => lambda {scheduler_type == "xsub" and scheduler_type_changed? }
   before_create :set_position
   before_destroy :validate_destroyable
 
@@ -170,7 +170,7 @@ class Host
     end
   end
 
-  def get_host_parameters_for_xscheduler
+  def get_host_parameters_for_xsub
     start_ssh do |ssh|
       wrapper = SchedulerWrapper.new(self)
       cmd = wrapper.get_host_parameters_command

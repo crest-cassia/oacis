@@ -92,7 +92,7 @@ class RemoteJobHandler
   end
 
   def submit_to_scheduler(run, job_script_path)
-    if @host.scheduler_type == "xscheduler"
+    if @host.scheduler_type == "xsub"
       job_parameters = run.host_parameters || {}
       job_parameters["mpi_procs"] = run.mpi_procs
       job_parameters["omp_threads"] = run.omp_threads

@@ -1,6 +1,6 @@
 class SchedulerWrapper
 
-  TYPES = ["none", "torque", "pjm", "pjm_k", "xscheduler"]
+  TYPES = ["none", "torque", "pjm", "pjm_k", "xsub"]
 
   attr_reader :type
 
@@ -23,7 +23,7 @@ class SchedulerWrapper
       "cd #{work_dir} && pjsub #{script} -o #{@work_base_dir} -e #{@work_base_dir} -s --spath #{@work_base_dir}"
     when "pjm_k"
       ". /etc/bashrc; cd #{work_dir} && pjsub #{script} -o #{@work_base_dir} -e #{@work_base_dir} -s --spath #{@work_base_dir} < /dev/null"
-    when "xscheduler"
+    when "xsub"
       scheduler_log_dir = @work_base_dir.join(run_id+"_log")
       escaped = job_parameters.to_json.gsub("'","'\\\\''")
       "xsub #{script} -d #{work_dir} -l #{scheduler_log_dir} -p '#{escaped}'"
@@ -53,7 +53,7 @@ class SchedulerWrapper
         raise "not supported format" unless $2
         $2
       end
-    when "xscheduler"
+    when "xsub"
       JSON.load(output.chomp)["job_id"]
     else
       raise "not supported"
@@ -61,7 +61,7 @@ class SchedulerWrapper
   end
 
   def get_host_parameters_command
-    if @type == "xscheduler"
+    if @type == "xsub"
       "xsub -t"
     else
       raise "invalid"
@@ -76,7 +76,7 @@ class SchedulerWrapper
       "qstat; pbsnodes -a"
     when "pjm", "pjm_k"
       "pjstat"
-    when "xscheduler"
+    when "xsub"
       "xstat"
     else
       raise "not supported"
@@ -91,7 +91,7 @@ class SchedulerWrapper
       "qstat #{job_id}"
     when "pjm", "pjm_k"
       "pjstat #{job_id}"
-    when "xscheduler"
+    when "xsub"
       "xstat #{job_id}"
     else
       raise "not supported"
@@ -129,7 +129,7 @@ class SchedulerWrapper
       else
         :unknown
       end
-    when "xscheduler"
+    when "xsub"
       case JSON.load(stdout)["status"]
       when "queued"
         :submitted
@@ -153,7 +153,7 @@ class SchedulerWrapper
       "qdel #{job_id}"
     when "pjm", "pjm_k"
       "pjdel #{job_id}"
-    when "xscheduler"
+    when "xsub"
       "xdel #{job_id}"
     else
       raise "not supported"
@@ -178,7 +178,7 @@ class SchedulerWrapper
       paths << dir.join("J#{run.id}.sh.e#{run.job_id}")
       paths << dir.join("J#{run.id}.sh.i#{run.job_id}")
       paths << dir.join("J#{run.id}.sh.s#{run.job_id}")
-    when "xscheduler"
+    when "xsub"
       paths << dir.join("#{run.id}_log")
     else
       raise "not supported type"

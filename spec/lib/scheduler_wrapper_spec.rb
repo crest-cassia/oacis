@@ -182,7 +182,7 @@ EOS
   describe "xsub" do
 
     before(:each) do
-      @host.update_attribute(:scheduler_type, "xscheduler")
+      @host.update_attribute(:scheduler_type, "xsub")
       @wrapper = SchedulerWrapper.new(@host)
     end
 
@@ -199,7 +199,7 @@ EOS
 
         before(:each) do
           @host = FactoryGirl.create(:host_with_parameters)
-          @host.update_attribute(:scheduler_type, "xscheduler")
+          @host.update_attribute(:scheduler_type, "xsub")
         end
 
         it "command includes host-parameters in json" do
