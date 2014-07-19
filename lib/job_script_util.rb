@@ -54,8 +54,7 @@ then
 fi
 EOS
 
-  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "mounted_work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command","work_base_dir"]
-  # TODO : remove work_base_dir later...
+  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "mounted_work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
 
   def self.script_for(run, host)
     default_variables = {

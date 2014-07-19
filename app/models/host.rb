@@ -45,7 +45,7 @@ class Host
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
   validate :template_conform_to_host_parameter_definitions,
-           :unless => lambda { scheduler_type == "xscheduler" }
+           :if => lambda { scheduler_type != "xscheduler" and scheduler_type_changed? }
 
   before_validation :get_host_parameters_for_xscheduler,
                     :if => lambda {scheduler_type == "xscheduler" and scheduler_type_changed? }
