@@ -100,7 +100,7 @@ class RemoteJobHandler
 
     job_parameters ||= {}
     wrapper = SchedulerWrapper.new(@host)
-    cmd = wrapper.submit_command(job_script_path, job_parameters)
+    cmd = wrapper.submit_command(job_script_path, run.id.to_s, job_parameters)
     @host.start_ssh do |ssh|
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
       raise RemoteOperationError, "#{cmd} failed : #{rc}, #{err}" unless rc == 0

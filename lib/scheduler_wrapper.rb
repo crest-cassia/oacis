@@ -12,20 +12,21 @@ class SchedulerWrapper
     @work_base_dir = Pathname.new(host.work_base_dir)
   end
 
-  def submit_command(script, job_parameters = {})
+  def submit_command(script, run_id, job_parameters = {})
+    work_dir = @work_base_dir.join(run_id)
     case @type
     when "none"
-      "nohup bash #{script} > /dev/null 2>&1 < /dev/null & basename #{script}"
+      "cd #{work_dir} && nohup bash #{script} > /dev/null 2>&1 < /dev/null & basename #{script}"
     when "torque"
-      "cd #{@work_base_dir}; qsub #{script}"
+      "qsub #{script} -d #{work_dir} -o #{@work_base_dir} -e #{@work_base_dir}"
     when "pjm"
-      "cd #{@work_base_dir}; pjsub #{script}"
+      "cd #{work_dir} && pjsub #{script} -o #{@work_base_dir} -e #{@work_base_dir} -s --spath #{@work_base_dir}"
     when "pjm_k"
-      ". /etc/bashrc; cd #{@work_base_dir}; pjsub #{script} < /dev/null"
+      ". /etc/bashrc; cd #{work_dir} && pjsub #{script} -o #{@work_base_dir} -e #{@work_base_dir} -s --spath #{@work_base_dir} < /dev/null"
     when "xscheduler"
-      scheduler_work_dir = @work_base_dir.join( File.basename(script, '.sh') + "_sw" )
+      scheduler_log_dir = @work_base_dir.join(run_id+"_log")
       escaped = job_parameters.to_json.gsub("'","'\\\\''")
-      "xsub #{script} -d #{scheduler_work_dir} -p '#{escaped}'"
+      "xsub #{script} -d #{work_dir} -l #{scheduler_log_dir} -p '#{escaped}'"
     else
       raise "not supported"
     end
@@ -178,7 +179,7 @@ class SchedulerWrapper
       paths << dir.join("J#{run.id}.sh.i#{run.job_id}")
       paths << dir.join("J#{run.id}.sh.s#{run.job_id}")
     when "xscheduler"
-      paths << dir.join("#{run.id}_sw")
+      paths << dir.join("#{run.id}_log")
     else
       raise "not supported type"
     end
