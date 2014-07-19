@@ -112,6 +112,11 @@ describe JobIncluder do
       let(:include_job) { JobIncluder.include_remote_job(@host, @run) }
 
       it_behaves_like "included correctly"
+
+      it "call SSHUtil.download" do
+        expect(SSHUtil).to receive(:download).and_call_original
+        include_job
+      end
     end
 
     describe "mounted_work_base_dir is not empty" do
@@ -131,6 +136,11 @@ describe JobIncluder do
         expect {
           include_job
         }.to change { File.directory?(work_dir) }.from(true).to(false)
+      end
+
+      it "does not call SSHUtil.download" do
+        expect(SSHUtil).to_not receive(:download)
+        include_job
       end
     end
 
