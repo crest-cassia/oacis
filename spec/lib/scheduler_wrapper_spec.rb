@@ -31,8 +31,10 @@ describe SchedulerWrapper do
 
     describe "#submit_command" do
 
-      it "returns a command to submit a job" do
-        @wrapper.submit_command("~/path/to/job.sh").should eq "nohup bash ~/path/to/job.sh > /dev/null 2>&1 < /dev/null & basename ~/path/to/job.sh"
+      it "returns a command to submit a job from work_dir" do
+        work_dir = File.join(@host.work_base_dir,"xxx")
+        expected = "cd #{work_dir} && nohup bash ~/path/to/job.sh > /dev/null 2>&1 < /dev/null & basename ~/path/to/job.sh"
+        @wrapper.submit_command("~/path/to/job.sh","xxx").should eq expected
       end
     end
 
@@ -79,8 +81,11 @@ EOS
 
     describe "#submit_command" do
 
-      it "returns a command to submit a job" do
-        @wrapper.submit_command("~/path/to/job.sh").should eq "cd #{@host.work_base_dir}; qsub ~/path/to/job.sh"
+      it "returns a command to submit a job from work_dir" do
+        work_dir = File.join(@host.work_base_dir,"xxx")
+        base_dir = @host.work_base_dir
+        expected = "qsub ~/path/to/job.sh -d #{work_dir} -o #{base_dir} -e #{base_dir}"
+        @wrapper.submit_command("~/path/to/job.sh","xxx").should eq expected
       end
     end
 
@@ -128,8 +133,11 @@ EOS
 
     describe "#submit_command" do
 
-      it "returns a command to submit a job" do
-        @wrapper.submit_command("~/path/to/job.sh").should eq ". /etc/bashrc; cd #{@host.work_base_dir}; pjsub ~/path/to/job.sh < /dev/null"
+      it "returns a command to submit a job from current dir" do
+        work_dir = File.join(@host.work_base_dir, "xxx")
+        log_dir = @host.work_base_dir
+        expected = ". /etc/bashrc; cd #{work_dir} && pjsub ~/path/to/job.sh -o #{log_dir} -e #{log_dir} -s --spath #{log_dir} < /dev/null"
+        @wrapper.submit_command("~/path/to/job.sh","xxx").should eq expected
       end
     end
 
