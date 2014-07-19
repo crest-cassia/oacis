@@ -90,6 +90,12 @@ module JobIncluder
     cmd = "rsync -a #{work_dir}/ #{run.dir} && mv #{archive} #{run.dir.join("..")}/"
     system(cmd)
     raise "can not move work_directory from #{work_dir}" unless $?.exitstatus == 0
+
+    RemoteFilePath.scheduler_log_file_paths(host, run).each do |path|
+      if path.exist?
+        FileUtils.mv(map_remote_path_to_mounted_path(host, path), run.dir)
+      end
+    end
   end
 
   def self.map_remote_path_to_mounted_path(host, remote_path)
