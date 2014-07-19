@@ -51,6 +51,11 @@ describe JobIncluder do
       @run.dir.join("_stdout.txt").should be_exist
     end
 
+    it "copies archive result file" do
+      include_job
+      @run.dir.join("..", File.basename(@archive_full_path)).should be_exist
+    end
+
     it "parses _status.json" do
       include_job
       @run.hostname.should eq "hostXXX"
@@ -144,12 +149,15 @@ describe JobIncluder do
       end
     end
 
-    describe "when work_dir exists" do
+    # A test case for error handling
+    # Even if .tar.bz2 is not found, try to include the files as much as possible
+    describe "when archive file is not found but work_dir exists" do
 
-      context "if _status.txt exists in downloded work_dir" do
+      context "if _status.json exists in downloded work_dir" do
 
         before(:each) do
           make_valid_archive_file(@run, true)
+          FileUtils.rm(@archive_full_path)
           JobIncluder.include_remote_job(@host, @run)
           @run.reload
         end
@@ -162,18 +170,21 @@ describe JobIncluder do
           @run.dir.join("_stdout.txt").should be_exist
         end
 
+        it "does not copy archive file" do
+          @run.dir.join('..', @run.id.to_s+'.tar.bz2').should_not be_exist
+        end
+
         it "deletes remote work_dir and archive file" do
           Dir.entries(@temp_dir).should =~ ['.', '..']
         end
       end
 
-      context "if _status.txt does not exist in downloded work_dir" do
+      context "if _status.json does not exist in downloded work_dir" do
 
         before(:each) do
           make_valid_archive_file(@run, true)
-          Dir.chdir(@temp_dir.join(@run.id.to_s)) {
-            FileUtils.rm("_status.json")
-          }
+          FileUtils.rm( @temp_dir.join(@run.id.to_s,"_status.json") )
+          FileUtils.rm( @archive_full_path )
           JobIncluder.include_remote_job(@host, @run)
           @run.reload
         end
