@@ -66,10 +66,7 @@ module JobIncluder
 
   def self.remote_file_is_ready_to_include(host, run, ssh)
     archive = RemoteFilePath.result_file_path(host, run)
-    work_dir = RemoteFilePath.work_dir_path(host, run)
-
-    return SSHUtil.exist?(ssh, archive) if host.scheduler_type == "pjm_k"
-    SSHUtil.exist?(ssh, archive) and !(SSHUtil.exist?(ssh, work_dir))
+    return SSHUtil.exist?(ssh, archive)
   end
 
   def self.download_remote_file(host, run, ssh)
