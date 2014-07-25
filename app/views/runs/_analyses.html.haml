@@ -4,7 +4,7 @@
   - @sim = @param_set.simulator
   - unless @sim.analyzers_on_run.empty? or OACIS_READ_ONLY
     %h3 Run analysis
-    = form_for( @run.analyses.build, :url => run_analyses_path(@run) ) do |f|
+    = form_for( @run.analyses.build, :url => run_analyses_path(@run), remote: true ) do |f|
       = f.label :analyzer
       = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }
       %div#parameters_form
