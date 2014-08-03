@@ -172,10 +172,17 @@ class Host
 
   def get_host_parameters_for_xsub
     start_ssh do |ssh|
-      wrapper = SchedulerWrapper.new(self)
-      cmd = wrapper.get_host_parameters_command
-      ret = SSHUtil.execute(ssh, cmd)
-      self.host_parameter_definitions = JSON.load(ret)["parameters"].map do |key,val|
+      cmd = "bash -l -c 'echo XSUB_BEGIN && xsub -t'"
+      ## bash -i invokes bash as an interactive shell.
+      ##   This is necessary to load path properly from bashrc.
+      ##   Otherwise, users do not have a way to set PATH in bash.
+      ## And sourcing bashrc may print some strings into stdout.
+      ##   In order to extract the output of xsub, use 'START_XSUB' as a separator.
+      ##   Lines below 'START_XSUB' is the json output written by 'xsub -t'.
+      ret = SSHUtil.execute(ssh, cmd).lines.to_a
+      begin_idx = ret.index {|line| line =~ /^XSUB_BEGIN$/}
+      xsub_out = ret[(begin_idx+1)..-1].join
+      self.host_parameter_definitions = JSON.load(xsub_out)["parameters"].map do |key,val|
         unless key == "mpi_procs" or key == "omp_threads"
           HostParameterDefinition.new(key: key, default: val["default"])
         end

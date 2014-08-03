@@ -25,8 +25,9 @@ class SchedulerWrapper
       ". /etc/bashrc; cd #{work_dir} && pjsub #{script} -o #{@work_base_dir} -e #{@work_base_dir} -s --spath #{@work_base_dir} < /dev/null"
     when "xsub"
       scheduler_log_dir = @work_base_dir.join(run_id+"_log")
-      escaped = job_parameters.to_json.gsub("'","'\\\\''")
-      "xsub #{script} -d #{work_dir} -l #{scheduler_log_dir} -p '#{escaped}'"
+      escaped = Shellwords.escape(job_parameters.to_json)
+      # escaped = job_parameters.to_json.gsub("'","'\\\\''")
+      "bash -l -c 'echo XSUB_BEGIN && xsub #{script} -d #{work_dir} -l #{scheduler_log_dir} -p #{escaped}'"
     else
       raise "not supported"
     end
@@ -54,17 +55,10 @@ class SchedulerWrapper
         $2
       end
     when "xsub"
-      JSON.load(output.chomp)["job_id"]
+      xsub_out = extract_xsub_output(output)
+      JSON.load(xsub_out)["job_id"]
     else
       raise "not supported"
-    end
-  end
-
-  def get_host_parameters_command
-    if @type == "xsub"
-      "xsub -t"
-    else
-      raise "invalid"
     end
   end
 
@@ -77,7 +71,7 @@ class SchedulerWrapper
     when "pjm", "pjm_k"
       "pjstat"
     when "xsub"
-      "xstat"
+      "bash -l -c 'xstat'"
     else
       raise "not supported"
     end
@@ -92,7 +86,7 @@ class SchedulerWrapper
     when "pjm", "pjm_k"
       "pjstat #{job_id}"
     when "xsub"
-      "xstat #{job_id}"
+      "bash -l -c 'echo XSUB_BEGIN && xstat #{job_id}'"
     else
       raise "not supported"
     end
@@ -130,7 +124,8 @@ class SchedulerWrapper
         :unknown
       end
     when "xsub"
-      case JSON.load(stdout)["status"]
+      xsub_out = extract_xsub_output(stdout)
+      case JSON.load(xsub_out)["status"]
       when "queued"
         :submitted
       when "running"
@@ -154,7 +149,7 @@ class SchedulerWrapper
     when "pjm", "pjm_k"
       "pjdel #{job_id}"
     when "xsub"
-      "xdel #{job_id}"
+      "bash -l -c 'xdel #{job_id}'"
     else
       raise "not supported"
     end
@@ -184,5 +179,12 @@ class SchedulerWrapper
       raise "not supported type"
     end
     paths
+  end
+
+  private
+  def extract_xsub_output(output)
+    output_lines = output.lines.to_a
+    idx = output_lines.index {|line| line =~ /^XSUB_BEGIN$/ }
+    output_lines[(idx+1)..-1].join
   end
 end
