@@ -20,18 +20,46 @@
 
 - if result_paths.present?
   %h3 Output Files
-  %ul
-    - result_paths.sort.each do |file_path|
-      - file_path_str = file_path.to_s
-      %li
+  #result-tree
+    %ul
+      - result_paths.sort.each do |file_path|
+        - file_path_str = file_path.to_s
         - if File.directory?(file_path_str)
-          = File.basename(file_path_str)
-        -else
-          %a{:href => file_path_to_link_path(file_path_str)}
+          %li.folder
             = File.basename(file_path_str)
-            %br
-            - if file_path_str =~ /\.png$/i or file_path_str.to_s =~ /\.jpg$/i
-              = image_tag(file_path_to_link_path(file_path_str), :width => '200px')
+            %ul
+              - Dir.glob( file_path.join("*") ).sort.each do |child_path|
+                - child_path_str = child_path.to_s
+                - if File.directory?(child_path_str)
+                  %li.folder
+                    = File.basename(child_path_str)
+                - else
+                  %li
+                    %a{:href => file_path_to_link_path(child_path_str)}
+                      =File.basename(child_path_str)
+        - else
+          %li
+            %a{:href => file_path_to_link_path(file_path_str)}
+              = File.basename(file_path_str)
+              %br
+              - if file_path_str =~ /\.png$/i or file_path_str.to_s =~ /\.jpg$/i
+                = image_tag(file_path_to_link_path(file_path_str), :width => '200px')
   - if File.exist?( archived_result_path.to_s )
     .form-actions
       %a.btn.btn-primary{href: file_path_to_link_path(archived_result_path)} Download Archive
+:css
+  ul.dynatree-container
+  {
+    border: none;
+  }
+
+:javascript
+  $(function () {
+    $("#result-tree").dynatree({
+      onActivate: function(node) {
+        if (node.data.href) {
+          location.href=node.data.href;
+        }
+      }
+    });
+  });
