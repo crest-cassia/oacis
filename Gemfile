@@ -17,6 +17,7 @@ gem 'jquery-ui-rails'
 gem 'jquery-datatables-rails'
 gem "d3-rails"
 gem "redcarpet"
+gem 'dynatree-rails'
 
 # for workers
 gem 'daemon-spawn', :require => 'daemon_spawn'
