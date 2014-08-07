@@ -184,7 +184,7 @@ class Host
       xsub_out = ret[(begin_idx+1)..-1].join
       self.host_parameter_definitions = JSON.load(xsub_out)["parameters"].map do |key,val|
         unless key == "mpi_procs" or key == "omp_threads"
-          HostParameterDefinition.new(key: key, default: val["default"])
+          HostParameterDefinition.new(key: key, default: val["default"], format: val["format"])
         end
       end
     end
