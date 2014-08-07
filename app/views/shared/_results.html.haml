@@ -21,6 +21,7 @@
 - if result_paths.present?
   %h3 Output Files
   #result-tree
+    = File.dirname(file_path_to_link_path(result_paths.first))+"/"
     %ul
       - result_paths.sort.each do |file_path|
         - file_path_str = file_path.to_s
@@ -43,7 +44,7 @@
               = File.basename(file_path_str)
               %br
               - if file_path_str =~ /\.png$/i or file_path_str.to_s =~ /\.jpg$/i
-                = image_tag(file_path_to_link_path(file_path_str), :width => '200px')
+                = image_tag(file_path_to_link_path(file_path_str))
   - if File.exist?( archived_result_path.to_s )
     .form-actions
       %a.btn.btn-primary{href: file_path_to_link_path(archived_result_path)} Download Archive
@@ -52,11 +53,16 @@
   {
     border: none;
   }
+  ul.dynatree-container img
+  {
+    width: 200px;
+    height: auto;
+  }
 
 :javascript
   $(function () {
     $("#result-tree").dynatree({
-      onActivate: function(node) {
+      onClick: function(node) {
         if (node.data.href) {
           location.href=node.data.href;
         }
