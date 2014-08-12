@@ -49,6 +49,7 @@ class Host
 
   before_validation :get_host_parameters_for_xsub,
                     :if => lambda {scheduler_type == "xsub" and scheduler_type_changed? }
+  before_save :use_default_template, :if => lambda { scheduler_type == "xsub" }
   before_create :set_position
   before_destroy :validate_destroyable
 
@@ -191,6 +192,10 @@ class Host
 
   rescue => ex
     errors.add(:base, "Error while getting host parameters: #{ex.message}")
+  end
+
+  def use_default_template
+    self.template = JobScriptUtil::DEFAULT_TEMPLATE
   end
 
   def validate_destroyable
