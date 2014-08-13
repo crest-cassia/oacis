@@ -1,6 +1,6 @@
 class SchedulerWrapper
 
-  TYPES = ["none", "torque", "pjm", "pjm_k", "xsub"]
+  TYPES = ["none", "xsub", "torque", "pjm", "pjm_k"]
 
   attr_reader :type
 
