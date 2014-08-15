@@ -30,12 +30,7 @@ fi
 
 # JOB EXECUTION -------------------
 export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
-if ${OACIS_IS_MPI_JOB}
-then
-  { time -p { { mpiexec -n ${OACIS_MPI_PROCS} <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
-else
-  { time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
-fi
+{ time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
 echo "  \\"rc\\": $?," >> ../${OACIS_RUN_ID}_status.json
 echo "  \\"finished_at\\": \\"`date`\\"" >> ../${OACIS_RUN_ID}_status.json
 echo "}" >> ../${OACIS_RUN_ID}_status.json
