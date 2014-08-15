@@ -55,221 +55,87 @@
 <h2>スケジューラを経由してジョブを実行する<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">ジョブスケジューラー（Torqueなど）を経由してジョブを実行する方法について説明する。</div>
-<div class="line">Host登録時にジョブスケジューラを指定する事にって、スケジューラのジョブ投入コマンド経由でジョブが実行されるようになる。</div>
-<div class="line">現在サポートされているスケジューラはTorqueとPJM(Fujitsu FX10で採用されているジョブスケジューラ)のみである。</div>
-<div class="line">以降ではTorqueにジョブを投げるケースを想定して説明する。</div>
-</div>
-<div class="section" id="id3">
-<h3>ジョブスクリプトのヘッダに特別な指定がいらないケース<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-<div class="line-block">
-<div class="line">シングルスレッド、シングルプロセスのジョブでジョブスクリプトのヘッダに特別な記述が必要ない場合は、Hostの登録時にスケジューラタイプとして <em>Torque</em> を選択するだけでよい。</div>
-<div class="line">このようにセットしておけば、workerがジョブスクリプトをqsubコマンドで実行し、その際に取得したTorqueのジョブIDはRunと紐付けて記録される。</div>
-<div class="line">workerは定期的に qstat コマンドで得られた結果をパースしてジョブの状態をモニターし、ジョブの完了後に計算結果を取得する。</div>
-<div class="line">実行中に異常終了した場合、途中までの結果をサーバーにダウンロードしRunのステータスを <em>failed</em> として記録する。</div>
-<div class="line">実行中にユーザーによってRunが削除された場合は、qdelコマンドを使用してジョブを停止させる。</div>
+<div class="line">ジョブスケジューラーを経由して実行するには [xsub](<a class="reference external" href="https://github.com/crest-cassia/xsub">https://github.com/crest-cassia/xsub</a>) というスケジューラーをラップするスクリプトをリモートホスト側に導入する必要がある。</div>
+<div class="line">xsubは各ホストごとのスケジューラーの差異を吸収する。</div>
 </div>
 <div class="line-block">
-<div class="line">PJMの場合には pjsub, pjstat, pjdel コマンドを使用してジョブの管理を行う。</div>
-</div>
-</div>
-<div class="section" id="id4">
-<h3>ジョブスクリプトのヘッダに変数を指定するケース<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
-<div class="line-block">
-<div class="line">ジョブスクリプトのヘッダにスケジューラのパラメータ（使用時間、占有するノード数、使用メモリ量など）を指定する必要があるケースについて説明する。</div>
-<div class="line">ここでは例としてMPIで並列化しているシミュレータを、Torqueのスケジューラを使って占有時間を指定して実行することを考える。</div>
+<div class="line">xsubの各ホストへの導入方法については、xsubのREADMEを参照のこと。</div>
+<div class="line">またxsubの実行コマンドへのPATHを、bashrcでセットする必要がある。（ログインシェルがzshなどの他のシェルの場合でも）</div>
+<div class="line">OACISがxsubの実行時に <cite>bash -l</cite> コマンドを経由して、bashのログインシェルとして実行するためである。</div>
 </div>
 <div class="line-block">
-<div class="line">ジョブスクリプトのヘッダに指定する変数は以下のようになる。</div>
+<div class="line">ホストの登録時に &#8220;scheduler_type&#8221; として <cite>xsub</cite> を選択すると、各ホストに導入されたxsub経由でジョブが実行される。</div>
 </div>
-<div class="highlight-sh"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
-<span class="c">#PBS -l nodes=2:ppn=4</span>
-<span class="c">#PBS -l walltime=10:00</span>
-...
-</pre></div>
-</div>
+<div class="section" id="torque">
+<h3>実行例（Torqueを経由してジョブを実行する場合）<a class="headerlink" href="#torque" title="Permalink to this headline">¶</a></h3>
 <div class="line-block">
-<div class="line">ここでnodesが使用するノード数、ppnは各ノード内のプロセス数、walltimeが実行制限時間である。</div>
-<div class="line">各ジョブによってこれらの値が異なるため、Runの作成時にこれらの値を指定できるようにする。</div>
+<div class="line">ジョブスクリプトのヘッダにスケジューラのパラメータ（使用時間、占有するノード数、使用メモリ量など）を指定する必要がある場合、Runの作成時にパラメータの入力が求められる。</div>
+<div class="line">これらのパラメータは、OACISからxsubを実行するときにパラメータとして渡される。</div>
+<div class="line">xsubはこれらのパラメータを受け取り、ジョブカードのヘッダに記述してスケジューラの投入コマンドを実行する。</div>
 </div>
-<div class="line-block">
-<div class="line">そのためにはホストパラメータと呼ぶ仕組みを使用する。</div>
-<div class="line">ホストパラメータとして指定した変数は各Runの作成時に個別に入力することができ、その変数がHostのテンプレート部分に展開される。</div>
-</div>
-<div class="line-block">
-<div class="line">具体的には以下の手順でHostの &#8220;template&#8221;, &#8220;Definition of Host Parameters&#8221; というフィールドを設定する。</div>
-</div>
-<ol class="arabic simple">
-<li>templateの変数展開をしたい部分を <em>&lt;%= ... %&gt;</em> という記号で囲む。今回の例ではヘッダ部分を以下のように編集する。</li>
-</ol>
-<blockquote>
-<div><div class="highlight-sh"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
-<span class="c">#PBS -l nodes=&lt;%= nodes %&gt;:ppn=&lt;%= ppn %&gt;</span>
-<span class="c">#PBS -l walltime=&lt;%= walltime %&gt;</span>
-...
-</pre></div>
-</div>
-</div></blockquote>
-<p>2. &#8220;Definition of Host Parameter&#8221;の部分に展開したい変数の変数名、デフォルト値、フォーマット（入力可能な形式を正規表現で指定）を入力する。
-今回の場合、以下のように設定する。（formatの部分は空でもよいが、設定しておくとRunの作成時に不正な値を入れるとエラーになるのでミスに気づきやすくなる。）</p>
-<blockquote>
-<div><ul class="simple">
-<li>Name: nodes,    Default: 1, format: ^d+$</li>
-<li>Name: ppn,      Default: 1, format: ^d+$</li>
-<li>Name: walltime, Default: 10:00, format: ^(dd:)?dd:dd$</li>
-</ul>
-<a class="reference internal image-reference" href="_images/edit_host_template.png"><img alt="_images/edit_host_template.png" class="align-center" src="_images/edit_host_template.png" style="width: 50%;" /></a>
-<div class="line-block">
-<div class="line">この際、テンプレートとホストパラメータ定義が整合していないとエラーとなる。</div>
-<div class="line">テンプレートで展開する変数は必ずホストパラメータとして定義されている必要があり、ホストパラメータとして定義された変数はテンプレート中に現れなくてはならない。</div>
-</div>
-</div></blockquote>
-<div class="line-block">
-<div class="line">以上でHostの設定は完了である。</div>
-<div class="line">この設定後、Runの作成時に以下のようにホストパラメータを入力する箇所が現れる。</div>
-<div class="line">適切な値を入れて [Preview] ボタンをクリックするとジョブスクリプトのプレビューが表示される。</div>
-<div class="line">[Create Run]をクリックするとRunが作成され、順番にジョブが投入される。</div>
-</div>
-<a class="reference internal image-reference" href="_images/new_run_with_host_params.png"><img alt="_images/new_run_with_host_params.png" class="align-center" src="_images/new_run_with_host_params.png" style="width: 30%;" /></a>
-</div>
-<div class="section" id="mpi-openmp">
-<h3>MPI, OpenMPのジョブ<a class="headerlink" href="#mpi-openmp" title="Permalink to this headline">¶</a></h3>
 <div class="line-block">
 <div class="line">MPI, OpenMPで並列化されたシミュレータの場合、実行時にMPIのプロセス数、OpenMPのスレッド数を指定することが必要となる。</div>
 <div class="line">Simulator登録時に、 <em>Suppot MPI</em>, <em>Support OMP</em> のチェックを入れると、Runの作成時にプロセス数とスレッド数を指定するフィールドが表示されるようになる。</div>
 </div>
 <a class="reference internal image-reference" href="_images/new_run_mpi_omp_support.png"><img alt="_images/new_run_mpi_omp_support.png" class="align-center" src="_images/new_run_mpi_omp_support.png" style="width: 30%;" /></a>
 <div class="line-block">
-<div class="line">ここで指定したプロセス数・スレッド数はテンプレートの中でそれぞれ <em>&lt;%= mpi_procs %&gt;</em>, <em>&lt;%= omp_threads %&gt;</em> という変数に展開される。</div>
-<div class="line">Hostのテンプレートを確認すれば分かるとおり、OpenMPのスレッド数はジョブスクリプトの中で環境変数 <em>OMP_NUM_THREADS</em> に代入される。</div>
-<div class="line">同様にMPIのプロセス数は、mpiexec コマンドの -n オプションの引数に展開される。</div>
-<div class="line">これによりシミュレータが指定したプロセス数・スレッド数で実行されるようにしている。</div>
+<div class="line">ここでは例としてMPIで並列化しているシミュレータを、Torqueのスケジューラを使って占有時間を指定して実行することを考える。</div>
 </div>
 <div class="line-block">
+<div class="line">xsubでジョブ投入時に要求されるパラメータは、<cite>mpi_procs</cite>, <cite>omp_threads</cite>, <cite>ppn</cite>, <cite>elapsed</cite> の４つである。</div>
+<div class="line"><cite>mpi_procs</cite>, <cite>omp_threads</cite> はRunを作るときに指定したMPIプロセス数とOMPスレッド数が渡される。</div>
+<div class="line"><cite>ppn</cite>, <cite>elapsed</cite> はRunの作成時に入力フォームが出るので、そこに適切な値を指定する。</div>
+<div class="line">例えば、各ノード４スレッドで、８ノードのMPI/OpenMPハイブリッド並列化プログラムを、実行時間10:00:00で実行する場合、</div>
+</div>
+<p>mpi_procs=8, omp_threads=4, ppn=4, elapsed=&#8221;10:00:00&#8221; を指定する。
+| するとxsubが、ジョブカードを作成しジョブを実行する。</p>
+<a class="reference internal image-reference" href="_images/new_run_with_host_params.png"><img alt="_images/new_run_with_host_params.png" class="align-center" src="_images/new_run_with_host_params.png" style="width: 30%;" /></a>
+</div>
+<div class="section" id="mpi-openmp">
+<h3>MPI, OpenMPのジョブ<a class="headerlink" href="#mpi-openmp" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">OpenMPのジョブのスレッド数を指定すると、ジョブスクリプトの中で OMP_NUM_THREADS の環境変数がセットされる。</div>
 <div class="line">つまりOpenMPで並列化しているシミュレータはOMP_NUM_THREADS環境変数を参照してスレッド数を決めるように実装されていなければならない。</div>
 <div class="line">（ プログラム内で <em>omp_set_num_threads()</em> 関数で別途指定している場合は、当然ながらここで指定したスレッド数は適用されない）</div>
 </div>
 <div class="line-block">
-<div class="line">MPIで並列化している場合、プロセス数は <em>mpiexec</em> コマンドの引数で渡されるが、 <em>mpiexec</em> コマンド以外のMPIプロセス実行コマンドを指定したい場合はHostのテンプレートを編集すればよい。</div>
+<div class="line">MPIで並列化して実行する場合、Runの作成時に指定したプロセス数は OACIS_MPI_PROCS の環境変数にセットされる。</div>
+<div class="line">Simulatorの実行コマンドで <em>mpiexec -n $OACIS_MPI_PROCS simulator.out</em> というように OACIS_MPI_PROCS 環境変数を参照してコマンドを実行するようにする。</div>
+</div>
+</div>
+<div class="section" id="id3">
+<h3>京コンピュータを利用するケース<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line">京コンピュータでジョブを実行する場合、実行するシミュレーターのファイルもステージングする必要があるため、実行コマンドを絶対パスやホームディレクトリからの相対パスで指定する事はできない。</div>
+<div class="line">そこで、プリプロセスを使って実行ファイルをカレントディレクトリにコピーし、実行コマンドはカレントディレクトリからの相対パスで指定するようにする。</div>
 </div>
 <div class="line-block">
-<div class="line">ジョブスクリプトのヘッダ部分でも &lt;%= mpi_procs %&gt;, &lt;%= omp_threads %&gt; 変数を展開することができる。</div>
-<div class="line">これを利用するとMPIプロセス数に応じて確保するノード数を自動的に決めたりすることができる。</div>
-<div class="line">例として、Flat MPIのプログラムを、１ノードあたり８コアのマシンで実行することを考える。</div>
-<div class="line">Hostのテンプレートに以下のように書くことで、ノード数が自動的に指定されるようになる。（ただし、プロセス数は８の倍数にする必要がある）</div>
+<div class="line">実行ファイルが <cite>~/path/to/simulator.out</cite> にある場合、プリプロセスには以下のように書く</div>
 </div>
-<div class="highlight-sh"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
-<span class="c">#PBS -l nodes=&lt;%= mpi_procs / 8 %&gt;:ppn=8</span>
-<span class="c">#PBS -l walltime=10:00</span>
-...
+<blockquote>
+<div><div class="highlight-sh"><div class="highlight"><pre>cp ~/path/to/simulator.out .
 </pre></div>
 </div>
-</div>
-<div class="section" id="pjm">
-<h3>京コンピュータのPJMを利用するケース<a class="headerlink" href="#pjm" title="Permalink to this headline">¶</a></h3>
+</div></blockquote>
 <div class="line-block">
-<div class="line">京コンピュータでジョブを実行する場合、ノード形状やelapse timeやステージング情報をジョブスクリプトに記載する必要がある。</div>
-<div class="line">また、若干の修正(PRE-PROCESS, JOB EXECUTION)が必要である。</div>
-<div class="line">以下では、実行時ディレクトリからみて、 ./signals/ 以下の設定ファイルを読み込み、 ./result/inst/ 以下に結果を出力するシミュレータでの例を示す。(シミュレータ依存の操作はOptionalと示される。)</div>
+<div class="line">xsubで実行すると、各ワークディレクトリがステージインされるので、必要なファイルはすべてカレントディレクトリに事前にコピーしておく。</div>
 </div>
-<ol class="arabic simple" start="0">
-<li>プリプロセスでの処理</li>
-</ol>
+<div class="line-block">
+<div class="line">実行コマンドは以下のように書く</div>
+</div>
 <blockquote>
-<div><ul class="simple">
-<li>下記(1. 2. 3.)に続くジョブスクリプトへの修正を行うことで、プリプロセスが実行されるディレクトリ以下をステージイン可能となる。しかし、実行に必要なバイナリや設定ファイルをジョブスクリプト実行ディレクトリ以下に配置する作業や実行コマンドの微修正などをあらかじめ実行しておく必要がある。</li>
-<li>例えば、バイナリの移動(need)や設定ファイル群の移動(optional)には、下記のようにコマンドをプリプロセスに追加する。</li>
-</ul>
-<div class="highlight-sh"><div class="highlight"><pre>cp ~/path/to/simulator.out . <span class="c">#(Need)</span>
-cp -r ~/path/to/signals . <span class="c">#(Optional)</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li>例えば、シミュレータの実行コマンドをステージイン後のパスに変更するには、実行コマンドを <em>SIMCMD.txt</em> ファイルに書き出す処理をプリプロセスに追加し、ジョブスクリプトから読み込む。(Optional)</li>
-</ul>
-<div class="highlight-sh"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">&quot;./simulator.out&quot;</span> &gt; SIMCMD.txt
+<div><div class="highlight-sh"><div class="highlight"><pre>./simulator.out
 </pre></div>
 </div>
 </div></blockquote>
-<ol class="arabic simple">
-<li>ステージングへの対応</li>
-</ol>
-<blockquote>
-<div><ul class="simple">
-<li>PJM &#8211;vset は、PJM内で利用する変数を定義する。ここでは、OACIS_RUN_IDとOACIS_WORK_BASE_DIRを定義している。</li>
-<li>PJM &#8211;stgin-dir &#8221;./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/&#8221;は、_input.jsonや設定ファイルを転送する。</li>
-<li>PJM &#8211;stgin-basedir ${OACIS_WORK_BASE_DIR}は、ステージインするベースディレクトリを指示する。</li>
-<li>PJM &#8211;stgin-dir &#8221;./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/&#8221;は、signalsディレクトリ以下のファイルを転送する。(Optional)</li>
-<li>PJM &#8211;stgout-basedir ${OACIS_WORK_BASE_DIR}は、ステージアウトするベースディレクトリを指示する。</li>
-<li>PJM &#8211;stgout &#8221;./* ./&#8221;は、すべてのファイル(ディレクトリは含まない)を転送する。(デフォルトでは、${RUN_ID}.tar.bz2がステージアウトされる。)</li>
-</ul>
-<div class="highlight-sh"><div class="highlight"><pre><span class="c">#!/bin/bash -x</span>
-<span class="c">#</span>
-<span class="c">#PJM --rsc-list &quot;node=1&quot;</span>
-<span class="c">#PJM --rsc-list &quot;elapse=0:05:00&quot;</span>
-<span class="c">#PJM --vset OACIS_RUN_ID=&lt;%= run_id %&gt;</span>
-<span class="c">#PJM --vset OACIS_WORK_BASE_DIR=&lt;%= work_base_dir %&gt;</span>
-<span class="c">#PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}</span>
-<span class="c">#PJM --stgin-dir &quot;./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/&quot;</span>
-<span class="c">#PJM --stgin-dir &quot;./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/&quot;</span>
-<span class="c">#PJM --stgout-basedir ${OACIS_WORK_BASE_DIR}</span>
-<span class="c">#PJM --stgout &quot;./* ./&quot;</span>
-<span class="c">#PJM -s</span>
-<span class="c">#</span>
-<span class="nv">LANG</span><span class="o">=</span>C
-</pre></div>
-</div>
-</div></blockquote>
-<ol class="arabic simple" start="2">
-<li>PRE-PROCESSへの修正</li>
-</ol>
-<blockquote>
-<div><ul class="simple">
-<li>mkdir -p result/instは、シミュレータの実行結果を出力するのに必要なフォルダを生成する。(Optional)</li>
-</ul>
-<div class="highlight-diff"><div class="highlight"><pre># PRE-PROCESS ---------------------
-<span class="gi">+ . /work/system/Env_base</span>
-<span class="gi">+ mkdir -p result/inst</span>
-<span class="gd">- #mkdir -p ${OACIS_WORK_BASE_DIR}</span>
-<span class="gd">- #cd ${OACIS_WORK_BASE_DIR}</span>
-<span class="gd">- mkdir -p ${OACIS_RUN_ID}</span>
-cd ${OACIS_RUN_ID}
-if [ -e ../${OACIS_RUN_ID}_input.json ]; then
-\mv ../${OACIS_RUN_ID}_input.json ./_input.json
-fi
-echo &quot;{&quot; &gt; ../${OACIS_RUN_ID}_status.json
-echo &quot;  \&quot;started_at\&quot;: \&quot;`date`\&quot;,&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
-echo &quot;  \&quot;hostname\&quot;: \&quot;`hostname`\&quot;,&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
-</pre></div>
-</div>
-</div></blockquote>
-<ol class="arabic simple" start="3">
-<li>JOB EXECUTIONへの修正</li>
-</ol>
-<blockquote>
-<div><ul class="simple">
-<li>SIMCMD=`cat SIMCMD.txt`は、シミュレータ実行コマンドを <em>SIMCMD.txt</em> から読み込む。SIMCMD.txtは、Simulatorのプリプロセスで生成しておく。(Optional)</li>
-</ul>
-<div class="highlight-diff"><div class="highlight"><pre># JOB EXECUTION -------------------
-<span class="gi">+ SIMCMD=`cat SIMCMD.txt` #SIMCMD.txt is created by _preprocess.sh</span>
-if ${OACIS_IS_MPI_JOB}
-then
-  export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
-<span class="gd">-  { time -p { { mpiexec -n ${OACIS_MPI_PROCS}  &lt;%= cmd %&gt;; } 1&gt;&gt; _stdout.txt 2&gt;&gt; _stderr.txt; } } 2&gt;&gt; ../${OACIS_RUN_ID}_time.txt</span>
-<span class="gi">+  { time -p { { mpiexec -n ${OACIS_MPI_PROCS} ${SIMCMD}; } 1&gt;&gt; _stdout.txt 2&gt;&gt; _stderr.txt; } } 2&gt;&gt; ../${OACIS_RUN_ID}_time.txt</span>
-else
-<span class="gd">-  { time -p { { &lt;%= cmd %&gt;; } 1&gt;&gt; _stdout.txt 2&gt;&gt; _stderr.txt; } } 2&gt;&gt; ../${OACIS_RUN_ID}_time.txt</span>
-<span class="gi">+  { time -p { { ${SIMCMD}; } 1&gt;&gt; _stdout.txt 2&gt;&gt; _stderr.txt; } } 2&gt;&gt; ../${OACIS_RUN_ID}_time.txt</span>
-fi
-echo &quot;  \&quot;rc\&quot;: $?,&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
-echo &quot;  \&quot;finished_at\&quot;: \&quot;`date`\&quot;&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
-echo &quot;}&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
-</pre></div>
-</div>
-</div></blockquote>
+<div class="line-block">
+<div class="line">このように設定しておけば、xsubがカレントディレクトリを丸ごとステージインして実行してくれる。</div>
+<div class="line">実行結果は、他のホストの場合と同様にカレントディレクトリ以下に配置しておけば、ステージアウトして結果を取り込んでくれるので、特にステージアウトするファイルを指定する必要は無い。</div>
 </div>
 </div>
-<div class="section" id="id5">
-<h2>手動でジョブを実行する<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id4">
+<h2>手動でジョブを実行する<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">OACIS上でRunを作るとworkerによってジョブ投入が自動で行われるが、ジョブの実行を手動で行う事もできる。</div>
 <div class="line">Run作成時に手動実行を指定した場合、自動ジョブ投入は行われずジョブスクリプトの生成のみ行われる。</div>
@@ -353,7 +219,7 @@ echo &quot;}&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
 <a class="reference internal image-reference" href="_images/run_results.png"><img alt="_images/run_results.png" class="align-center" src="_images/run_results.png" style="width: 40%;" /></a>
 </div>
 <div class="section" id="manage-simulator-version">
-<span id="id6"></span><h2>シミュレーターのバージョンを記録する<a class="headerlink" href="#manage-simulator-version" title="Permalink to this headline">¶</a></h2>
+<span id="id5"></span><h2>シミュレーターのバージョンを記録する<a class="headerlink" href="#manage-simulator-version" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">シミュレーションの実行時にどのバージョンのシミュレーターで実行したかOACISに記録をさせておくことができる。</div>
 <div class="line">RunとSimulatorのバージョンをひもづけて記録する事により、例えば、あるバージョンの実行結果の一括削除などの操作ができる様になる。</div>
@@ -383,8 +249,8 @@ echo &quot;}&quot; &gt;&gt; ../${OACIS_RUN_ID}_status.json
 </pre></div>
 </div>
 </div>
-<div class="section" id="id7">
-<h2>プリプロセスの定義<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h2>プリプロセスの定義<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">シミュレータによっては実際にシミュレーションジョブを開始する前に、入力ファイルを準備したりフォーマットを調整したりするプリプロセスが必要な場合がしばしばある。</div>
 <div class="line">しかしプリプロセスを計算ジョブの中で行おうとすると以下のようなケースで問題になる。</div>
@@ -640,8 +506,8 @@ plot &quot;_input/time_series.dat&quot; w l
 <div class="line">yesの場合、ParameterSet内のすべてのRunが :finished または :failed になったときに自動実行される。</div>
 </div>
 </div>
-<div class="section" id="id8">
-<h3>Analyzerのバージョンを記録する<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h3>Analyzerのバージョンを記録する<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <div class="line-block">
 <div class="line">Analyzer実行時に、どのバージョンのAnalyzerを実行したかをanalysisとひもづけてOACISに記録させておくことができる。</div>
 <div class="line">バージョンを記録することにより、例えば、あるバージョンのanalysisを一括削除などの操作ができる様になる。</div>
@@ -671,20 +537,19 @@ plot &quot;_input/time_series.dat&quot; w l
   <ul>
 <li><a class="reference internal" href="#">高度な使い方</a><ul>
 <li><a class="reference internal" href="#id2">スケジューラを経由してジョブを実行する</a><ul>
-<li><a class="reference internal" href="#id3">ジョブスクリプトのヘッダに特別な指定がいらないケース</a></li>
-<li><a class="reference internal" href="#id4">ジョブスクリプトのヘッダに変数を指定するケース</a></li>
+<li><a class="reference internal" href="#torque">実行例（Torqueを経由してジョブを実行する場合）</a></li>
 <li><a class="reference internal" href="#mpi-openmp">MPI, OpenMPのジョブ</a></li>
-<li><a class="reference internal" href="#pjm">京コンピュータのPJMを利用するケース</a></li>
+<li><a class="reference internal" href="#id3">京コンピュータを利用するケース</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id5">手動でジョブを実行する</a></li>
+<li><a class="reference internal" href="#id4">手動でジョブを実行する</a></li>
 <li><a class="reference internal" href="#mongodb">結果をMongoDB内に格納する</a></li>
 <li><a class="reference internal" href="#manage-simulator-version">シミュレーターのバージョンを記録する</a></li>
-<li><a class="reference internal" href="#id7">プリプロセスの定義</a></li>
+<li><a class="reference internal" href="#id6">プリプロセスの定義</a></li>
 <li><a class="reference internal" href="#analyzer">Analyzerの登録と実行</a><ul>
 <li><a class="reference internal" href="#run">Runに対する解析</a></li>
 <li><a class="reference internal" href="#parameterset">ParameterSetに対する解析</a></li>
-<li><a class="reference internal" href="#id8">Analyzerのバージョンを記録する</a></li>
+<li><a class="reference internal" href="#id7">Analyzerのバージョンを記録する</a></li>
 </ul>
 </li>
 </ul>

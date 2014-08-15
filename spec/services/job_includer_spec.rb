@@ -33,6 +33,13 @@ describe JobIncluder do
     }
   end
 
+  def make_scheduler_log(host, run)
+    host.update_attribute(:scheduler_type, :xsub)
+    log_dir = @temp_dir.join(@run.id.to_s+'_log')
+    FileUtils.mkdir_p(log_dir)
+    FileUtils.touch(log_dir.join('scheduler_log'))
+  end
+
   before(:each) do
     @sim = FactoryGirl.create(:simulator,
                               parameter_sets_count: 1, runs_count: 0,
@@ -49,6 +56,11 @@ describe JobIncluder do
     it "copies reuslt files into the run directory" do
       include_job
       @run.dir.join("_stdout.txt").should be_exist
+    end
+
+    it "copies archive result file" do
+      include_job
+      @run.dir.join("..", File.basename(@archive_full_path)).should be_exist
     end
 
     it "parses _status.json" do
@@ -101,6 +113,7 @@ describe JobIncluder do
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
       @run = @sim.parameter_sets.first.runs.create(submitted_to: @host)
+      make_scheduler_log(@host, @run)
     end
 
     describe "correct case" do
@@ -112,14 +125,57 @@ describe JobIncluder do
       let(:include_job) { JobIncluder.include_remote_job(@host, @run) }
 
       it_behaves_like "included correctly"
+
+      it "call SSHUtil.download" do
+        expect(SSHUtil).to receive(:download).and_call_original
+        include_job
+      end
+
+      it "includes scheduler_log" do
+        include_job
+        @run.dir.join(@run.id.to_s+'_log', 'scheduler_log').should be_exist
+      end
     end
 
-    describe "when work_dir exists" do
+    describe "mounted_work_base_dir is not empty" do
 
-      context "if _status.txt exists in downloded work_dir" do
+      before(:each) do
+        @host.mounted_work_base_dir = @host.work_base_dir
+        @host.save
+        make_valid_archive_file(@run, true)
+      end
+
+      let(:include_job) { JobIncluder.include_remote_job(@host, @run) }
+
+      it_behaves_like "included correctly"
+
+      it "deletes remote work_dir and archive file" do
+        work_dir = File.join(@temp_dir, @run.id.to_s)
+        expect {
+          include_job
+        }.to change { File.directory?(work_dir) }.from(true).to(false)
+      end
+
+      it "does not call SSHUtil.download" do
+        expect(SSHUtil).to_not receive(:download)
+        include_job
+      end
+
+      it "includes scheduler_log" do
+        include_job
+        @run.dir.join(@run.id.to_s+'_log', 'scheduler_log').should be_exist
+      end
+    end
+
+    # A test case for error handling
+    # Even if .tar.bz2 is not found, try to include the files as much as possible
+    describe "when archive file is not found but work_dir exists" do
+
+      context "if _status.json exists in downloded work_dir" do
 
         before(:each) do
           make_valid_archive_file(@run, true)
+          FileUtils.rm(@archive_full_path)
           JobIncluder.include_remote_job(@host, @run)
           @run.reload
         end
@@ -132,18 +188,21 @@ describe JobIncluder do
           @run.dir.join("_stdout.txt").should be_exist
         end
 
+        it "does not copy archive file" do
+          @run.dir.join('..', @run.id.to_s+'.tar.bz2').should_not be_exist
+        end
+
         it "deletes remote work_dir and archive file" do
           Dir.entries(@temp_dir).should =~ ['.', '..']
         end
       end
 
-      context "if _status.txt does not exist in downloded work_dir" do
+      context "if _status.json does not exist in downloded work_dir" do
 
         before(:each) do
           make_valid_archive_file(@run, true)
-          Dir.chdir(@temp_dir.join(@run.id.to_s)) {
-            FileUtils.rm("_status.json")
-          }
+          FileUtils.rm( @temp_dir.join(@run.id.to_s,"_status.json") )
+          FileUtils.rm( @archive_full_path )
           JobIncluder.include_remote_job(@host, @run)
           @run.reload
         end
@@ -151,29 +210,6 @@ describe JobIncluder do
         it "updates status to failed" do
           @run.status.should eq :failed
         end
-      end
-    end
-
-    describe "when work_dir exists and mounted_work_base_dir is not empty" do
-
-      before(:each) do
-        @host.mounted_work_base_dir = @host.work_base_dir
-        @host.save
-        make_valid_archive_file(@run, true)
-        JobIncluder.include_remote_job(@host, @run)
-        @run.reload
-      end
-
-      it "updates status to failed" do
-        @run.status.should eq :finished
-      end
-
-      it "copies files in work_dir" do
-        @run.dir.join("_stdout.txt").should be_exist
-      end
-
-      it "deletes remote work_dir and archive file" do
-        Dir.entries(@temp_dir).should =~ ['.', '..']
       end
     end
   end

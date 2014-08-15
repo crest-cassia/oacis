@@ -28,7 +28,8 @@
   .control-group
     = f.label(:scheduler_type, class: 'control-label')
     .controls
-      = f.select(:scheduler_type, SchedulerWrapper::TYPES)
+      - types = SchedulerWrapper::TYPES.map {|t| (t=="none" or t=="xsub") ? [t,t] : [t+' (obsolete)',t] }
+      = f.select(:scheduler_type, types)
   .control-group
     = f.label(:work_base_dir, class: 'control-label')
     .controls
@@ -87,6 +88,22 @@
     %a{class: 'btn btn-warning', id: 'load_default_template', data: JobScriptUtil::DEFAULT_TEMPLATE} Load default template
 
 :javascript
+  function update_template_and_host_parameters_field() {
+    if( $('#host_scheduler_type option:selected').text() == "xsub" ) {
+      $('#host_template').attr("disabled", "disabled");
+      $('#host_parameters_definition').hide();
+    }
+    else {
+      $('#host_template').removeAttr("disabled");
+      $('#host_parameters_definition').show();
+    }
+  }
+
+  $(function() {
+    update_template_and_host_parameters_field();
+    $('#host_scheduler_type').change( update_template_and_host_parameters_field );
+  });
+
   $(function(){
     $('a#load_default_template').on('click', function(){
       if(confirm('Are you sure to load default template?')){

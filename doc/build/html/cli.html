@@ -285,9 +285,17 @@
 </li>
 <li><p class="first">入力ファイル</p>
 <blockquote>
-<div><ul class="simple">
-<li>hostファイルは show_host で出力されるJSON形式のファイルを指定する。</li>
-<li>inputファイルは simulator_template で出力されるJSON形式のファイルを指定する。</li>
+<div><ul>
+<li><p class="first">hostファイルは show_host で出力されるJSON形式のファイルを指定する。</p>
+</li>
+<li><dl class="first docutils">
+<dt>inputファイルは simulator_template で出力されるJSON形式のファイルを指定する。</dt>
+<dd><ul class="first last simple">
+<li>JSONのパスを指定してもよいし、JSONの文字列をそのまま渡しても良い</li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </li>
@@ -311,7 +319,7 @@
 <p>create_parameter_setsの時に使用するparameter_sets.jsonファイルのテンプレートを作成する</p>
 <ul>
 <li><p class="first">実行方法</p>
-<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli parameter_sets_template -s simulator.json -o parameter_sets.json
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli parameter_sets_template -s 5361e421b93f96bbc500000e -o parameter_sets.json
 </pre></div>
 </div>
 </li>
@@ -339,7 +347,7 @@
 </td>
 <td><p class="first last">-s</p>
 </td>
-<td><p class="first last">simulator file</p>
+<td><p class="first last">simulator</p>
 </td>
 <td><p class="first last">yes</p>
 </td>
@@ -359,7 +367,7 @@
 <li><p class="first">入力ファイル</p>
 <blockquote>
 <div><ul class="simple">
-<li>simulatorファイルは create_simulator で出力されるJSON形式のファイルを指定する。</li>
+<li>simulatorはSimulatorのIDを渡すか、create_simulator で出力されるJSON形式のファイルを指定する。</li>
 </ul>
 </div></blockquote>
 </li>
@@ -386,6 +394,9 @@
 <div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli create_parameter_sets -s simulator_id.json -i parameter_sets.json -o parameter_set_ids.json
 </pre></div>
 </div>
+<div class="highlight-sh"><div class="highlight"><pre>./bin/oacis_cli create_parameter_sets -s 5361e421b93f96bbc500000e -i <span class="s1">&#39;{&quot;p1&quot;:1,&quot;p2&quot;:[2.0,3.0}&#39;</span> -o parameter_set_ids.json
+</pre></div>
+</div>
 </li>
 <li><p class="first">オプション</p>
 <table border="1" class="docutils">
@@ -411,7 +422,7 @@
 </td>
 <td><p class="first last">-s</p>
 </td>
-<td><p class="first last">simulator file</p>
+<td><p class="first last">simulator</p>
 </td>
 <td><p class="first last">yes</p>
 </td>
@@ -420,12 +431,21 @@
 </td>
 <td><p class="first last">-i</p>
 </td>
-<td><p class="first last">input file path</p>
+<td><p class="first last">input json</p>
 </td>
 <td><p class="first last">yes</p>
 </td>
 </tr>
-<tr class="row-even"><td><p class="first last">&#8211;output</p>
+<tr class="row-even"><td><p class="first last">&#8211;run</p>
+</td>
+<td><p class="first last">-r</p>
+</td>
+<td><p class="first last">run-option json</p>
+</td>
+<td><p class="first last">yes</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">&#8211;output</p>
 </td>
 <td><p class="first last">-o</p>
 </td>
@@ -439,9 +459,38 @@
 </li>
 <li><p class="first">入力ファイル</p>
 <blockquote>
-<div><ul class="simple">
-<li>simulatorファイルは create_simulator で出力されるJSON形式のファイルを指定する。</li>
-<li>inputファイルは parameter_sets_template で出力されるJSON形式のファイルを指定する。</li>
+<div><ul>
+<li><p class="first">simulatorはIDを渡すか、create_simulatorで出力されるJSON形式のファイルを指定する。</p>
+</li>
+<li><dl class="first docutils">
+<dt>inputファイルは parameter_sets_template で出力されるJSON形式のファイルを指定する。</dt>
+<dd><ul class="first last simple">
+<li>またはJSONの文字列を指定しても良い。</li>
+<li>パラメータとして配列を指定すると、複数のパラメータセットを同時に作る事ができる。</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>runは、指定されたParameterSetに対してRunの作成をする場合に指定する。</dt>
+<dd><ul class="first simple">
+<li>JSON形式の文字列、またはJSONファイルのパスを指定する。</li>
+<li>runのフォーマットは以下の通り。</li>
+</ul>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="p">{</span> <span class="s2">&quot;num_runs&quot;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;mpi_procs&quot;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;omp_threads&quot;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;priority&quot;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;submitted_to&quot;</span><span class="o">:</span><span class="s2">&quot;522fe89a899e53ec05000005&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;host_parameters&quot;</span><span class="o">:</span><span class="p">{</span><span class="s2">&quot;nodes&quot;</span><span class="o">:</span><span class="s2">&quot;1&quot;</span><span class="p">,</span><span class="s2">&quot;ppn&quot;</span><span class="o">:</span><span class="s2">&quot;1&quot;</span><span class="p">,</span><span class="s2">&quot;walltime&quot;</span><span class="o">:</span><span class="s2">&quot;10:00&quot;</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="last simple">
+<li>&#8220;submitted_to&#8221;フィールドにはHostのIDを指定する。</li>
+<li>&#8220;host_parameters&#8221;フィールドは、各ホストで必要とされるパラメータを入力する。</li>
+<li>それぞれのParameterSetが &#8220;num_runs&#8221; 個のRunを持つまでRunが作成される。</li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 </li>
@@ -539,7 +588,8 @@
     <span class="s2">&quot;walltime&quot;</span><span class="o">:</span> <span class="s2">&quot;10:00&quot;</span>
   <span class="p">},</span>
   <span class="s2">&quot;mpi_procs&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
-  <span class="s2">&quot;omp_threads&quot;</span><span class="o">:</span> <span class="mi">1</span>
+  <span class="s2">&quot;omp_threads&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;priority&quot;</span><span class="o">:</span> <span class="mi">1</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -619,8 +669,8 @@
 <li><p class="first">入力ファイル</p>
 <blockquote>
 <div><ul class="simple">
-<li>parameter_setsファイルは create_parameter_sets で出力されるJSON形式のファイルを指定する。</li>
-<li>job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルを指定する。</li>
+<li>parameter_setsファイルは create_parameter_sets で出力されるJSON形式のファイルまたは文字列を指定する。</li>
+<li>job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルまたは文字列を指定する。</li>
 <li>number_of_runs はRunの数を数値で指定する。各ParameterSetごとに、ここで指定された数になるまでRunが作られる。デフォルトは1。</li>
 </ul>
 </div></blockquote>
@@ -1107,7 +1157,7 @@
 <blockquote>
 <div><ul class="simple">
 <li>analyzerはanalyzerのIDを指定する。</li>
-<li>inputは analyses_template で出力されるJSON形式のファイルを指定する。デフォルトは、Analyzerに登録されたパラメータのデフォルト値。</li>
+<li>inputは analyses_template で出力されるJSON形式のファイルまたはJSON形式の文字列を指定する。デフォルトは、Analyzerに登録されたパラメータのデフォルト値。</li>
 </ul>
 </div></blockquote>
 </li>

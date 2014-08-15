@@ -52,7 +52,7 @@ class OacisCli < Thor
   def create_analyses
     raise "can not use both first_run_only option and target option" if options[:first_run_only].present? and options[:target].present?
     anz = Analyzer.find(options[:analyzer_id])
-    input = options[:input] ? JSON.load(File.read(options[:input])) : [ anz.parameter_definitions.inject({}) {|h, pd| h.merge!({pd["key"]=>pd["default"]})} ]
+    input = options[:input] ? load_json_file_or_string(options[:input]) : [ anz.parameter_definitions.inject({}) {|h, pd| h.merge!({pd["key"]=>pd["default"]})} ]
 
     analyses = []
     sim = Simulator.find(anz.simulator_id)

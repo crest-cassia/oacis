@@ -16,9 +16,8 @@ class AnalysesController < ApplicationController
 
     respond_to do |format|
       if arn.save
-        format.html { redirect_to after_create_redirect_path(arn),
-                      notice: "Analysis was successfully created."}
         format.json { render json: arn, status: :created, location: arn}
+        format.js
       else
         # UPDATE ME: a tentative implementation
         format.html { redirect_to analyzable, alert: "Failed to create analysis" }

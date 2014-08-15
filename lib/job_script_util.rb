@@ -7,19 +7,17 @@ LANG=C
 # VARIABLE DEFINITIONS ------------
 OACIS_RUN_ID=<%= run_id %>
 OACIS_IS_MPI_JOB=<%= is_mpi_job %>
-OACIS_WORK_BASE_DIR=<%= work_base_dir %>
 OACIS_MOUNTED_WORK_BASE_DIR=<%= mounted_work_base_dir %>
 OACIS_MPI_PROCS=<%= mpi_procs %>
 OACIS_OMP_THREADS=<%= omp_threads %>
 OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
 
 # PRE-PROCESS ---------------------
-mkdir -p ${OACIS_WORK_BASE_DIR}
-cd ${OACIS_WORK_BASE_DIR}
-mkdir -p ${OACIS_RUN_ID}
-cd ${OACIS_RUN_ID}
-if [ -e ../${OACIS_RUN_ID}_input.json ]; then
-\\mv ../${OACIS_RUN_ID}_input.json ./_input.json
+if [ `basename $(pwd)` != ${OACIS_RUN_ID} ]; then  # for manual submission
+  mkdir -p ${OACIS_RUN_ID} && cd ${OACIS_RUN_ID}
+  if [ -e ../${OACIS_RUN_ID}_input.json ]; then
+    \\mv ../${OACIS_RUN_ID}_input.json ./_input.json
+  fi
 fi
 echo "{" > ../${OACIS_RUN_ID}_status.json
 echo "  \\"started_at\\": \\"`date`\\"," >> ../${OACIS_RUN_ID}_status.json
@@ -32,12 +30,7 @@ fi
 
 # JOB EXECUTION -------------------
 export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
-if ${OACIS_IS_MPI_JOB}
-then
-  { time -p { { mpiexec -n ${OACIS_MPI_PROCS} <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
-else
-  { time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
-fi
+{ time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
 echo "  \\"rc\\": $?," >> ../${OACIS_RUN_ID}_status.json
 echo "  \\"finished_at\\": \\"`date`\\"" >> ../${OACIS_RUN_ID}_status.json
 echo "}" >> ../${OACIS_RUN_ID}_status.json
@@ -56,7 +49,7 @@ then
 fi
 EOS
 
-  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "work_base_dir", "mounted_work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
+  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "mounted_work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
 
   def self.script_for(run, host)
     default_variables = {

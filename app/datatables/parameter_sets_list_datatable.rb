@@ -54,7 +54,11 @@ private
       if param == @base_ps
         tmp << ''
       else
-        tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+        if OACIS_READ_ONLY
+          tmp << @view.raw('<i class="icon-trash">')
+        else
+          tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+        end
       end
       tmp
     end

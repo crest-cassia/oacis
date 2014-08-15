@@ -33,6 +33,7 @@ class Host
   validates :user, presence: true, format: {with: /^[A-Za-z0-9. _-]+$/}
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
+  validates :scheduler_type, inclusion: {in: SchedulerWrapper::TYPES }
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
   validates :polling_interval, numericality: {greater_than_or_equal_to: 5}
   validates :min_mpi_procs, numericality: {greater_than_or_equal_to: 1}
@@ -43,8 +44,12 @@ class Host
                      inclusion: {in: HOST_STATUS}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
-  validate :template_conform_to_host_parameter_definitions
+  validate :template_conform_to_host_parameter_definitions,
+           :if => lambda { scheduler_type != "xsub" and scheduler_type_changed? }
 
+  before_validation :get_host_parameters_for_xsub,
+                    :if => lambda {scheduler_type == "xsub" and scheduler_type_changed? }
+  before_save :use_default_template, :if => lambda { scheduler_type == "xsub" }
   before_create :set_position
   before_destroy :validate_destroyable
 
@@ -164,6 +169,33 @@ class Host
         errors[:base] << "'#{var}' is defined as a host parameter, but does not appear in template"
       end
     end
+  end
+
+  def get_host_parameters_for_xsub
+    start_ssh do |ssh|
+      cmd = "bash -l -c 'echo XSUB_BEGIN && xsub -t'"
+      ## bash -i invokes bash as an interactive shell.
+      ##   This is necessary to load path properly from bashrc.
+      ##   Otherwise, users do not have a way to set PATH in bash.
+      ## And sourcing bashrc may print some strings into stdout.
+      ##   In order to extract the output of xsub, use 'START_XSUB' as a separator.
+      ##   Lines below 'START_XSUB' is the json output written by 'xsub -t'.
+      ret = SSHUtil.execute(ssh, cmd).lines.to_a
+      begin_idx = ret.index {|line| line =~ /^XSUB_BEGIN$/}
+      xsub_out = ret[(begin_idx+1)..-1].join
+      self.host_parameter_definitions = JSON.load(xsub_out)["parameters"].map do |key,val|
+        unless key == "mpi_procs" or key == "omp_threads"
+          HostParameterDefinition.new(key: key, default: val["default"], format: val["format"])
+        end
+      end
+    end
+
+  rescue => ex
+    errors.add(:base, "Error while getting host parameters: #{ex.message}")
+  end
+
+  def use_default_template
+    self.template = JobScriptUtil::DEFAULT_TEMPLATE
   end
 
   def validate_destroyable

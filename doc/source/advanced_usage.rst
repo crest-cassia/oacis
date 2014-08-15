@@ -6,78 +6,21 @@
 ==========================================
 
 | ジョブスケジューラー（Torqueなど）を経由してジョブを実行する方法について説明する。
-| Host登録時にジョブスケジューラを指定する事にって、スケジューラのジョブ投入コマンド経由でジョブが実行されるようになる。
-| 現在サポートされているスケジューラはTorqueとPJM(Fujitsu FX10で採用されているジョブスケジューラ)のみである。
-| 以降ではTorqueにジョブを投げるケースを想定して説明する。
+| ジョブスケジューラーを経由して実行するには [xsub](https://github.com/crest-cassia/xsub) というスケジューラーをラップするスクリプトをリモートホスト側に導入する必要がある。
+| xsubは各ホストごとのスケジューラーの差異を吸収する。
 
-ジョブスクリプトのヘッダに特別な指定がいらないケース
------------------------------------------------------
+| xsubの各ホストへの導入方法については、xsubのREADMEを参照のこと。
+| またxsubの実行コマンドへのPATHを、bashrcでセットする必要がある。（ログインシェルがzshなどの他のシェルの場合でも）
+| OACISがxsubの実行時に `bash -l` コマンドを経由して、bashのログインシェルとして実行するためである。
 
-| シングルスレッド、シングルプロセスのジョブでジョブスクリプトのヘッダに特別な記述が必要ない場合は、Hostの登録時にスケジューラタイプとして *Torque* を選択するだけでよい。
-| このようにセットしておけば、workerがジョブスクリプトをqsubコマンドで実行し、その際に取得したTorqueのジョブIDはRunと紐付けて記録される。
-| workerは定期的に qstat コマンドで得られた結果をパースしてジョブの状態をモニターし、ジョブの完了後に計算結果を取得する。
-| 実行中に異常終了した場合、途中までの結果をサーバーにダウンロードしRunのステータスを *failed* として記録する。
-| 実行中にユーザーによってRunが削除された場合は、qdelコマンドを使用してジョブを停止させる。
+| ホストの登録時に "scheduler_type" として `xsub` を選択すると、各ホストに導入されたxsub経由でジョブが実行される。
 
-| PJMの場合には pjsub, pjstat, pjdel コマンドを使用してジョブの管理を行う。
-
-ジョブスクリプトのヘッダに変数を指定するケース
+実行例（Torqueを経由してジョブを実行する場合）
 ----------------------------------------------
 
-| ジョブスクリプトのヘッダにスケジューラのパラメータ（使用時間、占有するノード数、使用メモリ量など）を指定する必要があるケースについて説明する。
-| ここでは例としてMPIで並列化しているシミュレータを、Torqueのスケジューラを使って占有時間を指定して実行することを考える。
-
-| ジョブスクリプトのヘッダに指定する変数は以下のようになる。
-
-.. code-block:: sh
-
-  #!/bin/bash
-  #PBS -l nodes=2:ppn=4
-  #PBS -l walltime=10:00
-  ...
-
-| ここでnodesが使用するノード数、ppnは各ノード内のプロセス数、walltimeが実行制限時間である。
-| 各ジョブによってこれらの値が異なるため、Runの作成時にこれらの値を指定できるようにする。
-
-| そのためにはホストパラメータと呼ぶ仕組みを使用する。
-| ホストパラメータとして指定した変数は各Runの作成時に個別に入力することができ、その変数がHostのテンプレート部分に展開される。
-
-| 具体的には以下の手順でHostの "template", "Definition of Host Parameters" というフィールドを設定する。
-
-1. templateの変数展開をしたい部分を *<%= ... %>* という記号で囲む。今回の例ではヘッダ部分を以下のように編集する。
-
-  .. code-block:: sh
-
-    #!/bin/bash
-    #PBS -l nodes=<%= nodes %>:ppn=<%= ppn %>
-    #PBS -l walltime=<%= walltime %>
-    ...
-
-2. "Definition of Host Parameter"の部分に展開したい変数の変数名、デフォルト値、フォーマット（入力可能な形式を正規表現で指定）を入力する。
-今回の場合、以下のように設定する。（formatの部分は空でもよいが、設定しておくとRunの作成時に不正な値を入れるとエラーになるのでミスに気づきやすくなる。）
-
-  * Name: nodes,    Default: 1, format: ^\d+$
-  * Name: ppn,      Default: 1, format: ^\d+$
-  * Name: walltime, Default: 10:00, format: ^(\d\d:)?\d\d:\d\d$
-
-  .. image:: images/edit_host_template.png
-    :width: 50%
-    :align: center
-
-  | この際、テンプレートとホストパラメータ定義が整合していないとエラーとなる。
-  | テンプレートで展開する変数は必ずホストパラメータとして定義されている必要があり、ホストパラメータとして定義された変数はテンプレート中に現れなくてはならない。
-
-| 以上でHostの設定は完了である。
-| この設定後、Runの作成時に以下のようにホストパラメータを入力する箇所が現れる。
-| 適切な値を入れて [Preview] ボタンをクリックするとジョブスクリプトのプレビューが表示される。
-| [Create Run]をクリックするとRunが作成され、順番にジョブが投入される。
-
-.. image:: images/new_run_with_host_params.png
-  :width: 30%
-  :align: center
-
-MPI, OpenMPのジョブ
--------------------------------------------------------------
+| ジョブスクリプトのヘッダにスケジューラのパラメータ（使用時間、占有するノード数、使用メモリ量など）を指定する必要がある場合、Runの作成時にパラメータの入力が求められる。
+| これらのパラメータは、OACISからxsubを実行するときにパラメータとして渡される。
+| xsubはこれらのパラメータを受け取り、ジョブカードのヘッダに記述してスケジューラの投入コマンドを実行する。
 
 | MPI, OpenMPで並列化されたシミュレータの場合、実行時にMPIのプロセス数、OpenMPのスレッド数を指定することが必要となる。
 | Simulator登録時に、 *Suppot MPI*, *Support OMP* のチェックを入れると、Runの作成時にプロセス数とスレッド数を指定するフィールドが表示されるようになる。
@@ -86,118 +29,51 @@ MPI, OpenMPのジョブ
   :width: 30%
   :align: center
 
-| ここで指定したプロセス数・スレッド数はテンプレートの中でそれぞれ *<%= mpi_procs %>*, *<%= omp_threads %>* という変数に展開される。
-| Hostのテンプレートを確認すれば分かるとおり、OpenMPのスレッド数はジョブスクリプトの中で環境変数 *OMP_NUM_THREADS* に代入される。
-| 同様にMPIのプロセス数は、mpiexec コマンドの -n オプションの引数に展開される。
-| これによりシミュレータが指定したプロセス数・スレッド数で実行されるようにしている。
+| ここでは例としてMPIで並列化しているシミュレータを、Torqueのスケジューラを使って占有時間を指定して実行することを考える。
 
+| xsubでジョブ投入時に要求されるパラメータは、`mpi_procs`, `omp_threads`, `ppn`, `elapsed` の４つである。
+| `mpi_procs`, `omp_threads` はRunを作るときに指定したMPIプロセス数とOMPスレッド数が渡される。
+| `ppn`, `elapsed` はRunの作成時に入力フォームが出るので、そこに適切な値を指定する。
+| 例えば、各ノード４スレッドで、８ノードのMPI/OpenMPハイブリッド並列化プログラムを、実行時間10:00:00で実行する場合、
+mpi_procs=8, omp_threads=4, ppn=4, elapsed="10:00:00" を指定する。
+| するとxsubが、ジョブカードを作成しジョブを実行する。
+
+.. image:: images/new_run_with_host_params.png
+  :width: 30%
+  :align: center
+
+MPI, OpenMPのジョブ
+----------------------------------------------
+
+| OpenMPのジョブのスレッド数を指定すると、ジョブスクリプトの中で OMP_NUM_THREADS の環境変数がセットされる。
 | つまりOpenMPで並列化しているシミュレータはOMP_NUM_THREADS環境変数を参照してスレッド数を決めるように実装されていなければならない。
 | （ プログラム内で *omp_set_num_threads()* 関数で別途指定している場合は、当然ながらここで指定したスレッド数は適用されない）
 
-| MPIで並列化している場合、プロセス数は *mpiexec* コマンドの引数で渡されるが、 *mpiexec* コマンド以外のMPIプロセス実行コマンドを指定したい場合はHostのテンプレートを編集すればよい。
+| MPIで並列化して実行する場合、Runの作成時に指定したプロセス数は OACIS_MPI_PROCS の環境変数にセットされる。
+| Simulatorの実行コマンドで *mpiexec -n $OACIS_MPI_PROCS simulator.out* というように OACIS_MPI_PROCS 環境変数を参照してコマンドを実行するようにする。
 
-| ジョブスクリプトのヘッダ部分でも <%= mpi_procs %>, <%= omp_threads %> 変数を展開することができる。
-| これを利用するとMPIプロセス数に応じて確保するノード数を自動的に決めたりすることができる。
-| 例として、Flat MPIのプログラムを、１ノードあたり８コアのマシンで実行することを考える。
-| Hostのテンプレートに以下のように書くことで、ノード数が自動的に指定されるようになる。（ただし、プロセス数は８の倍数にする必要がある）
-
-.. code-block:: sh
-
-  #!/bin/bash
-  #PBS -l nodes=<%= mpi_procs / 8 %>:ppn=8
-  #PBS -l walltime=10:00
-  ...
-
-京コンピュータのPJMを利用するケース
+京コンピュータを利用するケース
 ----------------------------------------------
 
-| 京コンピュータでジョブを実行する場合、ノード形状やelapse timeやステージング情報をジョブスクリプトに記載する必要がある。
-| また、若干の修正(PRE-PROCESS, JOB EXECUTION)が必要である。
-| 以下では、実行時ディレクトリからみて、 ./signals/ 以下の設定ファイルを読み込み、 ./result/inst/ 以下に結果を出力するシミュレータでの例を示す。(シミュレータ依存の操作はOptionalと示される。)
+| 京コンピュータでジョブを実行する場合、実行するシミュレーターのファイルもステージングする必要があるため、実行コマンドを絶対パスやホームディレクトリからの相対パスで指定する事はできない。
+| そこで、プリプロセスを使って実行ファイルをカレントディレクトリにコピーし、実行コマンドはカレントディレクトリからの相対パスで指定するようにする。
 
-0. プリプロセスでの処理
-
-  - 下記(1. 2. 3.)に続くジョブスクリプトへの修正を行うことで、プリプロセスが実行されるディレクトリ以下をステージイン可能となる。しかし、実行に必要なバイナリや設定ファイルをジョブスクリプト実行ディレクトリ以下に配置する作業や実行コマンドの微修正などをあらかじめ実行しておく必要がある。
-  - 例えば、バイナリの移動(need)や設定ファイル群の移動(optional)には、下記のようにコマンドをプリプロセスに追加する。
+| 実行ファイルが `~/path/to/simulator.out` にある場合、プリプロセスには以下のように書く
 
   .. code-block:: sh
 
-    cp ~/path/to/simulator.out . #(Need)
-    cp -r ~/path/to/signals . #(Optional)
+    cp ~/path/to/simulator.out .
 
-  - 例えば、シミュレータの実行コマンドをステージイン後のパスに変更するには、実行コマンドを *SIMCMD.txt* ファイルに書き出す処理をプリプロセスに追加し、ジョブスクリプトから読み込む。(Optional)
+| xsubで実行すると、各ワークディレクトリがステージインされるので、必要なファイルはすべてカレントディレクトリに事前にコピーしておく。
 
-  .. code-block:: sh
-
-    echo "./simulator.out" > SIMCMD.txt
-
-1. ステージングへの対応
-
-  - PJM --vset は、PJM内で利用する変数を定義する。ここでは、OACIS_RUN_IDとOACIS_WORK_BASE_DIRを定義している。
-  - PJM --stgin-dir "./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/"は、_input.jsonや設定ファイルを転送する。
-  - PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}は、ステージインするベースディレクトリを指示する。
-  - PJM --stgin-dir "./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/"は、signalsディレクトリ以下のファイルを転送する。(Optional)
-  - PJM --stgout-basedir ${OACIS_WORK_BASE_DIR}は、ステージアウトするベースディレクトリを指示する。
-  - PJM --stgout "./* ./"は、すべてのファイル(ディレクトリは含まない)を転送する。(デフォルトでは、${RUN_ID}.tar.bz2がステージアウトされる。)
+| 実行コマンドは以下のように書く
 
   .. code-block:: sh
 
-    #!/bin/bash -x
-    #
-    #PJM --rsc-list "node=1"
-    #PJM --rsc-list "elapse=0:05:00"
-    #PJM --vset OACIS_RUN_ID=<%= run_id %>
-    #PJM --vset OACIS_WORK_BASE_DIR=<%= work_base_dir %>
-    #PJM --stgin-basedir ${OACIS_WORK_BASE_DIR}
-    #PJM --stgin-dir "./${OACIS_RUN_ID}/ ./${OACIS_RUN_ID}/"
-    #PJM --stgin-dir "./${OACIS_RUN_ID}/signals/ ./${OACIS_RUN_ID}/signals/"
-    #PJM --stgout-basedir ${OACIS_WORK_BASE_DIR}
-    #PJM --stgout "./* ./"
-    #PJM -s
-    #
-    LANG=C
+    ./simulator.out
 
-2. PRE-PROCESSへの修正
-
-  - mkdir -p result/instは、シミュレータの実行結果を出力するのに必要なフォルダを生成する。(Optional)
-
-  .. code-block:: diff
-
-    # PRE-PROCESS ---------------------
-    + . /work/system/Env_base
-    + mkdir -p result/inst
-    - #mkdir -p ${OACIS_WORK_BASE_DIR}
-    - #cd ${OACIS_WORK_BASE_DIR}
-    - mkdir -p ${OACIS_RUN_ID}
-    cd ${OACIS_RUN_ID}
-    if [ -e ../${OACIS_RUN_ID}_input.json ]; then
-    \mv ../${OACIS_RUN_ID}_input.json ./_input.json
-    fi
-    echo "{" > ../${OACIS_RUN_ID}_status.json
-    echo "  \"started_at\": \"`date`\"," >> ../${OACIS_RUN_ID}_status.json
-    echo "  \"hostname\": \"`hostname`\"," >> ../${OACIS_RUN_ID}_status.json
-
-3. JOB EXECUTIONへの修正
-
-  - SIMCMD=`cat SIMCMD.txt`は、シミュレータ実行コマンドを *SIMCMD.txt* から読み込む。SIMCMD.txtは、Simulatorのプリプロセスで生成しておく。(Optional)
-
-  .. code-block:: diff
-
-    # JOB EXECUTION -------------------
-    + SIMCMD=`cat SIMCMD.txt` #SIMCMD.txt is created by _preprocess.sh
-    if ${OACIS_IS_MPI_JOB}
-    then
-      export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
-    -  { time -p { { mpiexec -n ${OACIS_MPI_PROCS}  <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
-    +  { time -p { { mpiexec -n ${OACIS_MPI_PROCS} ${SIMCMD}; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
-    else
-    -  { time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
-    +  { time -p { { ${SIMCMD}; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
-    fi
-    echo "  \"rc\": $?," >> ../${OACIS_RUN_ID}_status.json
-    echo "  \"finished_at\": \"`date`\"" >> ../${OACIS_RUN_ID}_status.json
-    echo "}" >> ../${OACIS_RUN_ID}_status.json
-
+| このように設定しておけば、xsubがカレントディレクトリを丸ごとステージインして実行してくれる。
+| 実行結果は、他のホストの場合と同様にカレントディレクトリ以下に配置しておけば、ステージアウトして結果を取り込んでくれるので、特にステージアウトするファイルを指定する必要は無い。
 
 手動でジョブを実行する
 ==============================================

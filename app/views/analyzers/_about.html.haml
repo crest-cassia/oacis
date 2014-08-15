@@ -36,6 +36,54 @@
 %pre
   = h(analyzer.command)
 
-.form-actions
-  = link_to 'Edit', edit_analyzer_path(analyzer), class: 'btn btn-info'
-  = link_to 'Destroy', analyzer, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
+%h3 List of Analyzer Versions
+%table.table.table-striped#analyzer_version_table
+  %thead
+    %tr
+      %th Version
+      %th Oldest started_at
+      %th Latest started_at
+      %th= raw(status_label(:finished))
+      %th= raw(status_label(:failed))
+      %th CLI
+  %tbody
+    - analyzer.analyzer_versions.each do |anl_version|
+      %tr
+        %td= anl_version['version'] || "---"
+        - d = anl_version['oldest_started_at']
+        %td= d ? "#{d} (#{distance_to_now_in_words(d)})" : '---'
+        - d = anl_version['latest_started_at']
+        %td= d ? "#{d} (#{distance_to_now_in_words(d)})" : '---'
+        %td= anl_version['count'][:finished].to_i
+        %td= anl_version['count'][:failed].to_i
+        %td
+          %i.icon.icon-list{data: raw(render partial: "version_dialog", locals: {azr: analyzer, version: anl_version['version']})}
+
+:css
+  .modal.large {
+    width: 1000px;
+    height: 800px;
+    margin-left: -500px;
+  }
+  .modal-body.large {
+    overflow-y: auto;
+    max-height: 800px;
+  }
+
+#version_dialog_modal.modal.large.hide.fade
+  .modal-header
+    %a.close{:'data-dismiss' => "modal"}x</a>
+  .modal-body.large
+    #version_dialog
+
+:javascript
+  $("#analyzer_version_table i.icon.icon-list").on("click", function(){
+    $('#version_dialog').empty();
+    $('#version_dialog').append($(this).attr("data"));
+    $('#version_dialog_modal').modal('show');
+  });
+
+- unless OACIS_READ_ONLY
+  .form-actions
+    = link_to 'Edit', edit_analyzer_path(analyzer), class: 'btn btn-info'
+    = link_to 'Destroy', analyzer, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'

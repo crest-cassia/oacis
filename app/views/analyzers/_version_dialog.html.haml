@@ -1,0 +1,41 @@
+%h3 CLI commands for #{azr.name}
+
+%h3 Destroy analyses
+
+%ul
+  %li
+    analyzer_version:#{version}
+    %br
+    %pre ./bin/oacis_cli destroy_analyses -a #{azr.id} -q analyzer_version:#{version}
+  %li
+    analyzer_version:#{version}, status:
+    %span.label.label-success
+      finished
+    %br
+    %pre ./bin/oacis_cli destroy_analyses -a #{azr.id} -q analyzer_version:#{version} status:finished
+  %li
+    analyzer_version:#{version}, status:
+    %span.label.label-important
+      failed
+    %br
+    %pre ./bin/oacis_cli destroy_analyses -a #{azr.id} -q analyzer_version:#{version} status:failed
+
+%h3 Replace analyses
+
+%ul
+  %li
+    analyzer_version:#{version}
+    %br
+    %pre ./bin/oacis_cli replace_analyses -a #{azr.id} -q analyzer_version:#{version}
+  %li
+    analyzer_version:#{version}, status:
+    %span.label.label-success
+      finished
+    %br
+    %pre ./bin/oacis_cli replace_analyses -a #{azr.id} -q analyzer_version:#{version} status:finished
+  %li
+    analyzer_version:#{version}, status:
+    %span.label.label-important
+      failed
+    %br
+    %pre ./bin/oacis_cli replace_analyses -a #{azr.id} -q analyzer_version:#{version} status:failed

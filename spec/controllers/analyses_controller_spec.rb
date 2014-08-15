@@ -86,7 +86,8 @@ describe AnalysesController do
 
         it "redirects to 'analysis' tab of Run#show page" do
           post :create, @valid_param, valid_session
-          response.should redirect_to( run_path(@run, anchor: '!tab-analyses') )
+          response.should_not redirect_to( run_path(@run, anchor: '!tab-analyses') )
+          response.should_not render_template 'create'
         end
       end
 
@@ -124,7 +125,8 @@ describe AnalysesController do
 
         it "redirects to 'analysis' tab of ParameterSet#show page" do
           post :create, @valid_param, valid_session
-          response.should redirect_to( parameter_set_path(@par, anchor: '!tab-analyses') )
+          response.should_not redirect_to( parameter_set_path(@par, anchor: '!tab-analyses') )
+          response.should_not render_template 'create'
         end
       end
 

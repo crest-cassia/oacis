@@ -299,7 +299,7 @@ LinePlot.prototype.AddDescription = function() {
       a_element.download = fileName;
       a_element.href = blobURL;
     };
-    plot.description.append("a").text("download svg")
+    plot.description.append("a").text("download svg").style("cursor", "pointer")
       .on("click", function() {
         var clone_region = document.createElement('div');
         clone_region.appendChild(plot.svg.node().cloneNode(true));

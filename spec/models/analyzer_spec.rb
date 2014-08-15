@@ -155,4 +155,62 @@ describe Analyzer do
       }.to change { Analysis.count }.by(-1)
     end
   end
+
+  describe "#analyzer_versions" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 5,
+                                analyzers_count: 1, run_analysis: true)
+      @azr = @sim.analyzers.first
+
+      analyses = Analysis.where(analyzer: @azr).asc(:id)
+
+      analyses[0].update_attribute(:started_at, 2.days.ago)
+      analyses[0].update_attribute(:analyzer_version, "v1")
+      analyses[1].update_attribute(:started_at, 1.days.ago)
+      analyses[1].update_attribute(:analyzer_version, "v1")
+      analyses[2].update_attribute(:started_at, 3.days.ago)
+      analyses[2].update_attribute(:analyzer_version, "v2")
+      analyses[3].update_attribute(:started_at, 2.days.ago)
+      analyses[3].update_attribute(:analyzer_version, "v2")
+      analyses[4].update_attribute(:started_at, 1.days.ago)
+      analyses[4].update_attribute(:analyzer_version, "v2")
+      analyses[4].update_attribute(:status, :failed)
+    end
+
+    it "returns list of simulator_versions in Array" do
+      @azr.analyzer_versions.should be_a(Array)
+    end
+
+    it "returns array of hash whose 'version' field is simulator_versions" do
+      @azr.analyzer_versions.map {|h| h['version']}.should =~ ["v1", "v2"]
+    end
+
+    it "returns array of hash which has 'oldest_started_at' and 'latest_started_at' fields" do
+      analyses = Analysis.where(analyzer: @azr).asc(&:id)
+      expected = [
+        { "version" => "v1",
+          "oldest_started_at" => analyses[0].started_at,
+          "latest_started_at" => analyses[1].started_at,
+          "count" => {finished: 2} },
+        { "version" => "v2",
+          "oldest_started_at" => analyses[2].started_at,
+          "latest_started_at" => analyses[4].started_at,
+          "count" => {finished: 2, failed: 1} }
+      ]
+      @azr.analyzer_versions.should =~ expected
+    end
+
+    it "returns array which is sorted by 'latest_started_at' in ascending order" do
+      @azr.analyzer_versions.map {|h| h['version']}.should eq ["v1", "v2"]
+    end
+
+    it "counts analyses for each status" do
+      finished_count = Analysis.where(analyzer: @azr).where(status: :finished).count
+      failed_count = Analysis.where(analyzer: @azr).where(status: :failed).count
+      output = @azr.analyzer_versions
+      output.map {|h| h['count'][:finished].to_i }.inject(:+).should eq finished_count
+      output.map {|h| h['count'][:failed].to_i }.inject(:+).should eq failed_count
+    end
+  end
 end

@@ -29,7 +29,8 @@ describe OacisCli do
           "host_id" => @host.id.to_s,
           "host_parameters" => {"param1" => nil, "param2" => "XXX"},
           "mpi_procs" => 1,
-          "omp_threads" => 1
+          "omp_threads" => 1,
+          "priority" => 1
         }
         JSON.load(File.read('job_parameters.json')).should eq expected
       }
@@ -116,7 +117,8 @@ describe OacisCli do
           "host_id" => @host.id.to_s,
           "host_parameters" => {"param1" => "foo", "param2" => "bar"},
           "mpi_procs" => 2,
-          "omp_threads" => 8
+          "omp_threads" => 8,
+          "priority" => 0
         }
         io.puts job_parameters.to_json
         io.flush
@@ -150,6 +152,7 @@ describe OacisCli do
         run.submitted_to.should eq @host
         run.mpi_procs.should eq 2
         run.omp_threads.should eq 8
+        run.priority.should eq 0
         run.host_parameters.should eq({"param1" => "foo", "param2" => "bar"})
       }
     end
@@ -201,7 +204,8 @@ describe OacisCli do
             "host_id" => @host.id.to_s,
             "host_parameters" => {"param1" => "foo"}, # Do not set param2
             "mpi_procs" => 2,
-            "omp_threads" => 8
+            "omp_threads" => 8,
+            "priority" => 0
           }
           io.puts job_parameters.to_json
           io.flush

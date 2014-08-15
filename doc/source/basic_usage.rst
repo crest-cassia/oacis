@@ -50,7 +50,7 @@ Hostname                      ssh接続先のhostnameまたはIPアドレス。
 User                          ssh接続時に使用するユーザー名。
 Port                          ssh接続先のポート番号。デフォルトは22。
 SSH key                       ssh接続時の鍵認証で使用する秘密鍵ファイルへのパス。デフォルトは *~/.ssh/id_rsa*
-Scheduler Type                ジョブスケジューラのタイプ。none(スケジューラ無し)、torque、pjm、pjm_kの4種類から選択する。
+Scheduler Type                ジョブスケジューラのタイプ。none(スケジューラ無し)、xsubから選択する。（その他はv1.14.0で廃止予定）
 Work base dir                 ワークディレクトリとして利用するホスト上のパス。ここで指定したパス以下でジョブが実行される。
 Mounted work base dir         localhostでジョブを実行する場合やホームディレクトリがNFSで共有されている場合など、直接ワークディレクトリが参照できる場合、ここで指定したディレクトリから直接ジョブの取り込みが行われパフォーマンスが向上する。
 Max num jobs                  このホストに投入可能なジョブの最大数。
