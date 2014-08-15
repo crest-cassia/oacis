@@ -10,16 +10,17 @@ module JobIncluder
   def self.include_remote_job(host, run)
     host.start_ssh {|ssh|
       if remote_file_is_ready_to_include(host, run, ssh)
-        download_remote_file(host, run, ssh)
-        include_archive(run)
+        if host.mounted_work_base_dir.present?
+          move_local_file(host, run)
+          include_work_dir(run)
+        else
+          download_remote_file(host, run, ssh)
+          include_archive(run)
+        end
       else
         run.status = :failed
         run.save!
-        if host.mounted_work_base_dir.present?
-          move_local_file(host, run)
-        else
-          download_work_dir_if_exists(host, run, ssh)
-        end
+        download_work_dir_if_exists(host, run, ssh)
         include_work_dir(run)
       end
 
@@ -65,10 +66,7 @@ module JobIncluder
 
   def self.remote_file_is_ready_to_include(host, run, ssh)
     archive = RemoteFilePath.result_file_path(host, run)
-    work_dir = RemoteFilePath.work_dir_path(host, run)
-
-    return SSHUtil.exist?(ssh, archive) if host.scheduler_type == "pjm_k"
-    SSHUtil.exist?(ssh, archive) and !(SSHUtil.exist?(ssh, work_dir))
+    return SSHUtil.exist?(ssh, archive)
   end
 
   def self.download_remote_file(host, run, ssh)
@@ -80,18 +78,29 @@ module JobIncluder
     logs = RemoteFilePath.scheduler_log_file_paths(host, run)
     logs.each do |path|
       if SSHUtil.exist?(ssh, path)
-        SSHUtil.download(ssh, path, run.dir.join(path.basename))
+        SSHUtil.download_recursive(ssh, path, run.dir.join(path.basename))
         SSHUtil.rm_r(ssh, path)
       end
     end
   end
 
   def self.move_local_file(host, run)
-    work_dir = Pathname.new(host.mounted_work_base_dir).join(run.id.to_s)
-    archive = Pathname.new(host.mounted_work_base_dir).join("#{run.id}.tar.bz2")
-    cmd = "rm -rf #{run.dir}; mv #{work_dir} #{run.dir}; mv #{archive} #{run.dir.join("..")}/"
+    work_dir = map_remote_path_to_mounted_path(host, RemoteFilePath.work_dir_path(host, run))
+    archive = map_remote_path_to_mounted_path(host, RemoteFilePath.result_file_path(host, run))
+    cmd = "rsync -a #{work_dir}/ #{run.dir} && mv #{archive} #{run.dir.join("..")}/"
     system(cmd)
     raise "can not move work_directory from #{work_dir}" unless $?.exitstatus == 0
+
+    RemoteFilePath.scheduler_log_file_paths(host, run).each do |path|
+      if path.exist?
+        FileUtils.mv(map_remote_path_to_mounted_path(host, path), run.dir)
+      end
+    end
+  end
+
+  def self.map_remote_path_to_mounted_path(host, remote_path)
+    relative_path = remote_path.relative_path_from(Pathname.new(host.work_base_dir))
+    Pathname.new(host.mounted_work_base_dir).join(relative_path)
   end
 
   def self.download_work_dir_if_exists(host, run, ssh)
@@ -104,7 +113,7 @@ module JobIncluder
     logs = RemoteFilePath.scheduler_log_file_paths(host, run)
     logs.each do |path|
       if SSHUtil.exist?(ssh, path)
-        SSHUtil.download(ssh, path, run.dir.join(path.basename))
+        SSHUtil.download_recursive(ssh, path, run.dir.join(path.basename))
         SSHUtil.rm_r(ssh, path)
       end
     end
