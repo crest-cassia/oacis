@@ -3,7 +3,8 @@
 .page-header
   %h1 Run
   - param_string = @run.parameter_set.v.map {|key,val| "#{key}=#{val}" }.join(', ')
-  %h4= "(#{param_string})"
+  = "(#{param_string})"
+  = @run.dir
 
 %div.tabbable
   %ul.nav.nav-tabs
