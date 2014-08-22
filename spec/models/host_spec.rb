@@ -373,6 +373,7 @@ EOS
       ret_str = "XSUB_BEGIN\n#{hp.to_json}"
       SSHUtil.stub(:execute).and_return(ret_str)
       @host.scheduler_type = "xsub"
+      @host.save!
       @host.host_parameter_definitions.size.should eq 2
       @host.host_parameter_definitions[0].key.should eq "foo"
       @host.host_parameter_definitions[0].default.should eq "1"
