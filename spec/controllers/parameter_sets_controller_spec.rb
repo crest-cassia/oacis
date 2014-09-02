@@ -266,36 +266,37 @@ describe ParameterSetsController do
         @sim.parameter_sets.first.v["B"].should eq false
       end
     end
+  end
 
-    describe "when CLI command is requested" do
+  describe "GET _create_cli" do
 
-      before(:each) do
-        parameters = {"L" => 10, "T" => 2.0}
-        @valid_param = {simulator_id: @sim, v: parameters}
-      end
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      parameters = {"L" => 10, "T" => 2.0}
+      @valid_param = {simulator_id: @sim, v: parameters}
+    end
 
-      it "returns CLI command" do
-        get :_create_cli, @valid_param, valid_session
-        response.should be_success
-        response.body.should eq <<-EOS.chomp
+    it "returns CLI command" do
+      get :_create_cli, @valid_param, valid_session
+      response.should be_success
+      response.body.should eq <<-EOS.chomp
 ./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -o ps.json
-        EOS
-      end
+      EOS
+    end
 
-      it "returns CLI with valid runs_option" do
-        h = FactoryGirl.create(:host_with_parameters)
-        h.executable_simulators.push @sim
-        h.save!
-        @valid_param[:run] = {mpi_procs:"4",omp_threads:"8",priority:"2", submitted_to: h.id.to_s,
-                              host_parameters: {"param1" => "xxx", "param2" => "yyy"} }
-        @valid_param[:num_runs] = 3
+    it "returns CLI with valid runs_option" do
+      h = FactoryGirl.create(:host_with_parameters)
+      h.executable_simulators.push @sim
+      h.save!
+      @valid_param[:run] = {mpi_procs:"4",omp_threads:"8",priority:"2", submitted_to: h.id.to_s,
+                            host_parameters: {"param1" => "xxx", "param2" => "yyy"} }
+      @valid_param[:num_runs] = 3
 
-        get :_create_cli, @valid_param, valid_session
-        response.should be_success
-        response.body.should eq <<-EOS.chomp
+      get :_create_cli, @valid_param, valid_session
+      response.should be_success
+      response.body.should eq <<-EOS.chomp
 ./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -r '{"num_runs":3,"mpi_procs":4,"omp_threads":8,"priority":2,"submitted_to":"#{h.id}","host_parameters":{"param1":"xxx","param2":"yyy"}}' -o ps.json
-        EOS
-      end
+      EOS
     end
   end
 
