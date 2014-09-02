@@ -184,6 +184,20 @@ describe OacisCli do
           loaded.should have(6).items
         }
       end
+
+      it "duplicate ps is included even if given parameter is unordered" do
+        at_temp_dir {
+          ps = @sim.parameter_sets.first
+          reversed = {"T" => 0.1, "L" => 10} # specify parameter in reverse order
+          option = {simulator: @sim.id.to_s, input: reversed.to_json, output: "parameter_set_ids.json"}
+          OacisCli.new.invoke(:create_parameter_sets, [], option)
+
+          duplicated = {"parameter_set_id" => ps.id.to_s}
+          loaded = JSON.load(File.read('parameter_set_ids.json'))
+          loaded.should include(duplicated)
+          loaded.should have(1).items
+        }
+      end
     end
 
     context "when input parameter_sets is specified as object" do

@@ -67,7 +67,9 @@ class OacisCli < Thor
         parameter_sets << param_set
       elsif param_set.errors.keys == [:parameters] # An identical parameter_set is found
         progressbar.log "  An identical parameter_set already exists. Skipping..."
-        parameter_sets << simulator.parameter_sets.where(v: ps_value).first
+        parameter_sets << simulator.parameter_sets.where(v: param_set.v).first
+        # do not use 'ps_value' instead of 'param_set.v'.
+        # Otherwise the existing ps is not found because 'ps_value' is not casted and ordered properly.
       else
         progressbar.log param_set.inspect
         progressbar.log param_set.errors.full_messages
