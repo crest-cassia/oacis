@@ -30,6 +30,9 @@
       var url = "#{_host_parameters_field_host_url(':host_id')}".replace(':host_id', host_id);
       $.get(url, function(data) {
         $('#host_parameters').html(data);
+        if( $('#new_parameter_set').length > 0 ) {
+          $('#new_parameter_set').trigger('change'); // necessary to update CLI command
+        }
       })
     });
   });
