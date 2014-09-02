@@ -187,8 +187,14 @@ describe HostsController do
     end
 
     it "returns http success" do
-      @valid_param = {id: @host}
-      get :_host_parameters_field, @valid_param, valid_session
+      valid_param = {id: @host}
+      get :_host_parameters_field, valid_param, valid_session
+      response.should be_success
+    end
+
+    it "returns http success if host_id is not found" do
+      param = {id: "manual"}
+      get :_host_parameters_field, param, valid_session
       response.should be_success
     end
   end
