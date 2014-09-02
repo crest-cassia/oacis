@@ -10,7 +10,7 @@
 
 - unless OACIS_READ_ONLY
   %h3 Create New Runs
-  - run = parameter_set.runs.build
+  - run = parameter_set.runs.build(submitted_to: parameter_set.simulator.executable_on.first)
   = form_for( [parameter_set, run], html: {class: 'form-horizontal', remote: true}) do |f|
     #run_form_messages
     .control-group

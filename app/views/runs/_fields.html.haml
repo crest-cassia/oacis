@@ -19,23 +19,17 @@
     - host_names += [ ["(manual submission)", nil] ]
     - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
     = f.select(:submitted_to, options_for_select(host_names, selected: selected_id) )
-- run.simulator.executable_on.each do |host|
-  %div{ id: "host_parameters_#{host.id}"}
-    - host.host_parameter_definitions.each do |hpdef|
-      .control-group
-        = label_tag(:"run[host_parameters][#{hpdef.key}]", hpdef.key, class: 'control-label')
-        .controls
-          - value = run.host_parameters[hpdef.key] || hpdef.default
-          = text_field_tag(:"run[host_parameters][#{hpdef.key}]", value)
-          = "Format: /#{hpdef.format}/"
+#host_parameters
+  = render 'runs/host_parameter_fields', run: run, host: run.submitted_to
 
 :javascript
   $(function() {
     $('select#run_submitted_to').change(function() {
-      $('div[id^=host_parameters]').hide("normal");
-      var host_id = $("select#run_submitted_to option:selected").val();
-      var selected = $('div#host_parameters_' + host_id);
-      selected.show("normal");
+      var host_id = $(this).val();
+      if( host_id == '' ) { host_id = 'manual'; }
+      var url = "#{_host_parameters_field_host_url(':host_id')}".replace(':host_id', host_id);
+      $.get(url, function(data) {
+        $('#host_parameters').html(data);
+      })
     });
-    $('select#run_submitted_to').trigger('change');
   });
