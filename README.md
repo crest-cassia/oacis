@@ -35,7 +35,7 @@ gem install bundler
 git clone -b master https://github.com/crest-cassia/oacis.git
 ```
 - install dependent gems using bundle command
-    - cd to the project root directory `oacis`, and run the following command
+    - change directory to _oacis/_, and run the following command
 
       ```sh:install_sh
   bundle install --path=vendor/bundle
