@@ -293,8 +293,12 @@ describe Analysis do
 
       it "returns a Hash having result of Runs" do
         @run.result = {"xxx" => 1234, "yyy" => 0.5}
+        @run.status = :finished
         @run.save!
         run2 = FactoryGirl.create(:finished_run, parameter_set: @ps, result: {"zzz" => true})
+        run3 = FactoryGirl.create(:run, parameter_set: @ps)
+        run3.status = :failed
+        run3.save
         @arn.input[:result].size.should eq(2)
         @arn.input[:result].should have_key(@run.to_param)
         @arn.input[:result].should have_key(run2.to_param)

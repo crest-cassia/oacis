@@ -88,10 +88,11 @@ class Analysis
     when :on_parameter_set
       ps = self.analyzable
       obj[:simulation_parameters] = ps.v
-      obj[:result] = {}
-      ps.runs.each do |run|
-        obj[:result][run.to_param] = run.result
-      end
+      results = Run.collection.aggregate([
+        {'$match' => ps.runs.where(status: :finished).selector },
+        {'$group' => {_id: "$_id", result: {"$first" => "$result"}} }
+      ])
+      obj[:result] = Hash[results.map {|r| [r["_id"].to_s, r["result"]]}]
     else
       raise "not supported type"
     end
