@@ -266,12 +266,6 @@ describe Analysis do
       it "returns a Hash having 'analysis_parameters'" do
         @arn.input[:analysis_parameters].should eq(@arn.parameters)
       end
-
-      it "returns a Hash having result of Run" do
-        @run.result = {"xxx" => 1234, "yyy" => 0.5}
-        @run.save!
-        @arn.input[:result].should eq(@run.result)
-      end
     end
 
     describe "for :on_parameter_set type" do
@@ -291,19 +285,16 @@ describe Analysis do
         @arn.input[:analysis_parameters].should eq(@arn.parameters)
       end
 
-      it "returns a Hash having result of Runs" do
-        @run.result = {"xxx" => 1234, "yyy" => 0.5}
+      it "returns a Hash having Run ids" do
         @run.status = :finished
         @run.save!
         run2 = FactoryGirl.create(:finished_run, parameter_set: @ps, result: {"zzz" => true})
         run3 = FactoryGirl.create(:run, parameter_set: @ps)
         run3.status = :failed
         run3.save
-        @arn.input[:result].size.should eq(2)
-        @arn.input[:result].should have_key(@run.to_param)
-        @arn.input[:result].should have_key(run2.to_param)
-        @arn.input[:result][@run.to_param].should eq(@run.result)
-        @arn.input[:result][run2.to_param].should eq(run2.result)
+        @arn.input[:run_ids].size.should eq(2)
+        @arn.input[:run_ids].should include(@run.to_param)
+        @arn.input[:run_ids].should include(run2.to_param)
       end
     end
   end
