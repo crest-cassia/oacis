@@ -14,6 +14,9 @@ def verify_ruby_version
   if v =~ /1\.9\.3/
     puts_ok
     return true
+  elsif v =~ /2\.\d+\.\d+/
+    puts_ok
+    return true
   else
     puts_error
     puts "\tRuby version must be 1.9.3, but is #{v}"
