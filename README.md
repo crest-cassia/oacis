@@ -33,12 +33,19 @@ gem install bundler
 
     ```sh:clone.sh
 git clone -b master https://github.com/crest-cassia/oacis.git
-```
+    ```
+
+- check if the prerequisites are installed correctly by running the following command.
+
+    ```sh:check_oacis_env.sh
+./bin/check_oacis_env
+    ```
+
 - install dependent gems using bundle command
     - change directory to _oacis/_, and run the following command
 
       ```sh:install_sh
-  bundle install --path=vendor/bundle
+bundle install --path=vendor/bundle
       ```
 
 - run daemons
