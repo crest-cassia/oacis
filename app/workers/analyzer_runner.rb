@@ -66,10 +66,8 @@ class AnalyzerRunner
     end
 
     FileUtils.mkdir_p(INPUT_FILES_DIR)
-    arn.input_files.each do |dir, inputs|
-      inputs.each do |input|
-        FileUtils.ln_s(input, INPUT_FILES_DIR)
-      end
+    arn.input_files.each do |input|
+      FileUtils.ln_s(input, INPUT_FILES_DIR)
     end
   end
 
