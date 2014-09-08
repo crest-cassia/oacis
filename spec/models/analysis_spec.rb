@@ -317,20 +317,20 @@ describe Analysis do
 
       it "returns a file entries in run directory" do
         paths = @arn.input_files
-        paths.should be_a(Hash)
-        paths.should have(1).items
-        (paths['.'] - [@dummy_path, @dummy_dir]).should be_empty
+        paths.should be_a(Array)
+        paths.should have(2).items
+        (paths - [@dummy_path, @dummy_dir]).should be_empty
       end
 
       it "does not include analysis directory of self" do
         paths = @arn.input_files
-        paths.values.flatten.should_not include(@arn.dir)
+        paths.should_not include(@arn.dir)
       end
 
       it "does not include directories of other Analyses by defualt" do
         another_arn = @run.analyses.create!(analyzer: @azr, parameters: {})
         paths = @arn.input_files
-        paths.values.flatten.should_not include(another_arn.dir)
+        paths.should_not include(another_arn.dir)
       end
     end
 
@@ -355,14 +355,10 @@ describe Analysis do
         @dummy_dirs.each {|dir| FileUtils.rm_r(dir) if File.directory?(dir) }
       end
 
-      it "returns a hash whose keys are ids of finished runs" do
-        @arn2.input_files.keys.should eq( [@run2.to_param] )
-        @arn2.input_files.keys.should_not include(@run.to_param)
-      end
-
-      it "returns a hash whose values are output paths of runs" do
-        paths = @arn2.input_files[@run2.to_param]
-        paths.should eq(@run2.result_paths)
+      it "returns a array whose values are dirs of finished runs" do
+        @arn2.input_files.should be_a(Array)
+        @arn2.input_files.should eq([@run2.dir])
+        @arn2.input_files.should_not include(@run.dir)
       end
     end
   end
