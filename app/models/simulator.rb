@@ -81,11 +81,11 @@ class Simulator
 
   def plottable
     list = ["cpu_time", "real_time"]
-    run = Run.where(simulator: self, status: :finished).first
+    run = Run.where(simulator: self, status: :finished).last
     list += plottable_keys(run.try(:result)).map {|key| ".#{key}" }
 
     analyzers.each do |azr|
-      anl = azr.analyses.where(status: :finished).first
+      anl = azr.analyses.where(status: :finished).last
       keys = plottable_keys(anl.try(:result)).map do |key|
         "#{azr.name}.#{key}"
       end
