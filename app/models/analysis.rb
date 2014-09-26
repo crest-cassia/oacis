@@ -87,7 +87,7 @@ class Analysis
     when :on_parameter_set
       ps = self.analyzable
       obj[:simulation_parameters] = ps.v
-      run_ids = ps.runs.where(status: :finished).only(:id).map(&:id).map {|id| id.to_s}
+      run_ids = ps.runs.where(status: :finished).only(:id).map {|run| run.id.to_s}
       obj[:run_ids] = run_ids
     else
       raise "not supported type"
@@ -106,7 +106,7 @@ class Analysis
       # TODO: add directories of dependent analysis
     when :on_parameter_set
       ps = self.analyzable
-      run_ids = ps.runs.where(status: :finished).only(:id).map(&:id).map {|id| id.to_s}
+      run_ids = ps.runs.where(status: :finished).only(:id).map {|run| run.id.to_s}
       base_dir = ps.runs.where(status: :finished).first.dir.join('../')
       files = run_ids.map {|run_id| base_dir.join(run_id)}
     else
