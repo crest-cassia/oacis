@@ -308,7 +308,8 @@ ParameterSetに対する解析
 
 | ParameterSetに対する解析もRunに対する解析とほぼ同様である。
 | ただし、_input/ディレクトリに保存される形式と `_input.json` の形式が異なる。
-| 形式の変更のため、runの結果ファイルを参照するには `_input` ディレクトリ内からrun_id一覧を取得する処理もしくは、 `_input.json` ファイルからrun_id 一覧を取得する処理をAnalyzer内で実装する。
+| RunのIDの一覧が run_ids というキーに格納される。
+| Runの結果ファイルを参照するには `_input.json` からRunのIDの一覧を取得する処理をAnalyzer内で実装する。
 
 | `_input/` ディレクトリ内のファイルの構成は以下の通り
 
@@ -343,13 +344,13 @@ ParameterSetに対する解析
     ]
   }
 
-| Analyzerでrunの結果ファイルを取得する例(言語：ruby)
+| AnalyzerからRunの結果ファイルを取得する例(言語：ruby)
 
 .. code-block:: ruby
 
   #require 'json'
   #require 'pathname'
-  persed = JSON.load('_input.json')
+  persed = JSON.load(open('_input.json'))
   RESULT_FILE_NAME = 'time_series.dat'
   result_files = persed["run_ids"].map do |id|
     Pathname.new("_input").join(id).join(RESULT_FILE_NAME)
