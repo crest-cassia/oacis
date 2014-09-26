@@ -66,10 +66,10 @@ describe AnalyzerRunner do
         Dir.chdir(@work_dir) {
           dummy_input = @arn.analyzable.dir.join('dummy.txt')
           FileUtils.touch(dummy_input)
-          @arn.should_receive(:input_files).and_return({'abc' => [dummy_input]})
+          @arn.should_receive(:input_files).and_return([@arn.analyzable.dir])
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
           File.directory?('_input').should be_true
-          File.exist?('_input/abc/dummy.txt').should be_true
+          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should be_true
         }
       end
     end
@@ -99,13 +99,13 @@ describe AnalyzerRunner do
         Dir.chdir(@work_dir) {
           dummy_input = @arn.analyzable.dir.join('dummy.txt')
           FileUtils.touch(dummy_input)
-          @arn.should_receive(:input_files).and_return({'abc' => [dummy_input]})
+          @arn.should_receive(:input_files).and_return([@arn.analyzable.dir])
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
           File.directory?('_input').should be_true
-          File.exist?('_input/abc/dummy.txt').should be_true
+          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should be_true
           AnalyzerRunner.__send__(:remove_inputs)
           File.directory?('_input').should_not be_true
-          File.exist?('_input/abc/dummy.txt').should_not be_true
+          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should_not be_true
         }
       end
     end
