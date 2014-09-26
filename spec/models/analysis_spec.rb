@@ -266,12 +266,6 @@ describe Analysis do
       it "returns a Hash having 'analysis_parameters'" do
         @arn.input[:analysis_parameters].should eq(@arn.parameters)
       end
-
-      it "returns a Hash having result of Run" do
-        @run.result = {"xxx" => 1234, "yyy" => 0.5}
-        @run.save!
-        @arn.input[:result].should eq(@run.result)
-      end
     end
 
     describe "for :on_parameter_set type" do
@@ -291,15 +285,15 @@ describe Analysis do
         @arn.input[:analysis_parameters].should eq(@arn.parameters)
       end
 
-      it "returns a Hash having result of Runs" do
-        @run.result = {"xxx" => 1234, "yyy" => 0.5}
+      it "returns an Array having Run ids" do
+        @run.status = :finished
         @run.save!
         run2 = FactoryGirl.create(:finished_run, parameter_set: @ps, result: {"zzz" => true})
-        @arn.input[:result].size.should eq(2)
-        @arn.input[:result].should have_key(@run.to_param)
-        @arn.input[:result].should have_key(run2.to_param)
-        @arn.input[:result][@run.to_param].should eq(@run.result)
-        @arn.input[:result][run2.to_param].should eq(run2.result)
+        run3 = FactoryGirl.create(:run, parameter_set: @ps)
+        run3.status = :failed
+        run3.save
+        @arn.input[:run_ids].size.should eq(2)
+        @arn.input[:run_ids].should =~ [@run.id.to_s, run2.id.to_s]
       end
     end
   end
@@ -322,20 +316,20 @@ describe Analysis do
 
       it "returns a file entries in run directory" do
         paths = @arn.input_files
-        paths.should be_a(Hash)
-        paths.should have(1).items
-        (paths['.'] - [@dummy_path, @dummy_dir]).should be_empty
+        paths.should be_a(Array)
+        paths.should have(2).items
+        paths.should =~ [@dummy_path, @dummy_dir]
       end
 
       it "does not include analysis directory of self" do
         paths = @arn.input_files
-        paths.values.flatten.should_not include(@arn.dir)
+        paths.should_not include(@arn.dir)
       end
 
       it "does not include directories of other Analyses by defualt" do
         another_arn = @run.analyses.create!(analyzer: @azr, parameters: {})
         paths = @arn.input_files
-        paths.values.flatten.should_not include(another_arn.dir)
+        paths.should_not include(another_arn.dir)
       end
     end
 
@@ -360,14 +354,10 @@ describe Analysis do
         @dummy_dirs.each {|dir| FileUtils.rm_r(dir) if File.directory?(dir) }
       end
 
-      it "returns a hash whose keys are ids of finished runs" do
-        @arn2.input_files.keys.should eq( [@run2.to_param] )
-        @arn2.input_files.keys.should_not include(@run.to_param)
-      end
-
-      it "returns a hash whose values are output paths of runs" do
-        paths = @arn2.input_files[@run2.to_param]
-        paths.should eq(@run2.result_paths)
+      it "returns a array whose values are dirs of finished runs" do
+        @arn2.input_files.should be_a(Array)
+        @arn2.input_files.should eq([@run2.dir])
+        @arn2.input_files.should_not include(@run.dir)
       end
     end
   end

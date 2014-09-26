@@ -290,7 +290,7 @@ Description                   Analyzerに対する説明。入力は任意。
 
 | 今回のサンプルでは示されていないが、パラメータを受け付けるAnalyzerの場合には `_input.json` というファイル内に解析のパラメータが記入される。
 | Runに対する解析の場合、 `_input.json` のフォーマットは以下の通りである。
-| "analysis_parameters", "simulation_parameters", "result" はそれぞれ解析パラメータ、シミュレーションパラメータ、Runの結果を表す。
+| "analysis_parameters", "simulation_parameters" はそれぞれ解析パラメータ、シミュレーションパラメータを表す。
 
 .. code-block:: javascript
 
@@ -302,13 +302,6 @@ Description                   Analyzerに対する説明。入力は任意。
    "simulation_parameters": {
      "L": 32,
      "T": 0.5
-   },
-   "result": {
-     "magnetization": 0.5,
-     "energy": 24.5,
-     "another_analysis": {
-         "maximum_energy": 28.1
-     }
    }
   }
 
@@ -317,6 +310,8 @@ ParameterSetに対する解析
 
 | ParameterSetに対する解析もRunに対する解析とほぼ同様である。
 | ただし、_input/ディレクトリに保存される形式と `_input.json` の形式が異なる。
+| RunのIDの一覧が run_ids というキーに格納される。
+| Runの結果ファイルを参照するには `_input.json` からRunのIDの一覧を取得する処理をAnalyzer内で実装する。
 
 | `_input/` ディレクトリ内のファイルの構成は以下の通り
 
@@ -336,38 +331,33 @@ ParameterSetに対する解析
 .. code-block:: javascript
 
   {
-   "analysis_parameters": {
-     "x": 0.1,
-     "y": 2
-   },
-   "simulation_parameters": {
-     "L": 32,
-     "T": 0.5
-   },
-   "result": {
-     "run_id1": {
-       "magnetization": 0.5,
-       "energy": 24.5,
-       "analysis1": {
-           "maximum_energy": 28.1
-       }
-     },
-     "run_id2": {
-       "magnetization": 0.32,
-       "energy": 25.1,
-       "analysis1": {
-           "maximum_energy": 27.9
-       }
-     },
-     "run_id3": {
-       "magnetization": 0.2,
-       "energy": 20.7,
-       "analysis1": {
-           "maximum_energy": 26.8
-       }
-     }
-   }
+    "analysis_parameters": {
+      "x": 0.1,
+      "y": 2
+    },
+    "simulation_parameters": {
+      "L": 32,
+      "T": 0.5
+    },
+    "run_ids": [
+      "run_id1",
+      "run_id2",
+      "run_id3"
+    ]
   }
+
+| AnalyzerからRunの結果ファイルを取得する例(言語：ruby)
+
+.. code-block:: ruby
+
+  #require 'json'
+  #require 'pathname'
+  persed = JSON.load(open('_input.json'))
+  RESULT_FILE_NAME = 'time_series.dat'
+  result_files = persed["run_ids"].map do |id|
+    Pathname.new("_input").join(id).join(RESULT_FILE_NAME)
+  end
+  # result_files.map {|path| path.to_s} = ["_input/526638c781e31e98cf000001/time_series.dat", "_input/526638c781e31e98cf000002/time_series.dat"]
 
 | ParaemterSetに対する解析の場合、Auto Runのフラグはyes, noの２択から選択可能である。
 | yesの場合、ParameterSet内のすべてのRunが :finished または :failed になったときに自動実行される。
