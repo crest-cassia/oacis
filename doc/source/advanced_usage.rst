@@ -308,7 +308,7 @@ ParameterSetに対する解析
 
 | ParameterSetに対する解析もRunに対する解析とほぼ同様である。
 | ただし、_input/ディレクトリに保存される形式と `_input.json` の形式が異なる。
-| 形式の変更のため、runの結果ファイルを参照するためには `_input` ディレクトリ内からrun_id一覧を取得する処理もしくは、 `_input.json` ファイルからrun_id 一覧を取得する処理をAnalyzer内で実装する。
+| 形式の変更のため、runの結果ファイルを参照するには `_input` ディレクトリ内からrun_id一覧を取得する処理もしくは、 `_input.json` ファイルからrun_id 一覧を取得する処理をAnalyzer内で実装する。
 
 | `_input/` ディレクトリ内のファイルの構成は以下の通り
 
