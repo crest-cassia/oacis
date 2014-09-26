@@ -285,7 +285,7 @@ describe Analysis do
         @arn.input[:analysis_parameters].should eq(@arn.parameters)
       end
 
-      it "returns a Hash having Run ids" do
+      it "returns an Array having Run ids" do
         @run.status = :finished
         @run.save!
         run2 = FactoryGirl.create(:finished_run, parameter_set: @ps, result: {"zzz" => true})
@@ -293,8 +293,7 @@ describe Analysis do
         run3.status = :failed
         run3.save
         @arn.input[:run_ids].size.should eq(2)
-        @arn.input[:run_ids].should include(@run.to_param)
-        @arn.input[:run_ids].should include(run2.to_param)
+        @arn.input[:run_ids].should =~ [@run.id.to_s, run2.id.to_s]
       end
     end
   end
@@ -319,7 +318,7 @@ describe Analysis do
         paths = @arn.input_files
         paths.should be_a(Array)
         paths.should have(2).items
-        (paths - [@dummy_path, @dummy_dir]).should be_empty
+        paths.should =~ [@dummy_path, @dummy_dir]
       end
 
       it "does not include analysis directory of self" do
