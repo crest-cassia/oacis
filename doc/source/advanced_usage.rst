@@ -131,6 +131,8 @@ MPI, OpenMPのジョブ
   :width: 40%
   :align: center
 
+| ただし、ドット（.）を含む文字列はキーとして使用できない。（MongoDBの制約）"."を含んでいるとジョブがfailedになるので注意。
+
 .. _manage_simulator_version:
 
 シミュレーターのバージョンを記録する
