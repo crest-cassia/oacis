@@ -73,6 +73,9 @@ AcmProto::Application.routes.draw do
     collection do
       post "_sort" # for ajax, update order of the table
     end
+    member do
+      get "_host_parameters_field" # for ajax, get the fields for host_parameters
+    end
   end
 
   root :to => "simulators#index"

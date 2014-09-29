@@ -177,4 +177,25 @@ describe HostsController do
       }.to change { hosts.first.reload.position }.from(0).to(2)
     end
   end
+
+  describe "GET _host_parameters_field" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @sim.executable_on.push(@host)
+    end
+
+    it "returns http success" do
+      valid_param = {id: @host}
+      get :_host_parameters_field, valid_param, valid_session
+      response.should be_success
+    end
+
+    it "returns http success if host_id is not found" do
+      param = {id: "manual"}
+      get :_host_parameters_field, param, valid_session
+      response.should be_success
+    end
+  end
 end

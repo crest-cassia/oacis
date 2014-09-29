@@ -55,7 +55,7 @@ private
   end
 
   def fetch_runs_list
-    runs_list = @runs.order_by("#{sort_column} #{sort_direction}")
+    runs_list = @runs.without(:result).order_by("#{sort_column} #{sort_direction}")
     runs_list = runs_list.skip(page).limit(per_page)
     runs_list
   end

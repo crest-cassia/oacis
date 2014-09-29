@@ -1,6 +1,6 @@
 - param_def.each do |definition|
   = label 'parameters', definition.key
-  = text_field 'parameters', definition.key
+  = text_field_tag "parameters[#{definition.key}]", definition.default
   = definition.description
   = definition.type
   %br

@@ -2,5 +2,5 @@
   %h2
     = "Create a new parameter set on: #{@param_set.simulator.name}"
 
-- @run ||= @param_set.runs.build
+- @run ||= @param_set.runs.build(submitted_to: @param_set.simulator.executable_on.first)
 = render "form", parameter_set: @param_set, run: @run

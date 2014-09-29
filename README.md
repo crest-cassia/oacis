@@ -1,7 +1,7 @@
 # OACIS
 
 *OACIS* (''Organizing Assistant for Comprehensive and Interactive Simulations'') is developed for efficient management of simulation jobs and results.
-See docs (doc/build/html/index.html) for the sequence of installation and usage.
+See [wiki](https://github.com/crest-cassia/oacis/wiki) or docs (doc/build/html/index.html) for the sequence of installation and usage.
 
 ## Getting Started
 
@@ -32,14 +32,20 @@ gem install bundler
 - clone the git repository and checkout the master branch
 
     ```sh:clone.sh
-git clone -b master git@github.com:crest-cassia/oacis.git
-git checkout master
-```
+git clone -b master https://github.com/crest-cassia/oacis.git
+    ```
+
+- check if the prerequisites are installed correctly by running the following command.
+
+    ```sh:check_oacis_env.sh
+./bin/check_oacis_env
+    ```
+
 - install dependent gems using bundle command
-    - cd to the project root directory `oacis`, and run the following command
+    - change directory to _oacis/_, and run the following command
 
       ```sh:install_sh
-  bundle install --path=vendor/bundle
+bundle install --path=vendor/bundle
       ```
 
 - run daemons
@@ -83,6 +89,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Publications
 - A list of publications about OACIS is available at this [wiki page](https://github.com/crest-cassia/oacis/wiki/List-of-publications).
+- We would greatly appreciate if you cite the following article when you publish your research using OACIS.
+    - Y. Murase, T. Uchitane, and N. Ito, "A tool for parameter-space explorations", to appear in proceedings of 27'th CSP workshop, (2014) [arXiv:1404.3867](http://arxiv.org/abs/1404.3867)
+    - You can cite it as **"The systematic simulations in this study were assisted by OACIS."**, for example, in appendix or method section.
 - We would also like to create a list of researches to which OACIS contributed to.
     - We will be happy if you are willing to include your work. Let us know about your work when your paper is published.
 

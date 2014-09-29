@@ -84,35 +84,31 @@ class Analysis
     when :on_run
       run = self.analyzable
       obj[:simulation_parameters] = run.parameter_set.v
-      obj[:result] = run.result
     when :on_parameter_set
       ps = self.analyzable
       obj[:simulation_parameters] = ps.v
-      obj[:result] = {}
-      ps.runs.each do |run|
-        obj[:result][run.to_param] = run.result
-      end
+      run_ids = ps.runs.where(status: :finished).only(:id).map {|run| run.id.to_s}
+      obj[:run_ids] = run_ids
     else
       raise "not supported type"
     end
     return obj
   end
 
-  # returns a hash
-  #   key: relative path of the destination directory from _input/
-  #   value: array of aboslute pathnames of files to be copied to _input/
+  # returns an array
+  #   array of run.results_paths or run.dir(s) to be linked to _input/
   def input_files
-    files = {}
+    files = []
     case self.analyzer.type
     when :on_run
       run = self.analyzable
-      files['.'] = run.result_paths
+      files = run.result_paths
       # TODO: add directories of dependent analysis
     when :on_parameter_set
       ps = self.analyzable
-      ps.runs.where(status: :finished).each do |finished_run|
-        files[finished_run.to_param] = finished_run.result_paths
-      end
+      run_ids = ps.runs.where(status: :finished).only(:id).map {|run| run.id.to_s}
+      base_dir = ps.runs.where(status: :finished).first.dir.join('../')
+      files = run_ids.map {|run_id| base_dir.join(run_id)}
     else
       raise "not supported type"
     end

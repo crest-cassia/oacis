@@ -717,7 +717,7 @@ append_parameter_definition
 
   .. code-block:: sh
 
-    ./bin/oacis_cli append_parameter_definition -s 522442de899e53dd8d000034 -n "new_param" -t Float -d 0.0
+    ./bin/oacis_cli append_parameter_definition -s 522442de899e53dd8d000034 -n "new_param" -t Float -e 0.0
 
 - オプション
 
@@ -748,7 +748,7 @@ append_parameter_definition
 
       .. code-block:: sh
 
-        ./bin/oacis_cli append_parameter_definition -s 522442de899e53dd8d000034 -n p3 -t Integer -d 0
+        ./bin/oacis_cli append_parameter_definition -s 522442de899e53dd8d000034 -n p3 -t Integer -e 0
 
 - 注意事項
     - 既に作成済みのRunについては更新されない。
