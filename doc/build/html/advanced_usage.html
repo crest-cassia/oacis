@@ -217,6 +217,9 @@
 <div class="line">格納された結果は以下のようにブラウザから閲覧可能である。</div>
 </div>
 <a class="reference internal image-reference" href="_images/run_results.png"><img alt="_images/run_results.png" class="align-center" src="_images/run_results.png" style="width: 40%;" /></a>
+<div class="line-block">
+<div class="line">ただし、ドット（.）を含む文字列はキーとして使用できない。（MongoDBの制約）&#8221;.&#8221;を含んでいるとジョブがfailedになるので注意。</div>
+</div>
 </div>
 <div class="section" id="manage-simulator-version">
 <span id="id5"></span><h2>シミュレーターのバージョンを記録する<a class="headerlink" href="#manage-simulator-version" title="Permalink to this headline">¶</a></h2>
@@ -422,7 +425,7 @@ plot &quot;_input/time_series.dat&quot; w l
 <div class="line-block">
 <div class="line">今回のサンプルでは示されていないが、パラメータを受け付けるAnalyzerの場合には <cite>_input.json</cite> というファイル内に解析のパラメータが記入される。</div>
 <div class="line">Runに対する解析の場合、 <cite>_input.json</cite> のフォーマットは以下の通りである。</div>
-<div class="line">&#8220;analysis_parameters&#8221;, &#8220;simulation_parameters&#8221;, &#8220;result&#8221; はそれぞれ解析パラメータ、シミュレーションパラメータ、Runの結果を表す。</div>
+<div class="line">&#8220;analysis_parameters&#8221;, &#8220;simulation_parameters&#8221; はそれぞれ解析パラメータ、シミュレーションパラメータを表す。</div>
 </div>
 <div class="highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
  <span class="s2">&quot;analysis_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
@@ -432,13 +435,6 @@ plot &quot;_input/time_series.dat&quot; w l
  <span class="s2">&quot;simulation_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
    <span class="s2">&quot;L&quot;</span><span class="o">:</span> <span class="mi">32</span><span class="p">,</span>
    <span class="s2">&quot;T&quot;</span><span class="o">:</span> <span class="mf">0.5</span>
- <span class="p">},</span>
- <span class="s2">&quot;result&quot;</span><span class="o">:</span> <span class="p">{</span>
-   <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.5</span><span class="p">,</span>
-   <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">24.5</span><span class="p">,</span>
-   <span class="s2">&quot;another_analysis&quot;</span><span class="o">:</span> <span class="p">{</span>
-       <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">28.1</span>
-   <span class="p">}</span>
  <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -449,6 +445,8 @@ plot &quot;_input/time_series.dat&quot; w l
 <div class="line-block">
 <div class="line">ParameterSetに対する解析もRunに対する解析とほぼ同様である。</div>
 <div class="line">ただし、_input/ディレクトリに保存される形式と <cite>_input.json</cite> の形式が異なる。</div>
+<div class="line">RunのIDの一覧が run_ids というキーに格納される。</div>
+<div class="line">Runの結果ファイルを参照するには <cite>_input.json</cite> からRunのIDの一覧を取得する処理をAnalyzer内で実装する。</div>
 </div>
 <div class="line-block">
 <div class="line"><cite>_input/</cite> ディレクトリ内のファイルの構成は以下の通り</div>
@@ -467,38 +465,33 @@ plot &quot;_input/time_series.dat&quot; w l
 <div class="line"><cite>_input.json</cite> の形式は以下の通り</div>
 </div>
 <div class="highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
- <span class="s2">&quot;analysis_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
-   <span class="s2">&quot;x&quot;</span><span class="o">:</span> <span class="mf">0.1</span><span class="p">,</span>
-   <span class="s2">&quot;y&quot;</span><span class="o">:</span> <span class="mi">2</span>
- <span class="p">},</span>
- <span class="s2">&quot;simulation_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
-   <span class="s2">&quot;L&quot;</span><span class="o">:</span> <span class="mi">32</span><span class="p">,</span>
-   <span class="s2">&quot;T&quot;</span><span class="o">:</span> <span class="mf">0.5</span>
- <span class="p">},</span>
- <span class="s2">&quot;result&quot;</span><span class="o">:</span> <span class="p">{</span>
-   <span class="s2">&quot;run_id1&quot;</span><span class="o">:</span> <span class="p">{</span>
-     <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.5</span><span class="p">,</span>
-     <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">24.5</span><span class="p">,</span>
-     <span class="s2">&quot;analysis1&quot;</span><span class="o">:</span> <span class="p">{</span>
-         <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">28.1</span>
-     <span class="p">}</span>
-   <span class="p">},</span>
-   <span class="s2">&quot;run_id2&quot;</span><span class="o">:</span> <span class="p">{</span>
-     <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.32</span><span class="p">,</span>
-     <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">25.1</span><span class="p">,</span>
-     <span class="s2">&quot;analysis1&quot;</span><span class="o">:</span> <span class="p">{</span>
-         <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">27.9</span>
-     <span class="p">}</span>
-   <span class="p">},</span>
-   <span class="s2">&quot;run_id3&quot;</span><span class="o">:</span> <span class="p">{</span>
-     <span class="s2">&quot;magnetization&quot;</span><span class="o">:</span> <span class="mf">0.2</span><span class="p">,</span>
-     <span class="s2">&quot;energy&quot;</span><span class="o">:</span> <span class="mf">20.7</span><span class="p">,</span>
-     <span class="s2">&quot;analysis1&quot;</span><span class="o">:</span> <span class="p">{</span>
-         <span class="s2">&quot;maximum_energy&quot;</span><span class="o">:</span> <span class="mf">26.8</span>
-     <span class="p">}</span>
-   <span class="p">}</span>
- <span class="p">}</span>
+  <span class="s2">&quot;analysis_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s2">&quot;x&quot;</span><span class="o">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s2">&quot;y&quot;</span><span class="o">:</span> <span class="mi">2</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;simulation_parameters&quot;</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s2">&quot;L&quot;</span><span class="o">:</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="s2">&quot;T&quot;</span><span class="o">:</span> <span class="mf">0.5</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;run_ids&quot;</span><span class="o">:</span> <span class="p">[</span>
+    <span class="s2">&quot;run_id1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;run_id2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;run_id3&quot;</span>
+  <span class="p">]</span>
 <span class="p">}</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">AnalyzerからRunの結果ファイルを取得する例(言語：ruby)</div>
+</div>
+<div class="highlight-ruby"><div class="highlight"><pre><span class="c1">#require &#39;json&#39;</span>
+<span class="c1">#require &#39;pathname&#39;</span>
+<span class="n">persed</span> <span class="o">=</span> <span class="no">JSON</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;_input.json&#39;</span><span class="p">))</span>
+<span class="no">RESULT_FILE_NAME</span> <span class="o">=</span> <span class="s1">&#39;time_series.dat&#39;</span>
+<span class="n">result_files</span> <span class="o">=</span> <span class="n">persed</span><span class="o">[</span><span class="s2">&quot;run_ids&quot;</span><span class="o">].</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="nb">id</span><span class="o">|</span>
+  <span class="no">Pathname</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;_input&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">RESULT_FILE_NAME</span><span class="p">)</span>
+<span class="k">end</span>
+<span class="c1"># result_files.map {|path| path.to_s} = [&quot;_input/526638c781e31e98cf000001/time_series.dat&quot;, &quot;_input/526638c781e31e98cf000002/time_series.dat&quot;]</span>
 </pre></div>
 </div>
 <div class="line-block">
