@@ -4,9 +4,10 @@ class AnalyzerWorker < DaemonSpawn::Base
 
   WORKER_PID_FILE = Rails.root.join('tmp', 'pids', "analyzer_worker_#{Rails.env}.pid")
   WORKER_LOG_FILE = Rails.root.join('log', "analyzer_worker_#{Rails.env}.log")
+  WORKER_STDOUT_FILE = Rails.root.join('log', "analyzer_worker_#{Rails.env}_out.log")
 
   def start(args)
-    @logger = Logger.new(STDOUT, 7)
+    @logger = Logger.new(WORKER_LOG_FILE, 7)
     @logger.level = Logger::INFO
     @logger.info("starting")
 
@@ -54,7 +55,7 @@ class AnalyzerWorker < DaemonSpawn::Base
 end
 
 if $0 == __FILE__
-  AnalyzerWorker.spawn!(log_file:  AnalyzerWorker::WORKER_LOG_FILE,
+  AnalyzerWorker.spawn!(log_file:  AnalyzerWorker::WORKER_STDOUT_FILE,
                         pid_file:  AnalyzerWorker::WORKER_PID_FILE,
                         sync_log: true,
                         working_dir: Rails.root,
