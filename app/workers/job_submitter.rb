@@ -12,7 +12,7 @@ class JobSubmitter
           break unless num > 0
           runs = host.submittable_runs.where(priority: priority).limit(num)
           logger.info("submitting jobs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
-          num -= runs.length
+          num -= runs.length  # [warining] runs.length ignore 'limit', so 'num' can be negative.
           submit(runs, host, logger)
         end
       rescue => ex
