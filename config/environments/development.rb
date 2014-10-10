@@ -46,5 +46,8 @@ AcmProto::Application.configure do
   # Expands the lines which load the assets
   config.assets.debug = true
 
-  config.log_level = :info
+  config.log_level = :error
+  config.logger = Logger.new("log/development.log", 5, 1.megabytes)
+  Mongoid.logger.level = Logger::WARN
+  Moped.logger.level = Logger::WARN
 end
