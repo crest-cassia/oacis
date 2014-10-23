@@ -11,6 +11,10 @@ describe JobSubmitter do
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
 
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @sim.executable_on.push @host
+      @sim.save!
+
       @logger = Logger.new($stderr)
     end
 
@@ -19,25 +23,20 @@ describe JobSubmitter do
     end
 
     it "enqueues a job to remote host" do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-      @sim.executable_on.push @host
-      @sim.save!
       expect {
         JobSubmitter.perform(@logger)
       }.to change { Run.where(status: :submitted).count }.by(1)
     end
 
     it "do nothing if there is no 'created' jobs" do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      @sim.runs.first.update_attribute(:status, :finished)
       expect {
         JobSubmitter.perform(@logger)
       }.to_not raise_error
     end
 
     it "do nothing if there is no 'enabled' hosts" do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @host.update_attribute(:status, :disabled)
-      @sim.executable_on.push @host
       expect {
         JobSubmitter.perform(@logger)
       }.to change { Run.where(status: :created).count }.by(0)
@@ -47,9 +46,6 @@ describe JobSubmitter do
     end
 
     it "enqueus jobs to remote host in order of priorities on runs" do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-      @sim.executable_on.push @host
-      @sim.save!
       run = @sim.parameter_sets.first.runs.create(priority: 0, submitted_to: @host.to_param)
       run.save!
       expect {
