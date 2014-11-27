@@ -47,7 +47,7 @@ AcmProto::Application.configure do
   config.assets.debug = true
 
   config.log_level = :error
-  config.logger = Logger.new("log/development.log", 5, 1.megabytes)
+  config.logger = Logger.new(Rails.root.join("log/development.log"), 5, 1.megabytes)
   Mongoid.logger.level = Logger::WARN
   Moped.logger.level = Logger::WARN
 end
