@@ -139,10 +139,16 @@ describe AnalyzerRunner do
         dir.should eq(File.expand_path(@work_dir))
       end
 
-      it "executes with 'Bundler.with_clean_env'" do
-        @azr.update_attribute(:command, 'echo $BUNDLE_BIN_PATH > env.txt')
+      it "executes with 'Bundler.with_clean_env' and remove RUBYLIB, GEM_HOME variables" do
+        @azr.update_attribute(:command, 'export > env.txt')
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        File.open( File.join(@work_dir, 'env.txt')).read.chomp.should be_empty
+        env = File.open( File.join(@work_dir, 'env.txt')).read.chomp
+        STDERR.puts env
+        env.should_not match /^export BUNDLE_BIN_PATH=/
+        env.should_not match /^export BUNDLE_GEMFILE=/
+        env.should_not match /^export RUBYLIB=/
+        $1.should_not match /bundler/ if env =~ /^export RUBYOPT=(.*)$/
+        env.should_not match /^export GEM_HOME=/
       end
 
       it "stdout and stderr outputs are redirected to '_stdout.txt' and '_stderr.txt'" do

@@ -45,7 +45,8 @@ class AnalyzerRunner
         put_version_text(arn)
         Bundler.with_clean_env do
           cmd = "(#{arn.analyzer.command}) 1> _stdout.txt 2> _stderr.txt"
-          system(cmd)
+          envs_to_remove = {'RUBYLIB' => nil, 'GEM_HOME' => nil} # These variables are not cleaned by with_clean_env
+          system(envs_to_remove, cmd)
           unless $?.to_i == 0
             raise "Rc of the analyzer is not 0, but #{$?.to_i}"
           end
