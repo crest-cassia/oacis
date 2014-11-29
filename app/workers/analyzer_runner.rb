@@ -43,10 +43,12 @@ class AnalyzerRunner
       Dir.chdir(work_dir) {
         prepare_inputs(arn)
         put_version_text(arn)
-        cmd = "(#{arn.analyzer.command}) 1> _stdout.txt 2> _stderr.txt"
-        system(cmd)
-        unless $?.to_i == 0
-          raise "Rc of the analyzer is not 0, but #{$?.to_i}"
+        Bundler.with_clean_env do
+          cmd = "(#{arn.analyzer.command}) 1> _stdout.txt 2> _stderr.txt"
+          system(cmd)
+          unless $?.to_i == 0
+            raise "Rc of the analyzer is not 0, but #{$?.to_i}"
+          end
         end
         output[:result] = parse_output_json
         output[:result] = {"result"=>parse_output_json} unless output[:result].is_a?(Hash)

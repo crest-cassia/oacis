@@ -139,6 +139,12 @@ describe AnalyzerRunner do
         dir.should eq(File.expand_path(@work_dir))
       end
 
+      it "executes with 'Bundler.with_clean_env'" do
+        @azr.update_attribute(:command, 'echo $BUNDLE_BIN_PATH > env.txt')
+        AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
+        File.open( File.join(@work_dir, 'env.txt')).read.chomp.should be_empty
+      end
+
       it "stdout and stderr outputs are redirected to '_stdout.txt' and '_stderr.txt'" do
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
         File.exist?( File.join(@work_dir, '_stdout.txt') ).should be_true
