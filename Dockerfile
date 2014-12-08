@@ -43,6 +43,7 @@ RUN apt-get clean
 # Run daemons
 VOLUME ["/data/db"]
 VOLUME ["/home/oacis/oacis/public/Result_development"]
+RUN chown oacis:oacis /home/oacis/oacis/public/Result_development
 RUN if [ ! -d /var/run/sshd ]; then mkdir /var/run/sshd; fi; echo "[program:sshd]" > /etc/supervisor/conf.d/sshd.conf && echo "command=/usr/sbin/sshd -D" >> /etc/supervisor/conf.d/sshd.conf && echo "autostart=true" >> /etc/supervisor/conf.d/sshd.conf && echo "autorestart=true" >> /etc/supervisor/conf.d/sshd.conf
 RUN echo "[program:mongod]" > /etc/supervisor/conf.d/mongod.conf && echo "command=/usr/bin/mongod --fork --logpath /var/log/mongodb.log" >> /etc/supervisor/conf.d/mongod.conf && echo "autostart=true" >> /etc/supervisor/conf.d/mongod.conf && echo "autorestart=true" >> /etc/supervisor/conf.d/mongod.conf
 ENTRYPOINT /usr/bin/supervisord; su - oacis -c "/bin/bash -l -c \"cd ~/oacis; bundle exec rake daemon:restart\"; if [ ! -f ~/.ssh/id_rsa ]; then echo -e \"\\n\" | ssh-keygen -N \"\" -f $HOME/.ssh/id_rsa; cat $HOME/.ssh/id_rsa.pub > $HOME/.ssh/authorized_keys; chmod 600 $HOME/.ssh/authorized_keys; fi"; su - oacis
