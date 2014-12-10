@@ -36,7 +36,7 @@ function create_parameter_sets_list(selector, default_length) {
             )
           )
         );
-        $("#runs_list" ,tr_element.next()).trigger("change");
+        var oTable = datatables_for_runs_table();
       });
     } else {
       $(this)
