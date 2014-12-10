@@ -37,6 +37,7 @@ function create_parameter_sets_list(selector, default_length) {
           )
         );
         var oTable = datatables_for_runs_table();
+        toggle_auto_reload_runs_table(true);
       });
     } else {
       $(this)
@@ -44,6 +45,7 @@ function create_parameter_sets_list(selector, default_length) {
         .attr("src", "/assets/expand.png");
       var run_list = $(this).closest("tr").siblings("tr#ps_"+param_id);
       run_list.remove();
+      toggle_auto_reload_runs_table(false);
     }
   });
   return oPsTable;

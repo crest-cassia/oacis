@@ -1,8 +1,11 @@
-var aoRunsTable = null;
+var oRunsTableToReload = null;
+var bReloadRunsTable = true;
 function reload_runs_table() {
-  aoRunsTables.forEach( function(oTable) {
-    if( oTable ) { oTable.fnReloadAjax(); }
-  });
+  if( bReloadRunsTable && oRunsTableToReload ) { oRunsTableToReload.fnReloadAjax(); }
+}
+setInterval( reload_runs_table, 3000);
+function toggle_auto_reload_runs_table( flag ) {
+  bReloadRunsTable = flag;
 }
 
 $(function() {
@@ -22,10 +25,7 @@ $(function() {
     );
     var refresh_icon = $('#runs_list_length').children('#runs_list_refresh');
     refresh_icon.on('click', function() { oTable.fnReloadAjax();});
-    aoRunsTable = oTable;
-    setInterval(function() {
-      oTable.fnReloadAjax();
-    }, 3000);
+    oRunsTableToReload = oTable;
     return oTable;
   };
 
