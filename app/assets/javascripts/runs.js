@@ -21,7 +21,7 @@ $(function() {
       sPaginationType: "bootstrap"
     });
     $('#runs_list_length').append(
-      '<i class="icon-refresh" id="runs_list_refresh"></i>'
+      '<i class="icon-refresh runs-list-refresh" id="runs_list_refresh"></i>'
     );
     var refresh_icon = $('#runs_list_length').children('#runs_list_refresh');
     refresh_icon.on('click', function() { oTable.fnReloadAjax();});
