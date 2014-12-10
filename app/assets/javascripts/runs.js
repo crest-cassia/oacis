@@ -1,3 +1,10 @@
+var aoRunsTables = [];
+function reload_runs_table() {
+  aoRunsTables.forEach( function(oTable) {
+    oTable.fnReloadAjax();
+  });
+}
+
 $(function() {
   var datatables_for_runs_table;
 
@@ -17,16 +24,9 @@ $(function() {
     );
     var refresh_icon = $('#runs_list_length').children('#runs_list_refresh');
     refresh_icon.on('click', function() { oTable.fnReloadAjax();});
+    aoRunsTables.push(oTable);
     return oTable;
   };
 
   window.datatables_for_runs_table = datatables_for_runs_table;
-
 });
-
-var aoRunsTables = [];
-function reload_runs_table() {
-  aoRunsTables.forEach( function(oTable) {
-    oTable.fnReloadAjax();
-  });
-}
