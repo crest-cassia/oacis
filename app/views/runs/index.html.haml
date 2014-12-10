@@ -47,6 +47,7 @@
         oTable.fnReloadAjax();
       });
     }
+    setInterval( reload_runs_table , 3000 );
     $('.dataTables_length').each( function() {
       $(this).append(
         '<i class="icon-refresh runs-list-refresh" id="dataTables_refresh"></i>'
