@@ -17,6 +17,11 @@ function create_parameter_sets_list(selector, default_length) {
     oPsTable.fnReloadAjax();
   });
 
+  setInterval( function() {
+    var num_open = $(selector + ' img.treebtn[state="open"]').length;
+    if( num_open == 0 ) { oPsTable.fnReloadAjax(); }
+  }, 3000);
+
   $(selector).on("click", "img.treebtn[parameter_set_id]", function() {
     var param_id = $(this).attr("parameter_set_id");
     if ($(this).attr("state") == "close") {
@@ -36,7 +41,8 @@ function create_parameter_sets_list(selector, default_length) {
             )
           )
         );
-        $("#runs_list" ,tr_element.next()).trigger("change");
+        var oTable = datatables_for_runs_table();
+        toggle_auto_reload_runs_table(true);
       });
     } else {
       $(this)
@@ -44,6 +50,7 @@ function create_parameter_sets_list(selector, default_length) {
         .attr("src", "/assets/expand.png");
       var run_list = $(this).closest("tr").siblings("tr#ps_"+param_id);
       run_list.remove();
+      toggle_auto_reload_runs_table(false);
     }
   });
   return oPsTable;
