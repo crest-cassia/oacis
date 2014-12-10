@@ -29,6 +29,7 @@
 
 :javascript
   $(function() {
+    var aoRunsTables = []
     $('.jobs_datatable').each( function() {
       var source = $(this).attr("data-source");
       var oTable = $(this).dataTable({
@@ -41,6 +42,11 @@
       });
       aoRunsTables.push(oTable);
     });
+    function reload_runs_table() {
+      aoRunsTables.forEach( function(oTable) {
+        oTable.fnReloadAjax();
+      });
+    }
     $('.dataTables_length').each( function() {
       $(this).append(
         '<i class="icon-refresh" id="dataTables_refresh"></i>'
