@@ -1,14 +1,14 @@
-var oRunsTableToReload = null;
 var bReloadRunsTable = true;
-function reload_runs_table() {
-  if( bReloadRunsTable && oRunsTableToReload ) { oRunsTableToReload.fnReloadAjax(); }
-}
-setInterval( reload_runs_table, 3000);
 function toggle_auto_reload_runs_table( flag ) {
   bReloadRunsTable = flag;
 }
 
 $(function() {
+  var oRunsTableToReload = null;
+  setInterval( function() {
+    if( bReloadRunsTable && oRunsTableToReload ) { oRunsTableToReload.fnReloadAjax(); }
+  }, 3000);
+
   var datatables_for_runs_table = function() {
     var oTable = $('#runs_list').dataTable({
       bProcessing: true,
@@ -28,6 +28,7 @@ $(function() {
     oRunsTableToReload = oTable;
     return oTable;
   };
+
 
   window.datatables_for_runs_table = datatables_for_runs_table;
 });
