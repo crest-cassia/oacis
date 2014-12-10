@@ -29,6 +29,5 @@ $(function() {
     return oTable;
   };
 
-
   window.datatables_for_runs_table = datatables_for_runs_table;
 });
