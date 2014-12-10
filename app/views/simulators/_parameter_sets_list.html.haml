@@ -96,10 +96,6 @@
   });
 
 :javascript
-  var reload_parameter_sets_table;
   $(function() {
     var oPsTable = create_parameter_sets_list('#params_list', 100);
-    reload_parameter_sets_table = function() {
-      oPsTable.fnReloadAjax();
-    }
   });
