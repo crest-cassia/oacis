@@ -1,7 +1,7 @@
-var aoRunsTables = []
+var aoRunsTable = null;
 function reload_runs_table() {
   aoRunsTables.forEach( function(oTable) {
-    oTable.fnReloadAjax();
+    if( oTable ) { oTable.fnReloadAjax(); }
   });
 }
 
@@ -22,6 +22,10 @@ $(function() {
     );
     var refresh_icon = $('#runs_list_length').children('#runs_list_refresh');
     refresh_icon.on('click', function() { oTable.fnReloadAjax();});
+    aoRunsTable = oTable;
+    setInterval(function() {
+      oTable.fnReloadAjax();
+    }, 3000);
     return oTable;
   };
 
