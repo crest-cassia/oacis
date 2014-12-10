@@ -904,23 +904,24 @@ a.thumbnail {
 
   .bar {
     background-image: none;
+
+    &-info {
+      background-color: desaturate(@purple, 20%);
+    }
+
+    &-success {
+      background-color: desaturate(@green, 20%);
+    }
+
+    &-warning {
+      background-color: desaturate(@orange, 20%);
+    }
+
+    &-danger {
+      background-color: desaturain(@red, 20%);
+    }
   }
 
-  &-info {
-    background-color: @purple;
-  }
-
-  &-success {
-    background-color: @green;
-  }
-
-  &-warning {
-    background-color: @orange;
-  }
-
-  &-danger {
-    background-color: @red;
-  }
 }
 
 .modal {

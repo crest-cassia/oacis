@@ -32,14 +32,16 @@ module ApplicationHelper
     return links
   end
 
-  def progress_bar( total, num_success, num_danger, num_warning)
+  def progress_bar( total, num_success, num_danger, num_warning, num_submitted)
     percent_success = 0.0
     percent_danger = 0.0
     percent_warning = 0.0
+    percent_submitted = 0.0
     if total.to_f > 0
       percent_success = ( num_success.to_f / total.to_f * 100 ).round
       percent_danger = ( num_danger.to_f / total.to_f * 100 ).round
       percent_warning = ( num_warning.to_f / total.to_f * 100 ).round
+      percent_submitted = ( num_submitted.to_f / total.to_f * 100 ).round
     end
 
     tags = <<-EOS
@@ -47,6 +49,7 @@ module ApplicationHelper
         #{progress_bar_tag_for('success', percent_success)}
         #{progress_bar_tag_for('danger', percent_danger)}
         #{progress_bar_tag_for('warning', percent_warning)}
+        #{progress_bar_tag_for('info', percent_submitted)}
       </div>
     EOS
     raw(tags)
