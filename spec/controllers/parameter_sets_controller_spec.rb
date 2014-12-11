@@ -676,7 +676,7 @@ describe ParameterSetsController do
       loaded = JSON.load(response.body)
       loaded["xlabel"].should eq "L"
       loaded["ylabel"].should eq "T"
-      loaded["result"].should eq "fig1.png"
+      loaded["result"].should eq "/fig1.png"
       loaded["irrelevants"].should eq []
       loaded["data"].should =~ expected_data
     end
