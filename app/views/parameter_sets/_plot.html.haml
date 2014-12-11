@@ -201,7 +201,7 @@
     if( qparam['plot_type'] == 'line' ) {
       add_line_plot( qparam['x_axis'], qparam['y_axis'], qparam['series'] || '', qparam['irrelevants'] || '');
     } else if( qparam['plot_type'] == 'scatter' ) {
-      add_scatter_plot( qparam['x_axis'], qparam['y_axis'], qparam['result'] || '', qparam['irrelevants'] || '');
+      add_scatter_plot( qparam['x_axis'], qparam['y_axis'], qparam['result'], qparam['irrelevants'] || '');
     } else if( qparam['plot_type'] == 'figure' ) {
       add_figure_viewer( qparam['x_axis'], qparam['y_axis'], qparam['result'] || '', qparam['irrelevants'] || '');
     } else {
