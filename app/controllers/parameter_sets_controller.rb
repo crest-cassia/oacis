@@ -185,7 +185,10 @@ class ParameterSetsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: { xlabel: x_axis_key, ylabel: ylabel,
-                       series: series, series_values: series_values, data: data}
+                       series: series, series_values: series_values,
+                       irrelevants: irrelevant_keys,
+                       data: data
+                     }
       }
       format.plt {
         if series.blank?

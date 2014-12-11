@@ -434,7 +434,7 @@ describe ParameterSetsController do
       get :_line_plot,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: "", format: :json}
       expected = {
-        xlabel: "L", ylabel: "ResultKey1", series: "", series_values: [],
+        xlabel: "L", ylabel: "ResultKey1", series: "", series_values: [], irrelevants: [],
         data: [
           [
             [1, 99.0, nil, @ps_array[0].id],
@@ -450,7 +450,7 @@ describe ParameterSetsController do
       get :_line_plot,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "cpu_time", series: "", irrelevants: "", format: :json}
       expected = {
-        xlabel: "L", ylabel: "cpu_time", series: "", series_values: [],
+        xlabel: "L", ylabel: "cpu_time", series: "", series_values: [], irrelevants: [],
         data: [
           [
             [1, 10.0, nil, @ps_array[0].id],
@@ -468,7 +468,7 @@ describe ParameterSetsController do
         get :_line_plot,
           {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "", format: :json}
         expected = {
-          xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0],
+          xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0], irrelevants: [],
           data: [
             [
               [1, 99.0, nil, @ps_array[3].id],
@@ -491,7 +491,7 @@ describe ParameterSetsController do
         get :_line_plot,
           {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "P", format: :json}
         expected = {
-          xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0],
+          xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0], irrelevants: ["P"],
           data: [
             [
               [1, 99.0, nil, @ps_array[3].id],
