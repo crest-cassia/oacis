@@ -141,6 +141,10 @@ class Run
     FileUtils.rm(sh_path) if sh_path.exist?
     json_path = ResultDirectory.manual_submission_input_json_path(self)
     FileUtils.rm(json_path) if json_path.exist?
+    pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(self)
+    FileUtils.rm(pre_process_script_path) if pre_process_script_path.exist?
+    pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(self)
+    FileUtils.rm(pre_process_executor_path) if pre_process_executor_path.exist?
   end
 
   def set_simulator
@@ -179,6 +183,15 @@ class Run
     if simulator.support_input_json
       input_json_path = ResultDirectory.manual_submission_input_json_path(self)
       File.open(input_json_path, 'w') {|io| io.puts input.to_json; io.flush }
+    end
+
+    if simulator.pre_process_script.present?
+      pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(self)
+      File.open(pre_process_script_path, 'w') {|io| io.puts simulator.pre_process_script.gsub(/\r\n/, "\n"); io.flush } # Since a string taken from DB may contain \r\n, gsub is necessary
+      pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(self)
+      File.open(pre_process_executor_path, 'w') {|io| io.puts pre_process_executor; io.flush }
+      cmd = "cd #{pre_process_executor_path.dirname}; chmod +x #{pre_process_executor_path.basename}"
+      system(cmd)
     end
   end
 
@@ -265,5 +278,32 @@ class Run
         errors.add(:omp_threads, "must be equal to or smaller than #{submitted_to.max_mpi_procs}")
       end
     end
+  end
+
+  def pre_process_executor
+    script = <<-EOS
+#!/bin/bash
+RUN_ID=#{self.id}
+mkdir ${RUN_ID}
+cp ${RUN_ID}_preprocess.sh ${RUN_ID}/_preprocess.sh
+chmod +x ${RUN_ID}/_preprocess.sh
+EOS
+    if simulator.support_input_json
+      script += <<-EOS
+if [ -f ${RUN_ID}_input.json ]
+then
+  cp ${RUN_ID}_input.json ${RUN_ID}/_input.json
+else
+  echo "${RUN_ID}_input.json is missing"
+  exit -1
+fi
+EOS
+    end
+    script += <<-EOS
+cd ${RUN_ID}
+./_preprocess.sh #{self.args}
+exit 0
+EOS
+    return script
   end
 end
