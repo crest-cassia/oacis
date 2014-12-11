@@ -274,7 +274,7 @@ FigureViewer.prototype.AddDescription = function() {
     }
     dl.append("dt").text("URL");
     dl.append("input")
-      .attr({"type": "text", "readonly": "readonly"})
+      .attr({"type": "text", "readonly": "readonly", "onClick": "this.select(); "})
       .attr('value', plot.data.plot_url );
   }
   add_label_table();
