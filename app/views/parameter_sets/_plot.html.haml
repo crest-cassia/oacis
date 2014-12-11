@@ -179,3 +179,33 @@
     add_figure_viewer(x, y, result, irrelevants);
   });
 
+  $(function() {  // parse plot parameters from URL
+    function get_query_param() {
+      console.log('hoge');
+      if( 1 < document.location.search.length ) {
+        var query = document.location.search.substring(1);  // remove first '?'
+        var parameters = query.split('&');
+        var result = new Object();
+        for( var i=0; i < parameters.length; i++) {
+          var element = parameters[i].split('=');
+          var key = decodeURIComponent(element[0]);
+          var value = decodeURIComponent(element[1]);
+          result[key] = value;
+        }
+        return result;
+      }
+      return null;
+    }
+    var qparam = get_query_param();
+    if( qparam == null ) { return; }
+    if( qparam['plot_type'] == 'line' ) {
+      add_line_plot( qparam['x_axis'], qparam['y_axis'], qparam['series'] || '', qparam['irrelevants'] || '');
+    } else if( qparam['plot_type'] == 'scatter' ) {
+      add_scatter_plot( qparam['x_axis'], qparam['y_axis'], qparam['result'] || '', qparam['irrelevants'] || '');
+    } else if( qparam['plot_type'] == 'figure' ) {
+      add_figure_viewer( qparam['x_axis'], qparam['y_axis'], qparam['result'] || '', qparam['irrelevants'] || '');
+    } else {
+      console.log("unknown plot type");
+    }
+  });
+
