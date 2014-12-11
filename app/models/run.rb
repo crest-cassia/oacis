@@ -141,6 +141,10 @@ class Run
     FileUtils.rm(sh_path) if sh_path.exist?
     json_path = ResultDirectory.manual_submission_input_json_path(self)
     FileUtils.rm(json_path) if json_path.exist?
+    pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(self)
+    FileUtils.rm(pre_process_script_path) if pre_process_script_path.exist?
+    pre_process_executer_path = ResultDirectory.manual_submission_pre_process_executer_path(self)
+    FileUtils.rm(pre_process_executer_path) if pre_process_executer_path.exist?
   end
 
   def set_simulator
@@ -183,7 +187,7 @@ class Run
 
     if simulator.pre_process_script && simulator.pre_process_script.length > 0
       pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(self)
-      File.open(pre_process_script_path, 'w') {|io| io.puts simulator.pre_process_script; io.flush }
+      File.open(pre_process_script_path, 'w') {|io| io.puts simulator.pre_process_script.gsub(/\r\n/, "\n"); io.flush }
       pre_process_executer_path = ResultDirectory.manual_submission_pre_process_executer_path(self)
       File.open(pre_process_executer_path, 'w') {|io| io.puts pre_process_executer; io.flush }
       cmd = "cd #{pre_process_executer_path.dirname}; chmod +x #{pre_process_executer_path.basename}"

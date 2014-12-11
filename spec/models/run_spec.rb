@@ -409,6 +409,20 @@ EOS
       json_path.should_not be_exist
     end
 
+    it "deletes preprocess script and preprocess executer created for manual submission" do
+      sim = @run.simulator
+      sim.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
+      run = sim.parameter_sets.first.runs.create(submitted_to: nil)
+      pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(run)
+      pre_process_executer_path = ResultDirectory.manual_submission_pre_process_executer_path(run)
+
+      pre_process_script_path.should be_exist
+      pre_process_executer_path.should be_exist
+      run.destroy
+      pre_process_script_path.should_not be_exist
+      pre_process_executer_path.should_not be_exist
+    end
+
     context "when status is :submitted or :running" do
 
       before(:each) do
