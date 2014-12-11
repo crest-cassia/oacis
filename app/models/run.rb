@@ -180,6 +180,15 @@ class Run
       input_json_path = ResultDirectory.manual_submission_input_json_path(self)
       File.open(input_json_path, 'w') {|io| io.puts input.to_json; io.flush }
     end
+
+    if simulator.pre_process_script && simulator.pre_process_script.length > 0
+      pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(self)
+      File.open(pre_process_script_path, 'w') {|io| io.puts simulator.pre_process_script; io.flush }
+      pre_process_executer_path = ResultDirectory.manual_submission_pre_process_executer_path(self)
+      File.open(pre_process_executer_path, 'w') {|io| io.puts pre_process_executer; io.flush }
+      cmd = "cd #{pre_process_executer_path.dirname}; chmod +x #{pre_process_executer_path.basename}"
+      system(cmd)
+    end
   end
 
   def delete_run_dir
@@ -265,5 +274,32 @@ class Run
         errors.add(:omp_threads, "must be equal to or smaller than #{submitted_to.max_mpi_procs}")
       end
     end
+  end
+
+  def pre_process_executer
+    script = <<-EOS
+#!/bin/bash
+RUN_ID=#{self.id}
+mkdir ${RUN_ID}
+cp ${RUN_ID}_preprocess.sh ${RUN_ID}/_preprocess.sh
+chmod +x ${RUN_ID}/_preprocess.sh
+EOS
+    if simulator.support_input_json
+      script += <<-EOS
+if [ -f ${RUN_ID}_input.json ]
+then
+  cp ${RUN_ID}_input.json ${RUN_ID}/_input.json
+else
+  echo "${RUN_ID}_input.json is missing"
+  exit -1
+fi
+EOS
+    end
+    script += <<-EOS
+cd ${RUN_ID}
+./_preprocess.sh #{self.args}
+exit 0
+EOS
+    return script
   end
 end
