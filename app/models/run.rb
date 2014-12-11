@@ -185,9 +185,9 @@ class Run
       File.open(input_json_path, 'w') {|io| io.puts input.to_json; io.flush }
     end
 
-    if simulator.pre_process_script && simulator.pre_process_script.length > 0
+    if simulator.pre_process_script.present?
       pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(self)
-      File.open(pre_process_script_path, 'w') {|io| io.puts simulator.pre_process_script.gsub(/\r\n/, "\n"); io.flush }
+      File.open(pre_process_script_path, 'w') {|io| io.puts simulator.pre_process_script.gsub(/\r\n/, "\n"); io.flush } # Since a string taken from DB may contain \r\n, gsub is necessary
       pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(self)
       File.open(pre_process_executor_path, 'w') {|io| io.puts pre_process_executor; io.flush }
       cmd = "cd #{pre_process_executor_path.dirname}; chmod +x #{pre_process_executor_path.basename}"
