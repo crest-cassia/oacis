@@ -20,7 +20,7 @@ function create_parameter_sets_list(selector, default_length) {
   setInterval( function() {
     var num_open = $(selector + ' img.treebtn[state="open"]').length;
     if( num_open == 0 ) { oPsTable.fnReloadAjax(); }
-  }, 3000);
+  }, 5000);
 
   $(selector).on("click", "img.treebtn[parameter_set_id]", function() {
     var param_id = $(this).attr("parameter_set_id");

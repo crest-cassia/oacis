@@ -33,7 +33,7 @@ $(function() {
   setInterval( function() {
     var num_open = $('#analyses_list img.treebtn[state="open"]').length;
     if( bReloadAnalysesTable && num_open == 0 && oAnalysesTableToReload ) { oAnalysesTableToReload.fnReloadAjax(); }
-  }, 3000);
+  }, 5000);
 
   var datatables_for_analyses_table = function() {
     var oTable = $('#analyses_list').dataTable({

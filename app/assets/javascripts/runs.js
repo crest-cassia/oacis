@@ -7,7 +7,7 @@ $(function() {
   var oRunsTableToReload = null;
   setInterval( function() {
     if( bReloadRunsTable && oRunsTableToReload ) { oRunsTableToReload.fnReloadAjax(); }
-  }, 3000);
+  }, 5000);
 
   var datatables_for_runs_table = function() {
     var oTable = $('#runs_list').dataTable({
