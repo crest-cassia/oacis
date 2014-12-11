@@ -409,18 +409,18 @@ EOS
       json_path.should_not be_exist
     end
 
-    it "deletes preprocess script and preprocess executer created for manual submission" do
+    it "deletes preprocess script and preprocess executor created for manual submission" do
       sim = @run.simulator
       sim.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
       run = sim.parameter_sets.first.runs.create(submitted_to: nil)
       pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(run)
-      pre_process_executer_path = ResultDirectory.manual_submission_pre_process_executer_path(run)
+      pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(run)
 
       pre_process_script_path.should be_exist
-      pre_process_executer_path.should be_exist
+      pre_process_executor_path.should be_exist
       run.destroy
       pre_process_script_path.should_not be_exist
-      pre_process_executer_path.should_not be_exist
+      pre_process_executor_path.should_not be_exist
     end
 
     context "when status is :submitted or :running" do
@@ -504,31 +504,31 @@ EOS
           ResultDirectory.manual_submission_pre_process_script_path(run).should be_exist
         end
 
-        it "creates a preprocess executer" do
+        it "creates a preprocess executor" do
           @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
           run = @param_set.runs.create!(submitted_to: nil)
-          ResultDirectory.manual_submission_pre_process_executer_path(run).should be_exist
+          ResultDirectory.manual_submission_pre_process_executor_path(run).should be_exist
         end
 
-        it "preprocess executer creates _preprocess.sh" do
+        it "preprocess executor creates _preprocess.sh" do
           @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
           run = @param_set.runs.create!(submitted_to: nil)
-          pre_process_executer_path = ResultDirectory.manual_submission_pre_process_executer_path(run)
-          cmd = "/bin/bash #{pre_process_executer_path.basename}"
-          Dir.chdir(pre_process_executer_path.dirname) {
+          pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(run)
+          cmd = "/bin/bash #{pre_process_executor_path.basename}"
+          Dir.chdir(pre_process_executor_path.dirname) {
             system(cmd)
             _preprocess_path = Pathname.new(run.id).join("_preprocess.sh")
             _preprocess_path.should be_exist
           }
         end
 
-        it "preprocess executer creates _input.json" do
+        it "preprocess executor creates _input.json" do
           @simulator.update_attribute(:support_input_json, true)
           @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
           run = @param_set.runs.create!(submitted_to: nil)
-          pre_process_executer_path = ResultDirectory.manual_submission_pre_process_executer_path(run)
-          cmd = "/bin/bash #{pre_process_executer_path.basename}"
-          Dir.chdir(pre_process_executer_path.dirname) {
+          pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(run)
+          cmd = "/bin/bash #{pre_process_executor_path.basename}"
+          Dir.chdir(pre_process_executor_path.dirname) {
             system(cmd)
             _input_json_path = Pathname.new(run.id).join("_input.json")
             _input_json_path.should be_exist

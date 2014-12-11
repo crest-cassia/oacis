@@ -67,7 +67,7 @@ module ResultDirectory
     manual_submission_path.join("#{run.id}_preprocess.sh")
   end
 
-  def self.manual_submission_pre_process_executer_path(run)
-    manual_submission_path.join("#{run.id}_preprocess_executer.sh")
+  def self.manual_submission_pre_process_executor_path(run)
+    manual_submission_path.join("#{run.id}_preprocess_executor.sh")
   end
 end
