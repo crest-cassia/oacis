@@ -192,9 +192,9 @@ class ParameterSetsController < ApplicationController
       }
       format.plt {
         if series.blank?
-          script = GnuplotUtil.script_for_single_line_plot(data[0], x_axis_key, result_keys.last, true)
+          script = GnuplotUtil.script_for_single_line_plot(data[0], x_axis_key, ylabel, true)
         else
-          script = GnuplotUtil.script_for_multi_line_plot(data, x_axis_key, result_keys.last, true,
+          script = GnuplotUtil.script_for_multi_line_plot(data, x_axis_key, ylabel, true,
                                                           series, series_values)
         end
         render text: script
