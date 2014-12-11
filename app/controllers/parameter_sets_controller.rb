@@ -415,7 +415,6 @@ class ParameterSetsController < ApplicationController
     analyzer_name, figure_filename = params[:result].split('/')
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
-    scales = {}
 
     found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
 
@@ -463,7 +462,7 @@ class ParameterSetsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: { xlabel: x_axis_key, ylabel: y_axis_key,
-                       result: figure_filename, data: data, xscale: scales["xscale"], yscale: scales["yscale"]}
+                       result: figure_filename, data: data}
       }
     end
   end
