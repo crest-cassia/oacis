@@ -203,7 +203,7 @@
     } else if( qparam['plot_type'] == 'scatter' ) {
       add_scatter_plot( qparam['x_axis'], qparam['y_axis'], qparam['result'], qparam['irrelevants'] || '');
     } else if( qparam['plot_type'] == 'figure' ) {
-      add_figure_viewer( qparam['x_axis'], qparam['y_axis'], qparam['result'] || '', qparam['irrelevants'] || '');
+      add_figure_viewer( qparam['x_axis'], qparam['y_axis'], qparam['result'], qparam['irrelevants'] || '');
     } else {
       console.log("unknown plot type");
     }
