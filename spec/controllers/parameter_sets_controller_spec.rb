@@ -677,7 +677,17 @@ describe ParameterSetsController do
       loaded["xlabel"].should eq "L"
       loaded["ylabel"].should eq "T"
       loaded["result"].should eq "fig1.png"
+      loaded["irrelevants"].should eq []
       loaded["data"].should =~ expected_data
+    end
+
+    it "returns irrelevant keys" do
+      get :_figure_viewer,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "P", format: :json}
+
+      loaded = JSON.load(response.body)
+      loaded["irrelevants"].should eq ["P"]
+      loaded["data"].should include( [3, 2.0, path_to_fig(@ps_array[5]), @ps_array[5].id.to_s] )
     end
 
     context "when run is not created for all runs" do
