@@ -563,6 +563,7 @@ describe ParameterSetsController do
       loaded["xlabel"].should eq "L"
       loaded["ylabel"].should eq "T"
       loaded["result"].should eq "ResultKey1"
+      loaded["irrelevants"].should eq []
       loaded["data"].should =~ expected_data
     end
 
@@ -583,6 +584,7 @@ describe ParameterSetsController do
       loaded["xlabel"].should eq "L"
       loaded["ylabel"].should eq "T"
       loaded["result"].should eq "ResultKey1"
+      loaded["irrelevants"].should eq []
       loaded["data"].should =~ expected_data
     end
 
@@ -601,8 +603,22 @@ describe ParameterSetsController do
       loaded["xlabel"].should eq "L"
       loaded["ylabel"].should eq "T"
       loaded["result"].should eq "cpu_time"
+      loaded["irrelevants"].should eq []
       loaded["data"].should =~ expected_data
     end
+
+    it "returns collect values when irrelevant keys are given" do
+      get :_scatter_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "P", format: :json}
+
+      loaded = JSON.load(response.body)
+      loaded["xlabel"].should eq "L"
+      loaded["ylabel"].should eq "T"
+      loaded["result"].should eq "cpu_time"
+      loaded["irrelevants"].should eq ["P"]
+      loaded["data"].should include( [@ps_array[5].v, 10.0, nil, @ps_array[5].id.to_s] )
+    end
+
   end
 
   describe "GET _figure_viewer" do

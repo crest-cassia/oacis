@@ -378,7 +378,10 @@ class ParameterSetsController < ApplicationController
 
     respond_to do |format|
       format.json {
-        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result, data: data}
+        render json: {
+          xlabel: x_axis_key, ylabel: y_axis_key, result: result,
+          irrelevants: irrelevant_keys, data: data
+        }
       }
     end
   end
