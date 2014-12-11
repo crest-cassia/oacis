@@ -292,6 +292,25 @@ ScatterPlot.prototype.AddDescription = function() {
     dl.append("dd").text(plot.data.ylabel);
     dl.append("dt").text("Result");
     dl.append("dd").text(plot.data.result);
+    if(plot.data.irrelevants.length > 0) {
+      dl.append("dt").text("Irrevant keys");
+      dl.append("dd").text( plot.data.irrelevants.join(',') );
+    }
+    dl.append("dt").text("URL");
+    dl.append("input")
+      .attr({"type": "text", "readonly": "readonly"})
+      .attr('value', function() {
+        var url = plot.parameter_set_base_url + plot.current_ps_id;
+        var query = ["plot_type=scatter",
+                     "x_axis=" + encodeURIComponent(plot.data.xlabel),
+                     "y_axis=" + encodeURIComponent(plot.data.ylabel),
+                     "result=" + encodeURIComponent(plot.data.result)
+                    ];
+        if( plot.data.irrelevants.length > 0 ) {
+          query.push( "irrelevants=" + encodeURIComponent(plot.data.irrelevants.join(',')) );
+        }
+        return location.protocol + '//' + location.host + url + '?' + query.join('&') + '#!tab-plot';
+      });
   }
   add_label_table();
 
