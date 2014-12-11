@@ -291,9 +291,14 @@ FigureViewer.prototype.AddDescription = function() {
   add_label_table();
 
   function add_tools() {
-    plot.description.append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
-    plot.description.append("br");
-    plot.description.append("a").text("show smaller image").style('cursor','pointer').on("click", function() {
+    var actions = plot.description.append("div").attr('class', 'btn-group');
+    actions.append("a")
+      .attr({"class": "btn btn-primary btn-small dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
+      .text("Action")
+      .append("span").attr("class", "caret");
+    var list = actions.append("ul").attr('class', 'dropdown-menu');
+    list.append("li").append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
+    list.append("li").append("a").text("show smaller image").style('cursor','pointer').on("click", function() {
       if(plot.figure_size == "small") {
         plot.UpdatePlot("point");
       }
@@ -301,8 +306,7 @@ FigureViewer.prototype.AddDescription = function() {
         plot.UpdatePlot("small");
       }
     });
-    plot.description.append("br");
-    plot.description.append("a").text("show larger image").style('cursor','pointer').on("click", function() {
+    list.append("li").append("a").text("show larger image").style('cursor','pointer').on("click", function() {
       if(plot.figure_size == "point") {
         plot.UpdatePlot("small");
       }
@@ -310,14 +314,11 @@ FigureViewer.prototype.AddDescription = function() {
         plot.UpdatePlot("large");
       }
     });
-    plot.description.append("br");
-
-    plot.description.append("a").text("delete plot")
+    list.append("li").append("a").text("delete plot")
       .style("cursor", "pointer")
       .on("click", function() {
         plot.Destructor();
       });
-    plot.description.append("br");
     plot.description.append("div").style("padding-bottom", "50px");
 
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
