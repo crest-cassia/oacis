@@ -187,6 +187,7 @@ class ParameterSetsController < ApplicationController
         render json: { xlabel: x_axis_key, ylabel: ylabel,
                        series: series, series_values: series_values,
                        irrelevants: irrelevant_keys,
+                       plot_url: make_plot_url(ps, :line, params),
                        data: data
                      }
       }
@@ -380,7 +381,9 @@ class ParameterSetsController < ApplicationController
       format.json {
         render json: {
           xlabel: x_axis_key, ylabel: y_axis_key, result: result,
-          irrelevants: irrelevant_keys, data: data
+          irrelevants: irrelevant_keys,
+          plot_url: make_plot_url(base_ps, :scatter, params),
+          data: data
         }
       }
     end
@@ -462,11 +465,43 @@ class ParameterSetsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: { xlabel: x_axis_key, ylabel: y_axis_key,
-                       result: params[:result], irrelevants: irrelevant_keys, data: data}
+                       result: params[:result], irrelevants: irrelevant_keys,
+                       plot_url: make_plot_url(base_ps, :figure, params),
+                       data: data}
       }
     end
   end
 
+  private
+  def make_plot_url(ps, plot_type, params)
+    url = parameter_set_url(ps)
+    query = case plot_type
+    when :line
+      [ "plot_type=line",
+        "x_axis=#{ERB::Util.url_encode(params[:x_axis_key])}",
+        "y_axis=#{ERB::Util.url_encode(params[:y_axis_key])}",
+        "series=#{ERB::Util.url_encode(params[:series])}",
+        "irrelevants=#{ERB::Util.url_encode(params[:irrelevants])}"
+      ]
+    when :scatter
+      [ "plot_type=scatter",
+        "x_axis=#{ERB::Util.url_encode(params[:x_axis_key])}",
+        "y_axis=#{ERB::Util.url_encode(params[:y_axis_key])}",
+        "result=#{ERB::Util.url_encode(params[:result])}",
+        "irrelevants=#{ERB::Util.url_encode(params[:irrelevants])}"
+      ]
+    when :figure
+      [ "plot_type=figure",
+        "x_axis=#{ERB::Util.url_encode(params[:x_axis_key])}",
+        "y_axis=#{ERB::Util.url_encode(params[:y_axis_key])}",
+        "result=#{ERB::Util.url_encode(params[:result])}",
+        "irrelevants=#{ERB::Util.url_encode(params[:irrelevants])}"
+      ]
+    end
+    "#{url}?#{query.join('&')}#!tab-plot"
+  end
+
+  public
   def _neighbor
     current = ParameterSet.find(params[:id])
     simulator = current.simulator

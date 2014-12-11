@@ -435,6 +435,7 @@ describe ParameterSetsController do
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: "", format: :json}
       expected = {
         xlabel: "L", ylabel: "ResultKey1", series: "", series_values: [], irrelevants: [],
+        plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=&irrelevants=#!tab-plot",
         data: [
           [
             [1, 99.0, nil, @ps_array[0].id],
@@ -451,6 +452,7 @@ describe ParameterSetsController do
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "cpu_time", series: "", irrelevants: "", format: :json}
       expected = {
         xlabel: "L", ylabel: "cpu_time", series: "", series_values: [], irrelevants: [],
+        plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=cpu_time&series=&irrelevants=#!tab-plot",
         data: [
           [
             [1, 10.0, nil, @ps_array[0].id],
@@ -469,6 +471,7 @@ describe ParameterSetsController do
           {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "", format: :json}
         expected = {
           xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0], irrelevants: [],
+          plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=T&irrelevants=#!tab-plot",
           data: [
             [
               [1, 99.0, nil, @ps_array[3].id],
@@ -492,6 +495,7 @@ describe ParameterSetsController do
           {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "T", irrelevants: "P", format: :json}
         expected = {
           xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0], irrelevants: ["P"],
+          plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=T&irrelevants=P#!tab-plot",
           data: [
             [
               [1, 99.0, nil, @ps_array[3].id],
@@ -619,6 +623,12 @@ describe ParameterSetsController do
       loaded["data"].should include( [@ps_array[5].v, 10.0, nil, @ps_array[5].id.to_s] )
     end
 
+    it "contains url for the plot" do
+      get :_scatter_plot,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "P", format: :json}
+      loaded = JSON.load(response.body)
+      loaded["plot_url"].should match (/\?plot_type=scatter&x_axis=L&y_axis=T&result=cpu_time&irrelevants=P\#\!tab-plot$/)
+    end
   end
 
   describe "GET _figure_viewer" do
@@ -688,6 +698,13 @@ describe ParameterSetsController do
       loaded = JSON.load(response.body)
       loaded["irrelevants"].should eq ["P"]
       loaded["data"].should include( [3, 2.0, path_to_fig(@ps_array[5]), @ps_array[5].id.to_s] )
+    end
+
+    it "contains url for the plot" do
+      get :_figure_viewer,
+        {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "P", format: :json}
+      loaded = JSON.load(response.body)
+      loaded["plot_url"].should match (/\?plot_type=figure&x_axis=L&y_axis=T&result=%2Ffig1.png&irrelevants=P\#\!tab-plot$/)
     end
 
     context "when run is not created for all runs" do

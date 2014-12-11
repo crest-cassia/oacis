@@ -290,20 +290,7 @@ LinePlot.prototype.AddDescription = function() {
     dl.append("dt").text("URL");
     dl.append("input")
       .attr({"type": "text", "readonly": "readonly"})
-      .attr('value', function() {
-        var url = plot.parameter_set_base_url + plot.current_ps_id;
-        var query = ["plot_type=line",
-                     "x_axis=" + encodeURIComponent(plot.data.xlabel),
-                     "y_axis=" + encodeURIComponent(plot.data.ylabel)
-                     ];
-        if( plot.data.series ) {
-          query.push( "series=" + encodeURIComponent(plot.data.series) );
-        }
-        if( plot.data.irrelevants.length > 0 ) {
-          query.push( "irrelevants=" + encodeURIComponent(plot.data.irrelevants.join(',')) );
-        }
-        return location.protocol + '//' + location.host + url + '?' + query.join('&') + '#!tab-plot';
-      });
+      .attr('value', plot.data.plot_url );
   }
   add_label_table();
 
