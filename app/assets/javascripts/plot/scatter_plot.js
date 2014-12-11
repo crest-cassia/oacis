@@ -292,12 +292,25 @@ ScatterPlot.prototype.AddDescription = function() {
     dl.append("dd").text(plot.data.ylabel);
     dl.append("dt").text("Result");
     dl.append("dd").text(plot.data.result);
+    if(plot.data.irrelevants.length > 0) {
+      dl.append("dt").text("Irrevant keys");
+      dl.append("dd").text( plot.data.irrelevants.join(',') );
+    }
+    dl.append("dt").text("URL");
+    dl.append("input")
+      .attr({"type": "text", "readonly": "readonly", "onClick": "this.select(); "})
+      .attr('value', plot.data.plot_url );
   }
   add_label_table();
 
   function add_tools() {
-    plot.description.append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
-    plot.description.append("br");
+    var actions = plot.description.append("div").attr('class', 'btn-group');
+    actions.append("a")
+      .attr({"class": "btn btn-primary btn-small dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
+      .text("Action")
+      .append("span").attr("class", "caret");
+    var list = actions.append("ul").attr('class', 'dropdown-menu');
+    list.append("li").append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
     var downloadAsFile = function(fileName, content, a_element) {
       var blob = new Blob([content]);
       var url = window.URL || window.webkitURL;
@@ -305,7 +318,7 @@ ScatterPlot.prototype.AddDescription = function() {
       a_element.download = fileName;
       a_element.href = blobURL;
     };
-    plot.description.append("a").text("download svg").style("cursor", "pointer")
+    list.append("li").append("a").text("download svg").style("cursor", "pointer")
       .on("click", function() {
         var clone_region = document.createElement('div');
         clone_region.appendChild(plot.svg.node().cloneNode(true));
@@ -313,14 +326,11 @@ ScatterPlot.prototype.AddDescription = function() {
           .attr("xmlns", "http://www.w3.org/2000/svg");
         downloadAsFile("scatter_plot.svg", $(clone_region).html(), this);
       });
-    plot.description.append("br");
-
-    plot.description.append("a").text("delete plot")
+    list.append("li").append("a").text("delete plot")
       .style("cursor", "pointer")
       .on("click", function() {
         plot.Destructor();
       });
-    plot.description.append("br");
     plot.description.append("div").style("margin-bottom", "20px");
 
     plot.description.append("input").attr("type", "checkbox").on("change", function() {

@@ -185,13 +185,17 @@ class ParameterSetsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: { xlabel: x_axis_key, ylabel: ylabel,
-                       series: series, series_values: series_values, data: data}
+                       series: series, series_values: series_values,
+                       irrelevants: irrelevant_keys,
+                       plot_url: make_plot_url(ps, :line, params),
+                       data: data
+                     }
       }
       format.plt {
         if series.blank?
-          script = GnuplotUtil.script_for_single_line_plot(data[0], x_axis_key, result_keys.last, true)
+          script = GnuplotUtil.script_for_single_line_plot(data[0], x_axis_key, ylabel, true)
         else
-          script = GnuplotUtil.script_for_multi_line_plot(data, x_axis_key, result_keys.last, true,
+          script = GnuplotUtil.script_for_multi_line_plot(data, x_axis_key, ylabel, true,
                                                           series, series_values)
         end
         render text: script
@@ -375,7 +379,12 @@ class ParameterSetsController < ApplicationController
 
     respond_to do |format|
       format.json {
-        render json: {xlabel: x_axis_key, ylabel: y_axis_key, result: result, data: data}
+        render json: {
+          xlabel: x_axis_key, ylabel: y_axis_key, result: result,
+          irrelevants: irrelevant_keys,
+          plot_url: make_plot_url(base_ps, :scatter, params),
+          data: data
+        }
       }
     end
   end
@@ -409,7 +418,6 @@ class ParameterSetsController < ApplicationController
     analyzer_name, figure_filename = params[:result].split('/')
     analyzer = base_ps.simulator.analyzers.where(name: analyzer_name).first
     irrelevant_keys = params[:irrelevants].split(',')
-    scales = {}
 
     found_ps = base_ps.parameter_sets_with_different(x_axis_key, [y_axis_key] + irrelevant_keys)
 
@@ -457,11 +465,43 @@ class ParameterSetsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: { xlabel: x_axis_key, ylabel: y_axis_key,
-                       result: figure_filename, data: data, xscale: scales["xscale"], yscale: scales["yscale"]}
+                       result: params[:result], irrelevants: irrelevant_keys,
+                       plot_url: make_plot_url(base_ps, :figure, params),
+                       data: data}
       }
     end
   end
 
+  private
+  def make_plot_url(ps, plot_type, params)
+    url = parameter_set_url(ps)
+    query = case plot_type
+    when :line
+      [ "plot_type=line",
+        "x_axis=#{ERB::Util.url_encode(params[:x_axis_key])}",
+        "y_axis=#{ERB::Util.url_encode(params[:y_axis_key])}",
+        "series=#{ERB::Util.url_encode(params[:series])}",
+        "irrelevants=#{ERB::Util.url_encode(params[:irrelevants])}"
+      ]
+    when :scatter
+      [ "plot_type=scatter",
+        "x_axis=#{ERB::Util.url_encode(params[:x_axis_key])}",
+        "y_axis=#{ERB::Util.url_encode(params[:y_axis_key])}",
+        "result=#{ERB::Util.url_encode(params[:result])}",
+        "irrelevants=#{ERB::Util.url_encode(params[:irrelevants])}"
+      ]
+    when :figure
+      [ "plot_type=figure",
+        "x_axis=#{ERB::Util.url_encode(params[:x_axis_key])}",
+        "y_axis=#{ERB::Util.url_encode(params[:y_axis_key])}",
+        "result=#{ERB::Util.url_encode(params[:result])}",
+        "irrelevants=#{ERB::Util.url_encode(params[:irrelevants])}"
+      ]
+    end
+    "#{url}?#{query.join('&')}#!tab-plot"
+  end
+
+  public
   def _neighbor
     current = ParameterSet.find(params[:id])
     simulator = current.simulator
