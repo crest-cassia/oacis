@@ -6,6 +6,12 @@ AcmProto::Application.routes.draw do
     end
   end
 
+  resources :analyses, only: ["index"] do
+    collection do
+      get "_analyses_table" # for ajax, datatables
+    end
+  end
+
   # Simulator-ParameterSet-Run relations
   simulator_actions = ["index", "show"]
   simulator_actions += ["new", "create", "edit", "update", "destroy"] unless OACIS_READ_ONLY
