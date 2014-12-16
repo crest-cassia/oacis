@@ -35,6 +35,12 @@ describe JobSubmitter do
       }.to_not raise_error
     end
 
+    it "does not create SSH connection if there is no submittable jobs" do
+      @sim.runs.first.update_attribute(:status, :finished)
+      Host.any_instance.should_not_receive(:start_ssh)
+      JobSubmitter.perform(@logger)
+    end
+
     it "do nothing if there is no 'enabled' hosts" do
       @host.update_attribute(:status, :disabled)
       expect {
