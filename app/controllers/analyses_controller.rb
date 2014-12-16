@@ -41,6 +41,11 @@ class AnalysesController < ApplicationController
     render partial: "shared/results", layout: false, locals: {result: arn.result, result_paths: arn.result_paths, archived_result_path: nil}
   end
 
+  def _analyses_table
+    stat = params[:analysis_status].to_sym
+    render json: AnalysesListDatatable.new(view_context, Analysis.where(status: stat))
+  end
+
   private
   def fetch_analyzable(params)
     analyzable = nil
