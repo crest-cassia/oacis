@@ -13,7 +13,7 @@ class JobSubmitter
           runs = host.submittable_runs.where(priority: priority).limit(num)
           logger.info("submitting jobs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
           num -= runs.length  # [warining] runs.length ignore 'limit', so 'num' can be negative.
-          submit(runs, host, logger)
+          submit(runs, host, logger) if runs.present?
         end
       rescue => ex
         logger.error("Error in JobSubmitter: #{ex.inspect}")
