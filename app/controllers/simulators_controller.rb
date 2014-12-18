@@ -164,4 +164,10 @@ class SimulatorsController < ApplicationController
     end
     render nothing: true
   end
+
+  def _host_parameters_field
+    sim = Simulator.find(params[:id])
+    host = Host.where(id: params[:host_id]).first
+    render partial: "runs/host_parameter_fields", locals: {sim: sim, host: host}
+  end
 end

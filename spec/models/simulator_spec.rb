@@ -465,4 +465,49 @@ describe Simulator do
       end
     end
   end
+
+  describe "default_host_parameter" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 0
+                               )
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim.executable_on.destroy
+      @sim.executable_on << @host
+    end
+
+    context "when there is no run" do
+
+      it "return default_host_parameter associated with a host" do
+        key_value = @sim.executable_on.first.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
+        @sim.default_host_parameter(@sim.executable_on.first).should eq Hash[*key_value.flatten]
+      end
+
+      it "return default_host_parameter for manual submission" do
+        @sim.default_host_parameter(nil).should eq Hash.new
+      end
+    end
+
+    context "when new run is created" do
+
+      it "return default_host_parameter which the created run has" do
+        host_parameters = @sim.default_host_parameter(@sim.executable_on.first) # {"param1"=>nil, "param2"=>"XXX"}
+        run = @sim.parameter_sets.first.runs.build({submitted_to: @sim.executable_on.first, host_parameters: host_parameters})
+        expect {
+          run.host_parameters["param2"] = "YYY"
+          run.save
+        }.to change { Simulator.find(@sim.to_param).default_host_parameter(@sim.executable_on.first)["param2"] }.from("XXX").to("YYY")
+      end
+
+      it "return default_host_parameter which the created run has for manual submission" do
+        run = @sim.parameter_sets.first.runs.build({submitted_to: nil})
+        expect {
+          run.host_parameters = {"param1"=>nil, "param2"=>"XXX"}
+          run.save
+        }.to change { Simulator.find(@sim.to_param).default_host_parameter(nil) }.from({}).to({"param1"=>nil, "param2"=>"XXX"})
+      end
+    end
+  end
 end

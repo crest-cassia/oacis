@@ -20,14 +20,14 @@
     - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
     = f.select(:submitted_to, options_for_select(host_names, selected: selected_id) )
 #host_parameters
-  = render 'runs/host_parameter_fields', run: run, host: run.submitted_to
+  = render 'runs/host_parameter_fields', {sim: run.simulator, host: run.submitted_to}
 
 :javascript
   $(function() {
     $('select#run_submitted_to').change(function() {
       var host_id = $(this).val();
       if( host_id == '' ) { host_id = 'manual'; }
-      var url = "#{_host_parameters_field_host_url(':host_id')}".replace(':host_id', host_id);
+      var url = "#{_host_parameters_field_simulator_url(run.simulator)}" + "?host_id=" + host_id;
       $.get(url, function(data) {
         $('#host_parameters').html(data);
         if( $('#new_parameter_set').length > 0 ) {

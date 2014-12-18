@@ -50,7 +50,7 @@ class Run
 
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   before_save :remove_runs_status_count_cache, :if => :status_changed?
-  after_create :create_run_dir, :create_job_script_for_manual_submission
+  after_create :create_run_dir, :create_job_script_for_manual_submission, :update_default_host_parameter_on_its_simulator
   before_destroy :delete_run_dir, :delete_archived_result_file ,
                  :delete_files_for_manual_submission, :remove_runs_status_count_cache
 
@@ -192,6 +192,15 @@ class Run
       File.open(pre_process_executor_path, 'w') {|io| io.puts pre_process_executor; io.flush }
       cmd = "cd #{pre_process_executor_path.dirname}; chmod +x #{pre_process_executor_path.basename}"
       system(cmd)
+    end
+  end
+
+  def update_default_host_parameter_on_its_simulator
+    unless self.host_parameters == self.simulator.default_host_parameter(self.submitted_to)
+      id = self.submitted_to.present? ? self.submitted_to.id : "manual_submission"
+      host_parameters = self.simulator.default_host_parameters
+      host_parameters[id] = self.host_parameters
+      Simulator.find(self.simulator.to_param).timeless.update_attribute(:default_host_parameters, host_parameters)
     end
   end
 

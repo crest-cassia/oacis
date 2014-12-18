@@ -26,6 +26,7 @@ AcmProto::Application.routes.draw do
       get "_parameters_list" # for ajax, datatables
       get "_analyzer_list" # for ajax, datatables
       get "_progress" # for progress table
+      get "_host_parameters_field" # for ajax, get the fields for host_parameters
     end
 
     parameter_set_actions = ["show"]
@@ -78,9 +79,6 @@ AcmProto::Application.routes.draw do
   resources :hosts, only: host_actions do
     collection do
       post "_sort" # for ajax, update order of the table
-    end
-    member do
-      get "_host_parameters_field" # for ajax, get the fields for host_parameters
     end
   end
 

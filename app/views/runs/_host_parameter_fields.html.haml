@@ -1,8 +1,7 @@
 - if host
-  - host.host_parameter_definitions.each do |hpdef|
+  - sim.default_host_parameter(host).each do |key, val|
     .control-group
-      = label_tag(:"run[host_parameters][#{hpdef.key}]", hpdef.key, class: 'control-label')
+      = label_tag(:"run[host_parameters][#{key}]", key, class: 'control-label')
       .controls
-        - value = (defined?(run) && run.host_parameters[hpdef.key]) || hpdef.default
-        = text_field_tag(:"run[host_parameters][#{hpdef.key}]", value, id: "run_host_parameters_#{hpdef.key}_#{host.id}")
-        = "Format: /#{hpdef.format}/"
+        = text_field_tag(:"run[host_parameters][#{key}]", val, id: "run_host_parameters_#{key}_#{host.id}")
+        = "Format: /#{host.host_parameter_definitions.select {|hpd| hpd.key == key}.first.format }/"
