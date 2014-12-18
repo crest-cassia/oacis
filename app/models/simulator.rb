@@ -332,6 +332,7 @@ EOS
         host_parameter = Hash[*key_value.flatten]
       end
       self.default_host_parameters[id] = host_parameter
+      self.save
     end
     self.default_host_parameters[id]
   end

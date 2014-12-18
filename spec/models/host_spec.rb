@@ -365,6 +365,21 @@ EOS
     it "gets host parameters by invoking 'get_host_parameters_for_xsub' when scheduler_type is updated" do
       @host.scheduler_type = "xsub"
       @host.should_receive(:get_host_parameters_for_xsub)
+      @host.valid?
+    end
+
+    it "gets host parameters by invoking 'get_host_parameters_for_xsub' twice when scheduler_type is saved" do
+      @host.scheduler_type = "xsub"
+      @host.should_receive(:get_host_parameters_for_xsub).twice
+      @host.save!
+    end
+
+    it "gets host parameters by invoking 'get_host_parameters_for_xsub' when host is updated" do
+      @host.should_receive(:get_host_parameters_for_xsub).twice # first call in before_varidata, second call in after_update
+      @host.scheduler_type = "xsub"
+      @host.status = :disabled
+      @host.save!
+      @host.status = :enabled
       @host.save!
     end
 
@@ -395,6 +410,46 @@ EOS
     it "the largest number within existing hosts is assigned when created" do
       Host.create!(name: 'h1', hostname: 'localhost', user: 'foo').position.should eq 2
       Host.all.map(&:position).should =~ [0,1,2]
+    end
+  end
+
+  describe "#destroy" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 1)
+      @sim.executable_on.destroy
+      @sim.executable_on << @host
+      @sim.save
+    end
+
+    it "delete host parameters from executable simulators" do
+      host_id = @host.to_param
+      host_parameters = @sim.default_host_parameter(@host)
+      expect {
+        @host.destroy
+      }.to change { Simulator.find(@sim.to_param).default_host_parameters[host_id] }.from(host_parameters).to(nil)
+    end
+  end
+
+  describe "#check_host_parameters_in_executable_simulators" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 1)
+      @sim.executable_on.destroy
+      @sim.executable_on << @host
+      @sim.save
+    end
+
+    it "delete host_parameters in executable simulators" do
+      host_id = @host.to_param
+      host_parameters = @sim.default_host_parameter(@host)
+      @host.status.should eq :enabled
+      expect {
+        @host.status = :disabled
+        @host.save
+      }.to change { Simulator.find(@sim.to_param).default_host_parameters[host_id] }.from(host_parameters).to(nil)
     end
   end
 end
