@@ -116,7 +116,7 @@ Firewallの設定
 .. code-block:: yaml
 
   ---
-  basic_authentication: {username: password}
+  authentication: {username: password}
 
 | これでページにアクセスした際にユーザー認証が要求されるようになる。
 

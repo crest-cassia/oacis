@@ -3,7 +3,7 @@ class ApplicationController < ActionController::Base
 
   before_filter :authenticate
 
-  USERS = AcmProto::Application.config.user_config["basic_authentication"]
+  USERS = AcmProto::Application.config.user_config["authentication"]
 
   private
   def authenticate
