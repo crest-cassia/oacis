@@ -323,7 +323,7 @@ EOS
   end
 
   public
-  def default_host_parameter(host)
+  def get_default_host_parameter(host)
     if host.present?
       id = host.id.to_s
       unless self.default_host_parameters[id].present?

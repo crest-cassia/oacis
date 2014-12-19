@@ -466,7 +466,7 @@ describe Simulator do
     end
   end
 
-  describe "default_host_parameter" do
+  describe "get_default_host_parameter" do
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
@@ -482,28 +482,28 @@ describe Simulator do
 
       it "return default_host_parameter associated with a host" do
         key_value = @sim.executable_on.first.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
-        @sim.default_host_parameter(@sim.executable_on.first).should eq Hash[*key_value.flatten]
+        @sim.get_default_host_parameter(@sim.executable_on.first).should eq Hash[*key_value.flatten]
       end
 
       it "return default_host_parameter for manual submission" do
-        @sim.default_host_parameter(nil).should eq Hash.new
+        @sim.get_default_host_parameter(nil).should eq Hash.new
       end
     end
 
     context "when new run is created" do
 
       it "return the host parameters of the last created run" do
-        host_parameters = @sim.default_host_parameter(@sim.executable_on.first) # {"param1"=>nil, "param2"=>"XXX"}
+        host_parameters = @sim.get_default_host_parameter(@sim.executable_on.first) # {"param1"=>nil, "param2"=>"XXX"}
         run = @sim.parameter_sets.first.runs.build({submitted_to: @sim.executable_on.first, host_parameters: host_parameters})
         expect {
           run.host_parameters["param2"] = "YYY"
           run.save
-        }.to change { @sim.reload.default_host_parameter(@sim.executable_on.first)["param2"] }.from("XXX").to("YYY")
+        }.to change { @sim.reload.get_default_host_parameter(@sim.executable_on.first)["param2"] }.from("XXX").to("YYY")
       end
 
       it "return {} as default_host_parameter for manual submission" do
         run = @sim.parameter_sets.first.runs.build({submitted_to: nil})
-        @sim.default_host_parameter(run.submitted_to).should eq Hash.new
+        @sim.get_default_host_parameter(run.submitted_to).should eq Hash.new
       end
     end
   end

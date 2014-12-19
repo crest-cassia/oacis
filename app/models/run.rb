@@ -196,7 +196,7 @@ class Run
   end
 
   def update_default_host_parameter_on_its_simulator
-    unless self.host_parameters == self.simulator.default_host_parameter(self.submitted_to)
+    unless self.host_parameters == self.simulator.get_default_host_parameter(self.submitted_to)
       id = self.submitted_to.present? ? self.submitted_to.id : "manual_submission"
       host_parameters = self.simulator.default_host_parameters
       host_parameters[id] = self.host_parameters

@@ -418,7 +418,7 @@ EOS
 
     it "delete host parameters from executable simulators" do
       host_id = @host.id.to_s
-      host_parameters = @sim.default_host_parameter(@host)
+      host_parameters = @sim.get_default_host_parameter(@host)
       expect {
         @host.destroy
       }.to change { @sim.reload.default_host_parameters[host_id] }.from(host_parameters).to(nil)
@@ -437,7 +437,7 @@ EOS
 
     it "delete host_parameters in executable simulators" do
       host_id = @host.id.to_s
-      host_parameters = @sim.default_host_parameter(@host)
+      host_parameters = @sim.get_default_host_parameter(@host)
       @host.status.should eq :enabled
       expect {
         @host.status = :disabled
