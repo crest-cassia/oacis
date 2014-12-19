@@ -110,8 +110,14 @@ Firewallの設定
 ========================================
 
 | Digest認証に使用するパスワードを設定することも可能である。
-| app/controllers/application_controller.rb の８行目を編集する。
-| ８行目の先頭の # を取り除きコメントアウトを解除し、ユーザー名とパスワードをセットする。デフォルトのパスワードは使用しないこと。
+| config/user_config.yml ファイルに以下のように記述してOACISを起動する。
+| サンプルが config/user_config.sample.yml にあるので参考にしてほしい。(username, passwordは適宜変更すること)
+
+.. code-block:: yaml
+
+  ---
+  basic_authentication: {username: password}
+
 | これでページにアクセスした際にユーザー認証が要求されるようになる。
 
 データベースの変更
