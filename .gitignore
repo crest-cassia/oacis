@@ -88,3 +88,6 @@ nohup.out
 public/Result_*
 # default work directory of SimulatorRunner
 __work__
+
+# user_config file
+config/user_config.yml
