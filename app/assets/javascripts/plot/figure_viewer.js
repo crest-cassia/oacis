@@ -382,7 +382,6 @@ FigureViewer.prototype.AddDescription = function() {
       plot.SetYScale(y_linear_log); // reset xScale domain to draw non expanded plot
       var size = plot.figure_size;
       plot.UpdatePlot("point");  // point plot is drawn for brush
-      plot.UpdatePlot();
       while (control_plot.node().firstChild) {
         control_plot.node().removeChild(control_plot.node().firstChild);
       }
