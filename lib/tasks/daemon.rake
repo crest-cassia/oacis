@@ -17,7 +17,7 @@ namespace :daemon do
       end
     end
 
-    if ENV['OACIS_READ_ONLY'] == '1'
+    if AcmProto::Application.config.user_config["read_only"]
       $stderr.puts "OACIS_READ_ONLY mode is enabled"
     else
       threads << Thread.new do
