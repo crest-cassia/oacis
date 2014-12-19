@@ -11,6 +11,8 @@ class Simulator
   field :print_version_command, type: String
   field :position, type: Integer # position in the table. start from zero
   field :default_host_parameters, type: Hash, default: {} # {Host.id => {host_param1 => foo, ...}}
+  field :default_mpi_procs, type: Hash, default: {} # {Host.id => 4, ...}
+  field :default_omp_threads, type: Hash, default: {} # {Host.id => 8, ...}
 
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy

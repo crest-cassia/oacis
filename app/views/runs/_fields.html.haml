@@ -27,12 +27,26 @@
     $('select#run_submitted_to').change(function() {
       var host_id = $(this).val();
       if( host_id == '' ) { host_id = 'manual'; }
-      var url = "#{_host_parameters_field_simulator_url(run.simulator)}" + "?host_id=" + host_id;
-      $.get(url, function(data) {
-        $('#host_parameters').html(data);
-        if( $('#new_parameter_set').length > 0 ) {
-          $('#new_parameter_set').trigger('change'); // necessary to update CLI command
-        }
-      })
+      var update_mpi_omp_fields = function() {
+        var mpi_field = $('#run_mpi_procs');
+        var omp_field = $('#run_omp_threads');
+        if( mpi_field.size() + omp_field.size() == 0 ) return;
+        var url = "#{_default_mpi_omp_simulator_url(run.simulator)}.json" + "?host_id=" + host_id;
+        $.get(url, function(data) {
+          if( mpi_field.size() > 0 ) { mpi_field.val(data['mpi_procs']); }
+          if( omp_field.size() > 0 ) { omp_field.val(data['omp_threads']); }
+        });
+      }
+      update_mpi_omp_fields();
+      var update_host_parameters = function() {
+        var url = "#{_host_parameters_field_simulator_url(run.simulator)}" + "?host_id=" + host_id;
+        $.get(url, function(data) {
+          $('#host_parameters').html(data);
+          if( $('#new_parameter_set').length > 0 ) {
+            $('#new_parameter_set').trigger('change'); // necessary to update CLI command
+          }
+        });
+      }
+      update_host_parameters();
     });
   });

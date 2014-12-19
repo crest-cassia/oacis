@@ -27,6 +27,7 @@ AcmProto::Application.routes.draw do
       get "_analyzer_list" # for ajax, datatables
       get "_progress" # for progress table
       get "_host_parameters_field" # for ajax, get the fields for host_parameters
+      get "_default_mpi_omp" # for ajax, get the default mpi_procs and omp_threads
     end
 
     parameter_set_actions = ["show"]
