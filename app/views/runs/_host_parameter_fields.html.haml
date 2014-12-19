@@ -3,5 +3,6 @@
     .control-group
       = label_tag(:"run[host_parameters][#{key}]", key, class: 'control-label')
       .controls
-        = text_field_tag(:"run[host_parameters][#{key}]", val, id: "run_host_parameters_#{key}_#{host.id}")
+        - value = (defined?(run) && run.host_parameters[key]) || val
+        = text_field_tag(:"run[host_parameters][#{key}]", value, id: "run_host_parameters_#{key}_#{host.id}")
         = "Format: /#{host.host_parameter_definitions.select {|hpd| hpd.key == key}.first.format }/"

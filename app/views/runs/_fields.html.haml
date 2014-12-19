@@ -20,7 +20,7 @@
     - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
     = f.select(:submitted_to, options_for_select(host_names, selected: selected_id) )
 #host_parameters
-  = render 'runs/host_parameter_fields', {sim: run.simulator, host: run.submitted_to}
+  = render 'runs/host_parameter_fields', {run: run, sim: run.simulator, host: run.submitted_to}
 
 :javascript
   $(function() {
