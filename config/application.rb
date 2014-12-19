@@ -81,6 +81,13 @@ module AcmProto
 
     # disable field_wtih_errors div-tag, because it causes destruction on designs
     config.action_view.field_error_proc = proc { |input, instance| input}
+
+    # load user config
+    config.user_config = {}
+    user_config_yml = Rails.root.join("config/user_config.yml")
+    if File.exist? user_config_yml
+      config.user_config = YAML.load(File.open(user_config_yml))
+    end
   end
 end
 

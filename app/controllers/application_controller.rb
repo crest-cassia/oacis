@@ -3,13 +3,11 @@ class ApplicationController < ActionController::Base
 
   before_filter :authenticate
 
-  # CHANGE THE PASSWORD BEFORE YOU USE
-  USERS = {}
-  # USERS = {"admin" => "pass"}
+  USERS = AcmProto::Application.config.user_config["basic_authentication"]
 
   private
   def authenticate
-    if Rails.env.test? or USERS.empty?
+    if Rails.env.test? or USERS.blank?
       true
     else
       authenticate_or_request_with_http_digest do |username|
