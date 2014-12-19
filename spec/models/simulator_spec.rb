@@ -492,21 +492,18 @@ describe Simulator do
 
     context "when new run is created" do
 
-      it "return default_host_parameter which the created run has" do
+      it "return the host parameters of the last created run" do
         host_parameters = @sim.default_host_parameter(@sim.executable_on.first) # {"param1"=>nil, "param2"=>"XXX"}
         run = @sim.parameter_sets.first.runs.build({submitted_to: @sim.executable_on.first, host_parameters: host_parameters})
         expect {
           run.host_parameters["param2"] = "YYY"
           run.save
-        }.to change { Simulator.find(@sim.to_param).default_host_parameter(@sim.executable_on.first)["param2"] }.from("XXX").to("YYY")
+        }.to change { @sim.reload.default_host_parameter(@sim.executable_on.first)["param2"] }.from("XXX").to("YYY")
       end
 
-      it "return default_host_parameter which the created run has for manual submission" do
+      it "return {} as default_host_parameter for manual submission" do
         run = @sim.parameter_sets.first.runs.build({submitted_to: nil})
-        expect {
-          run.host_parameters = {"param1"=>nil, "param2"=>"XXX"}
-          run.save
-        }.to change { Simulator.find(@sim.to_param).default_host_parameter(nil) }.from({}).to({"param1"=>nil, "param2"=>"XXX"})
+        @sim.default_host_parameter(run.submitted_to).should eq Hash.new
       end
     end
   end

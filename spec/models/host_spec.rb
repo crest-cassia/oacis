@@ -365,20 +365,13 @@ EOS
     it "gets host parameters by invoking 'get_host_parameters_for_xsub' when scheduler_type is updated" do
       @host.scheduler_type = "xsub"
       @host.should_receive(:get_host_parameters_for_xsub)
-      @host.valid?
+      @host.should be_valid # it calls before_validate
     end
 
-    it "gets host parameters by invoking 'get_host_parameters_for_xsub' twice when scheduler_type is saved" do
-      @host.scheduler_type = "xsub"
-      @host.should_receive(:get_host_parameters_for_xsub).twice
-      @host.save!
-    end
-
-    it "gets host parameters by invoking 'get_host_parameters_for_xsub' when host is updated" do
-      @host.should_receive(:get_host_parameters_for_xsub).twice # first call in before_varidata, second call in after_update
-      @host.scheduler_type = "xsub"
-      @host.status = :disabled
-      @host.save!
+    it "gets host parameters by invoking 'get_host_parameters_for_xsub' when host status is changed into :enabled" do
+      @host.update_attribute(:scheduler_type, "xsub")
+      @host.update_attribute(:status, :disabled)
+      @host.should_receive(:get_host_parameters_for_xsub)
       @host.status = :enabled
       @host.save!
     end
@@ -424,15 +417,15 @@ EOS
     end
 
     it "delete host parameters from executable simulators" do
-      host_id = @host.to_param
+      host_id = @host.id.to_s
       host_parameters = @sim.default_host_parameter(@host)
       expect {
         @host.destroy
-      }.to change { Simulator.find(@sim.to_param).default_host_parameters[host_id] }.from(host_parameters).to(nil)
+      }.to change { @sim.reload.default_host_parameters[host_id] }.from(host_parameters).to(nil)
     end
   end
 
-  describe "#check_host_parameters_in_executable_simulators" do
+  describe "#clear_host_parameters_in_executable_simulators" do
 
     before(:each) do
       @host = FactoryGirl.create(:host_with_parameters)
@@ -443,13 +436,13 @@ EOS
     end
 
     it "delete host_parameters in executable simulators" do
-      host_id = @host.to_param
+      host_id = @host.id.to_s
       host_parameters = @sim.default_host_parameter(@host)
       @host.status.should eq :enabled
       expect {
         @host.status = :disabled
         @host.save
-      }.to change { Simulator.find(@sim.to_param).default_host_parameters[host_id] }.from(host_parameters).to(nil)
+      }.to change { @sim.reload.default_host_parameters[host_id] }.from(host_parameters).to(nil)
     end
   end
 end

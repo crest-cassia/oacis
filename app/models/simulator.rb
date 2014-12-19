@@ -10,7 +10,7 @@ class Simulator
   field :pre_process_script, type: String
   field :print_version_command, type: String
   field :position, type: Integer # position in the table. start from zero
-  field :default_host_parameters, type: Hash, default: {"manual_submission" => {}} # {Host.id => {host_param1 => foo, ...}}
+  field :default_host_parameters, type: Hash, default: {} # {Host.id => {host_param1 => foo, ...}}
 
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
@@ -27,7 +27,7 @@ class Simulator
   attr_accessible :name, :pre_process_script, :command, :description,
                   :parameter_definitions_attributes, :executable_on_ids,
                   :support_input_json, :support_omp, :support_mpi,
-                  :print_version_command, :default_host_parameters
+                  :print_version_command
 
   before_create :set_position
   after_create :create_simulator_dir
@@ -324,16 +324,20 @@ EOS
 
   public
   def default_host_parameter(host)
-    id = host.present? ? host.to_param : "manual_submission"
-    unless self.default_host_parameters[id].present?
-      host_parameter = {}
-      if host.present?
-        key_value = host.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
-        host_parameter = Hash[*key_value.flatten]
+    if host.present?
+      id = host.id.to_s
+      unless self.default_host_parameters[id].present?
+        host_parameter = {}
+        if host.present?
+          key_value = host.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
+          host_parameter = Hash[*key_value.flatten]
+        end
+        self.default_host_parameters[id] = host_parameter
+        self.timeless.update_attribute(:default_host_parameters, self.default_host_parameters)
       end
-      self.default_host_parameters[id] = host_parameter
-      self.save
+      return self.default_host_parameters[id]
+    else
+      return {} # for manual_submission
     end
-    self.default_host_parameters[id]
   end
 end

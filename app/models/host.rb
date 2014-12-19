@@ -53,8 +53,8 @@ class Host
   before_create :set_position
   before_destroy :validate_destroyable, :delete_host_parameters_from_executable_simulators
   after_update :get_host_parameters_for_xsub,
-               :if => lambda { scheduler_type == "xsub" && status == :enabled }
-  after_update :check_host_parameters_in_executable_simulators
+               :if => lambda { scheduler_type == "xsub" && status_changed? && status == :enabled }
+  after_update :clear_host_parameters_in_executable_simulators
 
   CONNECTION_EXCEPTIONS = [
     Errno::ECONNREFUSED,
@@ -216,12 +216,12 @@ class Host
 
   def delete_host_parameters_from_executable_simulators
     self.executable_simulators.each do |sim|
-      modified_host_parameters = sim.default_host_parameters.delete_if{|key, value| key == self.to_param}
-      Simulator.find(sim.to_param).timeless.update_attribute(:default_host_parameters, modified_host_parameters)
+      modified_host_parameters = sim.default_host_parameters.delete_if{|key, value| key == self.id.to_s}
+      sim.timeless.update_attribute(:default_host_parameters, modified_host_parameters)
     end
   end
 
-  def check_host_parameters_in_executable_simulators
+  def clear_host_parameters_in_executable_simulators
     if self.status == :disabled
       delete_host_parameters_from_executable_simulators
     end
