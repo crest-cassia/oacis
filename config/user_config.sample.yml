@@ -1,0 +1,6 @@
+---
+read_only: true
+basic_authentication:
+  foo: bar
+  usr: pass
+datatable_auto_reload: true
