@@ -483,6 +483,15 @@ EOS
       run.job_script.should be_present
     end
 
+    it "sets default_host_parameters to simulator" do
+      host = FactoryGirl.create(:host_with_parameters)
+      param = {"param1" => 3, "param2" => 1}
+      run = @param_set.runs.build(submitted_to: host, host_parameters: param)
+      expect {
+        run.save!
+      }.to change { run.simulator.default_host_parameters[host.id.to_s] }.from(nil).to(param)
+    end
+
     context "when submitted_to is nil" do
 
       it "creates a job-script" do
