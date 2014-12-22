@@ -1,12 +1,15 @@
 var bReloadRunsTable = true;
 function toggle_auto_reload_runs_table( flag ) {
-  bReloadRunsTable = flag;
+  bReloadRunsTable = flag && window.bEnableAutoReload;
 }
 
 $(function() {
+  toggle_auto_reload_runs_table();
   var oRunsTableToReload = null;
   setInterval( function() {
-    if( bReloadRunsTable && oRunsTableToReload ) { oRunsTableToReload.fnReloadAjax(); }
+    if( bReloadRunsTable && oRunsTableToReload ) {
+      oRunsTableToReload.fnReloadAjax();
+    }
   }, 5000);
 
   var datatables_for_runs_table = function() {
