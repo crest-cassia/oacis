@@ -1,0 +1,3 @@
+---
+read_only: true
+authentication: {username: password}
