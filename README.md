@@ -93,7 +93,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ## Publications
 - A list of publications about OACIS is available at this [wiki page](https://github.com/crest-cassia/oacis/wiki/List-of-publications).
 - We would greatly appreciate if you cite the following article when you publish your research using OACIS.
-    - Y. Murase, T. Uchitane, and N. Ito, "A tool for parameter-space explorations", to appear in proceedings of 27'th CSP workshop, (2014) [arXiv:1404.3867](http://arxiv.org/abs/1404.3867)
+    - Y. Murase, T. Uchitane, and N. Ito, "A tool for parameter-space explorations", Physics Procedia, 57, p73-76 (2014)
+      - http://www.sciencedirect.com/science/article/pii/S187538921400279X
     - You can cite it as **"The systematic simulations in this study were assisted by OACIS."**, for example, in appendix or method section.
 - We would also like to create a list of researches to which OACIS contributed to.
     - We will be happy if you are willing to include your work. Let us know about your work when your paper is published.
