@@ -416,12 +416,30 @@ EOS
       @sim.save
     end
 
-    it "delete host parameters from executable simulators" do
+    it "delete default_host_parameters from executable simulators" do
       host_id = @host.id.to_s
       host_parameters = @sim.get_default_host_parameter(@host)
       expect {
         @host.destroy
       }.to change { @sim.reload.default_host_parameters[host_id] }.from(host_parameters).to(nil)
+    end
+
+    it "delete default_mpi_procs from executable simulators" do
+      host_id = @host.id.to_s
+      @sim.update_attribute(:default_mpi_procs, {host_id => 4})
+      host_parameters = @sim.get_default_host_parameter(@host)
+      expect {
+        @host.destroy
+      }.to change { @sim.reload.default_mpi_procs[host_id] }.from(4).to(nil)
+    end
+
+    it "delete default_omp_threads from executable simulators" do
+      host_id = @host.id.to_s
+      @sim.update_attribute(:default_omp_threads, {host_id => 4})
+      host_parameters = @sim.get_default_host_parameter(@host)
+      expect {
+        @host.destroy
+      }.to change { @sim.reload.default_omp_threads[host_id] }.from(4).to(nil)
     end
   end
 
@@ -442,6 +460,26 @@ EOS
         @host.status = :disabled
         @host.save
       }.to change { @sim.reload.default_host_parameters[@host.id.to_s] }.from(host_parameters).to(nil)
+    end
+
+    it "delete default_mpi_procs from executable simulators" do
+      host_id = @host.id.to_s
+      @sim.update_attribute(:default_mpi_procs, {host_id => 4})
+      host_parameters = @sim.get_default_host_parameter(@host)
+      expect {
+        @host.status = :disabled
+        @host.save
+      }.to change { @sim.reload.default_mpi_procs[host_id] }.from(4).to(nil)
+    end
+
+    it "delete default_omp_threads from executable simulators" do
+      host_id = @host.id.to_s
+      @sim.update_attribute(:default_omp_threads, {host_id => 4})
+      host_parameters = @sim.get_default_host_parameter(@host)
+      expect {
+        @host.status = :disabled
+        @host.save
+      }.to change { @sim.reload.default_omp_threads[host_id] }.from(4).to(nil)
     end
   end
 end
