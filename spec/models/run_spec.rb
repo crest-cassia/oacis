@@ -483,6 +483,33 @@ EOS
       run.job_script.should be_present
     end
 
+    it "sets default_host_parameters to simulator" do
+      host = FactoryGirl.create(:host_with_parameters)
+      param = {"param1" => 3, "param2" => 1}
+      run = @param_set.runs.build(submitted_to: host, host_parameters: param)
+      expect {
+        run.save!
+      }.to change { run.simulator.default_host_parameters[host.id.to_s] }.from(nil).to(param)
+    end
+
+    it "sets default_mpi values" do
+      @simulator.update_attribute(:support_mpi, true)
+      h = Host.first
+      run = @param_set.runs.build(submitted_to: h, mpi_procs: 2)
+      expect {
+        run.save!
+      }.to change { run.simulator.reload.default_mpi_procs[h.id.to_s] }.to(2)
+    end
+
+    it "sets default_omp values" do
+      @simulator.update_attribute(:support_omp, true)
+      h = Host.first
+      run = @param_set.runs.build(submitted_to: h, omp_threads: 4)
+      expect {
+        run.save!
+      }.to change { run.simulator.default_omp_threads[h.id.to_s] }.to(4)
+    end
+
     context "when submitted_to is nil" do
 
       it "creates a job-script" do

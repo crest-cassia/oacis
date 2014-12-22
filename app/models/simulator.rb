@@ -10,6 +10,9 @@ class Simulator
   field :pre_process_script, type: String
   field :print_version_command, type: String
   field :position, type: Integer # position in the table. start from zero
+  field :default_host_parameters, type: Hash, default: {} # {Host.id => {host_param1 => foo, ...}}
+  field :default_mpi_procs, type: Hash, default: {} # {Host.id => 4, ...}
+  field :default_omp_threads, type: Hash, default: {} # {Host.id => 8, ...}
 
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
@@ -319,5 +322,24 @@ EOS
     end
 
     sim_versions.map {|key,val| val['version'] = key; val }.sort_by {|a| a['latest_started_at']}
+  end
+
+  public
+  def get_default_host_parameter(host)
+    if host.present?
+      id = host.id.to_s
+      unless self.default_host_parameters[id].present?
+        host_parameter = {}
+        if host.present?
+          key_value = host.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
+          host_parameter = Hash[*key_value.flatten]
+        end
+        self.default_host_parameters[id] = host_parameter
+        self.timeless.update_attribute(:default_host_parameters, self.default_host_parameters)
+      end
+      return self.default_host_parameters[id]
+    else
+      return {} # for manual_submission
+    end
   end
 end

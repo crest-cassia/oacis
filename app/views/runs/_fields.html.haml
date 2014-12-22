@@ -1,3 +1,14 @@
+.control-group
+  = f.label(:submitted_to, class: 'control-label')
+  .controls
+    - host_names = run.simulator.executable_on.map {|h| [h.name, h.id.to_s]}
+    - host_names += [ ["(manual submission)", nil] ]
+    - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
+    = f.select(:submitted_to, options_for_select(host_names, selected: selected_id) )
+.control-group
+  = f.label(:priority, 'Priorities of Runs', class: 'control-label')
+  .controls
+    = f.select(:priority, options_for_select(Run::PRIORITY_ORDER.sort_by {|a| a[0]}.map {|a| [a[1], a[0]]}, selected: 1))
 - if run.parameter_set.simulator.support_mpi
   .control-group
     = f.label(:mpi_procs, "MPI procs", class: 'control-label')
@@ -8,31 +19,35 @@
     = f.label(:omp_threads, "OMP threads", class: 'control-label')
     .controls
       = f.text_field(:omp_threads)
-.control-group
-  = f.label(:priority, 'Priorities of Runs', class: 'control-label')
-  .controls
-    = f.select(:priority, options_for_select(Run::PRIORITY_ORDER.sort_by {|a| a[0]}.map {|a| [a[1], a[0]]}, selected: 1))
-.control-group
-  = f.label(:submitted_to, class: 'control-label')
-  .controls
-    - host_names = run.simulator.executable_on.map {|h| [h.name, h.id.to_s]}
-    - host_names += [ ["(manual submission)", nil] ]
-    - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
-    = f.select(:submitted_to, options_for_select(host_names, selected: selected_id) )
+
 #host_parameters
-  = render 'runs/host_parameter_fields', run: run, host: run.submitted_to
+  = render 'runs/host_parameter_fields', {run: run, sim: run.simulator, host: run.submitted_to}
 
 :javascript
   $(function() {
     $('select#run_submitted_to').change(function() {
       var host_id = $(this).val();
       if( host_id == '' ) { host_id = 'manual'; }
-      var url = "#{_host_parameters_field_host_url(':host_id')}".replace(':host_id', host_id);
-      $.get(url, function(data) {
-        $('#host_parameters').html(data);
-        if( $('#new_parameter_set').length > 0 ) {
-          $('#new_parameter_set').trigger('change'); // necessary to update CLI command
-        }
-      })
+      var update_mpi_omp_fields = function() {
+        var mpi_field = $('#run_mpi_procs');
+        var omp_field = $('#run_omp_threads');
+        if( mpi_field.size() + omp_field.size() == 0 ) return;
+        var url = "#{_default_mpi_omp_simulator_url(run.simulator)}.json" + "?host_id=" + host_id;
+        $.get(url, function(data) {
+          if( mpi_field.size() > 0 ) { mpi_field.val(data['mpi_procs']); }
+          if( omp_field.size() > 0 ) { omp_field.val(data['omp_threads']); }
+        });
+      }
+      update_mpi_omp_fields();
+      var update_host_parameters = function() {
+        var url = "#{_host_parameters_field_simulator_url(run.simulator)}" + "?host_id=" + host_id;
+        $.get(url, function(data) {
+          $('#host_parameters').html(data);
+          if( $('#new_parameter_set').length > 0 ) {
+            $('#new_parameter_set').trigger('change'); // necessary to update CLI command
+          }
+        });
+      }
+      update_host_parameters();
     });
   });

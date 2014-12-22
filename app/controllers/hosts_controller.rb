@@ -98,9 +98,4 @@ class HostsController < ApplicationController
     end
     render nothing: true
   end
-
-  def _host_parameters_field
-    host = Host.where(id: params[:id]).first
-    render partial: "runs/host_parameter_fields", locals: {host: host}
-  end
 end

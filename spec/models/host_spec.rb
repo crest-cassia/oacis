@@ -365,6 +365,14 @@ EOS
     it "gets host parameters by invoking 'get_host_parameters_for_xsub' when scheduler_type is updated" do
       @host.scheduler_type = "xsub"
       @host.should_receive(:get_host_parameters_for_xsub)
+      @host.should be_valid # it calls before_validate
+    end
+
+    it "gets host parameters by invoking 'get_host_parameters_for_xsub' when host status is changed into :enabled" do
+      @host.update_attribute(:scheduler_type, "xsub")
+      @host.update_attribute(:status, :disabled)
+      @host.should_receive(:get_host_parameters_for_xsub)
+      @host.status = :enabled
       @host.save!
     end
 
@@ -395,6 +403,83 @@ EOS
     it "the largest number within existing hosts is assigned when created" do
       Host.create!(name: 'h1', hostname: 'localhost', user: 'foo').position.should eq 2
       Host.all.map(&:position).should =~ [0,1,2]
+    end
+  end
+
+  describe "#destroy" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 1)
+      @sim.executable_on.destroy
+      @sim.executable_on << @host
+      @sim.save
+    end
+
+    it "delete default_host_parameters from executable simulators" do
+      host_id = @host.id.to_s
+      host_parameters = @sim.get_default_host_parameter(@host)
+      expect {
+        @host.destroy
+      }.to change { @sim.reload.default_host_parameters[host_id] }.from(host_parameters).to(nil)
+    end
+
+    it "delete default_mpi_procs from executable simulators" do
+      host_id = @host.id.to_s
+      @sim.update_attribute(:default_mpi_procs, {host_id => 4})
+      host_parameters = @sim.get_default_host_parameter(@host)
+      expect {
+        @host.destroy
+      }.to change { @sim.reload.default_mpi_procs[host_id] }.from(4).to(nil)
+    end
+
+    it "delete default_omp_threads from executable simulators" do
+      host_id = @host.id.to_s
+      @sim.update_attribute(:default_omp_threads, {host_id => 4})
+      host_parameters = @sim.get_default_host_parameter(@host)
+      expect {
+        @host.destroy
+      }.to change { @sim.reload.default_omp_threads[host_id] }.from(4).to(nil)
+    end
+  end
+
+  context "when status is updated to :disabled" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 1)
+      @sim.executable_on.destroy
+      @sim.executable_on << @host
+      @sim.save
+    end
+
+    it "delete default_host_parameters of executable simulators" do
+      host_parameters = @sim.get_default_host_parameter(@host)
+      @host.status.should eq :enabled
+      expect {
+        @host.status = :disabled
+        @host.save
+      }.to change { @sim.reload.default_host_parameters[@host.id.to_s] }.from(host_parameters).to(nil)
+    end
+
+    it "delete default_mpi_procs from executable simulators" do
+      host_id = @host.id.to_s
+      @sim.update_attribute(:default_mpi_procs, {host_id => 4})
+      host_parameters = @sim.get_default_host_parameter(@host)
+      expect {
+        @host.status = :disabled
+        @host.save
+      }.to change { @sim.reload.default_mpi_procs[host_id] }.from(4).to(nil)
+    end
+
+    it "delete default_omp_threads from executable simulators" do
+      host_id = @host.id.to_s
+      @sim.update_attribute(:default_omp_threads, {host_id => 4})
+      host_parameters = @sim.get_default_host_parameter(@host)
+      expect {
+        @host.status = :disabled
+        @host.save
+      }.to change { @sim.reload.default_omp_threads[host_id] }.from(4).to(nil)
     end
   end
 end

@@ -48,10 +48,14 @@ class Host
            :if => lambda { scheduler_type != "xsub" and scheduler_type_changed? }
 
   before_validation :get_host_parameters_for_xsub,
-                    :if => lambda {scheduler_type == "xsub" and scheduler_type_changed? }
+                    :if => lambda { scheduler_type == "xsub" and scheduler_type_changed? }
   before_save :use_default_template, :if => lambda { scheduler_type == "xsub" }
   before_create :set_position
-  before_destroy :validate_destroyable
+  before_destroy :validate_destroyable, :delete_default_parameters_from_simulator
+  after_update :get_host_parameters_for_xsub,
+               :if => lambda { scheduler_type == "xsub" && status_changed? && status == :enabled }
+  after_update :delete_default_parameters_from_simulator,
+               :if => lambda { status_changed? and status == :disabled }
 
   CONNECTION_EXCEPTIONS = [
     Errno::ECONNREFUSED,
@@ -209,6 +213,15 @@ class Host
 
   def set_position
     self.position = Host.count
+  end
+
+  def delete_default_parameters_from_simulator
+    self.executable_simulators.each do |sim|
+      [:default_host_parameters, :default_mpi_procs, :default_omp_threads].each do |h|
+        modified = sim.send(h).delete_if{|key, value| key == id.to_s}
+        sim.timeless.update_attribute(:h, modified)
+      end
+    end
   end
 end
 
