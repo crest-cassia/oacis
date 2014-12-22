@@ -425,7 +425,7 @@ EOS
     end
   end
 
-  describe "#clear_host_parameters_in_executable_simulators" do
+  context "when status is updated to :disabled" do
 
     before(:each) do
       @host = FactoryGirl.create(:host_with_parameters)
@@ -435,14 +435,13 @@ EOS
       @sim.save
     end
 
-    it "delete host_parameters in executable simulators" do
-      host_id = @host.id.to_s
+    it "delete default_host_parameters of executable simulators" do
       host_parameters = @sim.get_default_host_parameter(@host)
       @host.status.should eq :enabled
       expect {
         @host.status = :disabled
         @host.save
-      }.to change { @sim.reload.default_host_parameters[host_id] }.from(host_parameters).to(nil)
+      }.to change { @sim.reload.default_host_parameters[@host.id.to_s] }.from(host_parameters).to(nil)
     end
   end
 end
