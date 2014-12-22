@@ -50,7 +50,9 @@ class Run
 
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   before_save :remove_runs_status_count_cache, :if => :status_changed?
-  after_create :create_run_dir, :create_job_script_for_manual_submission, :update_default_host_parameter_on_its_simulator
+  after_create :create_run_dir, :create_job_script_for_manual_submission,
+    :update_default_host_parameter_on_its_simulator,
+    :update_default_mpi_procs_omp_threads
   before_destroy :delete_run_dir, :delete_archived_result_file ,
                  :delete_files_for_manual_submission, :remove_runs_status_count_cache
 
@@ -201,6 +203,20 @@ class Run
       host_parameters = self.simulator.default_host_parameters
       host_parameters[id] = self.host_parameters
       self.simulator.timeless.update_attribute(:default_host_parameters, host_parameters)
+    end
+  end
+
+  def update_default_mpi_procs_omp_threads
+    hid = submitted_to.present? ? submitted_to.id : "manual_submission"
+    unless mpi_procs == simulator.default_mpi_procs[hid]
+      new_default_mpi_procs = simulator.default_mpi_procs
+      new_default_mpi_procs[hid] = mpi_procs
+      simulator.timeless.update_attribute(:default_mpi_procs, new_default_mpi_procs)
+    end
+    unless omp_threads == simulator.default_omp_threads[hid]
+      new_default_omp_threads = simulator.default_omp_threads
+      new_default_omp_threads[hid] = omp_threads
+      simulator.timeless.update_attribute(:default_omp_threads, new_default_omp_threads)
     end
   end
 
