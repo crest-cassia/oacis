@@ -1,4 +1,4 @@
 ---
 read_only: true
 authentication: {username: password}
-disable_auto_reload_tables: true
+auto_reload_tables: true
