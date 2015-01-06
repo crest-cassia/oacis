@@ -25,10 +25,11 @@ $(function () {
 
 var bReloadAnalysesTable = true;
 function toggle_auto_reload_analyses_table( flag ) {
-  bReloadAnalysesTable = flag;
+  bReloadAnalysesTable = flag && window.bEnableAutoReload;
 }
 
 $(function() {
+  toggle_auto_reload_analyses_table();
   var oAnalysesTableToReload = null;
   setInterval( function() {
     var num_open = $('#analyses_list img.treebtn[state="open"]').length;

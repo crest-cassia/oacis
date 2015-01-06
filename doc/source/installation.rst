@@ -117,8 +117,10 @@ Firewallの設定
 
   ---
   authentication: {username: password}
+  auto_reload_tables: false
 
 | これでページにアクセスした際にユーザー認証が要求されるようになる。
+| auto_reload_tables をfalseにすると、テーブルが自動的に更新されなくなる。ユーザー認証をつけている環境ではfalseにしておいたほうが良い。
 
 データベースの変更
 ========================================
