@@ -197,9 +197,17 @@ bundle exec rake daemon:stop
 <h2>パスワードの設定<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
 <div class="line">Digest認証に使用するパスワードを設定することも可能である。</div>
-<div class="line">app/controllers/application_controller.rb の８行目を編集する。</div>
-<div class="line">８行目の先頭の # を取り除きコメントアウトを解除し、ユーザー名とパスワードをセットする。デフォルトのパスワードは使用しないこと。</div>
+<div class="line">config/user_config.yml ファイルに以下のように記述してOACISを起動する。</div>
+<div class="line">サンプルが config/user_config.sample.yml にあるので参考にしてほしい。(username, passwordは適宜変更すること)</div>
+</div>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="nn">---</span>
+<span class="l-Scalar-Plain">authentication</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span><span class="nv">username</span><span class="p-Indicator">:</span> <span class="nv">password</span><span class="p-Indicator">}</span>
+<span class="l-Scalar-Plain">auto_reload_tables</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">false</span>
+</pre></div>
+</div>
+<div class="line-block">
 <div class="line">これでページにアクセスした際にユーザー認証が要求されるようになる。</div>
+<div class="line">auto_reload_tables をfalseにすると、テーブルが自動的に更新されなくなる。ユーザー認証をつけている環境ではfalseにしておいたほうが良い。</div>
 </div>
 </div>
 <div class="section" id="id6">
