@@ -409,6 +409,20 @@ EOS
       json_path.should_not be_exist
     end
 
+    it "deletes preprocess script and preprocess executor created for manual submission" do
+      sim = @run.simulator
+      sim.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
+      run = sim.parameter_sets.first.runs.create(submitted_to: nil)
+      pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(run)
+      pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(run)
+
+      pre_process_script_path.should be_exist
+      pre_process_executor_path.should be_exist
+      run.destroy
+      pre_process_script_path.should_not be_exist
+      pre_process_executor_path.should_not be_exist
+    end
+
     context "when status is :submitted or :running" do
 
       before(:each) do
@@ -469,6 +483,33 @@ EOS
       run.job_script.should be_present
     end
 
+    it "sets default_host_parameters to simulator" do
+      host = FactoryGirl.create(:host_with_parameters)
+      param = {"param1" => 3, "param2" => 1}
+      run = @param_set.runs.build(submitted_to: host, host_parameters: param)
+      expect {
+        run.save!
+      }.to change { run.simulator.default_host_parameters[host.id.to_s] }.from(nil).to(param)
+    end
+
+    it "sets default_mpi values" do
+      @simulator.update_attribute(:support_mpi, true)
+      h = Host.first
+      run = @param_set.runs.build(submitted_to: h, mpi_procs: 2)
+      expect {
+        run.save!
+      }.to change { run.simulator.reload.default_mpi_procs[h.id.to_s] }.to(2)
+    end
+
+    it "sets default_omp values" do
+      @simulator.update_attribute(:support_omp, true)
+      h = Host.first
+      run = @param_set.runs.build(submitted_to: h, omp_threads: 4)
+      expect {
+        run.save!
+      }.to change { run.simulator.default_omp_threads[h.id.to_s] }.to(4)
+    end
+
     context "when submitted_to is nil" do
 
       it "creates a job-script" do
@@ -480,6 +521,48 @@ EOS
         @simulator.update_attribute(:support_input_json, true)
         run = @param_set.runs.create!(submitted_to: nil)
         ResultDirectory.manual_submission_input_json_path(run).should be_exist
+      end
+
+      context "when simulator.pre_process exists" do
+
+        it "creates a preprocess script" do
+          @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
+          run = @param_set.runs.create!(submitted_to: nil)
+          ResultDirectory.manual_submission_pre_process_script_path(run).should be_exist
+        end
+
+        it "creates a preprocess executor" do
+          @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
+          run = @param_set.runs.create!(submitted_to: nil)
+          ResultDirectory.manual_submission_pre_process_executor_path(run).should be_exist
+        end
+
+        it "preprocess executor creates _preprocess.sh" do
+          @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
+          run = @param_set.runs.create!(submitted_to: nil)
+          pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(run)
+          cmd = "/bin/bash #{pre_process_executor_path.basename}"
+          Dir.chdir(pre_process_executor_path.dirname) {
+            system(cmd)
+            _preprocess_path = Pathname.new(run.id).join("_preprocess.sh")
+            _preprocess_path.should be_exist
+          }
+        end
+
+        it "preprocess executor creates _input.json" do
+          @simulator.update_attribute(:support_input_json, true)
+          @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
+          run = @param_set.runs.create!(submitted_to: nil)
+          pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(run)
+          cmd = "/bin/bash #{pre_process_executor_path.basename}"
+          Dir.chdir(pre_process_executor_path.dirname) {
+            system(cmd)
+            _input_json_path = Pathname.new(run.id).join("_input.json")
+            _input_json_path.should be_exist
+            _preprocess_script_result = Pathname.new(run.id).join("preprocess_result.txt")
+            _preprocess_script_result.should be_exist
+          }
+        end
       end
     end
   end

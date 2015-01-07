@@ -457,4 +457,73 @@ describe SimulatorsController do
       }.to change { simulators.first.reload.position }.from(0).to(2)
     end
   end
+
+  describe "GET _host_parameters_field" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @sim.executable_on.push(@host)
+    end
+
+    it "returns http success" do
+      valid_param = {id: @sim.to_param, host_id: @host.to_param}
+      get :_host_parameters_field, valid_param, valid_session
+      response.should be_success
+    end
+
+    it "returns http success if host_id is not found" do
+      param = {id: @sim.to_param, host_id: "manual"}
+      get :_host_parameters_field, param, valid_session
+      response.should be_success
+    end
+  end
+
+  describe "GET _default_mpi_omp" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 0, support_mpi: true, support_omp: true)
+      @sim.executable_on.push(@host)
+    end
+
+    it "returns http success" do
+      valid_param = {id: @sim.to_param, host_id: @host.to_param}
+      get :_default_mpi_omp, valid_param, valid_session
+      response.should be_success
+    end
+
+    context "when default_mpi_procs and/or defualt_omp_threads are set" do
+
+      before(:each) do
+        @sim.update_attribute(:default_mpi_procs, {@host.id.to_s => 8})
+        @sim.update_attribute(:default_omp_threads, {@host.id.to_s => 4})
+      end
+
+      it "returns mpi_procs and omp_threads in json" do
+        valid_param = {id: @sim.to_param, host_id: @host.to_param}
+        get :_default_mpi_omp, valid_param, valid_session
+        response.header['Content-Type'].should include 'application/json'
+        parsed = JSON.parse(response.body)
+        parsed.should eq ({'mpi_procs' => 8, 'omp_threads' => 4})
+      end
+    end
+
+    context "when default_mpi_procs or default_omp_threads is not set" do
+
+      before(:each) do
+        @sim.update_attribute(:default_mpi_procs, {})
+        @sim.update_attribute(:default_omp_threads, {})
+      end
+
+      it "returns mpi_procs and omp_threads in json" do
+        valid_param = {id: @sim.to_param, host_id: @host.to_param}
+        get :_default_mpi_omp, valid_param, valid_session
+        response.header['Content-Type'].should include 'application/json'
+        parsed = JSON.parse(response.body)
+        parsed.should eq ({'mpi_procs' => 1, 'omp_threads' => 1})
+      end
+    end
+  end
 end

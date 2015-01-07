@@ -164,4 +164,19 @@ class SimulatorsController < ApplicationController
     end
     render nothing: true
   end
+
+  def _host_parameters_field
+    sim = Simulator.find(params[:id])
+    host = Host.where(id: params[:host_id]).first
+    render partial: "runs/host_parameter_fields", locals: {sim: sim, host: host}
+  end
+
+  def _default_mpi_omp
+    sim = Simulator.find(params[:id])
+    host = Host.where(id: params[:host_id]).first
+    mpi = sim.default_mpi_procs[host.id.to_s] || 1
+    omp = sim.default_omp_threads[host.id.to_s] || 1
+    data = {'mpi_procs' => mpi, 'omp_threads' => omp}
+    render json: data
+  end
 end

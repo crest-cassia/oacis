@@ -1,0 +1,48 @@
+.page-header
+  %h1 Analyses
+
+%h3 Running Analyses
+%table.table.table-condensed.table-hover.table-striped.analyses_datatable{:'data-source' => "#{_analyses_table_analyses_path(format: "json", analysis_status: "running")}"}
+  %thead
+    %tr
+      - AnalysesListDatatable::HEADER.each do |header|
+        = raw(header)
+  %tbody
+
+%hr
+%h3 Created Analyses
+%table.table.table-condensed.table-hover.table-striped.analyses_datatable{:'data-source' => "#{_analyses_table_analyses_path(format: "json", analysis_status: "created")}"}
+  %thead
+    %tr
+      - AnalysesListDatatable::HEADER.each do |header|
+        = raw(header)
+  %tbody
+
+:javascript
+  $(function() {
+    var aoAnalysesTables = []
+    $('.analyses_datatable').each( function() {
+      var source = $(this).attr("data-source");
+      var oTable = $(this).dataTable({
+        bProcessing: true,
+        bServerSide: true,
+        bFilter: false,
+        sAjaxSource: source,
+        sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+        sPaginationType: "bootstrap"
+      });
+      aoAnalysesTables.push(oTable);
+    });
+    aoAnalysesTables.forEach( function(oTable) {
+      setInterval( function() {
+        var num_open = $('img.treebtn[state="open"]', $(oTable)).length;
+        if( num_open == 0 ) { oTable.fnReloadAjax(); }
+      }, 5000);
+      $('.dataTables_length', $(oTable).parent()).append(
+        '<i class="icon-refresh analyses-list-refresh" id="dataTables_refresh"></i>'
+      );
+      $('#dataTables_refresh', $(oTable).parent()).on('click', function() {
+        oTable.fnReloadAjax();
+      });
+    });
+  });

@@ -110,9 +110,17 @@ Firewallの設定
 ========================================
 
 | Digest認証に使用するパスワードを設定することも可能である。
-| app/controllers/application_controller.rb の８行目を編集する。
-| ８行目の先頭の # を取り除きコメントアウトを解除し、ユーザー名とパスワードをセットする。デフォルトのパスワードは使用しないこと。
+| config/user_config.yml ファイルに以下のように記述してOACISを起動する。
+| サンプルが config/user_config.sample.yml にあるので参考にしてほしい。(username, passwordは適宜変更すること)
+
+.. code-block:: yaml
+
+  ---
+  authentication: {username: password}
+  auto_reload_tables: false
+
 | これでページにアクセスした際にユーザー認証が要求されるようになる。
+| auto_reload_tables をfalseにすると、テーブルが自動的に更新されなくなる。ユーザー認証をつけている環境ではfalseにしておいたほうが良い。
 
 データベースの変更
 ========================================

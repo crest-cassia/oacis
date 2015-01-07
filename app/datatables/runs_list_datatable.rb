@@ -1,11 +1,11 @@
 class RunsListDatatable
 
   HEADER  = ['<th>RunID</th>', '<th>status</th>', '<th>priority</th>',
-             '<th>cpu_time</th>', '<th>real_time</th>',
+             '<th>elapsed</th>',
              '<th>MPI</th>', '<th>OMP</th>', '<th>version</th>',
              '<th>created_at</th>', '<th>finished_at</th>', '<th>host</th>', '<th>job_id</th>',
              '<th style="min-width: 18px; width: 1%;"></th>']
-  SORT_BY = ["id", "status", "priority", "cpu_time", "real_time",
+  SORT_BY = ["id", "status", "priority", "real_time",
              "mpi_procs", "omp_threads", "simulator_version",
              "created_at", "finished_at", "submitted_to", "job_id", "id"]
 
@@ -32,7 +32,6 @@ private
       tmp << @view.link_to( @view.shortened_id(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )
       tmp << Run::PRIORITY_ORDER[run.priority]
-      tmp << @view.formatted_elapsed_time(run.cpu_time)
       tmp << @view.formatted_elapsed_time(run.real_time)
       tmp << run.mpi_procs
       tmp << run.omp_threads

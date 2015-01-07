@@ -31,10 +31,10 @@
   $(function() {
     var hide_show_runs_field = function () {
       if( $('#num_runs').val() == 0 ) {
-        $('#runs_fields').hide("normal");
+        $('#runs_fields').find(':input').attr('disabled', true);
       }
       else {
-        $('#runs_fields').show("normal");
+        $('#runs_fields').find(':input').removeAttr('disabled');
       }
     }
     hide_show_runs_field();

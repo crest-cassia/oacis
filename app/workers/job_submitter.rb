@@ -7,15 +7,13 @@ class JobSubmitter
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
       begin
         num = host.max_num_jobs - host.submitted_runs.count
-        if num > 0
-          Run::PRIORITY_ORDER.keys.sort.each do |priority|
-            break if $term_received
-            runs = host.submittable_runs.where(priority: priority).limit(num)
-            logger.info("submitting jobs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
-            num -= runs.length
-            submit(runs, host, logger)
-            break if num == 0
-          end
+        Run::PRIORITY_ORDER.keys.sort.each do |priority|
+          break if $term_received
+          break unless num > 0
+          runs = host.submittable_runs.where(priority: priority).limit(num)
+          logger.info("submitting jobs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
+          num -= runs.length  # [warining] runs.length ignore 'limit', so 'num' can be negative.
+          submit(runs, host, logger) if runs.present?
         end
       rescue => ex
         logger.error("Error in JobSubmitter: #{ex.inspect}")

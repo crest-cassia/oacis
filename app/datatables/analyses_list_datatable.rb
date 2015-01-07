@@ -1,5 +1,12 @@
 class AnalysesListDatatable
 
+  HEADER  = ['<th style="min-width: 18px; width: 1%;"></th>',
+             '<th>AnalysisID</th>', '<th>analyzer</th>', '<th>parameters</th>',
+             '<th>status</th>',
+             '<th>version</th>', '<th>created_at</th>',
+             '<th style="min-width: 18px; width: 1%;"></th>']
+  SORT_BY = ["id", "id", "analyzer_id", "parameters", "status", "analyzer_version", "updated_at", "id"]
+
   def initialize(view_context, analyses)
     @view = view_context
     @analyses = analyses
@@ -53,10 +60,9 @@ private
     @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
   end
 
-  COLUMN_KEYS = ["id", "id", "analyzer_id", "parameters", "status", "analyzer_version", "updated_at", "id"]
   def sort_column
     idx = @view.params[:iSortCol_0].to_i
-    COLUMN_KEYS[idx]
+    SORT_BY[idx]
   end
 
   def sort_direction

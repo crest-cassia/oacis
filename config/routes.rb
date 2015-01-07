@@ -6,6 +6,12 @@ AcmProto::Application.routes.draw do
     end
   end
 
+  resources :analyses, only: ["index"] do
+    collection do
+      get "_analyses_table" # for ajax, datatables
+    end
+  end
+
   # Simulator-ParameterSet-Run relations
   simulator_actions = ["index", "show"]
   simulator_actions += ["new", "create", "edit", "update", "destroy"] unless OACIS_READ_ONLY
@@ -20,6 +26,8 @@ AcmProto::Application.routes.draw do
       get "_parameters_list" # for ajax, datatables
       get "_analyzer_list" # for ajax, datatables
       get "_progress" # for progress table
+      get "_host_parameters_field" # for ajax, get the fields for host_parameters
+      get "_default_mpi_omp" # for ajax, get the default mpi_procs and omp_threads
     end
 
     parameter_set_actions = ["show"]
@@ -72,9 +80,6 @@ AcmProto::Application.routes.draw do
   resources :hosts, only: host_actions do
     collection do
       post "_sort" # for ajax, update order of the table
-    end
-    member do
-      get "_host_parameters_field" # for ajax, get the fields for host_parameters
     end
   end
 

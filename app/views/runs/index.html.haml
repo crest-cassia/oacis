@@ -29,6 +29,7 @@
 
 :javascript
   $(function() {
+    var aoRunsTables = []
     $('.jobs_datatable').each( function() {
       var source = $(this).attr("data-source");
       var oTable = $(this).dataTable({
@@ -41,9 +42,15 @@
       });
       aoRunsTables.push(oTable);
     });
+    function reload_runs_table() {
+      aoRunsTables.forEach( function(oTable) {
+        oTable.fnReloadAjax();
+      });
+    }
+    setInterval( reload_runs_table , 5000 );
     $('.dataTables_length').each( function() {
       $(this).append(
-        '<i class="icon-refresh" id="dataTables_refresh"></i>'
+        '<i class="icon-refresh runs-list-refresh" id="dataTables_refresh"></i>'
       );
       $(this).children('#dataTables_refresh').on('click', reload_runs_table);
     });

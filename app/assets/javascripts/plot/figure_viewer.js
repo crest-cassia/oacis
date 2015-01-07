@@ -268,13 +268,26 @@ FigureViewer.prototype.AddDescription = function() {
     dl.append("dd").text(plot.data.ylabel);
     dl.append("dt").text("Result");
     dl.append("dd").text(plot.data.result);
+    if(plot.data.irrelevants.length > 0) {
+      dl.append("dt").text("Irrevant keys");
+      dl.append("dd").text( plot.data.irrelevants.join(',') );
+    }
+    dl.append("dt").text("URL");
+    dl.append("input")
+      .attr({"type": "text", "readonly": "readonly", "onClick": "this.select(); "})
+      .attr('value', plot.data.plot_url );
   }
   add_label_table();
 
   function add_tools() {
-    plot.description.append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
-    plot.description.append("br");
-    plot.description.append("a").text("show smaller image").style('cursor','pointer').on("click", function() {
+    var actions = plot.description.append("div").attr('class', 'btn-group');
+    actions.append("a")
+      .attr({"class": "btn btn-primary btn-small dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
+      .text("Action")
+      .append("span").attr("class", "caret");
+    var list = actions.append("ul").attr('class', 'dropdown-menu');
+    list.append("li").append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
+    list.append("li").append("a").text("show smaller image").style('cursor','pointer').on("click", function() {
       if(plot.figure_size == "small") {
         plot.UpdatePlot("point");
       }
@@ -282,8 +295,7 @@ FigureViewer.prototype.AddDescription = function() {
         plot.UpdatePlot("small");
       }
     });
-    plot.description.append("br");
-    plot.description.append("a").text("show larger image").style('cursor','pointer').on("click", function() {
+    list.append("li").append("a").text("show larger image").style('cursor','pointer').on("click", function() {
       if(plot.figure_size == "point") {
         plot.UpdatePlot("small");
       }
@@ -291,14 +303,11 @@ FigureViewer.prototype.AddDescription = function() {
         plot.UpdatePlot("large");
       }
     });
-    plot.description.append("br");
-
-    plot.description.append("a").text("delete plot")
+    list.append("li").append("a").text("delete plot")
       .style("cursor", "pointer")
       .on("click", function() {
         plot.Destructor();
       });
-    plot.description.append("br");
     plot.description.append("div").style("padding-bottom", "50px");
 
     plot.description.append("input").attr("type", "checkbox").on("change", function() {
@@ -373,7 +382,6 @@ FigureViewer.prototype.AddDescription = function() {
       plot.SetYScale(y_linear_log); // reset xScale domain to draw non expanded plot
       var size = plot.figure_size;
       plot.UpdatePlot("point");  // point plot is drawn for brush
-      plot.UpdatePlot();
       while (control_plot.node().firstChild) {
         control_plot.node().removeChild(control_plot.node().firstChild);
       }
