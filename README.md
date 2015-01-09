@@ -1,7 +1,7 @@
 # OACIS
 
 [![release](https://img.shields.io/github/release/crest-cassia/oacis.svg)](https://github.com/crest-cassia/oacis/releases/latest)
-[![docker image](http://img.shields.io/badge/docker_image-ready-brightgreen.svg)](https://registry.hub.docker.com/u/takeshiuchitane/oacis/)
+[![oaics_docker](http://img.shields.io/badge/oaics_docker-building-yellow.svg)](https://github.com/crest-cassia/oacis_docker)
 
 *OACIS* (''Organizing Assistant for Comprehensive and Interactive Simulations'') is developed for efficient management of simulation jobs and results.
 See [wiki](https://github.com/crest-cassia/oacis/wiki) or docs (doc/build/html/index.html) for the sequence of installation and usage.
