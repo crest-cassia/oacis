@@ -7,7 +7,7 @@ describe "RunsListDatatable" do
     before(:each) do
       @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 30)
       @param_set = @simulator.parameter_sets.first
-      @runs = @param_set.runs 
+      @runs = @param_set.runs
       @context = ActionController::Base.new.view_context
       @context.stub(:params).and_return({id: @param_set.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "desc"})
       @context.stub(:link_to) {|str, link_path| link_path }
@@ -27,12 +27,46 @@ describe "RunsListDatatable" do
     it "is initialized" do
       @rld.instance_variable_get(:@runs).should eq(Run.where(:parameter_set_id => @param_set.to_param))
     end
-    
+
     it "return json" do
       @rld_json["iTotalRecords"].should == 30
       @rld_json["iTotalDisplayRecords"].should == 30
       @rld_json["aaData"].size.should == 25
       @rld_json["aaData"][0][0].to_s.should == @runs.order_by("id desc").first.id.to_s
+    end
+
+    context "with multiple sort" do
+
+    before(:each) do
+      @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 30)
+      @param_set = @simulator.parameter_sets.first
+      @runs = @param_set.runs
+      run = @runs.first
+      run.priority = :low
+      run.save
+      @context = ActionController::Base.new.view_context
+      @context.stub(:params).and_return({id: @param_set.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 2, iSortCol_1: 0, sSortDir_0: "aec", sSortDir_1: "desc"})
+      @context.stub(:link_to) {|str, link_path| link_path }
+      @context.stub(:run_path) {|run| run.id.to_s }
+      @context.stub(:priority) {|run| Run::PRIORITY_ORDER[run.priority].to_s }
+      @context.stub(:distance_to_now_in_words).and_return("time")
+      @context.stub(:formatted_elapsed_time).and_return("time")
+      @context.stub(:raw).and_return("label")
+      @context.stub(:status_label).and_return("status_label")
+      @context.stub(:shortened_id).and_return("xxxx..yy")
+      @context.stub(:host_path).and_return("/host/xxx")
+      @context.stub(:shortened_job_id).and_return("123456..")
+      @rld = RunsListDatatable.new(@runs, @context)
+      @rld_json = JSON.parse(@rld.to_json)
+    end
+
+      it "return json" do
+        @rld_json["iTotalRecords"].should == 30
+        @rld_json["iTotalDisplayRecords"].should == 30
+        @rld_json["aaData"].size.should == 25
+        @rld_json["aaData"][0][0].to_s.should_not == @runs.order_by({"id"=>" desc"}).first.id.to_s
+        @rld_json["aaData"][0][0].to_s.should == @runs.order_by({"priority"=>"aec", "id"=>" desc"}).first.id.to_s
+      end
     end
   end
 end
