@@ -53,6 +53,11 @@ class OacisCli < Thor
     aliases:  '-n',
     desc:     'runs are created up to this number',
     default:  1
+  method_option :seeds,
+    type:     :string,
+    aliases:  '-s',
+    desc:     'runs are created with seeds',
+    required: false
   method_option :output,
     type:     :string,
     aliases:  '-o',
@@ -62,13 +67,14 @@ class OacisCli < Thor
     parameter_sets = get_parameter_sets(options[:parameter_sets])
     job_parameters = load_json_file_or_string(options[:job_parameters])
     num_runs = options[:number_of_runs]
+    seeds = JSON.parse(options[:seeds]) if options[:seeds]
     submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
     host_parameters = job_parameters["host_parameters"].to_hash
     mpi_procs = job_parameters["mpi_procs"]
     omp_threads = job_parameters["omp_threads"]
     priority = job_parameters["priority"]
 
-    runs = create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority)
+    runs = create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority, seeds)
 
   ensure
     return if options[:dry_run]
@@ -77,7 +83,7 @@ class OacisCli < Thor
   end
 
   private
-  def create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority)
+  def create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority, seeds)
     progressbar = ProgressBar.create(total: parameter_sets.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
       progressbar.log "Number of parameter_sets : #{parameter_sets.count}"
@@ -98,6 +104,7 @@ class OacisCli < Thor
                             omp_threads: omp_threads,
                             host_parameters: host_parameters,
                             priority: priority)
+        run.seed = seeds[i] if seeds[i]
         if run.valid?
           run.save! unless options[:dry_run]
           runs << run
