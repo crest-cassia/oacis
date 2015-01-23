@@ -319,6 +319,8 @@ Runを新規作成する
   +----------------+--------+--------------------------------+-----------+
   |--number_of_runs|-n      |number of runs (Integer)        |no         |
   +----------------+--------+--------------------------------+-----------+
+  |--seeds         |-s      |seeds array (Json String)       |no         |
+  +----------------+--------+--------------------------------+-----------+
   |--output        |-o      |output file path                |yes        |
   +----------------+--------+--------------------------------+-----------+
 
@@ -327,6 +329,7 @@ Runを新規作成する
     - parameter_setsファイルは create_parameter_sets で出力されるJSON形式のファイルまたは文字列を指定する。
     - job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルまたは文字列を指定する。
     - number_of_runs はRunの数を数値で指定する。各ParameterSetごとに、ここで指定された数になるまでRunが作られる。デフォルトは1。
+    - seeds はRunのseedを数値の配列で指定する(--seeds "[0, 1, 2, 3]")。number_of_runs以上のseedが指定された場合、number_of_runsで指定された数になるまで指定されたseedでRunが作られる。
 
 - 出力
     - RunのidをObjectの配列としてJSON形式で出力する。
