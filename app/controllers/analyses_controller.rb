@@ -43,7 +43,7 @@ class AnalysesController < ApplicationController
 
   def _analyses_table
     stat = params[:analysis_status].to_sym
-    render json: AnalysesListDatatable.new(view_context, Analysis.where(status: stat))
+    render json: AnalysesListDatatable.new(Analysis.where(status: stat), view_context)
   end
 
   private

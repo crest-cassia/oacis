@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Analysis do
 
   before(:each) do
-    @sim = FactoryGirl.create(:simulator, 
+    @sim = FactoryGirl.create(:simulator,
                               parameter_sets_count:1, runs_count:1,
                               analyzers_count: 1, run_analysis: true
                               )

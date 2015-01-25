@@ -89,7 +89,7 @@ private
   end
 
   def fetch_parameter_sets_list
-    parameter_sets_list = @param_sets.only("v","updated_at").order_by("#{sort_column} #{sort_direction}")
+    parameter_sets_list = @param_sets.only("v","updated_at").order_by(sort_column_direction)
     parameter_sets_list = parameter_sets_list.skip(page).limit(per_page)
     parameter_sets_list
   end
@@ -102,13 +102,33 @@ private
     @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
   end
 
-  def sort_column
-    idx = @view.params[:iSortCol_0].to_i
-    sort_by[idx]
+  def sort_column_direction
+    a = [sort_columns,sort_directions].transpose
+    Hash[*a.flatten]
   end
 
-  def sort_direction
-    @view.params[:sSortDir_0] == "desc" ? "desc" : "asc"
+  def sort_columns
+    idxs = []
+    i=0
+    while true
+      idx=@view.params[("iSortCol_" + i.to_s).to_sym]
+      break unless idx
+      idxs << idx.to_i
+      i+=1
+    end
+    idxs.map {|idx| sort_by[idx] }
+  end
+
+  def sort_directions
+    dirs = []
+    i=0
+    while true
+      dir=@view.params[("sSortDir_" + i.to_s).to_sym]
+      break unless dir
+      dirs << dir == "desc" ? "desc" : "asc"
+      i+=1
+    end
+    dirs
   end
 end
 
