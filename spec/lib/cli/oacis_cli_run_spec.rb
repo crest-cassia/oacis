@@ -183,10 +183,10 @@ describe OacisCli do
       it "creates run having correct attributes" do
         at_temp_dir {
           invoke_create_runs_with_seeds
-          run = @sim.parameter_sets.first.runs.first
-          run.seed.should == 0
-          run2 = @sim.parameter_sets.last.runs.first
-          run2.seed.should == 0
+          seeds = @sim.parameter_sets.first.reload.runs.map {|run| run.seed }
+          seeds.should =~ [0,1,2]
+          seeds2 = @sim.parameter_sets.last.reload.runs.map {|run| run.seed }
+          seeds2.should =~ [0,1,2]
         }
       end
     end
