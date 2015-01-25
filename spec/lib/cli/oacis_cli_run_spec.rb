@@ -157,6 +157,40 @@ describe OacisCli do
       }
     end
 
+    context "with seeds option" do
+
+      def invoke_create_runs_with_seeds
+        create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
+        create_job_parameters_json('job_parameters.json')
+        options = {
+          parameter_sets: 'parameter_set_ids.json',
+          job_parameters: 'job_parameters.json',
+          number_of_runs: 3,
+          seeds: "[0, 1, 2]",
+          output: 'run_ids.json'
+        }
+        OacisCli.new.invoke(:create_runs, [], options)
+      end
+
+      it "creates runs for each parameter_set" do
+        at_temp_dir {
+          expect {
+            invoke_create_runs_with_seeds
+          }.to change { Run.count }.by(6)
+        }
+      end
+
+      it "creates run having correct attributes" do
+        at_temp_dir {
+          invoke_create_runs_with_seeds
+          seeds = @sim.parameter_sets.first.reload.runs.map {|run| run.seed }
+          seeds.should =~ [0,1,2]
+          seeds2 = @sim.parameter_sets.last.reload.runs.map {|run| run.seed }
+          seeds2.should =~ [0,1,2]
+        }
+      end
+    end
+
     it "outputs ids of created runs in json" do
       at_temp_dir {
         invoke_create_runs
