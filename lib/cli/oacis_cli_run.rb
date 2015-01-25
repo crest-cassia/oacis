@@ -67,7 +67,7 @@ class OacisCli < Thor
     parameter_sets = get_parameter_sets(options[:parameter_sets])
     job_parameters = load_json_file_or_string(options[:job_parameters])
     num_runs = options[:number_of_runs]
-    seeds = JSON.parse(options[:seeds]) if options[:seeds]
+    seeds = options[:seeds] ? JSON.parse(options[:seeds]) : []
     submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
     host_parameters = job_parameters["host_parameters"].to_hash
     mpi_procs = job_parameters["mpi_procs"]
