@@ -88,7 +88,7 @@ class OacisCli < Thor
       omp_threads = run_option["omp_threads"] || 1
       priority = run_option["priority"] || 1
 
-      create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority)
+      create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority, [])
     end
 
   ensure
