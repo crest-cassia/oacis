@@ -73,7 +73,7 @@ class RunsController < ApplicationController
 
   def _analyses_list
     run = Run.find(params[:id])
-    render json: AnalysesListDatatable.new(view_context, run.analyses)
+    render json: AnalysesListDatatable.new(run.analyses, view_context)
   end
 
   def preview
