@@ -136,7 +136,7 @@ class ParameterSetsController < ApplicationController
 
   def _analyses_list
     parameter_set = ParameterSet.find(params[:id])
-    render json: AnalysesListDatatable.new(view_context, parameter_set.analyses)
+    render json: AnalysesListDatatable.new(parameter_set.analyses, view_context)
   end
 
   def _similar_parameter_sets_list
