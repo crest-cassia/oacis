@@ -40,14 +40,20 @@ class JobObserver
             JobIncluder.include_remote_job(host, run)
           end
         rescue => ex
-          logger.error("Error in Host#check_submitted_job_status: #{ex.inspect}")
+          logger.error("Error in RemoteJobHandler#remote_status: #{ex.inspect}")
           logger.error ex.backtrace
-          logger.error("run:\"#{run.to_param.to_s}\" is failed")
-          if run.result.present?
-            run.result = "System_message:_output.json is not stored. More detail is written in log files."
+
+          # When ssh connection is failed, ex.inspect="#<NoMethodError: undefined method `stat' for nil:NilClass"
+          if ex.inspect.to_s == "#<NoMethodError: undefined method `stat' for nil:NilClass>"
+            logger.error("ssh connection error occurs in run:\"#{run.to_param.to_s}\"")
+          else
+            logger.error("run:\"#{run.to_param.to_s}\" is failed")
+            if run.result.present?
+              run.result = "System_message:_output.json is not stored. More detail is written in log files."
+            end
+            run.status = :failed
+            run.save!
           end
-          run.status = :failed
-          run.save!
         end
       end
     end
