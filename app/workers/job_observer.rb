@@ -43,9 +43,9 @@ class JobObserver
           logger.error("Error in RemoteJobHandler#remote_status: #{ex.inspect}")
           logger.error ex.backtrace
 
-          # When ssh connection is failed, ex.inspect="#<NoMethodError: undefined method `stat' for nil:NilClass"
+          # When ssh connection is failed, ex.inspect="#<NoMethodError: undefined method `stat' for nil:NilClass>"
           if ex.inspect.to_s == "#<NoMethodError: undefined method `stat' for nil:NilClass>"
-            logger.error("ssh connection error occurs in run:\"#{run.to_param.to_s}\"")
+            logger.error("ssh connection error occurs in getting status of run:\"#{run.to_param.to_s}\"")
           else
             logger.error("run:\"#{run.to_param.to_s}\" is failed")
             if run.result.present?
