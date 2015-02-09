@@ -104,9 +104,20 @@ describe JobObserver do
       end
 
       it "does not include remote data even if remote status is 'includable'" do
-        @host.stub(:remote_status) { :includable }
+        RemoteJobHandler.any_instance.stub(:remote_status) { :includable }
         JobIncluder.should_not_receive(:include_remote_job)
         JobObserver.__send__(:observe_host, @host, @logger)
+      end
+    end
+
+    context "when ssh connection error occers" do
+
+      it "does not change run status into :failed" do
+        # return "#<NoMethodError: undefined method `stat' for nil:NilClass>"
+        RemoteJobHandler.any_instance.stub(:remote_status) { nil.stat }
+        expect {
+          JobObserver.__send__(:observe_host, @host, @logger)
+        }.not_to change { Run.where(status: :failed).count }
       end
     end
   end
