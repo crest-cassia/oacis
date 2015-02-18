@@ -78,11 +78,9 @@ describe ParameterSetQuery do
                                   )
     end
 
-    subject { @query }
-
-    its(:selector) {
-      should == {"simulator_id" => @sim.id, "v.L" => {"$lte" => 123}, "v.T" => {"$gte" => 456.0}}
-    }
+    it "has valid selector" do
+      expect(@query.selector).to eq ({"simulator_id" => @sim.id, "v.L" => {"$lte" => 123}, "v.T" => {"$gte" => 456.0}})
+    end
   end
 
   describe "#set_query" do
