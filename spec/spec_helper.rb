@@ -35,6 +35,7 @@ Spork.prefork do
   Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
 
   RSpec.configure do |config|
+    config.infer_spec_type_from_file_location! # this line is added when updating rspec3
     config.include SpecHelper
     # ## Mock Framework
     #

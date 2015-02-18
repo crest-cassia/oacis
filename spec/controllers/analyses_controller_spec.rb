@@ -98,7 +98,7 @@ describe AnalysesController do
         end
 
         it "re-renders Run#show template showing errors" do
-          pending "not yet implemented"
+          skip "not yet implemented"
         end
       end
     end
@@ -133,7 +133,7 @@ describe AnalysesController do
       describe "with invalid param" do
 
         it "re-renders ParameterSet#show template showing errors" do
-          pending "not yet implemented"
+          skip "not yet implemented"
         end
       end
     end

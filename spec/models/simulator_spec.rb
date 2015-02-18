@@ -81,7 +81,7 @@ describe Simulator do
 
     it "is created when a new item is added" do
       sim = Simulator.create!(@valid_fields)
-      FileTest.directory?(ResultDirectory.simulator_path(sim)).should be_true
+      FileTest.directory?(ResultDirectory.simulator_path(sim)).should be_truthy
     end
 
     it "is not created when validation fails" do
@@ -456,12 +456,12 @@ describe Simulator do
 
       it "does not include the result for a failed run" do
         @sim.runs.first.update_attribute(:status, :failed)
-        @sim.figure_files.any? {|f| f =~ /fig1/ }.should be_false
+        @sim.figure_files.any? {|f| f =~ /fig1/ }.should be_falsey
       end
 
       it "does not include the result for a failed analysis" do
         @sim.analyzers.first.analyses.first.update_attribute(:status, :failed)
-        @sim.figure_files.any? {|f| f =~ /fig2/ }.should be_false
+        @sim.figure_files.any? {|f| f =~ /fig2/ }.should be_falsey
       end
     end
   end

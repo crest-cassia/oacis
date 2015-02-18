@@ -131,7 +131,7 @@ describe Analyzer do
     end
 
     it "has many analyses" do
-      @azr.analyses.should have(3).items
+      expect(@azr.analyses.size).to eq 3
     end
   end
 

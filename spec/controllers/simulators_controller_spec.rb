@@ -76,7 +76,7 @@ describe SimulatorsController do
       assigns(:simulator).should eq(@simulator)
       assigns(:analyzers).should eq(@simulator.analyzers)
       assigns(:query_id).should be_nil
-      assigns(:query_list).should have(5).items
+      expect(assigns(:query_list).size).to eq 5
     end
   end
 
@@ -153,11 +153,11 @@ describe SimulatorsController do
         sim = Simulator.last
         sim.name.should eq "simulatorA"
         sim.command.should eq "echo"
-        sim.support_input_json.should be_false
+        sim.support_input_json.should be_falsey
         sim.parameter_definition_for("param1").type.should eq "Integer"
         sim.parameter_definition_for("param2").type.should eq "Float"
-        sim.support_mpi.should be_false
-        sim.support_omp.should be_true
+        sim.support_mpi.should be_falsey
+        sim.support_omp.should be_truthy
       end
 
       it "assigns a newly created simulator as @simulator" do
@@ -221,7 +221,7 @@ describe SimulatorsController do
 
         post :create, @valid_post_parameter, valid_session
         assigns(:duplicating_simulator).should eq @sim
-        assigns(:copied_analyzers).should have(1).items
+        expect(assigns(:copied_analyzers).size).to eq 1
       end
     end
 
