@@ -28,13 +28,14 @@ Spork.prefork do
   end
   require File.expand_path("../../config/environment", __FILE__)
   require 'rspec/rails'
-  require 'rspec/autorun'
+  #require 'rspec/autorun' # this line is no longer required in rspec 3
 
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.
   Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
 
   RSpec.configure do |config|
+    config.infer_spec_type_from_file_location!
     config.include SpecHelper
     # ## Mock Framework
     #
@@ -78,10 +79,10 @@ Spork.prefork do
 
     # redirect stdout and stderr
     config.before(:all) do
-      $stderr = File.new(File.join(File.dirname(__FILE__), 'stderr.txt'), 'w')
-      $stdout = File.new(File.join(File.dirname(__FILE__), 'stdout.txt'), 'w')
-      if ProgressBar::Base::DEFAULT_OUTPUT_STREAM != $stdout
-        ProgressBar::Base::DEFAULT_OUTPUT_STREAM = $stdout
+      #$stderr = File.new(File.join(File.dirname(__FILE__), 'stderr.txt'), 'w')
+      #$stdout = File.new(File.join(File.dirname(__FILE__), 'stdout.txt'), 'w')
+      if ProgressBar::Output::DEFAULT_OUTPUT_STREAM != $stdout
+        ProgressBar::Output::DEFAULT_OUTPUT_STREAM = $stdout
       end
     end
 

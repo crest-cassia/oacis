@@ -455,9 +455,9 @@ describe ParameterSetsController do
         plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=cpu_time&series=&irrelevants=#!tab-plot",
         data: [
           [
-            [1, 10.0, nil, @ps_array[0].id],
-            [2, 10.0, nil, @ps_array[1].id],
-            [3, 10.0, nil, @ps_array[2].id],
+            [1, 10.0, nil, @ps_array[0].id.to_s],
+            [2, 10.0, nil, @ps_array[1].id.to_s],
+            [3, 10.0, nil, @ps_array[2].id.to_s],
           ]
         ]
       }.to_json
@@ -620,7 +620,7 @@ describe ParameterSetsController do
       loaded["ylabel"].should eq "T"
       loaded["result"].should eq "cpu_time"
       loaded["irrelevants"].should eq ["P"]
-      loaded["data"].should include( [@ps_array[5].v, 10.0, nil, @ps_array[5].id.to_s] )
+      loaded["data"].should include( [@ps_array[5].v, 10.0, nil, @ps_array[5].id] )
     end
 
     it "contains url for the plot" do

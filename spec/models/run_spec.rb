@@ -42,10 +42,11 @@ describe Run do
     end
 
     it "seed is an accessible attribute" do
-      seed_val = 12345
-      @valid_attribute.update(seed: seed_val)
-      run = @param_set.runs.create!(@valid_attribute)
-      run.seed.should == seed_val
+      #seed_val = 12345
+      #@valid_attribute.update(seed: seed_val)
+      #run = @param_set.runs.create!(@valid_attribute)
+      #run.seed.should == seed_val
+      skip "attr_accessible is no longer defined in model. See the controller"
     end
 
     it "seed must be unique" do
@@ -55,23 +56,24 @@ describe Run do
     end
 
     it "the attributes other than seed are not accessible" do
-      @valid_attribute.update(
-        status: :cancelled,
-        hostname: "host",
-        cpu_time: 123.0,
-        real_time: 456.0,
-        started_at: DateTime.now,
-        finished_at: DateTime.now,
-        included_at: DateTime.now
-      )
-      run = @param_set.runs.build(@valid_attribute)
-      run.status.should_not == :cancelled
-      run.hostname.should be_nil
-      run.cpu_time.should be_nil
-      run.real_time.should be_nil
-      run.started_at.should be_nil
-      run.finished_at.should be_nil
-      run.included_at.should be_nil
+      #@valid_attribute.update(
+      #  status: :cancelled,
+      #  hostname: "host",
+      #  cpu_time: 123.0,
+      #  real_time: 456.0,
+      #  started_at: DateTime.now,
+      #  finished_at: DateTime.now,
+      #  included_at: DateTime.now
+      #)
+      #run = @param_set.runs.build(@valid_attribute)
+      #run.status.should_not == :cancelled
+      #run.hostname.should be_nil
+      #run.cpu_time.should be_nil
+      #run.real_time.should be_nil
+      #run.started_at.should be_nil
+      #run.finished_at.should be_nil
+      #run.included_at.should be_nil
+      skip "attr_accessible is no longer defined in model. See the controller"
     end
 
     it "status must be either :created, :submitted, :running, :failed, :finished, or :cancelled" do
@@ -258,7 +260,7 @@ EOS
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       prm = sim.parameter_sets.first
       run = prm.runs.create!(@valid_attribute)
-      FileTest.directory?(ResultDirectory.run_path(run)).should be_true
+      FileTest.directory?(ResultDirectory.run_path(run)).should be_truthy
     end
 
     it "is not created when validation fails" do
@@ -277,7 +279,7 @@ EOS
       run = sim.parameter_sets.first.runs.first
       dir_path = run.dir
       run.destroy
-      FileTest.directory?(dir_path).should be_false
+      FileTest.directory?(dir_path).should be_falsey
     end
   end
 
@@ -447,8 +449,8 @@ EOS
         archive = @run.archived_result_path
         FileUtils.touch(archive)
         @run.destroy
-        File.exist?(run_dir).should be_false
-        File.exist?(archive).should be_false
+        File.exist?(run_dir).should be_falsey
+        File.exist?(archive).should be_falsey
       end
 
       it "does not destroy run even if #destroy is called twice" do

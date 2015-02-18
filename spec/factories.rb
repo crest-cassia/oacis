@@ -17,7 +17,7 @@ FactoryGirl.define do
     }
     description { Faker::Lorem.paragraphs.join("\n") }
 
-    ignore do
+    transient do
       parameter_sets_count 5
       runs_count 5
       finished_runs_count 0
@@ -61,7 +61,7 @@ FactoryGirl.define do
       {"L" => n, "T" => n*2.0}
     end
 
-    ignore do
+    transient do
       runs_count 5
       finished_runs_count 0
     end
@@ -108,7 +108,7 @@ FactoryGirl.define do
     }
     description { Faker::Lorem.paragraphs.join("\n") }
 
-    ignore do
+    transient do
       run_analysis true
     end
 

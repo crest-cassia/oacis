@@ -56,9 +56,19 @@ class SimulatorsController < ApplicationController
   # POST /simulators
   # POST /simulators.json
   def create
-    @simulator = Simulator.new(params[:simulator])
-    if params[:duplicating_simulator]
-      @duplicating_simulator = Simulator.find(params[:duplicating_simulator])
+    permitted_params = params[:simulator].present? ? params.require(:simulator)
+                                                           .permit(:name,
+                                                                   :pre_process_script,
+                                                                   :command, :description,
+                                                                   :executable_on_ids,
+                                                                   :support_input_json,
+                                                                   :support_omp,
+                                                                   :support_mpi,
+                                                                   :print_version_command,
+                                                                   parameter_definitions_attributes: [[:key,:type,:default, :description]]
+                                                                  ) : {}
+    @simulator = Simulator.new(permitted_params)
+    if params[:copied_analyzers]
       @copied_analyzers = params[:copied_analyzers].to_a.map {|azr_id| Analyzer.find(azr_id) }
       @copied_analyzers.each do |azr|
         @simulator.analyzers.push azr.clone
@@ -80,9 +90,20 @@ class SimulatorsController < ApplicationController
   # PUT /simulators/1.json
   def update
     @simulator = Simulator.find(params[:id])
+    permitted_params = params[:simulator].present? ? params.require(:simulator)
+                                                           .permit(:name,
+                                                                   :pre_process_script,
+                                                                   :command, :description,
+                                                                   :executable_on_ids,
+                                                                   :support_input_json,
+                                                                   :support_omp,
+                                                                   :support_mpi,
+                                                                   :print_version_command,
+                                                                   parameter_definitions_attributes: [[:key,:type,:default, :description]]
+                                                                  ) : {}
 
     respond_to do |format|
-      if @simulator.update_attributes(params[:simulator])
+      if @simulator.update_attributes(permitted_params)
         format.html { redirect_to @simulator, notice: 'Simulator was successfully updated.' }
         format.json { head :no_content }
       else
@@ -109,14 +130,13 @@ class SimulatorsController < ApplicationController
     @query_id = params[:query_id]
 
     if params[:delete_query]
-      @q = ParameterSetQuery.find(@query_id)
-      @q.destroy
+      ParameterSetQuery.find(@query_id).destroy
       @query_id = nil
     else
-      @simulator = Simulator.find(params[:id])
-      @new_query = @simulator.parameter_set_queries.build
+      simulator = Simulator.find(params[:id])
+      @new_query = simulator.parameter_set_queries.build
       if @new_query.set_query(params["query"]) and @new_query.save
-        @query_id = @new_query.id
+        @query_id = @new_query.id.to_s
         flash[:notice] = "A new query is created"
       else
         flash[:alert] = "Failed to create a query"

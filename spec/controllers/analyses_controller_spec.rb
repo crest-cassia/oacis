@@ -72,7 +72,8 @@ describe AnalysesController do
           @valid_param = {
             run_id: @run.to_param,
             analysis: { analyzer: @azr.to_param},
-            parameters: {"param1" => 1, "param2" => 2.0}
+            parameters: {"param1" => 1, "param2" => 2.0},
+            format: 'json'
           }
         end
 
@@ -94,11 +95,28 @@ describe AnalysesController do
       describe "with invalid params" do
 
         before(:each) do
-          @invalid_param = {}   #IMPLEMENT ME
+          @invalid_param = {
+            run_id: @run.to_param,
+            analysis: { analyzer: @azr.to_param},
+            parameters: {"param1" => 1, "param2" => 2.0},
+            result: "abc",
+            status: :running,
+            format: 'json'
+          }
         end
 
         it "re-renders Run#show template showing errors" do
-          pending "not yet implemented"
+          skip "not yet implemented"
+        end
+
+        it "result is not an accessible field" do
+          expect {
+            post :create, @invalid_param, valid_session
+          }.to change{
+            @run.reload.analyses.count
+          }.by(1)
+          @run.analyses.last.result.should be_nil
+          @run.analyses.last.status.should_not eq :running
         end
       end
     end
@@ -111,7 +129,8 @@ describe AnalysesController do
           @valid_param = {
             parameter_set_id: @par.to_param,
             analysis: { analyzer: @azr2.to_param},
-            parameters: {}
+            parameters: {},
+            format: 'json'
           }
         end
 
@@ -133,7 +152,7 @@ describe AnalysesController do
       describe "with invalid param" do
 
         it "re-renders ParameterSet#show template showing errors" do
-          pending "not yet implemented"
+          skip "not yet implemented"
         end
       end
     end
@@ -143,7 +162,7 @@ describe AnalysesController do
 
     it "destroys the analysis when status is neither :failed nor :finished" do
       expect {
-        delete :destroy, {id: @arn.to_param}, valid_session
+        delete :destroy, {id: @arn.to_param, format: 'json'}, valid_session
       }.to change(Analysis, :count).by(-1)
     end
 
@@ -151,7 +170,7 @@ describe AnalysesController do
       @arn.status = :running
       @arn.save!
       expect {
-        delete :destroy, {id: @arn.to_param}, valid_session
+        delete :destroy, {id: @arn.to_param, format: 'json'}, valid_session
       }.to change { Analysis.where(status: :cancelled).count }.by(1)
     end
   end

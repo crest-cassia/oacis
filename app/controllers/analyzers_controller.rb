@@ -25,7 +25,8 @@ class AnalyzersController < ApplicationController
 
   def create
     simulator = Simulator.find(params[:simulator_id])
-    @analyzer = simulator.analyzers.build(params[:analyzer])
+    permitted_params = params[:analyzer].present? ? params.require(:analyzer).permit(:name, :type, :command, :description, :auto_run, :print_version_command, :simulator, parameter_definitions_attributes: [[:key, :type]]) : {}
+    @analyzer = simulator.analyzers.build(permitted_params)
 
     respond_to do |format|
       if @analyzer.save
@@ -40,9 +41,10 @@ class AnalyzersController < ApplicationController
 
   def update
     @analyzer = Analyzer.find(params[:id])
+    permitted_params = params[:analyzer].present? ? params.require(:analyzer).permit(:name, :type, :command, :description, :auto_run, :print_version_command, :simulator, parameter_definitions_attributes: [[:key, :type]]) : {}
 
     respond_to do |format|
-      if @analyzer.update_attributes(params[:analyzer])
+      if @analyzer.update_attributes(permitted_params)
         format.html { redirect_to @analyzer, notice: 'Analyzer was successfully updated.' }
         format.json { head :no_content }
       else

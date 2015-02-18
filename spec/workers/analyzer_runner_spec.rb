@@ -54,7 +54,7 @@ describe AnalyzerRunner do
         Dir.chdir(@work_dir) {
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
           input_json = '_input.json'
-          File.exist?(input_json).should be_true
+          File.exist?(input_json).should be_truthy
           parsed = JSON.parse(IO.read(input_json))
           mapped = {}
           @arn.input.each {|key, value| mapped[key.to_s] = value}
@@ -68,8 +68,8 @@ describe AnalyzerRunner do
           FileUtils.touch(dummy_input)
           @arn.should_receive(:input_files).and_return([@arn.analyzable.dir])
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
-          File.directory?('_input').should be_true
-          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should be_true
+          File.directory?('_input').should be_truthy
+          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should be_truthy
         }
       end
     end
@@ -89,9 +89,9 @@ describe AnalyzerRunner do
         Dir.chdir(@work_dir) {
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
           input_json = '_input.json'
-          File.exist?(input_json).should be_true
+          File.exist?(input_json).should be_truthy
           AnalyzerRunner.__send__(:remove_inputs)
-          File.exist?(input_json).should_not be_true
+          File.exist?(input_json).should_not be_truthy
         }
       end
 
@@ -101,11 +101,11 @@ describe AnalyzerRunner do
           FileUtils.touch(dummy_input)
           @arn.should_receive(:input_files).and_return([@arn.analyzable.dir])
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
-          File.directory?('_input').should be_true
-          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should be_true
+          File.directory?('_input').should be_truthy
+          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should be_truthy
           AnalyzerRunner.__send__(:remove_inputs)
-          File.directory?('_input').should_not be_true
-          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should_not be_true
+          File.directory?('_input').should_not be_truthy
+          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should_not be_truthy
         }
       end
     end
@@ -153,8 +153,8 @@ describe AnalyzerRunner do
 
       it "stdout and stderr outputs are redirected to '_stdout.txt' and '_stderr.txt'" do
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        File.exist?( File.join(@work_dir, '_stdout.txt') ).should be_true
-        File.exist?( File.join(@work_dir, '_stderr.txt') ).should be_true
+        File.exist?( File.join(@work_dir, '_stdout.txt') ).should be_truthy
+        File.exist?( File.join(@work_dir, '_stderr.txt') ).should be_truthy
       end
 
       it "analyzer_command may include redirection of stdout or stderr" do
@@ -223,7 +223,7 @@ describe AnalyzerRunner do
       it "write '_version.txt'" do
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
         version_text = '_version.txt'
-        File.exist?( File.join(@work_dir, version_text) ).should be_true
+        File.exist?( File.join(@work_dir, version_text) ).should be_truthy
         version = File.open(File.join(@work_dir, version_text) ).read.chomp
         version.should eq("v0.1.0")
       end

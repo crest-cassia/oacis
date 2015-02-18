@@ -1,5 +1,7 @@
 class JobObserver
 
+  MAX_NUM_JOBS=20
+
   def self.perform(logger)
     @last_performed_at ||= {}
     Host.where(status: :enabled).each do |host|
@@ -22,6 +24,7 @@ class JobObserver
     return unless is_enough_disk_space_left?(logger)
     host.start_ssh do |ssh|
       handler = RemoteJobHandler.new(host)
+      job_count=0
       # check if job is finished
       host.submitted_runs.each do |run|
         break if $term_received
@@ -38,6 +41,8 @@ class JobObserver
             run.update_attribute(:status, :running) if run.status == :submitted
           when :includable, :unknown
             JobIncluder.include_remote_job(host, run)
+            job_counter+=1
+            break if job_counter==MAX_NUM_JOBS
           end
         rescue => ex
           logger.error("Error in RemoteJobHandler#remote_status: #{ex.inspect}")

@@ -76,7 +76,7 @@ describe SimulatorsController do
       assigns(:simulator).should eq(@simulator)
       assigns(:analyzers).should eq(@simulator.analyzers)
       assigns(:query_id).should be_nil
-      assigns(:query_list).should have(5).items
+      expect(assigns(:query_list).size).to eq 5
     end
   end
 
@@ -153,11 +153,11 @@ describe SimulatorsController do
         sim = Simulator.last
         sim.name.should eq "simulatorA"
         sim.command.should eq "echo"
-        sim.support_input_json.should be_false
+        sim.support_input_json.should be_falsey
         sim.parameter_definition_for("param1").type.should eq "Integer"
         sim.parameter_definition_for("param2").type.should eq "Float"
-        sim.support_mpi.should be_false
-        sim.support_omp.should be_true
+        sim.support_mpi.should be_falsey
+        sim.support_omp.should be_truthy
       end
 
       it "assigns a newly created simulator as @simulator" do
@@ -184,7 +184,8 @@ describe SimulatorsController do
         }
         @valid_post_parameter = {
           simulator: simulator,
-          duplicating_simulator: @sim.id, copied_analyzers: @sim.analyzers.map(&:id)
+          duplicating_simulator: @sim.id.to_s, copied_analyzers: @sim.analyzers.map(&:id).map {|obj_id| obj_id.to_s},
+          format: 'json'
         }
       end
 
@@ -220,8 +221,8 @@ describe SimulatorsController do
         @valid_post_parameter[:copied_analyzers].shift
 
         post :create, @valid_post_parameter, valid_session
-        assigns(:duplicating_simulator).should eq @sim
-        assigns(:copied_analyzers).should have(1).items
+        #assigns(:duplicating_simulator).should eq @sim # removed by refavtoring
+        expect(assigns(:copied_analyzers).size).to eq 1
       end
     end
 
@@ -255,18 +256,18 @@ describe SimulatorsController do
           support_mpi: "0", support_omp: "1",
           parameter_definitions_attributes: definitions
         }
-        @valid_post_parameter = {simulator: simulator}
+        @valid_post_parameter = {simulator: simulator, format: 'json'}
       end
 
       it "updates the requested simulator" do
         simulator = Simulator.create! valid_attributes
-        Simulator.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
-        put :update, {:id => simulator.to_param, :simulator => {'these' => 'params'}}, valid_session
+        Simulator.any_instance.should_receive(:update_attributes).with({'description' => 'yyy zzz'})
+        put :update, {:id => simulator.to_param, :simulator => {'description' => 'yyy zzz'}, format: 'json'}, valid_session
       end
 
       it "assigns the requested simulator as @simulator" do
         simulator = Simulator.create! valid_attributes
-        put :update, {:id => simulator.to_param, :simulator => @valid_post_parameter}, valid_session
+        put :update, {:id => simulator.to_param, :simulator => @valid_post_parameter, format: 'json'}, valid_session
         assigns(:simulator).should eq(simulator)
       end
 
@@ -327,7 +328,7 @@ describe SimulatorsController do
         params = [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
                   {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}
                  ]
-        @valid_post_parameter = {:id => @simulator.to_param, "query" => params, query_id: @simulator.parameter_set_queries.first.id}
+        @valid_post_parameter = {:id => @simulator.to_param, "query" => params, query_id: @simulator.parameter_set_queries.first.id.to_s, format: 'json'}
       end
 
       it "creates a new ParameterSetQuery" do
@@ -346,13 +347,13 @@ describe SimulatorsController do
       it "redirects to show with the created parameter_set_query" do
         post :_make_query, @valid_post_parameter, valid_session
         response.should redirect_to( simulator_path(@simulator, query_id: ParameterSetQuery.last.to_param) )
-        assigns(:query_id).should == ParameterSetQuery.last.id
+        assigns(:query_id).should == ParameterSetQuery.last.id.to_s
       end
 
       context "and with delete option" do
         it "delete the last parameter_set_query of @simulator" do
           expect {
-            post :_make_query, {:id => @simulator.to_param, delete_query: "xxx", query_id: @simulator.parameter_set_queries.first.id}, valid_session
+            post :_make_query, {:id => @simulator.to_param, delete_query: "xxx", query_id: @simulator.parameter_set_queries.first.id.to_s, format: 'json'}, valid_session
           }.to change(ParameterSetQuery, :count).by(-1)
         end
       end

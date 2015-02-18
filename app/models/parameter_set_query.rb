@@ -4,8 +4,8 @@ class ParameterSetQuery
   belongs_to :simulator
   validates :simulator, presence: true
   validates :query, presence: true
-  validate :validate_uniqueness_of_query, message: 'must be unique'
-  validate :validate_format_of_query, message: 'format must be valid'
+  validate :validate_uniqueness_of_query
+  validate :validate_format_of_query
 
   NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
   NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]

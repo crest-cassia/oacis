@@ -1,15 +1,17 @@
 class JobSubmitter
 
+  MAX_NUM_JOBS=20
+
   def self.perform(logger)
     @last_performed_at ||= {}
     Host.where(status: :enabled).each do |host|
       break if $term_received
-      next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
       begin
         num = host.max_num_jobs - host.submitted_runs.count
         Run::PRIORITY_ORDER.keys.sort.each do |priority|
           break if $term_received
           break unless num > 0
+          num=MAX_NUM_JOBS if num > MAX_NUM_JOBS
           runs = host.submittable_runs.where(priority: priority).limit(num)
           logger.info("submitting jobs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
           num -= runs.length  # [warining] runs.length ignore 'limit', so 'num' can be negative.

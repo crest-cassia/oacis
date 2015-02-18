@@ -8,6 +8,7 @@ describe "AnalyzersListDatatable" do
       @simulator = FactoryGirl.create(:simulator, analyzers_count: 25)
       @context = ActionController::Base.new.view_context
       @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:10 , iSortCol_0: 0, sSortDir_0: "desc"})
+      @context.stub(:link_to) {|str, link_path| link_path }
       @context.stub(:shortened_id).and_return("id")
       @context.stub(:analyzer_path).and_return("/analyzers/00000000")
       @azrld = AnalyzersListDatatable.new(@context)
@@ -34,6 +35,7 @@ describe "AnalyzersListDatatable" do
         end
         @context = ActionController::Base.new.view_context
         @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:10, iSortCol_0: 4, iSortCol_1: 0, sSortDir_0: "asc", sSortDir_1: "desc"})
+        @context.stub(:link_to) {|str, link_path| link_path }
         @context.stub(:shortened_id).and_return("id")
         @context.stub(:analyzer_path).and_return("/analyzers/00000000")
         @azrld = AnalyzersListDatatable.new(@context)

@@ -28,7 +28,8 @@ class Analysis
   after_create :create_dir
   before_destroy :delete_dir
 
-  attr_accessible :parameters, :analyzer
+  #attr_accessible is disabled in rails 4
+  #attr_accessible :parameters, :analyzer
 
   public
   def dir
