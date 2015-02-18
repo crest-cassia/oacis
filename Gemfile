@@ -30,7 +30,7 @@ gem "quiet_assets"
 
 # utility tool
 gem "pry"
-gem "rspec-rails" # must be in :development group to use the rake task 'spec'
+gem "rspec-rails", '~>3.2' # must be in :development group to use the rake task 'spec'
 
 group :test do
   gem "factory_girl_rails"
