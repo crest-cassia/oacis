@@ -78,11 +78,9 @@ describe ParameterSetQuery do
                                   )
     end
 
-    subject { @query }
-
-    its(:selector) {
-      should == {"simulator_id" => @sim.id, "v.L" => {"$lte" => 123}, "v.T" => {"$gte" => 456.0}}
-    }
+    it "has valid selector" do
+      expect(@query.selector).to eq ({"simulator_id" => @sim.id, "v.L" => {"$lte" => 123}, "v.T" => {"$gte" => 456.0}})
+    end
   end
 
   describe "#set_query" do
@@ -103,7 +101,7 @@ describe ParameterSetQuery do
     end
 
     it "returns false when argument is invalid" do
-      @psq.set_query(nil).should be_false
+      @psq.set_query(nil).should be_falsey
     end
   end
 end

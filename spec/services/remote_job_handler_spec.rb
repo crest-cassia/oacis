@@ -22,19 +22,19 @@ describe RemoteJobHandler do
 
     it "creates a work_dir on remote host" do
       RemoteJobHandler.new(@host).submit_remote_job(@run)
-      File.directory?( @temp_dir.join(@run.id) ).should be_true
+      File.directory?( @temp_dir.join(@run.id) ).should be_truthy
     end
 
     it "creates _input.json on remote host if simulator.support_input_json is true" do
       @sim.update_attribute(:support_input_json, true)
       RemoteJobHandler.new(@host).submit_remote_job(@run)
-      File.exist?( @temp_dir.join(@run.id, '_input.json') ).should be_true
+      File.exist?( @temp_dir.join(@run.id, '_input.json') ).should be_truthy
     end
 
     it "executes pre_process_script if simulator.pre_process_script is not empty" do
       @sim.update_attribute(:pre_process_script, "echo hello > preprocess.txt")
       RemoteJobHandler.new(@host).submit_remote_job(@run)
-      File.exist?( @temp_dir.join(@run.id, 'preprocess.txt')).should be_true
+      File.exist?( @temp_dir.join(@run.id, 'preprocess.txt')).should be_truthy
     end
 
     it "executes pre_process_script with arguments when support_input_json is false" do
@@ -82,18 +82,18 @@ describe RemoteJobHandler do
 
       it "removes files on remote host" do
         call_submit_remote_job
-        File.directory?( @temp_dir.join(@run.id) ).should be_false
+        File.directory?( @temp_dir.join(@run.id) ).should be_falsey
       end
 
       it "copies files in the remote work_dir to Run's directory" do
         call_submit_remote_job
-        File.exist?( @run.dir.join('_preprocess.sh') ).should be_true
+        File.exist?( @run.dir.join('_preprocess.sh') ).should be_truthy
       end
     end
 
     it "creates a job script on remote host" do
       RemoteJobHandler.new(@host).submit_remote_job(@run)
-      File.exist?( @temp_dir.join( @run.id.to_s+'.sh') ).should be_true
+      File.exist?( @temp_dir.join( @run.id.to_s+'.sh') ).should be_truthy
     end
 
     it "updates status of Run to :submitted" do
@@ -187,7 +187,7 @@ describe RemoteJobHandler do
         dummy_work_dir = RemoteFilePath.work_dir_path(@host, @run)
         FileUtils.mkdir_p(dummy_work_dir)
         @handler.cancel_remote_job(@run)
-        File.directory?(dummy_work_dir).should be_false
+        File.directory?(dummy_work_dir).should be_falsey
       end
     end
 
@@ -206,7 +206,7 @@ describe RemoteJobHandler do
         dummy_work_dir = RemoteFilePath.work_dir_path(@host, @run)
         FileUtils.mkdir_p(dummy_work_dir)
         @handler.cancel_remote_job(@run)
-        File.directory?(dummy_work_dir).should be_false
+        File.directory?(dummy_work_dir).should be_falsey
       end
     end
 
@@ -225,7 +225,7 @@ describe RemoteJobHandler do
         dummy_work_dir = RemoteFilePath.work_dir_path(@host, @run)
         FileUtils.mkdir_p(dummy_work_dir)
         @handler.cancel_remote_job(@run)
-        File.directory?(dummy_work_dir).should be_false
+        File.directory?(dummy_work_dir).should be_falsey
       end
     end
   end

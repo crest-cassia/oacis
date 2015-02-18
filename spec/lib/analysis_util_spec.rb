@@ -7,7 +7,7 @@ describe AnalysisUtil do
     it "executes error analysis and returns [average, error, number_of_data]" do
       data = [1.0, 2.0, 3.0, 4.0, 5.0]
       result = AnalysisUtil.error_analysis(data)
-      result.should have(3).items
+      expect(result.size).to eq 3
       result[0].should be_within(0.0001).of(3.0)
       result[1].should be_within(0.0001).of(Math.sqrt(0.5))
       result[2].should eq 5

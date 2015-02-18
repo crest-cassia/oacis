@@ -258,7 +258,7 @@ EOS
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       prm = sim.parameter_sets.first
       run = prm.runs.create!(@valid_attribute)
-      FileTest.directory?(ResultDirectory.run_path(run)).should be_true
+      FileTest.directory?(ResultDirectory.run_path(run)).should be_truthy
     end
 
     it "is not created when validation fails" do
@@ -277,7 +277,7 @@ EOS
       run = sim.parameter_sets.first.runs.first
       dir_path = run.dir
       run.destroy
-      FileTest.directory?(dir_path).should be_false
+      FileTest.directory?(dir_path).should be_falsey
     end
   end
 
@@ -447,8 +447,8 @@ EOS
         archive = @run.archived_result_path
         FileUtils.touch(archive)
         @run.destroy
-        File.exist?(run_dir).should be_false
-        File.exist?(archive).should be_false
+        File.exist?(run_dir).should be_falsey
+        File.exist?(archive).should be_falsey
       end
 
       it "does not destroy run even if #destroy is called twice" do

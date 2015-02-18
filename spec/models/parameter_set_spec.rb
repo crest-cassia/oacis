@@ -52,7 +52,7 @@ describe ParameterSet do
       err.should have_key(:parameters)
       err[:parameters].find {|x|
         x =~ /identical/
-      }.should be_true
+      }.should be_truthy
     end
 
     it "identical v is valid for a differnet simulator" do
@@ -141,7 +141,7 @@ describe ParameterSet do
     it "is created when a new item is added" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
       prm = sim.parameter_sets.create!(@valid_attr)
-      FileTest.directory?(ResultDirectory.parameter_set_path(prm)).should be_true
+      FileTest.directory?(ResultDirectory.parameter_set_path(prm)).should be_truthy
     end
 
     it "is not created when validation fails" do
@@ -301,7 +301,7 @@ describe ParameterSet do
       ps = @sim.parameter_sets.first
       dir = ps.dir
       ps.destroy
-      File.directory?(dir).should be_false
+      File.directory?(dir).should be_falsey
     end
   end
 end

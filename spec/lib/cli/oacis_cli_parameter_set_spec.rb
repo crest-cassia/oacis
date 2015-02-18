@@ -21,7 +21,7 @@ describe OacisCli do
         create_simulator_id_json(@sim, 'simulator_id.json')
         option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
         OacisCli.new.invoke(:parameter_sets_template, [], option)
-        File.exist?('parameter_sets.json').should be_true
+        File.exist?('parameter_sets.json').should be_truthy
         expect {
           JSON.load(File.read('parameter_sets.json'))
         }.not_to raise_error
@@ -66,7 +66,7 @@ describe OacisCli do
           create_simulator_id_json(@sim, 'simulator_id.json')
           option = {simulator: 'simulator_id.json', output: 'parameter_sets.json', dry_run: true}
           OacisCli.new.invoke(:parameter_sets_template, [], option)
-          File.exist?('parameter_sets.json').should be_false
+          File.exist?('parameter_sets.json').should be_falsey
         }
       end
     end
@@ -80,7 +80,7 @@ describe OacisCli do
           expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
           option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
           OacisCli.new.invoke(:parameter_sets_template, [], option)
-          File.exist?('parameter_sets.json').should be_true
+          File.exist?('parameter_sets.json').should be_truthy
           expect {
             JSON.load(File.read('parameter_sets.json'))
           }.not_to raise_error
@@ -97,7 +97,7 @@ describe OacisCli do
           expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
           option = {simulator: 'simulator_id.json', output: 'parameter_sets.json', yes: true}
           OacisCli.new.invoke(:parameter_sets_template, [], option)
-          File.exist?('parameter_sets.json').should be_true
+          File.exist?('parameter_sets.json').should be_truthy
           expect {
             JSON.load(File.read('parameter_sets.json'))
           }.not_to raise_error
@@ -152,7 +152,7 @@ describe OacisCli do
     it "outputs ids of parameter_sets in json" do
       at_temp_dir {
         invoke_create_parameter_sets
-        File.exist?('parameter_set_ids.json').should be_true
+        File.exist?('parameter_set_ids.json').should be_truthy
 
         expected = @sim.reload.parameter_sets.map {|ps| {"parameter_set_id" => ps.id.to_s} }
         JSON.load(File.read('parameter_set_ids.json')).should =~ expected
@@ -181,7 +181,7 @@ describe OacisCli do
           duplicated = {"parameter_set_id" => ps.id.to_s}
           loaded = JSON.load(File.read('parameter_set_ids.json'))
           loaded.should include(duplicated)
-          loaded.should have(6).items
+          expect(loaded.size).to eq 6
         }
       end
 
@@ -195,7 +195,7 @@ describe OacisCli do
           duplicated = {"parameter_set_id" => ps.id.to_s}
           loaded = JSON.load(File.read('parameter_set_ids.json'))
           loaded.should include(duplicated)
-          loaded.should have(1).items
+          expect(loaded.size).to eq 1
         }
       end
     end
@@ -381,7 +381,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           invoke_create_parameter_sets_with_dry_run
-          File.exist?('parameter_set_ids.json').should be_false
+          File.exist?('parameter_set_ids.json').should be_falsey
         }
       end
     end
@@ -407,7 +407,7 @@ describe OacisCli do
           create_parameter_sets_json('parameter_sets.json')
           option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json", yes: true}
           OacisCli.new.invoke(:create_parameter_sets, [], option)
-          File.exist?('parameter_set_ids.json').should be_true
+          File.exist?('parameter_set_ids.json').should be_truthy
           expect {
             JSON.load(File.read('parameter_set_ids.json'))
           }.not_to raise_error

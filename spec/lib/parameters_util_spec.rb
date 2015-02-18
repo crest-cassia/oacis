@@ -26,7 +26,7 @@ describe ParametersUtil do
       casted["param1"].should eq(70)
       casted["param2"].should be_a(Float)
       casted["param2"].should eq(3.0)
-      casted["param3"].should be_true
+      casted["param3"].should be_truthy
       casted["param4"].should be_a(String)
       casted["param4"].should eq("12345")
     end
@@ -38,7 +38,7 @@ describe ParametersUtil do
       casted = ParametersUtil.cast_parameter_values(parameters, @definitions)
       casted["param1"].should eq(70)
       casted["param2"].should eq(1.0)
-      casted["param3"].should be_false
+      casted["param3"].should be_falsey
       casted["param4"].should eq("abc")
     end
 
@@ -60,7 +60,7 @@ describe ParametersUtil do
         @definitions[2].default = true
 
         casted = ParametersUtil.cast_parameter_values({"param1" => 0, "param3" => false}, @definitions)
-        casted["param3"].should be_false
+        casted["param3"].should be_falsey
 
         casted = ParametersUtil.cast_parameter_values({"param1" => 0}, @definitions)
         casted["param3"].should eq true
@@ -73,7 +73,7 @@ describe ParametersUtil do
     it "returns casted value" do
       ParametersUtil.cast_value("-1", "Integer").should eq(-1)
       ParametersUtil.cast_value("+0.234e5", "Float").should eq(0.234e5)
-      ParametersUtil.cast_value("false", "Boolean").should be_false
+      ParametersUtil.cast_value("false", "Boolean").should be_falsey
       ParametersUtil.cast_value(123, "String").should eq("123")
     end
 
