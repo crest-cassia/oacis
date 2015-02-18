@@ -46,7 +46,7 @@ describe RunsController do
   describe "POST 'create'" do
 
     before(:each) do
-      @req_param = { parameter_set_id: @par, run: {submitted_to: Host.first} }
+      @req_param = { parameter_set_id: @par, run: {submitted_to: Host.first}, format: 'json' }
     end
 
     describe "with valid parameters" do
@@ -118,7 +118,7 @@ describe RunsController do
 
     it "destroys the run when status is neither submitted nor running" do
       expect {
-        delete :destroy, {id: @run.to_param}, valid_session
+        delete :destroy, {id: @run.to_param, format: 'json'}, valid_session
       }.to change(Run, :count).by(-1)
     end
 
@@ -126,7 +126,7 @@ describe RunsController do
       @run.status = :running
       @run.save!
       expect {
-        delete :destroy, {id: @run.to_param}, valid_session
+        delete :destroy, {id: @run.to_param, format: 'json'}, valid_session
       }.to change { Run.where(status: :cancelled).count }.by(1)
     end
   end

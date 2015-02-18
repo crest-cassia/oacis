@@ -103,7 +103,7 @@ describe ParameterSetQuery do
     end
 
     it "returns false when argument is invalid" do
-      @psq.set_query(nil).should be_false
+      @psq.set_query(nil).should be_falsey
     end
   end
 end

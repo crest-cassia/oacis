@@ -8,7 +8,7 @@ describe OacisCli do
     it "prints a template of simulator.json" do
       at_temp_dir {
         OacisCli.new.invoke(:simulator_template, [], {output: 'simulator.json'})
-        File.exist?('simulator.json').should be_true
+        File.exist?('simulator.json').should be_truthy
         expect {
           loaded = JSON.load(File.read('simulator.json'))
         }.not_to raise_error
@@ -20,7 +20,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           OacisCli.new.invoke(:simulator_template, [], {output: 'simulator.json', dry_run: true})
-          File.exist?('simulator.json').should be_false
+          File.exist?('simulator.json').should be_falsey
         }
       end
     end
@@ -43,7 +43,7 @@ describe OacisCli do
           FileUtils.touch('simulator.json')
           expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
           OacisCli.new.invoke(:simulator_template, [], {output: 'simulator.json', yes: true})
-          File.exist?('simulator.json').should be_true
+          File.exist?('simulator.json').should be_truthy
           expect {
             JSON.load(File.read('simulator.json'))
           }.not_to raise_error
@@ -93,7 +93,7 @@ describe OacisCli do
 
         sim = Simulator.first
         sim.name.should eq "a_sample_simulator"
-        sim.support_input_json.should be_true
+        sim.support_input_json.should be_truthy
         sim.pre_process_script.should be_nil
       }
     end
@@ -189,7 +189,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           invoke_create_simulator_with_dry_run
-          File.exist?('simulator_id.json').should be_false
+          File.exist?('simulator_id.json').should be_falsey
         }
       end
     end
@@ -218,7 +218,7 @@ describe OacisCli do
           expect {
             OacisCli.new.invoke(:create_simulator, [], option)
           }.to change { Simulator.count }.by(1)
-          File.exist?('simulator_id.json').should be_true
+          File.exist?('simulator_id.json').should be_truthy
         }
       end
     end
@@ -235,7 +235,7 @@ describe OacisCli do
         option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
         OacisCli.new.invoke(:append_parameter_definition, [], option)
         @sim.reload
-        @sim.parameter_definitions.should have(3).items
+        expect(@sim.parameter_definitions.size).to eq 3
         new_param_def = @sim.parameter_definitions.last
         new_param_def.key.should eq "NEW_PARAM"
         new_param_def.type.should eq "Float"

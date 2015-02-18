@@ -86,13 +86,15 @@ describe Analysis do
   describe "accessibility" do
 
     it "result is not an accessible field" do
-      arn = @run.analyses.build(@valid_attr.update(result: "abc"))
-      arn.result.should be_nil
+      #arn = @run.analyses.build(@valid_attr.update(result: "abc"))
+      #arn.result.should be_nil
+      skip "attr_accessible is no longer defined in model. See the controller"
     end
 
     it "status is not an accessible field" do
-      arn = @run.analyses.build(@valid_attr.update(status: :running))
-      arn.status.should_not == :running
+      #arn = @run.analyses.build(@valid_attr.update(status: :running))
+      #arn.status.should_not == :running
+      skip "attr_accessible is no longer defined in model. See the controller"
     end
   end
 
@@ -131,7 +133,7 @@ describe Analysis do
 
     it "updates status to 'running' and sets hostname" do
       ret = @arn.update_status_running(hostname: 'host_ABC')
-      ret.should be_true
+      ret.should be_truthy
 
       @arn.reload
       @arn.status.should == :running
@@ -153,7 +155,7 @@ describe Analysis do
     end
 
     it "returns true" do
-      @arn.update_status_finished(@arg).should be_true
+      @arn.update_status_finished(@arg).should be_truthy
     end
 
     it "sets status of runs" do
@@ -175,7 +177,7 @@ describe Analysis do
 
     it "updates status to failed" do
       ret = @arn.update_status_failed
-      ret.should be_true
+      ret.should be_truthy
       @arn.reload
       @arn.status.should eq(:failed)
     end
@@ -206,7 +208,7 @@ describe Analysis do
       it "delete analysis directory" do
         dir = @analysis.dir
         @analysis.destroy
-        File.directory?(dir).should be_false
+        File.directory?(dir).should be_falsey
       end
     end
 
@@ -230,7 +232,7 @@ describe Analysis do
       it "deletes analysis_directory" do
         dir = @analysis.dir
         @analysis.destroy
-        File.directory?(dir).should be_false
+        File.directory?(dir).should be_falsey
       end
 
       it "does not destroy analysis even if #destroy is called twice" do
@@ -317,7 +319,7 @@ describe Analysis do
       it "returns a file entries in run directory" do
         paths = @arn.input_files
         paths.should be_a(Array)
-        paths.should have(2).items
+        expect(paths.size).to eq 2
         paths.should =~ [@dummy_path, @dummy_dir]
       end
 
@@ -396,7 +398,7 @@ describe Analysis do
   describe "result directory" do
 
     it "is created when a new item is saved" do
-      FileTest.directory?(@arn.dir).should be_true
+      FileTest.directory?(@arn.dir).should be_truthy
     end
 
     it "is not created when validation fails" do
@@ -411,7 +413,7 @@ describe Analysis do
     it "is deleted when an item is destroyed" do
       dir_path = @arn.dir
       @arn.destroy
-      FileTest.directory?(dir_path).should be_false
+      FileTest.directory?(dir_path).should be_falsey
     end
   end
 end

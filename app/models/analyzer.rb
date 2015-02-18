@@ -20,7 +20,8 @@ class Analyzer
   validates :auto_run, inclusion: {in: [:yes, :no, :first_run_only]}
 
   accepts_nested_attributes_for :parameter_definitions, allow_destroy: true
-  attr_accessible :name, :type, :command, :description, :auto_run, :parameter_definitions_attributes, :print_version_command, :simulator
+  #attr_accessible is disabled in rails 4
+  #attr_accessible :name, :type, :command, :description, :auto_run, :parameter_definitions_attributes, :print_version_command, :simulator
 
   public
   def parameter_definition_for(key)

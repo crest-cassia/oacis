@@ -20,7 +20,7 @@ describe SSHUtil do
       FileUtils.touch(remote_path)
       local_path = @temp_dir.join('__def__').expand_path
       SSHUtil.download(@ssh, remote_path, local_path)
-      File.exist?(local_path).should be_true
+      File.exist?(local_path).should be_truthy
     end
   end
 
@@ -34,7 +34,7 @@ describe SSHUtil do
       local_path = @temp_dir.join('local')
       FileUtils.mkdir_p(local_path)
       SSHUtil.download_recursive(@ssh, remote_path, local_path)
-      File.exist?(local_path.join('file')).should be_true
+      File.exist?(local_path.join('file')).should be_truthy
     end
 
     it "creates local directory if specified directory does not exist" do
@@ -45,8 +45,8 @@ describe SSHUtil do
       local_path = @temp_dir.join('local')
 
       SSHUtil.download_recursive(@ssh, remote_path, local_path)
-      File.directory?(local_path).should be_true
-      File.exist?(local_path.join('file')).should be_true
+      File.directory?(local_path).should be_truthy
+      File.exist?(local_path.join('file')).should be_truthy
     end
 
     it "download file if the remote_path is not directory but file" do
@@ -55,7 +55,7 @@ describe SSHUtil do
 
       local_path = @temp_dir.join('local')
       SSHUtil.download_recursive(@ssh, remote_path, local_path)
-      File.exist?(local_path).should be_true
+      File.exist?(local_path).should be_truthy
     end
   end
 
@@ -66,7 +66,7 @@ describe SSHUtil do
       FileUtils.touch(local_path)
       remote_path = @temp_dir.join('__def__').expand_path
       SSHUtil.upload(@ssh, local_path, remote_path)
-      File.exist?(remote_path).should be_true
+      File.exist?(remote_path).should be_truthy
     end
   end
 
@@ -79,12 +79,12 @@ describe SSHUtil do
 
     it "removes specified file" do
       SSHUtil.rm_r(@ssh, @temp_file.expand_path)
-      File.exist?(@temp_file).should be_false
+      File.exist?(@temp_file).should be_falsey
     end
 
     it "removes specified directory even if the directory is not empty" do
       SSHUtil.rm_r(@ssh, @temp_dir.expand_path)
-      File.directory?(@temp_dir).should be_false
+      File.directory?(@temp_dir).should be_falsey
     end
   end
 
@@ -122,7 +122,7 @@ describe SSHUtil do
     it "handles redirection properly" do
       remote_path = @temp_dir.join('abc').expand_path
       SSHUtil.execute_in_background(@ssh, "echo $USER > #{remote_path}")
-      File.exist?(remote_path).should be_true
+      File.exist?(remote_path).should be_truthy
       File.open(remote_path).read.chomp.should eq ENV['USER']
     end
   end
@@ -175,18 +175,18 @@ describe SSHUtil do
     it "returns true when the remote file exists" do
       remote_path = @temp_dir.join('abc').expand_path
       FileUtils.touch(remote_path)
-      SSHUtil.exist?(@ssh, remote_path).should be_true
+      SSHUtil.exist?(@ssh, remote_path).should be_truthy
     end
 
     it "returns false when the remote file does not exist" do
       remote_path = @temp_dir.join('abc').expand_path
-      SSHUtil.exist?(@ssh, remote_path).should be_false
+      SSHUtil.exist?(@ssh, remote_path).should be_falsey
     end
 
     it "returns true if the remote directory exist" do
       remote_path = @temp_dir.join('abc').expand_path
       FileUtils.mkdir_p(remote_path)
-      SSHUtil.exist?(@ssh, remote_path).should be_true
+      SSHUtil.exist?(@ssh, remote_path).should be_truthy
     end
   end
 
@@ -195,18 +195,18 @@ describe SSHUtil do
     it "returns true if the path is a directory" do
       remote_path = @temp_dir.join('abc').expand_path
       FileUtils.mkdir_p(remote_path)
-      SSHUtil.directory?(@ssh, remote_path).should be_true
+      SSHUtil.directory?(@ssh, remote_path).should be_truthy
     end
 
     it "returns false if the path is a file" do
       remote_path = @temp_dir.join('abc').expand_path
       FileUtils.touch(remote_path)
-      SSHUtil.directory?(@ssh, remote_path).should be_false
+      SSHUtil.directory?(@ssh, remote_path).should be_falsey
     end
 
     it "returns false if the path does not exist" do
       remote_path = @temp_dir.join('abc').expand_path
-      SSHUtil.directory?(@ssh, remote_path).should be_false
+      SSHUtil.directory?(@ssh, remote_path).should be_falsey
     end
   end
 end

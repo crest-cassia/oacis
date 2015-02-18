@@ -30,13 +30,13 @@ describe JobScriptUtil do
       run_test_script_in_temp_dir
       Dir.chdir(@temp_dir) {
         result_file = "#{@run.id}.tar.bz2"
-        File.exist?(result_file).should be_true
+        File.exist?(result_file).should be_truthy
 
-        File.directory?(@run.id.to_s).should be_false
+        File.directory?(@run.id.to_s).should be_falsey
 
         system("tar xjf #{result_file}")
         json_path = File.join(@run.id.to_s, '_status.json')
-        File.exist?(json_path).should be_true
+        File.exist?(json_path).should be_truthy
         parsed = JSON.load(File.open(json_path))
         parsed.should have_key("started_at")
         parsed.should have_key("hostname")
@@ -44,7 +44,7 @@ describe JobScriptUtil do
         parsed.should have_key("finished_at")
 
         time_path = File.join(@run.id.to_s, '_time.txt')
-        File.exist?(time_path).should be_true
+        File.exist?(time_path).should be_truthy
       }
     end
 
@@ -54,7 +54,7 @@ describe JobScriptUtil do
       run_test_script_in_temp_dir
       Dir.chdir(@temp_dir) {
         result_file = "#{@run.id}.tar.bz2"
-        File.exist?(result_file).should be_true
+        File.exist?(result_file).should be_truthy
       }
     end
 
@@ -122,10 +122,10 @@ EOS
         JobScriptUtil.expand_result_file(@run)
 
         # expand result properly
-        File.exist?(@run.dir.join('_stdout.txt')).should be_true
-        File.exist?(@run.dir.join('_output.json')).should be_true
-        File.exist?(@run.dir.join('..', "#{@run.id}.tar")).should be_false
-        File.exist?(@run.dir.join('..', "#{@run.id}.tar.bz2")).should be_true
+        File.exist?(@run.dir.join('_stdout.txt')).should be_truthy
+        File.exist?(@run.dir.join('_output.json')).should be_truthy
+        File.exist?(@run.dir.join('..', "#{@run.id}.tar")).should be_falsey
+        File.exist?(@run.dir.join('..', "#{@run.id}.tar.bz2")).should be_truthy
       }
     end
 
@@ -206,7 +206,7 @@ EOS
       JobScriptUtil.update_run(@run)
 
       # expand result properly
-      File.exist?(@run.dir.join('_output.json')).should be_true
+      File.exist?(@run.dir.join('_output.json')).should be_truthy
 
       # parse status
       @run.reload
@@ -223,7 +223,7 @@ EOS
       JobScriptUtil.update_run(@run)
 
       # expand result properly
-      File.exist?(@run.dir.join('_output.json')).should be_true
+      File.exist?(@run.dir.join('_output.json')).should be_truthy
 
       # parse status
       @run.reload
@@ -240,7 +240,7 @@ EOS
       JobScriptUtil.update_run(@run)
 
       # expand result properly
-      File.exist?(@run.dir.join('_output.json')).should be_true
+      File.exist?(@run.dir.join('_output.json')).should be_truthy
 
       # parse status
       @run.reload
@@ -257,7 +257,7 @@ EOS
       JobScriptUtil.update_run(@run)
 
       # expand result properly
-      File.exist?(@run.dir.join('_output.json')).should be_true
+      File.exist?(@run.dir.join('_output.json')).should be_truthy
 
       # parse status
       @run.reload
@@ -354,7 +354,7 @@ EOS
       @run.real_time.should_not be_nil
       @run.cpu_time.should_not be_nil
       @run.included_at.should be_a(DateTime)
-      File.exist?(@run.dir.join('_stdout.txt')).should be_true
+      File.exist?(@run.dir.join('_stdout.txt')).should be_truthy
     end
 
     it "parses simulator version printed by Simulator#print_version_command" do

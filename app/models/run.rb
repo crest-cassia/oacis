@@ -46,7 +46,8 @@ class Run
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to
+  #attr_accessible is disabled in rails 4
+  #attr_accessible :seed, :mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to
 
   before_create :set_simulator, :remove_redundant_host_parameters, :set_job_script
   before_save :remove_runs_status_count_cache, :if => :status_changed?
@@ -199,7 +200,7 @@ class Run
 
   def update_default_host_parameter_on_its_simulator
     unless self.host_parameters == self.simulator.get_default_host_parameter(self.submitted_to)
-      host_id = self.submitted_to.present? ? self.submitted_to.id : "manual_submission"
+      host_id = self.submitted_to.present? ? self.submitted_to.id.to_s : "manual_submission"
       new_host_parameters = self.simulator.default_host_parameters
       new_host_parameters[host_id] = self.host_parameters
       self.simulator.timeless.update_attribute(:default_host_parameters, new_host_parameters)
@@ -207,15 +208,15 @@ class Run
   end
 
   def update_default_mpi_procs_omp_threads
-    hid = submitted_to.present? ? submitted_to.id : "manual_submission"
-    unless mpi_procs == simulator.default_mpi_procs[hid]
+    host_id = submitted_to.present? ? submitted_to.id.to_s : "manual_submission"
+    unless mpi_procs == simulator.default_mpi_procs[host_id]
       new_default_mpi_procs = simulator.default_mpi_procs
-      new_default_mpi_procs[hid] = mpi_procs
+      new_default_mpi_procs[host_id] = mpi_procs
       simulator.timeless.update_attribute(:default_mpi_procs, new_default_mpi_procs)
     end
-    unless omp_threads == simulator.default_omp_threads[hid]
+    unless omp_threads == simulator.default_omp_threads[host_id]
       new_default_omp_threads = simulator.default_omp_threads
-      new_default_omp_threads[hid] = omp_threads
+      new_default_omp_threads[host_id] = omp_threads
       simulator.timeless.update_attribute(:default_omp_threads, new_default_omp_threads)
     end
   end

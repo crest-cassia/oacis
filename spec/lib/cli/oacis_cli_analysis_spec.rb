@@ -18,9 +18,9 @@ describe OacisCli do
     analyzer_id = nil
     case type
     when :on_run
-      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
     when :on_parameter_set
-      analyzer_id = @sim.analyzers.where(type: :on_parameter_set).first.id
+      analyzer_id = @sim.analyzers.where(type: :on_parameter_set).first.id.to_s
     end
     option.merge!({analyzer_id: analyzer_id})
     options = create_options(option)
@@ -35,7 +35,7 @@ describe OacisCli do
       at_temp_dir {
         options = { analyzer_id: @sim.analyzers.first.id.to_s, output: 'anz_parameters.json' }
         OacisCli.new.invoke(:analyses_template, [], options)
-        File.exist?('anz_parameters.json').should be_true
+        File.exist?('anz_parameters.json').should be_truthy
         expect {
           JSON.load(File.read('anz_parameters.json'))
         }.not_to raise_error
@@ -66,7 +66,7 @@ describe OacisCli do
         at_temp_dir {
           options = { analyzer_id: @sim.analyzers.first.id.to_s, output: 'analyzres.json', dry_run: true }
           OacisCli.new.invoke(:analyses_template, [], options)
-          File.exist?('analyzers.json').should be_false
+          File.exist?('analyzers.json').should be_falsey
         }
       end
     end
@@ -133,7 +133,7 @@ describe OacisCli do
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: 'analysis_ids_tmp.json', input: "anz_parameters.json"})
 
-        File.exist?('analysis_ids_tmp.json').should be_true
+        File.exist?('analysis_ids_tmp.json').should be_truthy
         expected = Analysis.all.map {|anl| {"analysis_id" => anl.id.to_s} }.sort_by {|h| h["analysis_id"]}
         JSON.load(File.read('analysis_ids_tmp.json')).should =~ expected
       }
@@ -147,7 +147,7 @@ describe OacisCli do
             io = File.open('runs.json','w')
             a = []
             @sim.parameter_sets.each do |ps|
-              h = {"run_id" => ps.runs.first.id }
+              h = {"run_id" => ps.runs.first.id.to_s }
               a << h
             end
             io.puts a.to_json
@@ -164,7 +164,7 @@ describe OacisCli do
         at_temp_dir {
           expect {
             io = File.open('parameter_sets.json','w')
-            a = [{"parameter_set_id" => @sim.parameter_sets.first.id }]
+            a = [{"parameter_set_id" => @sim.parameter_sets.first.id.to_s }]
             io.puts a.to_json
             io.close
             invoke_create_analyses(:on_parameter_set, {target: "parameter_sets.json", input: "anz_parameters.json"})
@@ -207,7 +207,7 @@ describe OacisCli do
         at_temp_dir {
           invoke_create_analyses(:on_run, {output: "analysis_ids_tmp.json", input: "anz_parameters.json"})
 
-          File.exist?('analysis_ids_tmp.json').should be_true
+          File.exist?('analysis_ids_tmp.json').should be_truthy
           expected = Analysis.all.map {|anl| {"analysis_id" => anl.id.to_s} }.sort_by {|h| h["analysis_id"]}
           JSON.load(File.read('analysis_ids_tmp.json')).should =~ expected
         }
@@ -227,7 +227,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           invoke_create_analyses(:on_run, {output: "analysis_ids_dry_run.json", dry_run: true, input: "anz_parameters.json"})
-          File.exist?('analysis_ids_dry_run.json').should be_false
+          File.exist?('analysis_ids_dry_run.json').should be_falsey
         }
       end
     end
@@ -275,7 +275,7 @@ describe OacisCli do
           FileUtils.touch("analysis_ids_tmp.json")
           expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
           invoke_create_analyses(:on_run, {output: "analysis_ids_tmp.json", input: "anz_parameters.json", yes: true})
-          File.exist?('analysis_ids_tmp.json').should be_true
+          File.exist?('analysis_ids_tmp.json').should be_truthy
           expected = Analysis.all.map {|anl| {"analysis_id" => anl.id.to_s} }.sort_by {|h| h["analysis_id"]}
           JSON.load(File.read('analysis_ids_tmp.json')).should =~ expected
         }

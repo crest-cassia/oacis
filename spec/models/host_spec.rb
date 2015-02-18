@@ -200,7 +200,7 @@ EOS
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       run = sim.parameter_sets.first.runs.first
       host = run.submitted_to
-      host.destroy.should be_false
+      host.destroy.should be_falsey
       host.errors.full_messages.should_not be_empty
     end
 
@@ -209,7 +209,7 @@ EOS
       run = sim.parameter_sets.first.runs.first
       run.update_attribute(:status, :finished)
       host = run.submitted_to
-      host.destroy.should be_true
+      host.destroy.should be_truthy
       host.errors.full_messages.should be_empty
     end
   end
@@ -221,17 +221,17 @@ EOS
     end
 
     it "returns true if ssh connection established" do
-      @host.connected?.should be_true
+      @host.connected?.should be_truthy
     end
 
     it "returns false when hostname is invalid" do
       @host.hostname = "INVALID_HOSTNAME"
-      @host.connected?.should be_false
+      @host.connected?.should be_falsey
     end
 
     it "returns false when user name is not correct" do
       @host.user = "NOT_EXISTING_USER"
-      @host.connected?.should be_false
+      @host.connected?.should be_falsey
     end
 
     it "exception is stored into connection_error variable" do
@@ -248,7 +248,7 @@ EOS
     end
 
     it "returns status of hosts" do
-      pending "not yet implemented"
+      skip "not yet implemented"
     end
   end
 
@@ -275,7 +275,7 @@ EOS
     end
 
     it "returns runs whose status is created and submitted_to is self" do
-      @host.submittable_runs.should have(6).items
+      expect(@host.submittable_runs.size).to eq 6
     end
 
     it "does not return runs whose submitted_to is not self" do
@@ -293,7 +293,7 @@ EOS
         end
       end
 
-      @host.submittable_runs.should have(8).items
+      expect(@host.submittable_runs.size).to eq 8
       @host.submittable_runs.each do |run|
         run.submitted_to.should_not eq another_host
       end
@@ -324,7 +324,7 @@ EOS
     end
 
     it "returns runs whose status is ['submitted','running','cancelled'] and 'submitted_to' is the host" do
-      @host.submitted_runs.should have(4).items
+      expect(@host.submitted_runs.size).to eq 4
     end
   end
 
@@ -411,9 +411,9 @@ EOS
     before(:each) do
       @host = FactoryGirl.create(:host_with_parameters)
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 1)
-      @sim.executable_on.destroy
       @sim.executable_on << @host
       @sim.save
+      @host.reload # @sim.save call Host#update for executable_simulators.
     end
 
     it "delete default_host_parameters from executable simulators" do
@@ -448,9 +448,9 @@ EOS
     before(:each) do
       @host = FactoryGirl.create(:host_with_parameters)
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 1)
-      @sim.executable_on.destroy
       @sim.executable_on << @host
       @sim.save
+      @host.reload # @sim.save call Host#update for executable_simulators.
     end
 
     it "delete default_host_parameters of executable simulators" do

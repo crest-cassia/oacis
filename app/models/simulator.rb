@@ -10,9 +10,9 @@ class Simulator
   field :pre_process_script, type: String
   field :print_version_command, type: String
   field :position, type: Integer # position in the table. start from zero
-  field :default_host_parameters, type: Hash, default: {} # {Host.id => {host_param1 => foo, ...}}
-  field :default_mpi_procs, type: Hash, default: {} # {Host.id => 4, ...}
-  field :default_omp_threads, type: Hash, default: {} # {Host.id => 8, ...}
+  field :default_host_parameters, type: Hash, default: {} # {Host.id.to_s => {host_param1 => foo, ...}}
+  field :default_mpi_procs, type: Hash, default: {} # {Host.id.to_s => 4, ...}
+  field :default_omp_threads, type: Hash, default: {} # {Host.id.to_s => 8, ...}
 
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
@@ -25,11 +25,13 @@ class Simulator
   validates :command, presence: true
   validates :parameter_definitions, presence: true
 
-  accepts_nested_attributes_for :parameter_definitions, allow_destroy: true
-  attr_accessible :name, :pre_process_script, :command, :description,
-                  :parameter_definitions_attributes, :executable_on_ids,
-                  :support_input_json, :support_omp, :support_mpi,
-                  :print_version_command
+  accepts_nested_attributes_for :parameter_definitions, update_only: true
+  accepts_nested_attributes_for :executable_on, allow_destroy: true
+  #attr_accessible is disabled in rails 4
+  #attr_accessible :name, :pre_process_script, :command, :description,
+  #                :parameter_definitions_attributes, :executable_on_ids,
+  #                :support_input_json, :support_omp, :support_mpi,
+  #                :print_version_command
 
   before_create :set_position
   after_create :create_simulator_dir
@@ -327,17 +329,14 @@ EOS
   public
   def get_default_host_parameter(host)
     if host.present?
-      id = host.id.to_s
-      unless self.default_host_parameters[id].present?
-        host_parameter = {}
-        if host.present?
-          key_value = host.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
-          host_parameter = Hash[*key_value.flatten]
-        end
-        self.default_host_parameters[id] = host_parameter
+      host_id = host.id.to_s
+      unless self.default_host_parameters[host_id].present?
+        key_value = host.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
+        host_parameter = Hash[*key_value.flatten]
+        self.default_host_parameters[host_id] = host_parameter
         self.timeless.update_attribute(:default_host_parameters, self.default_host_parameters)
       end
-      return self.default_host_parameters[id]
+      return self.default_host_parameters[host_id]
     else
       return {} # for manual_submission
     end

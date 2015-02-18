@@ -15,7 +15,8 @@ class ParameterSet
   after_create :create_parameter_set_dir
   before_destroy :delete_parameter_set_dir
 
-  attr_accessible :v
+  #attr_accessible is disabled in rails 4
+  #attr_accessible :v
 
   public
   def dir

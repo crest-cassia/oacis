@@ -46,7 +46,25 @@ class HostsController < ApplicationController
   # POST /hosts
   # POST /hosts.json
   def create
-    @host = Host.new(params[:host])
+    permitted_params = params[:host].present? ? params.require(:host)
+                                                           .permit(:name,
+                                                                   :hostname,
+                                                                   :status,
+                                                                   :user,
+                                                                   :port,
+                                                                   :ssh_key,
+                                                                   :scheduler_type,
+                                                                   :work_base_dir,
+                                                                   :mounted_work_base_dir,
+                                                                   :max_num_jobs,
+                                                                   :polling_interval,
+                                                                   :min_mpi_procs,
+                                                                   :max_mpi_procs,
+                                                                   :min_omp_threads,
+                                                                   :max_omp_threads,
+                                                                   :template
+                                                                  ) : {}
+    @host = Host.new(permitted_params)
 
     respond_to do |format|
       if @host.save
@@ -63,9 +81,27 @@ class HostsController < ApplicationController
   # PUT /hosts/1.json
   def update
     @host = Host.find(params[:id])
+    permitted_params = params[:host].present? ? params.require(:host)
+                                                           .permit(:name,
+                                                                   :hostname,
+                                                                   :status,
+                                                                   :user,
+                                                                   :port,
+                                                                   :ssh_key,
+                                                                   :scheduler_type,
+                                                                   :work_base_dir,
+                                                                   :mounted_work_base_dir,
+                                                                   :max_num_jobs,
+                                                                   :polling_interval,
+                                                                   :min_mpi_procs,
+                                                                   :max_mpi_procs,
+                                                                   :min_omp_threads,
+                                                                   :max_omp_threads,
+                                                                   :template
+                                                                  ) : {}
 
     respond_to do |format|
-      if @host.update_attributes(params[:host])
+      if @host.update_attributes(permitted_params)
         format.html { redirect_to @host, notice: 'Host was successfully updated.' }
         format.json { head :no_content }
       else

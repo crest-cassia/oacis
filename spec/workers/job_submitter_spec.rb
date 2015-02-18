@@ -61,7 +61,7 @@ describe JobSubmitter do
     end
 
     it "does not enqueue a job until polling interval has passed since the last submission" do
-      pending "not yet implemented"
+      skip "not yet implemented"
     end
   end
 end

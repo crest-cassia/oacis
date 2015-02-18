@@ -57,7 +57,7 @@ describe ParameterDefinition do
       it "is casted properly to the specified type" do
         pd = ParameterDefinition.new( @valid_attr.update(default: "30") )
         pd.should be_valid
-        pd.default.should eq be_an(Integer)
+        pd.default.should be_an(Integer)
       end
 
       it "is not be valid when the default value can not be casted" do

@@ -81,7 +81,7 @@ describe JobObserver do
     end
 
     it "does not check remote host until polling interval has passed since the last observation" do
-      pending "not yet implemented"
+      skip "not yet implemented"
     end
 
     context "when run is cancelled" do

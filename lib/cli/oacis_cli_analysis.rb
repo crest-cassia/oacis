@@ -36,7 +36,7 @@ class OacisCli < Thor
     aliases:  '-i',
     desc:     'input file',
     required: false
-  option :first_run_only,
+  method_option :first_run_only,
     desc:     'create analyses only on first runs',
     required: false
   method_option :target,

@@ -12,7 +12,8 @@ class AnalysesController < ApplicationController
   def create
     analyzable = fetch_analyzable(params)
     azr = analyzable.simulator.analyzers.find(params[:analysis][:analyzer])
-    arn = analyzable.analyses.build(analyzer: azr, parameters: params[:parameters])
+    permitted_params = params[:paramters].present? ? params.require(:parameters).permit(azr.parameter_definitions.map {|pd| pd.key.to_sym}) : {}
+    arn = analyzable.analyses.build(analyzer: azr, parameters: permitted_params)
 
     respond_to do |format|
       if arn.save

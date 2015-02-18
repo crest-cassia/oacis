@@ -149,8 +149,8 @@ describe AnalyzersController do
       end
 
       it "updates the requested analyzer" do
-        Analyzer.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
-        put :update, {:id => @azr.to_param, :analyzer => {'these' => 'params'}}, valid_session
+        Analyzer.any_instance.should_receive(:update_attributes).with({'description' => 'yyy zzz'})
+        put :update, {:id => @azr.to_param, :analyzer => {'description' => 'yyy zzz'}}, valid_session
       end
 
       it "assigns the requested analyzer as @analyzer" do
@@ -189,7 +189,7 @@ describe AnalyzersController do
 
     it "destroys the requested analyzer" do
       expect {
-        delete :destroy, {id: @azr.to_param}, valid_session
+        delete :destroy, {id: @azr.to_param, format: 'json'}, valid_session
       }.to change { @sim.reload.analyzers.count }.by(-1)
     end
   end

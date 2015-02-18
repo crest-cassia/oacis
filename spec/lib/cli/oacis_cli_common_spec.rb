@@ -27,7 +27,7 @@ describe OacisCli do
           "user" => @host.user
         }]
         OacisCli.new.invoke(:show_host, [], {output: 'host.json'})
-        File.exist?('host.json').should be_true
+        File.exist?('host.json').should be_truthy
         JSON.load( File.read('host.json') ).should eq expected
       }
     end
@@ -37,7 +37,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           OacisCli.new.invoke(:show_host, [], {output: 'host.json', dry_run: true})
-          File.exist?('host.json').should be_false
+          File.exist?('host.json').should be_falsey
         }
       end
     end

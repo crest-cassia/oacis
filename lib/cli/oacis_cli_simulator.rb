@@ -52,10 +52,10 @@ EOS
     input = load_json_file_or_string(options[:input])
 
     # create a simulator
-    sim = Simulator.new(input)
-    input["parameter_definitions"].each do |param_def|
-      sim.parameter_definitions.build(param_def)
-    end
+    sim = Simulator.new(input) # when :parameter_definitions are included in input, the new sim has parameter_definitions.
+    #input["parameter_definitions"].each do |param_def|
+    #  sim.parameter_definitions.build(param_def)
+    #end
     if options[:host]
       hosts = get_host(options[:host])
       sim.executable_on += hosts

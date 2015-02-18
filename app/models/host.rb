@@ -24,13 +24,14 @@ class Host
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
   embeds_many :host_parameter_definitions
+  accepts_nested_attributes_for :executable_simulators, update_only: true
   accepts_nested_attributes_for :host_parameter_definitions, allow_destroy: true
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
-  validates :hostname, presence: true, format: {with: /^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/}
+  validates :hostname, presence: true, format: {with: /\A(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?\z/}
   # See http://stackoverflow.com/questions/1418423/the-hostname-regex for the regexp of the hsotname
 
-  validates :user, presence: true, format: {with: /^[A-Za-z0-9. _-]+$/}
+  validates :user, presence: true, format: {with: /\A[A-Za-z0-9. _-]+\z/}
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
   validates :scheduler_type, inclusion: {in: SchedulerWrapper::TYPES }
@@ -122,7 +123,7 @@ class Host
     if @ssh
       yield @ssh
     else
-      Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port) do |ssh|
+      Net::SSH.start(hostname, user, auth_methods: ["publickey"], timeout: 1, keys: ssh_key, port: port) do |ssh|
         @ssh = ssh
         begin
           yield ssh

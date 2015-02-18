@@ -60,7 +60,6 @@
       .control-label
         Copy Analyzers
       .controls
-        = hidden_field_tag "duplicating_simulator", @duplicating_simulator.id
         - @duplicating_simulator.analyzers.each do |azr|
           %label{ for: dom_id(azr) }
             = check_box_tag "copied_analyzers[]", azr.id, @copied_analyzers.include?(azr), id: dom_id(azr)

@@ -13,7 +13,7 @@ describe OacisCli do
       at_temp_dir {
         options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
         OacisCli.new.invoke(:job_parameter_template, [], options)
-        File.exist?('job_parameters.json').should be_true
+        File.exist?('job_parameters.json').should be_truthy
         expect {
           JSON.load(File.read('job_parameters.json'))
         }.not_to raise_error
@@ -58,7 +58,7 @@ describe OacisCli do
             dry_run: true
           }
           OacisCli.new.invoke(:job_parameter_template, [], options)
-          File.exist?('job_parameters.json').should be_false
+          File.exist?('job_parameters.json').should be_falsey
         }
       end
     end
@@ -83,7 +83,7 @@ describe OacisCli do
           expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
           options = { host_id: @host.id.to_s, output: 'job_parameters.json', yes: true}
           OacisCli.new.invoke(:job_parameter_template, [], options)
-          File.exist?('job_parameters.json').should be_true
+          File.exist?('job_parameters.json').should be_truthy
           expect {
             JSON.load(File.read('job_parameters.json'))
           }.not_to raise_error
@@ -195,7 +195,7 @@ describe OacisCli do
       at_temp_dir {
         invoke_create_runs
 
-        File.exist?('run_ids.json').should be_true
+        File.exist?('run_ids.json').should be_truthy
         expected = Run.all.map {|run| {"run_id" => run.id.to_s} }.sort_by {|h| h["run_id"]}
         JSON.load(File.read('run_ids.json')).should =~ expected
       }
@@ -222,7 +222,7 @@ describe OacisCli do
         at_temp_dir {
           invoke_create_runs
 
-          File.exist?('run_ids.json').should be_true
+          File.exist?('run_ids.json').should be_truthy
           runs = @ps1.reload.runs.limit(3).to_a + @ps2.reload.runs.limit(3)
           expected = runs.map {|run| {"run_id" => run.id.to_s} }.sort_by {|h| h["run_id"]}
           JSON.load(File.read('run_ids.json')).should =~ expected
@@ -300,7 +300,7 @@ describe OacisCli do
             invoke_create_runs_with_invalid_parameter_set_ids
           rescue
           end
-          File.exist?('parameter_set_ids.json').should be_true
+          File.exist?('parameter_set_ids.json').should be_truthy
         }
       end
 
@@ -332,7 +332,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           invoke_create_runs_with_dry_run
-          File.exist?('run_ids.json').should be_false
+          File.exist?('run_ids.json').should be_falsey
         }
       end
     end
@@ -374,7 +374,7 @@ describe OacisCli do
             yes: true
           }
           OacisCli.new.invoke(:create_runs, [], options)
-          File.exist?('run_ids.json').should be_true
+          File.exist?('run_ids.json').should be_truthy
           expect {
             JSON.load(File.read('run_ids.json'))
           }.not_to raise_error
