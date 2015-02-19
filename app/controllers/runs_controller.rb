@@ -49,7 +49,7 @@ class RunsController < ApplicationController
 
     @runs = []
     num_runs.times do |i|
-      run = @param_set.runs.build(params[:run])
+      run = @param_set.runs.build(permitted_run_params)
       @runs << run if run.save
     end
 
@@ -63,7 +63,7 @@ class RunsController < ApplicationController
         format.json {
           render json: @runs.map{ |r| r.errors }, status: :unprocessable_entity
         }
-        run = @param_set.runs.build(params[:run])
+        run = @param_set.runs.build(permitted_run_params)
         run.valid?
         @messages = {error: run.errors.full_messages }
         format.js
@@ -96,5 +96,10 @@ class RunsController < ApplicationController
       format.json { head :no_content }
       format.js
     end
+  end
+
+  private
+  def permitted_run_params
+    params.require(:run).permit(:mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to, :seed)
   end
 end

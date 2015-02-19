@@ -56,7 +56,7 @@ class SimulatorsController < ApplicationController
   # POST /simulators
   # POST /simulators.json
   def create
-    @simulator = Simulator.new(params[:simulator])
+    @simulator = Simulator.new(permittedi_simulator_params)
     if params[:duplicating_simulator]
       @duplicating_simulator = Simulator.find(params[:duplicating_simulator])
       @copied_analyzers = params[:copied_analyzers].to_a.map {|azr_id| Analyzer.find(azr_id) }
@@ -82,7 +82,7 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
 
     respond_to do |format|
-      if @simulator.update_attributes(params[:simulator])
+      if @simulator.update_attributes(permittedi_simulator_params)
         format.html { redirect_to @simulator, notice: 'Simulator was successfully updated.' }
         format.json { head :no_content }
       else
@@ -178,5 +178,20 @@ class SimulatorsController < ApplicationController
     omp = sim.default_omp_threads[host.id.to_s] || 1
     data = {'mpi_procs' => mpi, 'omp_threads' => omp}
     render json: data
+  end
+
+  private
+  def permittedi_simulator_params
+    params[:simulator].present? ? params.require(:simulator)
+                                        .permit(:name,
+                                                :pre_process_script,
+                                                :command, :description,
+                                                :executable_on_ids,
+                                                :support_input_json,
+                                                :support_omp,
+                                                :support_mpi,
+                                                :print_version_command,
+                                                parameter_definitions_attributes: [[:key,:type,:default, :description]]
+                                               ) : {}
   end
 end

@@ -26,10 +26,6 @@ class Simulator
   validates :parameter_definitions, presence: true
 
   accepts_nested_attributes_for :parameter_definitions, allow_destroy: true
-  attr_accessible :name, :pre_process_script, :command, :description,
-                  :parameter_definitions_attributes, :executable_on_ids,
-                  :support_input_json, :support_omp, :support_mpi,
-                  :print_version_command
 
   before_create :set_position
   after_create :create_simulator_dir
