@@ -31,10 +31,12 @@ class ParameterSetsController < ApplicationController
     previous_num_ps = simulator.parameter_sets.count
     previous_num_runs = simulator.runs.count
 
-    @param_set = simulator.parameter_sets.build(params)
+    permitted_params = params.permit(v: params[:v].keys)
+    @param_set = simulator.parameter_sets.build(permitted_params)
     # this run is not saved, but used when rendering new
     if @num_runs > 0
-      @run = @param_set.runs.build(params[:run])
+      permitted_params = params[:run].present? ? params.require(:run).permit(:mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to, :seed) : {}
+      @run = @param_set.runs.build(permitted_params)
       unless @run.valid?
         render action: "new"
         return
@@ -52,7 +54,8 @@ class ParameterSetsController < ApplicationController
     @num_runs.times do |i|
       created.each do |ps|
         next if ps.runs.count > i
-        ps.runs.create(params[:run])
+        permitted_params = params[:run].present? ? params.require(:run).permit(:mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to, :seed) : {}
+        ps.runs.create(permitted_params)
       end
     end
 
