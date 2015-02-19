@@ -41,5 +41,6 @@ group :test do
   gem "ci_reporter"
   gem "spork"
   gem "faker"
+  gem "pry-byebug"
 end
 
