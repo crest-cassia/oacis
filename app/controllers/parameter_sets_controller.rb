@@ -219,7 +219,7 @@ class ParameterSetsController < ApplicationController
 
     plot_data = collect_result_values(ps_ids, analyzer, result_keys).map do |h|
       ps_id = h["_id"]
-      [ ps_id_to_x[ps_id.to_s], h["average"], h["error"], ps_id ]
+      [ ps_id_to_x[ps_id.to_s], h["average"], h["error"], ps_id.to_s ]
     end
     plot_data.sort_by {|d| d[0]}
   end
