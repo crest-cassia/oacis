@@ -289,13 +289,9 @@ describe OacisCli do
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
         options = {analysis_ids: 'analysis_ids.json'}
-        captured = capture(:stdout) {
+        expect {
           OacisCli.new.invoke(:analysis_status, [], options)
-        }
-        loaded = JSON.load(captured)
-        loaded["total"].should eq 4
-        loaded["created"].should eq 4
-        loaded["finished"].should eq 0
+        }.to output(puts JSON.pretty_generate({total: 4, created: 4, running: 0, failed: 0, finished: 0})).to_stdout
       }
     end
   end

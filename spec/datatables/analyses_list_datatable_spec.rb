@@ -48,7 +48,7 @@ describe "AnalysesListDatatable" do
 
       before(:each) do
         @context = ActionController::Base.new.view_context
-        @context.stub(:params).and_return({sEcho: 1, iDisplayStart: 0, iDisplayLength:10, iSortCol_0: 4, iSortCol_1: 0, sSortDir_0: "asc", sSortDir_1: "desc"})
+        @context.stub(:params).and_return({sEcho: 1, iDisplayStart: 0, iDisplayLength:10, iSortCol_0: 5, iSortCol_1: 0, sSortDir_0: "asc", sSortDir_1: "desc"})
         @context.stub(:link_to) {|str, link_path| link_path }
         @context.stub(:image_tag) {|str, link_path| link_path }
         @context.stub(:analysis_path) {|arn| arn.id.to_s }

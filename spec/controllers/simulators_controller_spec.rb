@@ -260,8 +260,8 @@ describe SimulatorsController do
 
       it "updates the requested simulator" do
         simulator = Simulator.create! valid_attributes
-        Simulator.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
-        put :update, {:id => simulator.to_param, :simulator => {'these' => 'params'}}, valid_session
+        Simulator.any_instance.should_receive(:update_attributes).with({'description' => 'yyy zzz'})
+        put :update, {:id => simulator.to_param, :simulator => {'description' => 'yyy zzz'}}, valid_session
       end
 
       it "assigns the requested simulator as @simulator" do

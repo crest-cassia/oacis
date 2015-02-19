@@ -41,37 +41,10 @@ describe Run do
       seeds.uniq.size.should == n
     end
 
-    it "seed is an accessible attribute" do
-      seed_val = 12345
-      @valid_attribute.update(seed: seed_val)
-      run = @param_set.runs.create!(@valid_attribute)
-      run.seed.should == seed_val
-    end
-
     it "seed must be unique" do
       seed_val = @param_set.runs.first.seed
       @valid_attribute.update(seed: seed_val)
       @param_set.runs.build(@valid_attribute).should_not be_valid
-    end
-
-    it "the attributes other than seed are not accessible" do
-      @valid_attribute.update(
-        status: :cancelled,
-        hostname: "host",
-        cpu_time: 123.0,
-        real_time: 456.0,
-        started_at: DateTime.now,
-        finished_at: DateTime.now,
-        included_at: DateTime.now
-      )
-      run = @param_set.runs.build(@valid_attribute)
-      run.status.should_not == :cancelled
-      run.hostname.should be_nil
-      run.cpu_time.should be_nil
-      run.real_time.should be_nil
-      run.started_at.should be_nil
-      run.finished_at.should be_nil
-      run.included_at.should be_nil
     end
 
     it "status must be either :created, :submitted, :running, :failed, :finished, or :cancelled" do
