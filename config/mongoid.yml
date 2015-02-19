@@ -12,8 +12,10 @@ development:
         - localhost:27017
       options:
         # Change whether the session persists in safe mode by default.
-        # (default: false)
-        safe: true
+        #write: {w: -1 } # Don't verify writes and raise no network errors.
+        #write: { w: 0 } # Don't verify writes and raise network errors.
+        write: { w: 1 } # Verify writes on the primary node. (default)
+        #write: { w: n } # Verify writes on n number of nodes.
 
         # Change the default consistency model to :eventual or :strong.
         # :eventual will send reads to secondaries, :strong sends everything
@@ -73,8 +75,14 @@ test:
       hosts:
         - localhost:27017
       options:
-        consistency: :strong
-        safe: true
+        #consistency: :strong # consistency is no longer supported in mongoid 4.0
+        read: primary # instead of consistency: :strong
+
+        #write: {w: -1 } # Don't verify writes and raise no network errors.
+        #write: { w: 0 } # Don't verify writes and raise network errors.
+        write: { w: 1 } # Verify writes on the primary node. (default)
+        #write: { w: n } # Verify writes on n number of nodes.
+
         # In the test environment we lower the retries and retry interval to
         # low amounts for fast failures.
         max_retries: 1
