@@ -280,7 +280,7 @@ describe ParameterSetsController do
       get :_create_cli, @valid_param, valid_session
       response.should be_success
       response.body.should eq <<-EOS.chomp
-./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -o ps.json
+./bin/oacis_cli create_parameter_sets -s #{@sim.id.to_s} -i '{"L":10,"T":2.0}' -o ps.json
       EOS
     end
 
@@ -295,7 +295,7 @@ describe ParameterSetsController do
       get :_create_cli, @valid_param, valid_session
       response.should be_success
       response.body.should eq <<-EOS.chomp
-./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -r '{"num_runs":3,"mpi_procs":4,"omp_threads":8,"priority":2,"submitted_to":"#{h.id}","host_parameters":{"param1":"xxx","param2":"yyy"}}' -o ps.json
+./bin/oacis_cli create_parameter_sets -s #{@sim.id.to_s} -i '{"L":10,"T":2.0}' -r '{"num_runs":3,"mpi_procs":4,"omp_threads":8,"priority":2,"submitted_to":"#{h.id.to_s}","host_parameters":{"param1":"xxx","param2":"yyy"}}' -o ps.json
       EOS
     end
   end
@@ -438,9 +438,9 @@ describe ParameterSetsController do
         plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=&irrelevants=#!tab-plot",
         data: [
           [
-            [1, 99.0, nil, @ps_array[0].id],
-            [2, 99.0, nil, @ps_array[1].id],
-            [3, 99.0, nil, @ps_array[2].id],
+            [1, 99.0, nil, @ps_array[0].id.to_s],
+            [2, 99.0, nil, @ps_array[1].id.to_s],
+            [3, 99.0, nil, @ps_array[2].id.to_s],
           ]
         ]
       }.to_json
@@ -455,9 +455,9 @@ describe ParameterSetsController do
         plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=cpu_time&series=&irrelevants=#!tab-plot",
         data: [
           [
-            [1, 10.0, nil, @ps_array[0].id],
-            [2, 10.0, nil, @ps_array[1].id],
-            [3, 10.0, nil, @ps_array[2].id],
+            [1, 10.0, nil, @ps_array[0].id.to_s],
+            [2, 10.0, nil, @ps_array[1].id.to_s],
+            [3, 10.0, nil, @ps_array[2].id.to_s],
           ]
         ]
       }.to_json
@@ -474,13 +474,13 @@ describe ParameterSetsController do
           plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=T&irrelevants=#!tab-plot",
           data: [
             [
-              [1, 99.0, nil, @ps_array[3].id],
-              [2, 99.0, nil, @ps_array[4].id],
+              [1, 99.0, nil, @ps_array[3].id.to_s],
+              [2, 99.0, nil, @ps_array[4].id.to_s],
             ],
             [
-              [1, 99.0, nil, @ps_array[0].id],
-              [2, 99.0, nil, @ps_array[1].id],
-              [3, 99.0, nil, @ps_array[2].id]
+              [1, 99.0, nil, @ps_array[0].id.to_s],
+              [2, 99.0, nil, @ps_array[1].id.to_s],
+              [3, 99.0, nil, @ps_array[2].id.to_s]
             ]
           ]
         }.to_json
@@ -498,14 +498,14 @@ describe ParameterSetsController do
           plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=T&irrelevants=P#!tab-plot",
           data: [
             [
-              [1, 99.0, nil, @ps_array[3].id],
-              [2, 99.0, nil, @ps_array[4].id],
-              [3, 99.0, nil, @ps_array[5].id]
+              [1, 99.0, nil, @ps_array[3].id.to_s],
+              [2, 99.0, nil, @ps_array[4].id.to_s],
+              [3, 99.0, nil, @ps_array[5].id.to_s]
             ],
             [
-              [1, 99.0, nil, @ps_array[0].id],
-              [2, 99.0, nil, @ps_array[1].id],
-              [3, 99.0, nil, @ps_array[2].id]
+              [1, 99.0, nil, @ps_array[0].id.to_s],
+              [2, 99.0, nil, @ps_array[1].id.to_s],
+              [3, 99.0, nil, @ps_array[2].id.to_s]
             ]
           ]
         }.to_json

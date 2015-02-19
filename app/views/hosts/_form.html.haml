@@ -79,7 +79,7 @@
       = hidden_field_tag "host[executable_simulator_ids][]", nil
       - Simulator.all.each do |sim|
         %label{ for: dom_id(sim) }
-          = check_box_tag "host[executable_simulator_ids][]", sim.id, @host.executable_simulator_ids.include?(sim.id), id: dom_id(sim)
+          = check_box_tag "host[executable_simulator_ids][]", sim.id.to_s, @host.executable_simulator_ids.include?(sim.id), id: dom_id(sim)
           = sim.name
 
   .form-actions

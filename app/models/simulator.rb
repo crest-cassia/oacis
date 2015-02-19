@@ -323,17 +323,17 @@ EOS
   public
   def get_default_host_parameter(host)
     if host.present?
-      id = host.id.to_s
-      unless self.default_host_parameters[id].present?
+      host_id = host.id.to_s
+      unless self.default_host_parameters[host_id].present?
         host_parameter = {}
         if host.present?
           key_value = host.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
           host_parameter = Hash[*key_value.flatten]
         end
-        self.default_host_parameters[id] = host_parameter
+        self.default_host_parameters[host_id] = host_parameter
         self.timeless.update_attribute(:default_host_parameters, self.default_host_parameters)
       end
-      return self.default_host_parameters[id]
+      return self.default_host_parameters[host_id]
     else
       return {} # for manual_submission
     end

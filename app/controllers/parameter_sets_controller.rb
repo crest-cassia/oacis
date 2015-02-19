@@ -233,7 +233,7 @@ class ParameterSetsController < ApplicationController
 
     plot_data = collect_latest_elapsed_times(ps_ids).map do |h|
       ps_id = h["_id"]
-      [ ps_id_to_x[ps_id.to_s], h[y_axis_key], nil, ps_id ]
+      [ ps_id_to_x[ps_id.to_s], h[y_axis_key], nil, ps_id.to_s ]
     end
     plot_data.sort_by {|d| d[0]}
   end
@@ -356,7 +356,7 @@ class ParameterSetsController < ApplicationController
 
       data = result_values.map do |h|
         found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
-        [found["v"], h["average"], h["error"], h["_id"]]
+        [found["v"], h["average"], h["error"], h["_id"].to_s]
       end
       result = result_keys.last
     elsif ["cpu_time", "real_time"].include?(params[:result])
@@ -368,12 +368,12 @@ class ParameterSetsController < ApplicationController
       #  {...}, {...}, ... ]
       data = elapsed_times.map do |h|
         found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
-        [found["v"], h[result], nil, h["_id"]]
+        [found["v"], h[result], nil, h["_id"].to_s]
       end
     else
       result = nil
       data = parameter_values.map do |pv|
-        [pv["v"], nil, nil, pv["_id"]]
+        [pv["v"], nil, nil, pv["_id"].to_s]
       end
     end
 

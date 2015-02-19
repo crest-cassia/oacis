@@ -184,7 +184,7 @@ describe SimulatorsController do
         }
         @valid_post_parameter = {
           simulator: simulator,
-          duplicating_simulator: @sim.id, copied_analyzers: @sim.analyzers.map(&:id)
+          duplicating_simulator: @sim.id.to_s, copied_analyzers: @sim.analyzers.map(&:id).map {|ana_id| ana_id.to_s}
         }
       end
 
@@ -327,7 +327,7 @@ describe SimulatorsController do
         params = [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
                   {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}
                  ]
-        @valid_post_parameter = {:id => @simulator.to_param, "query" => params, query_id: @simulator.parameter_set_queries.first.id}
+        @valid_post_parameter = {:id => @simulator.to_param, "query" => params, query_id: @simulator.parameter_set_queries.first.id.to_s}
       end
 
       it "creates a new ParameterSetQuery" do
@@ -346,13 +346,13 @@ describe SimulatorsController do
       it "redirects to show with the created parameter_set_query" do
         post :_make_query, @valid_post_parameter, valid_session
         response.should redirect_to( simulator_path(@simulator, query_id: ParameterSetQuery.last.to_param) )
-        assigns(:query_id).should == ParameterSetQuery.last.id
+        assigns(:query_id).should == ParameterSetQuery.last.id.to_s
       end
 
       context "and with delete option" do
         it "delete the last parameter_set_query of @simulator" do
           expect {
-            post :_make_query, {:id => @simulator.to_param, delete_query: "xxx", query_id: @simulator.parameter_set_queries.first.id}, valid_session
+            post :_make_query, {:id => @simulator.to_param, delete_query: "xxx", query_id: @simulator.parameter_set_queries.first.id.to_s}, valid_session
           }.to change(ParameterSetQuery, :count).by(-1)
         end
       end
@@ -411,7 +411,7 @@ describe SimulatorsController do
                                     query: {"L" => {"gte" => 5}})
 
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
-        get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 4, sSortDir_0: "desc", query_id: @query.id}, :format => :json
+        get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 4, sSortDir_0: "desc", query_id: @query.id.to_s}, :format => :json
         @parsed_body = JSON.parse(response.body)
       end
 
