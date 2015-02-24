@@ -86,7 +86,7 @@ class AnalyzersController < ApplicationController
                                                :auto_run,
                                                :print_version_command,
                                                :simulator,
-                                               parameter_definitions_attributes: [[:key, :type]]
+                                               parameter_definitions_attributes: [[:id, :key, :type, :dafault, :description]]
                                               ) : {}
   end
 end

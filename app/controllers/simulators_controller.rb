@@ -192,7 +192,7 @@ class SimulatorsController < ApplicationController
                                                 :support_omp,
                                                 :support_mpi,
                                                 :print_version_command,
-                                                parameter_definitions_attributes: [[:key,:type,:default, :description]],
+                                                parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
                                                 executable_on_ids: []
                                                ) : {}
   end
