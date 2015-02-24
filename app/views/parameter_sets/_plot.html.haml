@@ -96,7 +96,8 @@
       "&y_axis_key=" + encodeURIComponent(y) +
       "&series=" + encodeURIComponent(series) +
       "&irrelevants=" + encodeURIComponent(irrelevants);
-    var ps_base_url = "#{parameter_set_path('')}";
+    var ps_base_url = "#{parameter_set_path}";
+    ps_base_url = ps_base_url.substr(0, ps_base_url.lastIndexOf("/"));
     draw_line_plot(url_with_param, ps_base_url, "#{@param_set.id}");
   }
   $('#add_line_plot_button').on('click', function() {
@@ -144,7 +145,8 @@
       "&y_axis_key=" + encodeURIComponent(y) +
       "&result=" + encodeURIComponent(result) +
       "&irrelevants=" + encodeURIComponent(irrelevants);
-    var ps_base_url = "#{parameter_set_path('')}";
+    var ps_base_url = "#{parameter_set_path}";
+    ps_base_url = ps_base_url.substr(0, ps_base_url.lastIndexOf("/"));
     draw_scatter_plot(url_with_param, ps_base_url, "#{@param_set.id}");
   }
   $('#add_scatter_plot_button').on('click', function() {
@@ -165,7 +167,8 @@
       "&y_axis_key=" + encodeURIComponent(y) +
       "&result=" + encodeURIComponent(result) +
       "&irrelevants=" + encodeURIComponent(irrelevants);
-    var ps_base_url = "#{parameter_set_path('')}";
+    var ps_base_url = "#{parameter_set_path}";
+    ps_base_url = ps_base_url.substr(0, ps_base_url.lastIndexOf("/"));
     draw_figure_viewer(url_with_param, ps_base_url, "#{@param_set.id}");
   }
   $('#add_figure_viewer_button').on('click', function() {
