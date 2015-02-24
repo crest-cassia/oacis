@@ -79,6 +79,20 @@ describe HostsController do
         post :create, {host: valid_attributes}, valid_session
         response.should redirect_to(Host.last)
       end
+
+      context "with executable_simulators" do
+
+        before(:each) do
+          @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, runs_count: 0)
+          @valid_attributes_with_sim = valid_attributes.update(executable_simulator_ids: [@sim.id.to_s])
+        end
+
+        it "create a new Host" do
+          post :create, {host: @valid_attributes_with_sim}, valid_session
+          host = assigns(:host)
+          expect(host.executable_simulator_ids).to include(@sim.id)
+        end
+      end
     end
 
     describe "with invalid params" do
