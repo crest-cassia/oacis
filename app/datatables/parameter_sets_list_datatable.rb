@@ -89,7 +89,8 @@ private
   end
 
   def fetch_parameter_sets_list
-    parameter_sets_list = @param_sets.only("v","updated_at").order_by(sort_column_direction)
+    #"only" is removed due to ParameterSet.runs_status_count can not be called.
+    parameter_sets_list = @param_sets.order_by(sort_column_direction)
     parameter_sets_list = parameter_sets_list.skip(page).limit(per_page)
     parameter_sets_list
   end
