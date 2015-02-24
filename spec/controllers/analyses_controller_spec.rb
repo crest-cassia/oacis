@@ -102,6 +102,41 @@ describe AnalysesController do
           skip "not yet implemented"
         end
       end
+
+      describe "with no permitted params" do
+
+        before(:each) do
+          @valid_param = {
+            run_id: @run.to_param,
+            analysis: { analyzer: @azr.to_param},
+            parameters: {"param1" => 1, "param2" => 2.0},
+            format: 'json'
+          }
+        end
+
+        it "create new analysis but no permitted params are not saved" do
+          invalid_analysis_params = @valid_param[:analysis].update(parameters: {"param1"=>2, "param2"=>4.0})
+                                                           .update(status: :finished)
+                                                           .update(hostname: "Foo")
+                                                           .update(cpu_time: -100.0)
+                                                           .update(real_time: -100.0)
+                                                           .update(result: {"r1"=>0})
+                                                           .update(analyzer_version: "v9999")
+          invalid_params = @valid_param
+          invalid_params[:analysis] = invalid_analysis_params
+          expect {
+            post :create, invalid_params, valid_session
+          }.to change{Analysis.count}.by(1)
+          anl = Analysis.last
+          expect(anl.parameters).not_to eq ({"param1"=>2, "param2"=>4.0})
+          expect(anl.status).not_to eq :finished
+          expect(anl.hostname).not_to eq "Foo"
+          expect(anl.cpu_time).not_to eq -100.0
+          expect(anl.real_time).not_to eq -100.0
+          expect(anl.result).not_to eq ({"r1"=>0})
+          expect(anl.analyzer_version).not_to eq "v9999"
+        end
+      end
     end
 
     describe "for :on_parameter_set type" do
@@ -136,6 +171,41 @@ describe AnalysesController do
 
         it "re-renders ParameterSet#show template showing errors" do
           skip "not yet implemented"
+        end
+      end
+
+      describe "with no permitted params" do
+
+        before(:each) do
+          @valid_param = {
+            parameter_set_id: @par.to_param,
+            analysis: { analyzer: @azr2.to_param},
+            parameters: {},
+            format: 'json'
+          }
+        end
+
+        it "create new analysis but no permitted params are not saved" do
+          invalid_analysis_params = @valid_param[:analysis].update(parameters: {"param1"=>2, "param2"=>4.0})
+                                                           .update(status: :finished)
+                                                           .update(hostname: "Foo")
+                                                           .update(cpu_time: -100.0)
+                                                           .update(real_time: -100.0)
+                                                           .update(result: {"r1"=>0})
+                                                           .update(analyzer_version: "v9999")
+          invalid_params = @valid_param
+          invalid_params[:analysis] = invalid_analysis_params
+          expect {
+            post :create, invalid_params, valid_session
+          }.to change{Analysis.count}.by(1)
+          anl = Analysis.last
+          expect(anl.parameters).not_to eq ({"param1"=>2, "param2"=>4.0})
+          expect(anl.status).not_to eq :finished
+          expect(anl.hostname).not_to eq "Foo"
+          expect(anl.cpu_time).not_to eq -100.0
+          expect(anl.real_time).not_to eq -100.0
+          expect(anl.result).not_to eq ({"r1"=>0})
+          expect(anl.analyzer_version).not_to eq "v9999"
         end
       end
     end

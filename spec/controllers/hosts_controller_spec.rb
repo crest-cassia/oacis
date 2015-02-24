@@ -60,7 +60,9 @@ describe HostsController do
   end
 
   describe "POST create" do
+
     describe "with valid params" do
+
       it "creates a new Host" do
         expect {
           post :create, {host: valid_attributes}, valid_session
@@ -88,6 +90,18 @@ describe HostsController do
       it "re-renders the 'new' template" do
         post :create, {host: {}}, valid_session
         response.should render_template("new")
+      end
+    end
+
+    describe "with no permitted params" do
+
+      it "creates a new Host but no permitted params are not saved" do
+        invalid_host_params = valid_attributes.update(admin_flg: 1)
+        expect {
+          post :create, {host: invalid_host_params}, valid_session
+        }.to change(Host, :count).by(1)
+        host = assigns(:host)
+        expect(host.try(:admin_flg)).not_to eq 1
       end
     end
   end
@@ -124,6 +138,17 @@ describe HostsController do
         host = Host.create! valid_attributes
         put :update, {id: host.to_param, host: {name: ''}}, valid_session
         response.should render_template("edit")
+      end
+    end
+
+    describe "with no permitted params" do
+
+      it "update the Host but no permitted params are not saved" do
+        host = Host.create! valid_attributes
+        invalid_host_params = valid_attributes.update(admin_flg: 1)
+        post :update, {id: host.to_param, host: invalid_host_params}, valid_session
+        h = assigns(:host)
+        expect(h.try(:admin_flg)).not_to eq 1
       end
     end
   end

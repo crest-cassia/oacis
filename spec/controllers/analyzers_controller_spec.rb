@@ -123,6 +123,33 @@ describe AnalyzersController do
         response.should render_template("new")
       end
     end
+
+    describe "with no permitted params" do
+
+      before(:each) do
+        definitions = [
+          {key: "param1", type: "Integer"},
+          {key: "param2", type: "Float"}
+        ]
+        analyzer = {
+          name: "analyzerA", type: "on_run", command: "echo",
+          parameter_definitions_attributes: definitions,
+          auto_run: "no", description: "xxx yyy"
+        }
+        @valid_post_parameter = {simulator_id: @sim.id, analyzer: analyzer}
+      end
+
+      it "create a new analyzer but no permitted params are not saved" do
+        invalid_analyzer_params = @valid_post_parameter[:analyzer].update(admin_flg: 1)
+        invalid_params = @valid_post_parameter
+        invalid_params[:analyzer] = invalid_analyzer_params
+        expect {
+          post :create, invalid_params, valid_session
+        }.to change {Analyzer.count}.by(1)
+        anz = assigns(:analyzer)
+        expect(anz.try(:admin_flg)).not_to eq 1
+      end
+    end
   end
 
   describe "PUT update" do
@@ -149,8 +176,9 @@ describe AnalyzersController do
       end
 
       it "updates the requested analyzer" do
-        Analyzer.any_instance.should_receive(:update_attributes).with({'description' => 'yyy zzz'})
         put :update, {:id => @azr.to_param, :analyzer => {'description' => 'yyy zzz'}}, valid_session
+        anz = assigns(:analyzer)
+        expect(anz.description).to eq 'yyy zzz'
       end
 
       it "assigns the requested analyzer as @analyzer" do
@@ -165,6 +193,7 @@ describe AnalyzersController do
     end
 
     describe "with invalid params" do
+
       it "assigns the simulator as @simulator" do
         Analyzer.any_instance.stub(:update_attributes).and_return(false)
         put :update, {:id => @azr.to_param, :analyzer => {}}, valid_session
@@ -175,6 +204,31 @@ describe AnalyzersController do
         Analyzer.any_instance.stub(:update_attributes).and_return(false)
         put :update, {:id => @azr.to_param, :analyzer => {}}, valid_session
         response.should render_template("edit")
+      end
+    end
+
+    describe "with no permitted params" do
+
+      before(:each) do
+        definitions = [
+          {key: "param1", type: "Integer"},
+          {key: "param2", type: "Float"}
+        ]
+        analyzer = {
+          name: "analyzerA", type: "on_run", command: "echo",
+          parameter_definitions_attributes: definitions,
+          auto_run: "no", description: "xxx yyy"
+        }
+        @valid_post_parameter = {id: @azr.to_param, analyzer: analyzer}
+      end
+
+      it "update the analyzer but no permitted params are not saved" do
+        invalid_analyzer_params = @valid_post_parameter[:analyzer].update(admin_flg: 1)
+        invalid_params = @valid_post_parameter
+        invalid_params[:analyzer] = invalid_analyzer_params
+        post :update, invalid_params, valid_session
+        anz = assigns(:analyzer)
+        expect(anz.try(:admin_flg)).not_to eq 1
       end
     end
   end

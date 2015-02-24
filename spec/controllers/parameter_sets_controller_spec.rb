@@ -248,6 +248,25 @@ describe ParameterSetsController do
       end
     end
 
+    describe "with no permitted params" do
+
+      before(:each) do
+        parameters = {"L" => 10, "T" => 1.0}
+        @valid_params = {simulator_id: @sim, v: parameters}
+      end
+
+      it "create new ps but no permitted params are not saved" do
+        invalid_params = @valid_params.update(runs_status_count_cache: {"kill"=>"all"})
+                                      .update(progress_rate_cache: 123)
+        expect {
+          post :create, invalid_params, valid_session
+        }.to change {ParameterSet.count}.by(1)
+        ps = ParameterSet.last
+        expect(ps.runs_status_count_cache).not_to eq ({"kill"=>"all"})
+        expect(ps.progress_rate_cache).not_to eq 123
+      end
+    end
+
     describe "when Boolean parameters are included" do
 
       before(:each) do

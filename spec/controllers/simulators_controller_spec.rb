@@ -130,6 +130,7 @@ describe SimulatorsController do
     describe "with valid params" do
 
       before(:each) do
+        host = FactoryGirl.create(:host)
         definitions = [
           {key: "param1", type: "Integer"},
           {key: "param2", type: "Float"}
@@ -137,7 +138,8 @@ describe SimulatorsController do
         simulator = {
           name: "simulatorA", command: "echo", support_input_json: "0",
           support_mpi: "0", support_omp: "1",
-          parameter_definitions_attributes: definitions
+          parameter_definitions_attributes: definitions,
+          executable_on_ids: [host.id.to_s]
         }
         @valid_post_parameter = {simulator: simulator}
       end
@@ -240,6 +242,24 @@ describe SimulatorsController do
         response.should render_template("new")
       end
     end
+
+    describe "with no permitted params" do
+
+      it "create new simulator but no permitted params are not saved" do
+        invalid_params = valid_attributes.update(position: 100)
+                                          .update(default_host_parameters: {"host_id"=>{"param1"=>123}})
+                                          .update(default_mpi_procs: {"host_id"=>12345})
+                                          .update(default_omp_threads: {"host_id"=>54321})
+        expect {
+          post :create, {simulator: invalid_params}, valid_session
+        }.to change {Simulator.count}.by(1)
+        sim = Simulator.last
+        expect(sim.position).not_to eq 100
+        expect(sim.default_host_parameters).not_to include({"host_id"=>{"param1"=>123}})
+        expect(sim.default_mpi_procs).not_to include({"host_id"=>12345})
+        expect(sim.default_omp_threads).not_to include({"host_id"=>54321})
+      end
+    end
   end
 
   describe "PUT update" do
@@ -250,12 +270,11 @@ describe SimulatorsController do
           {key: "param1", type: "Integer"},
           {key: "param2", type: "Float"}
         ]
-        simulator = {
+        @valid_post_parameter = {
           name: "simulatorA", command: "echo", support_input_json: "0",
           support_mpi: "0", support_omp: "1",
           parameter_definitions_attributes: definitions
         }
-        @valid_post_parameter = {simulator: simulator}
       end
 
       it "updates the requested simulator" do
@@ -267,7 +286,11 @@ describe SimulatorsController do
       it "assigns the requested simulator as @simulator" do
         simulator = Simulator.create! valid_attributes
         put :update, {:id => simulator.to_param, :simulator => @valid_post_parameter}, valid_session
-        assigns(:simulator).should eq(simulator)
+        expect(assigns(:simulator).id).to eq simulator.id
+        expect(assigns(:simulator).command).to eq "echo"
+        expect(assigns(:simulator).support_input_json).to be_falsey
+        expect(assigns(:simulator).support_mpi).to be_falsey
+        expect(assigns(:simulator).support_omp).to be_truthy
       end
 
       it "redirects to the simulator" do
@@ -290,6 +313,36 @@ describe SimulatorsController do
         Simulator.any_instance.stub(:save).and_return(false)
         put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
         response.should render_template("edit")
+      end
+    end
+
+    describe "with no permitted params" do
+
+      before(:each) do
+        definitions = [
+          {key: "param1", type: "Integer"},
+          {key: "param2", type: "Float"}
+        ]
+        @valid_post_parameter = {
+          name: "simulatorA", command: "echo", support_input_json: "0",
+          support_mpi: "0", support_omp: "1",
+          parameter_definitions_attributes: definitions
+        }
+      end
+
+      it "update new simulator but no permitted params are not saved" do
+        simulator = Simulator.create! valid_attributes
+        invalid_params = @valid_post_parameter.update(description: "yyy zzz")
+                                              .update(position: 100)
+                                              .update(default_host_parameters: {"host_id"=>{"param1"=>123}})
+                                              .update(default_mpi_procs: {"host_id"=>12345})
+                                              .update(default_omp_threads: {"host_id"=>54321})
+        post :update, {id: simulator.to_param, simulator: invalid_params}, valid_session
+        expect(assigns(:simulator).description).to eq "yyy zzz"
+        expect(assigns(:simulator).position).not_to eq 100
+        expect(assigns(:simulator).default_host_parameters).not_to include({"host_id"=>{"param1"=>123}})
+        expect(assigns(:simulator).default_mpi_procs).not_to include({"host_id"=>12345})
+        expect(assigns(:simulator).default_omp_threads).not_to include({"host_id"=>54321})
       end
     end
   end
