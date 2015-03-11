@@ -129,12 +129,14 @@ describe AnalyzersController do
       before(:each) do
         definitions = [
           {key: "param1", type: "Integer"},
-          {key: "param2", type: "Float"}
+          {key: "param2", type: "Float", invalid: 1},
+          {invalid: 1}
         ]
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
-          auto_run: "no", description: "xxx yyy"
+          auto_run: "no", description: "xxx yyy",
+          invalid: 1
         }
         @valid_post_parameter = {simulator_id: @sim.id, analyzer: analyzer}
       end
@@ -212,12 +214,14 @@ describe AnalyzersController do
       before(:each) do
         definitions = [
           {key: "param1", type: "Integer"},
-          {key: "param2", type: "Float"}
+          {key: "param2", type: "Float", invalid: 1},
+          {invalid: 1}
         ]
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
-          auto_run: "no", description: "xxx yyy"
+          auto_run: "no", description: "xxx yyy",
+          invalid: 1
         }
         @valid_post_parameter = {id: @azr.to_param, analyzer: analyzer}
       end

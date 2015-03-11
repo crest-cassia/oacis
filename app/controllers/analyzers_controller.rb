@@ -78,7 +78,7 @@ class AnalyzersController < ApplicationController
 
   private
   def permitted_analyzer_params
-    params[:analyzer].present? ? params.require(:analyzer)
+    analyzer_params = params[:analyzer].present? ? params.require(:analyzer)
                                        .permit(:name,
                                                :type,
                                                :command,
@@ -88,5 +88,9 @@ class AnalyzersController < ApplicationController
                                                :simulator,
                                                parameter_definitions_attributes: [[:id, :key, :type, :dafault, :description]]
                                               ) : {}
+    if analyzer_params.has_key?(:parameter_definitions_attributes)
+      analyzer_params[:parameter_definitions_attributes].select! {|pdef| pdef.has_key?(:key)} # remove empty hash
+    end
+    analyzer_params
   end
 end

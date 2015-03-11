@@ -108,21 +108,23 @@ describe AnalysesController do
         before(:each) do
           @valid_param = {
             run_id: @run.to_param,
-            analysis: { analyzer: @azr.to_param},
-            parameters: {"param1" => 1, "param2" => 2.0},
+            analysis: { analyzer: @azr.to_param },
+            parameters: {"param1" => 1, "param2" => 2.0 },
             format: 'json'
           }
         end
 
         it "create new analysis but no permitted params are not saved" do
-          invalid_analysis_params = @valid_param[:analysis].update(parameters: {"param1"=>2, "param2"=>4.0})
+          invalid_analysis_params = @valid_param[:analysis].update(parameters: {"param1"=>2, "param2"=>4.0, invalid: 1})
                                                            .update(status: :finished)
                                                            .update(hostname: "Foo")
                                                            .update(cpu_time: -100.0)
                                                            .update(real_time: -100.0)
                                                            .update(result: {"r1"=>0})
                                                            .update(analyzer_version: "v9999")
-          invalid_params = @valid_param
+                                                           .update(invalid: 1)
+          invalid_params = @valid_param.update(invalid: 1)
+          invalid_params[:parameters].update(invalid: 1)
           invalid_params[:analysis] = invalid_analysis_params
           expect {
             post :create, invalid_params, valid_session
@@ -193,7 +195,9 @@ describe AnalysesController do
                                                            .update(real_time: -100.0)
                                                            .update(result: {"r1"=>0})
                                                            .update(analyzer_version: "v9999")
-          invalid_params = @valid_param
+                                                           .update(invalid: 1)
+          invalid_params = @valid_param.update(invalid: 1)
+          invalid_params[:parameters].update(invalid: 1)
           invalid_params[:analysis] = invalid_analysis_params
           expect {
             post :create, invalid_params, valid_session

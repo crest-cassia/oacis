@@ -110,12 +110,12 @@ describe HostsController do
     describe "with no permitted params" do
 
       it "creates a new Host but no permitted params are not saved" do
-        invalid_host_params = valid_attributes.update(admin_flg: 1)
+        invalid_host_params = valid_attributes.update(invalid: 1)
         expect {
-          post :create, {host: invalid_host_params}, valid_session
+          post :create, {host: invalid_host_params, invalid: 1}, valid_session
         }.to change(Host, :count).by(1)
         host = assigns(:host)
-        expect(host.try(:admin_flg)).not_to eq 1
+        expect(host.try(:invalid)).not_to eq 1
       end
     end
   end
@@ -159,10 +159,10 @@ describe HostsController do
 
       it "update the Host but no permitted params are not saved" do
         host = Host.create! valid_attributes
-        invalid_host_params = valid_attributes.update(admin_flg: 1)
-        post :update, {id: host.to_param, host: invalid_host_params}, valid_session
+        invalid_host_params = valid_attributes.update(invalid: 1)
+        post :update, {id: host.to_param, host: invalid_host_params, invalid: 1}, valid_session
         h = assigns(:host)
-        expect(h.try(:admin_flg)).not_to eq 1
+        expect(h.try(:invalid)).not_to eq 1
       end
     end
   end

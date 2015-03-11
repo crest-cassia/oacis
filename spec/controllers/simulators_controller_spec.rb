@@ -250,8 +250,9 @@ describe SimulatorsController do
                                           .update(default_host_parameters: {"host_id"=>{"param1"=>123}})
                                           .update(default_mpi_procs: {"host_id"=>12345})
                                           .update(default_omp_threads: {"host_id"=>54321})
+                                          .update(invalid: 1)
         expect {
-          post :create, {simulator: invalid_params}, valid_session
+          post :create, {simulator: invalid_params, invalid: 1}, valid_session
         }.to change {Simulator.count}.by(1)
         sim = Simulator.last
         expect(sim.position).not_to eq 100
@@ -337,7 +338,8 @@ describe SimulatorsController do
                                               .update(default_host_parameters: {"host_id"=>{"param1"=>123}})
                                               .update(default_mpi_procs: {"host_id"=>12345})
                                               .update(default_omp_threads: {"host_id"=>54321})
-        post :update, {id: simulator.to_param, simulator: invalid_params}, valid_session
+                                              .update(invalid: 1)
+        post :update, {id: simulator.to_param, simulator: invalid_params, invalid: 1}, valid_session
         expect(assigns(:simulator).description).to eq "yyy zzz"
         expect(assigns(:simulator).position).not_to eq 100
         expect(assigns(:simulator).default_host_parameters).not_to include({"host_id"=>{"param1"=>123}})

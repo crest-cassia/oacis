@@ -258,6 +258,7 @@ describe ParameterSetsController do
       it "create new ps but no permitted params are not saved" do
         invalid_params = @valid_params.update(runs_status_count_cache: {"kill"=>"all"})
                                       .update(progress_rate_cache: 123)
+                                      .update(invalid: 1)
         expect {
           post :create, invalid_params, valid_session
         }.to change {ParameterSet.count}.by(1)

@@ -100,6 +100,7 @@ describe RunsController do
                                      .update(result: {"r1"=>0})
                                      .update(simulator_version: "v9999")
                                      .update(job_id: "12345.localhost")
+                                     .update(invalid: 1)
         invalid_params = @req_param
         invalid_params[:run] = invalid_run_params
         expect {
