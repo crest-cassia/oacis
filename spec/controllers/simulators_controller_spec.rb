@@ -186,7 +186,7 @@ describe SimulatorsController do
         }
         @valid_post_parameter = {
           simulator: simulator,
-          duplicating_simulator: @sim.id.to_s, copied_analyzers: @sim.analyzers.map(&:id).map {|ana_id| ana_id.to_s}
+          duplicating_simulator: @sim.id.to_s, copied_analyzers: @sim.analyzers.map(&:id).map(&:to_s)
         }
       end
 

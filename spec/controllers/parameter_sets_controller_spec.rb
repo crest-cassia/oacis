@@ -300,7 +300,7 @@ describe ParameterSetsController do
       get :_create_cli, @valid_param, valid_session
       response.should be_success
       response.body.should eq <<-EOS.chomp
-./bin/oacis_cli create_parameter_sets -s #{@sim.id.to_s} -i '{"L":10,"T":2.0}' -o ps.json
+./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -o ps.json
       EOS
     end
 
@@ -315,7 +315,7 @@ describe ParameterSetsController do
       get :_create_cli, @valid_param, valid_session
       response.should be_success
       response.body.should eq <<-EOS.chomp
-./bin/oacis_cli create_parameter_sets -s #{@sim.id.to_s} -i '{"L":10,"T":2.0}' -r '{"num_runs":3,"mpi_procs":4,"omp_threads":8,"priority":2,"submitted_to":"#{h.id.to_s}","host_parameters":{"param1":"xxx","param2":"yyy"}}' -o ps.json
+./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -r '{"num_runs":3,"mpi_procs":4,"omp_threads":8,"priority":2,"submitted_to":"#{h.id.to_s}","host_parameters":{"param1":"xxx","param2":"yyy"}}' -o ps.json
       EOS
     end
   end

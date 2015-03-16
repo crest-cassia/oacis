@@ -291,7 +291,7 @@ describe OacisCli do
         options = {analysis_ids: 'analysis_ids.json'}
         expect {
           OacisCli.new.invoke(:analysis_status, [], options)
-        }.to output(puts JSON.pretty_generate({total: 4, created: 4, running: 0, failed: 0, finished: 0})).to_stdout
+        }.to output(JSON.pretty_generate({total: 4, created: 4, running: 0, failed: 0, finished: 0})+"\n").to_stdout
       }
     end
   end
