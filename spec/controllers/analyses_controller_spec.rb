@@ -72,21 +72,20 @@ describe AnalysesController do
           @valid_param = {
             run_id: @run.to_param,
             analysis: { analyzer: @azr.to_param},
-            parameters: {"param1" => 1, "param2" => 2.0},
-            format: 'json'
+            parameters: {"param1" => 1, "param2" => 2.0}
           }
         end
 
         it "creates a new Analysis" do
           expect {
-            post :create, @valid_param, valid_session
+            post :create, @valid_param.update(format: 'json'), valid_session
           }.to change{
             @run.reload.analyses.count
           }.by(1)
         end
 
         it "redirects to 'analysis' tab of Run#show page" do
-          post :create, @valid_param, valid_session
+          post :create, @valid_param.update(format: 'json'), valid_session
           response.should_not redirect_to( run_path(@run, anchor: '!tab-analyses') )
           response.should_not render_template 'create'
         end
@@ -109,8 +108,7 @@ describe AnalysesController do
           @valid_param = {
             run_id: @run.to_param,
             analysis: { analyzer: @azr.to_param },
-            parameters: {"param1" => 1, "param2" => 2.0 },
-            format: 'json'
+            parameters: {"param1" => 1, "param2" => 2.0 }
           }
         end
 
@@ -127,7 +125,7 @@ describe AnalysesController do
           invalid_params[:parameters].update(invalid: 1)
           invalid_params[:analysis] = invalid_analysis_params
           expect {
-            post :create, invalid_params, valid_session
+            post :create, invalid_params.update(format: 'json'), valid_session
           }.to change{Analysis.count}.by(1)
           anl = Analysis.last
           expect(anl.parameters).not_to eq ({"param1"=>2, "param2"=>4.0})
@@ -149,21 +147,20 @@ describe AnalysesController do
           @valid_param = {
             parameter_set_id: @par.to_param,
             analysis: { analyzer: @azr2.to_param},
-            parameters: {},
-            format: 'json'
+            parameters: {}
           }
         end
 
         it "creates a new Analysis" do
           expect {
-            post :create, @valid_param, valid_session
+            post :create, @valid_param.update(format: 'json'), valid_session
           }.to change {
             @par.reload.analyses.count
           }.by(1)
         end
 
         it "redirects to 'analysis' tab of ParameterSet#show page" do
-          post :create, @valid_param, valid_session
+          post :create, @valid_param.update(format: 'json'), valid_session
           response.should_not redirect_to( parameter_set_path(@par, anchor: '!tab-analyses') )
           response.should_not render_template 'create'
         end
@@ -182,8 +179,7 @@ describe AnalysesController do
           @valid_param = {
             parameter_set_id: @par.to_param,
             analysis: { analyzer: @azr2.to_param},
-            parameters: {},
-            format: 'json'
+            parameters: {}
           }
         end
 
@@ -200,7 +196,7 @@ describe AnalysesController do
           invalid_params[:parameters].update(invalid: 1)
           invalid_params[:analysis] = invalid_analysis_params
           expect {
-            post :create, invalid_params, valid_session
+            post :create, invalid_params.update(format: 'json'), valid_session
           }.to change{Analysis.count}.by(1)
           anl = Analysis.last
           expect(anl.parameters).not_to eq ({"param1"=>2, "param2"=>4.0})
