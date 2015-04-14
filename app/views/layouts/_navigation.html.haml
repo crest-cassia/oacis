@@ -1,21 +1,21 @@
-.navbar.navbar-fixed-top
-  .navbar-inner
-    .container
-      %a.btn.btn-navbar{"data-toggle"=>"collapse","data-target"=>".nav-collapse"}
+%nav.navbar.navbar-default.navbar-static-top
+  .container
+    .navbar-header
+      %button.navbar-toggle.collapsed(type="button" data-toggle="collapse" data-target="#navbar-collapse")
         %span.icon-bar
         %span.icon-bar
         %span.icon-bar
-      = link_to "OACIS", root_path, :class => 'brand'
-      .nav-collapse
-        %ul.nav
-          %li
-            = link_to 'Simulators', simulators_path
-          %li
-            = link_to 'Jobs', runs_path
-          %li
-            = link_to 'Analyses', analyses_path
-          %li
-            = link_to 'Hosts', hosts_path
-        %ul.nav.pull-right
-          %li
-            = link_to 'Document', "#{root_path}oacis_document/index.html", target: '_blank'
+      %a.navbar-brand(href="#{root_path}") OACIS
+    .collapse.navbar-collapse#navbar-collapse
+      %ul.nav.navbar-nav
+        %li
+          = link_to 'Simulators', simulators_path
+        %li
+          = link_to 'Jobs', runs_path
+        %li
+          = link_to 'Analyses', analyses_path
+        %li
+          = link_to 'Hosts', hosts_path
+      %ul.nav.navbar-nav.navbar-right
+        %li
+          = link_to 'Document', "#{root_path}oacis_document/index.html", target: '_blank'
