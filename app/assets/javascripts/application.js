@@ -50,7 +50,7 @@ $(document).ready(function () {
 $(document).ready( function() {
   $('form').on('click', '.remove_fields', function() {
     $(this).prev('input[type=hidden]').val('1');
-    $(this).closest('fieldset').hide();
+    $(this).closest('.parameter-definition-field').remove();
     event.preventDefault();
   });
   $('form').on('click', '.add_fields', function() {
