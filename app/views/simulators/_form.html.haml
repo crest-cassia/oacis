@@ -3,7 +3,7 @@
   - has_ps = @simulator.parameter_sets.present?
   .form-group
     = f.label(:name, class: ['col-md-2','control-label'])
-    .col-md-2
+    .col-md-3
       = f.text_field(:name, class: ['form-control'])
   .form-group
     = label_tag('', 'Definition of Parameters', class: ['col-md-2','control-label'])
@@ -25,53 +25,58 @@
       = link_to_add_fields "Add Parameter", f, :parameter_definitions unless has_ps
   .form-group
     = f.label(:pre_process_script, class: ['col-md-2','control-label'])
-    .col-md-2
+    .col-md-6
       = f.text_area(:pre_process_script, rows: 3, class: 'form-control')
   .form-group
     = f.label(:command, class: ['col-md-2','control-label'])
-    .col-md-2
+    .col-md-6
       = f.text_field(:command, class: 'form-control')
   .form-group
     = f.label(:print_version_command, class: ['col-md-2','control-label'])
-    .col-md-2
+    .col-md-3
       = f.text_field(:print_version_command, class: 'form-control')
   .form-group
     = f.label(:support_input_json, "Input type", class: ['col-md-2','control-label'])
-    .col-md-2
+    .col-md-3
       = f.select(:support_input_json, {"Argument" => false, "JSON" => true}, {},{class: 'form-control'})
   .form-group
     = f.label(:support_mpi, class: ['col-md-2','control-label'])
     .col-md-2
-      = f.check_box(:support_mpi, class: 'form-control')
+      .checkbox
+        %label
+          = f.check_box(:support_mpi)
   .form-group
     = f.label(:support_omp, class: ['col-md-2','control-label'])
     .col-md-2
-      = f.check_box(:support_omp, class: 'form-control')
+      .checkbox
+        %label
+          = f.check_box(:support_omp)
   .form-group
     = f.label(:description, class: ['col-md-2','control-label'])
-    .col-md-2
+    .col-md-6
       = f.text_area(:description, rows: 5, class: 'form-control')
   .form-group
-    .col-md-2
-      .control-label
-        Executable_on
-    .col-md-2
+    %label.col-md-2.control-label
+      Executable_on
+    .col-md-10
       = hidden_field_tag "simulator[executable_on_ids][]", nil
       - Host.all.each do |host|
-        %label{ for: dom_id(host) }
-          = check_box_tag "simulator[executable_on_ids][]", host.id.to_s, @simulator.executable_on_ids.include?(host.id), id: dom_id(host), class: 'form-control'
-          = host.name
+        .checkbox
+          %label{ for: dom_id(host) }
+            = check_box_tag "simulator[executable_on_ids][]", host.id.to_s, @simulator.executable_on_ids.include?(host.id), id: dom_id(host)
+            = host.name
   - if @duplicating_simulator
     .form-group
-      .col-md-2.control-label
-        Copy Analyzers
-      .col-md-2
+      %label.col-md-2.control-label
+        Analyzers to copy
+      .col-md-10
         = hidden_field_tag "duplicating_simulator", @duplicating_simulator.id
         - @duplicating_simulator.analyzers.each do |azr|
-          %label{ for: dom_id(azr) }
-            = check_box_tag "copied_analyzers[]", azr.id.to_s, @copied_analyzers.include?(azr), id: dom_id(azr)
-            = "#{azr.simulator.name} / #{azr.name}"
+          .checkbox
+            %label{ for: dom_id(azr) }
+              = check_box_tag "copied_analyzers[]", azr.id.to_s, @copied_analyzers.include?(azr), id: dom_id(azr)
+              = "#{azr.simulator.name} / #{azr.name}"
   .form-group
-    .col-md-4.col-lg-offset-2
+    .col-md-4.col-md-offset-2
       = f.submit(class: 'btn btn-primary')
       = link_to('Cancel', simulators_path, class: ['btn', 'btn-default'])
