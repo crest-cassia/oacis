@@ -17,5 +17,5 @@
         %td#progress= progress_bar(counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted])
 
 - unless OACIS_READ_ONLY
-  .form-actions
-    %a.btn.btn-primary{href: new_simulator_path} New Simulator
+  .well
+    %a.btn.btn-primary.btn-sm{href: new_simulator_path} New Simulator
