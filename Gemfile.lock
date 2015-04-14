@@ -59,7 +59,7 @@ GEM
     dynatree-rails (1.2.6)
     erubis (2.7.0)
     eventmachine (1.0.3)
-    execjs (2.0.2)
+    execjs (2.4.0)
     factory_girl (4.4.0)
       activesupport (>= 3.0.0)
     factory_girl_rails (4.4.1)
@@ -93,11 +93,11 @@ GEM
     jquery-ui-rails (4.2.0)
       railties (>= 3.2.16)
     json (1.8.2)
-    less (2.3.3)
-      commonjs (~> 0.2.6)
-    less-rails (2.3.3)
+    less (2.6.0)
+      commonjs (~> 0.2.7)
+    less-rails (2.6.0)
       actionpack (>= 3.1)
-      less (~> 2.3.1)
+      less (~> 2.6.0)
     libv8 (3.16.14.7)
     loofah (2.0.1)
       nokogiri (>= 1.5.9)
@@ -154,11 +154,11 @@ GEM
       sprockets-rails
     rails-deprecated_sanitizer (1.0.3)
       activesupport (>= 4.2.0.alpha)
-    rails-dom-testing (1.0.5)
+    rails-dom-testing (1.0.6)
       activesupport (>= 4.2.0.beta, < 5.0)
       nokogiri (~> 1.6.0)
       rails-deprecated_sanitizer (>= 1.0.1)
-    rails-html-sanitizer (1.0.1)
+    rails-html-sanitizer (1.0.2)
       loofah (~> 2.0)
     railties (4.2.0)
       actionpack (= 4.2.0)
@@ -228,12 +228,13 @@ GEM
       eventmachine (>= 1.0.0)
       rack (>= 1.0.0)
     thor (0.19.1)
-    thread_safe (0.3.4)
+    thread_safe (0.3.5)
     tilt (1.4.1)
-    twitter-bootstrap-rails (2.2.6)
-      actionpack (>= 3.1)
-      execjs
-      railties (>= 3.1)
+    twitter-bootstrap-rails (3.2.0)
+      actionpack (~> 4.1)
+      execjs (~> 2.2)
+      rails (~> 4.1)
+      railties (~> 4.1)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
 
@@ -252,7 +253,7 @@ DEPENDENCIES
   jquery-datatables-rails
   jquery-rails
   jquery-ui-rails
-  less-rails (= 2.3.3)
+  less-rails (= 2.6.0)
   mongoid
   mongoid-rspec
   net-sftp
@@ -272,4 +273,4 @@ DEPENDENCIES
   sys-filesystem
   therubyracer
   thin
-  twitter-bootstrap-rails (= 2.2.6)
+  twitter-bootstrap-rails (= 3.2.0)
