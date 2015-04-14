@@ -15,4 +15,15 @@
 .field_with_errors {
   @extend .control-group !optional;
   @extend .error !optional;
- }
+}
+.row.no-margin {
+  margin-right:0;
+  margin-left:0;
+}
+.form-group.small-margin-bottom {
+  margin-bottom:1px;
+}
+.no-gutter > [class*='col-'] {
+  padding-right:0;
+  padding-left:0;
+}

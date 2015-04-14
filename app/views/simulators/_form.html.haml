@@ -12,19 +12,16 @@
       = f.fields_for :parameter_definitions do |builder|
         = render 'parameter_definition_fields', f: builder, disabled: has_ps
       #add_field_here
-      .form-inline
-        .form-group
-          .col-md-2
-            = text_field_tag '__dummy__', "_seed", {disabled: true, class: 'form-control'}
-        .form-group
-          .col-md-1
-            = select_tag '__dummy__', options_for_select(['seed']), {disabled: true, class: 'form-control'}
-        .form-group
-          .col-md-2
-            = text_field_tag '__dummy__', "-", {disabled: true, class: 'form-control'}
-      .form-group
+      .form-group.row.no-margin.no-gutter.small-margin-bottom
+        .col-md-3
+          = text_field_tag '__dummy__', "_seed", {disabled: true, class: 'form-control'}
         .col-md-2
-          = text_area_tag '__dummy__', "Random number seed", rows: 3, disabled: true
+          = select_tag '__dummy__', options_for_select(['seed']), {disabled: true, class: 'form-control'}
+        .col-md-3
+          = text_field_tag '__dummy__', "-", {disabled: true, class: 'form-control'}
+      .form-group.row.no-margin.no-gutter
+        .col-md-8
+          = text_area_tag '__dummy__', "Random number seed", rows: 3, disabled: true, class: 'form-control'
       = link_to_add_fields "Add Parameter", f, :parameter_definitions unless has_ps
   .form-group
     = f.label(:pre_process_script, class: ['col-md-2','control-label'])
