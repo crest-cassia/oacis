@@ -48,7 +48,7 @@
     setInterval( reload_runs_table , 5000 );
     $('.dataTables_length').each( function() {
       $(this).append(
-        '<i class="fa fa-refresh padding-8" id="params_list_refresh"></i>'
+        '<i class="fa fa-refresh padding-8 clickable" id="params_list_refresh"></i>'
       );
       $(this).children('#dataTables_refresh').on('click', reload_runs_table);
     });
