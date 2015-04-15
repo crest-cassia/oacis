@@ -37,7 +37,7 @@
         if( num_open == 0 ) { oTable.fnReloadAjax(); }
       }, 5000);
       $('.dataTables_length', $(oTable).parent()).append(
-        '<i class="icon-refresh analyses-list-refresh" id="dataTables_refresh"></i>'
+        '<i class="fa fa-refresh padding-8" id="params_list_refresh"></i>'
       );
       $('#dataTables_refresh', $(oTable).parent()).on('click', function() {
         oTable.fnReloadAjax();
