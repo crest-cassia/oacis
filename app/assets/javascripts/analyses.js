@@ -42,9 +42,7 @@ $(function() {
       bServerSide: true,
       bFilter: false,
       bDestroy: true,
-      sAjaxSource: $('#analyses_list').data('source'),
-      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-      sPaginationType: "bootstrap"
+      sAjaxSource: $('#analyses_list').data('source')
     });
     $('#analyses_list_length').append(
       '<i class="icon-refresh" id="analyses_list_refresh"></i>'

@@ -19,9 +19,7 @@ $(function() {
       bFilter: false,
       aaSorting: [[ 8, "desc" ]],
       bDestroy: true,
-      sAjaxSource: $('#runs_list').data('source'),
-      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-      sPaginationType: "bootstrap"
+      sAjaxSource: $('#runs_list').data('source')
     });
     $('#runs_list_length').append(
       '<i class="icon-refresh runs-list-refresh" id="runs_list_refresh"></i>'

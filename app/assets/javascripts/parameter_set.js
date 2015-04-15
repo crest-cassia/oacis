@@ -6,9 +6,7 @@ function create_parameter_sets_list(selector, default_length) {
     aaSorting: [[ 3, "desc" ]],
     bAutoWidth: false,
     iDisplayLength: default_length,
-    sAjaxSource: $(selector).data('source'),
-    sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-    sPaginationType: "bootstrap"
+    sAjaxSource: $(selector).data('source')
   });
   $(selector+'_length').append(
     '<i class="icon-refresh" id="params_list_refresh"></i>'
