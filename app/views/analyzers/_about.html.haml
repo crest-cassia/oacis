@@ -57,7 +57,7 @@
         %td= anl_version['count'][:finished].to_i
         %td= anl_version['count'][:failed].to_i
         %td
-          %i.icon.icon-list{data: raw(render partial: "version_dialog", locals: {azr: analyzer, version: anl_version['version']})}
+          %i.fa.fa-cog.clickable#show_cli{data: raw(render partial: "version_dialog", locals: {azr: analyzer, version: anl_version['version']})}
 
 :css
   .modal.large {
@@ -77,7 +77,7 @@
     #version_dialog
 
 :javascript
-  $("#analyzer_version_table i.icon.icon-list").on("click", function(){
+  $("#analyzer_version_table #show_cli").on("click", function(){
     $('#version_dialog').empty();
     $('#version_dialog').append($(this).attr("data"));
     $('#version_dialog_modal').modal('show');

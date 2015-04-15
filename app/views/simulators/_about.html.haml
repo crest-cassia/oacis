@@ -80,7 +80,7 @@
         %td= sim_version['count'][:finished].to_i
         %td= sim_version['count'][:failed].to_i
         %td
-          %i.icon.icon-list{data: raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['version']})}
+          %i.fa.fa-cog.clickable#show_cli{data: raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['version']})}
 
 :css
   .modal.large {
@@ -100,7 +100,7 @@
     #version_dialog
 
 :javascript
-  $("#simulator_version_table i.icon.icon-list").on("click", function(){
+  $("#simulator_version_table #show_cli").on("click", function(){
     $('#version_dialog').empty();
     $('#version_dialog').append($(this).attr("data"));
     $('#version_dialog_modal').modal('show');
