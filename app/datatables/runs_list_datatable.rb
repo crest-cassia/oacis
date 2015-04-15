@@ -29,7 +29,7 @@ private
     a = []
     runs_lists.each do |run|
       tmp = []
-      tmp << @view.link_to( @view.shortened_id(run.id), @view.run_path(run) )
+      tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )
       tmp << Run::PRIORITY_ORDER[run.priority]
       tmp << @view.formatted_elapsed_time(run.real_time)

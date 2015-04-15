@@ -42,7 +42,7 @@ private
       counts.delete(:cancelled)
       progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
       tmp << @view.raw(progress)
-      tmp << "<tt>"+@view.link_to( @view.shortened_id(param.id), @view.parameter_set_path(param) )+"</tt>"
+      tmp << @view.link_to( @view.shortened_id_monospaced(param.id), @view.parameter_set_path(param) )
       tmp << @view.distance_to_now_in_words(param.updated_at)
       @param_keys.each do |key|
         if @base_ps

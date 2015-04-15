@@ -55,6 +55,10 @@ module ApplicationHelper
     raw(tags)
   end
 
+  def shortened_id_monospaced(id)
+    raw( '<tt class="short-id">' + shortened_id(id) + '</tt>' )
+  end
+
   def shortened_id(id)
     str = id.to_s
     str[3..6] + ".." + str[-3..-1]
