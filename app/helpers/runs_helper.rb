@@ -16,13 +16,13 @@ module RunsHelper
   def status_label(status)
     case status
     when :created
-      '<span class="label">created</span>'
+      '<span class="label label-default">created</span>'
     when :submitted
       '<span class="label label-info">submitted</span>'
     when :running
       '<span class="label label-warning">running</span>'
     when :failed
-      '<span class="label label-important">failed</span>'
+      '<span class="label label-danger">failed</span>'
     when :finished
       '<span class="label label-success">finished</span>'
     else
