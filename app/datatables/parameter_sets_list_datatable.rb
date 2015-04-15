@@ -55,9 +55,9 @@ private
         tmp << ''
       else
         if OACIS_READ_ONLY
-          tmp << @view.raw('<i class="icon-trash">')
+          tmp << @view.raw('<i class="fa fa-trash-o">')
         else
-          tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+          tmp << @view.link_to( @view.raw('<i class="fa fa-trash-o">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
         end
       end
       tmp

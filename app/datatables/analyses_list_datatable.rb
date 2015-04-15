@@ -26,8 +26,8 @@ private
   def data
     a = analyses_lists.map do |arn|
       analyzer = arn.analyzer
-      trash = OACIS_READ_ONLY ? @view.raw('<i class="icon-trash">')
-        : @view.link_to( @view.raw('<i class="icon-trash">'), arn, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+      trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">')
+        : @view.link_to( @view.raw('<i class="fa fa-trash-o">'), arn, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
       [
         @view.image_tag("/assets/expand.png", analysis_id: arn.id.to_s, align: "center", state: "close", class: "treebtn"),
         @view.link_to( @view.shortened_id(arn.id), @view.analysis_path(arn) ),

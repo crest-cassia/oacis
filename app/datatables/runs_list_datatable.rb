@@ -41,8 +41,8 @@ private
       host = run.submitted_to
       tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "---")
       tmp << @view.shortened_job_id(run.job_id)
-      trash = OACIS_READ_ONLY ? @view.raw('<i class="icon-trash">')
-        : @view.link_to( @view.raw('<i class="icon-trash">'), run, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+      trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">')
+        : @view.link_to( @view.raw('<i class="fa fa-trash-o">'), run, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
       tmp << trash
       a << tmp
     end
