@@ -1,10 +1,9 @@
 = render partial: "description", locals: {simulator: simulator}
 
 - unless OACIS_READ_ONLY
-  .form-actions
-    = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
-    = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
-    = link_to 'Destroy', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
+  = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
+  = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
+  = link_to 'Destroy', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
 
 
 %h3 About

@@ -20,9 +20,8 @@
       = render partial: "shared/parameters_table", locals: {parameters_hash: @param_set.v}
       = render "similar_parameter_sets_list", parameter_set: @param_set
       - unless OACIS_READ_ONLY
-        .form-actions
-          = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
-          = link_to 'Destroy', @param_set, method: :delete, data: { confirm: 'Are you sure?'}, class: 'btn btn-warning'
+        = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
+        = link_to 'Destroy', @param_set, method: :delete, data: { confirm: 'Are you sure?'}, class: 'btn btn-warning'
     .tab-pane.active#tab-list-runs
       = render "runs", parameter_set: @param_set
     .tab-pane#tab-analyses

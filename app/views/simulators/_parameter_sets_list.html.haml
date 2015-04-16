@@ -11,9 +11,8 @@
   %tbody
 
 - unless OACIS_READ_ONLY
-  .form-actions
-    %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
-      New Parameter Set
+  %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
+    New Parameter Set
   
 %h3 Parameter Filter
 = form_tag( _make_query_simulator_path(@simulator) ) do |f|

@@ -40,5 +40,4 @@
           = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if host.destroyable? and (!OACIS_READ_ONLY)
 
 - unless OACIS_READ_ONLY
-  .form-actions
-    %a.btn.btn-primary{href: new_host_path} New Host
+  %a.btn.btn-primary{href: new_host_path} New Host

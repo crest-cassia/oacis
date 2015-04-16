@@ -6,8 +6,7 @@
         = raw(th_element)
   %tbody
 - unless OACIS_READ_ONLY
-  .form-actions
-    = link_to 'New Analyzer', new_simulator_analyzer_path(@simulator), class: 'btn btn-primary'
+  = link_to 'New Analyzer', new_simulator_analyzer_path(@simulator), class: 'btn btn-primary'
 
 :javascript
   var oAzrTable;
