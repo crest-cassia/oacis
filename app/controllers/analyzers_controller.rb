@@ -68,7 +68,7 @@ class AnalyzersController < ApplicationController
     analyzer = Analyzer.find(params[:id])
     param_def = analyzer.parameter_definitions
 
-    render partial: 'shared/parameters_form', layout: false, locals: {param_def: param_def}
+    render partial: 'analyses/parameters_form', layout: false, locals: {param_def: param_def}
   end
 
   def _inner_show
