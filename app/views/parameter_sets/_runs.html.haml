@@ -13,12 +13,12 @@
   - run = parameter_set.runs.build(submitted_to: parameter_set.simulator.executable_on.first)
   = form_for( [parameter_set, run], html: {class: 'form-horizontal', remote: true}) do |f|
     #run_form_messages
-    .control-group
-      = label_tag('num_runs', '# of Runs', class: 'control-label')
-      .controls
-        = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]))
+    .form-group
+      = label_tag('num_runs', '# of Runs', class: 'col-md-2 control-label')
+      .col-md-3
+        = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]), {class: 'form-control'})
     = render 'runs/fields', run: run, f: f
-    .form-actions
+    .form-actions.col-md-offset-2
       = submit_tag 'Preview', name: 'preview_button', class: 'btn'
       = f.submit(class: 'btn btn-primary')
   #script_preview_modal.modal.hide.fade
