@@ -18,9 +18,10 @@
       .col-md-3
         = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]), {class: 'form-control'})
     = render 'runs/fields', run: run, f: f
-    .form-actions.col-md-offset-2
-      = submit_tag 'Preview', name: 'preview_button', class: 'btn'
-      = f.submit(class: 'btn btn-primary')
+    .form-group
+      .col-md-4.col-md-offset-2
+        = submit_tag 'Preview', name: 'preview_button', class: 'btn'
+        = f.submit(class: 'btn btn-primary')
   #script_preview_modal.modal.hide.fade
     .modal-header
       %a.close{:'data-dismiss' => "modal"}x</a>

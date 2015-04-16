@@ -23,9 +23,10 @@
   #runs_fields
     = fields_for run do |builder|
       = render 'runs/fields', run: builder.object, f: builder
-  .form-actions.col-md-offset-2
-    = submit_tag "Create", class: 'btn btn-primary'
-    = link_to "Cancel", simulator_path(simulator), class: 'btn btn-default'
+  .form-group
+    .col-md-2.col-md-offset-2
+      = submit_tag "Create", class: 'btn btn-primary'
+      = link_to "Cancel", simulator_path(simulator), class: 'btn btn-default'
   CLI command:
   %pre#cli-command
 
