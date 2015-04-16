@@ -298,6 +298,7 @@ ScatterPlot.prototype.AddDescription = function() {
     }
     dl.append("dt").text("URL");
     dl.append("input")
+      .attr('class', 'form-control input-sm')
       .attr({"type": "text", "readonly": "readonly", "onClick": "this.select(); "})
       .attr('value', plot.data.plot_url );
   }
@@ -306,7 +307,7 @@ ScatterPlot.prototype.AddDescription = function() {
   function add_tools() {
     var actions = plot.description.append("div").attr('class', 'btn-group');
     actions.append("a")
-      .attr({"class": "btn btn-primary btn-small dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
+      .attr({"class": "btn btn-primary btn-sm dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
       .text("Action")
       .append("span").attr("class", "caret");
     var list = actions.append("ul").attr('class', 'dropdown-menu');
@@ -431,13 +432,13 @@ ScatterPlot.prototype.AddDescription = function() {
       var form = color_scale_control.append("form").attr("class", "form-inline");
       form.append("input").attr({
         "type": "text",
-        "class": "input-small",
+        "class": "input-sm form-control",
         "placeholder": "min",
         "id": "range-min"
       });
       form.append("input").attr({
         "type": "text",
-        "class": "input-small",
+        "class": "input-sm form-control",
         "placeholder": "max",
         "id": "range-max"
       });
