@@ -2,40 +2,41 @@
 = form_for path, html: {class: 'form-horizontal'} do |f|
   = render partial: 'shared/error_messages', locals: {error_messages: analyzer.errors.full_messages}
   - has_child = analyzer.analyses.present?
-  .control-group
-    = f.label(:name, class: 'control-label')
-    .controls
-      = f.text_field(:name, class: 'text_field', disabled: has_child)
-  .control-group
-    = f.label(:type, class: 'control-label')
-    .controls
-      = f.select(:type, ["on_run", "on_parameter_set"], {}, disabled: has_child)
-  #parameters_form.control-group
-    = label_tag('', 'Definition of Parameters', class: 'control-label')
-    .controls
+  .form-group
+    = f.label(:name, class: 'col-md-2 control-label')
+    .col-md-3
+      = f.text_field(:name, class: 'text_field form-control', disabled: has_child)
+  .form-group
+    = f.label(:type, class: 'col-md-2 control-label')
+    .col-md-3
+      = f.select(:type, ["on_run", "on_parameter_set"], {}, class: 'form-control', disabled: has_child)
+  #parameters_form.form-group
+    = label_tag('', 'Definition of Parameters', class: 'col-md-2 control-label')
+    .col-md-10
       = f.fields_for :parameter_definitions do |builder|
         = render 'simulators/parameter_definition_fields', f: builder, disabled: has_child
       - unless has_child
         = link_to_add_fields "Add Parameter", f, :parameter_definitions, 'simulators/parameter_definition_fields'
-  .control-group
-    = f.label(:command, class: 'control-label')
-    .controls
-      = f.text_field(:command)
-  .control-group
-    = f.label(:print_version_command, class: 'control-label')
-    .controls
-      = f.text_field(:print_version_command)
-  .control-group
-    = f.label(:auto_run, class: 'control-label')
-    .controls
-      = f.select(:auto_run, [:no,:yes,:first_run_only], id: "auto_run")
-  .control-group
-    = f.label(:description, class: 'control-label')
-    .controls
-      = f.text_area(:description, rows: 5)
-  .form-actions
-    = f.submit(class: 'btn btn-primary')
-    = link_to('Cancel', simulator_path(simulator, anchor: '!tab-about'), class: 'btn')
+  .form-group
+    = f.label(:command, class: 'col-md-2 control-label')
+    .col-md-3
+      = f.text_field(:command, class: 'form-control')
+  .form-group
+    = f.label(:print_version_command, class: 'col-md-2 control-label')
+    .col-md-3
+      = f.text_field(:print_version_command, class: 'form-control')
+  .form-group
+    = f.label(:auto_run, class: 'col-md-2 control-label')
+    .col-md-3
+      = f.select(:auto_run, [:no,:yes,:first_run_only], {}, id: "auto_run", class: 'form-control')
+  .form-group
+    = f.label(:description, class: 'col-md-2 control-label')
+    .col-md-6
+      = f.text_area(:description, rows: 5, class: 'form-control')
+  .form-group
+    .col-md-3.col-md-offset-2
+      = f.submit(class: 'btn btn-primary')
+      = link_to('Cancel', simulator_path(simulator, anchor: '!tab-about'), class: 'btn btn-default')
 
 :javascript
   $(function() {
