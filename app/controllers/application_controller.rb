@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
 
-  before_filter :authenticate
+  before_action :authenticate
 
   USERS = AcmProto::Application.config.user_config["authentication"]
 
