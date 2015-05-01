@@ -100,6 +100,10 @@ class RunsController < ApplicationController
 
   private
   def permitted_run_params
-    params.require(:run).permit(:mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to, :seed)
+    if params[:run]["submitted_to"].length > 0
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed, host_parameters: [Host.find(params["run"]["submitted_to"]).host_parameter_definitions.map {|hpd| hpd[:key]}])
+    else
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed, host_parameters: {})
+    end
   end
 end

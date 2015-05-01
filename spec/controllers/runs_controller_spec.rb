@@ -46,7 +46,7 @@ describe RunsController do
   describe "POST 'create'" do
 
     before(:each) do
-      @req_param = { parameter_set_id: @par, run: {submitted_to: Host.first}, format: 'json' }
+      @req_param = { parameter_set_id: @par, run: {submitted_to: Host.first.id.to_s}, format: 'json' }
     end
 
     describe "with valid parameters" do
@@ -83,7 +83,7 @@ describe RunsController do
 
       it "fails with a duplicated seed" do
         seed_val = @par.runs.first.seed
-        @req_param.update(run: {seed: seed_val})
+        @req_param[:run].update(seed: seed_val)
         expect {
           post 'create', @req_param, valid_session
         }.to change(Run, :count).by(0)
