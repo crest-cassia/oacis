@@ -66,10 +66,10 @@ describe AnalyzersController do
     describe "with valid params" do
 
       before(:each) do
-        definitions = [
-          {key: "param1", type: "Integer"},
-          {key: "param2", type: "Float"}
-        ]
+        definitions = {
+          "0" => {key: "param1", type: "Integer"},
+          "1" => {key: "param2", type: "Float"}
+        }
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
@@ -127,11 +127,11 @@ describe AnalyzersController do
     describe "with no permitted params" do
 
       before(:each) do
-        definitions = [
-          {key: "param1", type: "Integer"},
-          {key: "param2", type: "Float", invalid: 1},
-          {invalid: 1}
-        ]
+        definitions = {
+          "0" => {key: "param1", type: "Integer"},
+          "1" => {key: "param2", type: "Float", invalid: 1},
+          invalid: 1
+        }
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
@@ -165,10 +165,10 @@ describe AnalyzersController do
     describe "with valid params" do
 
       before(:each) do
-        definitions = [
-          {key: "param1", type: "Integer"},
-          {key: "param2", type: "Float"}
-        ]
+        definitions = {
+          "0" => {key: "param1", type: "Integer"},
+          "1" => {key: "param2", type: "Float"}
+        }
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
@@ -212,11 +212,11 @@ describe AnalyzersController do
     describe "with no permitted params" do
 
       before(:each) do
-        definitions = [
-          {key: "param1", type: "Integer"},
-          {key: "param2", type: "Float", invalid: 1},
-          {invalid: 1}
-        ]
+        definitions = {
+          "0" => {key: "param1", type: "Integer"},
+          "1" => {key: "param2", type: "Float", invalid: 1},
+          invalid: 1
+        }
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,

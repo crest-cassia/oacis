@@ -86,10 +86,10 @@ class AnalyzersController < ApplicationController
                                                :auto_run,
                                                :print_version_command,
                                                :simulator,
-                                               parameter_definitions_attributes: [[:id, :key, :type, :dafault, :description]]
+                                               parameter_definitions_attributes: [[:id, :key, :type, :default, :description]]
                                               ) : {}
-    if analyzer_params.has_key?(:parameter_definitions_attributes)
-      analyzer_params[:parameter_definitions_attributes].select! {|pdef| pdef.has_key?(:key)} # remove empty hash
+    if analyzer_params.has_key?(:parameter_definitions_attributes) and analyzer_params[:parameter_definitions_attributes].is_a?(Hash)
+      analyzer_params[:parameter_definitions_attributes].select! {|pdef_id, pdef_val| pdef_val.has_key?(:key)} # remove empty hash
     end
     analyzer_params
   end
