@@ -21,12 +21,12 @@ describe "ParameterSetsListDatatable" do
 
         @context = ActionController::Base.new.view_context
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
-        @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"})
+        @context.stub(:params).and_return({id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" =>  {"column" => "4", "dir" => "asc"}}})
         @context.stub(:link_to).and_return("#{@simulator.to_param}")
         @context.stub(:distance_to_now_in_words).and_return("time")
         @context.stub(:progress_bar).and_return("<div></div>")
         @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
-        @context.stub(:shortened_id).and_return("xxxx..yy")
+        @context.stub(:shortened_id_monospaced).and_return("xxxx..yy")
         keys = @simulator.parameter_definitions.map {|x| x.key}
         @psld = ParameterSetsListDatatable.new(@simulator.parameter_sets, keys, @context)
         @psld_json = JSON.parse(@psld.to_json)
@@ -37,10 +37,10 @@ describe "ParameterSetsListDatatable" do
       end
 
       it "return json" do
-        @psld_json["iTotalRecords"].should == 30
-        @psld_json["iTotalDisplayRecords"].should == 30
-        @psld_json["aaData"].size.should == 25
-        @psld_json["aaData"].first[4].to_i.should == ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).min("v.L")
+        @psld_json["recordsTotal"].should == 30
+        @psld_json["recordsFiltered"].should == 30
+        @psld_json["data"].size.should == 25
+        @psld_json["data"].first[4].to_i.should == ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).min("v.L")
       end
     end
 
@@ -61,12 +61,12 @@ describe "ParameterSetsListDatatable" do
 
         @context = ActionController::Base.new.view_context
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
-        @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:5 , iSortCol_0: 4, sSortDir_0: "desc", query_id: @query.id})
+        @context.stub(:params).and_return({id: @simulator.to_param, draw: 1, start: 0, length:5 , "order" =>  {"0" => {"column" => "4", "dir" => "desc"}}, query_id: @query.id})
         @context.stub(:link_to).and_return("#{@simulator.to_param}")
         @context.stub(:distance_to_now_in_words).and_return("time")
         @context.stub(:progress_bar).and_return("<div></div>")
         @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
-        @context.stub(:shortened_id).and_return("xxxx..yy")
+        @context.stub(:shortened_id_monospaced).and_return("xxxx..yy")
         keys = @simulator.parameter_definitions.map {|x| x.key}
         @psld = ParameterSetsListDatatable.new(@query.parameter_sets, keys, @context)
         @psld_json = JSON.parse(@psld.to_json)
@@ -77,10 +77,10 @@ describe "ParameterSetsListDatatable" do
       end
 
       it "return json" do
-        @psld_json["iTotalRecords"].should == 25
-        @psld_json["iTotalDisplayRecords"].should == 25
-        @psld_json["aaData"].size.should == 5
-        @psld_json["aaData"].first[4].to_i.should == @query.parameter_sets.only("v.L").max("v.L")#["aaData"].first[4].to_i is qeual to v.L (["aaData"].first[id, updated_at, [keys]])
+        @psld_json["recordsTotal"].should == 25
+        @psld_json["recordsFiltered"].should == 25
+        @psld_json["data"].size.should == 5
+        @psld_json["data"].first[4].to_i.should == @query.parameter_sets.only("v.L").max("v.L")#["aaData"].first[4].to_i is qeual to v.L (["aaData"].first[id, updated_at, [keys]])
       end
     end
 
@@ -97,23 +97,23 @@ describe "ParameterSetsListDatatable" do
         end
         @context = ActionController::Base.new.view_context
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
-        @context.stub(:params).and_return({id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 4, iSortCol_1: 0, sSortDir_0: "desc", sSortDir_1: "asc"})
+        @context.stub(:params).and_return({id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => 4, "dir" => "desc"}, "1" => {"column" => 0, "dir" => "asc"}}})
         @context.stub(:link_to).and_return("#{@simulator.to_param}")
         @context.stub(:distance_to_now_in_words).and_return("time")
         @context.stub(:progress_bar).and_return("<div></div>")
         @context.stub(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
-        @context.stub(:shortened_id).and_return("xxxx..yy")
+        @context.stub(:shortened_id_monospaced).and_return("xxxx..yy")
         keys = @simulator.parameter_definitions.map {|x| x.key}
         @psld = ParameterSetsListDatatable.new(@simulator.parameter_sets, keys, @context)
         @psld_json = JSON.parse(@psld.to_json)
       end
 
       it "return json" do
-        @psld_json["iTotalRecords"].should == 30
-        @psld_json["iTotalDisplayRecords"].should == 30
-        @psld_json["aaData"].size.should == 25
-        @psld_json["aaData"].first[4].to_i.should == ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).max("v.L")
-        @psld_json["aaData"].first[5].to_i.should == ParameterSet.only("v.T").where(:simulator_id => @simulator.to_param).where({"v.L"=>14}).min("v.T")
+        @psld_json["recordsTotal"].should == 30
+        @psld_json["recordsFiltered"].should == 30
+        @psld_json["data"].size.should == 25
+        @psld_json["data"].first[4].to_i.should == ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).max("v.L")
+        @psld_json["data"].first[5].to_i.should == ParameterSet.only("v.T").where(:simulator_id => @simulator.to_param).where({"v.L"=>14}).min("v.T")
       end
     end
   end

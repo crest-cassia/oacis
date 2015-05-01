@@ -9,10 +9,10 @@ class ParameterSetsListDatatable
 
   def as_json(options = {})
     {
-      sEcho: @view.params[:sEcho].to_i,
-      iTotalRecords: @param_sets.count,
-      iTotalDisplayRecords: parameter_sets_lists.count,
-      aaData: data
+      draw: @view.params[:draw].to_i,
+      recordsTotal: @param_sets.count,
+      recordsFiltered: parameter_sets_lists.count,
+      data: data
     }
   end
 
@@ -96,11 +96,11 @@ private
   end
 
   def page
-    @view.params[:iDisplayStart].to_i
+    @view.params[:start].to_i
   end
 
   def per_page
-    @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
+    @view.params[:length].to_i > 0 ? @view.params[:length].to_i : 10
   end
 
   def sort_column_direction
@@ -109,27 +109,17 @@ private
   end
 
   def sort_columns
-    idxs = []
-    i=0
-    while true
-      idx=@view.params[("iSortCol_" + i.to_s).to_sym]
-      break unless idx
-      idxs << idx.to_i
-      i+=1
+    return ["updated_at"] if @view.params["order"].nil?
+    @view.params["order"].keys.map do |key|
+      sort_by[@view.params["order"][key]["column"].to_i]
     end
-    idxs.map {|idx| sort_by[idx] }
   end
 
   def sort_directions
-    dirs = []
-    i=0
-    while true
-      dir=@view.params[("sSortDir_" + i.to_s).to_sym]
-      break unless dir
-      dirs << dir == "desc" ? "desc" : "asc"
-      i+=1
+    return ["desc"] if @view.params["order"].nil?
+    @view.params["order"].keys.map do |key|
+      @view.params["order"][key]["dir"] == "desc" ? "desc" : "asc"
     end
-    dirs
   end
 end
 
