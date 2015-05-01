@@ -9,13 +9,13 @@
     %pre ./bin/oacis_cli destroy_runs -s #{sim.id} -q simulator_version:#{version}
   %li
     simulator_version:#{version}, status:
-    %span.label.label-success
+    %span.label.label-success.status-label
       finished
     %br
     %pre ./bin/oacis_cli destroy_runs -s #{sim.id} -q simulator_version:#{version} status:finished
   %li
     simulator_version:#{version}, status:
-    %span.label.label-important
+    %span.label.label-danger.status-label
       failed
     %br
     %pre ./bin/oacis_cli destroy_runs -s #{sim.id} -q simulator_version:#{version} status:failed
@@ -29,13 +29,13 @@
     %pre ./bin/oacis_cli replace_runs -s #{sim.id} -q simulator_version:#{version}
   %li
     simulator_version:#{version}, status:
-    %span.label.label-success
+    %span.label.label-success.status-label
       finished
     %br
     %pre ./bin/oacis_cli replace_runs -s #{sim.id} -q simulator_version:#{version} status:finished
   %li
     simulator_version:#{version}, status:
-    %span.label.label-important
+    %span.label.label-danger.status-label
       failed
     %br
     %pre ./bin/oacis_cli replace_runs -s #{sim.id} -q simulator_version:#{version} status:failed

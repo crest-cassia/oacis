@@ -60,27 +60,34 @@
           %i.fa.fa-cog.clickable#show_cli{data: raw(render partial: "version_dialog", locals: {azr: analyzer, version: anl_version['version']})}
 
 :css
-  .modal.large {
-    width: 1000px;
-    height: 800px;
-    margin-left: -500px;
-  }
-  .modal-body.large {
-    overflow-y: auto;
-    max-height: 800px;
+  .modal-vertical-centered {
+    transform: translate(0, 50%) !important;
+    -ms-transform: translate(0, 50%) !important; /* IE 9 */
+    -webkit-transform: translate(0, 50%) !important; /* Safari and Chrome */
   }
 
-#version_dialog_modal.modal.large.hide.fade
-  .modal-header
-    %a.close{:'data-dismiss' => "modal"}x</a>
-  .modal-body.large
-    #version_dialog
+#version_dialog_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.modal-title
+          CLI
+      .modal-body.large#version_dialog
+      .modal-footer
+        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+          Close
 
 :javascript
   $("#analyzer_version_table #show_cli").on("click", function(){
+    $('#version_dialog_modal').modal("show");
+  });
+  $("#version_dialog_modal").on('show.bs.modal', function (event) {
+    $('#version_dialog').append($("#analyzer_version_table #show_cli").attr("data"));
+  });
+  $("#version_dialog_modal").on('hidden.bs.modal', function (event) {
     $('#version_dialog').empty();
-    $('#version_dialog').append($(this).attr("data"));
-    $('#version_dialog_modal').modal('show');
   });
 
 - unless OACIS_READ_ONLY
