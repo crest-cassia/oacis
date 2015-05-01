@@ -436,18 +436,18 @@ describe SimulatorsController do
                                       analyzers_count: 3, run_analysis: false,
                                       parameter_set_queries_count: 5
                                       )
-      get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      get :_parameters_list, {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
 
     it "return json format" do
       response.header['Content-Type'].should include 'application/json'
-      @parsed_body["iTotalRecords"].should == 30
-      @parsed_body["iTotalDisplayRecords"].should == 30
+      expect(@parsed_body["recordsTotal"]).to eq 30
+      expect(@parsed_body["recordsFiltered"]).to eq 30
     end
 
     it "paginates the list of parameters" do
-      @parsed_body["aaData"].size.should == 25
+      expect(@parsed_body["data"].size).to eq 25
     end
 
     context "when 'query_id' parameter is given" do
@@ -466,16 +466,16 @@ describe SimulatorsController do
                                     query: {"L" => {"gte" => 5}})
 
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
-        get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 4, sSortDir_0: "desc", query_id: @query.id.to_s}, :format => :json
+        get :_parameters_list, {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "4", "dir" => "desc"}}, query_id: @query.id.to_s}, :format => :json
         @parsed_body = JSON.parse(response.body)
       end
 
       it "show the list of filtered ParameterSets" do
-        @parsed_body["aaData"].size.should == 5
-        @parsed_body["aaData"].each do |ps|
-          ps[4].to_i.should >= 5 #ps[3].to_i is qeual to v.L(ps[img, id, id, updated_at, [keys]])
+        expect(@parsed_body["data"].size).to eq 5
+        @parsed_body["data"].each do |ps|
+          expect(ps[4].to_i).to be >= 5 #ps[3].to_i is qeual to v.L(ps[img, id, id, updated_at, [keys]])
         end
-        @parsed_body["aaData"].first[4].to_i.should == @query.parameter_sets.max("v.L")
+        expect(@parsed_body["data"].first[4].to_i).to eq @query.parameter_sets.max("v.L")
       end
     end
   end

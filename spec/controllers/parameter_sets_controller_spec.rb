@@ -358,18 +358,18 @@ describe ParameterSetsController do
                                       parameter_set_queries_count: 0
                                       )
       @param_set = @simulator.parameter_sets.first
-      get :_runs_list, {id: @param_set.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      get :_runs_list, {id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
 
     it "return json format" do
       response.header['Content-Type'].should include 'application/json'
-      @parsed_body["iTotalRecords"].should == 30
-      @parsed_body["iTotalDisplayRecords"].should == 30
+      expect(@parsed_body["recordsTotal"]).to eq 30
+      expect(@parsed_body["recordsFiltered"]).to eq 30
     end
 
     it "paginates the list of parameters" do
-      @parsed_body["aaData"].size.should == 25
+      expect(@parsed_body["data"].size).to eq 25
     end
   end
 
@@ -397,7 +397,7 @@ describe ParameterSetsController do
         end
       end
       @param_set = @simulator.parameter_sets.where('v.I'=>1,'v.F'=>1.0,'v.S'=>'b','v.B'=>true).first
-      get :_similar_parameter_sets_list, {id: @param_set.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      get :_similar_parameter_sets_list, {id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
 
@@ -408,7 +408,7 @@ describe ParameterSetsController do
 
     it "returns correct number of parameter sets" do
       parsed_body = JSON.parse(response.body)
-      parsed_body['iTotalRecords'].should eq 8
+      expect(parsed_body['recordsTotal']).to eq 8
     end
   end
 
