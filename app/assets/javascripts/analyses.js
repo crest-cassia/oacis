@@ -33,22 +33,22 @@ $(function() {
   var oAnalysesTableToReload = null;
   setInterval( function() {
     var num_open = $('#analyses_list img.treebtn[state="open"]').length;
-    if( bReloadAnalysesTable && num_open == 0 && oAnalysesTableToReload ) { oAnalysesTableToReload.fnReloadAjax(); }
+    if( bReloadAnalysesTable && num_open == 0 && oAnalysesTableToReload ) { oAnalysesTableToReload.ajax.reload(null, false); }
   }, 5000);
 
   var datatables_for_analyses_table = function() {
-    var oTable = $('#analyses_list').dataTable({
-      bProcessing: true,
-      bServerSide: true,
+    var oTable = $('#analyses_list').DataTable({
+      processing: true,
+      serverSide: true,
       bFilter: false,
-      bDestroy: true,
-      sAjaxSource: $('#analyses_list').data('source')
+      destroy: true,
+      ajax: $('#analyses_list').data('source')
     });
     $('#analyses_list_length').append(
-      '<i class="fa fa-refresh clickable padding-8" id="params_list_refresh"></i>'
+      '<i class="fa fa-refresh clickable padding-8" id="analyses_list_refresh"></i>'
     );
     var refresh_icon = $('#analyses_list_length').children('#analyses_list_refresh');
-    refresh_icon.on('click', function() { oTable.fnReloadAjax(); });
+    refresh_icon.on('click', function() { oTable.ajax.reload(null, false); });
     oAnalysesTableToReload = oTable;
     return oTable;
   };

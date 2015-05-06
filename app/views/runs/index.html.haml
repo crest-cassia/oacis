@@ -32,24 +32,24 @@
     var aoRunsTables = []
     $('.jobs_datatable').each( function() {
       var source = $(this).attr("data-source");
-      var oTable = $(this).dataTable({
-        bProcessing: true,
-        bServerSide: true,
-        bFilter: false,
-        sAjaxSource: source
+      var oTable = $(this).DataTable({
+        processing: true,
+        serverSide: true,
+        searching: false,
+        ajax: source
       });
       aoRunsTables.push(oTable);
     });
     function reload_runs_table() {
       aoRunsTables.forEach( function(oTable) {
-        oTable.fnReloadAjax();
+        oTable.ajax.reload(null, false);
       });
     }
     setInterval( reload_runs_table , 5000 );
     $('.dataTables_length').each( function() {
       $(this).append(
-        '<i class="fa fa-refresh padding-8 clickable" id="params_list_refresh"></i>'
+        '<i class="fa fa-refresh padding-8 clickable" id="runs_list_refresh"></i>'
       );
-      $(this).children('#dataTables_refresh').on('click', reload_runs_table);
+      $(this).children('#runs_list_refresh').on('click', reload_runs_table);
     });
   });

@@ -23,24 +23,24 @@
     var aoAnalysesTables = []
     $('.analyses_datatable').each( function() {
       var source = $(this).attr("data-source");
-      var oTable = $(this).dataTable({
-        bProcessing: true,
-        bServerSide: true,
-        bFilter: false,
-        sAjaxSource: source
+      var oTable = $(this).DataTable({
+        processing: true,
+        serverSide: true,
+        searching: false,
+        ajax: source
       });
       aoAnalysesTables.push(oTable);
     });
     aoAnalysesTables.forEach( function(oTable) {
       setInterval( function() {
         var num_open = $('img.treebtn[state="open"]', $(oTable)).length;
-        if( num_open == 0 ) { oTable.fnReloadAjax(); }
+        if( num_open == 0 ) { oTable.ajax.reload(null, false); }
       }, 5000);
       $('.dataTables_length', $(oTable).parent()).append(
-        '<i class="fa fa-refresh padding-8 clickable" id="params_list_refresh"></i>'
+        '<i class="fa fa-refresh padding-8 clickable" id="analyses_list_refresh"></i>'
       );
-      $('#dataTables_refresh', $(oTable).parent()).on('click', function() {
-        oTable.fnReloadAjax();
+      $('#analyses_list_refresh', $(oTable).parent()).on('click', function() {
+        oTable.ajax.reload(null, false);
       });
     });
   });
