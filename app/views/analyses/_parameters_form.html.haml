@@ -1,0 +1,8 @@
+- param_def.each do |definition|
+  .form-group
+    = label 'parameters', definition.key, class: 'col-md-2 control-label'
+    .col-md-3
+      = text_field_tag "parameters[#{definition.key}]", definition.default, class: 'form-control'
+    .col-md-6
+      = definition.description
+      = definition.type

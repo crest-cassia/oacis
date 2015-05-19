@@ -6,24 +6,27 @@
     - key = pd.key
     - property = :"v[#{key}]"
     - value = parameter_set.v[key]
-    .control-group
-      = label_tag(property, "#{key} (#{pd.type})", class: 'control-label')
-      .controls
+    .form-group
+      = label_tag(property, "#{key} (#{pd.type})", class: 'col-md-2 control-label')
+      .col-md-3
         - if pd.type == "Boolean"
-          = select_tag( property, options_for_select([[true,"true"],[false,"false"]], selected: value))
+          = select_tag( property, options_for_select([[true,"true"],[false,"false"]], selected: value), class: 'form-control', 'aria-describedby': "desc_#{key}")
         - else
-          = text_field_tag(property, value, class: 'text_field')
-        = pd.description
-  .control-group
-    = label_tag('num_runs', 'Target # of Runs', class: 'control-label')
-    .controls
-      = select_tag('num_runs', options_for_select([0,1,2,3,4,5,10,20], selected: @num_runs))
+          = text_field_tag(property, value, class: 'form-control', 'aria-describedby': "desc_#{key}")
+      .col-md-4
+        %span{id: "desc_#{key}", class: "help-block"}
+          = pd.description
+  .form-group
+    = label_tag('num_runs', 'Target # of Runs', class: 'col-md-2 control-label')
+    .col-md-3
+      = select_tag('num_runs', options_for_select([0,1,2,3,4,5,10,20], selected: @num_runs), class: 'form-control')
   #runs_fields
     = fields_for run do |builder|
       = render 'runs/fields', run: builder.object, f: builder
-  .form-actions
-    = submit_tag "Create", class: 'btn btn-primary'
-    = link_to "Cancel", simulator_path(simulator), class: 'btn'
+  .form-group
+    .col-md-2.col-md-offset-2
+      = submit_tag "Create", class: 'btn btn-primary'
+      = link_to "Cancel", simulator_path(simulator), class: 'btn btn-default'
   CLI command:
   %pre#cli-command
 

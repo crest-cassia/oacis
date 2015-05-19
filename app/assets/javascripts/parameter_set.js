@@ -1,26 +1,24 @@
 function create_parameter_sets_list(selector, default_length) {
-  var oPsTable = $(selector).dataTable({
-    bProcessing: true,
-    bServerSide: true,
-    bFilter: false,
-    aaSorting: [[ 3, "desc" ]],
-    bAutoWidth: false,
-    iDisplayLength: default_length,
-    sAjaxSource: $(selector).data('source'),
-    sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-    sPaginationType: "bootstrap"
+  var oPsTable = $(selector).DataTable({
+    processing: true,
+    serverSide: true,
+    searching: false,
+    order: [[ 3, "desc" ]],
+    autoWidth: false,
+    pageLength: default_length,
+    ajax: $(selector).data('source')
   });
   $(selector+'_length').append(
-    '<i class="icon-refresh" id="params_list_refresh"></i>'
+    '<i class="fa fa-refresh padding-8 clickable" id="params_list_refresh"></i>'
   );
   $('#params_list_length').children('#params_list_refresh').on('click', function() {
-    oPsTable.fnReloadAjax();
+    oPsTable.ajax.reload(null, false);
   });
 
   if( window.bEnableAutoReload ) {
     setInterval( function() {
       var num_open = $(selector + ' img.treebtn[state="open"]').length;
-      if( num_open == 0 ) { oPsTable.fnReloadAjax(); }
+      if( num_open == 0 ) { oPsTable.ajax.reload(null, false); }
     }, 5000);
   }
 

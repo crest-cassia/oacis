@@ -10,10 +10,10 @@ class AnalyzersListDatatable
 
   def as_json(options = {})
     {
-      sEcho: @view.params[:sEcho].to_i,
-      iTotalRecords: @analyzers.count,
-      iTotalDisplayRecords: @analyzers.count,
-      aaData: data
+      draw: @view.params[:draw].to_i,
+      recordsTotal: @analyzers.count,
+      recordsFiltered: @analyzers.count,
+      data: data
     }
   end
 
@@ -32,10 +32,10 @@ private
 
   def data
     a = analyzers_lists.map do |azr|
-      trash = OACIS_READ_ONLY ? @view.raw('<i class="icon-trash">') : @view.link_to(@view.raw('<i class="icon-trash">'), azr, remote: true, method: :delete, data: {confirm: 'Are you sure? Dependent analyses are also going to be destroyed.'})
+      trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">') : @view.link_to(@view.raw('<i class="fa fa-trash-o">'), azr, remote: true, method: :delete, data: {confirm: 'Are you sure? Dependent analyses are also going to be destroyed.'})
       [
-        @view.image_tag("/assets/expand.png", analyzer_id: azr.id.to_s, align: "center", state: "close", class: "treebtn"),
-        @view.link_to( @view.shortened_id(azr.id), @view.analyzer_path(azr) ),
+        @view.image_tag("/assets/expand.png", analyzer_id: azr.id.to_s, align: "center", state: "close", class: "treebtn clickable"),
+        @view.link_to( @view.shortened_id_monospaced(azr.id), @view.analyzer_path(azr) ),
         azr.name,
         azr.type,
         azr.description,
@@ -56,11 +56,11 @@ private
   end
 
   def page
-    @view.params[:iDisplayStart].to_i
+    @view.params[:start].to_i
   end
 
   def per_page
-    @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
+    @view.params[:length].to_i > 0 ? @view.params[:length].to_i : 10
   end
 
   def sort_column_direction
@@ -69,27 +69,17 @@ private
   end
 
   def sort_columns
-    idxs = []
-    i=0
-    while true
-      idx=@view.params[("iSortCol_" + i.to_s).to_sym]
-      break unless idx
-      idxs << idx.to_i
-      i+=1
+    return ["id"] if @view.params["order"].nil?
+    @view.params["order"].keys.map do |key|
+      SORT_BY[@view.params["order"][key]["column"].to_i]
     end
-    idxs.map {|idx| SORT_BY[idx] }
   end
 
   def sort_directions
-    dirs = []
-    i=0
-    while true
-      dir=@view.params[("sSortDir_" + i.to_s).to_sym]
-      break unless dir
-      dirs << dir == "desc" ? "desc" : "asc"
-      i+=1
+    return ["asc"] if @view.params["order"].nil?
+    @view.params["order"].keys.map do |key|
+      @view.params["order"][key]["dir"] == "desc" ? "desc" : "asc"
     end
-    dirs
   end
 end
 

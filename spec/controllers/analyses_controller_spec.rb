@@ -78,14 +78,14 @@ describe AnalysesController do
 
         it "creates a new Analysis" do
           expect {
-            post :create, @valid_param, valid_session
+            post :create, @valid_param.update(format: 'json'), valid_session
           }.to change{
             @run.reload.analyses.count
           }.by(1)
         end
 
         it "redirects to 'analysis' tab of Run#show page" do
-          post :create, @valid_param, valid_session
+          post :create, @valid_param.update(format: 'json'), valid_session
           response.should_not redirect_to( run_path(@run, anchor: '!tab-analyses') )
           response.should_not render_template 'create'
         end
@@ -94,11 +94,47 @@ describe AnalysesController do
       describe "with invalid params" do
 
         before(:each) do
-          @invalid_param = {}   #IMPLEMENT ME
+          @invalid_param = {}    #IMPLEMENT ME
         end
 
         it "re-renders Run#show template showing errors" do
           skip "not yet implemented"
+        end
+      end
+
+      describe "with no permitted params" do
+
+        before(:each) do
+          @valid_param = {
+            run_id: @run.to_param,
+            analysis: { analyzer: @azr.to_param },
+            parameters: {"param1" => 1, "param2" => 2.0 }
+          }
+        end
+
+        it "create new analysis but no permitted params are not saved" do
+          invalid_analysis_params = @valid_param[:analysis].update(parameters: {"param1"=>2, "param2"=>4.0, invalid: 1})
+                                                           .update(status: :finished)
+                                                           .update(hostname: "Foo")
+                                                           .update(cpu_time: -100.0)
+                                                           .update(real_time: -100.0)
+                                                           .update(result: {"r1"=>0})
+                                                           .update(analyzer_version: "v9999")
+                                                           .update(invalid: 1)
+          invalid_params = @valid_param.update(invalid: 1)
+          invalid_params[:parameters].update(invalid: 1)
+          invalid_params[:analysis] = invalid_analysis_params
+          expect {
+            post :create, invalid_params.update(format: 'json'), valid_session
+          }.to change{Analysis.count}.by(1)
+          anl = Analysis.last
+          expect(anl.parameters).not_to eq ({"param1"=>2, "param2"=>4.0})
+          expect(anl.status).not_to eq :finished
+          expect(anl.hostname).not_to eq "Foo"
+          expect(anl.cpu_time).not_to eq -100.0
+          expect(anl.real_time).not_to eq -100.0
+          expect(anl.result).not_to eq ({"r1"=>0})
+          expect(anl.analyzer_version).not_to eq "v9999"
         end
       end
     end
@@ -117,14 +153,14 @@ describe AnalysesController do
 
         it "creates a new Analysis" do
           expect {
-            post :create, @valid_param, valid_session
+            post :create, @valid_param.update(format: 'json'), valid_session
           }.to change {
             @par.reload.analyses.count
           }.by(1)
         end
 
         it "redirects to 'analysis' tab of ParameterSet#show page" do
-          post :create, @valid_param, valid_session
+          post :create, @valid_param.update(format: 'json'), valid_session
           response.should_not redirect_to( parameter_set_path(@par, anchor: '!tab-analyses') )
           response.should_not render_template 'create'
         end
@@ -136,6 +172,42 @@ describe AnalysesController do
           skip "not yet implemented"
         end
       end
+
+      describe "with no permitted params" do
+
+        before(:each) do
+          @valid_param = {
+            parameter_set_id: @par.to_param,
+            analysis: { analyzer: @azr2.to_param},
+            parameters: {}
+          }
+        end
+
+        it "create new analysis but no permitted params are not saved" do
+          invalid_analysis_params = @valid_param[:analysis].update(parameters: {"param1"=>2, "param2"=>4.0})
+                                                           .update(status: :finished)
+                                                           .update(hostname: "Foo")
+                                                           .update(cpu_time: -100.0)
+                                                           .update(real_time: -100.0)
+                                                           .update(result: {"r1"=>0})
+                                                           .update(analyzer_version: "v9999")
+                                                           .update(invalid: 1)
+          invalid_params = @valid_param.update(invalid: 1)
+          invalid_params[:parameters].update(invalid: 1)
+          invalid_params[:analysis] = invalid_analysis_params
+          expect {
+            post :create, invalid_params.update(format: 'json'), valid_session
+          }.to change{Analysis.count}.by(1)
+          anl = Analysis.last
+          expect(anl.parameters).not_to eq ({"param1"=>2, "param2"=>4.0})
+          expect(anl.status).not_to eq :finished
+          expect(anl.hostname).not_to eq "Foo"
+          expect(anl.cpu_time).not_to eq -100.0
+          expect(anl.real_time).not_to eq -100.0
+          expect(anl.result).not_to eq ({"r1"=>0})
+          expect(anl.analyzer_version).not_to eq "v9999"
+        end
+      end
     end
   end
 
@@ -143,7 +215,7 @@ describe AnalysesController do
 
     it "destroys the analysis when status is neither :failed nor :finished" do
       expect {
-        delete :destroy, {id: @arn.to_param}, valid_session
+        delete :destroy, {id: @arn.to_param, format: 'json'}, valid_session
       }.to change(Analysis, :count).by(-1)
     end
 
@@ -151,7 +223,7 @@ describe AnalysesController do
       @arn.status = :running
       @arn.save!
       expect {
-        delete :destroy, {id: @arn.to_param}, valid_session
+        delete :destroy, {id: @arn.to_param, format: 'json'}, valid_session
       }.to change { Analysis.where(status: :cancelled).count }.by(1)
     end
   end

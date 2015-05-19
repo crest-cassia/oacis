@@ -289,6 +289,7 @@ LinePlot.prototype.AddDescription = function() {
     }
     dl.append("dt").text("URL");
     dl.append("input")
+      .attr('class', 'form-control input-sm')
       .attr({"type": "text", "readonly": "readonly", "onClick": "this.select(); "})
       .attr('value', plot.data.plot_url );
   }
@@ -297,7 +298,7 @@ LinePlot.prototype.AddDescription = function() {
   function add_tools() {
     var actions = plot.description.append("div").attr('class', 'btn-group');
     actions.append("a")
-      .attr({"class": "btn btn-primary btn-small dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
+      .attr({"class": "btn btn-primary btn-sm dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
       .text("Action")
       .append("span").attr("class", "caret");
     var list = actions.append("ul").attr('class', 'dropdown-menu');

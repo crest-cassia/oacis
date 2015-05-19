@@ -46,6 +46,8 @@ AcmProto::Application.configure do
   # Expands the lines which load the assets
   config.assets.debug = true
 
+  config.eager_load = false
+
   config.log_level = :error
   FileUtils.mkdir_p( Rails.root.join("log") )
   config.logger = Logger.new(Rails.root.join("log/development.log"), 5, 1.megabytes)

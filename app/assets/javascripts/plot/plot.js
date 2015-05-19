@@ -1,7 +1,7 @@
 function Plot() {
   this.row = d3.select("#plot").insert("div","div").attr("class", "row");
-  this.plot_region = this.row.append("div").attr("class", "span8");
-  this.description = this.row.append("div").attr("class", "span4");
+  this.plot_region = this.row.append("div").attr("class", "col-md-8");
+  this.description = this.row.append("div").attr("class", "col-md-4");
   this.svg = this.plot_region.insert("svg")
     .attr({
       "width": this.width + this.margin.left + this.margin.right,

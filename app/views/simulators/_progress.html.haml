@@ -29,31 +29,35 @@
 
 %div
   .row
-    .span8#progress-overview
+    .col-md-8#progress-overview
       %svg
       #progress-tooltip.progress-tooltip{style: "opacity: 0;"}
-    .span4
+    .col-md-4
       %aside
         %p
-          Progress each parameter set:
-          %br
-          0%-------------100%
-          %br
-          %svg#colormap-svg
+          %label{class: 'control-label'} Progress of each parameter set:
+          .row.no-gutter
+            .col-md-2
+            .col-md-2.add-margin-top{align: 'right'} 0%
+            .col-md-6{align: 'center'}
+              %svg#colormap-svg
+            .col-md-2.add-margin-top{align: 'left'} 100%
         #color-map
         :javascript
           draw_color_map();
         %form.form-horizontal
-        - parameter_keys = @simulator.parameter_definitions.map(&:key)
-        .control-group
-          %label Column Parameter:
-          .controls
-            = select_tag 'column_parameter', options_for_select(parameter_keys, selected: parameter_keys[0]), id: 'column_parameter';
-        .control-group
-          %label Row Parameter:
-          .controls
-            = select_tag 'row_parameter', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'row_parameter'
-        = submit_tag 'Show', name: 'show_progress_button', class: 'btn btn-primary', id: 'show_progress_button'
+          - parameter_keys = @simulator.parameter_definitions.map(&:key)
+          .form-group
+            %label{class: 'col-md-3 control-label'} Column:
+            .col-md-9
+              = select_tag 'column_parameter', options_for_select(parameter_keys, selected: parameter_keys[0]), id: 'column_parameter', class: 'form-control'
+          .form-group
+            %label{class: 'col-md-3 control-label'} Row:
+            .col-md-9
+              = select_tag 'row_parameter', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'row_parameter', class: 'form-control'
+          .form-group
+            .col-md-9.col-md-offset-3
+              = submit_tag 'Show', name: 'show_progress_button', class: 'btn btn-primary', id: 'show_progress_button'
 :javascript
   var url = "#{_progress_simulator_path}" + ".json";
   $('#show_progress_button').on('click', function () {

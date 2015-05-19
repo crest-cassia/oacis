@@ -1,6 +1,9 @@
-%fieldset.controls-row
-  = f.text_field :key, placeholder: "Name"
-  = f.text_field :default, placeholder: "Default value"
-  = f.text_field :format, placeholder: "Format"
+.form-group.row.no-margin.no-gutter.small-margin-bottom
+  .col-md-3
+    = f.text_field :key, placeholder: "Name", class: 'form-control'
+  .col-md-3
+    = f.text_field :default, placeholder: "Default value", class: 'form-control'
+  .col-md-3
+    = f.text_field :format, placeholder: "Format", class: 'form-control'
   = f.hidden_field :_destroy
   = link_to "remove", '#', class: "remove_fields"

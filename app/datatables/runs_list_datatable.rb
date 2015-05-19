@@ -16,10 +16,10 @@ class RunsListDatatable
 
   def as_json(options = {})
     {
-      sEcho: @view.params[:sEcho].to_i,
-      iTotalRecords: @runs.count,
-      iTotalDisplayRecords: runs_lists.count,
-      aaData: data
+      draw: @view.params[:draw].to_i,
+      recordsTotal: @runs.count,
+      recordsFiltered: runs_lists.count,
+      data: data
     }
   end
 
@@ -29,7 +29,7 @@ private
     a = []
     runs_lists.each do |run|
       tmp = []
-      tmp << @view.link_to( @view.shortened_id(run.id), @view.run_path(run) )
+      tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )
       tmp << Run::PRIORITY_ORDER[run.priority]
       tmp << @view.formatted_elapsed_time(run.real_time)
@@ -41,8 +41,8 @@ private
       host = run.submitted_to
       tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "---")
       tmp << @view.shortened_job_id(run.job_id)
-      trash = OACIS_READ_ONLY ? @view.raw('<i class="icon-trash">')
-        : @view.link_to( @view.raw('<i class="icon-trash">'), run, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+      trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">')
+        : @view.link_to( @view.raw('<i class="fa fa-trash-o">'), run, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
       tmp << trash
       a << tmp
     end
@@ -60,11 +60,11 @@ private
   end
 
   def page
-    @view.params[:iDisplayStart].to_i
+    @view.params[:start].to_i
   end
 
   def per_page
-    @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
+    @view.params[:length].to_i > 0 ? @view.params[:length].to_i : 10
   end
 
   def sort_column_direction
@@ -73,27 +73,17 @@ private
   end
 
   def sort_columns
-    idxs = []
-    i=0
-    while true
-      idx=@view.params[("iSortCol_" + i.to_s).to_sym]
-      break unless idx
-      idxs << idx.to_i
-      i+=1
+    return ["finished_at"] if @view.params["order"].nil?
+    @view.params["order"].keys.map do |key|
+      SORT_BY[@view.params["order"][key]["column"].to_i]
     end
-    idxs.map {|idx| SORT_BY[idx] }
   end
 
   def sort_directions
-    dirs = []
-    i=0
-    while true
-      dir=@view.params[("sSortDir_" + i.to_s).to_sym]
-      break unless dir
-      dirs << dir == "desc" ? "desc" : "asc"
-      i+=1
+    return ["desc"] if @view.params["order"].nil?
+    @view.params["order"].keys.map do |key|
+      @view.params["order"][key]["dir"] == "desc" ? "desc" : "asc"
     end
-    dirs
   end
 end
 

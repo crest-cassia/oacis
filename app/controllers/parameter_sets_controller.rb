@@ -31,10 +31,12 @@ class ParameterSetsController < ApplicationController
     previous_num_ps = simulator.parameter_sets.count
     previous_num_runs = simulator.runs.count
 
-    @param_set = simulator.parameter_sets.build(params)
+    permitted_params = params.permit(v: params[:v].keys)
+    @param_set = simulator.parameter_sets.build(permitted_params)
     # this run is not saved, but used when rendering new
     if @num_runs > 0
-      @run = @param_set.runs.build(params[:run])
+      permitted_params = params[:run].present? ? params.require(:run).permit(:mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to, :seed) : {}
+      @run = @param_set.runs.build(permitted_params)
       unless @run.valid?
         render action: "new"
         return
@@ -52,7 +54,8 @@ class ParameterSetsController < ApplicationController
     @num_runs.times do |i|
       created.each do |ps|
         next if ps.runs.count > i
-        ps.runs.create(params[:run])
+        permitted_params = params[:run].present? ? params.require(:run).permit(:mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to, :seed) : {}
+        ps.runs.create(permitted_params)
       end
     end
 
@@ -216,7 +219,7 @@ class ParameterSetsController < ApplicationController
 
     plot_data = collect_result_values(ps_ids, analyzer, result_keys).map do |h|
       ps_id = h["_id"]
-      [ ps_id_to_x[ps_id.to_s], h["average"], h["error"], ps_id ]
+      [ ps_id_to_x[ps_id.to_s], h["average"], h["error"], ps_id.to_s ]
     end
     plot_data.sort_by {|d| d[0]}
   end
@@ -233,7 +236,7 @@ class ParameterSetsController < ApplicationController
 
     plot_data = collect_latest_elapsed_times(ps_ids).map do |h|
       ps_id = h["_id"]
-      [ ps_id_to_x[ps_id.to_s], h[y_axis_key], nil, ps_id ]
+      [ ps_id_to_x[ps_id.to_s], h[y_axis_key], nil, ps_id.to_s ]
     end
     plot_data.sort_by {|d| d[0]}
   end
@@ -356,7 +359,7 @@ class ParameterSetsController < ApplicationController
 
       data = result_values.map do |h|
         found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
-        [found["v"], h["average"], h["error"], h["_id"]]
+        [found["v"], h["average"], h["error"], h["_id"].to_s]
       end
       result = result_keys.last
     elsif ["cpu_time", "real_time"].include?(params[:result])
@@ -368,12 +371,12 @@ class ParameterSetsController < ApplicationController
       #  {...}, {...}, ... ]
       data = elapsed_times.map do |h|
         found = parameter_values.find {|pv| pv["_id"] == h["_id"] }
-        [found["v"], h[result], nil, h["_id"]]
+        [found["v"], h[result], nil, h["_id"].to_s]
       end
     else
       result = nil
       data = parameter_values.map do |pv|
-        [pv["v"], nil, nil, pv["_id"]]
+        [pv["v"], nil, nil, pv["_id"].to_s]
       end
     end
 

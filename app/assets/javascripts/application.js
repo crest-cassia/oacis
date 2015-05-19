@@ -22,9 +22,8 @@
 //= require simulator.js
 //= require sortable.js
 //= require dataTables/jquery.dataTables
-//= require dataTables/jquery.dataTables.bootstrap
+//= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
 //= require dataTables/jquery.dataTables.api.fnReloadAjax
-//= require datatables_extends
 //= require dynatree/jquery.dynatree
 
 // Handle back button issues with Twitter Bootstrap's tab component.
@@ -35,14 +34,12 @@
 // - Browser scroll position was lost due to fragment navigation
 //   (Worked around this by converting #id values to #!id values before navigating.)
 $(document).ready(function () {
-    if (location.hash.substr(0,2) == "#!") {
-        $("a[href='#" + location.hash.substr(2) + "']").tab("show");
+    if (document.location.hash.substr(0,2) == "#!") {
+      $('.nav-tabs a[href=' + document.location.hash.replace('!', '') + ']').tab('show');
     }
-    $("a[data-toggle='tab']").on("shown", function (e) {
-        var hash = $(e.target).attr("href");
-        if (hash.substr(0,1) == "#") {
-            location.replace("#!" + hash.substr(1));
-        }
+
+    $('.nav-tabs a').on('shown.bs.tab', function(e) {
+      window.location.hash = e.target.hash.replace('#', '#' + '!');
     });
 });
 
@@ -50,7 +47,7 @@ $(document).ready(function () {
 $(document).ready( function() {
   $('form').on('click', '.remove_fields', function() {
     $(this).prev('input[type=hidden]').val('1');
-    $(this).closest('fieldset').hide();
+    $(this).closest('.parameter-definition-field').remove();
     event.preventDefault();
   });
   $('form').on('click', '.add_fields', function() {

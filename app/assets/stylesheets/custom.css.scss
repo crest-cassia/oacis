@@ -13,6 +13,59 @@
   }
 }
 .field_with_errors {
-  @extend .control-group;
-  @extend .error;
- }
+  @extend .control-group !optional;
+  @extend .error !optional;
+}
+.row.no-margin {
+  margin-right:0;
+  margin-left:0;
+}
+.form-group.small-margin-bottom {
+  margin-bottom:1px;
+}
+.no-gutter > [class*='col-'] {
+  padding-right:0;
+  padding-left:0;
+}
+.progress {
+  margin-bottom: 0;
+}
+i.padding-8 {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.add-margin-top {
+  margin-top: 8px;
+}
+table.dataTable th {
+  text-align: right;
+}
+table.dataTable td {
+  text-align: right;
+}
+.clickable {
+  cursor: pointer;
+}
+.status-label {
+  display: inline-block;
+  width: 70px;
+}
+tt.short-id {
+  font-family:Consolas,Monaco,Lucida Console,monospace;
+  font-size:15px;
+}
+.help-block {
+  margin-top:11px;
+}
+.range-tilde {
+  padding-top:10px;
+  font-size:18px;
+}
+#plot dd {
+  margin-bottom: 8px;
+}
+pre {
+  min-height: 28px;
+}

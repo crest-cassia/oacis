@@ -60,7 +60,9 @@ describe HostsController do
   end
 
   describe "POST create" do
+
     describe "with valid params" do
+
       it "creates a new Host" do
         expect {
           post :create, {host: valid_attributes}, valid_session
@@ -77,6 +79,20 @@ describe HostsController do
         post :create, {host: valid_attributes}, valid_session
         response.should redirect_to(Host.last)
       end
+
+      context "with executable_simulators" do
+
+        before(:each) do
+          @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, runs_count: 0)
+          @valid_attributes_with_sim = valid_attributes.update(executable_simulator_ids: [@sim.id.to_s])
+        end
+
+        it "create a new Host" do
+          post :create, {host: @valid_attributes_with_sim}, valid_session
+          host = assigns(:host)
+          expect(host.executable_simulator_ids).to include(@sim.id)
+        end
+      end
     end
 
     describe "with invalid params" do
@@ -88,6 +104,18 @@ describe HostsController do
       it "re-renders the 'new' template" do
         post :create, {host: {}}, valid_session
         response.should render_template("new")
+      end
+    end
+
+    describe "with no permitted params" do
+
+      it "creates a new Host but no permitted params are not saved" do
+        invalid_host_params = valid_attributes.update(invalid: 1)
+        expect {
+          post :create, {host: invalid_host_params, invalid: 1}, valid_session
+        }.to change(Host, :count).by(1)
+        host = assigns(:host)
+        expect(host.try(:invalid)).not_to eq 1
       end
     end
   end
@@ -124,6 +152,17 @@ describe HostsController do
         host = Host.create! valid_attributes
         put :update, {id: host.to_param, host: {name: ''}}, valid_session
         response.should render_template("edit")
+      end
+    end
+
+    describe "with no permitted params" do
+
+      it "update the Host but no permitted params are not saved" do
+        host = Host.create! valid_attributes
+        invalid_host_params = valid_attributes.update(invalid: 1)
+        post :update, {id: host.to_param, host: invalid_host_params, invalid: 1}, valid_session
+        h = assigns(:host)
+        expect(h.try(:invalid)).not_to eq 1
       end
     end
   end

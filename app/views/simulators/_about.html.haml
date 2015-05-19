@@ -1,10 +1,9 @@
 = render partial: "description", locals: {simulator: simulator}
 
 - unless OACIS_READ_ONLY
-  .form-actions
-    = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
-    = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
-    = link_to 'Destroy', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
+  = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
+  = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
+  = link_to 'Destroy', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
 
 
 %h3 About
@@ -29,10 +28,10 @@
 %table.table.table-striped
   %thead
     %tr
-      %th.span2
-      %th.span2 Type
-      %th.span2 Default
-      %th.span6 Description
+      %th.col-md-2
+      %th.col-md-2 Type
+      %th.col-md-2 Default
+      %th.col-md-6 Description
   %tbody
     - simulator.parameter_definitions.each do |pd|
       %tr
@@ -80,29 +79,36 @@
         %td= sim_version['count'][:finished].to_i
         %td= sim_version['count'][:failed].to_i
         %td
-          %i.icon.icon-list{data: raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['version']})}
+          %i.fa.fa-cog.clickable#show_cli{data: raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['version']})}
 
 :css
-  .modal.large {
-    width: 1000px;
-    height: 800px;
-    margin-left: -500px;
-  }
-  .modal-body.large {
-    overflow-y: auto;
-    max-height: 800px;
+  .modal-vertical-centered {
+    transform: translate(0, 50%) !important;
+    -ms-transform: translate(0, 50%) !important; /* IE 9 */
+    -webkit-transform: translate(0, 50%) !important; /* Safari and Chrome */
   }
 
-#version_dialog_modal.modal.large.hide.fade
-  .modal-header
-    %a.close{:'data-dismiss' => "modal"}x</a>
-  .modal-body.large
-    #version_dialog
+#version_dialog_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.modal-title
+          CLI
+      .modal-body.large#version_dialog
+      .modal-footer
+        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+          Close
 
 :javascript
-  $("#simulator_version_table i.icon.icon-list").on("click", function(){
+  $("#simulator_version_table #show_cli").on("click", function(){
+    $('#version_dialog_modal').modal("show");
+  });
+  $("#version_dialog_modal").on('show.bs.modal', function (event) {
+    $('#version_dialog').append($("#simulator_version_table #show_cli").attr("data"));
+  });
+  $("#version_dialog_modal").on('hidden.bs.modal', function (event) {
     $('#version_dialog').empty();
-    $('#version_dialog').append($(this).attr("data"));
-    $('#version_dialog_modal').modal('show');
   });
 
