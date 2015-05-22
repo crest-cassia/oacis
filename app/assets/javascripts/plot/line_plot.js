@@ -327,16 +327,19 @@ LinePlot.prototype.AddDescription = function() {
       });
     plot.description.append("div").style("padding-bottom", "50px");
 
-    plot.description.append("input").attr("type", "checkbox").on("change", function() {
+    var log_check_box = plot.description.append("div").attr("class", "checkbox");
+    var check_box_x_label = log_check_box.append("label").attr("id", "x_log_check");
+    check_box_x_label.html('<input type="checkbox"> log scale on x axis');
+    $("#x_log_check input").on("change", function() {
       reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
     });
-    plot.description.append("span").html("log scale on x axis");
-    plot.description.append("br");
+    log_check_box.append("br");
 
-    plot.description.append("input").attr("type", "checkbox").on("change", function() {
+    var check_box_y_label = log_check_box.append("label").attr("id", "y_log_check");
+    check_box_y_label.html('<input type="checkbox"> log scale on y axis');
+    $("#y_log_check input").on("change", function() {
       reset_brush(plot.IsLog[0] ? "log" : "linear", this.checked ? "log" : "linear");
     });
-    plot.description.append("span").html("log scale on y axis");
 
     plot.description.append("br");
     var control_plot = plot.description.append("div").style("margin-top", "10px");
