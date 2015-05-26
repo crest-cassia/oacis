@@ -330,14 +330,16 @@ LinePlot.prototype.AddDescription = function() {
     var log_check_box = plot.description.append("div").attr("class", "checkbox");
     var check_box_x_label = log_check_box.append("label").attr("id", "x_log_check");
     check_box_x_label.html('<input type="checkbox"> log scale on x axis');
-    $("#x_log_check input").on("change", function() {
+    //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
+    d3.select('label#x_log_check input').on("change", function() {
       reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
     });
     log_check_box.append("br");
 
     var check_box_y_label = log_check_box.append("label").attr("id", "y_log_check");
     check_box_y_label.html('<input type="checkbox"> log scale on y axis');
-    $("#y_log_check input").on("change", function() {
+    //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
+    d3.select('label#y_log_check input').on("change", function() {
       reset_brush(plot.IsLog[0] ? "log" : "linear", this.checked ? "log" : "linear");
     });
 
