@@ -91,7 +91,7 @@
   .form-group
     .col-md-4.col-md-offset-2
       = f.submit('Save', class: 'btn btn-primary')
-      = link_to('Cancel', (@host.persisted? ? @host : hosts_path), class: 'btn')
+      = link_to('Cancel', (@host.persisted? ? @host : hosts_path), class: 'btn btn-default')
       %a{class: 'btn btn-warning', id: 'load_default_template', data: JobScriptUtil::DEFAULT_TEMPLATE} Load default template
 
 :javascript

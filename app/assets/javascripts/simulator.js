@@ -201,7 +201,7 @@ function draw_progress_overview(url) {
         stroke: "black",
         "stroke-width": 1
       });
-    
+
     var rectRegion = inner_svg.append("g");
 
     var row = rectRegion.selectAll("g")
@@ -323,7 +323,10 @@ function draw_progress_overview(url) {
       })
       .text(function(d) { return d; });
   })
-  .on("error", function() { loading.remove(); })
+  .on("error", function(error) {
+    console.warn(error);
+    loading.remove();
+  })
   .get();
 
   loading.on("mousedown", function() {

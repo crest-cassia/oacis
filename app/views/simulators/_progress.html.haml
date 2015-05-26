@@ -57,7 +57,7 @@
               = select_tag 'row_parameter', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'row_parameter', class: 'form-control'
           .form-group
             .col-md-9.col-md-offset-3
-              = submit_tag 'Show', name: 'show_progress_button', class: 'btn btn-primary', id: 'show_progress_button'
+              %a.btn.btn-primary#show_progress_button Show
 :javascript
   var url = "#{_progress_simulator_path}" + ".json";
   $('#show_progress_button').on('click', function () {
