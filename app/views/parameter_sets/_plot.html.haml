@@ -54,21 +54,6 @@
 #plot
   #plot-tooltip.plot-tooltip
 
-:css
-  div.plot-tooltip {
-    opacity: 0;
-    position: absolute;
-    text-align: center;
-    padding: 2px;
-    font: 12px sans-serif;
-    background: black;
-    color: white;
-    border: 0px;
-    border-radius: 8px;
-    pointer-events: none;
-    z-index: 10;
-  }
-
 :javascript
   function show_form_for_plots() {
     if( $('#plot-type').val() == 'line' ) {
