@@ -30,6 +30,9 @@
 .progress {
   margin-bottom: 0;
 }
+.progress-tooltip {
+  z-index: 10;
+}
 i.padding-8 {
   padding-top: 8px;
   padding-bottom: 8px;

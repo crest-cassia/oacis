@@ -180,7 +180,14 @@
     add_figure_viewer(x, y, result, irrelevants);
   });
 
+  function add_tooltip() {
+    // in order to avoid 'position: relative' style of '.col-lg-12' tag, we put 'tooltip' before '.col-lg-12' tag
+    // See http://stackoverflow.com/questions/8828387
+    $('#plot-tooltip').insertBefore('.col-lg-12');
+  }
+
   $(function() {  // parse plot parameters from URL
+    add_tooltip();
     function get_query_param() {
       console.log('hoge');
       if( 1 < document.location.search.length ) {
