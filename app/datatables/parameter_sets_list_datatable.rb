@@ -37,7 +37,7 @@ private
   def data
     parameter_sets_lists.map do |param|
       tmp = []
-      tmp << @view.image_tag("/assets/expand.png", parameter_set_id: param.id.to_s, align: "center", state: "close", class: "treebtn clickable")
+      tmp << @view.content_tag(:i, '', parameter_set_id: param.id.to_s, state: "close", align: "center", class: "fa fa-plus-square-o clickable")
       counts = param.runs_status_count
       counts.delete(:cancelled)
       progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
