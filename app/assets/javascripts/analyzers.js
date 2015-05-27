@@ -1,24 +1,20 @@
 $(function () {
-  $('body').on("click", 'img[analyzer_id]', function() {
-    if( $(this).attr("state") === "close" ) {
-      var tr_element = $(this).closest("tr");
-      var analyzer_id = $(this).attr("analyzer_id");
-      var table_cols = tr_element.children("td").length
-      $(this).attr("state", "open").attr("src", "/assets/collapse.png")
-      $.get("/analyzers/" + analyzer_id +"/_inner_show", {}, function(data) {
-        tr_element.after(
-          $("<tr>").attr("id", "about_" + analyzer_id).html(
-            $("<td>").attr({colspan: table_cols}).html(
-              $("<div>").attr("class", "well").html(data)
-            )
-          )
-        );
-      });
-    }
-    else {  // state === "open"
-      $(this).attr("state", "close").attr("src", "/assets/expand.png")
-      var about_id = "about_" + $(this).attr("analyzer_id")
-      $(this).closest("tr").siblings("tr#" + about_id).remove()
-    }
+  $("#analyzers_list").on("click", "i.fa.fa-plus-square-o[analyzer_id]", function() {
+    var analyzer_id = $(this).attr("analyzer_id");
+    $('#analyzers_list_modal').modal("show", {
+      analyzer_id: analyzer_id
+    });
+  });
+  $("#analyzers_list_modal").on('show.bs.modal', function (event) {
+    var analyzer_id = event.relatedTarget.analyzer_id;
+    $.get("/analyzers/"+analyzer_id+"/_inner_show", function(data) {
+      $("i.fa.fa-plus-square-o[analyzer_id="+analyzer_id+"]").attr("state", "open");
+      $("#analyzers_list_modal_page").append(data);
+    });
+  });
+
+  $("#analyzers_list_modal").on('hidden.bs.modal', function (event) {
+    $('#analyzers_list_modal_page').empty();
+    $("i.fa.fa-plus-square-o[analyzer_id]").attr("state", "close");
   });
 });
