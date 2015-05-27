@@ -65,4 +65,9 @@
     var rp = $('#row_parameter option:selected').val();
     var url_with_param = url + "?row_parameter=" + rp + "&column_parameter=" + cp;
     draw_progress_overview(url_with_param);
-  })
+  });
+  $(function() {
+      // in order to avoid 'position: relative' style of '.col-lg-12' tag, we put 'tooltip' before '.col-lg-12' tag
+    // See http://stackoverflow.com/questions/8828387
+    $('#progress-tooltip').insertBefore('.col-lg-12');
+  });
