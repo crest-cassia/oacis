@@ -85,3 +85,15 @@ tt.short-id {
 pre {
   min-height: 28px;
 }
+/* adjust modal position */
+.modal-vertical-centered {
+  transform: translate(0, 300px) !important;
+  -ms-transform: translate(0, 300px) !important; /* IE 9 */
+  -webkit-transform: translate(0, 300px) !important; /* Safari and Chrome */
+}
+#runs_list_modal .modal-vertical-centered {
+  width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
+}
+#script_preview_modal .modal-vertical-centered {
+  width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
+}

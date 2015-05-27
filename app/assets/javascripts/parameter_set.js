@@ -18,7 +18,7 @@ function create_parameter_sets_list(selector, default_length) {
   if( window.bEnableAutoReload ) {
     setInterval( function() {
       var num_open = $(selector + ' img.treebtn[state="open"]').length;
-      if( num_open == 0 ) { oPsTable.ajax.reload(null, false); }
+      if( num_open === 0 ) { oPsTable.ajax.reload(null, false); }
     }, 5000);
   }
 
@@ -35,16 +35,15 @@ $(function() {
   $("#runs_list_modal").on('show.bs.modal', function (event) {
     var param_id = event.relatedTarget.parameter_set_id;
     $.get("/parameter_sets/"+param_id+"/_runs_and_analyses", function(data) {
-      toggle_auto_reload_runs_table(true);
-      toggle_auto_reload_analyses_table(true);
-      $("#runs_list_modal_page").html("");
+      toggle_auto_reload_runs_table(false);
+      toggle_auto_reload_analyses_table(false);
       $("#runs_list_modal_page").append(data);
     });
   });
 
   $("#runs_list_modal").on('hidden.bs.modal', function (event) {
     $('#runs_list_modal_page').empty();
-    toggle_auto_reload_runs_table(false);
-    toggle_auto_reload_analyses_table(false);
+    toggle_auto_reload_runs_table(true);
+    toggle_auto_reload_analyses_table(true);
   });
 });

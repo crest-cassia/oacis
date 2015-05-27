@@ -51,14 +51,6 @@
     = hidden_field_tag "query_id", @query_id
     = submit_tag "Delete this Filter", :class => 'btn btn-primary', :name => :delete_query, :confirm => 'Are you sure?'
 
-:css
-  .modal-vertical-centered {
-    transform: translate(0, 50%) !important;
-    -ms-transform: translate(0, 50%) !important; /* IE 9 */
-    -webkit-transform: translate(0, 50%) !important; /* Safari and Chrome */
-    width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
-  }
-
 #runs_list_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
     .modal-content

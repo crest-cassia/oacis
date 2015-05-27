@@ -20,14 +20,20 @@
     = render 'runs/fields', run: run, f: f
     .form-group
       .col-md-4.col-md-offset-2
-        = submit_tag 'Preview', name: 'preview_button', class: 'btn'
+        = submit_tag 'Preview', name: 'preview_button', class: 'btn', remote: true
         = f.submit(class: 'btn btn-primary')
-  #script_preview_modal.modal.hide.fade
-    .modal-header
-      %a.close{:'data-dismiss' => "modal"}x</a>
-    .modal-body
-      #script_preview
-
+  #script_preview_modal.modal.large.fade
+    .modal-dialog.modal-vertical-centered
+      .modal-content
+        .modal-header
+          %button.close{type: "button", "data-dismiss" => "modal"}
+            &times;
+          %h4.modal-title
+            Job Script Preview
+        .modal-body.large#script_preview
+        .modal-footer
+          %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+            Close
 
 :javascript
   $(function() {
