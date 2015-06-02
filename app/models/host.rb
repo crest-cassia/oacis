@@ -10,7 +10,7 @@ class Host
   field :user, type: String
   field :port, type: Integer, default: 22
   field :ssh_key, type: String, default: '~/.ssh/id_rsa'
-  field :scheduler_type, type: String, default: "none"
+  field :scheduler_type, type: String, default: "xsub"
   field :work_base_dir, type: String, default: '~'
   field :mounted_work_base_dir, type: String, default: ""
   field :max_num_jobs, type: Integer, default: 1
@@ -44,8 +44,6 @@ class Host
                      inclusion: {in: HOST_STATUS}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
-  validate :template_conform_to_host_parameter_definitions,
-           :if => lambda { scheduler_type != "xsub" and scheduler_type_changed? }
 
   before_validation :get_host_parameters_for_xsub,
                     :if => lambda { scheduler_type == "xsub" and scheduler_type_changed? }
@@ -146,32 +144,6 @@ class Host
     end
     if min_omp_threads > max_omp_threads
       errors.add(:max_omp_threads, "must be larger than min_omp_threads")
-    end
-  end
-
-  def template_conform_to_host_parameter_definitions
-    invalid = SafeTemplateEngine.invalid_parameters(template)
-    if invalid.any?
-      errors.add(:template, "invalid parameters #{invalid.inspect}")
-      return
-    end
-    vars = SafeTemplateEngine.extract_parameters(template)
-    vars -= JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
-    # check if definition is marked_for_destruction
-    # since nested_attributes are destructed after validation of host
-    host_params = host_parameter_definitions.reject{ |hpdef| hpdef.marked_for_destruction? }
-    keys = host_params.map {|hpdef| hpdef.key }
-    diff = vars.sort - keys.sort
-    if diff.any?
-      diff.each do |var|
-        errors[:base] << "'#{var}' appears in template, but not defined as a host parameter"
-      end
-    end
-    diff2 = keys.sort - vars.sort
-    if diff2.any?
-      diff2.each do |var|
-        errors[:base] << "'#{var}' is defined as a host parameter, but does not appear in template"
-      end
     end
   end
 
