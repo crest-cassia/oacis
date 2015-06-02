@@ -34,7 +34,7 @@ private
     a = analyzers_lists.map do |azr|
       trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">') : @view.link_to(@view.raw('<i class="fa fa-trash-o">'), azr, remote: true, method: :delete, data: {confirm: 'Are you sure? Dependent analyses are also going to be destroyed.'})
       [
-        @view.content_tag(:i, '', analyzer_id: azr.id.to_s, state: "close", align: "center", class: "fa fa-plus-square-o clickable"),
+        @view.content_tag(:i, '', analyzer_id: azr.id.to_s, align: "center", class: "fa fa-search clickable"),
         @view.link_to( @view.shortened_id_monospaced(azr.id), @view.analyzer_path(azr) ),
         azr.name,
         azr.type,

@@ -17,12 +17,11 @@ function create_parameter_sets_list(selector, default_length) {
 
   if( window.bEnableAutoReload ) {
     setInterval( function() {
-      var num_open = $(selector + ' i.fa.fa-plus-square-o[state="open"]').length;
-      if( num_open === 0 ) { oPsTable.ajax.reload(null, false); }
+      oPsTable.ajax.reload(null, false);
     }, 5000);
   }
 
-  $(selector).on("click", "i.fa.fa-plus-square-o[parameter_set_id]", function() {
+  $(selector).on("click", "i.fa.fa-search[parameter_set_id]", function() {
     var param_id = $(this).attr("parameter_set_id");
     $('#runs_list_modal').modal("show", {
       parameter_set_id: param_id
@@ -35,17 +34,11 @@ $(function() {
   $("#runs_list_modal").on('show.bs.modal', function (event) {
     var param_id = event.relatedTarget.parameter_set_id;
     $.get("/parameter_sets/"+param_id+"/_runs_and_analyses", function(data) {
-      toggle_auto_reload_runs_table(true);
-      toggle_auto_reload_analyses_table(true);
-      $("i.fa.fa-plus-square-o[parameter_set_id="+param_id+"]").attr("state", "open");
       $("#runs_list_modal_page").append(data);
     });
   });
 
   $("#runs_list_modal").on('hidden.bs.modal', function (event) {
-    toggle_auto_reload_runs_table(false);
-    toggle_auto_reload_analyses_table(false);
     $('#runs_list_modal_page').empty();
-    $("i.fa.fa-plus-square-o[parameter_set_id]").attr("state", "close");
   });
 });
