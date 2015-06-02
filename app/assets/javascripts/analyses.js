@@ -20,7 +20,7 @@ $(function () {
 $(function() {
   var oAnalysesTableToReload = null;
   setInterval( function() {
-    if( oAnalysesTableToReload ) { oAnalysesTableToReload.ajax.reload(null, false); }
+    if( window.bEnableAutoReload && oAnalysesTableToReload ) { oAnalysesTableToReload.ajax.reload(null, false); }
   }, 5000);
 
   var datatables_for_analyses_table = function() {

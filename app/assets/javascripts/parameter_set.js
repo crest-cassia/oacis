@@ -17,7 +17,7 @@ function create_parameter_sets_list(selector, default_length) {
 
   if( window.bEnableAutoReload ) {
     setInterval( function() {
-      oPsTable.ajax.reload(null, false);
+        oPsTable.ajax.reload(null, false);
     }, 5000);
   }
 

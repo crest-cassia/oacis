@@ -1,7 +1,7 @@
 $(function() {
   var oRunsTableToReload = null;
   setInterval( function() {
-    if( oRunsTableToReload ) {
+    if( window.bEnableAutoReload && oRunsTableToReload ) {
       oRunsTableToReload.ajax.reload(null, false);
     }
   }, 5000);
