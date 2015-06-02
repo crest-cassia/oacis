@@ -81,13 +81,6 @@
         %td
           %i.fa.fa-cog.clickable#show_cli{data: raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['version']})}
 
-:css
-  .modal-vertical-centered {
-    transform: translate(0, 50%) !important;
-    -ms-transform: translate(0, 50%) !important; /* IE 9 */
-    -webkit-transform: translate(0, 50%) !important; /* Safari and Chrome */
-  }
-
 #version_dialog_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
     .modal-content
