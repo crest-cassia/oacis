@@ -93,13 +93,25 @@ pre {
 }
 #runs_list_modal .modal-vertical-centered {
   width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
+  max-height: 100%;
+  max-width: 100%;
+  overflow: auto;
 }
 #analyses_list_modal .modal-vertical-centered {
   width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
+  max-height: 100%;
+  max-width: 100%;
+  overflow: auto;
 }
 #analyzers_list_modal .modal-vertical-centered {
   width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
+  max-height: 100%;
+  max-width: 100%;
+  overflow: auto;
 }
 #script_preview_modal .modal-vertical-centered {
   width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
+  max-height: 100%;
+  max-width: 100%;
+  overflow: auto;
 }
