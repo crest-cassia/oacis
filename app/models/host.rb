@@ -43,12 +43,11 @@ class Host
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
 
+  before_validation :get_host_parameters,
+               :if => lambda { status == :enabled }
   before_save :use_default_template
   before_create :set_position
   before_destroy :validate_destroyable, :delete_default_parameters_from_simulator
-  after_create :get_host_parameters
-  after_update :get_host_parameters,
-               :if => lambda { status_changed? && status == :enabled }
   after_update :delete_default_parameters_from_simulator,
                :if => lambda { status_changed? and status == :disabled }
 

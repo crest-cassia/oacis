@@ -234,7 +234,7 @@ EOS
       @valid_attribute.update(seed: seed_val)
 
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size
-      run = prm.runs.create(@valid_attribute)
+      prm.runs.create(@valid_attribute)
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size.should == prev_count
     end
 
