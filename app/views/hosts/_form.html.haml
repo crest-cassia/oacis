@@ -26,11 +26,6 @@
     .col-md-3
       = f.text_field(:ssh_key, class: 'form-control')
   .form-group
-    = f.label(:scheduler_type, class: 'col-md-2 control-label')
-    .col-md-3
-      - types = SchedulerWrapper::TYPES.map {|t| (t=="none" or t=="xsub") ? [t,t] : [t+' (obsolete)',t] }
-      = f.select(:scheduler_type, types, {}, {class: 'form-control'})
-  .form-group
     = f.label(:work_base_dir, class: 'col-md-2 control-label')
     .col-md-3
       - if @host.work_base_dir_is_not_editable?
@@ -96,19 +91,12 @@
 
 :javascript
   function update_template_and_host_parameters_field() {
-    if( $('#host_scheduler_type option:selected').text() == "xsub" ) {
-      $('#host_template').attr("disabled", "disabled");
-      $('#host_parameters_definition').hide();
-    }
-    else {
-      $('#host_template').removeAttr("disabled");
-      $('#host_parameters_definition').show();
-    }
+    $('#host_template').attr("disabled", "disabled");
+    $('#host_parameters_definition').hide();
   }
 
   $(function() {
     update_template_and_host_parameters_field();
-    $('#host_scheduler_type').change( update_template_and_host_parameters_field );
   });
 
   $(function(){

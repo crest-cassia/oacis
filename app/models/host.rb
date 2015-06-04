@@ -10,7 +10,6 @@ class Host
   field :user, type: String
   field :port, type: Integer, default: 22
   field :ssh_key, type: String, default: '~/.ssh/id_rsa'
-  field :scheduler_type, type: String, default: "xsub"
   field :work_base_dir, type: String, default: '~'
   field :mounted_work_base_dir, type: String, default: ""
   field :max_num_jobs, type: Integer, default: 1
@@ -33,7 +32,6 @@ class Host
   validates :user, presence: true, format: {with: /\A[A-Za-z0-9. _-]+\z/}
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
-  validates :scheduler_type, inclusion: {in: SchedulerWrapper::TYPES }
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
   validates :polling_interval, numericality: {greater_than_or_equal_to: 5}
   validates :min_mpi_procs, numericality: {greater_than_or_equal_to: 1}
@@ -45,7 +43,7 @@ class Host
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
 
-  before_save :use_default_template, :if => lambda { scheduler_type == "xsub" }
+  before_save :use_default_template
   before_create :set_position
   before_destroy :validate_destroyable, :delete_default_parameters_from_simulator
   after_create :get_host_parameters
@@ -162,7 +160,7 @@ class Host
         unless key == "mpi_procs" or key == "omp_threads"
           HostParameterDefinition.new(key: key, default: val["default"], format: val["format"])
         end
-      end
+      end.compact
     end
 
   rescue => ex

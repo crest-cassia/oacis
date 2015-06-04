@@ -11,7 +11,6 @@ describe Host do
         user: ENV['USER'],
         port: 22,
         ssh_key: '~/.ssh/id_rsa',
-        scheduler_type: 'xsub',
         work_base_dir: '~/__cm_work__',
         status: :enabled
       }
@@ -77,11 +76,6 @@ describe Host do
     it "default of 'ssh_key' is '~/.ssh/id_rsa'" do
       @valid_attr.delete(:ssh_key)
       Host.new(@valid_attr).ssh_key.should eq('~/.ssh/id_rsa')
-    end
-
-    it "'scheduler_type' must be either [none, torque, pjm, pjm_k, xsub]" do
-      @valid_attr.update(scheduler_type: "foobar")
-      Host.new(@valid_attr).should_not be_valid
     end
 
     it "default of 'work_base_dir' is '~'" do
@@ -322,29 +316,26 @@ describe Host do
     end
   end
 
-  describe "when 'xsub' is selected as the scheduler_type" do
+  it "gets host parameters by invoking 'get_host_parameters' when host status is changed into :enabled" do
+    @host = FactoryGirl.create(:localhost)
+    @host.update_attribute(:status, :disabled)
+    @host.should_receive(:get_host_parameters)
+    @host.status = :enabled
+    @host.save!
+  end
 
-    it "gets host parameters by invoking 'get_host_parameters' when host status is changed into :enabled" do
-      @host = FactoryGirl.create(:localhost)
-      @host.update_attribute(:status, :disabled)
-      @host.should_receive(:get_host_parameters)
-      @host.status = :enabled
-      @host.save!
-    end
+  it "parse output of 'xsub -t' and set it to host_parameter_definitions" do
+    hp = {"parameters" => {"foo" => {"default"=>1}, "bar" => {"default"=>"abc"} } }
+    ret_str = "XSUB_BEGIN\n#{hp.to_json}"
+    SSHUtil.stub(:execute).and_return(ret_str)
+    @host = FactoryGirl.create(:localhost)
+    @host.host_parameter_definitions.size.should eq 2
+    @host.host_parameter_definitions[0].key.should eq "foo"
+    @host.host_parameter_definitions[0].default.should eq "1"
+  end
 
-    it "parse output of 'xsub -t' and set it to host_parameter_definitions" do
-      hp = {"parameters" => {"foo" => {"default"=>1}, "bar" => {"default"=>"abc"} } }
-      ret_str = "XSUB_BEGIN\n#{hp.to_json}"
-      SSHUtil.stub(:execute).and_return(ret_str)
-      @host = FactoryGirl.create(:localhost)
-      @host.host_parameter_definitions.size.should eq 2
-      @host.host_parameter_definitions[0].key.should eq "foo"
-      @host.host_parameter_definitions[0].default.should eq "1"
-    end
-
-    it "'xsub' command fails, write message to logger" do
-      skip "when xsub command fails, write messaga to logger"
-    end
+  it "'xsub' command fails, write message to logger" do
+    skip "when xsub command fails, write messaga to logger"
   end
 
   describe "'position' field" do

@@ -108,7 +108,6 @@ class HostsController < ApplicationController
                                            :user,
                                            :port,
                                            :ssh_key,
-                                           :scheduler_type,
                                            :work_base_dir,
                                            :mounted_work_base_dir,
                                            :max_num_jobs,
