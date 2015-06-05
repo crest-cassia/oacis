@@ -5,7 +5,7 @@
 スケジューラを経由してジョブを実行する
 ==========================================
 
-| xsub(https://github.com/crest-cassia/xsub) というスケジューララッパを経由してTorqueなどにジョブ投入する方法について説明する。
+| xsub(https://github.com/crest-cassia/xsub) というスケジューララッパを経由してTorqueなどのスケジューラにジョブを投入する方法について説明する。
 | xsubは各ホストごとのスケジューラの差異を吸収する。
 
 | xsubの各ホストへの導入方法については、xsubのREADMEを参照のこと。
@@ -15,27 +15,15 @@
 実行例（Torqueを経由してジョブを実行する場合）
 ----------------------------------------------
 
-| シミュレータを実行するホストの環境変数XSUB_TYPEに"torque"を指定する。（ `export XSUB_TYPE="torque"` ）
-| Hostの登録を行なうとスケジューラの変数（使用時間、占有するノード数、使用メモリ量など）がxsubからOACISに通知される。
-| Runの作成時にスケジューラの変数の値入力が求められる。
-| スケジューラの変数の値は、OACISからxsubを実行するときに引数として渡される。
-| xsubはこれらの変数を受け取り、ジョブカード（ジョブスクリプトとは異なる）のヘッダに記述してTorqueの投入コマンド（qsub）を実行する。
-
-| MPI, OpenMPで並列化されたシミュレータの場合、実行時にMPIのプロセス数、OpenMPのスレッド数を指定することが必要となる。
-| Simulator登録時に、 *Suppot MPI*, *Support OMP* のチェックを入れると、Runの作成時にプロセス数とスレッド数を指定するフィールドが表示されるようになる。
-
-.. image:: images/new_run_mpi_omp_support.png
-  :width: 30%
-  :align: center
-
 | ここでは例としてMPIで並列化しているシミュレータを、Torqueのスケジューラを使って占有時間を指定して実行することを考える。
 
-| xsubでジョブ投入時に要求されるパラメータは、`mpi_procs`, `omp_threads`, `ppn`, `elapsed` の４つである。
-| `mpi_procs`, `omp_threads` はRunを作るときに指定したMPIプロセス数とOMPスレッド数が渡される。
-| `ppn`, `elapsed` はRunの作成時に入力フォームが出るので、そこに適切な値を指定する。
+| シミュレータを実行するホストの環境変数XSUB_TYPEに"torque"を指定する。（たとえば，.bashrcに `export XSUB_TYPE="torque"` を記載する。）
+| Hostを作成し、スケジューラの変数（占有するノード数 `ppn` 、 使用時間 `walltime` ）がHost Parametersに登録されているのを確認する。
+| Runの作成時にHostを選択すると、スケジューラの変数の値入力が求められる。
+| Runの作成時に要求されるスケジューラの変数は、`mpi_procs`, `omp_threads`, `ppn`, `walltime` の４つである。
 | 例えば、各ノード４スレッドで、８ノードのMPI/OpenMPハイブリッド並列化プログラムを、実行時間10:00:00で実行する場合、
-mpi_procs=8, omp_threads=4, ppn=4, elapsed="10:00:00" を指定する。
-| するとxsubが、ジョブカードを作成しジョブを実行する。
+mpi_procs=8, omp_threads=4, ppn=4, walltime="10:00:00" を指定する。
+| するとxsubが、Torque用のジョブカードを作成しジョブを実行する。
 
 .. image:: images/new_run_with_host_params.png
   :width: 30%
@@ -43,6 +31,12 @@ mpi_procs=8, omp_threads=4, ppn=4, elapsed="10:00:00" を指定する。
 
 MPI, OpenMPのジョブ
 ----------------------------------------------
+
+| Simulator登録時に、 *Suppot MPI*, *Support OMP* のチェックを入れると、Runの作成時にプロセス数とスレッド数を指定するフィールドが表示されるようになる。
+
+.. image:: images/new_run_mpi_omp_support.png
+  :width: 30%
+  :align: center
 
 | OpenMPのジョブのスレッド数を指定すると、ジョブスクリプトの中で OMP_NUM_THREADS の環境変数がセットされる。
 | つまりOpenMPで並列化しているシミュレータはOMP_NUM_THREADS環境変数を参照してスレッド数を決めるように実装されていなければならない。
