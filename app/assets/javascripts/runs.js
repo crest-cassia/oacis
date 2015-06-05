@@ -1,13 +1,7 @@
-var bReloadRunsTable = true;
-function toggle_auto_reload_runs_table( flag ) {
-  bReloadRunsTable = flag && window.bEnableAutoReload;
-}
-
 $(function() {
-  toggle_auto_reload_runs_table();
   var oRunsTableToReload = null;
   setInterval( function() {
-    if( bReloadRunsTable && oRunsTableToReload ) {
+    if( window.bEnableAutoReload && oRunsTableToReload ) {
       oRunsTableToReload.ajax.reload(null, false);
     }
   }, 5000);

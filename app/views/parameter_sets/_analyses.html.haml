@@ -15,6 +15,17 @@
     .form-group
       .col-md-2.col-md-offset-2
         = f.submit "Analyze", :class => 'btn btn-primary'
+#analyses_list_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.modal-title
+      .modal-body.large#analyses_list_modal_page
+      .modal-footer
+        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+          Close
 
 :javascript
   $(function() {
