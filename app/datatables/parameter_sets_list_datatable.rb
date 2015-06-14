@@ -9,10 +9,10 @@ class ParameterSetsListDatatable
 
   def as_json(options = {})
     {
-      sEcho: @view.params[:sEcho].to_i,
-      iTotalRecords: @param_sets.count,
-      iTotalDisplayRecords: parameter_sets_lists.count,
-      aaData: data
+      draw: @view.params[:draw].to_i,
+      recordsTotal: @param_sets.count,
+      recordsFiltered: parameter_sets_lists.count,
+      data: data
     }
   end
 
@@ -37,12 +37,12 @@ private
   def data
     parameter_sets_lists.map do |param|
       tmp = []
-      tmp << @view.image_tag("/assets/expand.png", parameter_set_id: param.id.to_s, align: "center", state: "close", class: "treebtn")
+      tmp << @view.content_tag(:i, '', parameter_set_id: param.id.to_s, align: "center", class: "fa fa-search clickable")
       counts = param.runs_status_count
       counts.delete(:cancelled)
       progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
       tmp << @view.raw(progress)
-      tmp << "<tt>"+@view.link_to( @view.shortened_id(param.id), @view.parameter_set_path(param) )+"</tt>"
+      tmp << @view.link_to( @view.shortened_id_monospaced(param.id), @view.parameter_set_path(param) )
       tmp << @view.distance_to_now_in_words(param.updated_at)
       @param_keys.each do |key|
         if @base_ps
@@ -55,9 +55,9 @@ private
         tmp << ''
       else
         if OACIS_READ_ONLY
-          tmp << @view.raw('<i class="icon-trash">')
+          tmp << @view.raw('<i class="fa fa-trash-o">')
         else
-          tmp << @view.link_to( @view.raw('<i class="icon-trash">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+          tmp << @view.link_to( @view.raw('<i class="fa fa-trash-o">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
         end
       end
       tmp
@@ -89,17 +89,18 @@ private
   end
 
   def fetch_parameter_sets_list
-    parameter_sets_list = @param_sets.only("v","updated_at").order_by(sort_column_direction)
+    #"only" is removed due to ParameterSet.runs_status_count can not be called.
+    parameter_sets_list = @param_sets.order_by(sort_column_direction)
     parameter_sets_list = parameter_sets_list.skip(page).limit(per_page)
     parameter_sets_list
   end
 
   def page
-    @view.params[:iDisplayStart].to_i
+    @view.params[:start].to_i
   end
 
   def per_page
-    @view.params[:iDisplayLength].to_i > 0 ? @view.params[:iDisplayLength].to_i : 10
+    @view.params[:length].to_i > 0 ? @view.params[:length].to_i : 10
   end
 
   def sort_column_direction
@@ -108,27 +109,17 @@ private
   end
 
   def sort_columns
-    idxs = []
-    i=0
-    while true
-      idx=@view.params[("iSortCol_" + i.to_s).to_sym]
-      break unless idx
-      idxs << idx.to_i
-      i+=1
+    return ["updated_at"] if @view.params["order"].nil?
+    @view.params["order"].keys.map do |key|
+      sort_by[@view.params["order"][key]["column"].to_i]
     end
-    idxs.map {|idx| sort_by[idx] }
   end
 
   def sort_directions
-    dirs = []
-    i=0
-    while true
-      dir=@view.params[("sSortDir_" + i.to_s).to_sym]
-      break unless dir
-      dirs << dir == "desc" ? "desc" : "asc"
-      i+=1
+    return ["desc"] if @view.params["order"].nil?
+    @view.params["order"].keys.map do |key|
+      @view.params["order"][key]["dir"] == "desc" ? "desc" : "asc"
     end
-    dirs
   end
 end
 

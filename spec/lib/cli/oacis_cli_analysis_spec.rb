@@ -18,9 +18,9 @@ describe OacisCli do
     analyzer_id = nil
     case type
     when :on_run
-      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
     when :on_parameter_set
-      analyzer_id = @sim.analyzers.where(type: :on_parameter_set).first.id
+      analyzer_id = @sim.analyzers.where(type: :on_parameter_set).first.id.to_s
     end
     option.merge!({analyzer_id: analyzer_id})
     options = create_options(option)
@@ -147,7 +147,7 @@ describe OacisCli do
             io = File.open('runs.json','w')
             a = []
             @sim.parameter_sets.each do |ps|
-              h = {"run_id" => ps.runs.first.id }
+              h = {"run_id" => ps.runs.first.id.to_s }
               a << h
             end
             io.puts a.to_json
@@ -164,7 +164,7 @@ describe OacisCli do
         at_temp_dir {
           expect {
             io = File.open('parameter_sets.json','w')
-            a = [{"parameter_set_id" => @sim.parameter_sets.first.id }]
+            a = [{"parameter_set_id" => @sim.parameter_sets.first.id.to_s }]
             io.puts a.to_json
             io.close
             invoke_create_analyses(:on_parameter_set, {target: "parameter_sets.json", input: "anz_parameters.json"})
@@ -183,7 +183,7 @@ describe OacisCli do
                      }
         }
         it { should change { Analysis.count }.by(2) }
-        it { should change { Analysis.where(parameter_set_id: @sim.parameter_sets.first.id).count }.by(1) }
+        it { should change { Analysis.where(parameter_set_id: @sim.parameter_sets.first.id.to_s).count }.by(1) }
       end
     end
 
@@ -289,13 +289,9 @@ describe OacisCli do
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
         options = {analysis_ids: 'analysis_ids.json'}
-        captured = capture(:stdout) {
+        expect {
           OacisCli.new.invoke(:analysis_status, [], options)
-        }
-        loaded = JSON.load(captured)
-        loaded["total"].should eq 4
-        loaded["created"].should eq 4
-        loaded["finished"].should eq 0
+        }.to output(JSON.pretty_generate({total: 4, created: 4, running: 0, failed: 0, finished: 0})+"\n").to_stdout
       }
     end
   end
@@ -303,7 +299,7 @@ describe OacisCli do
   describe "#destroy_analyses" do
 
     it "destroys analyses specified by 'status'" do
-      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
         Analysis.limit(3).each do |anl|
@@ -318,7 +314,7 @@ describe OacisCli do
     end
 
     it "destroys analyses specified by 'analyzer_version'" do
-      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
         Analysis.limit(3).each do |anl|
@@ -333,7 +329,7 @@ describe OacisCli do
     end
 
     it "destroys analyses of analyzer_version=nil when analyzer_version is empty" do
-      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
         Analysis.each do |anl|
@@ -352,7 +348,7 @@ describe OacisCli do
 
     context "when query option is invalid" do
       it "raises an exception" do
-        analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+        analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
         at_temp_dir {
           invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
           options = {analyzer_id: analyzer_id, query: "DO_NOT_EXIST", yes: true}
@@ -376,7 +372,7 @@ describe OacisCli do
     context "if user say \"no\" not to destroy analyses" do
 
       it "destroys nothing" do
-        analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+        analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
         at_temp_dir {
           invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
           Analysis.each do |anl|
@@ -397,7 +393,7 @@ describe OacisCli do
     context "with yes option" do
 
       it "destroys analyses without confirmation" do
-        analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+        analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
         at_temp_dir {
           invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
           Analysis.each do |anl|
@@ -419,7 +415,7 @@ describe OacisCli do
   describe "#replace_analyses" do
 
     it "newly create analyses have the same attribute as old ones" do
-      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
         Analysis.limit(2).each do |anl|
@@ -436,7 +432,7 @@ describe OacisCli do
     end
 
     it "destroys old analysis" do
-      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json", yes: true})
         Analysis.limit(2).each do |anl|
@@ -453,7 +449,7 @@ describe OacisCli do
     context "if user say \"no\" not to replace analyses" do
 
       it "replaces nothing" do
-        analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+        analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
         at_temp_dir {
           invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
           Analysis.limit(2).each do |anl|
@@ -473,7 +469,7 @@ describe OacisCli do
   context "with yes option" do
 
     it "replaces analyses with out confirmation" do
-      analyzer_id = @sim.analyzers.where(type: :on_run).first.id
+      analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "anz_parameters.json"})
         Analysis.limit(2).each do |anl|

@@ -248,6 +248,26 @@ describe ParameterSetsController do
       end
     end
 
+    describe "with no permitted params" do
+
+      before(:each) do
+        parameters = {"L" => 10, "T" => 1.0}
+        @valid_params = {simulator_id: @sim, v: parameters}
+      end
+
+      it "create new ps but no permitted params are not saved" do
+        invalid_params = @valid_params.update(runs_status_count_cache: {"kill"=>"all"})
+                                      .update(progress_rate_cache: 123)
+                                      .update(invalid: 1)
+        expect {
+          post :create, invalid_params, valid_session
+        }.to change {ParameterSet.count}.by(1)
+        ps = ParameterSet.last
+        expect(ps.runs_status_count_cache).not_to eq ({"kill"=>"all"})
+        expect(ps.progress_rate_cache).not_to eq 123
+      end
+    end
+
     describe "when Boolean parameters are included" do
 
       before(:each) do
@@ -295,7 +315,7 @@ describe ParameterSetsController do
       get :_create_cli, @valid_param, valid_session
       response.should be_success
       response.body.should eq <<-EOS.chomp
-./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -r '{"num_runs":3,"mpi_procs":4,"omp_threads":8,"priority":2,"submitted_to":"#{h.id}","host_parameters":{"param1":"xxx","param2":"yyy"}}' -o ps.json
+./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -r '{"num_runs":3,"mpi_procs":4,"omp_threads":8,"priority":2,"submitted_to":"#{h.id.to_s}","host_parameters":{"param1":"xxx","param2":"yyy"}}' -o ps.json
       EOS
     end
   end
@@ -338,18 +358,18 @@ describe ParameterSetsController do
                                       parameter_set_queries_count: 0
                                       )
       @param_set = @simulator.parameter_sets.first
-      get :_runs_list, {id: @param_set.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      get :_runs_list, {id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
 
     it "return json format" do
       response.header['Content-Type'].should include 'application/json'
-      @parsed_body["iTotalRecords"].should == 30
-      @parsed_body["iTotalDisplayRecords"].should == 30
+      expect(@parsed_body["recordsTotal"]).to eq 30
+      expect(@parsed_body["recordsFiltered"]).to eq 30
     end
 
     it "paginates the list of parameters" do
-      @parsed_body["aaData"].size.should == 25
+      expect(@parsed_body["data"].size).to eq 25
     end
   end
 
@@ -377,7 +397,7 @@ describe ParameterSetsController do
         end
       end
       @param_set = @simulator.parameter_sets.where('v.I'=>1,'v.F'=>1.0,'v.S'=>'b','v.B'=>true).first
-      get :_similar_parameter_sets_list, {id: @param_set.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      get :_similar_parameter_sets_list, {id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
 
@@ -388,7 +408,7 @@ describe ParameterSetsController do
 
     it "returns correct number of parameter sets" do
       parsed_body = JSON.parse(response.body)
-      parsed_body['iTotalRecords'].should eq 8
+      expect(parsed_body['recordsTotal']).to eq 8
     end
   end
 
@@ -438,9 +458,9 @@ describe ParameterSetsController do
         plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=&irrelevants=#!tab-plot",
         data: [
           [
-            [1, 99.0, nil, @ps_array[0].id],
-            [2, 99.0, nil, @ps_array[1].id],
-            [3, 99.0, nil, @ps_array[2].id],
+            [1, 99.0, nil, @ps_array[0].id.to_s],
+            [2, 99.0, nil, @ps_array[1].id.to_s],
+            [3, 99.0, nil, @ps_array[2].id.to_s],
           ]
         ]
       }.to_json
@@ -455,9 +475,9 @@ describe ParameterSetsController do
         plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=cpu_time&series=&irrelevants=#!tab-plot",
         data: [
           [
-            [1, 10.0, nil, @ps_array[0].id],
-            [2, 10.0, nil, @ps_array[1].id],
-            [3, 10.0, nil, @ps_array[2].id],
+            [1, 10.0, nil, @ps_array[0].id.to_s],
+            [2, 10.0, nil, @ps_array[1].id.to_s],
+            [3, 10.0, nil, @ps_array[2].id.to_s],
           ]
         ]
       }.to_json
@@ -474,13 +494,13 @@ describe ParameterSetsController do
           plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=T&irrelevants=#!tab-plot",
           data: [
             [
-              [1, 99.0, nil, @ps_array[3].id],
-              [2, 99.0, nil, @ps_array[4].id],
+              [1, 99.0, nil, @ps_array[3].id.to_s],
+              [2, 99.0, nil, @ps_array[4].id.to_s],
             ],
             [
-              [1, 99.0, nil, @ps_array[0].id],
-              [2, 99.0, nil, @ps_array[1].id],
-              [3, 99.0, nil, @ps_array[2].id]
+              [1, 99.0, nil, @ps_array[0].id.to_s],
+              [2, 99.0, nil, @ps_array[1].id.to_s],
+              [3, 99.0, nil, @ps_array[2].id.to_s]
             ]
           ]
         }.to_json
@@ -498,14 +518,14 @@ describe ParameterSetsController do
           plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=T&irrelevants=P#!tab-plot",
           data: [
             [
-              [1, 99.0, nil, @ps_array[3].id],
-              [2, 99.0, nil, @ps_array[4].id],
-              [3, 99.0, nil, @ps_array[5].id]
+              [1, 99.0, nil, @ps_array[3].id.to_s],
+              [2, 99.0, nil, @ps_array[4].id.to_s],
+              [3, 99.0, nil, @ps_array[5].id.to_s]
             ],
             [
-              [1, 99.0, nil, @ps_array[0].id],
-              [2, 99.0, nil, @ps_array[1].id],
-              [3, 99.0, nil, @ps_array[2].id]
+              [1, 99.0, nil, @ps_array[0].id.to_s],
+              [2, 99.0, nil, @ps_array[1].id.to_s],
+              [3, 99.0, nil, @ps_array[2].id.to_s]
             ]
           ]
         }.to_json

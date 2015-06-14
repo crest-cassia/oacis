@@ -130,6 +130,7 @@ describe SimulatorsController do
     describe "with valid params" do
 
       before(:each) do
+        host = FactoryGirl.create(:host)
         definitions = [
           {key: "param1", type: "Integer"},
           {key: "param2", type: "Float"}
@@ -137,7 +138,8 @@ describe SimulatorsController do
         simulator = {
           name: "simulatorA", command: "echo", support_input_json: "0",
           support_mpi: "0", support_omp: "1",
-          parameter_definitions_attributes: definitions
+          parameter_definitions_attributes: definitions,
+          executable_on_ids: [host.id.to_s]
         }
         @valid_post_parameter = {simulator: simulator}
       end
@@ -184,7 +186,7 @@ describe SimulatorsController do
         }
         @valid_post_parameter = {
           simulator: simulator,
-          duplicating_simulator: @sim.id, copied_analyzers: @sim.analyzers.map(&:id)
+          duplicating_simulator: @sim.id.to_s, copied_analyzers: @sim.analyzers.map(&:id).map(&:to_s)
         }
       end
 
@@ -240,6 +242,25 @@ describe SimulatorsController do
         response.should render_template("new")
       end
     end
+
+    describe "with no permitted params" do
+
+      it "create new simulator but no permitted params are not saved" do
+        invalid_params = valid_attributes.update(position: 100)
+                                          .update(default_host_parameters: {"host_id"=>{"param1"=>123}})
+                                          .update(default_mpi_procs: {"host_id"=>12345})
+                                          .update(default_omp_threads: {"host_id"=>54321})
+                                          .update(invalid: 1)
+        expect {
+          post :create, {simulator: invalid_params, invalid: 1}, valid_session
+        }.to change {Simulator.count}.by(1)
+        sim = Simulator.last
+        expect(sim.position).not_to eq 100
+        expect(sim.default_host_parameters).not_to include({"host_id"=>{"param1"=>123}})
+        expect(sim.default_mpi_procs).not_to include({"host_id"=>12345})
+        expect(sim.default_omp_threads).not_to include({"host_id"=>54321})
+      end
+    end
   end
 
   describe "PUT update" do
@@ -250,24 +271,27 @@ describe SimulatorsController do
           {key: "param1", type: "Integer"},
           {key: "param2", type: "Float"}
         ]
-        simulator = {
+        @valid_post_parameter = {
           name: "simulatorA", command: "echo", support_input_json: "0",
           support_mpi: "0", support_omp: "1",
           parameter_definitions_attributes: definitions
         }
-        @valid_post_parameter = {simulator: simulator}
       end
 
       it "updates the requested simulator" do
         simulator = Simulator.create! valid_attributes
-        Simulator.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
-        put :update, {:id => simulator.to_param, :simulator => {'these' => 'params'}}, valid_session
+        Simulator.any_instance.should_receive(:update_attributes).with({'description' => 'yyy zzz'})
+        put :update, {:id => simulator.to_param, :simulator => {'description' => 'yyy zzz'}}, valid_session
       end
 
       it "assigns the requested simulator as @simulator" do
         simulator = Simulator.create! valid_attributes
         put :update, {:id => simulator.to_param, :simulator => @valid_post_parameter}, valid_session
-        assigns(:simulator).should eq(simulator)
+        expect(assigns(:simulator).id).to eq simulator.id
+        expect(assigns(:simulator).command).to eq "echo"
+        expect(assigns(:simulator).support_input_json).to be_falsey
+        expect(assigns(:simulator).support_mpi).to be_falsey
+        expect(assigns(:simulator).support_omp).to be_truthy
       end
 
       it "redirects to the simulator" do
@@ -290,6 +314,37 @@ describe SimulatorsController do
         Simulator.any_instance.stub(:save).and_return(false)
         put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
         response.should render_template("edit")
+      end
+    end
+
+    describe "with no permitted params" do
+
+      before(:each) do
+        definitions = [
+          {key: "param1", type: "Integer"},
+          {key: "param2", type: "Float"}
+        ]
+        @valid_post_parameter = {
+          name: "simulatorA", command: "echo", support_input_json: "0",
+          support_mpi: "0", support_omp: "1",
+          parameter_definitions_attributes: definitions
+        }
+      end
+
+      it "update new simulator but no permitted params are not saved" do
+        simulator = Simulator.create! valid_attributes
+        invalid_params = @valid_post_parameter.update(description: "yyy zzz")
+                                              .update(position: 100)
+                                              .update(default_host_parameters: {"host_id"=>{"param1"=>123}})
+                                              .update(default_mpi_procs: {"host_id"=>12345})
+                                              .update(default_omp_threads: {"host_id"=>54321})
+                                              .update(invalid: 1)
+        post :update, {id: simulator.to_param, simulator: invalid_params, invalid: 1}, valid_session
+        expect(assigns(:simulator).description).to eq "yyy zzz"
+        expect(assigns(:simulator).position).not_to eq 100
+        expect(assigns(:simulator).default_host_parameters).not_to include({"host_id"=>{"param1"=>123}})
+        expect(assigns(:simulator).default_mpi_procs).not_to include({"host_id"=>12345})
+        expect(assigns(:simulator).default_omp_threads).not_to include({"host_id"=>54321})
       end
     end
   end
@@ -327,7 +382,7 @@ describe SimulatorsController do
         params = [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
                   {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}
                  ]
-        @valid_post_parameter = {:id => @simulator.to_param, "query" => params, query_id: @simulator.parameter_set_queries.first.id}
+        @valid_post_parameter = {:id => @simulator.to_param, "query" => params, query_id: @simulator.parameter_set_queries.first.id.to_s}
       end
 
       it "creates a new ParameterSetQuery" do
@@ -346,13 +401,13 @@ describe SimulatorsController do
       it "redirects to show with the created parameter_set_query" do
         post :_make_query, @valid_post_parameter, valid_session
         response.should redirect_to( simulator_path(@simulator, query_id: ParameterSetQuery.last.to_param) )
-        assigns(:query_id).should == ParameterSetQuery.last.id
+        assigns(:query_id).should == ParameterSetQuery.last.id.to_s
       end
 
       context "and with delete option" do
         it "delete the last parameter_set_query of @simulator" do
           expect {
-            post :_make_query, {:id => @simulator.to_param, delete_query: "xxx", query_id: @simulator.parameter_set_queries.first.id}, valid_session
+            post :_make_query, {:id => @simulator.to_param, delete_query: "xxx", query_id: @simulator.parameter_set_queries.first.id.to_s}, valid_session
           }.to change(ParameterSetQuery, :count).by(-1)
         end
       end
@@ -381,18 +436,18 @@ describe SimulatorsController do
                                       analyzers_count: 3, run_analysis: false,
                                       parameter_set_queries_count: 5
                                       )
-      get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 0, sSortDir_0: "asc"}, :format => :json
+      get :_parameters_list, {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
 
     it "return json format" do
       response.header['Content-Type'].should include 'application/json'
-      @parsed_body["iTotalRecords"].should == 30
-      @parsed_body["iTotalDisplayRecords"].should == 30
+      expect(@parsed_body["recordsTotal"]).to eq 30
+      expect(@parsed_body["recordsFiltered"]).to eq 30
     end
 
     it "paginates the list of parameters" do
-      @parsed_body["aaData"].size.should == 25
+      expect(@parsed_body["data"].size).to eq 25
     end
 
     context "when 'query_id' parameter is given" do
@@ -411,16 +466,16 @@ describe SimulatorsController do
                                     query: {"L" => {"gte" => 5}})
 
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
-        get :_parameters_list, {id: @simulator.to_param, sEcho: 1, iDisplayStart: 0, iDisplayLength:25 , iSortCol_0: 4, sSortDir_0: "desc", query_id: @query.id}, :format => :json
+        get :_parameters_list, {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "4", "dir" => "desc"}}, query_id: @query.id.to_s}, :format => :json
         @parsed_body = JSON.parse(response.body)
       end
 
       it "show the list of filtered ParameterSets" do
-        @parsed_body["aaData"].size.should == 5
-        @parsed_body["aaData"].each do |ps|
-          ps[4].to_i.should >= 5 #ps[3].to_i is qeual to v.L(ps[img, id, id, updated_at, [keys]])
+        expect(@parsed_body["data"].size).to eq 5
+        @parsed_body["data"].each do |ps|
+          expect(ps[4].to_i).to be >= 5 #ps[3].to_i is qeual to v.L(ps[img, id, id, updated_at, [keys]])
         end
-        @parsed_body["aaData"].first[4].to_i.should == @query.parameter_sets.max("v.L")
+        expect(@parsed_body["data"].first[4].to_i).to eq @query.parameter_sets.max("v.L")
       end
     end
   end

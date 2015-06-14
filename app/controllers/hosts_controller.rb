@@ -46,7 +46,7 @@ class HostsController < ApplicationController
   # POST /hosts
   # POST /hosts.json
   def create
-    @host = Host.new(params[:host])
+    @host = Host.new(permitted_host_params)
 
     respond_to do |format|
       if @host.save
@@ -65,7 +65,7 @@ class HostsController < ApplicationController
     @host = Host.find(params[:id])
 
     respond_to do |format|
-      if @host.update_attributes(params[:host])
+      if @host.update_attributes(permitted_host_params)
         format.html { redirect_to @host, notice: 'Host was successfully updated.' }
         format.json { head :no_content }
       else
@@ -97,5 +97,28 @@ class HostsController < ApplicationController
       Host.find(host_id).timeless.update_attribute(:position, index)
     end
     render nothing: true
+  end
+
+  private
+  def permitted_host_params
+    params[:host].present? ? params.require(:host)
+                                   .permit(:name,
+                                           :hostname,
+                                           :status,
+                                           :user,
+                                           :port,
+                                           :ssh_key,
+                                           :scheduler_type,
+                                           :work_base_dir,
+                                           :mounted_work_base_dir,
+                                           :max_num_jobs,
+                                           :polling_interval,
+                                           :min_mpi_procs,
+                                           :max_mpi_procs,
+                                           :min_omp_threads,
+                                           :max_omp_threads,
+                                           :template,
+                                           executable_simulator_ids: []
+                                          ) : {}
   end
 end

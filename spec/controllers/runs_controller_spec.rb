@@ -46,7 +46,7 @@ describe RunsController do
   describe "POST 'create'" do
 
     before(:each) do
-      @req_param = { parameter_set_id: @par, run: {submitted_to: Host.first} }
+      @req_param = { parameter_set_id: @par, run: {submitted_to: Host.first.id.to_s}, format: 'json' }
     end
 
     describe "with valid parameters" do
@@ -83,10 +83,37 @@ describe RunsController do
 
       it "fails with a duplicated seed" do
         seed_val = @par.runs.first.seed
-        @req_param.update(run: {seed: seed_val})
+        @req_param[:run].update(seed: seed_val)
         expect {
           post 'create', @req_param, valid_session
         }.to change(Run, :count).by(0)
+      end
+    end
+
+    describe "with no permitted params" do
+
+      it "create a new run but no permitted params are not saved" do
+        invalid_run_params = @req_param[:run].update(status: :finished)
+                                     .update(hostname: "Foo")
+                                     .update(cpu_time: -100.0)
+                                     .update(real_time: -100.0)
+                                     .update(result: {"r1"=>0})
+                                     .update(simulator_version: "v9999")
+                                     .update(job_id: "12345.localhost")
+                                     .update(invalid: 1)
+        invalid_params = @req_param
+        invalid_params[:run] = invalid_run_params
+        expect {
+          post :create, invalid_params, valid_session
+        }.to change{Run.count}.by(1)
+        run = Run.last
+        expect(run.status).not_to eq :finished
+        expect(run.hostname).not_to eq "Foo"
+        expect(run.cpu_time).not_to eq -100.0
+        expect(run.real_time).not_to eq -100.0
+        expect(run.result).not_to eq ({"r1"=>0})
+        expect(run.simulator_version).not_to eq "v9999"
+        expect(run.job_id).not_to eq "12345.localhost"
       end
     end
 
@@ -118,7 +145,7 @@ describe RunsController do
 
     it "destroys the run when status is neither submitted nor running" do
       expect {
-        delete :destroy, {id: @run.to_param}, valid_session
+        delete :destroy, {id: @run.to_param, format: 'json'}, valid_session
       }.to change(Run, :count).by(-1)
     end
 
@@ -126,7 +153,7 @@ describe RunsController do
       @run.status = :running
       @run.save!
       expect {
-        delete :destroy, {id: @run.to_param}, valid_session
+        delete :destroy, {id: @run.to_param, format: 'json'}, valid_session
       }.to change { Run.where(status: :cancelled).count }.by(1)
     end
   end

@@ -401,14 +401,9 @@ describe OacisCli do
       at_temp_dir {
         create_run_ids_json(Run.all, 'run_ids.json')
         options = {run_ids: 'run_ids.json'}
-        captured = capture(:stdout) {
+        expect {
           OacisCli.new.invoke(:run_status, [], options)
-        }
-
-        loaded = JSON.load(captured)
-        loaded["total"].should eq 6
-        loaded["created"].should eq 6
-        loaded["finished"].should eq 0
+        }.to output(puts JSON.pretty_generate({total: 6, created: 6, running: 0, failed: 0, finished: 0})).to_stdout
       }
     end
   end

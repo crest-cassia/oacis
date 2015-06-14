@@ -4,13 +4,28 @@
 - sim = parameter_set.simulator
 - azrs = sim.analyzers_on_parameter_set
 - unless OACIS_READ_ONLY or azrs.empty?
-  = form_for( parameter_set.analyses.build, :url => parameter_set_analyses_path(parameter_set), remote: true ) do |f|
-    = f.label :analyzer
-    = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }
+  %h3 Create Analysis
+  = form_for( parameter_set.analyses.build, :url => parameter_set_analyses_path(parameter_set), html: {class: 'form-horizontal'}, remote: true ) do |f|
+    .form-group
+      = f.label :analyzer, class: 'col-md-2 control-label'
+      .col-md-3
+        = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }, {}, {class: 'form-control'}
     %div#parameters_form
-      = render 'shared/parameters_form', param_def: azrs.first.parameter_definitions
-    .form-actions
-      = f.submit "Analyze", :class => 'btn btn-primary'
+      = render 'analyses/parameters_form', param_def: azrs.first.parameter_definitions
+    .form-group
+      .col-md-2.col-md-offset-2
+        = f.submit "Analyze", :class => 'btn btn-primary'
+#analyses_list_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.modal-title
+      .modal-body.large#analyses_list_modal_page
+      .modal-footer
+        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+          Close
 
 :javascript
   $(function() {

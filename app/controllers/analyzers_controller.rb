@@ -25,7 +25,7 @@ class AnalyzersController < ApplicationController
 
   def create
     simulator = Simulator.find(params[:simulator_id])
-    @analyzer = simulator.analyzers.build(params[:analyzer])
+    @analyzer = simulator.analyzers.build(permitted_analyzer_params)
 
     respond_to do |format|
       if @analyzer.save
@@ -42,7 +42,7 @@ class AnalyzersController < ApplicationController
     @analyzer = Analyzer.find(params[:id])
 
     respond_to do |format|
-      if @analyzer.update_attributes(params[:analyzer])
+      if @analyzer.update_attributes(permitted_analyzer_params)
         format.html { redirect_to @analyzer, notice: 'Analyzer was successfully updated.' }
         format.json { head :no_content }
       else
@@ -68,11 +68,29 @@ class AnalyzersController < ApplicationController
     analyzer = Analyzer.find(params[:id])
     param_def = analyzer.parameter_definitions
 
-    render partial: 'shared/parameters_form', layout: false, locals: {param_def: param_def}
+    render partial: 'analyses/parameters_form', layout: false, locals: {param_def: param_def}
   end
 
   def _inner_show
     analyzer = Analyzer.find(params[:id])
     render partial: "inner_show", locals: {analyzer: analyzer}
+  end
+
+  private
+  def permitted_analyzer_params
+    analyzer_params = params[:analyzer].present? ? params.require(:analyzer)
+                                       .permit(:name,
+                                               :type,
+                                               :command,
+                                               :description,
+                                               :auto_run,
+                                               :print_version_command,
+                                               :simulator,
+                                               parameter_definitions_attributes: [[:id, :key, :type, :default, :description]]
+                                              ) : {}
+    if analyzer_params.has_key?(:parameter_definitions_attributes) and analyzer_params[:parameter_definitions_attributes].is_a?(Hash)
+      analyzer_params[:parameter_definitions_attributes].select! {|pdef_id, pdef_val| pdef_val.has_key?(:key)} # remove empty hash
+    end
+    analyzer_params
   end
 end

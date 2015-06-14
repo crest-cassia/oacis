@@ -20,7 +20,7 @@ describe "AnalysesListDatatable" do
         @run.analyses.create!(@valid_attr)
       end
       @context = ActionController::Base.new.view_context
-      @context.stub(:params).and_return({sEcho: 1, iDisplayStart: 0, iDisplayLength:10 , iSortCol_0: 0, sSortDir_0: "desc"})
+      @context.stub(:params).and_return({draw: 1, start: 0, length:10 , "order" => {"0" => {"column" => "0", "dir" => "desc"}}})
       @context.stub(:link_to) {|str, link_path| link_path }
       @context.stub(:image_tag) {|str, link_path| link_path }
       @context.stub(:analysis_path) {|arn| arn.id.to_s }
@@ -28,27 +28,27 @@ describe "AnalysesListDatatable" do
       @context.stub(:distance_to_now_in_words).and_return("time")
       @context.stub(:raw).and_return("label")
       @context.stub(:status_label).and_return("status_label")
-      @context.stub(:shortened_id).and_return("xxxx..yy")
+      @context.stub(:shortened_id_monospaced).and_return("xxxx..yy")
       @arnld = AnalysesListDatatable.new(Analysis.where(status: :created), @context)
       @arnld_json = JSON.parse(@arnld.to_json)
     end
 
     it "is initialized" do
-      @arnld.instance_variable_get(:@analyses).should eq(Analysis.where(status: :created))
+      expect(@arnld.instance_variable_get(:@analyses)).to  eq Analysis.where(status: :created)
     end
 
     it "returns json" do
-      @arnld_json["iTotalRecords"].should == 20
-      @arnld_json["iTotalDisplayRecords"].should == 20
-      @arnld_json["aaData"].size.should == 10
-      @arnld_json["aaData"][0][1].to_s.should == @run.analyses.order_by("id desc").first.id.to_s
+      expect(@arnld_json["recordsTotal"]).to eq 20
+      expect(@arnld_json["recordsFiltered"]).to eq 20
+      expect(@arnld_json["data"].size).to eq 10
+      expect(@arnld_json["data"][0][1].to_s).to eq @run.analyses.order_by("id desc").first.id.to_s
     end
 
     context "with multiple sort" do
 
       before(:each) do
         @context = ActionController::Base.new.view_context
-        @context.stub(:params).and_return({sEcho: 1, iDisplayStart: 0, iDisplayLength:10, iSortCol_0: 4, iSortCol_1: 0, sSortDir_0: "asc", sSortDir_1: "desc"})
+        @context.stub(:params).and_return({draw: 1, start: 0, length:10, "order" => {"0" => {"column" => "5", "dir" => "asc"}, "1" => {"column" => "0", "dir" => "desc"}}})
         @context.stub(:link_to) {|str, link_path| link_path }
         @context.stub(:image_tag) {|str, link_path| link_path }
         @context.stub(:analysis_path) {|arn| arn.id.to_s }
@@ -56,16 +56,16 @@ describe "AnalysesListDatatable" do
         @context.stub(:distance_to_now_in_words).and_return("time")
         @context.stub(:raw).and_return("label")
         @context.stub(:status_label).and_return("status_label")
-        @context.stub(:shortened_id).and_return("xxxx..yy")
+        @context.stub(:shortened_id_monospaced).and_return("xxxx..yy")
         @arnld = AnalysesListDatatable.new(Analysis.where(status: :created), @context)
         @arnld_json = JSON.parse(@arnld.to_json)
       end
 
       it "returns json" do
-        @arnld_json["iTotalRecords"].should == 20
-        @arnld_json["iTotalDisplayRecords"].should == 20
-        @arnld_json["aaData"].size.should == 10
-        @arnld_json["aaData"][0][1].to_s.should == @run.analyses.order_by({"analyzer_version"=>"asc", "id"=>"desc"}).first.id.to_s
+        expect(@arnld_json["recordsTotal"]).to eq 20
+        expect(@arnld_json["recordsFiltered"]).to eq 20
+        expect(@arnld_json["data"].size).to eq 10
+        expect(@arnld_json["data"][0][1].to_s).to eq @run.analyses.order_by({"analyzer_version"=>"asc", "id"=>"desc"}).first.id.to_s
       end
     end
   end

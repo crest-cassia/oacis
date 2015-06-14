@@ -3,14 +3,28 @@
 - if @run.status == :finished or @run.status == :failed
   - @sim = @param_set.simulator
   - unless @sim.analyzers_on_run.empty? or OACIS_READ_ONLY
-    %h3 Run analysis
-    = form_for( @run.analyses.build, :url => run_analyses_path(@run), remote: true ) do |f|
-      = f.label :analyzer
-      = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }
+    %h3 Create Analysis
+    = form_for( @run.analyses.build, :url => run_analyses_path(@run), html: {class: 'form-horizontal'}, remote: true ) do |f|
+      .form-group
+        = f.label :analyzer, class: 'col-md-2 control-label'
+        .col-md-3
+          = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }, {}, {class: 'form-control'}
       %div#parameters_form
-        = render 'shared/parameters_form', param_def: @sim.analyzers_on_run.first.parameter_definitions
-      .form-actions
-        = f.submit "Analyze", :class => 'btn btn-primary'
+        = render 'analyses/parameters_form', param_def: @sim.analyzers_on_run.first.parameter_definitions
+      .form-group
+        .col-md-2.col-md-offset-2
+          = f.submit "Analyze", :class => 'btn btn-primary'
+#analyses_list_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.modal-title
+      .modal-body.large#analyses_list_modal_page
+      .modal-footer
+        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+          Close
 
   :javascript
     $(function() {

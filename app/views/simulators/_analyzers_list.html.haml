@@ -6,27 +6,35 @@
         = raw(th_element)
   %tbody
 - unless OACIS_READ_ONLY
-  .form-actions
-    = link_to 'New Analyzer', new_simulator_analyzer_path(@simulator), class: 'btn btn-primary'
+  = link_to 'New Analyzer', new_simulator_analyzer_path(@simulator), class: 'btn btn-primary'
+#analyzers_list_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.modal-title
+      .modal-body.large#analyzers_list_modal_page
+      .modal-footer
+        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+          Close
 
 :javascript
   var oAzrTable;
   function reload_analyzers_table() {
-    oAzrTable.fnReloadAjax();
+    oAzrTable.ajax.reload(null, false);
   }
 
   $(function() {
-    oAzrTable = $('#analyzers_list').dataTable({
-      bProcessing: true,
-      bServerSide: true,
-      bFilter: false,
-      iDisplayLength: 10,
-      sAjaxSource: $('#analyzers_list').data('source'),
-      sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-      sPaginationType: "bootstrap"
+    oAzrTable = $('#analyzers_list').DataTable({
+      processing: true,
+      serverSide: true,
+      searching: false,
+      pageLength: 10,
+      ajax: $('#analyzers_list').data('source')
     });
     $('#analyzers_list_length').append(
-      '<i class="icon-refresh" id="analyzers_list_refresh"></i>'
+      '<i class="fa fa-refresh padding-8 clickable" id="analyzers_list_refresh"></i>'
     );
     var refresh_icon = $('#analyzers_list_length').children('#analyzers_list_refresh');
     refresh_icon.on('click', reload_analyzers_table);

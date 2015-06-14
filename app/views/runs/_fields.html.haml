@@ -1,24 +1,24 @@
-.control-group
-  = f.label(:submitted_to, class: 'control-label')
-  .controls
+.form-group
+  = f.label(:submitted_to, class: 'col-md-2 control-label')
+  .col-md-3
     - host_names = run.simulator.executable_on.map {|h| [h.name, h.id.to_s]}
     - host_names += [ ["(manual submission)", nil] ]
     - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
-    = f.select(:submitted_to, options_for_select(host_names, selected: selected_id) )
-.control-group
-  = f.label(:priority, 'Priorities of Runs', class: 'control-label')
-  .controls
-    = f.select(:priority, options_for_select(Run::PRIORITY_ORDER.sort_by {|a| a[0]}.map {|a| [a[1], a[0]]}, selected: 1))
+    = f.select(:submitted_to, options_for_select(host_names, selected: selected_id), {}, {class: 'form-control'})
+.form-group
+  = f.label(:priority, 'Priorities of Runs', class: 'col-md-2 control-label')
+  .col-md-3
+    = f.select(:priority, options_for_select(Run::PRIORITY_ORDER.sort_by {|a| a[0]}.map {|a| [a[1], a[0]]}, selected: 1), {}, {class: 'form-control'})
 - if run.parameter_set.simulator.support_mpi
-  .control-group
-    = f.label(:mpi_procs, "MPI procs", class: 'control-label')
-    .controls
-      = f.text_field(:mpi_procs)
+  .form-group
+    = f.label(:mpi_procs, "MPI procs", class: 'col-md-2 control-label')
+    .col-md-3
+      = f.text_field(:mpi_procs, class: 'form-control')
 - if run.parameter_set.simulator.support_omp
-  .control-group
-    = f.label(:omp_threads, "OMP threads", class: 'control-label')
-    .controls
-      = f.text_field(:omp_threads)
+  .form-group
+    = f.label(:omp_threads, "OMP threads", class: 'col-md-2 control-label')
+    .col-md-3
+      = f.text_field(:omp_threads, class: 'form-control')
 
 #host_parameters
   = render 'runs/host_parameter_fields', {run: run, sim: run.simulator, host: run.submitted_to}
