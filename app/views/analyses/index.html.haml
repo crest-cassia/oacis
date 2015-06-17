@@ -31,16 +31,20 @@
       });
       aoAnalysesTables.push(oTable);
     });
-    aoAnalysesTables.forEach( function(oTable) {
-      setInterval( function() {
-        var num_open = $('img.treebtn[state="open"]', $(oTable)).length;
-        if( num_open == 0 ) { oTable.ajax.reload(null, false); }
-      }, 5000);
-      $('.dataTables_length', $(oTable).parent()).append(
-        '<i class="fa fa-refresh padding-8 clickable" id="analyses_list_refresh"></i>'
-      );
-      $('#analyses_list_refresh', $(oTable).parent()).on('click', function() {
+    function reload_analyses_table() {
+      aoAnalysesTables.forEach( function(oTable) {
         oTable.ajax.reload(null, false);
       });
+    }
+    setInterval( function() {
+      if(window.bEnableAutoReload) {
+        reload_analyses_table();
+      }
+    }, 5000 );
+    $('.dataTables_length').each( function() {
+      $(this).append(
+        '<i class="fa fa-refresh padding-half-em clickable" id="analyses_list_refresh"></i>'
+      );
+      $(this).children('#analyses_list_refresh').on('click', reload_analyses_table);
     });
   });
