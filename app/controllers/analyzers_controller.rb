@@ -60,6 +60,7 @@ class AnalyzersController < ApplicationController
     respond_to do |format|
       format.json { head :no_content }
       format.js
+      format.html { redirect_to simulator_path(simulator) }
     end
   end
 

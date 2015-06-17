@@ -9,7 +9,7 @@ function create_parameter_sets_list(selector, default_length) {
     ajax: $(selector).data('source')
   });
   $(selector+'_length').append(
-    '<i class="fa fa-refresh padding-8 clickable" id="params_list_refresh"></i>'
+    '<i class="fa fa-refresh padding-half-em clickable" id="params_list_refresh"></i>'
   );
   $('#params_list_length').children('#params_list_refresh').on('click', function() {
     oPsTable.ajax.reload(null, false);

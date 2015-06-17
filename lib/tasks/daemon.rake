@@ -11,7 +11,7 @@ namespace :daemon do
       if is_server_running?
         $stderr.puts "server is already running: #{SERVER_PID}"
       else
-        cmd = "bundle exec rails s -d"
+        cmd = "bundle exec rails s -d -b 0.0.0.0"
         puts cmd
         system(cmd)
       end

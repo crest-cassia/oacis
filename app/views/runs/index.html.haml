@@ -45,10 +45,14 @@
         oTable.ajax.reload(null, false);
       });
     }
-    setInterval( reload_runs_table , 5000 );
+    setInterval( function() {
+      if(window.bEnableAutoReload) {
+        reload_runs_table();
+      }
+    }, 5000 );
     $('.dataTables_length').each( function() {
       $(this).append(
-        '<i class="fa fa-refresh padding-8 clickable" id="runs_list_refresh"></i>'
+        '<i class="fa fa-refresh padding-half-em clickable" id="runs_list_refresh"></i>'
       );
       $(this).children('#runs_list_refresh').on('click', reload_runs_table);
     });
