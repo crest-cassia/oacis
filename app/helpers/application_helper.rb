@@ -55,6 +55,10 @@ module ApplicationHelper
     raw(tags)
   end
 
+  def shortened_id_monospaced(id)
+    raw( '<tt class="short-id">' + shortened_id(id) + '</tt>' )
+  end
+
   def shortened_id(id)
     str = id.to_s
     str[3..6] + ".." + str[-3..-1]
@@ -71,7 +75,7 @@ module ApplicationHelper
   def progress_bar_tag_for(status, percent)
     content = percent > MIN_PERCENT_TO_PRINT ? "#{percent}%" : ""
     tag = <<-EOS
-      <div class="bar bar-#{status}" style="width: #{percent}%">#{content}</div>
+      <div class="progress-bar progress-bar-#{status}" style="width: #{percent}%">#{content}</div>
     EOS
   end
 

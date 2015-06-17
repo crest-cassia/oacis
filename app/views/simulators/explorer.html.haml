@@ -11,7 +11,7 @@
 %hr
 
 .row
-  .span4
+  .col-md-4
     %table.table.table-striped
       %tbody
         %tr
@@ -26,43 +26,48 @@
             %td{id: "ps_v_#{key}", :"data-range" => domains[key] }= @param_set.v[key]
             %td{style: "padding-left: 0; padding-right: 0;"}
               - url = _neighbor_parameter_set_path('PSID') +".json?key=#{key}&direction=down"
-              %i.icon-arrow-down{id: "ps_down_#{key}", data: {"neighbor-url" => url}}
+              %i.fa.fa-arrow-down.clickable{id: "ps_down_#{key}", data: {"neighbor-url" => url}}
             %td{style: "padding-left: 0; padding-right: 0;"}
               - url = _neighbor_parameter_set_path('PSID') +".json?key=#{key}&direction=up"
-              %i.icon-arrow-up{id: "ps_up_#{key}", data: {"neighbor-url" => url}}
+              %i.fa.fa-arrow-up.clickable{id: "ps_up_#{key}", data: {"neighbor-url" => url}}
     %form.form-inline#scatter-plot-form{style: "line-height: 15px;"}
       - opts = @simulator.parameter_definitions.map(&:key)
       #forms-x
         %br
         = label_tag 'x_axis_key', "X-Axis: ", class: 'control-label scatter-plot-label'
-        = select_tag 'x_axis_key', options_for_select(opts), id: 'x_axis_key'
-        %label.checkbox.inline
-          %input#xlog{type: "checkbox"} Log Scale
+        = select_tag 'x_axis_key', options_for_select(opts), id: 'x_axis_key', class: 'form-control input-sm'
+        .checkbox
+          %label
+            %input#xlog{type: "checkbox"} Log Scale
       #forms-y
         %br
         = label_tag 'y_axis_key', "Y-Axis: ", class: 'control-label scatter-plot-label'
-        = select_tag 'y_axis_key', options_for_select(opts, selected: opts[1]), id: 'y_axis_key'
-        %label.checkbox.inline
-          %input#ylog{type: "checkbox"} Log Scale
+        = select_tag 'y_axis_key', options_for_select(opts, selected: opts[1]), id: 'y_axis_key', class: 'form-control input-sm'
+        .checkbox
+          %label
+            %input#ylog{type: "checkbox"} Log Scale
       #form-result
         %br
         = label_tag 'result', "Result:", class: 'control-label'
         - opts = @simulator.plottable_domains.map {|key,domain| [key, key, {:"data-domain" => domain}] }
-        = select_tag 'result', options_for_select(opts), id: 'result', include_blank: true
+        = select_tag 'result', options_for_select(opts), id: 'result', class: 'form-control input-sm', include_blank: true
       #irrelevant-params
         %br
-        Irrelevant parameters :
+        %label Irrelevant Parameters:
         %br
-        - @simulator.parameter_definitions.map(&:key).each do |key|
-          = label_tag key, key
-          = check_box_tag key
+        .checkbox
+          - @simulator.parameter_definitions.map(&:key).each do |key|
+            %label
+              %input{type: "checkbox"}
+                = key
       #result-range
         %br
         %label
-          Result range:
-        %input.input-small#range-min{type: "text", placeholder: "min"}
-        %input.input-small#range-max{type: "text", placeholder: "max"}
-  .span8
+          Result Range:
+        .form-inline
+          %input.input-sm.form-control#range-min{type: "text", placeholder: "min"}
+          %input.input-sm.form-control#range-max{type: "text", placeholder: "max"}
+  .col-md-8
     - urls = {"scatter-plot-url" => _scatter_plot_parameter_set_path('PSID') + '.json',
               "ps-url" => parameter_set_path('PSID')+'.json'}
     #plot{data: urls }
@@ -92,10 +97,10 @@
   $('#scatter-plot-form select').change( function() {parameter_explorer.Update();} );
   $('#irrelevant-params input').change( function() {parameter_explorer.Update();} );
 
-  $('i.icon-arrow-down[id^="ps_down_"]').on('click', function () {
+  $('i.fa-arrow-down[id^="ps_down_"]').on('click', function () {
     parameter_explorer.MoveCurrentPs(this);
   });
-  $('i.icon-arrow-up[id^="ps_up_"]').on('click', function () {
+  $('i.fa-arrow-up[id^="ps_up_"]').on('click', function () {
     parameter_explorer.MoveCurrentPs(this);
   });
 

@@ -298,6 +298,7 @@ ScatterPlot.prototype.AddDescription = function() {
     }
     dl.append("dt").text("URL");
     dl.append("input")
+      .attr('class', 'form-control input-sm')
       .attr({"type": "text", "readonly": "readonly", "onClick": "this.select(); "})
       .attr('value', plot.data.plot_url );
   }
@@ -306,7 +307,7 @@ ScatterPlot.prototype.AddDescription = function() {
   function add_tools() {
     var actions = plot.description.append("div").attr('class', 'btn-group');
     actions.append("a")
-      .attr({"class": "btn btn-primary btn-small dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
+      .attr({"class": "btn btn-primary btn-sm dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
       .text("Action")
       .append("span").attr("class", "caret");
     var list = actions.append("ul").attr('class', 'dropdown-menu');
@@ -333,16 +334,21 @@ ScatterPlot.prototype.AddDescription = function() {
       });
     plot.description.append("div").style("margin-bottom", "20px");
 
-    plot.description.append("input").attr("type", "checkbox").on("change", function() {
+    var log_check_box = plot.description.append("div").attr("class", "checkbox");
+    var check_box_x_label = log_check_box.append("label").attr("id", "x_log_check");
+    check_box_x_label.html('<input type="checkbox"> log scale on x axis');
+    //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
+    d3.select('label#x_log_check input').on("change", function() {
       reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
     });
-    plot.description.append("span").html("log scale on x axis");
-    plot.description.append("br");
+    log_check_box.append("br");
 
-    plot.description.append("input").attr("type", "checkbox").on("change", function() {
+    var check_box_y_label = log_check_box.append("label").attr("id", "y_log_check");
+    check_box_y_label.html('<input type="checkbox"> log scale on y axis');
+    //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
+    d3.select('label#y_log_check input').on("change", function() {
       reset_brush(plot.IsLog[0] ? "log" : "linear", this.checked ? "log" : "linear");
     });
-    plot.description.append("span").html("log scale on y axis");
 
     plot.description.append("br");
     var control_plot = plot.description.append("div").style("margin-top", "10px");
@@ -431,13 +437,13 @@ ScatterPlot.prototype.AddDescription = function() {
       var form = color_scale_control.append("form").attr("class", "form-inline");
       form.append("input").attr({
         "type": "text",
-        "class": "input-small",
+        "class": "input-sm form-control",
         "placeholder": "min",
         "id": "range-min"
       });
       form.append("input").attr({
         "type": "text",
-        "class": "input-small",
+        "class": "input-sm form-control",
         "placeholder": "max",
         "id": "range-max"
       });

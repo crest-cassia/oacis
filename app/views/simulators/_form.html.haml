@@ -1,70 +1,82 @@
 = form_for @simulator, html: {class: 'form-horizontal'} do |f|
   = render partial: 'shared/error_messages', locals: {error_messages: @simulator.errors.full_messages}
   - has_ps = @simulator.parameter_sets.present?
-  .control-group
-    = f.label(:name, class: 'control-label')
-    .controls
-      = f.text_field(:name, class: 'text_field')
-  #parameters_form.control-group
-    = label_tag('', 'Definition of Parameters', class: 'control-label')
-    .controls
+  .form-group
+    = f.label(:name, class: ['col-md-2','control-label'])
+    .col-md-3
+      = f.text_field(:name, class: ['form-control'])
+  .form-group
+    = label_tag('', 'Definition of Parameters', class: ['col-md-2','control-label'])
+    .col-md-10
+      #parameters_form
       = f.fields_for :parameter_definitions do |builder|
         = render 'parameter_definition_fields', f: builder, disabled: has_ps
       #add_field_here
-      %fieldset.controls-row
-        = text_field_tag '__dummy__', "_seed", disabled: true
-        = select_tag '__dummy__', options_for_select(['seed']), disabled: true
-        = text_field_tag '__dummy__', "-", disabled: true
-        %br
-        = text_area_tag '__dummy__', "Random number seed", rows: 3, disabled: true
+      .form-group.row.no-margin.no-gutter.small-margin-bottom
+        .col-md-3
+          = text_field_tag '__dummy__', "_seed", {disabled: true, class: 'form-control'}
+        .col-md-2
+          = select_tag '__dummy__', options_for_select(['seed']), {disabled: true, class: 'form-control'}
+        .col-md-3
+          = text_field_tag '__dummy__', "-", {disabled: true, class: 'form-control'}
+      .form-group.row.no-margin.no-gutter
+        .col-md-8
+          = text_area_tag '__dummy__', "Random number seed", rows: 3, disabled: true, class: 'form-control'
       = link_to_add_fields "Add Parameter", f, :parameter_definitions unless has_ps
-  .control-group
-    = f.label(:pre_process_script, class: 'control-label')
-    .controls
-      = f.text_area(:pre_process_script, rows: 3)
-  .control-group
-    = f.label(:command, class: 'control-label')
-    .controls
-      = f.text_field(:command)
-  .control-group
-    = f.label(:print_version_command, class: 'control-label')
-    .controls
-      = f.text_field(:print_version_command)
-  .control-group
-    = f.label(:support_input_json, "Input type", class: 'control-label')
-    .controls
-      = f.select(:support_input_json, {"Argument" => false, "JSON" => true} )
-  .control-group
-    = f.label(:support_mpi, class: 'control-label')
-    .controls
-      = f.check_box(:support_mpi)
-  .control-group
-    = f.label(:support_omp, class: 'control-label')
-    .controls
-      = f.check_box(:support_omp)
-  .control-group
-    = f.label(:description, class: 'control-label')
-    .controls
-      = f.text_area(:description, rows: 5)
-  .control-group
-    .control-label
+  .form-group
+    = f.label(:pre_process_script, class: ['col-md-2','control-label'])
+    .col-md-6
+      = f.text_area(:pre_process_script, rows: 3, class: 'form-control')
+  .form-group
+    = f.label(:command, class: ['col-md-2','control-label'])
+    .col-md-6
+      = f.text_field(:command, class: 'form-control')
+  .form-group
+    = f.label(:print_version_command, class: ['col-md-2','control-label'])
+    .col-md-3
+      = f.text_field(:print_version_command, class: 'form-control')
+  .form-group
+    = f.label(:support_input_json, "Input type", class: ['col-md-2','control-label'])
+    .col-md-3
+      = f.select(:support_input_json, {"Argument" => false, "JSON" => true}, {},{class: 'form-control'})
+  .form-group
+    = f.label(:support_mpi, class: ['col-md-2','control-label'])
+    .col-md-2
+      .checkbox
+        %label
+          = f.check_box(:support_mpi)
+  .form-group
+    = f.label(:support_omp, class: ['col-md-2','control-label'])
+    .col-md-2
+      .checkbox
+        %label
+          = f.check_box(:support_omp)
+  .form-group
+    = f.label(:description, class: ['col-md-2','control-label'])
+    .col-md-6
+      = f.text_area(:description, rows: 5, class: 'form-control')
+  .form-group
+    %label.col-md-2.control-label
       Executable_on
-    .controls
+    .col-md-10
       = hidden_field_tag "simulator[executable_on_ids][]", nil
       - Host.all.each do |host|
-        %label{ for: dom_id(host) }
-          = check_box_tag "simulator[executable_on_ids][]", host.id.to_s, @simulator.executable_on_ids.include?(host.id), id: dom_id(host)
-          = host.name
+        .checkbox
+          %label{ for: dom_id(host) }
+            = check_box_tag "simulator[executable_on_ids][]", host.id.to_s, @simulator.executable_on_ids.include?(host.id), id: dom_id(host)
+            = host.name
   - if @duplicating_simulator
-    .control-group
-      .control-label
-        Copy Analyzers
-      .controls
+    .form-group
+      %label.col-md-2.control-label
+        Analyzers to copy
+      .col-md-10
         = hidden_field_tag "duplicating_simulator", @duplicating_simulator.id
         - @duplicating_simulator.analyzers.each do |azr|
-          %label{ for: dom_id(azr) }
-            = check_box_tag "copied_analyzers[]", azr.id.to_s, @copied_analyzers.include?(azr), id: dom_id(azr)
-            = "#{azr.simulator.name} / #{azr.name}"
-  .form-actions
-    = f.submit(class: 'btn btn-primary')
-    = link_to('Cancel', simulators_path, class: 'btn')
+          .checkbox
+            %label{ for: dom_id(azr) }
+              = check_box_tag "copied_analyzers[]", azr.id.to_s, @copied_analyzers.include?(azr), id: dom_id(azr)
+              = "#{azr.simulator.name} / #{azr.name}"
+  .form-group
+    .col-md-4.col-md-offset-2
+      = f.submit(class: 'btn btn-primary')
+      = link_to('Cancel', simulators_path, class: ['btn', 'btn-default'])

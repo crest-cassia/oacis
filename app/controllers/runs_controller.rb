@@ -78,7 +78,7 @@ class RunsController < ApplicationController
 
   def preview
     param_set = ParameterSet.find(params[:parameter_set_id])
-    run = param_set.runs.build(params[:run])
+    run = param_set.runs.build(permitted_run_params)
     @error_messages = run.valid? ? [] : run.errors.full_messages
     @script = JobScriptUtil.script_for(run, run.submitted_to) if run.valid? and run.submitted_to?
     respond_to do |format|
@@ -100,6 +100,10 @@ class RunsController < ApplicationController
 
   private
   def permitted_run_params
-    params.require(:run).permit(:mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to, :seed)
+    if params[:run]["submitted_to"].length > 0
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed, host_parameters: [Host.find(params["run"]["submitted_to"]).host_parameter_definitions.map {|hpd| hpd[:key]}])
+    else
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed, host_parameters: {})
+    end
   end
 end

@@ -60,6 +60,7 @@ class AnalyzersController < ApplicationController
     respond_to do |format|
       format.json { head :no_content }
       format.js
+      format.html { redirect_to simulator_path(simulator) }
     end
   end
 
@@ -68,7 +69,7 @@ class AnalyzersController < ApplicationController
     analyzer = Analyzer.find(params[:id])
     param_def = analyzer.parameter_definitions
 
-    render partial: 'shared/parameters_form', layout: false, locals: {param_def: param_def}
+    render partial: 'analyses/parameters_form', layout: false, locals: {param_def: param_def}
   end
 
   def _inner_show
@@ -86,10 +87,10 @@ class AnalyzersController < ApplicationController
                                                :auto_run,
                                                :print_version_command,
                                                :simulator,
-                                               parameter_definitions_attributes: [[:id, :key, :type, :dafault, :description]]
+                                               parameter_definitions_attributes: [[:id, :key, :type, :default, :description]]
                                               ) : {}
-    if analyzer_params.has_key?(:parameter_definitions_attributes)
-      analyzer_params[:parameter_definitions_attributes].select! {|pdef| pdef.has_key?(:key)} # remove empty hash
+    if analyzer_params.has_key?(:parameter_definitions_attributes) and analyzer_params[:parameter_definitions_attributes].is_a?(Hash)
+      analyzer_params[:parameter_definitions_attributes].select! {|pdef_id, pdef_val| pdef_val.has_key?(:key)} # remove empty hash
     end
     analyzer_params
   end

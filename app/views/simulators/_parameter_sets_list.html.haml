@@ -11,9 +11,8 @@
   %tbody
 
 - unless OACIS_READ_ONLY
-  .form-actions
-    %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
-      New Parameter Set
+  %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
+    New Parameter Set
   
 %h3 Parameter Filter
 = form_tag( _make_query_simulator_path(@simulator) ) do |f|
@@ -51,6 +50,18 @@
   = form_tag( _make_query_simulator_path(@simulator) ) do |f|
     = hidden_field_tag "query_id", @query_id
     = submit_tag "Delete this Filter", :class => 'btn btn-primary', :name => :delete_query, :confirm => 'Are you sure?'
+
+#runs_list_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.modal-title
+      .modal-body.large#runs_list_modal_page
+      .modal-footer
+        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+          Close
 
 :javascript
   $(function() {

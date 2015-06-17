@@ -5,68 +5,54 @@
 
 %form
   .form-inline
-    %label{for: 'plot-type'} Plot type
-    %select#plot-type
-      %option{value: 'line'} line plot
-      %option{value: 'scatter'} scatter plot
-      %option{value: 'figures'} figure viewer
-  %br
+    .form-group
+      %label{for: 'plot-type'} Plot type
+      %select#plot-type.form-control
+        %option{value: 'line'} line plot
+        %option{value: 'scatter'} scatter plot
+        %option{value: 'figures'} figure viewer
   .form-inline
     - simulator = @param_set.simulator
     - plottable = simulator.plottable
-    #line-plot-form
+    .form-group#line-plot-form
       - parameter_keys = @param_set.parameter_keys_having_distinct_values
       = label_tag 'x_axis_key', "X-Axis"
-      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', prompt: "[Plot All]";
+      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', class: 'form-control', prompt: "[Plot All]";
       = label_tag 'y_axis_key', "Y-Axis"
-      = select_tag 'y_axis_key', options_for_select(plottable), id: 'y_axis_key', prompt: "[Plot All]"
+      = select_tag 'y_axis_key', options_for_select(plottable), id: 'y_axis_key', class: 'form-control', prompt: "[Plot All]"
       = label_tag 'series', "Series"
-      = select_tag 'series', options_for_select(parameter_keys), id: 'series', include_blank: true
+      = select_tag 'series', options_for_select(parameter_keys), id: 'series', class: 'form-control', include_blank: true
       %a.btn.btn-primary#add_line_plot_button Add Line Plot
-    #scatter-plot-form
+    .form-group#scatter-plot-form
       - parameter_keys = simulator.parameter_definitions.map(&:key)
       = label_tag 'x_axis_key', "X-Axis"
-      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key'
+      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', class: 'form-control'
       = label_tag 'y_axis_key', "Y-Axis"
-      = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
+      = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key', class: 'form-control'
       = label_tag 'result', "Result"
-      = select_tag 'result', options_for_select(plottable), id: 'result'
+      = select_tag 'result', options_for_select(plottable), id: 'result', class: 'form-control'
       %a.btn.btn-primary#add_scatter_plot_button Add Scatter Plot
-    #figure-viewer-form
+    .form-group#figure-viewer-form
       - parameter_keys = simulator.parameter_definitions.map(&:key)
       = label_tag 'x_axis_key', "X-Axis"
-      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key'
+      = select_tag 'x_axis_key', options_for_select(parameter_keys), id: 'x_axis_key', class: 'form-control'
       = label_tag 'y_axis_key', "Y-Axis"
-      = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key'
+      = select_tag 'y_axis_key', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'y_axis_key', class: 'form-control'
       = label_tag 'result', "Result"
-      = select_tag 'result', options_for_select(simulator.figure_files), id: 'result'
+      = select_tag 'result', options_for_select(simulator.figure_files), id: 'result', class: 'form-control'
       %a.btn.btn-primary#add_figure_viewer_button Add Figure Viewer
-    #irrelevant-params
-      %br
-      Irrelevant parameters :
+  .form-inline
+    .form-group#irrelevant-params
+      %label Irrelevant parameters:
       %br
       - simulator.parameter_definitions.map(&:key).each do |key|
-        = label_tag key, key
-        = check_box_tag key
+        %label
+          %input{type: 'checkbox', data: {key: key}}
+            = key
 %hr
 
 #plot
   #plot-tooltip.plot-tooltip
-
-:css
-  div.plot-tooltip {
-    opacity: 0;
-    position: absolute;
-    text-align: center;
-    padding: 2px;
-    font: 12px sans-serif;
-    background: black;
-    color: white;
-    border: 0px;
-    border-radius: 8px;
-    pointer-events: none;
-    z-index: 10;
-  }
 
 :javascript
   function show_form_for_plots() {
@@ -103,8 +89,8 @@
     var x = $('#line-plot-form #x_axis_key').val();
     var y = $('#line-plot-form #y_axis_key').val();
     var series = $('#line-plot-form #series').val();
-    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
-      return this.id;
+    var irrelevants = $('#irrelevant-params').find("input:checkbox:checked").map(function() {
+      return $(this).data('key');
       }).get().join(',');
 
     if( x == "" ) {
@@ -179,7 +165,14 @@
     add_figure_viewer(x, y, result, irrelevants);
   });
 
+  function add_tooltip() {
+    // in order to avoid 'position: relative' style of '.col-lg-12' tag, we put 'tooltip' before '.col-lg-12' tag
+    // See http://stackoverflow.com/questions/8828387
+    $('#plot-tooltip').insertBefore('.col-lg-12');
+  }
+
   $(function() {  // parse plot parameters from URL
+    add_tooltip();
     function get_query_param() {
       console.log('hoge');
       if( 1 < document.location.search.length ) {
