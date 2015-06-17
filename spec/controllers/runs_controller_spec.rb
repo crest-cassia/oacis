@@ -120,7 +120,7 @@ describe RunsController do
     describe "when preview button is pressed" do
 
       before(:each) do
-        @req_param = {parameter_set_id: @par}.merge(preview_button: true)
+        @req_param = {parameter_set_id: @par, run: {omp_threads: 1, mpi_procs: 8, submitted_to: ""}}.merge(preview_button: true)
       end
 
       it "calls preview method" do

@@ -18,7 +18,6 @@ class Host
   field :max_mpi_procs, type: Integer, default: 1
   field :min_omp_threads, type: Integer, default: 1
   field :max_omp_threads, type: Integer, default: 1
-  field :template, type: String, default: JobScriptUtil::DEFAULT_TEMPLATE
   field :position, type: Integer # position in the table. start from zero
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
@@ -45,7 +44,6 @@ class Host
 
   before_validation :get_host_parameters,
                :if => lambda { status == :enabled }
-  before_save :use_default_template
   before_create :set_position
   before_destroy :validate_destroyable, :delete_default_parameters_from_simulator
   after_update :delete_default_parameters_from_simulator,
@@ -164,10 +162,6 @@ class Host
 
   rescue => ex
     errors.add(:base, "Error while getting host parameters: #{ex.message}")
-  end
-
-  def use_default_template
-    self.template = JobScriptUtil::DEFAULT_TEMPLATE
   end
 
   def validate_destroyable

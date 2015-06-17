@@ -116,7 +116,6 @@ class HostsController < ApplicationController
                                            :max_mpi_procs,
                                            :min_omp_threads,
                                            :max_omp_threads,
-                                           :template,
                                            executable_simulator_ids: []
                                           ) : {}
   end
