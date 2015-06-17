@@ -20,9 +20,6 @@
       %th SSH key
       %td= @host.ssh_key
     %tr
-      %th Scheduler type
-      %td= @host.scheduler_type
-    %tr
       %th Work base directory
       %td= @host.work_base_dir
     %tr
@@ -48,10 +45,6 @@
           = @host.min_omp_threads
         - else
           = "#{@host.min_omp_threads} ~ #{@host.max_omp_threads}"
-    %tr
-      %th Template
-      %td
-        %pre= @host.template
     %tr
       %th Host Parameters
       %td

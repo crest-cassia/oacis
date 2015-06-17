@@ -26,11 +26,6 @@
     .col-md-3
       = f.text_field(:ssh_key, class: 'form-control')
   .form-group
-    = f.label(:scheduler_type, class: 'col-md-2 control-label')
-    .col-md-3
-      - types = SchedulerWrapper::TYPES.map {|t| (t=="none" or t=="xsub") ? [t,t] : [t+' (obsolete)',t] }
-      = f.select(:scheduler_type, types, {}, {class: 'form-control'})
-  .form-group
     = f.label(:work_base_dir, class: 'col-md-2 control-label')
     .col-md-3
       - if @host.work_base_dir_is_not_editable?
@@ -68,10 +63,6 @@
         \~
       .col-md-5
         = f.number_field(:max_omp_threads, class: 'form-control')
-  .form-group
-    = f.label(:template, class: 'col-md-2 control-label')
-    .col-md-7
-      = f.text_area(:template, rows: 20, class: 'form-control')
   #host_parameters_definition.form-group
     = label_tag('', 'Definition of Host Parameters', class: 'col-md-2 control-label')
     .col-md-10
@@ -92,30 +83,4 @@
     .col-md-4.col-md-offset-2
       = f.submit('Save', class: 'btn btn-primary')
       = link_to('Cancel', (@host.persisted? ? @host : hosts_path), class: 'btn btn-default')
-      %a{class: 'btn btn-warning', id: 'load_default_template', data: JobScriptUtil::DEFAULT_TEMPLATE} Load default template
-
-:javascript
-  function update_template_and_host_parameters_field() {
-    if( $('#host_scheduler_type option:selected').text() == "xsub" ) {
-      $('#host_template').attr("disabled", "disabled");
-      $('#host_parameters_definition').hide();
-    }
-    else {
-      $('#host_template').removeAttr("disabled");
-      $('#host_parameters_definition').show();
-    }
-  }
-
-  $(function() {
-    update_template_and_host_parameters_field();
-    $('#host_scheduler_type').change( update_template_and_host_parameters_field );
-  });
-
-  $(function(){
-    $('a#load_default_template').on('click', function(){
-      if(confirm('Are you sure to load default template?')){
-        $('textarea#host_template').text($('a#load_default_template').attr('data'));
-      }
-    });
-  });
 

@@ -58,22 +58,6 @@ describe JobScriptUtil do
       }
     end
 
-    it "renders a template" do
-      @host.template = <<EOS
-#!/bin/sh
-# foobar: <%= foobar %>
-# node: <%= mpi_procs / 4 %>
-# mpi_procs: <%= mpi_procs %>
-EOS
-      @run.mpi_procs = 8
-      @run.host_parameters = {"foobar" => "abc"}
-      script = JobScriptUtil.script_for(@run, @host)
-      script.should match(/bin\/sh/)
-      script.should match(/foobar: abc/)
-      script.should match(/node: 2/)
-      script.should match(/mpi_procs: 8/)
-    end
-
     it "calls mpiexec when Simulator#support_mpi is true" do
       @sim.support_mpi = true
       @sim.save!
