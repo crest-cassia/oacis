@@ -34,7 +34,6 @@ describe JobIncluder do
   end
 
   def make_scheduler_log(host, run)
-    host.update_attribute(:scheduler_type, :xsub)
     log_dir = @temp_dir.join(@run.id.to_s+'_log')
     FileUtils.mkdir_p(log_dir)
     FileUtils.touch(log_dir.join('scheduler_log'))

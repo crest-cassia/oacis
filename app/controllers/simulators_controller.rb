@@ -56,7 +56,7 @@ class SimulatorsController < ApplicationController
   # POST /simulators
   # POST /simulators.json
   def create
-    @simulator = Simulator.new(params[:simulator])
+    @simulator = Simulator.new(permitted_simulator_params)
     if params[:duplicating_simulator]
       @duplicating_simulator = Simulator.find(params[:duplicating_simulator])
       @copied_analyzers = params[:copied_analyzers].to_a.map {|azr_id| Analyzer.find(azr_id) }
@@ -82,7 +82,7 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
 
     respond_to do |format|
-      if @simulator.update_attributes(params[:simulator])
+      if @simulator.update_attributes(permitted_simulator_params)
         format.html { redirect_to @simulator, notice: 'Simulator was successfully updated.' }
         format.json { head :no_content }
       else
@@ -116,7 +116,7 @@ class SimulatorsController < ApplicationController
       @simulator = Simulator.find(params[:id])
       @new_query = @simulator.parameter_set_queries.build
       if @new_query.set_query(params["query"]) and @new_query.save
-        @query_id = @new_query.id
+        @query_id = @new_query.id.to_s
         flash[:notice] = "A new query is created"
       else
         flash[:alert] = "Failed to create a query"
@@ -178,5 +178,22 @@ class SimulatorsController < ApplicationController
     omp = sim.default_omp_threads[host.id.to_s] || 1
     data = {'mpi_procs' => mpi, 'omp_threads' => omp}
     render json: data
+  end
+
+  private
+  def permitted_simulator_params
+    params[:simulator].present? ? params.require(:simulator)
+                                        .permit(:name,
+                                                :pre_process_script,
+                                                :command,
+                                                :description,
+                                                :executable_on_ids,
+                                                :support_input_json,
+                                                :support_omp,
+                                                :support_mpi,
+                                                :print_version_command,
+                                                parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
+                                                executable_on_ids: []
+                                               ) : {}
   end
 end

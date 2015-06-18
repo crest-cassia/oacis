@@ -4,16 +4,16 @@ function draw_color_map() {
   var colorScale = d3.scale.linear().domain([0.0,1.0])
     .range(["#dddddd", "#0041ff"]);
   var cmap = d3.select('svg#colormap-svg')
-    .attr("width", 200)
-    .attr("height", 20);
+    .attr("width", 180)
+    .attr("height", 30);
   cmap.selectAll("rect")
     .data([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
     .enter().append("rect")
     .attr({
-      x: function(d, i) { return i * 20.0;},
+      x: function(d, i) { return i * 30.0;},
       y: 0.0,
-      width: 19,
-      height: 19,
+      width: 29,
+      height: 29,
       fill: function(d) { return colorScale(d); }
     });
 };
@@ -201,7 +201,7 @@ function draw_progress_overview(url) {
         stroke: "black",
         "stroke-width": 1
       });
-    
+
     var rectRegion = inner_svg.append("g");
 
     var row = rectRegion.selectAll("g")
@@ -323,7 +323,10 @@ function draw_progress_overview(url) {
       })
       .text(function(d) { return d; });
   })
-  .on("error", function() { loading.remove(); })
+  .on("error", function(error) {
+    console.warn(error);
+    loading.remove();
+  })
   .get();
 
   loading.on("mousedown", function() {

@@ -148,6 +148,9 @@ FactoryGirl.define do
   end
 
   factory :host do
+    before(:create) do |host|
+      host.stub(:get_host_parameters).and_return []
+    end
     sequence(:name, 'A') {|n| "Host_#{n}"}
     sequence(:hostname, 'A') {|n| "hostname.#{n}"}
     min_mpi_procs 1
@@ -157,12 +160,6 @@ FactoryGirl.define do
     user "login_user"
 
     factory :host_with_parameters do
-      new_header = <<-EOS
-#!/bin/bash
-# param1:<%= param1 %>
-# param2:<%= param2 %>
-EOS
-      template { JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", new_header) }
       host_parameter_definitions {
         [
           HostParameterDefinition.new(key: "param1"),
@@ -172,6 +169,7 @@ EOS
     end
   end
 
+  # :localhost needs ssh connection and xsub
   factory :localhost, class: Host do
     name "localhost"
     hostname { `hostname`.chomp }

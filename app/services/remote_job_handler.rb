@@ -92,13 +92,9 @@ class RemoteJobHandler
   end
 
   def submit_to_scheduler(run, job_script_path)
-    if @host.scheduler_type == "xsub"
-      job_parameters = run.host_parameters || {}
-      job_parameters["mpi_procs"] = run.mpi_procs
-      job_parameters["omp_threads"] = run.omp_threads
-    end
-
-    job_parameters ||= {}
+    job_parameters = run.host_parameters || {}
+    job_parameters["mpi_procs"] = run.mpi_procs
+    job_parameters["omp_threads"] = run.omp_threads
     wrapper = SchedulerWrapper.new(@host)
     cmd = wrapper.submit_command(job_script_path, run.id.to_s, job_parameters)
     @host.start_ssh do |ssh|

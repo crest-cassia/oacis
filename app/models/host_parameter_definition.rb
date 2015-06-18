@@ -19,7 +19,7 @@ class HostParameterDefinition
   end
 
   def reserved_words_are_not_used_in_key
-    if JobScriptUtil::DEFAULT_EXPANDED_VARIABLES.include?(key)
+    if JobScriptUtil::EXPANDED_VARIABLES.include?(key)
       errors[:base] << "#{key} is a reserved word. Cannot use it as a key."
     end
   end

@@ -20,9 +20,6 @@
       %th SSH key
       %td= @host.ssh_key
     %tr
-      %th Scheduler type
-      %td= @host.scheduler_type
-    %tr
       %th Work base directory
       %td= @host.work_base_dir
     %tr
@@ -49,10 +46,6 @@
         - else
           = "#{@host.min_omp_threads} ~ #{@host.max_omp_threads}"
     %tr
-      %th Template
-      %td
-        %pre= @host.template
-    %tr
       %th Host Parameters
       %td
         %table.table.table-striped
@@ -71,7 +64,6 @@
       %td= raw( @host.executable_simulators.map {|sim| h(sim.name) }.join('<br />') )
 
 - unless OACIS_READ_ONLY
-  .form-actions
-    = link_to 'Edit', edit_host_path(@host), class: 'btn btn-info'
-    = link_to 'Back to Index', hosts_path, class: 'btn'
-    = link_to 'Destroy', @host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @host.destroyable?
+  = link_to 'Edit', edit_host_path(@host), class: 'btn btn-info'
+  = link_to 'Back to Index', hosts_path, class: 'btn btn-default'
+  = link_to 'Destroy', @host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @host.destroyable?

@@ -10,7 +10,6 @@ class Host
   field :user, type: String
   field :port, type: Integer, default: 22
   field :ssh_key, type: String, default: '~/.ssh/id_rsa'
-  field :scheduler_type, type: String, default: "none"
   field :work_base_dir, type: String, default: '~'
   field :mounted_work_base_dir, type: String, default: ""
   field :max_num_jobs, type: Integer, default: 1
@@ -19,7 +18,6 @@ class Host
   field :max_mpi_procs, type: Integer, default: 1
   field :min_omp_threads, type: Integer, default: 1
   field :max_omp_threads, type: Integer, default: 1
-  field :template, type: String, default: JobScriptUtil::DEFAULT_TEMPLATE
   field :position, type: Integer # position in the table. start from zero
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
@@ -27,13 +25,12 @@ class Host
   accepts_nested_attributes_for :host_parameter_definitions, allow_destroy: true
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
-  validates :hostname, presence: true, format: {with: /^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/}
+  validates :hostname, presence: true, format: {with: /\A(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?\z/}
   # See http://stackoverflow.com/questions/1418423/the-hostname-regex for the regexp of the hsotname
 
-  validates :user, presence: true, format: {with: /^[A-Za-z0-9. _-]+$/}
+  validates :user, presence: true, format: {with: /\A[A-Za-z0-9. _-]+\z/}
 
   validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
-  validates :scheduler_type, inclusion: {in: SchedulerWrapper::TYPES }
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
   validates :polling_interval, numericality: {greater_than_or_equal_to: 5}
   validates :min_mpi_procs, numericality: {greater_than_or_equal_to: 1}
@@ -44,16 +41,11 @@ class Host
                      inclusion: {in: HOST_STATUS}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
-  validate :template_conform_to_host_parameter_definitions,
-           :if => lambda { scheduler_type != "xsub" and scheduler_type_changed? }
 
-  before_validation :get_host_parameters_for_xsub,
-                    :if => lambda { scheduler_type == "xsub" and scheduler_type_changed? }
-  before_save :use_default_template, :if => lambda { scheduler_type == "xsub" }
+  before_validation :get_host_parameters,
+               :if => lambda { status == :enabled }
   before_create :set_position
   before_destroy :validate_destroyable, :delete_default_parameters_from_simulator
-  after_update :get_host_parameters_for_xsub,
-               :if => lambda { scheduler_type == "xsub" && status_changed? && status == :enabled }
   after_update :delete_default_parameters_from_simulator,
                :if => lambda { status_changed? and status == :disabled }
 
@@ -149,33 +141,7 @@ class Host
     end
   end
 
-  def template_conform_to_host_parameter_definitions
-    invalid = SafeTemplateEngine.invalid_parameters(template)
-    if invalid.any?
-      errors.add(:template, "invalid parameters #{invalid.inspect}")
-      return
-    end
-    vars = SafeTemplateEngine.extract_parameters(template)
-    vars -= JobScriptUtil::DEFAULT_EXPANDED_VARIABLES
-    # check if definition is marked_for_destruction
-    # since nested_attributes are destructed after validation of host
-    host_params = host_parameter_definitions.reject{ |hpdef| hpdef.marked_for_destruction? }
-    keys = host_params.map {|hpdef| hpdef.key }
-    diff = vars.sort - keys.sort
-    if diff.any?
-      diff.each do |var|
-        errors[:base] << "'#{var}' appears in template, but not defined as a host parameter"
-      end
-    end
-    diff2 = keys.sort - vars.sort
-    if diff2.any?
-      diff2.each do |var|
-        errors[:base] << "'#{var}' is defined as a host parameter, but does not appear in template"
-      end
-    end
-  end
-
-  def get_host_parameters_for_xsub
+  def get_host_parameters
     start_ssh do |ssh|
       cmd = "bash -l -c 'echo XSUB_BEGIN && xsub -t'"
       ## bash -i invokes bash as an interactive shell.
@@ -191,15 +157,11 @@ class Host
         unless key == "mpi_procs" or key == "omp_threads"
           HostParameterDefinition.new(key: key, default: val["default"], format: val["format"])
         end
-      end
+      end.compact
     end
 
   rescue => ex
     errors.add(:base, "Error while getting host parameters: #{ex.message}")
-  end
-
-  def use_default_template
-    self.template = JobScriptUtil::DEFAULT_TEMPLATE
   end
 
   def validate_destroyable

@@ -4,8 +4,8 @@ class ParameterSetQuery
   belongs_to :simulator
   validates :simulator, presence: true
   validates :query, presence: true
-  validate :validate_uniqueness_of_query, message: 'must be unique'
-  validate :validate_format_of_query, message: 'format must be valid'
+  validate :validate_uniqueness_of_query
+  validate :validate_format_of_query
 
   NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
   NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]
@@ -14,7 +14,7 @@ class ParameterSetQuery
 
   def validate_uniqueness_of_query
     if self.query.blank?
-      self.errors.add(:query, "query is empty")
+      self.errors.add(:query, "must not be blank")
       return
     end
 
@@ -25,19 +25,19 @@ class ParameterSetQuery
 
   def validate_format_of_query
     unless !self.query.blank? && self.query.is_a?(Hash)
-      self.errors.add(:query, "query is not a Hash")
+      self.errors.add(:query, "must be a Hash")
       return
     end
 
     self.query.each do |key,criteria|
       pd = simulator.parameter_definition_for(key)
       unless pd
-        self.errors.add(:query, "defined keys and/or values are not exist in parametr_definitions")
+        self.errors.add(:query, "does not have keys defined in parametr_set_definitions")
         return
       end
 
       unless criteria.is_a?(Hash)
-        self.errors.add(:query, "criteria of query must be a Hash")
+        self.errors.add(:query, "criteria must be a Hash")
         return
       end
 
@@ -45,14 +45,14 @@ class ParameterSetQuery
       criteria.each do |matcher, value|
         type = pd.type
         unless supported_matchers(type).include?(matcher)
-          self.errors.add(:set_query, "unknown matcher : #{matcher}")
+          self.errors.add(:query, "has unknown matcher : #{matcher}")
           return false
         end
 
         # validate type of a value
         klass = Kernel.const_get(type)
         unless value.is_a?(klass)
-          self.errors.add(:query, "#{value.inspect} is not a #{type}")
+          self.errors.add(:query, "#{value.inspect} must be a #{type}")
           return false
         end
       end

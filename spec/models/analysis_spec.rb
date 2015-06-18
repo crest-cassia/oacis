@@ -83,19 +83,6 @@ describe Analysis do
     end
   end
 
-  describe "accessibility" do
-
-    it "result is not an accessible field" do
-      arn = @run.analyses.build(@valid_attr.update(result: "abc"))
-      arn.result.should be_nil
-    end
-
-    it "status is not an accessible field" do
-      arn = @run.analyses.build(@valid_attr.update(status: :running))
-      arn.status.should_not == :running
-    end
-  end
-
   describe "relation" do
 
     it "can be embedded in a run" do

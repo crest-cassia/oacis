@@ -46,8 +46,7 @@
               - if file_path_str =~ /\.png$/i or file_path_str.to_s =~ /\.jpg$/i
                 = image_tag(file_path_to_link_path(file_path_str))
   - if File.exist?( archived_result_path.to_s )
-    .form-actions
-      %a.btn.btn-primary{href: file_path_to_link_path(archived_result_path)} Download Archive
+    %a.btn.btn-primary{href: file_path_to_link_path(archived_result_path)} Download Archive
 :css
   ul.dynatree-container
   {

@@ -49,7 +49,7 @@ class RunsController < ApplicationController
 
     @runs = []
     num_runs.times do |i|
-      run = @param_set.runs.build(params[:run])
+      run = @param_set.runs.build(permitted_run_params)
       @runs << run if run.save
     end
 
@@ -63,7 +63,7 @@ class RunsController < ApplicationController
         format.json {
           render json: @runs.map{ |r| r.errors }, status: :unprocessable_entity
         }
-        run = @param_set.runs.build(params[:run])
+        run = @param_set.runs.build(permitted_run_params)
         run.valid?
         @messages = {error: run.errors.full_messages }
         format.js
@@ -78,9 +78,9 @@ class RunsController < ApplicationController
 
   def preview
     param_set = ParameterSet.find(params[:parameter_set_id])
-    run = param_set.runs.build(params[:run])
+    run = param_set.runs.build(permitted_run_params)
     @error_messages = run.valid? ? [] : run.errors.full_messages
-    @script = JobScriptUtil.script_for(run, run.submitted_to) if run.valid? and run.submitted_to?
+    @script = JobScriptUtil.script_for(run, nil) if run.valid?
     respond_to do |format|
       format.js {
         render action: "preview"
@@ -95,6 +95,15 @@ class RunsController < ApplicationController
     respond_to do |format|
       format.json { head :no_content }
       format.js
+    end
+  end
+
+  private
+  def permitted_run_params
+    if params[:run]["submitted_to"].length > 0
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed, host_parameters: [Host.find(params["run"]["submitted_to"]).host_parameter_definitions.map {|hpd| hpd[:key]}])
+    else
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed, host_parameters: {})
     end
   end
 end

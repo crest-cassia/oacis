@@ -1,6 +1,6 @@
 module JobScriptUtil
 
-  DEFAULT_TEMPLATE = <<-EOS
+  TEMPLATE = <<-EOS
 #!/bin/bash
 LANG=C
 
@@ -49,10 +49,10 @@ then
 fi
 EOS
 
-  DEFAULT_EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "mounted_work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
+  EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "mounted_work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
 
   def self.script_for(run, host)
-    default_variables = {
+    variables = {
       "run_id" => run.id.to_s,
       "is_mpi_job" => run.simulator.support_mpi ? "true" : "false",
       "work_base_dir" => host ? host.work_base_dir : '.',
@@ -64,12 +64,7 @@ EOS
     }
     # semi-colon in the last of the command causes bash syntax error
 
-    variables = {}
-    variables = run.host_parameters.dup if run.host_parameters
-    variables.update(default_variables)
-
-    template = host ? host.template : DEFAULT_TEMPLATE
-    rendered_script = SafeTemplateEngine.render(template, variables)
+    rendered_script = SafeTemplateEngine.render(TEMPLATE, variables)
     rendered_script.gsub(/(\r\n|\r|\n)/, "\n")
   end
 

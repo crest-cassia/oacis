@@ -13,6 +13,105 @@
   }
 }
 .field_with_errors {
-  @extend .control-group;
-  @extend .error;
- }
+  @extend .control-group !optional;
+  @extend .error !optional;
+}
+.row.no-margin {
+  margin-right:0;
+  margin-left:0;
+}
+.form-group.small-margin-bottom {
+  margin-bottom:1px;
+}
+.no-gutter > [class*='col-'] {
+  padding-right:0;
+  padding-left:0;
+}
+.progress {
+  margin-bottom: 0;
+}
+.progress-tooltip {
+  z-index: 10;
+}
+.plot-tooltip {
+  opacity: 0;
+  position: absolute;
+  text-align: center;
+  padding: 2px;
+  font: 12px sans-serif;
+  background: black;
+  color: white;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 10;
+}
+i.padding-half-em {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+.add-margin-top {
+  margin-top: 8px;
+}
+table.dataTable th {
+  text-align: right;
+}
+table.dataTable td {
+  text-align: right;
+}
+.clickable {
+  cursor: pointer;
+}
+.status-label {
+  display: inline-block;
+  width: 70px;
+}
+tt.short-id {
+  font-family:Consolas,Monaco,Lucida Console,monospace;
+  font-size:15px;
+}
+.help-block {
+  margin-top:11px;
+}
+.range-tilde {
+  padding-top:10px;
+  font-size:18px;
+}
+#plot dd {
+  margin-bottom: 8px;
+}
+pre {
+  min-height: 28px;
+}
+/* adjust modal position */
+.modal-vertical-centered {
+  transform: translate(0, 55px) !important;
+  -ms-transform: translate(0, 55px) !important; /* IE 9 */
+  -webkit-transform: translate(0, 55px) !important; /* Safari and Chrome */
+}
+#runs_list_modal .modal-vertical-centered {
+  width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
+  max-height: 100%;
+  max-width: 100%;
+  overflow: auto;
+}
+#analyses_list_modal .modal-vertical-centered {
+  width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
+  max-height: 100%;
+  max-width: 100%;
+  overflow: auto;
+}
+#analyzers_list_modal .modal-vertical-centered {
+  width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
+  max-height: 100%;
+  max-width: 100%;
+  overflow: auto;
+}
+#script_preview_modal .modal-vertical-centered {
+  width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
+  max-height: 100%;
+  max-width: 100%;
+  overflow: auto;
+}

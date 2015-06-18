@@ -41,37 +41,10 @@ describe Run do
       seeds.uniq.size.should == n
     end
 
-    it "seed is an accessible attribute" do
-      seed_val = 12345
-      @valid_attribute.update(seed: seed_val)
-      run = @param_set.runs.create!(@valid_attribute)
-      run.seed.should == seed_val
-    end
-
     it "seed must be unique" do
       seed_val = @param_set.runs.first.seed
       @valid_attribute.update(seed: seed_val)
       @param_set.runs.build(@valid_attribute).should_not be_valid
-    end
-
-    it "the attributes other than seed are not accessible" do
-      @valid_attribute.update(
-        status: :cancelled,
-        hostname: "host",
-        cpu_time: 123.0,
-        real_time: 456.0,
-        started_at: DateTime.now,
-        finished_at: DateTime.now,
-        included_at: DateTime.now
-      )
-      run = @param_set.runs.build(@valid_attribute)
-      run.status.should_not == :cancelled
-      run.hostname.should be_nil
-      run.cpu_time.should be_nil
-      run.real_time.should be_nil
-      run.started_at.should be_nil
-      run.finished_at.should be_nil
-      run.included_at.should be_nil
     end
 
     it "status must be either :created, :submitted, :running, :failed, :finished, or :cancelled" do
@@ -142,24 +115,11 @@ describe Run do
       run.priority.should eq 1
     end
 
-    it "priority is an accessible attribute" do
-      @valid_attribute.update(priority: 0)
-      run = @param_set.runs.create!(@valid_attribute)
-      run.should be_valid
-      run.priority.should eq 0
-    end
-
    describe "'host_parameters' field" do
 
       before(:each) do
-        header = <<-EOS
-#!/bin/bash
-# node:<%= node %>
-# proc:<%= mpi_procs %>
-EOS
-        template = JobScriptUtil::DEFAULT_TEMPLATE.sub(/#!\/bin\/bash/, header)
         hpds = [ HostParameterDefinition.new(key: "node", default: "x", format: '\w+') ]
-        @host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
+        @host = FactoryGirl.create(:host, host_parameter_definitions: hpds)
       end
 
       it "is valid when host_parameters are properly given" do
@@ -200,11 +160,7 @@ EOS
         run.mpi_procs = 8
         run.host_parameters = {"node" => "abc"}
         run.save!
-        new_template = <<-EOS
-#!/bin/bash
-# new_var: <%= new_var %>
-EOS
-        @host.update_attribute(:template, new_template)
+        @host.update_attribute(:host_parameter_definitions, @host.host_parameter_definitions + [HostParameterDefinition.new(key: "param1", default: "aaa", format: '\w+')])
         run.should be_valid
       end
     end
@@ -268,7 +224,7 @@ EOS
       @valid_attribute.update(seed: seed_val)
 
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size
-      run = prm.runs.create(@valid_attribute)
+      prm.runs.create(@valid_attribute)
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size.should == prev_count
     end
 
@@ -462,19 +418,6 @@ EOS
   end
 
   describe "after_create callbacks" do
-
-    it "removes host_parameters not necessary for the host" do
-      template = <<EOS
-#!/bin/bash
-# foobar: <%= foobar %>
-EOS
-      hpds = [ HostParameterDefinition.new(key: "foobar") ]
-      host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
-      r_params = {"foobar" => 1, "baz" => 2}
-      run = @param_set.runs.build(submitted_to: host, host_parameters: r_params)
-      run.save!
-      run.host_parameters.should eq ({"foobar" => 1})
-    end
 
     it "sets job script" do
       run = @param_set.runs.build(submitted_to: Host.first)

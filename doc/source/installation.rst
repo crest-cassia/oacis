@@ -17,6 +17,7 @@
         - Mac OS 10.8, Ubuntu, CentOSで動作実績あり
         - bash がインストールされていること
         - sshの鍵認証でログインできること
+        - xsub (https://github.com/crest-cassia/xsub) がインストールされていること
 - クライアント
     - Google Chrome および Firefox でテストされている
         - (IEでの挙動は未確認)
