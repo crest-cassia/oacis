@@ -118,14 +118,8 @@ describe Run do
    describe "'host_parameters' field" do
 
       before(:each) do
-        header = <<-EOS
-#!/bin/bash
-# node:<%= node %>
-# proc:<%= mpi_procs %>
-EOS
-        template = JobScriptUtil::DEFAULT_TEMPLATE.sub(/#!\/bin\/bash/, header)
         hpds = [ HostParameterDefinition.new(key: "node", default: "x", format: '\w+') ]
-        @host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
+        @host = FactoryGirl.create(:host, host_parameter_definitions: hpds)
       end
 
       it "is valid when host_parameters are properly given" do
@@ -166,11 +160,7 @@ EOS
         run.mpi_procs = 8
         run.host_parameters = {"node" => "abc"}
         run.save!
-        new_template = <<-EOS
-#!/bin/bash
-# new_var: <%= new_var %>
-EOS
-        @host.update_attribute(:template, new_template)
+        @host.update_attribute(:host_parameter_definitions, @host.host_parameter_definitions + [HostParameterDefinition.new(key: "param1", default: "aaa", format: '\w+')])
         run.should be_valid
       end
     end
@@ -234,7 +224,7 @@ EOS
       @valid_attribute.update(seed: seed_val)
 
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size
-      run = prm.runs.create(@valid_attribute)
+      prm.runs.create(@valid_attribute)
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size.should == prev_count
     end
 
@@ -428,19 +418,6 @@ EOS
   end
 
   describe "after_create callbacks" do
-
-    it "removes host_parameters not necessary for the host" do
-      template = <<EOS
-#!/bin/bash
-# foobar: <%= foobar %>
-EOS
-      hpds = [ HostParameterDefinition.new(key: "foobar") ]
-      host = FactoryGirl.create(:host, template: template, host_parameter_definitions: hpds)
-      r_params = {"foobar" => 1, "baz" => 2}
-      run = @param_set.runs.build(submitted_to: host, host_parameters: r_params)
-      run.save!
-      run.host_parameters.should eq ({"foobar" => 1})
-    end
 
     it "sets job script" do
       run = @param_set.runs.build(submitted_to: Host.first)

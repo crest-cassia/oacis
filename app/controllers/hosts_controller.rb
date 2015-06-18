@@ -108,7 +108,6 @@ class HostsController < ApplicationController
                                            :user,
                                            :port,
                                            :ssh_key,
-                                           :scheduler_type,
                                            :work_base_dir,
                                            :mounted_work_base_dir,
                                            :max_num_jobs,
@@ -117,7 +116,6 @@ class HostsController < ApplicationController
                                            :max_mpi_procs,
                                            :min_omp_threads,
                                            :max_omp_threads,
-                                           :template,
                                            executable_simulator_ids: []
                                           ) : {}
   end

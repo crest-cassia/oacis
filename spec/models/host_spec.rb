@@ -11,10 +11,12 @@ describe Host do
         user: ENV['USER'],
         port: 22,
         ssh_key: '~/.ssh/id_rsa',
-        scheduler_type: 'none',
         work_base_dir: '~/__cm_work__',
         status: :enabled
       }
+      allow_any_instance_of(Host).to receive(:get_host_parameters) do
+        []
+      end
     end
 
     it "'name' must be present" do
@@ -74,11 +76,6 @@ describe Host do
     it "default of 'ssh_key' is '~/.ssh/id_rsa'" do
       @valid_attr.delete(:ssh_key)
       Host.new(@valid_attr).ssh_key.should eq('~/.ssh/id_rsa')
-    end
-
-    it "'scheduler_type' must be either [none, torque, pjm, pjm_k, xsub]" do
-      @valid_attr.update(scheduler_type: "foobar")
-      Host.new(@valid_attr).should_not be_valid
     end
 
     it "default of 'work_base_dir' is '~'" do
@@ -156,43 +153,6 @@ describe Host do
       run = ps.runs.create!(submitted_to: host)
       run.update_attribute(:status, :submitted)
       host.work_base_dir = "/path/to/another_dir"
-      host.should_not be_valid
-    end
-
-    it "is valid when host_parameter_definitions conform to template" do
-      template_header = <<-EOS
-#!/bin/bash
-#node: <%= node %>
-EOS
-      template = JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", template_header)
-      definitions = [HostParameterDefinition.new(key: "node")]
-      host = FactoryGirl.build(:host, template: template, host_parameter_definitions: definitions)
-      host.should be_valid
-    end
-
-    it "is not valid when host_parameter_definitions does not have sufficient variables" do
-      template_header = <<-EOS
-#!/bin/bash
-#node: <= node %>
-#elapsed: <%= elapsed %>
-EOS
-      template = JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", template_header)
-      definitions = [HostParameterDefinition.new(key: "node")]
-      host = FactoryGirl.build(:host, template: template, host_parameter_definitions: definitions)
-      host.should_not be_valid
-    end
-
-    it "is not valid when there is a host_parameter_definitions which is not found in template" do
-      template_header = <<-EOS
-#!/bin/bash
-#node: <= node %>
-EOS
-      template = JobScriptUtil::DEFAULT_TEMPLATE.sub("#!/bin/bash", template_header)
-      definitions = [
-        HostParameterDefinition.new(key: "node"),
-        HostParameterDefinition.new(key: "elapsed")
-      ]
-      host = FactoryGirl.build(:host, template: template, host_parameter_definitions: definitions)
       host.should_not be_valid
     end
 
@@ -312,7 +272,7 @@ EOS
                               parameter_set: ps, status: :submitted, submitted_to: @host)
       FactoryGirl.create_list(:run, 1,
                               parameter_set: ps, status: :running, submitted_to: @host)
-      run = ps.runs.where(status: :submitted).first.__send__(:cancel)
+      ps.runs.where(status: :submitted).first.__send__(:cancel)
       FactoryGirl.create_list(:run, 1,
                               parameter_set: ps, status: :finished, submitted_to: @host)
       FactoryGirl.create_list(:run, 2,
@@ -356,42 +316,26 @@ EOS
     end
   end
 
-  describe "when 'xsub' is selected as the scheduler_type" do
+  it "gets host parameters by invoking 'get_host_parameters' when host status is changed into :enabled" do
+    @host = FactoryGirl.create(:localhost)
+    @host.update_attribute(:status, :disabled)
+    @host.should_receive(:get_host_parameters)
+    @host.status = :enabled
+    @host.save!
+  end
 
-    before(:each) do
-      @host = FactoryGirl.create(:localhost)
-    end
+  it "parse output of 'xsub -t' and set it to host_parameter_definitions" do
+    hp = {"parameters" => {"foo" => {"default"=>1}, "bar" => {"default"=>"abc"} } }
+    ret_str = "XSUB_BEGIN\n#{hp.to_json}"
+    SSHUtil.stub(:execute).and_return(ret_str)
+    @host = FactoryGirl.create(:localhost)
+    @host.host_parameter_definitions.size.should eq 2
+    @host.host_parameter_definitions[0].key.should eq "foo"
+    @host.host_parameter_definitions[0].default.should eq "1"
+  end
 
-    it "gets host parameters by invoking 'get_host_parameters_for_xsub' when scheduler_type is updated" do
-      @host.scheduler_type = "xsub"
-      @host.should_receive(:get_host_parameters_for_xsub)
-      @host.should be_valid # it calls before_validate
-    end
-
-    it "gets host parameters by invoking 'get_host_parameters_for_xsub' when host status is changed into :enabled" do
-      @host.update_attribute(:scheduler_type, "xsub")
-      @host.update_attribute(:status, :disabled)
-      @host.should_receive(:get_host_parameters_for_xsub)
-      @host.status = :enabled
-      @host.save!
-    end
-
-    it "parse output of 'xsub -t' and set it to host_parameter_definitions" do
-      hp = {"parameters" => {"foo" => {"default"=>1}, "bar" => {"default"=>"abc"} } }
-      ret_str = "XSUB_BEGIN\n#{hp.to_json}"
-      SSHUtil.stub(:execute).and_return(ret_str)
-      @host.scheduler_type = "xsub"
-      @host.save!
-      @host.host_parameter_definitions.size.should eq 2
-      @host.host_parameter_definitions[0].key.should eq "foo"
-      @host.host_parameter_definitions[0].default.should eq "1"
-    end
-
-    it "'xsub' command fails, validation fails" do
-      SSHUtil.stub(:execute).and_return("{invalid:...")
-      @host.scheduler_type = "xsub"
-      @host.should_not be_valid
-    end
+  it "'xsub' command fails, write message to logger" do
+    skip "when xsub command fails, write messaga to logger"
   end
 
   describe "'position' field" do
@@ -401,6 +345,9 @@ EOS
     end
 
     it "the largest number within existing hosts is assigned when created" do
+      allow_any_instance_of(Host).to receive(:get_host_parameters) do
+        []
+      end
       Host.create!(name: 'h1', hostname: 'localhost', user: 'foo').position.should eq 2
       Host.all.map(&:position).should =~ [0,1,2]
     end
@@ -427,7 +374,7 @@ EOS
     it "delete default_mpi_procs from executable simulators" do
       host_id = @host.id.to_s
       @sim.update_attribute(:default_mpi_procs, {host_id => 4})
-      host_parameters = @sim.get_default_host_parameter(@host)
+      @sim.get_default_host_parameter(@host)
       expect {
         @host.destroy
       }.to change { @sim.reload.default_mpi_procs[host_id] }.from(4).to(nil)
@@ -436,7 +383,7 @@ EOS
     it "delete default_omp_threads from executable simulators" do
       host_id = @host.id.to_s
       @sim.update_attribute(:default_omp_threads, {host_id => 4})
-      host_parameters = @sim.get_default_host_parameter(@host)
+      @sim.get_default_host_parameter(@host)
       expect {
         @host.destroy
       }.to change { @sim.reload.default_omp_threads[host_id] }.from(4).to(nil)
@@ -465,7 +412,7 @@ EOS
     it "delete default_mpi_procs from executable simulators" do
       host_id = @host.id.to_s
       @sim.update_attribute(:default_mpi_procs, {host_id => 4})
-      host_parameters = @sim.get_default_host_parameter(@host)
+      @sim.get_default_host_parameter(@host)
       expect {
         @host.status = :disabled
         @host.save
@@ -475,7 +422,7 @@ EOS
     it "delete default_omp_threads from executable simulators" do
       host_id = @host.id.to_s
       @sim.update_attribute(:default_omp_threads, {host_id => 4})
-      host_parameters = @sim.get_default_host_parameter(@host)
+      @sim.get_default_host_parameter(@host)
       expect {
         @host.status = :disabled
         @host.save
