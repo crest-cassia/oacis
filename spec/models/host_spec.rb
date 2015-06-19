@@ -387,6 +387,15 @@ EOS
       @host.host_parameter_definitions[0].default.should eq "1"
     end
 
+    it "ignores 'mpi_procs' and 'omp_threads' parameters when setting host_parameter_definitions" do
+      hp = {"parameters" => {"mpi_procs" => {"default"=>1}, "omp_threads" => {"default"=>"1"} } }
+      ret_str = "XSUB_BEGIN\n#{hp.to_json}"
+      SSHUtil.stub(:execute).and_return(ret_str)
+      @host.scheduler_type = "xsub"
+      @host.save!
+      @host.host_parameter_definitions.should be_empty
+    end
+
     it "'xsub' command fails, validation fails" do
       SSHUtil.stub(:execute).and_return("{invalid:...")
       @host.scheduler_type = "xsub"
