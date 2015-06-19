@@ -63,12 +63,6 @@
         \~
       .col-md-5
         = f.number_field(:max_omp_threads, class: 'form-control')
-  #host_parameters_definition.form-group
-    = label_tag('', 'Definition of Host Parameters', class: 'col-md-2 control-label')
-    .col-md-10
-      = f.fields_for :host_parameter_definitions do |builder|
-        = render 'host_parameter_definition_fields', f: builder
-      = link_to_add_fields "Add Parameter", f, :host_parameter_definitions
   .form-group
     %label.col-md-2.control-label
       Executable Simulators
