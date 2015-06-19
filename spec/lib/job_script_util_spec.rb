@@ -115,14 +115,11 @@ describe JobScriptUtil do
 
     context "when archive is invalid archive" do
       it "raise error" do
-        Dir.chdir(@temp_dir) {
-          system("echo 1.2345 > #{@run.id}.tar.bz2")
-          result_file = "#{@run.id}.tar.bz2"
-          FileUtils.mv( result_file, @run.dir.join('..') )
-          expect {
-            JobScriptUtil.expand_result_file(@run)
-          }.to raise_error
-        }
+        expect(JobScriptUtil).to receive(:system)
+        expect($?).to receive(:to_i).and_return(1)
+        expect {
+          JobScriptUtil.expand_result_file(@run)
+        }.to raise_error
       end
     end
   end
