@@ -21,129 +21,129 @@ describe Host do
 
     it "'name' must be present" do
       @valid_attr.delete(:name)
-      Host.new(@valid_attr).should_not be_valid
+      expect(Host.new(@valid_attr)).not_to be_valid
     end
 
     it "'name' must be unique" do
       Host.create!(@valid_attr)
-      Host.new(@valid_attr).should_not be_valid
+      expect(Host.new(@valid_attr)).not_to be_valid
     end
 
     it "'name' must not be an empty string" do
       @valid_attr.update(name: '')
-      Host.new(@valid_attr).should_not be_valid
+      expect(Host.new(@valid_attr)).not_to be_valid
     end
 
     it "'hostname' must be present" do
       @valid_attr.delete(:hostname)
-      Host.new(@valid_attr).should_not be_valid
+      expect(Host.new(@valid_attr)).not_to be_valid
     end
 
     it "'hostname' must conform to a format of hostname" do
       @valid_attr.update(hostname: 'hostname;')
-      Host.new(@valid_attr).should_not be_valid
+      expect(Host.new(@valid_attr)).not_to be_valid
       @valid_attr.update(hostname: 'xn--bcher-kva.ch.')
-      Host.new(@valid_attr).should be_valid
+      expect(Host.new(@valid_attr)).to be_valid
     end
 
     it "'user' must be present" do
       @valid_attr.delete(:user)
-      Host.new(@valid_attr).should_not be_valid
+      expect(Host.new(@valid_attr)).not_to be_valid
     end
 
     it "format of the 'user' must be valid" do
       @valid_attr.update(user: 'user-XYZ')
-      Host.new(@valid_attr).should be_valid
+      expect(Host.new(@valid_attr)).to be_valid
       @valid_attr.update(user: 'user;XYZ')
-      Host.new(@valid_attr).should_not be_valid
+      expect(Host.new(@valid_attr)).not_to be_valid
     end
 
     it "'user' can include '.'" do
       @valid_attr.update(user: 'user.XYZ')
-      Host.new(@valid_attr).should be_valid
+      expect(Host.new(@valid_attr)).to be_valid
     end
 
     it "default of 'port' is 22" do
       @valid_attr.delete(:port)
-      Host.new(@valid_attr).port.should eq(22)
+      expect(Host.new(@valid_attr).port).to eq(22)
     end
 
     it "'port' must be between 1..65535" do
       @valid_attr.update(port: 'abc')  # => casted to 0
-      Host.new(@valid_attr).should_not be_valid
+      expect(Host.new(@valid_attr)).not_to be_valid
     end
 
     it "default of 'ssh_key' is '~/.ssh/id_rsa'" do
       @valid_attr.delete(:ssh_key)
-      Host.new(@valid_attr).ssh_key.should eq('~/.ssh/id_rsa')
+      expect(Host.new(@valid_attr).ssh_key).to eq('~/.ssh/id_rsa')
     end
 
     it "default of 'work_base_dir' is '~'" do
       @valid_attr.delete(:work_base_dir)
-      Host.new(@valid_attr).work_base_dir.should eq('~')
+      expect(Host.new(@valid_attr).work_base_dir).to eq('~')
     end
 
     it "has timestamp fields" do
       host = Host.new(@valid_attr)
-      host.should respond_to(:created_at)
-      host.should respond_to(:updated_at)
+      expect(host).to respond_to(:created_at)
+      expect(host).to respond_to(:updated_at)
     end
 
     it "max_num_jobs must be 0 or positive number" do
       @valid_attr.update(max_num_jobs: -1)
       host = Host.new(@valid_attr)
-      host.should_not be_valid
+      expect(host).not_to be_valid
     end
 
     it "polling_interval must greater than or equal to 5" do
       @valid_attr.update(polling_interval: 4)
       host = Host.new(@valid_attr)
-      host.should_not be_valid
+      expect(host).not_to be_valid
     end
 
     it "min_mpi_procs must be 1 or positive" do
       @valid_attr.update(min_mpi_procs: 0)
       host = Host.new(@valid_attr)
-      host.should_not be_valid
+      expect(host).not_to be_valid
     end
 
     it "max_mpi_procs must be 1 or positive" do
       @valid_attr.update(max_mpi_procs: 0)
       host = Host.new(@valid_attr)
-      host.should_not be_valid
+      expect(host).not_to be_valid
     end
 
     it "max_mpi_procs must be larger than min_mpi_procs" do
       @valid_attr.update(min_mpi_procs: 2, max_mpi_procs: 1)
       host = Host.new(@valid_attr)
-      host.should_not be_valid
+      expect(host).not_to be_valid
     end
 
     it "min_omp_threads must be 1 or positive" do
       @valid_attr.update(min_omp_threads: 0)
       host = Host.new(@valid_attr)
-      host.should_not be_valid
+      expect(host).not_to be_valid
     end
 
     it "max_omp_threads must be 1 or positive" do
       @valid_attr.update(max_omp_threads: 0)
       host = Host.new(@valid_attr)
-      host.should_not be_valid
+      expect(host).not_to be_valid
     end
 
     it "max_omp_threads must be larger than min_omp_threads" do
       @valid_attr.update(min_omp_threads: 2, max_omp_threads: 1)
       host = Host.new(@valid_attr)
-      host.should_not be_valid
+      expect(host).not_to be_valid
     end
 
     it "status must be either ':enabled' or ':disabled'" do
       @valid_attr.update(status: :disabled)
       host = Host.new(@valid_attr)
-      host.should be_valid
+      expect(host).to be_valid
       @valid_attr.update(status: :running)
       host = Host.new(@valid_attr)
-      host.should_not be_valid
+      expect(host).not_to be_valid
     end
 
     it "cannot change when submitted runs exist" do
@@ -153,15 +153,15 @@ describe Host do
       run = ps.runs.create!(submitted_to: host)
       run.update_attribute(:status, :submitted)
       host.work_base_dir = "/path/to/another_dir"
-      host.should_not be_valid
+      expect(host).not_to be_valid
     end
 
     it "can not be destroyed when submittable_runs or submitted_runs exist" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       run = sim.parameter_sets.first.runs.first
       host = run.submitted_to
-      host.destroy.should be_falsey
-      host.errors.full_messages.should_not be_empty
+      expect(host.destroy).to be_falsey
+      expect(host.errors.full_messages).not_to be_empty
     end
 
     it "can be destroyed when neither submittable_runs nor submitted_runs exist" do
@@ -169,8 +169,8 @@ describe Host do
       run = sim.parameter_sets.first.runs.first
       run.update_attribute(:status, :finished)
       host = run.submitted_to
-      host.destroy.should be_truthy
-      host.errors.full_messages.should be_empty
+      expect(host.destroy).to be_truthy
+      expect(host.errors.full_messages).to be_empty
     end
   end
 
@@ -181,23 +181,23 @@ describe Host do
     end
 
     it "returns true if ssh connection established" do
-      @host.connected?.should be_truthy
+      expect(@host.connected?).to be_truthy
     end
 
     it "returns false when hostname is invalid" do
       @host.hostname = "INVALID_HOSTNAME"
-      @host.connected?.should be_falsey
+      expect(@host.connected?).to be_falsey
     end
 
     it "returns false when user name is not correct" do
       @host.user = "NOT_EXISTING_USER"
-      @host.connected?.should be_falsey
+      expect(@host.connected?).to be_falsey
     end
 
     it "exception is stored into connection_error variable" do
       @host.hostname = "INVALID_HOSTNAME"
       @host.connected?
-      @host.connection_error.should be_a(SocketError)
+      expect(@host.connection_error).to be_a(SocketError)
     end
   end
 
@@ -231,7 +231,7 @@ describe Host do
     end
 
     it "returns a Mongoid::Critieria" do
-      @host.submittable_runs.should be_a(Mongoid::Criteria)
+      expect(@host.submittable_runs).to be_a(Mongoid::Criteria)
     end
 
     it "returns runs whose status is created and submitted_to is self" do
@@ -255,7 +255,7 @@ describe Host do
 
       expect(@host.submittable_runs.size).to eq 8
       @host.submittable_runs.each do |run|
-        run.submitted_to.should_not eq another_host
+        expect(run.submitted_to).not_to eq another_host
       end
     end
   end
@@ -280,7 +280,7 @@ describe Host do
     end
 
     it "returns the number of runs submitted to the host" do
-      @host.submitted_runs.should be_a(Mongoid::Criteria)
+      expect(@host.submitted_runs).to be_a(Mongoid::Criteria)
     end
 
     it "returns runs whose status is ['submitted','running','cancelled'] and 'submitted_to' is the host" do
@@ -312,7 +312,7 @@ describe Host do
 
     it "returns the number of runs for each status" do
       expected = {created: 5, submitted: 4, running: 3, finished: 2, failed: 1, cancelled: 0}
-      @host.runs_status_count.should eq expected
+      expect(@host.runs_status_count).to eq expected
     end
   end
 
@@ -365,8 +365,8 @@ describe Host do
       allow_any_instance_of(Host).to receive(:get_host_parameters) do
         []
       end
-      Host.create!(name: 'h1', hostname: 'localhost', user: 'foo').position.should eq 2
-      Host.all.map(&:position).should =~ [0,1,2]
+      expect(Host.create!(name: 'h1', hostname: 'localhost', user: 'foo').position).to eq 2
+      expect(Host.all.map(&:position)).to match_array([0,1,2])
     end
   end
 
@@ -419,7 +419,7 @@ describe Host do
 
     it "delete default_host_parameters of executable simulators" do
       host_parameters = @sim.get_default_host_parameter(@host)
-      @host.status.should eq :enabled
+      expect(@host.status).to eq :enabled
       expect {
         @host.status = :disabled
         @host.save

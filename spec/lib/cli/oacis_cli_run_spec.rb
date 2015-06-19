@@ -13,7 +13,7 @@ describe OacisCli do
       at_temp_dir {
         options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
         OacisCli.new.invoke(:job_parameter_template, [], options)
-        File.exist?('job_parameters.json').should be_truthy
+        expect(File.exist?('job_parameters.json')).to be_truthy
         expect {
           JSON.load(File.read('job_parameters.json'))
         }.not_to raise_error
@@ -32,7 +32,7 @@ describe OacisCli do
           "omp_threads" => 1,
           "priority" => 1
         }
-        JSON.load(File.read('job_parameters.json')).should eq expected
+        expect(JSON.load(File.read('job_parameters.json'))).to eq expected
       }
     end
 
@@ -58,7 +58,7 @@ describe OacisCli do
             dry_run: true
           }
           OacisCli.new.invoke(:job_parameter_template, [], options)
-          File.exist?('job_parameters.json').should be_falsey
+          expect(File.exist?('job_parameters.json')).to be_falsey
         }
       end
     end
@@ -83,7 +83,7 @@ describe OacisCli do
           expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
           options = { host_id: @host.id.to_s, output: 'job_parameters.json', yes: true}
           OacisCli.new.invoke(:job_parameter_template, [], options)
-          File.exist?('job_parameters.json').should be_truthy
+          expect(File.exist?('job_parameters.json')).to be_truthy
           expect {
             JSON.load(File.read('job_parameters.json'))
           }.not_to raise_error
@@ -149,11 +149,11 @@ describe OacisCli do
       at_temp_dir {
         invoke_create_runs
         run = @sim.parameter_sets.first.runs.first
-        run.submitted_to.should eq @host
-        run.mpi_procs.should eq 2
-        run.omp_threads.should eq 8
-        run.priority.should eq 0
-        run.host_parameters.should eq({"param1" => "foo", "param2" => "bar"})
+        expect(run.submitted_to).to eq @host
+        expect(run.mpi_procs).to eq 2
+        expect(run.omp_threads).to eq 8
+        expect(run.priority).to eq 0
+        expect(run.host_parameters).to eq({"param1" => "foo", "param2" => "bar"})
       }
     end
 
@@ -184,9 +184,9 @@ describe OacisCli do
         at_temp_dir {
           invoke_create_runs_with_seeds
           seeds = @sim.parameter_sets.first.reload.runs.map {|run| run.seed }
-          seeds.should =~ [0,1,2]
+          expect(seeds).to match_array([0,1,2])
           seeds2 = @sim.parameter_sets.last.reload.runs.map {|run| run.seed }
-          seeds2.should =~ [0,1,2]
+          expect(seeds2).to match_array([0,1,2])
         }
       end
     end
@@ -195,9 +195,9 @@ describe OacisCli do
       at_temp_dir {
         invoke_create_runs
 
-        File.exist?('run_ids.json').should be_truthy
+        expect(File.exist?('run_ids.json')).to be_truthy
         expected = Run.all.map {|run| {"run_id" => run.id.to_s} }.sort_by {|h| h["run_id"]}
-        JSON.load(File.read('run_ids.json')).should =~ expected
+        expect(JSON.load(File.read('run_ids.json'))).to match_array(expected)
       }
     end
 
@@ -222,10 +222,10 @@ describe OacisCli do
         at_temp_dir {
           invoke_create_runs
 
-          File.exist?('run_ids.json').should be_truthy
+          expect(File.exist?('run_ids.json')).to be_truthy
           runs = @ps1.reload.runs.limit(3).to_a + @ps2.reload.runs.limit(3)
           expected = runs.map {|run| {"run_id" => run.id.to_s} }.sort_by {|h| h["run_id"]}
-          JSON.load(File.read('run_ids.json')).should =~ expected
+          expect(JSON.load(File.read('run_ids.json'))).to match_array(expected)
         }
       end
     end
@@ -300,7 +300,7 @@ describe OacisCli do
             invoke_create_runs_with_invalid_parameter_set_ids
           rescue
           end
-          File.exist?('parameter_set_ids.json').should be_truthy
+          expect(File.exist?('parameter_set_ids.json')).to be_truthy
         }
       end
 
@@ -332,7 +332,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           invoke_create_runs_with_dry_run
-          File.exist?('run_ids.json').should be_falsey
+          expect(File.exist?('run_ids.json')).to be_falsey
         }
       end
     end
@@ -374,7 +374,7 @@ describe OacisCli do
             yes: true
           }
           OacisCli.new.invoke(:create_runs, [], options)
-          File.exist?('run_ids.json').should be_truthy
+          expect(File.exist?('run_ids.json')).to be_truthy
           expect {
             JSON.load(File.read('run_ids.json'))
           }.not_to raise_error
@@ -506,7 +506,7 @@ describe OacisCli do
         expect {
           OacisCli.new.invoke(:replace_runs, [], options)
         }.to change { Run.where(status: :created).count }.by(1)
-        Run.where(status: :created).first.mpi_procs.should eq 8
+        expect(Run.where(status: :created).first.mpi_procs).to eq 8
       }
     end
 

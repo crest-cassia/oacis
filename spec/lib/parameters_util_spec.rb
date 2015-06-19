@@ -22,13 +22,13 @@ describe ParametersUtil do
       }
       casted = ParametersUtil.cast_parameter_values(parameters, @definitions)
 
-      casted["param1"].should be_a(Integer)
-      casted["param1"].should eq(70)
-      casted["param2"].should be_a(Float)
-      casted["param2"].should eq(3.0)
-      casted["param3"].should be_truthy
-      casted["param4"].should be_a(String)
-      casted["param4"].should eq("12345")
+      expect(casted["param1"]).to be_a(Integer)
+      expect(casted["param1"]).to eq(70)
+      expect(casted["param2"]).to be_a(Float)
+      expect(casted["param2"]).to eq(3.0)
+      expect(casted["param3"]).to be_truthy
+      expect(casted["param4"]).to be_a(String)
+      expect(casted["param4"]).to eq("12345")
     end
 
     it "uses the defined default value if a parameter is not specified" do
@@ -36,10 +36,10 @@ describe ParametersUtil do
         "param1" => "70"
       }
       casted = ParametersUtil.cast_parameter_values(parameters, @definitions)
-      casted["param1"].should eq(70)
-      casted["param2"].should eq(1.0)
-      casted["param3"].should be_falsey
-      casted["param4"].should eq("abc")
+      expect(casted["param1"]).to eq(70)
+      expect(casted["param2"]).to eq(1.0)
+      expect(casted["param3"]).to be_falsey
+      expect(casted["param4"]).to eq("abc")
     end
 
     it "returns nil when a parameter is not given for the key whose default value is not defined" do
@@ -47,7 +47,7 @@ describe ParametersUtil do
         "param2" => "3.0"
       }
       casted = ParametersUtil.cast_parameter_values(parameters, @definitions)
-      casted.should be_nil
+      expect(casted).to be_nil
     end
 
     it "accept nil as the first argument" do
@@ -60,10 +60,10 @@ describe ParametersUtil do
         @definitions[2].default = true
 
         casted = ParametersUtil.cast_parameter_values({"param1" => 0, "param3" => false}, @definitions)
-        casted["param3"].should be_falsey
+        expect(casted["param3"]).to be_falsey
 
         casted = ParametersUtil.cast_parameter_values({"param1" => 0}, @definitions)
-        casted["param3"].should eq true
+        expect(casted["param3"]).to eq true
       end
     end
   end
@@ -71,15 +71,15 @@ describe ParametersUtil do
   describe ".cast_value" do
 
     it "returns casted value" do
-      ParametersUtil.cast_value("-1", "Integer").should eq(-1)
-      ParametersUtil.cast_value("+0.234e5", "Float").should eq(0.234e5)
-      ParametersUtil.cast_value("false", "Boolean").should be_falsey
-      ParametersUtil.cast_value(123, "String").should eq("123")
+      expect(ParametersUtil.cast_value("-1", "Integer")).to eq(-1)
+      expect(ParametersUtil.cast_value("+0.234e5", "Float")).to eq(0.234e5)
+      expect(ParametersUtil.cast_value("false", "Boolean")).to be_falsey
+      expect(ParametersUtil.cast_value(123, "String")).to eq("123")
     end
 
     it "returns nil when format of the value is not valid" do
-      ParametersUtil.cast_value("abc", "Integer").should be_nil
-      ParametersUtil.cast_value("def", "Float").should be_nil
+      expect(ParametersUtil.cast_value("abc", "Integer")).to be_nil
+      expect(ParametersUtil.cast_value("def", "Float")).to be_nil
     end
   end
 end

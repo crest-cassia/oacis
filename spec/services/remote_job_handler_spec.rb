@@ -15,7 +15,7 @@ describe RemoteJobHandler do
         @temp_dir = Pathname.new( Dir.mktmpdir )
         @host.work_base_dir = @temp_dir.expand_path
         @host.save!
-        RemoteJobHandler.any_instance.stub(:submit_to_scheduler)
+        allow_any_instance_of(RemoteJobHandler).to receive(:submit_to_scheduler)
       end
 
       after(:each) do
@@ -24,26 +24,26 @@ describe RemoteJobHandler do
 
       it "creates a work_dir on remote host" do
         RemoteJobHandler.new(@host).submit_remote_job(@run)
-        File.directory?( @temp_dir.join(@run.id) ).should be_truthy
+        expect(File.directory?( @temp_dir.join(@run.id) )).to be_truthy
       end
 
       it "creates _input.json on remote host if simulator.support_input_json is true" do
         @sim.update_attribute(:support_input_json, true)
         RemoteJobHandler.new(@host).submit_remote_job(@run)
-        File.exist?( @temp_dir.join(@run.id, '_input.json') ).should be_truthy
+        expect(File.exist?( @temp_dir.join(@run.id, '_input.json') )).to be_truthy
       end
 
       it "executes pre_process_script if simulator.pre_process_script is not empty" do
         @sim.update_attribute(:pre_process_script, "echo hello > preprocess.txt")
         RemoteJobHandler.new(@host).submit_remote_job(@run)
-        File.exist?( @temp_dir.join(@run.id, 'preprocess.txt')).should be_truthy
+        expect(File.exist?( @temp_dir.join(@run.id, 'preprocess.txt'))).to be_truthy
       end
 
       it "executes pre_process_script with arguments when support_input_json is false" do
         @sim.update_attribute(:support_input_json, false)
         @sim.update_attribute(:pre_process_script, "echo $# > preprocess.txt")
         RemoteJobHandler.new(@host).submit_remote_job(@run)
-        File.open( @temp_dir.join(@run.id, 'preprocess.txt') ).read.chomp.should eq "3"
+        expect(File.open( @temp_dir.join(@run.id, 'preprocess.txt') ).read.chomp).to eq "3"
       end
 
       describe "when pre_process_script fails" do
@@ -74,28 +74,28 @@ describe RemoteJobHandler do
 
         it "raises an exception and sets status of Run to failed" do
           call_submit_remote_job
-          @run.reload.status.should eq :failed
+          expect(@run.reload.status).to eq :failed
         end
 
         it "does not enqueue job script" do
-          SchedulerWrapper.any_instance.should_not_receive(:submit_command)
+          expect_any_instance_of(SchedulerWrapper).not_to receive(:submit_command)
           call_submit_remote_job
         end
 
         it "removes files on remote host" do
           call_submit_remote_job
-          File.directory?( @temp_dir.join(@run.id) ).should be_falsey
+          expect(File.directory?( @temp_dir.join(@run.id) )).to be_falsey
         end
 
         it "copies files in the remote work_dir to Run's directory" do
           call_submit_remote_job
-          File.exist?( @run.dir.join('_preprocess.sh') ).should be_truthy
+          expect(File.exist?( @run.dir.join('_preprocess.sh') )).to be_truthy
         end
       end
 
       it "creates a job script on remote host" do
         RemoteJobHandler.new(@host).submit_remote_job(@run)
-        File.exist?( @temp_dir.join( @run.id.to_s+'.sh') ).should be_truthy
+        expect(File.exist?( @temp_dir.join( @run.id.to_s+'.sh') )).to be_truthy
       end
     end
 
@@ -123,7 +123,7 @@ describe RemoteJobHandler do
 
       it "updates status of Run to :submitted" do
         RemoteJobHandler.new(@host).submit_remote_job(@run)
-        @run.reload.status.should eq :submitted
+        expect(@run.reload.status).to eq :submitted
       end
 
       it "updates submitted_at of Run" do
@@ -139,7 +139,7 @@ describe RemoteJobHandler do
       end
 
       it "creates ssh session only once" do
-        Net::SSH.should_receive(:start).once.and_call_original
+        expect(Net::SSH).to receive(:start).once.and_call_original
         RemoteJobHandler.new(@host).submit_remote_job(@run)
       end
     end
@@ -157,7 +157,7 @@ describe RemoteJobHandler do
       FileUtils.mkdir_p(@temp_dir)
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
-      SSHUtil.stub(:execute2).and_return(["out", "err", 0, nil])
+      allow(SSHUtil).to receive(:execute2).and_return(["out", "err", 0, nil])
     end
 
     after(:each) do
@@ -165,13 +165,13 @@ describe RemoteJobHandler do
     end
 
     it "returns status parsed by SchedulerWrapper#parse_remote_status" do
-      SchedulerWrapper.any_instance.should_receive(:parse_remote_status).and_return(:submitted)
-      RemoteJobHandler.new(@host).remote_status(@run).should eq :submitted
+      expect_any_instance_of(SchedulerWrapper).to receive(:parse_remote_status).and_return(:submitted)
+      expect(RemoteJobHandler.new(@host).remote_status(@run)).to eq :submitted
     end
 
     it "returns :unknown if remote status is not obtained by SchedulerWrapper" do
-      SSHUtil.stub(:execute2).and_return([nil, nil, 1, nil])
-      RemoteJobHandler.new(@host).remote_status(@run).should eq :unknown
+      allow(SSHUtil).to receive(:execute2).and_return([nil, nil, 1, nil])
+      expect(RemoteJobHandler.new(@host).remote_status(@run)).to eq :unknown
     end
   end
 
@@ -185,7 +185,7 @@ describe RemoteJobHandler do
       @host = @sim.executable_on.where(name: "localhost").first
       @temp_dir = Pathname.new( Dir.mktmpdir )
       @host.update_attribute(:work_base_dir, @temp_dir.expand_path)
-      SchedulerWrapper.any_instance.stub(:cancel_command).and_return("echo")
+      allow_any_instance_of(SchedulerWrapper).to receive(:cancel_command).and_return("echo")
       @handler = RemoteJobHandler.new(@host)
     end
 
@@ -196,11 +196,11 @@ describe RemoteJobHandler do
     context "when remote_status is :submitted" do
 
       before(:each) do
-        @handler.stub(:remote_status).and_return(:submitted)
+        allow(@handler).to receive(:remote_status).and_return(:submitted)
       end
 
       it "calls cancel_command of the scheduler" do
-        SchedulerWrapper.any_instance.should_receive(:cancel_command)
+        expect_any_instance_of(SchedulerWrapper).to receive(:cancel_command)
         @handler.cancel_remote_job(@run)
       end
 
@@ -208,18 +208,18 @@ describe RemoteJobHandler do
         dummy_work_dir = RemoteFilePath.work_dir_path(@host, @run)
         FileUtils.mkdir_p(dummy_work_dir)
         @handler.cancel_remote_job(@run)
-        File.directory?(dummy_work_dir).should be_falsey
+        expect(File.directory?(dummy_work_dir)).to be_falsey
       end
     end
 
     context "when remote_status is :running" do
 
       before(:each) do
-        @handler.stub(:remote_status).and_return(:running)
+        allow(@handler).to receive(:remote_status).and_return(:running)
       end
 
       it "calls cancel_command of the scheduler" do
-        SchedulerWrapper.any_instance.should_receive(:cancel_command)
+        expect_any_instance_of(SchedulerWrapper).to receive(:cancel_command)
         @handler.cancel_remote_job(@run)
       end
 
@@ -227,18 +227,18 @@ describe RemoteJobHandler do
         dummy_work_dir = RemoteFilePath.work_dir_path(@host, @run)
         FileUtils.mkdir_p(dummy_work_dir)
         @handler.cancel_remote_job(@run)
-        File.directory?(dummy_work_dir).should be_falsey
+        expect(File.directory?(dummy_work_dir)).to be_falsey
       end
     end
 
     context "when remote_status is :includable" do
 
       before(:each) do
-        @handler.stub(:remote_status).and_return(:includable)
+        allow(@handler).to receive(:remote_status).and_return(:includable)
       end
 
       it "calls cancel_command of the scheduler" do
-        SchedulerWrapper.any_instance.should_not_receive(:cancel_command)
+        expect_any_instance_of(SchedulerWrapper).not_to receive(:cancel_command)
         @handler.cancel_remote_job(@run)
       end
 
@@ -246,7 +246,7 @@ describe RemoteJobHandler do
         dummy_work_dir = RemoteFilePath.work_dir_path(@host, @run)
         FileUtils.mkdir_p(dummy_work_dir)
         @handler.cancel_remote_job(@run)
-        File.directory?(dummy_work_dir).should be_falsey
+        expect(File.directory?(dummy_work_dir)).to be_falsey
       end
     end
   end

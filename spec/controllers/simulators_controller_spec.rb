@@ -46,8 +46,8 @@ describe SimulatorsController do
     it "assigns all simulators as @simulators" do
       simulator = Simulator.create! valid_attributes
       get :index, {}, valid_session
-      response.should be_success
-      assigns(:simulators).should eq([simulator])
+      expect(response).to be_success
+      expect(assigns(:simulators)).to eq([simulator])
     end
 
     it "@simulators are sorted by the position" do
@@ -56,7 +56,7 @@ describe SimulatorsController do
       simulators.last.update_attribute(:position, 0)
       sorted = simulators.sort_by {|sim| sim.position }
       get :index, {}, valid_session
-      assigns(:simulators).should eq sorted
+      expect(assigns(:simulators)).to eq sorted
     end
   end
 
@@ -72,10 +72,10 @@ describe SimulatorsController do
 
     it "assigns the requested simulator as @simulator" do
       get :show, {id: @simulator.to_param}, valid_session
-      response.should be_success
-      assigns(:simulator).should eq(@simulator)
-      assigns(:analyzers).should eq(@simulator.analyzers)
-      assigns(:query_id).should be_nil
+      expect(response).to be_success
+      expect(assigns(:simulator)).to eq(@simulator)
+      expect(assigns(:analyzers)).to eq(@simulator.analyzers)
+      expect(assigns(:query_id)).to be_nil
       expect(assigns(:query_list).size).to eq 5
     end
   end
@@ -83,12 +83,12 @@ describe SimulatorsController do
   describe "GET new" do
     it "assigns a new simulator as @simulator" do
       get :new, {}, valid_session
-      assigns(:simulator).should be_a_new(Simulator)
+      expect(assigns(:simulator)).to be_a_new(Simulator)
     end
 
     it "@duplicating_simulator is nil" do
       get :new, {}, valid_session
-      assigns(:duplicating_simulator).should be_nil
+      expect(assigns(:duplicating_simulator)).to be_nil
     end
   end
 
@@ -100,21 +100,21 @@ describe SimulatorsController do
 
     it "assigns a new simulator as @simulator" do
       get :duplicate, {id: @simulator}, valid_session
-      assigns(:simulator).should be_a_new(Simulator)
-      assigns(:simulator).name.should eq @simulator.name
-      assigns(:simulator).command.should eq @simulator.command
+      expect(assigns(:simulator)).to be_a_new(Simulator)
+      expect(assigns(:simulator).name).to eq @simulator.name
+      expect(assigns(:simulator).command).to eq @simulator.command
       keys = @simulator.parameter_definitions.map(&:key)
-      assigns(:simulator).parameter_definitions.map(&:key).should eq keys
+      expect(assigns(:simulator).parameter_definitions.map(&:key)).to eq keys
     end
 
     it "assigns the original simulator to @duplicating_simulator" do
       get :duplicate, {id: @simulator}, valid_session
-      assigns(:duplicating_simulator).should eq @simulator
+      expect(assigns(:duplicating_simulator)).to eq @simulator
     end
 
     it "assigns analyzers of the original simulator to @copied_analyzers" do
       get :duplicate, {id: @simulator}, valid_session
-      assigns(:copied_analyzers).should =~ @simulator.analyzers
+      expect(assigns(:copied_analyzers)).to match_array(@simulator.analyzers)
     end
   end
 
@@ -122,7 +122,7 @@ describe SimulatorsController do
     it "assigns the requested simulator as @simulator" do
       simulator = Simulator.create! valid_attributes
       get :edit, {:id => simulator.to_param}, valid_session
-      assigns(:simulator).should eq(simulator)
+      expect(assigns(:simulator)).to eq(simulator)
     end
   end
 
@@ -153,24 +153,24 @@ describe SimulatorsController do
       it "assigns attributes of newly created Simulator" do
         post :create, @valid_post_parameter, valid_session
         sim = Simulator.last
-        sim.name.should eq "simulatorA"
-        sim.command.should eq "echo"
-        sim.support_input_json.should be_falsey
-        sim.parameter_definition_for("param1").type.should eq "Integer"
-        sim.parameter_definition_for("param2").type.should eq "Float"
-        sim.support_mpi.should be_falsey
-        sim.support_omp.should be_truthy
+        expect(sim.name).to eq "simulatorA"
+        expect(sim.command).to eq "echo"
+        expect(sim.support_input_json).to be_falsey
+        expect(sim.parameter_definition_for("param1").type).to eq "Integer"
+        expect(sim.parameter_definition_for("param2").type).to eq "Float"
+        expect(sim.support_mpi).to be_falsey
+        expect(sim.support_omp).to be_truthy
       end
 
       it "assigns a newly created simulator as @simulator" do
         post :create, @valid_post_parameter, valid_session
-        assigns(:simulator).should be_a(Simulator)
-        assigns(:simulator).should be_persisted
+        expect(assigns(:simulator)).to be_a(Simulator)
+        expect(assigns(:simulator)).to be_persisted
       end
 
       it "redirects to the created simulator" do
         post :create, @valid_post_parameter, valid_session
-        response.should redirect_to(Simulator.last)
+        expect(response).to redirect_to(Simulator.last)
       end
     end
 
@@ -222,7 +222,7 @@ describe SimulatorsController do
         @valid_post_parameter[:copied_analyzers].shift
 
         post :create, @valid_post_parameter, valid_session
-        assigns(:duplicating_simulator).should eq @sim
+        expect(assigns(:duplicating_simulator)).to eq @sim
         expect(assigns(:copied_analyzers).size).to eq 1
       end
     end
@@ -232,14 +232,14 @@ describe SimulatorsController do
       it "assigns a newly created but unsaved simulator as @simulator" do
         expect {
           post :create, {simulator: {}}, valid_session
-          assigns(:simulator).should be_a_new(Simulator)
+          expect(assigns(:simulator)).to be_a_new(Simulator)
         }.to_not change(Simulator, :count)
       end
 
       it "re-renders the 'new' template" do
         # Trigger the behavior that occurs when invalid params are submitted
         post :create, {simulator: {}}, valid_session
-        response.should render_template("new")
+        expect(response).to render_template("new")
       end
     end
 
@@ -280,7 +280,7 @@ describe SimulatorsController do
 
       it "updates the requested simulator" do
         simulator = Simulator.create! valid_attributes
-        Simulator.any_instance.should_receive(:update_attributes).with({'description' => 'yyy zzz'})
+        expect_any_instance_of(Simulator).to receive(:update_attributes).with({'description' => 'yyy zzz'})
         put :update, {:id => simulator.to_param, :simulator => {'description' => 'yyy zzz'}}, valid_session
       end
 
@@ -297,23 +297,23 @@ describe SimulatorsController do
       it "redirects to the simulator" do
         simulator = Simulator.create! valid_attributes
         put :update, {:id => simulator.to_param, :simulator => @valid_post_parameter}, valid_session
-        response.should redirect_to(simulator)
+        expect(response).to redirect_to(simulator)
       end
     end
 
     describe "with invalid params" do
       it "assigns the simulator as @simulator" do
         simulator = Simulator.create! valid_attributes
-        Simulator.any_instance.stub(:save).and_return(false)
+        allow_any_instance_of(Simulator).to receive(:save).and_return(false)
         put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
-        assigns(:simulator).should eq(simulator)
+        expect(assigns(:simulator)).to eq(simulator)
       end
 
       it "re-renders the 'edit' template" do
         simulator = Simulator.create! valid_attributes
-        Simulator.any_instance.stub(:save).and_return(false)
+        allow_any_instance_of(Simulator).to receive(:save).and_return(false)
         put :update, {:id => simulator.to_param, :simulator => {}}, valid_session
-        response.should render_template("edit")
+        expect(response).to render_template("edit")
       end
     end
 
@@ -363,7 +363,7 @@ describe SimulatorsController do
 
     it "redirects to the simulators list" do
       delete :destroy, {id: @sim.to_param}, valid_session
-      response.should redirect_to(simulators_url)
+      expect(response).to redirect_to(simulators_url)
     end
   end
 
@@ -393,15 +393,15 @@ describe SimulatorsController do
 
       it "assigns a newly created parameter_set_query of @simulator" do
         post :_make_query, @valid_post_parameter, valid_session
-        assigns(:new_query).should be_a(ParameterSetQuery)
-        assigns(:new_query).query.should eq({"T" =>{"gte"=>4.0}, "L" =>{"eq"=>2}})
-        assigns(:new_query).should be_persisted
+        expect(assigns(:new_query)).to be_a(ParameterSetQuery)
+        expect(assigns(:new_query).query).to eq({"T" =>{"gte"=>4.0}, "L" =>{"eq"=>2}})
+        expect(assigns(:new_query)).to be_persisted
       end
 
       it "redirects to show with the created parameter_set_query" do
         post :_make_query, @valid_post_parameter, valid_session
-        response.should redirect_to( simulator_path(@simulator, query_id: ParameterSetQuery.last.to_param) )
-        assigns(:query_id).should == ParameterSetQuery.last.id.to_s
+        expect(response).to redirect_to( simulator_path(@simulator, query_id: ParameterSetQuery.last.to_param) )
+        expect(assigns(:query_id)).to eq(ParameterSetQuery.last.id.to_s)
       end
 
       context "and with delete option" do
@@ -418,13 +418,13 @@ describe SimulatorsController do
       it "assigns a newly created but unsaved paramater_set_query of @simulator" do
         expect {
           post :_make_query, {:id => @simulator.to_param, params: {}}, valid_session
-          assigns(:new_query).should be_a_new(ParameterSetQuery)
+          expect(assigns(:new_query)).to be_a_new(ParameterSetQuery)
         }.to_not change(ParameterSetQuery, :count)
       end
 
       it "redirect to show with nonmodified query_id" do
         post :_make_query, {:id => @simulator.to_param, params: {}, query_id: ""}, valid_session
-        response.should redirect_to( simulator_path(@simulator, query_id: "") )
+        expect(response).to redirect_to( simulator_path(@simulator, query_id: "") )
       end
     end
   end
@@ -441,7 +441,7 @@ describe SimulatorsController do
     end
 
     it "return json format" do
-      response.header['Content-Type'].should include 'application/json'
+      expect(response.header['Content-Type']).to include 'application/json'
       expect(@parsed_body["recordsTotal"]).to eq 30
       expect(@parsed_body["recordsFiltered"]).to eq 30
     end
@@ -490,11 +490,11 @@ describe SimulatorsController do
     end
 
     it "return json format" do
-      response.should be_success
-      response.header['Content-Type'].should include 'application/json'
-      @parsed_body["parameters"].should eq ["L", "T"]
-      @parsed_body["parameter_values"].should be_a(Array)
-      @parsed_body["num_runs"].should be_a(Array)
+      expect(response).to be_success
+      expect(response.header['Content-Type']).to include 'application/json'
+      expect(@parsed_body["parameters"]).to eq ["L", "T"]
+      expect(@parsed_body["parameter_values"]).to be_a(Array)
+      expect(@parsed_body["num_runs"]).to be_a(Array)
     end
   end
 
@@ -508,7 +508,7 @@ describe SimulatorsController do
       simulators = Simulator.asc(:position).to_a
       expect {
         post :_sort, {simulator: simulators.reverse }
-        response.should be_success
+        expect(response).to be_success
       }.to change { simulators.first.reload.position }.from(0).to(2)
     end
   end
@@ -524,13 +524,13 @@ describe SimulatorsController do
     it "returns http success" do
       valid_param = {id: @sim.to_param, host_id: @host.to_param}
       get :_host_parameters_field, valid_param, valid_session
-      response.should be_success
+      expect(response).to be_success
     end
 
     it "returns http success if host_id is not found" do
       param = {id: @sim.to_param, host_id: "manual"}
       get :_host_parameters_field, param, valid_session
-      response.should be_success
+      expect(response).to be_success
     end
   end
 
@@ -546,7 +546,7 @@ describe SimulatorsController do
     it "returns http success" do
       valid_param = {id: @sim.to_param, host_id: @host.to_param}
       get :_default_mpi_omp, valid_param, valid_session
-      response.should be_success
+      expect(response).to be_success
     end
 
     context "when default_mpi_procs and/or defualt_omp_threads are set" do
@@ -559,9 +559,9 @@ describe SimulatorsController do
       it "returns mpi_procs and omp_threads in json" do
         valid_param = {id: @sim.to_param, host_id: @host.to_param}
         get :_default_mpi_omp, valid_param, valid_session
-        response.header['Content-Type'].should include 'application/json'
+        expect(response.header['Content-Type']).to include 'application/json'
         parsed = JSON.parse(response.body)
-        parsed.should eq ({'mpi_procs' => 8, 'omp_threads' => 4})
+        expect(parsed).to eq ({'mpi_procs' => 8, 'omp_threads' => 4})
       end
     end
 
@@ -575,9 +575,9 @@ describe SimulatorsController do
       it "returns mpi_procs and omp_threads in json" do
         valid_param = {id: @sim.to_param, host_id: @host.to_param}
         get :_default_mpi_omp, valid_param, valid_session
-        response.header['Content-Type'].should include 'application/json'
+        expect(response.header['Content-Type']).to include 'application/json'
         parsed = JSON.parse(response.body)
-        parsed.should eq ({'mpi_procs' => 1, 'omp_threads' => 1})
+        expect(parsed).to eq ({'mpi_procs' => 1, 'omp_threads' => 1})
       end
     end
   end

@@ -26,13 +26,13 @@ describe JobObserver do
     end
 
     it "do observe_host if host status is 'enabled'" do
-      JobObserver.should_receive(:observe_host).and_return(nil)
+      expect(JobObserver).to receive(:observe_host).and_return(nil)
       JobObserver.perform(@logger)
     end
 
     it "do nothing if host status is 'disabled'" do
       @host.update_attribute(:status, :disabled)
-      JobObserver.should_not_receive(:observe_host)
+      expect(JobObserver).not_to receive(:observe_host)
       JobObserver.perform(@logger)
     end
   end
@@ -61,21 +61,21 @@ describe JobObserver do
     end
 
     it "do nothing if remote_status is 'submitted'" do
-      RemoteJobHandler.any_instance.should_receive(:remote_status).and_return(:submitted)
+      expect_any_instance_of(RemoteJobHandler).to receive(:remote_status).and_return(:submitted)
       JobObserver.__send__(:observe_host, @host, @logger)
-      @run.reload.status.should eq :submitted
+      expect(@run.reload.status).to eq :submitted
     end
 
     it "update status to 'running' when remote_status of Run is 'running'" do
-      RemoteJobHandler.any_instance.should_receive(:remote_status).and_return(:running)
+      expect_any_instance_of(RemoteJobHandler).to receive(:remote_status).and_return(:running)
       JobObserver.__send__(:observe_host, @host, @logger)
-      @run.reload.status.should eq :running
+      expect(@run.reload.status).to eq :running
     end
 
     it "include remote data and update status to 'finished' or 'failed'" do
-      RemoteJobHandler.any_instance.should_receive(:remote_status).and_return(:includable)
-      JobIncluder.should_receive(:include_remote_job) do |host, run|
-        run.id.should eq @run.id
+      expect_any_instance_of(RemoteJobHandler).to receive(:remote_status).and_return(:includable)
+      expect(JobIncluder).to receive(:include_remote_job) do |host, run|
+        expect(run.id).to eq @run.id
       end
       JobObserver.__send__(:observe_host, @host, @logger)
     end
@@ -92,20 +92,20 @@ describe JobObserver do
       end
 
       it "cancelles a remote job" do
-        RemoteJobHandler.any_instance.should_receive(:cancel_remote_job) # do nothing
+        expect_any_instance_of(RemoteJobHandler).to receive(:cancel_remote_job) # do nothing
         JobObserver.__send__(:observe_host, @host, @logger)
       end
 
       it "destroys run" do
-        RemoteJobHandler.any_instance.stub(:remote_status) { :includable }
+        allow_any_instance_of(RemoteJobHandler).to receive(:remote_status) { :includable }
         expect {
           JobObserver.__send__(:observe_host, @host, @logger)
         }.to change { Run.count }.by(-1)
       end
 
       it "does not include remote data even if remote status is 'includable'" do
-        RemoteJobHandler.any_instance.stub(:remote_status) { :includable }
-        JobIncluder.should_not_receive(:include_remote_job)
+        allow_any_instance_of(RemoteJobHandler).to receive(:remote_status) { :includable }
+        expect(JobIncluder).not_to receive(:include_remote_job)
         JobObserver.__send__(:observe_host, @host, @logger)
       end
     end
@@ -114,7 +114,7 @@ describe JobObserver do
 
       it "does not change run status into :failed" do
         # return "#<NoMethodError: undefined method `stat' for nil:NilClass>"
-        RemoteJobHandler.any_instance.stub(:remote_status) { nil.stat }
+        allow_any_instance_of(RemoteJobHandler).to receive(:remote_status) { nil.stat }
         expect {
           JobObserver.__send__(:observe_host, @host, @logger)
         }.not_to change { Run.where(status: :failed).count }

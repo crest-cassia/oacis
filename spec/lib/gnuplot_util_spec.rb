@@ -15,7 +15,7 @@ plot '-' u 1:2 w linespoints
 1 2 0.2
 e
 EOS
-      GnuplotUtil.script_for_single_line_plot(data, "XXX", "YYY").should eq expected
+      expect(GnuplotUtil.script_for_single_line_plot(data, "XXX", "YYY")).to eq expected
     end
 
     it "returns a script to draw a single line plot with errorbars when option is given" do
@@ -29,7 +29,7 @@ plot '-' u 1:2:3 w errorlines
 1 2 0.2
 e
 EOS
-      GnuplotUtil.script_for_single_line_plot(data, "XXX", "YYY", true).should eq expected
+      expect(GnuplotUtil.script_for_single_line_plot(data, "XXX", "YYY", true)).to eq expected
     end
 
     it "plots correctly even when third column is nil" do
@@ -43,7 +43,7 @@ plot '-' u 1:2:3 w errorlines
 1 2 0 bbb
 e
 EOS
-      GnuplotUtil.script_for_single_line_plot(data, "XXX", "YYY", true).should eq expected
+      expect(GnuplotUtil.script_for_single_line_plot(data, "XXX", "YYY", true)).to eq expected
     end
   end
 
@@ -66,7 +66,7 @@ e
 1 4 0.4
 e
       EOS
-      GnuplotUtil.script_for_multi_line_plot(data_arr, "XXX", "YYY", false, "ZZZ", [5, 4]).should eq expected
+      expect(GnuplotUtil.script_for_multi_line_plot(data_arr, "XXX", "YYY", false, "ZZZ", [5, 4])).to eq expected
     end
 
     it "returns a gnuplot script to draw a series of plots with errorbars when option is given" do
@@ -86,7 +86,7 @@ e
 1 4 0.4
 e
       EOS
-      GnuplotUtil.script_for_multi_line_plot(data_arr, "XXX", "YYY", true, "ZZZ", [5, 4]).should eq expected
+      expect(GnuplotUtil.script_for_multi_line_plot(data_arr, "XXX", "YYY", true, "ZZZ", [5, 4])).to eq expected
     end
   end
 end

@@ -14,28 +14,28 @@ describe Simulator do
   end
 
   it "should be valid with appropriate fields" do
-    Simulator.new(@valid_fields).should be_valid
+    expect(Simulator.new(@valid_fields)).to be_valid
   end
 
   describe "'name' field" do
 
     it "must exist" do
-      Simulator.new(@valid_fields.update(name:"")).should_not be_valid
+      expect(Simulator.new(@valid_fields.update(name:""))).not_to be_valid
     end
 
     it "must be unique" do
       Simulator.create!(@valid_fields)
-      Simulator.new(@valid_fields).should_not be_valid
+      expect(Simulator.new(@valid_fields)).not_to be_valid
     end
 
     it "must be organized with word characters" do
-      Simulator.new(@valid_fields.update({name:"b l a n k"})).should_not be_valid
+      expect(Simulator.new(@valid_fields.update({name:"b l a n k"}))).not_to be_valid
     end
 
     it "is editable after a parameter set is created" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       sim.name = "AnotherSimulator"
-      sim.should be_valid
+      expect(sim).to be_valid
     end
   end
 
@@ -44,7 +44,7 @@ describe Simulator do
     it "must exist" do
       invalid_attr = @valid_fields
       invalid_attr.delete(:command)
-      Simulator.new(invalid_attr).should_not be_valid
+      expect(Simulator.new(invalid_attr)).not_to be_valid
     end
   end
 
@@ -55,11 +55,11 @@ describe Simulator do
     end
 
     it "should have 'parameter_sets' method" do
-      @simulator.should respond_to(:parameter_sets)
+      expect(@simulator).to respond_to(:parameter_sets)
     end
 
     it "should return 'parameter_sets'" do
-      @simulator.parameter_sets.should == []
+      expect(@simulator.parameter_sets).to eq([])
 
       param_attribute = {:v => {"L" => 32, "T" => 0.1} }
       @simulator.parameter_sets.create!(param_attribute)
@@ -81,19 +81,19 @@ describe Simulator do
 
     it "is created when a new item is added" do
       sim = Simulator.create!(@valid_fields)
-      FileTest.directory?(ResultDirectory.simulator_path(sim)).should be_truthy
+      expect(FileTest.directory?(ResultDirectory.simulator_path(sim))).to be_truthy
     end
 
     it "is not created when validation fails" do
       Simulator.create(@valid_fields.update(name:""))
-      (Dir.entries(ResultDirectory.root) - ['.', '..']).should be_empty
+      expect(Dir.entries(ResultDirectory.root) - ['.', '..']).to be_empty
     end
   end
 
   describe "'description' field" do
 
     it "responds to 'description'" do
-      Simulator.new.should respond_to(:description)
+      expect(Simulator.new).to respond_to(:description)
     end
   end
 
@@ -104,8 +104,8 @@ describe Simulator do
     end
 
     it "the largest number within existing simulators is assigned when created" do
-      Simulator.create!(@valid_fields.update(name: 'simulatorC')).position.should eq 2
-      Simulator.all.map(&:position).should =~ [0,1,2]
+      expect(Simulator.create!(@valid_fields.update(name: 'simulatorC')).position).to eq 2
+      expect(Simulator.all.map(&:position)).to match_array([0,1,2])
     end
   end
 
@@ -142,7 +142,7 @@ describe Simulator do
 
     it "returns the result directory of the simulator" do
       sim = FactoryGirl.create(:simulator, :parameter_sets_count => 0, :runs_count => 0, :parameter_set_queries_count => 0)
-      sim.dir.should == ResultDirectory.simulator_path(sim)
+      expect(sim.dir).to eq(ResultDirectory.simulator_path(sim))
     end
   end
 
@@ -162,9 +162,9 @@ describe Simulator do
                               type: :on_parameter_set,
                               simulator: sim)
 
-      sim.analyzers_on_run.should be_a(Mongoid::Criteria)
-      sim.analyzers_on_run.should eq(sim.analyzers.where(type: :on_run))
-      sim.analyzers_on_run.count.should eq(5)
+      expect(sim.analyzers_on_run).to be_a(Mongoid::Criteria)
+      expect(sim.analyzers_on_run).to eq(sim.analyzers.where(type: :on_run))
+      expect(sim.analyzers_on_run.count).to eq(5)
     end
   end
 
@@ -184,9 +184,9 @@ describe Simulator do
                               type: :on_parameter_set,
                               simulator: sim)
 
-      sim.analyzers_on_parameter_set.should be_a(Mongoid::Criteria)
-      sim.analyzers_on_parameter_set.should eq(sim.analyzers.where(type: :on_parameter_set))
-      sim.analyzers_on_parameter_set.count.should eq(2)
+      expect(sim.analyzers_on_parameter_set).to be_a(Mongoid::Criteria)
+      expect(sim.analyzers_on_parameter_set).to eq(sim.analyzers.where(type: :on_parameter_set))
+      expect(sim.analyzers_on_parameter_set.count).to eq(2)
     end
   end
 
@@ -211,7 +211,7 @@ describe Simulator do
 
     it "return array of plottable keys" do
       analyzer_name = @sim.analyzers.first.name
-      @sim.plottable.should eq [
+      expect(@sim.plottable).to eq [
         "cpu_time", "real_time",
         ".r1", ".r2.r3", ".r2.r4",
         "#{analyzer_name}.a1", "#{analyzer_name}.a2.a3", "#{analyzer_name}.a2.a4"
@@ -255,7 +255,7 @@ describe Simulator do
         "#{azr.name}.a2.a3" => [3, 4],
         "#{azr.name}.a2.a4" => [4, 5]
       }
-      @sim.plottable_domains.should eq expected
+      expect(@sim.plottable_domains).to eq expected
     end
   end
 
@@ -283,7 +283,7 @@ describe Simulator do
         "T" => [1.0, 10.0],
         "S" => [nil, nil]
       }
-      @sim.parameter_ranges.should eq expected
+      expect(@sim.parameter_ranges).to eq expected
     end
   end
 
@@ -309,12 +309,12 @@ describe Simulator do
 
     it "returns a Hash with valid keys" do
       progress = @sim.progress_overview_data("L", "T")
-      progress.should be_a(Hash)
-      progress.keys.should =~ [:parameters, :parameter_values, :num_runs]
+      expect(progress).to be_a(Hash)
+      expect(progress.keys).to match_array([:parameters, :parameter_values, :num_runs])
     end
 
     it "progress[:parameters] is an Array of row_parameter and column_parameter" do
-      @sim.progress_overview_data("L", "T")[:parameters].should eq ["L", "T"]
+      expect(@sim.progress_overview_data("L", "T")[:parameters]).to eq ["L", "T"]
     end
 
     it "progress[:parameter_values] are distinct values for each parameters" do
@@ -330,7 +330,7 @@ describe Simulator do
         [ [5,8], [3,5], [3,5] ], # T=1.0
         [ [3,5], [8,8], [0,0] ], # T=2.0
       ]
-      num_runs.should eq expected
+      expect(num_runs).to eq expected
     end
 
     context "when first and second parameters are same" do
@@ -343,7 +343,7 @@ describe Simulator do
           [ [0,0], [11,13],[0,0] ], # L=2
           [ [0,0], [0,0],  [3,5] ], # L=3
         ]
-        num_runs.should eq expected
+        expect(num_runs).to eq expected
       end
     end
 
@@ -363,7 +363,7 @@ describe Simulator do
           [ [5,8], [3,5], [3,5] ], # T=1.0
           [ [3,5], [8,8], [0,0] ], # T=2.0
         ]
-        num_runs.should eq expected
+        expect(num_runs).to eq expected
       end
     end
   end
@@ -389,11 +389,11 @@ describe Simulator do
     end
 
     it "returns list of simulator_versions in Array" do
-      @sim.simulator_versions.should be_a(Array)
+      expect(@sim.simulator_versions).to be_a(Array)
     end
 
     it "returns array of hash whose 'version' field is simulator_versions" do
-      @sim.simulator_versions.map {|h| h['version']}.should =~ ["v1", "v2"]
+      expect(@sim.simulator_versions.map {|h| h['version']}).to match_array(["v1", "v2"])
     end
 
     it "returns array of hash which has 'oldest_started_at' and 'latest_started_at' fields" do
@@ -408,19 +408,19 @@ describe Simulator do
           "latest_started_at" => runs[4].started_at,
           "count" => {finished: 2, failed: 1} }
       ]
-      @sim.simulator_versions.should =~ expected
+      expect(@sim.simulator_versions).to match_array(expected)
     end
 
     it "returns array which is sorted by 'latest_started_at' in ascending order" do
-      @sim.simulator_versions.map {|h| h['version']}.should eq ["v1", "v2"]
+      expect(@sim.simulator_versions.map {|h| h['version']}).to eq ["v1", "v2"]
     end
 
     it "counts runs for each status" do
       finished_count = @sim.runs.where(status: :finished).count
       failed_count = @sim.runs.where(status: :failed).count
       output = @sim.simulator_versions
-      output.map {|h| h['count'][:finished].to_i }.inject(:+).should eq finished_count
-      output.map {|h| h['count'][:failed].to_i }.inject(:+).should eq failed_count
+      expect(output.map {|h| h['count'][:finished].to_i }.inject(:+)).to eq finished_count
+      expect(output.map {|h| h['count'][:failed].to_i }.inject(:+)).to eq failed_count
     end
   end
 
@@ -449,19 +449,19 @@ describe Simulator do
       analyzer_name = @sim.analyzers.first.name
       expected_files = @figure_extensions.map {|fe| "/fig1."+fe}
       expected_files += ["#{analyzer_name}/fig2.jpg"]
-      @sim.figure_files.should =~ expected_files
+      expect(@sim.figure_files).to match_array(expected_files)
     end
 
     context "when there is no finished run or analysis" do
 
       it "does not include the result for a failed run" do
         @sim.runs.first.update_attribute(:status, :failed)
-        @sim.figure_files.any? {|f| f =~ /fig1/ }.should be_falsey
+        expect(@sim.figure_files.any? {|f| f =~ /fig1/ }).to be_falsey
       end
 
       it "does not include the result for a failed analysis" do
         @sim.analyzers.first.analyses.first.update_attribute(:status, :failed)
-        @sim.figure_files.any? {|f| f =~ /fig2/ }.should be_falsey
+        expect(@sim.figure_files.any? {|f| f =~ /fig2/ }).to be_falsey
       end
     end
   end
@@ -482,11 +482,11 @@ describe Simulator do
 
       it "return default_host_parameter associated with a host" do
         key_value = @sim.executable_on.first.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
-        @sim.get_default_host_parameter(@sim.executable_on.first).should eq Hash[*key_value.flatten]
+        expect(@sim.get_default_host_parameter(@sim.executable_on.first)).to eq Hash[*key_value.flatten]
       end
 
       it "return default_host_parameter for manual submission" do
-        @sim.get_default_host_parameter(nil).should eq Hash.new
+        expect(@sim.get_default_host_parameter(nil)).to eq Hash.new
       end
     end
 
@@ -503,7 +503,7 @@ describe Simulator do
 
       it "return {} as default_host_parameter for manual submission" do
         run = @sim.parameter_sets.first.runs.build({submitted_to: nil})
-        @sim.get_default_host_parameter(run.submitted_to).should eq Hash.new
+        expect(@sim.get_default_host_parameter(run.submitted_to)).to eq Hash.new
       end
     end
   end

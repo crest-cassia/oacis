@@ -24,7 +24,7 @@ describe HostsController do
     it "assigns all hosts as @hosts" do
       host = Host.create! valid_attributes
       get :index, {}, valid_session
-      assigns(:hosts).should eq([host])
+      expect(assigns(:hosts)).to eq([host])
     end
 
     it "@hosts are sorted by position" do
@@ -32,7 +32,7 @@ describe HostsController do
       hosts.first.update_attribute(:position, 2)
       hosts.last.update_attribute(:position, 0)
       get :index, {}, valid_session
-      assigns(:hosts).map(&:position).should eq [0,1,2]
+      expect(assigns(:hosts).map(&:position)).to eq [0,1,2]
     end
   end
 
@@ -40,14 +40,14 @@ describe HostsController do
     it "assigns the requested host as @host" do
       host = Host.create! valid_attributes
       get :show, {id: host.to_param}, valid_session
-      assigns(:host).should eq(host)
+      expect(assigns(:host)).to eq(host)
     end
   end
 
   describe "GET new" do
     it "assigns a new host as @host" do
       get :new, {}, valid_session
-      assigns(:host).should be_a_new(Host)
+      expect(assigns(:host)).to be_a_new(Host)
     end
   end
 
@@ -55,7 +55,7 @@ describe HostsController do
     it "assigns the requested host as @host" do
       host = Host.create! valid_attributes
       get :edit, {id: host.to_param}, valid_session
-      assigns(:host).should eq(host)
+      expect(assigns(:host)).to eq(host)
     end
   end
 
@@ -71,13 +71,13 @@ describe HostsController do
 
       it "assigns a newly created host as @host" do
         post :create, {host: valid_attributes}, valid_session
-        assigns(:host).should be_a(Host)
-        assigns(:host).should be_persisted
+        expect(assigns(:host)).to be_a(Host)
+        expect(assigns(:host)).to be_persisted
       end
 
       it "redirects to the created host" do
         post :create, {host: valid_attributes}, valid_session
-        response.should redirect_to(Host.last)
+        expect(response).to redirect_to(Host.last)
       end
 
       context "with executable_simulators" do
@@ -98,12 +98,12 @@ describe HostsController do
     describe "with invalid params" do
       it "assigns a newly created but unsaved host as @host" do
         post :create, {host: {}}, valid_session
-        assigns(:host).should be_a_new(Host)
+        expect(assigns(:host)).to be_a_new(Host)
       end
 
       it "re-renders the 'new' template" do
         post :create, {host: {}}, valid_session
-        response.should render_template("new")
+        expect(response).to render_template("new")
       end
     end
 
@@ -125,19 +125,19 @@ describe HostsController do
       it "updates the requested host" do
         host = Host.create! valid_attributes
         put :update, {id: host.to_param, host: {name: 'XYZ'}}, valid_session
-        host.reload.name.should eq('XYZ')
+        expect(host.reload.name).to eq('XYZ')
       end
 
       it "assigns the requested host as @host" do
         host = Host.create! valid_attributes
         put :update, {id: host.to_param, host: valid_attributes}, valid_session
-        assigns(:host).should eq(host)
+        expect(assigns(:host)).to eq(host)
       end
 
       it "redirects to the host" do
         host = Host.create! valid_attributes
         put :update, {id: host.to_param, host: valid_attributes}, valid_session
-        response.should redirect_to(host)
+        expect(response).to redirect_to(host)
       end
     end
 
@@ -145,13 +145,13 @@ describe HostsController do
       it "assigns the host as @host" do
         host = Host.create! valid_attributes
         put :update, {id: host.to_param, host: {name: ''}}, valid_session
-        assigns(:host).should eq(host)
+        expect(assigns(:host)).to eq(host)
       end
 
       it "re-renders the 'edit' template" do
         host = Host.create! valid_attributes
         put :update, {id: host.to_param, host: {name: ''}}, valid_session
-        response.should render_template("edit")
+        expect(response).to render_template("edit")
       end
     end
 
@@ -178,7 +178,7 @@ describe HostsController do
     it "redirects to the hosts list" do
       host = Host.create! valid_attributes
       delete :destroy, {id: host.to_param}, valid_session
-      response.should redirect_to(hosts_url)
+      expect(response).to redirect_to(hosts_url)
     end
 
     context "when submittable or submitted runs exist" do
@@ -197,7 +197,7 @@ describe HostsController do
 
       it "renders 'show' template" do
         delete :destroy, {id: @host.to_param}, valid_session
-        response.should render_template('show')
+        expect(response).to render_template('show')
       end
     end
   end
@@ -212,7 +212,7 @@ describe HostsController do
       hosts = Host.asc(:position).to_a
       expect {
         post :_sort, {host: hosts.reverse }
-        response.should be_success
+        expect(response).to be_success
       }.to change { hosts.first.reload.position }.from(0).to(2)
     end
   end

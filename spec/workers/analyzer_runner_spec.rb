@@ -33,8 +33,8 @@ describe AnalyzerRunner do
       end
 
       it "does not call run_analysis nor include_data methods when cancelled" do
-        AnalyzerRunner.should_not_receive(:run_analysis)
-        AnalyzerRunner.should_not_receive(:include_data)
+        expect(AnalyzerRunner).not_to receive(:run_analysis)
+        expect(AnalyzerRunner).not_to receive(:include_data)
         AnalyzerRunner.perform(@logger)
       end
     end
@@ -54,11 +54,11 @@ describe AnalyzerRunner do
         Dir.chdir(@work_dir) {
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
           input_json = '_input.json'
-          File.exist?(input_json).should be_truthy
+          expect(File.exist?(input_json)).to be_truthy
           parsed = JSON.parse(IO.read(input_json))
           mapped = {}
           @arn.input.each {|key, value| mapped[key.to_s] = value}
-          parsed.should eq(mapped)
+          expect(parsed).to eq(mapped)
         }
       end
 
@@ -66,10 +66,10 @@ describe AnalyzerRunner do
         Dir.chdir(@work_dir) {
           dummy_input = @arn.analyzable.dir.join('dummy.txt')
           FileUtils.touch(dummy_input)
-          @arn.should_receive(:input_files).and_return([@arn.analyzable.dir])
+          expect(@arn).to receive(:input_files).and_return([@arn.analyzable.dir])
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
-          File.directory?('_input').should be_truthy
-          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should be_truthy
+          expect(File.directory?('_input')).to be_truthy
+          expect(File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt")).to be_truthy
         }
       end
     end
@@ -89,9 +89,9 @@ describe AnalyzerRunner do
         Dir.chdir(@work_dir) {
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
           input_json = '_input.json'
-          File.exist?(input_json).should be_truthy
+          expect(File.exist?(input_json)).to be_truthy
           AnalyzerRunner.__send__(:remove_inputs)
-          File.exist?(input_json).should_not be_truthy
+          expect(File.exist?(input_json)).not_to be_truthy
         }
       end
 
@@ -99,13 +99,13 @@ describe AnalyzerRunner do
         Dir.chdir(@work_dir) {
           dummy_input = @arn.analyzable.dir.join('dummy.txt')
           FileUtils.touch(dummy_input)
-          @arn.should_receive(:input_files).and_return([@arn.analyzable.dir])
+          expect(@arn).to receive(:input_files).and_return([@arn.analyzable.dir])
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
-          File.directory?('_input').should be_truthy
-          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should be_truthy
+          expect(File.directory?('_input')).to be_truthy
+          expect(File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt")).to be_truthy
           AnalyzerRunner.__send__(:remove_inputs)
-          File.directory?('_input').should_not be_truthy
-          File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt").should_not be_truthy
+          expect(File.directory?('_input')).not_to be_truthy
+          expect(File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt")).not_to be_truthy
         }
       end
     end
@@ -122,12 +122,12 @@ describe AnalyzerRunner do
       end
 
       it "updates status to 'running'" do
-        @arn.should_receive(:update_status_running)
+        expect(@arn).to receive(:update_status_running)
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
       end
 
       it "prepares input files" do
-        AnalyzerRunner.should_receive(:prepare_inputs)
+        expect(AnalyzerRunner).to receive(:prepare_inputs)
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
       end
 
@@ -136,7 +136,7 @@ describe AnalyzerRunner do
         @azr.save
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
         dir = File.open(File.join(@work_dir, '_stdout.txt')).read.chomp
-        dir.should eq(File.expand_path(@work_dir))
+        expect(dir).to eq(File.expand_path(@work_dir))
       end
 
       it "executes with 'Bundler.with_clean_env' and remove RUBYLIB, GEM_HOME variables" do
@@ -144,39 +144,39 @@ describe AnalyzerRunner do
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
         env = File.open( File.join(@work_dir, 'env.txt')).read.chomp
         STDERR.puts env
-        env.should_not match /^export BUNDLE_BIN_PATH=/
-        env.should_not match /^export BUNDLE_GEMFILE=/
-        env.should_not match /^export RUBYLIB=/
-        $1.should_not match /bundler/ if env =~ /^export RUBYOPT=(.*)$/
-        env.should_not match /^export GEM_HOME=/
+        expect(env).not_to match /^export BUNDLE_BIN_PATH=/
+        expect(env).not_to match /^export BUNDLE_GEMFILE=/
+        expect(env).not_to match /^export RUBYLIB=/
+        expect($1).not_to match /bundler/ if env =~ /^export RUBYOPT=(.*)$/
+        expect(env).not_to match /^export GEM_HOME=/
       end
 
       it "stdout and stderr outputs are redirected to '_stdout.txt' and '_stderr.txt'" do
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        File.exist?( File.join(@work_dir, '_stdout.txt') ).should be_truthy
-        File.exist?( File.join(@work_dir, '_stderr.txt') ).should be_truthy
+        expect(File.exist?( File.join(@work_dir, '_stdout.txt') )).to be_truthy
+        expect(File.exist?( File.join(@work_dir, '_stderr.txt') )).to be_truthy
       end
 
       it "analyzer_command may include redirection of stdout or stderr" do
         @azr.update_attribute(:command, 'pwd > pwd.txt')
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
         dir = File.open(File.join(@work_dir, 'pwd.txt')).read.chomp
-        dir.should eq(File.expand_path(@work_dir))
+        expect(dir).to eq(File.expand_path(@work_dir))
       end
 
       it "raises an exception if return code of the analyzer is not zero" do
         @azr.update_attribute(:command, 'invalid_command')
-        lambda {
+        expect {
           AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        }.should raise_error
+        }.to raise_error
       end
 
       it "returns status of analysis" do
         @azr.update_attribute(:command, 'sleep 1')
         @azr.save
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        status[:cpu_time].should be_within(0.1).of(0.0)
-        status[:real_time].should be_within(0.1).of(1.0)
+        expect(status[:cpu_time]).to be_within(0.1).of(0.0)
+        expect(status[:real_time]).to be_within(0.1).of(1.0)
       end
 
       it "updates result of Analysis" do
@@ -184,8 +184,8 @@ describe AnalyzerRunner do
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts result.to_json}
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        status[:result]["xxx"].should eq(0.1)
-        status[:result]["yyy"].should eq(12345)
+        expect(status[:result]["xxx"]).to eq(0.1)
+        expect(status[:result]["yyy"]).to eq(12345)
       end
 
       it "updates result of Analysis when result is a Float" do
@@ -193,7 +193,7 @@ describe AnalyzerRunner do
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts result}
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        status[:result].should eq({"result"=>result})
+        expect(status[:result]).to eq({"result"=>result})
       end
 
       it "updates result of Analysis when result is a Boolean" do
@@ -201,7 +201,7 @@ describe AnalyzerRunner do
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts result.to_s}
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        status[:result].should eq({"result"=>result})
+        expect(status[:result]).to eq({"result"=>result})
       end
 
       it "updates result of Analysis when result is a String" do
@@ -209,7 +209,7 @@ describe AnalyzerRunner do
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts "\"#{result}\""}
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        status[:result].should eq({"result"=>result})
+        expect(status[:result]).to eq({"result"=>result})
       end
  
       it "updates result of Analysis when result is a Array" do
@@ -217,20 +217,20 @@ describe AnalyzerRunner do
         output_json = File.join(@work_dir, '_output.json')
         File.open(output_json, 'w') {|io| io.puts result.to_json}
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        status[:result].should eq({"result"=>result})
+        expect(status[:result]).to eq({"result"=>result})
       end
 
       it "write '_version.txt'" do
         status = AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
         version_text = '_version.txt'
-        File.exist?( File.join(@work_dir, version_text) ).should be_truthy
+        expect(File.exist?( File.join(@work_dir, version_text) )).to be_truthy
         version = File.open(File.join(@work_dir, version_text) ).read.chomp
-        version.should eq("v0.1.0")
+        expect(version).to eq("v0.1.0")
       end
 
       it "update analyzer_version if print_version_command exists" do
         status= AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
-        status[:analyzer_version].should eq("v0.1.0")
+        expect(status[:analyzer_version]).to eq("v0.1.0")
       end
     end
 
@@ -252,14 +252,14 @@ describe AnalyzerRunner do
             f.write(JSON.pretty_generate(result))
           end
           parsed = AnalyzerRunner.__send__(:parse_output_json)
-          parsed.should == result
+          expect(parsed).to eq(result)
         }
       end
 
       it "returns nil when _output.json is not found" do
         Dir.chdir(@work_dir) {
           parsed = AnalyzerRunner.__send__(:parse_output_json)
-          parsed.should be_nil
+          expect(parsed).to be_nil
         }
       end
     end
@@ -276,7 +276,7 @@ describe AnalyzerRunner do
       end
 
       it "updates status to 'finished'" do
-        @arn.should_receive(:update_status_finished)
+        expect(@arn).to receive(:update_status_finished)
         AnalyzerRunner.__send__(:include_data, @arn, @work_dir, {})
       end
 

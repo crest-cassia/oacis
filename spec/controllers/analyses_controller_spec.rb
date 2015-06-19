@@ -39,12 +39,12 @@ describe AnalysesController do
 
       it "returns http success" do
         get 'show', {id: @arn}, valid_session
-        response.should be_success
+        expect(response).to be_success
       end
 
       it "assigns instance variables for analysis_on_run" do
         get 'show', {id: @arn}, valid_session
-        assigns(:analysis).should eq(@arn)
+        expect(assigns(:analysis)).to eq(@arn)
       end
     end
 
@@ -52,12 +52,12 @@ describe AnalysesController do
 
       it "returns http success" do
         get 'show', {id: @arn2}, valid_session
-        response.should be_success
+        expect(response).to be_success
       end
 
       it "assigns instance variables" do
         get 'show', {id: @arn2}, valid_session
-        assigns(:analysis).should eq(@arn2)
+        expect(assigns(:analysis)).to eq(@arn2)
       end
     end
   end
@@ -86,8 +86,8 @@ describe AnalysesController do
 
         it "redirects to 'analysis' tab of Run#show page" do
           post :create, @valid_param.update(format: 'json'), valid_session
-          response.should_not redirect_to( run_path(@run, anchor: '!tab-analyses') )
-          response.should_not render_template 'create'
+          expect(response).not_to redirect_to( run_path(@run, anchor: '!tab-analyses') )
+          expect(response).not_to render_template 'create'
         end
       end
 
@@ -161,8 +161,8 @@ describe AnalysesController do
 
         it "redirects to 'analysis' tab of ParameterSet#show page" do
           post :create, @valid_param.update(format: 'json'), valid_session
-          response.should_not redirect_to( parameter_set_path(@par, anchor: '!tab-analyses') )
-          response.should_not render_template 'create'
+          expect(response).not_to redirect_to( parameter_set_path(@par, anchor: '!tab-analyses') )
+          expect(response).not_to render_template 'create'
         end
       end
 
@@ -232,7 +232,7 @@ describe AnalysesController do
 
     it "returns http success" do
       get '_result', {id: @arn}, valid_session
-      response.should be_success
+      expect(response).to be_success
     end
   end
 end

@@ -18,7 +18,7 @@ describe ParameterSetsController do
                                analyzers_count: 1,
                                run_analysis: true)
       get 'show', {id: sim.parameter_sets.first}, valid_session
-      response.should be_success
+      expect(response).to be_success
     end
 
     it "assigns instance variables" do
@@ -29,7 +29,7 @@ describe ParameterSetsController do
                                run_analysis: true)
       prm = sim.parameter_sets.first
       get 'show', {id: prm}, valid_session
-      assigns(:param_set).should eq(prm)
+      expect(assigns(:param_set)).to eq(prm)
     end
   end
 
@@ -42,8 +42,8 @@ describe ParameterSetsController do
 
     it "assigns instance variables @simulator and @param_set" do
       get 'new', {simulator_id: @sim}, valid_session
-      assigns(:param_set).should be_a_new(ParameterSet)
-      assigns(:param_set).should respond_to(:v)
+      expect(assigns(:param_set)).to be_a_new(ParameterSet)
+      expect(assigns(:param_set)).to respond_to(:v)
     end
   end
 
@@ -56,9 +56,9 @@ describe ParameterSetsController do
 
     it "assigns instance variables @simulator and @param_set with duplicated parameters" do
       get 'duplicate', {id: @ps}, valid_session
-      assigns(:param_set).should be_a_new(ParameterSet)
-      assigns(:param_set).should respond_to(:v)
-      assigns(:param_set).v.should eq(@ps.v)
+      expect(assigns(:param_set)).to be_a_new(ParameterSet)
+      expect(assigns(:param_set)).to respond_to(:v)
+      expect(assigns(:param_set).v).to eq(@ps.v)
     end
   end
 
@@ -84,7 +84,7 @@ describe ParameterSetsController do
 
       it "redirects to the created parameter set" do
         post :create, @valid_param, valid_session
-        response.should redirect_to(ParameterSet.last)
+        expect(response).to redirect_to(ParameterSet.last)
       end
 
       it "creates runs if num_runs are given" do
@@ -97,7 +97,7 @@ describe ParameterSetsController do
         @sim.support_mpi = true
         @sim.save!
         post :create, @valid_param.update(num_runs: 3, run: {submitted_to: Host.first, mpi_procs: 8}), valid_session
-        Run.last.mpi_procs.should eq 8
+        expect(Run.last.mpi_procs).to eq 8
       end
 
       context "when duplicated parameter_set exists" do
@@ -127,7 +127,7 @@ describe ParameterSetsController do
         it "redirects to simulator when multiple parameter sets were created" do
           @valid_param.update(v: {"L" => "1,2,3", "T" => "1.0, 2.0, 3.0"})
           post :create, @valid_param, valid_session
-          response.should redirect_to(@sim)
+          expect(response).to redirect_to(@sim)
         end
 
         it "non-castable elements are skipped" do
@@ -140,7 +140,7 @@ describe ParameterSetsController do
         it "redirects to parameter set when single paraemter set is created" do
           @valid_param.update(v: {"L" => "1", "T" => "1.0, abc"})
           post :create, @valid_param, valid_session
-          response.should redirect_to(ParameterSet.last)
+          expect(response).to redirect_to(ParameterSet.last)
         end
 
         it "does not create duplicated parameter set" do
@@ -182,13 +182,13 @@ describe ParameterSetsController do
           it "redirects to simulator when multiple parameter sets are specified" do
             @valid_param.update(v: {"L" => "1", "T" => "1.0,2.0"}, num_runs: 3)
             post :create, @valid_param, valid_session
-            response.should redirect_to(@sim)
+            expect(response).to redirect_to(@sim)
           end
 
           it "shows an error when no parameter_sets or runs are created" do
             @valid_param.update(v: {"L" => 1, "T" => 1.0}, num_runs: 1)
             post :create, @valid_param, valid_session
-            response.should render_template("new")
+            expect(response).to render_template("new")
           end
         end
       end
@@ -204,13 +204,13 @@ describe ParameterSetsController do
       it "assigns a new ParameterSet as @param_set" do
         expect {
           post :create, @invalid_param, valid_session
-          assigns(:param_set).should be_a_new(ParameterSet)
+          expect(assigns(:param_set)).to be_a_new(ParameterSet)
         }.to_not change(ParameterSet, :count)
       end
 
       it "re-renders the 'new' template" do
         post :create, @invalid_param, valid_session
-        response.should render_template("new")
+        expect(response).to render_template("new")
       end
 
       describe "creation of multiple parameter sets" do
@@ -227,7 +227,7 @@ describe ParameterSetsController do
           @invalid_param.update(v: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
                                     "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
           post :create, @invalid_param, valid_session
-          response.should render_template("new")
+          expect(response).to render_template("new")
         end
       end
 
@@ -283,7 +283,7 @@ describe ParameterSetsController do
       it "creates a parameter_sets correctly when the boolean parameter is false" do
         valid_param = {simulator_id: @sim, v: {"B" => "false"}}
         post :create, valid_param, valid_session
-        @sim.parameter_sets.first.v["B"].should eq false
+        expect(@sim.parameter_sets.first.v["B"]).to eq false
       end
     end
   end
@@ -298,8 +298,8 @@ describe ParameterSetsController do
 
     it "returns CLI command" do
       get :_create_cli, @valid_param, valid_session
-      response.should be_success
-      response.body.should eq <<-EOS.chomp
+      expect(response).to be_success
+      expect(response.body).to eq <<-EOS.chomp
 ./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -o ps.json
       EOS
     end
@@ -313,8 +313,8 @@ describe ParameterSetsController do
       @valid_param[:num_runs] = 3
 
       get :_create_cli, @valid_param, valid_session
-      response.should be_success
-      response.body.should eq <<-EOS.chomp
+      expect(response).to be_success
+      expect(response.body).to eq <<-EOS.chomp
 ./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -r '{"num_runs":3,"mpi_procs":4,"omp_threads":8,"priority":2,"submitted_to":"#{h.id.to_s}","host_parameters":{"param1":"xxx","param2":"yyy"}}' -o ps.json
       EOS
     end
@@ -337,7 +337,7 @@ describe ParameterSetsController do
 
       it "respond to simulator show" do
         delete :destroy, {id: @ps.to_param, format: :js}, valid_session
-        response.should_not redirect_to(@sim)
+        expect(response).not_to redirect_to(@sim)
       end
     end
 
@@ -345,7 +345,7 @@ describe ParameterSetsController do
 
       it "respond to simulator show" do
         delete :destroy, {id: @ps.to_param, format: :html}, valid_session
-        response.should redirect_to(@sim)
+        expect(response).to redirect_to(@sim)
       end
     end
   end
@@ -363,7 +363,7 @@ describe ParameterSetsController do
     end
 
     it "return json format" do
-      response.header['Content-Type'].should include 'application/json'
+      expect(response.header['Content-Type']).to include 'application/json'
       expect(@parsed_body["recordsTotal"]).to eq 30
       expect(@parsed_body["recordsFiltered"]).to eq 30
     end
@@ -402,8 +402,8 @@ describe ParameterSetsController do
     end
 
     it "return json format" do
-      response.should be_success
-      response.header['Content-Type'].should include 'application/json'
+      expect(response).to be_success
+      expect(response.header['Content-Type']).to include 'application/json'
     end
 
     it "returns correct number of parameter sets" do
@@ -447,7 +447,7 @@ describe ParameterSetsController do
     it "returns in json format" do
       get :_line_plot,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: ".ResultKey1", series: "", irrelevants: "", format: :json}
-      response.header['Content-Type'].should include 'application/json'
+      expect(response.header['Content-Type']).to include 'application/json'
     end
 
     it "returns valid json" do
@@ -464,7 +464,7 @@ describe ParameterSetsController do
           ]
         ]
       }.to_json
-      response.body.should eq expected
+      expect(response.body).to eq expected
     end
 
     it "returns elapsed times when 'real_time' or 'cpu_time' is specified as y_axis_key" do
@@ -481,7 +481,7 @@ describe ParameterSetsController do
           ]
         ]
       }.to_json
-      response.body.should eq expected
+      expect(response.body).to eq expected
     end
 
     context "when parameter 'series' is given" do
@@ -504,7 +504,7 @@ describe ParameterSetsController do
             ]
           ]
         }.to_json
-        response.body.should eq expected
+        expect(response.body).to eq expected
       end
     end
 
@@ -529,7 +529,7 @@ describe ParameterSetsController do
             ]
           ]
         }.to_json
-        response.body.should eq expected
+        expect(response.body).to eq expected
       end
     end
   end
@@ -569,7 +569,7 @@ describe ParameterSetsController do
     it "returns in json format" do
       get :_scatter_plot,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", format: :json}
-      response.header['Content-Type'].should include 'application/json'
+      expect(response.header['Content-Type']).to include 'application/json'
     end
 
     it "returns valid json" do
@@ -584,11 +584,11 @@ describe ParameterSetsController do
       ]
 
       loaded = JSON.load(response.body)
-      loaded["xlabel"].should eq "L"
-      loaded["ylabel"].should eq "T"
-      loaded["result"].should eq "ResultKey1"
-      loaded["irrelevants"].should eq []
-      loaded["data"].should =~ expected_data
+      expect(loaded["xlabel"]).to eq "L"
+      expect(loaded["ylabel"]).to eq "T"
+      expect(loaded["result"]).to eq "ResultKey1"
+      expect(loaded["irrelevants"]).to eq []
+      expect(loaded["data"]).to match_array(expected_data)
     end
 
     it "returns records specified by range" do
@@ -605,11 +605,11 @@ describe ParameterSetsController do
       ]
 
       loaded = JSON.load(response.body)
-      loaded["xlabel"].should eq "L"
-      loaded["ylabel"].should eq "T"
-      loaded["result"].should eq "ResultKey1"
-      loaded["irrelevants"].should eq []
-      loaded["data"].should =~ expected_data
+      expect(loaded["xlabel"]).to eq "L"
+      expect(loaded["ylabel"]).to eq "T"
+      expect(loaded["result"]).to eq "ResultKey1"
+      expect(loaded["irrelevants"]).to eq []
+      expect(loaded["data"]).to match_array(expected_data)
     end
 
     it "returns elapsed time when params[:result] is 'cpu_time' or 'real_time'" do
@@ -624,11 +624,11 @@ describe ParameterSetsController do
       ]
 
       loaded = JSON.load(response.body)
-      loaded["xlabel"].should eq "L"
-      loaded["ylabel"].should eq "T"
-      loaded["result"].should eq "cpu_time"
-      loaded["irrelevants"].should eq []
-      loaded["data"].should =~ expected_data
+      expect(loaded["xlabel"]).to eq "L"
+      expect(loaded["ylabel"]).to eq "T"
+      expect(loaded["result"]).to eq "cpu_time"
+      expect(loaded["irrelevants"]).to eq []
+      expect(loaded["data"]).to match_array(expected_data)
     end
 
     it "returns collect values when irrelevant keys are given" do
@@ -636,18 +636,18 @@ describe ParameterSetsController do
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "P", format: :json}
 
       loaded = JSON.load(response.body)
-      loaded["xlabel"].should eq "L"
-      loaded["ylabel"].should eq "T"
-      loaded["result"].should eq "cpu_time"
-      loaded["irrelevants"].should eq ["P"]
-      loaded["data"].should include( [@ps_array[5].v, 10.0, nil, @ps_array[5].id.to_s] )
+      expect(loaded["xlabel"]).to eq "L"
+      expect(loaded["ylabel"]).to eq "T"
+      expect(loaded["result"]).to eq "cpu_time"
+      expect(loaded["irrelevants"]).to eq ["P"]
+      expect(loaded["data"]).to include( [@ps_array[5].v, 10.0, nil, @ps_array[5].id.to_s] )
     end
 
     it "contains url for the plot" do
       get :_scatter_plot,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "P", format: :json}
       loaded = JSON.load(response.body)
-      loaded["plot_url"].should match (/\?plot_type=scatter&x_axis=L&y_axis=T&result=cpu_time&irrelevants=P\#\!tab-plot$/)
+      expect(loaded["plot_url"]).to match (/\?plot_type=scatter&x_axis=L&y_axis=T&result=cpu_time&irrelevants=P\#\!tab-plot$/)
     end
   end
 
@@ -684,7 +684,7 @@ describe ParameterSetsController do
     it "returns in json format" do
       get :_figure_viewer,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "", logscales: "", format: :json}
-      response.header['Content-Type'].should include 'application/json'
+      expect(response.header['Content-Type']).to include 'application/json'
     end
 
     def path_to_fig(ps)
@@ -704,11 +704,11 @@ describe ParameterSetsController do
       ]
 
       loaded = JSON.load(response.body)
-      loaded["xlabel"].should eq "L"
-      loaded["ylabel"].should eq "T"
-      loaded["result"].should eq "/fig1.png"
-      loaded["irrelevants"].should eq []
-      loaded["data"].should =~ expected_data
+      expect(loaded["xlabel"]).to eq "L"
+      expect(loaded["ylabel"]).to eq "T"
+      expect(loaded["result"]).to eq "/fig1.png"
+      expect(loaded["irrelevants"]).to eq []
+      expect(loaded["data"]).to match_array(expected_data)
     end
 
     it "returns irrelevant keys" do
@@ -716,15 +716,15 @@ describe ParameterSetsController do
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "P", format: :json}
 
       loaded = JSON.load(response.body)
-      loaded["irrelevants"].should eq ["P"]
-      loaded["data"].should include( [3, 2.0, path_to_fig(@ps_array[5]), @ps_array[5].id.to_s] )
+      expect(loaded["irrelevants"]).to eq ["P"]
+      expect(loaded["data"]).to include( [3, 2.0, path_to_fig(@ps_array[5]), @ps_array[5].id.to_s] )
     end
 
     it "contains url for the plot" do
       get :_figure_viewer,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "/fig1.png", irrelevants: "P", format: :json}
       loaded = JSON.load(response.body)
-      loaded["plot_url"].should match (/\?plot_type=figure&x_axis=L&y_axis=T&result=%2Ffig1.png&irrelevants=P\#\!tab-plot$/)
+      expect(loaded["plot_url"]).to match (/\?plot_type=figure&x_axis=L&y_axis=T&result=%2Ffig1.png&irrelevants=P\#\!tab-plot$/)
     end
 
     context "when run is not created for all runs" do
@@ -744,7 +744,7 @@ describe ParameterSetsController do
           [3, 1.0, path_to_fig(@ps_array[2]), @ps_array[2].id.to_s]
         ]
 
-        JSON.load(response.body)["data"].should =~ expected_data
+        expect(JSON.load(response.body)["data"]).to match_array(expected_data)
       end
     end
   end

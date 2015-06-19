@@ -18,17 +18,17 @@ describe Run do
   describe "validations" do
 
     it "creates a Run with a valid attribute" do
-      @param_set.runs.build(@valid_attribute).should be_valid
+      expect(@param_set.runs.build(@valid_attribute)).to be_valid
     end
 
     it "assigns 'created' stauts by default" do
       run = @param_set.runs.create
-      run.status.should == :created
+      expect(run.status).to eq(:created)
     end
 
     it "assigns a seed by default" do
       run = @param_set.runs.create
-      run.seed.should be_a(Integer)
+      expect(run.seed).to be_a(Integer)
     end
 
     it "automatically assigned seeds are unique" do
@@ -38,31 +38,31 @@ describe Run do
         run = @param_set.runs.create
         seeds << run.seed
       end
-      seeds.uniq.size.should == n
+      expect(seeds.uniq.size).to eq(n)
     end
 
     it "seed must be unique" do
       seed_val = @param_set.runs.first.seed
       @valid_attribute.update(seed: seed_val)
-      @param_set.runs.build(@valid_attribute).should_not be_valid
+      expect(@param_set.runs.build(@valid_attribute)).not_to be_valid
     end
 
     it "status must be either :created, :submitted, :running, :failed, :finished, or :cancelled" do
       run = @param_set.runs.build(@valid_attribute)
       run.status = :unknown
-      run.should_not be_valid
+      expect(run).not_to be_valid
     end
 
     it "mpi_procs must be present" do
       run = @param_set.runs.build(@valid_attribute)
       run.mpi_procs = nil
-      run.should_not be_valid
+      expect(run).not_to be_valid
     end
 
     it "omp_threads must be present" do
       run = @param_set.runs.build(@valid_attribute)
       run.omp_threads = nil
-      run.should_not be_valid
+      expect(run).not_to be_valid
     end
 
     it "mpi_procs must between Host#min_mpi_procs and Host#max_mpi_procs" do
@@ -70,9 +70,9 @@ describe Run do
       host = run.submitted_to
       host.update_attributes(min_mpi_procs: 1, max_mpi_procs: 256)
       run.mpi_procs = 256
-      run.should be_valid
+      expect(run).to be_valid
       run.mpi_procs = 512
-      run.should_not be_valid
+      expect(run).not_to be_valid
     end
 
     it "skips validation of mpi_procs for a persisted document" do
@@ -82,7 +82,7 @@ describe Run do
       run.mpi_procs = 256
       run.save!
       host.update_attribute(:max_mpi_procs, 128)
-      run.should be_valid
+      expect(run).to be_valid
     end
 
     it "omp_threads must between Host#min_omp_threads and Host#max_omp_threads" do
@@ -90,9 +90,9 @@ describe Run do
       host = run.submitted_to
       host.update_attributes(min_omp_threads: 1, max_omp_threads: 256)
       run.omp_threads = 256
-      run.should be_valid
+      expect(run).to be_valid
       run.omp_threads = 512
-      run.should_not be_valid
+      expect(run).not_to be_valid
     end
 
     it "skips validation of omp_threads for a persisted document" do
@@ -102,17 +102,17 @@ describe Run do
       run.omp_threads = 256
       run.save!
       host.update_attribute(:max_omp_threads, 128)
-      run.should be_valid
+      expect(run).to be_valid
     end
 
     it "assigns a priority by default" do
       run = @param_set.runs.create
-      run.priority.should be_a(Integer)
+      expect(run.priority).to be_a(Integer)
     end
 
     it "automatically assigned priority is 1" do
       run = @param_set.runs.create
-      run.priority.should eq 1
+      expect(run.priority).to eq 1
     end
 
    describe "'host_parameters' field" do
@@ -127,7 +127,7 @@ describe Run do
         run.submitted_to = @host
         run.mpi_procs = 8
         run.host_parameters = {"node" => "abc"}
-        run.should be_valid
+        expect(run).to be_valid
       end
 
       it "is invalid when all the host_parameters are not specified" do
@@ -135,7 +135,7 @@ describe Run do
         run.submitted_to = @host
         run.mpi_procs = 8
         run.host_parameters = {}
-        run.should_not be_valid
+        expect(run).not_to be_valid
       end
 
       it "is valid when host_parameters have rendundant keys" do
@@ -144,14 +144,14 @@ describe Run do
         run.mpi_procs = 8
         run.omp_threads = 8
         run.host_parameters = {"node" => "abd", "shape" => "xyz"}
-        run.should be_valid
+        expect(run).to be_valid
       end
 
       it "is invalid when host_parameters does not match the defined format" do
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.host_parameters = {"node" => "!!!"}
-        run.should_not be_valid
+        expect(run).not_to be_valid
       end
 
       it "skips validation for a persisted run" do
@@ -161,13 +161,13 @@ describe Run do
         run.host_parameters = {"node" => "abc"}
         run.save!
         @host.update_attribute(:host_parameter_definitions, @host.host_parameter_definitions + [HostParameterDefinition.new(key: "param1", default: "aaa", format: '\w+')])
-        run.should be_valid
+        expect(run).to be_valid
       end
     end
 
     it "submitted_to can be nil" do
       run = @param_set.runs.build(@valid_attribute.update({submitted_to: nil}))
-      run.should be_valid
+      expect(run).to be_valid
     end
   end
 
@@ -178,17 +178,17 @@ describe Run do
     end
 
     it "belongs to parameter" do
-      @run.should respond_to(:parameter_set)
+      expect(@run).to respond_to(:parameter_set)
     end
 
     it "responds to simulator" do
-      @run.should respond_to(:simulator)
-      @run.simulator.should eq(@run.parameter_set.simulator)
+      expect(@run).to respond_to(:simulator)
+      expect(@run.simulator).to eq(@run.parameter_set.simulator)
     end
 
     it "returns simulator even when run is not saved" do
       run = @param_set.runs.build
-      run.simulator.should be_a(Simulator)
+      expect(run.simulator).to be_a(Simulator)
     end
 
     it "destroys including analyses when destroyed" do
@@ -214,7 +214,7 @@ describe Run do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       prm = sim.parameter_sets.first
       run = prm.runs.create!(@valid_attribute)
-      FileTest.directory?(ResultDirectory.run_path(run)).should be_truthy
+      expect(FileTest.directory?(ResultDirectory.run_path(run))).to be_truthy
     end
 
     it "is not created when validation fails" do
@@ -225,7 +225,7 @@ describe Run do
 
       prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size
       prm.runs.create(@valid_attribute)
-      prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size.should == prev_count
+      prev_count = expect(Dir.entries(ResultDirectory.parameter_set_path(prm)).size).to eq(prev_count)
     end
 
     it "is removed when the item is destroyed" do
@@ -233,7 +233,7 @@ describe Run do
       run = sim.parameter_sets.first.runs.first
       dir_path = run.dir
       run.destroy
-      FileTest.directory?(dir_path).should be_falsey
+      expect(FileTest.directory?(dir_path)).to be_falsey
     end
   end
 
@@ -246,8 +246,8 @@ describe Run do
         prm = sim.parameter_sets.first
         run = prm.runs.first
         command, input = run.command_and_input
-        command.should eq "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
-        input.should be_nil
+        expect(command).to eq "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
+        expect(input).to be_nil
       end
     end
 
@@ -258,11 +258,11 @@ describe Run do
         prm = sim.parameter_sets.first
         run = prm.runs.first
         command, input = run.command_and_input
-        command.should eq "#{sim.command}"
+        expect(command).to eq "#{sim.command}"
         prm.v.each do |key, val|
-          input[key].should eq val
+          expect(input[key]).to eq val
         end
-        input[:_seed].should eq run.seed
+        expect(input[:_seed]).to eq run.seed
       end
     end
   end
@@ -273,7 +273,7 @@ describe Run do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       prm = sim.parameter_sets.first
       run = prm.runs.first
-      run.dir.should == ResultDirectory.run_path(run)
+      expect(run.dir).to eq(ResultDirectory.run_path(run))
     end
   end
 
@@ -302,18 +302,18 @@ describe Run do
     it "returns list of result files" do
       res = @run.result_paths
       @temp_files[0..1].each do |f|
-        res.should include(f)
+        expect(res).to include(f)
       end
-      res.should include(@temp_dir)
-      res.should_not include(@temp_files[2])
+      expect(res).to include(@temp_dir)
+      expect(res).not_to include(@temp_files[2])
     end
 
     it "does not include directories of analysis" do
       entries_in_run_dir = Dir.glob(@run.dir.join('*'))
-      entries_in_run_dir.size.should eq(4)
-      @run.result_paths.size.should eq(3)
+      expect(entries_in_run_dir.size).to eq(4)
+      expect(@run.result_paths.size).to eq(3)
       arn_dir = @run.analyses.first.dir
-      @run.result_paths.should_not include(arn_dir)
+      expect(@run.result_paths).not_to include(arn_dir)
     end
   end
 
@@ -325,7 +325,7 @@ describe Run do
     end
 
     it "returns path to archived file" do
-      @run.archived_result_path.should eq @run.dir.join("../#{@run.id}.tar.bz2")
+      expect(@run.archived_result_path).to eq @run.dir.join("../#{@run.id}.tar.bz2")
     end
 
     it "is deleted when the run is destroyed" do
@@ -358,11 +358,11 @@ describe Run do
       sh_path = ResultDirectory.manual_submission_job_script_path(run)
       json_path = ResultDirectory.manual_submission_input_json_path(run)
 
-      sh_path.should be_exist
-      json_path.should be_exist
+      expect(sh_path).to be_exist
+      expect(json_path).to be_exist
       run.destroy
-      sh_path.should_not be_exist
-      json_path.should_not be_exist
+      expect(sh_path).not_to be_exist
+      expect(json_path).not_to be_exist
     end
 
     it "deletes preprocess script and preprocess executor created for manual submission" do
@@ -372,11 +372,11 @@ describe Run do
       pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(run)
       pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(run)
 
-      pre_process_script_path.should be_exist
-      pre_process_executor_path.should be_exist
+      expect(pre_process_script_path).to be_exist
+      expect(pre_process_executor_path).to be_exist
       run.destroy
-      pre_process_script_path.should_not be_exist
-      pre_process_executor_path.should_not be_exist
+      expect(pre_process_script_path).not_to be_exist
+      expect(pre_process_executor_path).not_to be_exist
     end
 
     context "when status is :submitted or :running" do
@@ -386,7 +386,7 @@ describe Run do
       end
 
       it "calls cancel if status is :submitted or :running" do
-        @run.should_receive(:cancel)
+        expect(@run).to receive(:cancel)
         @run.destroy
       end
 
@@ -394,8 +394,8 @@ describe Run do
         expect {
           @run.destroy
         }.to_not change { Run.count }
-        @run.status.should eq :cancelled
-        @run.parameter_set.should be_nil
+        expect(@run.status).to eq :cancelled
+        expect(@run.parameter_set).to be_nil
       end
 
       it "deletes run_directory and archived_result_file when cancel is called" do
@@ -403,8 +403,8 @@ describe Run do
         archive = @run.archived_result_path
         FileUtils.touch(archive)
         @run.destroy
-        File.exist?(run_dir).should be_falsey
-        File.exist?(archive).should be_falsey
+        expect(File.exist?(run_dir)).to be_falsey
+        expect(File.exist?(archive)).to be_falsey
       end
 
       it "does not destroy run even if #destroy is called twice" do
@@ -412,7 +412,7 @@ describe Run do
           @run.destroy
           @run.destroy
         }.to_not change { Run.count }
-        @run.status.should eq :cancelled
+        expect(@run.status).to eq :cancelled
       end
     end
   end
@@ -421,9 +421,9 @@ describe Run do
 
     it "sets job script" do
       run = @param_set.runs.build(submitted_to: Host.first)
-      run.job_script.should_not be_present
+      expect(run.job_script).not_to be_present
       run.save!
-      run.job_script.should be_present
+      expect(run.job_script).to be_present
     end
 
     it "sets default_host_parameters to simulator" do
@@ -457,13 +457,13 @@ describe Run do
 
       it "creates a job-script" do
         run = @param_set.runs.create!(submitted_to: nil)
-        ResultDirectory.manual_submission_job_script_path(run).should be_exist
+        expect(ResultDirectory.manual_submission_job_script_path(run)).to be_exist
       end
 
       it "create _input.json" do
         @simulator.update_attribute(:support_input_json, true)
         run = @param_set.runs.create!(submitted_to: nil)
-        ResultDirectory.manual_submission_input_json_path(run).should be_exist
+        expect(ResultDirectory.manual_submission_input_json_path(run)).to be_exist
       end
 
       context "when simulator.pre_process exists" do
@@ -471,13 +471,13 @@ describe Run do
         it "creates a preprocess script" do
           @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
           run = @param_set.runs.create!(submitted_to: nil)
-          ResultDirectory.manual_submission_pre_process_script_path(run).should be_exist
+          expect(ResultDirectory.manual_submission_pre_process_script_path(run)).to be_exist
         end
 
         it "creates a preprocess executor" do
           @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
           run = @param_set.runs.create!(submitted_to: nil)
-          ResultDirectory.manual_submission_pre_process_executor_path(run).should be_exist
+          expect(ResultDirectory.manual_submission_pre_process_executor_path(run)).to be_exist
         end
 
         it "preprocess executor creates _preprocess.sh" do
@@ -488,7 +488,7 @@ describe Run do
           Dir.chdir(pre_process_executor_path.dirname) {
             system(cmd)
             _preprocess_path = Pathname.new(run.id).join("_preprocess.sh")
-            _preprocess_path.should be_exist
+            expect(_preprocess_path).to be_exist
           }
         end
 
@@ -501,9 +501,9 @@ describe Run do
           Dir.chdir(pre_process_executor_path.dirname) {
             system(cmd)
             _input_json_path = Pathname.new(run.id).join("_input.json")
-            _input_json_path.should be_exist
+            expect(_input_json_path).to be_exist
             _preprocess_script_result = Pathname.new(run.id).join("preprocess_result.txt")
-            _preprocess_script_result.should be_exist
+            expect(_preprocess_script_result).to be_exist
           }
         end
       end
@@ -514,32 +514,32 @@ describe Run do
 
     before(:each) do
       @param_set.runs_status_count
-      @param_set.reload.runs_status_count_cache.should_not be_nil
+      expect(@param_set.reload.runs_status_count_cache).not_to be_nil
     end
 
     it "removes runs_status_count_cache when a new Run is created" do
       @param_set.runs.create!(@valid_attribute)
-      @param_set.reload.runs_status_count_cache.should be_nil
+      expect(@param_set.reload.runs_status_count_cache).to be_nil
     end
 
     it "removes runs_status_count_cache when status is changed" do
       run = @param_set.runs.first
       run.status = :finished
       run.save!
-      @param_set.reload.runs_status_count_cache.should be_nil
+      expect(@param_set.reload.runs_status_count_cache).to be_nil
     end
 
     it "removes runs_status_count_cache when destroyed" do
       run = @param_set.runs.first
       run.destroy
-      @param_set.reload.runs_status_count_cache.should be_nil
+      expect(@param_set.reload.runs_status_count_cache).to be_nil
     end
 
     it "does not change runs_status_count_cache when status is not changed" do
       run = @param_set.runs.first
       run.updated_at = DateTime.now
       run.save!
-      @param_set.reload.runs_status_count_cache.should_not be_nil
+      expect(@param_set.reload.runs_status_count_cache).not_to be_nil
     end
   end
 end

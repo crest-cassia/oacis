@@ -35,7 +35,7 @@ describe OacisCli do
       at_temp_dir {
         options = { analyzer_id: @sim.analyzers.first.id.to_s, output: 'anz_parameters.json' }
         OacisCli.new.invoke(:analyses_template, [], options)
-        File.exist?('anz_parameters.json').should be_truthy
+        expect(File.exist?('anz_parameters.json')).to be_truthy
         expect {
           JSON.load(File.read('anz_parameters.json'))
         }.not_to raise_error
@@ -47,7 +47,7 @@ describe OacisCli do
         options = { analyzer_id: @sim.analyzers.first.id.to_s, output: 'anz_parameters.json' }
         OacisCli.new.invoke(:analyses_template, [], options)
         expected = @sim.analyzers.first.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
-        JSON.load(File.read('anz_parameters.json')).should eq [Hash[expected]]
+        expect(JSON.load(File.read('anz_parameters.json'))).to eq [Hash[expected]]
       }
     end
 
@@ -66,7 +66,7 @@ describe OacisCli do
         at_temp_dir {
           options = { analyzer_id: @sim.analyzers.first.id.to_s, output: 'analyzres.json', dry_run: true }
           OacisCli.new.invoke(:analyses_template, [], options)
-          File.exist?('analyzers.json').should be_falsey
+          expect(File.exist?('analyzers.json')).to be_falsey
         }
       end
     end
@@ -92,7 +92,7 @@ describe OacisCli do
           expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
           OacisCli.new.invoke(:analyses_template, [], options)
           expected = @sim.analyzers.first.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
-          JSON.load(File.read('anz_parameters.json')).should eq [Hash[expected]]
+          expect(JSON.load(File.read('anz_parameters.json'))).to eq [Hash[expected]]
         }
       end
     end
@@ -133,9 +133,9 @@ describe OacisCli do
       at_temp_dir {
         invoke_create_analyses(:on_run, {output: 'analysis_ids_tmp.json', input: "anz_parameters.json"})
 
-        File.exist?('analysis_ids_tmp.json').should be_truthy
+        expect(File.exist?('analysis_ids_tmp.json')).to be_truthy
         expected = Analysis.all.map {|anl| {"analysis_id" => anl.id.to_s} }.sort_by {|h| h["analysis_id"]}
-        JSON.load(File.read('analysis_ids_tmp.json')).should =~ expected
+        expect(JSON.load(File.read('analysis_ids_tmp.json'))).to match_array(expected)
       }
     end
 
@@ -182,8 +182,8 @@ describe OacisCli do
                        }
                      }
         }
-        it { should change { Analysis.count }.by(2) }
-        it { should change { Analysis.where(parameter_set_id: @sim.parameter_sets.first.id.to_s).count }.by(1) }
+        it { is_expected.to change { Analysis.count }.by(2) }
+        it { is_expected.to change { Analysis.where(parameter_set_id: @sim.parameter_sets.first.id.to_s).count }.by(1) }
       end
     end
 
@@ -207,9 +207,9 @@ describe OacisCli do
         at_temp_dir {
           invoke_create_analyses(:on_run, {output: "analysis_ids_tmp.json", input: "anz_parameters.json"})
 
-          File.exist?('analysis_ids_tmp.json').should be_truthy
+          expect(File.exist?('analysis_ids_tmp.json')).to be_truthy
           expected = Analysis.all.map {|anl| {"analysis_id" => anl.id.to_s} }.sort_by {|h| h["analysis_id"]}
-          JSON.load(File.read('analysis_ids_tmp.json')).should =~ expected
+          expect(JSON.load(File.read('analysis_ids_tmp.json'))).to match_array(expected)
         }
       end
     end
@@ -227,7 +227,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           invoke_create_analyses(:on_run, {output: "analysis_ids_dry_run.json", dry_run: true, input: "anz_parameters.json"})
-          File.exist?('analysis_ids_dry_run.json').should be_falsey
+          expect(File.exist?('analysis_ids_dry_run.json')).to be_falsey
         }
       end
     end
@@ -253,7 +253,7 @@ describe OacisCli do
           }.to change { Analysis.where(analyzable_type: "Run").count }.by(4)
         }
         expected = @sim.analyzers.first.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
-        Analysis.first.parameters.should eq Hash[expected]
+        expect(Analysis.first.parameters).to eq Hash[expected]
       end
     end
 
@@ -275,9 +275,9 @@ describe OacisCli do
           FileUtils.touch("analysis_ids_tmp.json")
           expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
           invoke_create_analyses(:on_run, {output: "analysis_ids_tmp.json", input: "anz_parameters.json", yes: true})
-          File.exist?('analysis_ids_tmp.json').should be_truthy
+          expect(File.exist?('analysis_ids_tmp.json')).to be_truthy
           expected = Analysis.all.map {|anl| {"analysis_id" => anl.id.to_s} }.sort_by {|h| h["analysis_id"]}
-          JSON.load(File.read('analysis_ids_tmp.json')).should =~ expected
+          expect(JSON.load(File.read('analysis_ids_tmp.json'))).to match_array(expected)
         }
       end
     end
@@ -427,7 +427,7 @@ describe OacisCli do
         expect {
           OacisCli.new.invoke(:replace_analyses, [], options)
         }.to change { Analysis.where(status: :created).count }.by(2)
-        Analysis.where(status: :created).first.parameters.should eq h
+        expect(Analysis.where(status: :created).first.parameters).to eq h
       }
     end
 

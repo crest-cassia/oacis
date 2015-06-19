@@ -19,7 +19,7 @@ describe SchedulerWrapper do
       work_dir = File.join(@host.work_base_dir, "xxx")
       log_dir = File.join(@host.work_base_dir, "xxx_log")
       expected = "bash -l -c 'echo XSUB_BEGIN && xsub ~/path/to/job.sh -d #{work_dir} -l #{log_dir} -p \\{\\}'"
-      @wrapper.submit_command("~/path/to/job.sh","xxx").should eq expected
+      expect(@wrapper.submit_command("~/path/to/job.sh","xxx")).to eq expected
     end
 
     context "when host parameters are required" do
@@ -30,7 +30,7 @@ describe SchedulerWrapper do
         expected = <<EOS.chomp
 bash -l -c 'echo XSUB_BEGIN && xsub ~/path/to/job.sh -d #{work_dir} -l #{log_dir} -p \\{\\\"param1\\\":\\\"1\\\",\\\"param2\\\":\\\"2\\\"\\}'
 EOS
-        @wrapper.submit_command("~/path/to/job.sh","xxx",{param1:"1",param2:"2"}).should eq expected
+        expect(@wrapper.submit_command("~/path/to/job.sh","xxx",{param1:"1",param2:"2"})).to eq expected
       end
     end
   end
@@ -38,14 +38,14 @@ EOS
   describe "#all_status_command" do
 
     it "returns a command to show the status of all the jobs in the host" do
-      @wrapper.all_status_command.should match(/bash -l -c 'xstat'/)
+      expect(@wrapper.all_status_command).to match(/bash -l -c 'xstat'/)
     end
   end
 
   describe "#status_command" do
 
     it "returns a command to show the status of the host" do
-      @wrapper.status_command("job_id").should eq "bash -l -c 'echo XSUB_BEGIN && xstat job_id'"
+      expect(@wrapper.status_command("job_id")).to eq "bash -l -c 'echo XSUB_BEGIN && xstat job_id'"
     end
   end
 
@@ -63,14 +63,14 @@ XSUB_BEGIN
   ]
 }
 EOS
-      @wrapper.parse_remote_status(stdout).should eq :running
+      expect(@wrapper.parse_remote_status(stdout)).to eq :running
     end
   end
 
   describe "#cancel_command" do
 
     it "returns command to cancel a job" do
-      @wrapper.cancel_command("job_id").should eq "bash -l -c 'xdel job_id'"
+      expect(@wrapper.cancel_command("job_id")).to eq "bash -l -c 'xdel job_id'"
     end
   end
 end

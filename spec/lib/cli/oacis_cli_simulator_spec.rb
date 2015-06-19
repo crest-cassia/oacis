@@ -8,7 +8,7 @@ describe OacisCli do
     it "prints a template of simulator.json" do
       at_temp_dir {
         OacisCli.new.invoke(:simulator_template, [], {output: 'simulator.json'})
-        File.exist?('simulator.json').should be_truthy
+        expect(File.exist?('simulator.json')).to be_truthy
         expect {
           loaded = JSON.load(File.read('simulator.json'))
         }.not_to raise_error
@@ -20,7 +20,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           OacisCli.new.invoke(:simulator_template, [], {output: 'simulator.json', dry_run: true})
-          File.exist?('simulator.json').should be_falsey
+          expect(File.exist?('simulator.json')).to be_falsey
         }
       end
     end
@@ -43,7 +43,7 @@ describe OacisCli do
           FileUtils.touch('simulator.json')
           expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
           OacisCli.new.invoke(:simulator_template, [], {output: 'simulator.json', yes: true})
-          File.exist?('simulator.json').should be_truthy
+          expect(File.exist?('simulator.json')).to be_truthy
           expect {
             JSON.load(File.read('simulator.json'))
           }.not_to raise_error
@@ -92,9 +92,9 @@ describe OacisCli do
         OacisCli.new.invoke(:create_simulator, [], option)
 
         sim = Simulator.first
-        sim.name.should eq "a_sample_simulator"
-        sim.support_input_json.should be_truthy
-        sim.pre_process_script.should be_nil
+        expect(sim.name).to eq "a_sample_simulator"
+        expect(sim.support_input_json).to be_truthy
+        expect(sim.pre_process_script).to be_nil
       }
     end
 
@@ -108,9 +108,9 @@ describe OacisCli do
           ["p1", "Integer", 0, "parameter1"],
           ["p2", "Float", 5.0, "parameter2"]
         ]
-        Simulator.first.parameter_definitions.map { |pd|
+        expect(Simulator.first.parameter_definitions.map { |pd|
           [pd.key, pd.type, pd.default, pd.description]
-        }.should eq expected
+        }).to eq expected
       }
     end
 
@@ -122,7 +122,7 @@ describe OacisCli do
 
         expected = { "simulator_id" => Simulator.first.id.to_s }
         output = JSON.parse(File.read('simulator_id.json'))
-        output.should eq expected
+        expect(output).to eq expected
       }
     end
 
@@ -142,14 +142,14 @@ describe OacisCli do
       it "sets executable_on_ids when host.json is specified" do
         at_temp_dir {
           create_simulator_with_host_json
-          Simulator.first.executable_on.should eq [@host]
+          expect(Simulator.first.executable_on).to eq [@host]
         }
       end
 
       it "sets Host#executable_simulators field" do
         at_temp_dir {
           create_simulator_with_host_json
-          @host.reload.executable_simulators.should eq [Simulator.first]
+          expect(@host.reload.executable_simulators).to eq [Simulator.first]
         }
       end
     end
@@ -189,7 +189,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           invoke_create_simulator_with_dry_run
-          File.exist?('simulator_id.json').should be_falsey
+          expect(File.exist?('simulator_id.json')).to be_falsey
         }
       end
     end
@@ -218,7 +218,7 @@ describe OacisCli do
           expect {
             OacisCli.new.invoke(:create_simulator, [], option)
           }.to change { Simulator.count }.by(1)
-          File.exist?('simulator_id.json').should be_truthy
+          expect(File.exist?('simulator_id.json')).to be_truthy
         }
       end
     end
@@ -237,9 +237,9 @@ describe OacisCli do
         @sim.reload
         expect(@sim.parameter_definitions.size).to eq 3
         new_param_def = @sim.parameter_definitions.last
-        new_param_def.key.should eq "NEW_PARAM"
-        new_param_def.type.should eq "Float"
-        new_param_def.default.should eq 0.5
+        expect(new_param_def.key).to eq "NEW_PARAM"
+        expect(new_param_def.type).to eq "Float"
+        expect(new_param_def.default).to eq 0.5
       }
     end
 
@@ -248,7 +248,7 @@ describe OacisCli do
         option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
         OacisCli.new.invoke(:append_parameter_definition, [], option)
         @sim.reload.parameter_sets.all? do |ps|
-          ps.v["NEW_PARAM"].should eq 0.5
+          expect(ps.v["NEW_PARAM"]).to eq 0.5
         end
       }
     end
@@ -258,7 +258,7 @@ describe OacisCli do
         option = {simulator: @sim.id.to_s, name: "NEW_PARAM", type: "Boolean", default: false}
         OacisCli.new.invoke(:append_parameter_definition, [], option)
         new_param_def = @sim.reload.parameter_definitions.last
-        new_param_def.default.should eq false
+        expect(new_param_def.default).to eq false
       }
     end
 

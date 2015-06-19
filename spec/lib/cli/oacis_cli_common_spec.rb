@@ -6,9 +6,9 @@ describe OacisCli do
   describe "#usage" do
 
     it "prints usage" do
-      capture(:stdout) {
+      expect(capture(:stdout) {
         OacisCli.new.invoke(:usage)
-      }.should_not be_empty
+      }).not_to be_empty
     end
   end
 
@@ -27,8 +27,8 @@ describe OacisCli do
           "user" => @host.user
         }]
         OacisCli.new.invoke(:show_host, [], {output: 'host.json'})
-        File.exist?('host.json').should be_truthy
-        JSON.load( File.read('host.json') ).should eq expected
+        expect(File.exist?('host.json')).to be_truthy
+        expect(JSON.load( File.read('host.json') )).to eq expected
       }
     end
 
@@ -37,7 +37,7 @@ describe OacisCli do
       it "does not create output file" do
         at_temp_dir {
           OacisCli.new.invoke(:show_host, [], {output: 'host.json', dry_run: true})
-          File.exist?('host.json').should be_falsey
+          expect(File.exist?('host.json')).to be_falsey
         }
       end
     end

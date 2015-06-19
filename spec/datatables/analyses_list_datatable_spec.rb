@@ -20,15 +20,15 @@ describe "AnalysesListDatatable" do
         @run.analyses.create!(@valid_attr)
       end
       @context = ActionController::Base.new.view_context
-      @context.stub(:params).and_return({draw: 1, start: 0, length:10 , "order" => {"0" => {"column" => "0", "dir" => "desc"}}})
-      @context.stub(:link_to) {|str, link_path| link_path }
-      @context.stub(:image_tag) {|str, link_path| link_path }
-      @context.stub(:analysis_path) {|arn| arn.id.to_s }
-      @context.stub(:analyzer_path) {|anz| anz.id.to_s }
-      @context.stub(:distance_to_now_in_words).and_return("time")
-      @context.stub(:raw).and_return("label")
-      @context.stub(:status_label).and_return("status_label")
-      @context.stub(:shortened_id_monospaced).and_return("xxxx..yy")
+      allow(@context).to receive(:params).and_return({draw: 1, start: 0, length:10 , "order" => {"0" => {"column" => "0", "dir" => "desc"}}})
+      allow(@context).to receive(:link_to) {|str, link_path| link_path }
+      allow(@context).to receive(:image_tag) {|str, link_path| link_path }
+      allow(@context).to receive(:analysis_path) {|arn| arn.id.to_s }
+      allow(@context).to receive(:analyzer_path) {|anz| anz.id.to_s }
+      allow(@context).to receive(:distance_to_now_in_words).and_return("time")
+      allow(@context).to receive(:raw).and_return("label")
+      allow(@context).to receive(:status_label).and_return("status_label")
+      allow(@context).to receive(:shortened_id_monospaced).and_return("xxxx..yy")
       @arnld = AnalysesListDatatable.new(Analysis.where(status: :created), @context)
       @arnld_json = JSON.parse(@arnld.to_json)
     end
@@ -48,15 +48,15 @@ describe "AnalysesListDatatable" do
 
       before(:each) do
         @context = ActionController::Base.new.view_context
-        @context.stub(:params).and_return({draw: 1, start: 0, length:10, "order" => {"0" => {"column" => "5", "dir" => "asc"}, "1" => {"column" => "0", "dir" => "desc"}}})
-        @context.stub(:link_to) {|str, link_path| link_path }
-        @context.stub(:image_tag) {|str, link_path| link_path }
-        @context.stub(:analysis_path) {|arn| arn.id.to_s }
-        @context.stub(:analyzer_path) {|anz| anz.id.to_s }
-        @context.stub(:distance_to_now_in_words).and_return("time")
-        @context.stub(:raw).and_return("label")
-        @context.stub(:status_label).and_return("status_label")
-        @context.stub(:shortened_id_monospaced).and_return("xxxx..yy")
+        allow(@context).to receive(:params).and_return({draw: 1, start: 0, length:10, "order" => {"0" => {"column" => "5", "dir" => "asc"}, "1" => {"column" => "0", "dir" => "desc"}}})
+        allow(@context).to receive(:link_to) {|str, link_path| link_path }
+        allow(@context).to receive(:image_tag) {|str, link_path| link_path }
+        allow(@context).to receive(:analysis_path) {|arn| arn.id.to_s }
+        allow(@context).to receive(:analyzer_path) {|anz| anz.id.to_s }
+        allow(@context).to receive(:distance_to_now_in_words).and_return("time")
+        allow(@context).to receive(:raw).and_return("label")
+        allow(@context).to receive(:status_label).and_return("status_label")
+        allow(@context).to receive(:shortened_id_monospaced).and_return("xxxx..yy")
         @arnld = AnalysesListDatatable.new(Analysis.where(status: :created), @context)
         @arnld_json = JSON.parse(@arnld.to_json)
       end
