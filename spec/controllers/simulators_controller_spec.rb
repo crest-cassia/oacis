@@ -74,7 +74,7 @@ describe SimulatorsController do
       get :show, {id: @simulator.to_param}, valid_session
       expect(response).to be_success
       expect(assigns(:simulator)).to eq(@simulator)
-      expect(assigns(:analyzers)).to eq(@simulator.analyzers)
+      expect(assigns(:analyzers)).to match_array(@simulator.analyzers)
       expect(assigns(:query_id)).to be_nil
       expect(assigns(:query_list).size).to eq 5
     end
