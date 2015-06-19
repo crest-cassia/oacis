@@ -316,26 +316,43 @@ describe Host do
     end
   end
 
-  it "gets host parameters by invoking 'get_host_parameters' when host status is changed into :enabled" do
-    @host = FactoryGirl.create(:localhost)
-    @host.update_attribute(:status, :disabled)
-    @host.should_receive(:get_host_parameters)
-    @host.status = :enabled
-    @host.save!
-  end
+  describe "registering host_parameter_definitions" do
 
-  it "parse output of 'xsub -t' and set it to host_parameter_definitions" do
-    hp = {"parameters" => {"foo" => {"default"=>1}, "bar" => {"default"=>"abc"} } }
-    ret_str = "XSUB_BEGIN\n#{hp.to_json}"
-    SSHUtil.stub(:execute).and_return(ret_str)
-    @host = FactoryGirl.create(:localhost)
-    @host.host_parameter_definitions.size.should eq 2
-    @host.host_parameter_definitions[0].key.should eq "foo"
-    @host.host_parameter_definitions[0].default.should eq "1"
-  end
+    it "gets host parameters by invoking 'get_host_parameters' when host status is changed into :enabled" do
+      @host = FactoryGirl.create(:localhost)
+      @host.update_attribute(:status, :disabled)
+      expect(@host).to receive(:get_host_parameters)
+      @host.status = :enabled
+      @host.save!
+    end
 
-  it "'xsub' command fails, write message to logger" do
-    skip "when xsub command fails, write messaga to logger"
+    it "parse output of 'xsub -t' and set it to host_parameter_definitions" do
+      hp = {"parameters" => {"foo" => {"default"=>1}, "bar" => {"default"=>"abc"} } }
+      ret_str = "XSUB_BEGIN\n#{hp.to_json}"
+      expect(SSHUtil).to receive(:execute).and_return(ret_str)
+      @host = FactoryGirl.create(:localhost)
+      expect(@host.host_parameter_definitions.size).to eq 2
+      expect(@host.host_parameter_definitions[0].key).to eq "foo"
+      expect(@host.host_parameter_definitions[0].default).to eq "1"
+    end
+
+    it "ignores 'mpi_procs' and 'omp_threads' parameters when setting host_parameter_definitions" do
+      hp = {"parameters" => {"mpi_procs" => {"default"=>1}, "omp_threads" => {"default"=>"1"} } }
+      ret_str = "XSUB_BEGIN\n#{hp.to_json}"
+      expect(SSHUtil).to receive(:execute).and_return(ret_str)
+      @host = FactoryGirl.create(:localhost)
+      expect(@host.host_parameter_definitions).to be_empty
+    end
+
+    it "'xsub' command fails, validation fails" do
+      expect(SSHUtil).to receive(:execute).and_return("{invalid:...")
+      @host = FactoryGirl.build(:localhost)
+      expect(@host).to_not be_valid
+    end
+
+    it "'xsub' command fails, write message to logger" do
+      skip "when xsub command fails, write message to logger"
+    end
   end
 
   describe "'position' field" do
