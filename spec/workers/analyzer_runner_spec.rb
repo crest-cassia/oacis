@@ -143,7 +143,6 @@ describe AnalyzerRunner do
         @azr.update_attribute(:command, 'export > env.txt')
         AnalyzerRunner.__send__(:run_analysis, @arn, @work_dir)
         env = File.open( File.join(@work_dir, 'env.txt')).read.chomp
-        STDERR.puts env
         expect(env).not_to match /^export BUNDLE_BIN_PATH=/
         expect(env).not_to match /^export BUNDLE_GEMFILE=/
         expect(env).not_to match /^export RUBYLIB=/
