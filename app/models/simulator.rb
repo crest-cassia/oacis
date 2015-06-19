@@ -126,7 +126,7 @@ class Simulator
     run = runs.where(status: :finished).order_by(:updated_at.desc).first
     list = []
     if run
-      list += Dir.glob( run.dir.join(figures_filenames) ).map {|f| "/#{File.basename(f)}" }
+      list += Dir.glob( run.dir.join(figures_filenames) ).map {|f| "/#{File.basename(f)}" }.uniq
     end
 
     analyzers.each do |azr|
@@ -135,7 +135,7 @@ class Simulator
       if anl
         list += Dir.glob( anl.dir.join(figures_filenames) ).map do |f|
           "#{azr.name}/#{File.basename(f)}"
-        end
+        end.uniq
       end
     end
     list
