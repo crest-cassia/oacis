@@ -149,7 +149,7 @@ FactoryGirl.define do
 
   factory :host do
     before(:create) do |host|
-      host.stub(:get_host_parameters).and_return []
+      def host.get_host_parameters; []; end
     end
     sequence(:name, 'A') {|n| "Host_#{n}"}
     sequence(:hostname, 'A') {|n| "hostname.#{n}"}
