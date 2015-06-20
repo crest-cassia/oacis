@@ -20,16 +20,17 @@ namespace :daemon do
     if AcmProto::Application.config.user_config["read_only"]
       $stderr.puts "OACIS_READ_ONLY mode is enabled"
     else
+      here = File.dirname(__FILE__)
       threads << Thread.new do
-        cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'job_worker.rb')} start"
+        cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_job_worker.rb')} start"
         system(cmd)
       end
       threads << Thread.new do
-        cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'analyzer_worker.rb')} start"
+        cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_analyzer_worker.rb')} start"
         system(cmd)
       end
       threads << Thread.new do
-        cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'service_worker.rb')} start"
+        cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_service_worker.rb')} start"
         system(cmd)
       end
     end
@@ -53,18 +54,19 @@ namespace :daemon do
       end
     end
 
+    here = File.dirname(__FILE__)
     threads << Thread.new do
-      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'job_worker.rb')} stop"
+      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_job_worker.rb')} stop"
       system(cmd)
     end
 
     threads << Thread.new do
-      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'analyzer_worker.rb')} stop"
+      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_analyzer_worker.rb')} stop"
       system(cmd)
     end
 
     threads << Thread.new do
-      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{Rails.root.join('app', 'workers', 'service_worker.rb')} stop"
+      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_service_worker.rb')} stop"
       system(cmd)
     end
 
