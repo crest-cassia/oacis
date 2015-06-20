@@ -9,17 +9,17 @@ describe "RunsListDatatable" do
       @param_set = @simulator.parameter_sets.first
       @runs = @param_set.runs
       @context = ActionController::Base.new.view_context
-      @context.stub(:params).and_return({id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"culumn" => "0", "dir" => "desc"}}})
-      @context.stub(:link_to) {|str, link_path| link_path }
-      @context.stub(:run_path) {|run| run.id.to_s }
-      @context.stub(:priority) {|run| Run::PRIORITY_ORDER[run.priority].to_s }
-      @context.stub(:distance_to_now_in_words).and_return("time")
-      @context.stub(:formatted_elapsed_time).and_return("time")
-      @context.stub(:raw).and_return("label")
-      @context.stub(:status_label).and_return("status_label")
-      @context.stub(:shortened_id_monospaced).and_return("xxxx..yy")
-      @context.stub(:host_path).and_return("/host/xxx")
-      @context.stub(:shortened_job_id).and_return("123456..")
+      allow(@context).to receive(:params).and_return({id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"culumn" => "0", "dir" => "desc"}}})
+      allow(@context).to receive(:link_to) {|str, link_path| link_path }
+      allow(@context).to receive(:run_path) {|run| run.id.to_s }
+      allow(@context).to receive(:priority) {|run| Run::PRIORITY_ORDER[run.priority].to_s }
+      allow(@context).to receive(:distance_to_now_in_words).and_return("time")
+      allow(@context).to receive(:formatted_elapsed_time).and_return("time")
+      allow(@context).to receive(:raw).and_return("label")
+      allow(@context).to receive(:status_label).and_return("status_label")
+      allow(@context).to receive(:shortened_id_monospaced).and_return("xxxx..yy")
+      allow(@context).to receive(:host_path).and_return("/host/xxx")
+      allow(@context).to receive(:shortened_job_id).and_return("123456..")
       @rld = RunsListDatatable.new(@runs, @context)
       @rld_json = JSON.parse(@rld.to_json)
     end
@@ -45,17 +45,17 @@ describe "RunsListDatatable" do
       run.priority = :low
       run.save
       @context = ActionController::Base.new.view_context
-      @context.stub(:params).and_return({id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "2", "dir" => "asc"}, "1" => {"column" => "0", "dir" => "desc"}}})
-      @context.stub(:link_to) {|str, link_path| link_path }
-      @context.stub(:run_path) {|run| run.id.to_s }
-      @context.stub(:priority) {|run| Run::PRIORITY_ORDER[run.priority].to_s }
-      @context.stub(:distance_to_now_in_words).and_return("time")
-      @context.stub(:formatted_elapsed_time).and_return("time")
-      @context.stub(:raw).and_return("label")
-      @context.stub(:status_label).and_return("status_label")
-      @context.stub(:shortened_id_monospaced).and_return("xxxx..yy")
-      @context.stub(:host_path).and_return("/host/xxx")
-      @context.stub(:shortened_job_id).and_return("123456..")
+      allow(@context).to receive(:params).and_return({id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "2", "dir" => "asc"}, "1" => {"column" => "0", "dir" => "desc"}}})
+      allow(@context).to receive(:link_to) {|str, link_path| link_path }
+      allow(@context).to receive(:run_path) {|run| run.id.to_s }
+      allow(@context).to receive(:priority) {|run| Run::PRIORITY_ORDER[run.priority].to_s }
+      allow(@context).to receive(:distance_to_now_in_words).and_return("time")
+      allow(@context).to receive(:formatted_elapsed_time).and_return("time")
+      allow(@context).to receive(:raw).and_return("label")
+      allow(@context).to receive(:status_label).and_return("status_label")
+      allow(@context).to receive(:shortened_id_monospaced).and_return("xxxx..yy")
+      allow(@context).to receive(:host_path).and_return("/host/xxx")
+      allow(@context).to receive(:shortened_job_id).and_return("123456..")
       @rld = RunsListDatatable.new(@runs, @context)
       @rld_json = JSON.parse(@rld.to_json)
     end

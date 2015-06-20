@@ -18,7 +18,7 @@ describe ParameterSetQuery do
                             )
     }
 
-    it {should be_valid}
+    it {is_expected.to be_valid}
   end
 
   describe "validation for a invalid type" do
@@ -29,7 +29,7 @@ describe ParameterSetQuery do
                             )
     }
 
-    it {should_not be_valid}
+    it {is_expected.not_to be_valid}
   end
 
   describe "validation for a invalid matcher" do
@@ -40,7 +40,7 @@ describe ParameterSetQuery do
                             )
     }
 
-    it {should_not be_valid}
+    it {is_expected.not_to be_valid}
   end
 
   describe "validation for presence" do
@@ -49,7 +49,7 @@ describe ParameterSetQuery do
       ParameterSetQuery.new(simulator: @sim, query: {})
     }
 
-    it {should_not be_valid}
+    it {is_expected.not_to be_valid}
   end
 
   describe "validation for uniqueness" do
@@ -65,7 +65,7 @@ describe ParameterSetQuery do
         @test_query
       }
 
-      it {should_not be_valid}
+      it {is_expected.not_to be_valid}
     end
   end
 
@@ -93,15 +93,15 @@ describe ParameterSetQuery do
 
     it "updates 'query' field" do
       @psq.set_query(@arg)
-      @psq.query.should eq({"T" => {"gte" => 4.0}, "L" => {"eq" => 2}})
+      expect(@psq.query).to eq({"T" => {"gte" => 4.0}, "L" => {"eq" => 2}})
     end
 
     it "returns a Hash when it successfuly updates query field" do
-      @psq.set_query(@arg).should be_a(Hash)
+      expect(@psq.set_query(@arg)).to be_a(Hash)
     end
 
     it "returns false when argument is invalid" do
-      @psq.set_query(nil).should be_falsey
+      expect(@psq.set_query(nil)).to be_falsey
     end
   end
 end

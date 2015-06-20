@@ -30,21 +30,21 @@ describe JobScriptUtil do
       run_test_script_in_temp_dir
       Dir.chdir(@temp_dir) {
         result_file = "#{@run.id}.tar.bz2"
-        File.exist?(result_file).should be_truthy
+        expect(File.exist?(result_file)).to be_truthy
 
-        File.directory?(@run.id.to_s).should be_falsey
+        expect(File.directory?(@run.id.to_s)).to be_falsey
 
         system("tar xjf #{result_file}")
         json_path = File.join(@run.id.to_s, '_status.json')
-        File.exist?(json_path).should be_truthy
+        expect(File.exist?(json_path)).to be_truthy
         parsed = JSON.load(File.open(json_path))
-        parsed.should have_key("started_at")
-        parsed.should have_key("hostname")
-        parsed.should have_key("rc")
-        parsed.should have_key("finished_at")
+        expect(parsed).to have_key("started_at")
+        expect(parsed).to have_key("hostname")
+        expect(parsed).to have_key("rc")
+        expect(parsed).to have_key("finished_at")
 
         time_path = File.join(@run.id.to_s, '_time.txt')
-        File.exist?(time_path).should be_truthy
+        expect(File.exist?(time_path)).to be_truthy
       }
     end
 
@@ -54,7 +54,7 @@ describe JobScriptUtil do
       run_test_script_in_temp_dir
       Dir.chdir(@temp_dir) {
         result_file = "#{@run.id}.tar.bz2"
-        File.exist?(result_file).should be_truthy
+        expect(File.exist?(result_file)).to be_truthy
       }
     end
 
@@ -63,8 +63,8 @@ describe JobScriptUtil do
       @sim.save!
       @run.mpi_procs = 8
       script = JobScriptUtil.script_for(@run, @host)
-      script.should match(/OACIS_MPI_PROCS=8/)
-      script.should match(/OACIS_IS_MPI_JOB=true/)
+      expect(script).to match(/OACIS_MPI_PROCS=8/)
+      expect(script).to match(/OACIS_IS_MPI_JOB=true/)
     end
 
     it "does not call insert mpiexec when Simulator#support_mpi is false" do
@@ -72,7 +72,7 @@ describe JobScriptUtil do
       @sim.save!
       @run.mpi_procs = 8
       script = JobScriptUtil.script_for(@run, @host)
-      script.should match(/OACIS_IS_MPI_JOB=false/)
+      expect(script).to match(/OACIS_IS_MPI_JOB=false/)
     end
 
     it "sets OMP_NUM_THREADS in the script" do
@@ -80,7 +80,7 @@ describe JobScriptUtil do
       @sim.save!
       @run.omp_threads = 8
       script = JobScriptUtil.script_for(@run, @host)
-      script.should match(/OACIS_OMP_THREADS=8/)
+      expect(script).to match(/OACIS_OMP_THREADS=8/)
     end
 
     context "when host is nil" do
@@ -106,23 +106,20 @@ describe JobScriptUtil do
         JobScriptUtil.expand_result_file(@run)
 
         # expand result properly
-        File.exist?(@run.dir.join('_stdout.txt')).should be_truthy
-        File.exist?(@run.dir.join('_output.json')).should be_truthy
-        File.exist?(@run.dir.join('..', "#{@run.id}.tar")).should be_falsey
-        File.exist?(@run.dir.join('..', "#{@run.id}.tar.bz2")).should be_truthy
+        expect(File.exist?(@run.dir.join('_stdout.txt'))).to be_truthy
+        expect(File.exist?(@run.dir.join('_output.json'))).to be_truthy
+        expect(File.exist?(@run.dir.join('..', "#{@run.id}.tar"))).to be_falsey
+        expect(File.exist?(@run.dir.join('..', "#{@run.id}.tar.bz2"))).to be_truthy
       }
     end
 
     context "when archive is invalid archive" do
       it "raise error" do
-        Dir.chdir(@temp_dir) {
-          system("echo 1.2345 > #{@run.id}.tar.bz2")
-          result_file = "#{@run.id}.tar.bz2"
-          FileUtils.mv( result_file, @run.dir.join('..') )
-          expect {
-            JobScriptUtil.expand_result_file(@run)
-          }.to raise_error
-        }
+        expect(JobScriptUtil).to receive(:system)
+        expect($?).to receive(:to_i).and_return(1)
+        expect {
+          JobScriptUtil.expand_result_file(@run)
+        }.to raise_error
       end
     end
   end
@@ -147,13 +144,13 @@ describe JobScriptUtil do
 
       # parse status
       @run.reload
-      @run.status.should eq :finished
-      @run.hostname.should_not be_empty
-      @run.started_at.should be_a(DateTime)
-      @run.finished_at.should be_a(DateTime)
-      @run.real_time.should_not be_nil
-      @run.cpu_time.should_not be_nil
-      @run.included_at.should be_a(DateTime)
+      expect(@run.status).to eq :finished
+      expect(@run.hostname).not_to be_empty
+      expect(@run.started_at).to be_a(DateTime)
+      expect(@run.finished_at).to be_a(DateTime)
+      expect(@run.real_time).not_to be_nil
+      expect(@run.cpu_time).not_to be_nil
+      expect(@run.included_at).to be_a(DateTime)
     end
 
     context "when _status.json has invalid json format" do
@@ -170,13 +167,13 @@ describe JobScriptUtil do
 
         # parse status
         @run.reload
-        @run.status.should eq :created
-        @run.hostname.should be_nil
-        @run.started_at.should be_nil
-        @run.finished_at.should be_nil
-        @run.real_time.should_not be_nil
-        @run.cpu_time.should_not be_nil
-        @run.included_at.should be_a(DateTime)
+        expect(@run.status).to eq :created
+        expect(@run.hostname).to be_nil
+        expect(@run.started_at).to be_nil
+        expect(@run.finished_at).to be_nil
+        expect(@run.real_time).not_to be_nil
+        expect(@run.cpu_time).not_to be_nil
+        expect(@run.included_at).to be_a(DateTime)
       end
     end
 
@@ -190,11 +187,11 @@ describe JobScriptUtil do
       JobScriptUtil.update_run(@run)
 
       # expand result properly
-      File.exist?(@run.dir.join('_output.json')).should be_truthy
+      expect(File.exist?(@run.dir.join('_output.json'))).to be_truthy
 
       # parse status
       @run.reload
-      @run.result.should eq Hash["result",0.12345]
+      expect(@run.result).to eq Hash["result",0.12345]
     end
 
     it "parse _output.json which is not a Hash but a Boolean" do
@@ -207,11 +204,11 @@ describe JobScriptUtil do
       JobScriptUtil.update_run(@run)
 
       # expand result properly
-      File.exist?(@run.dir.join('_output.json')).should be_truthy
+      expect(File.exist?(@run.dir.join('_output.json'))).to be_truthy
 
       # parse status
       @run.reload
-      @run.result.should eq Hash["result",false]
+      expect(@run.result).to eq Hash["result",false]
     end
 
     it "parse _output.json which is not a Hash but a String" do
@@ -224,11 +221,11 @@ describe JobScriptUtil do
       JobScriptUtil.update_run(@run)
 
       # expand result properly
-      File.exist?(@run.dir.join('_output.json')).should be_truthy
+      expect(File.exist?(@run.dir.join('_output.json'))).to be_truthy
 
       # parse status
       @run.reload
-      @run.result.should eq Hash["result","12345"]
+      expect(@run.result).to eq Hash["result","12345"]
     end
 
     it "parse _output.json which is not a Hash but a Array" do
@@ -241,11 +238,11 @@ describe JobScriptUtil do
       JobScriptUtil.update_run(@run)
 
       # expand result properly
-      File.exist?(@run.dir.join('_output.json')).should be_truthy
+      expect(File.exist?(@run.dir.join('_output.json'))).to be_truthy
 
       # parse status
       @run.reload
-      @run.result.should eq Hash["result",[1,2,3]]
+      expect(@run.result).to eq Hash["result",[1,2,3]]
     end
 
     context "when _output.json has invalid json format" do
@@ -264,13 +261,13 @@ describe JobScriptUtil do
 
         # parse status
         @run.reload
-        @run.status.should eq :finished
-        @run.hostname.should_not be_nil
-        @run.started_at.should be_a(DateTime)
-        @run.finished_at.should be_a(DateTime)
-        @run.real_time.should_not be_nil
-        @run.cpu_time.should_not be_nil
-        @run.included_at.should be_a(DateTime)
+        expect(@run.status).to eq :finished
+        expect(@run.hostname).not_to be_nil
+        expect(@run.started_at).to be_a(DateTime)
+        expect(@run.finished_at).to be_a(DateTime)
+        expect(@run.real_time).not_to be_nil
+        expect(@run.cpu_time).not_to be_nil
+        expect(@run.included_at).to be_a(DateTime)
       end
     end
 
@@ -288,8 +285,8 @@ EOS
       JobScriptUtil.update_run(@run)
 
       @run.reload
-      @run.cpu_time.should eq 0.2
-      @run.real_time.should eq 0.3
+      expect(@run.cpu_time).to eq 0.2
+      expect(@run.real_time).to eq 0.3
     end
 
     context "when _time.txt has invalid format" do
@@ -310,13 +307,13 @@ EOS
 
         # parse status
         @run.reload
-        @run.status.should eq :finished
-        @run.hostname.should_not be_nil
-        @run.started_at.should be_a(DateTime)
-        @run.finished_at.should be_a(DateTime)
-        @run.real_time.should be_nil
-        @run.cpu_time.should_not be_nil
-        @run.included_at.should be_a(DateTime)
+        expect(@run.status).to eq :finished
+        expect(@run.hostname).not_to be_nil
+        expect(@run.started_at).to be_a(DateTime)
+        expect(@run.finished_at).to be_a(DateTime)
+        expect(@run.real_time).to be_nil
+        expect(@run.cpu_time).not_to be_nil
+        expect(@run.included_at).to be_a(DateTime)
       end
     end
 
@@ -331,14 +328,14 @@ EOS
       JobScriptUtil.update_run(@run)
 
       @run.reload
-      @run.status.should eq :failed
-      @run.hostname.should_not be_empty
-      @run.started_at.should be_a(DateTime)
-      @run.finished_at.should be_a(DateTime)
-      @run.real_time.should_not be_nil
-      @run.cpu_time.should_not be_nil
-      @run.included_at.should be_a(DateTime)
-      File.exist?(@run.dir.join('_stdout.txt')).should be_truthy
+      expect(@run.status).to eq :failed
+      expect(@run.hostname).not_to be_empty
+      expect(@run.started_at).to be_a(DateTime)
+      expect(@run.finished_at).to be_a(DateTime)
+      expect(@run.real_time).not_to be_nil
+      expect(@run.cpu_time).not_to be_nil
+      expect(@run.included_at).to be_a(DateTime)
+      expect(File.exist?(@run.dir.join('_stdout.txt'))).to be_truthy
     end
 
     it "parses simulator version printed by Simulator#print_version_command" do
@@ -350,7 +347,7 @@ EOS
       JobScriptUtil.update_run(@run)
 
       @run.reload
-      @run.simulator_version.should eq "simulator version: 1.0.0"
+      expect(@run.simulator_version).to eq "simulator version: 1.0.0"
     end
   end
 end

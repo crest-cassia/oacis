@@ -54,35 +54,35 @@ describe JobIncluder do
 
     it "copies reuslt files into the run directory" do
       include_job
-      @run.dir.join("_stdout.txt").should be_exist
+      expect(@run.dir.join("_stdout.txt")).to be_exist
     end
 
     it "copies archive result file" do
       include_job
-      @run.dir.join("..", File.basename(@archive_full_path)).should be_exist
+      expect(@run.dir.join("..", File.basename(@archive_full_path))).to be_exist
     end
 
     it "parses _status.json" do
       include_job
-      @run.hostname.should eq "hostXXX"
-      @run.started_at.should be_a(DateTime)
-      @run.finished_at.should be_a(DateTime)
-      @run.status.should eq :finished
+      expect(@run.hostname).to eq "hostXXX"
+      expect(@run.started_at).to be_a(DateTime)
+      expect(@run.finished_at).to be_a(DateTime)
+      expect(@run.status).to eq :finished
     end
 
     it "parses _time.txt" do
       include_job
-      @run.cpu_time.should be_within(0.01).of(8.0)
-      @run.real_time.should be_within(0.01).of(10.0)
+      expect(@run.cpu_time).to be_within(0.01).of(8.0)
+      expect(@run.real_time).to be_within(0.01).of(10.0)
     end
 
     it "deletes archive file after the inclusion finishes" do
       include_job
-      @archive_full_path.should_not be_exist
+      expect(@archive_full_path).not_to be_exist
     end
 
     it "invokes create_auto_run_analyses" do
-      JobIncluder.should_receive(:create_auto_run_analyses)
+      expect(JobIncluder).to receive(:create_auto_run_analyses)
       include_job
     end
   end
@@ -91,7 +91,7 @@ describe JobIncluder do
 
     before(:each) do
       @run = @sim.parameter_sets.first.runs.create(submitted_to: nil)
-      ResultDirectory.manual_submission_job_script_path(@run).should be_exist
+      expect(ResultDirectory.manual_submission_job_script_path(@run)).to be_exist
       make_valid_archive_file(@run)
     end
 
@@ -101,7 +101,7 @@ describe JobIncluder do
 
     it "deletes job script after inclusion" do
       include_job
-      ResultDirectory.manual_submission_job_script_path(@run).should_not be_exist
+      expect(ResultDirectory.manual_submission_job_script_path(@run)).not_to be_exist
     end
   end
 
@@ -132,7 +132,7 @@ describe JobIncluder do
 
       it "includes scheduler_log" do
         include_job
-        @run.dir.join(@run.id.to_s+'_log', 'scheduler_log').should be_exist
+        expect(@run.dir.join(@run.id.to_s+'_log', 'scheduler_log')).to be_exist
       end
     end
 
@@ -162,7 +162,7 @@ describe JobIncluder do
 
       it "includes scheduler_log" do
         include_job
-        @run.dir.join(@run.id.to_s+'_log', 'scheduler_log').should be_exist
+        expect(@run.dir.join(@run.id.to_s+'_log', 'scheduler_log')).to be_exist
       end
     end
 
@@ -180,19 +180,19 @@ describe JobIncluder do
         end
 
         it "updates status to finished" do
-          @run.status.should eq :finished
+          expect(@run.status).to eq :finished
         end
 
         it "copies files in work_dir" do
-          @run.dir.join("_stdout.txt").should be_exist
+          expect(@run.dir.join("_stdout.txt")).to be_exist
         end
 
         it "does not copy archive file" do
-          @run.dir.join('..', @run.id.to_s+'.tar.bz2').should_not be_exist
+          expect(@run.dir.join('..', @run.id.to_s+'.tar.bz2')).not_to be_exist
         end
 
         it "deletes remote work_dir and archive file" do
-          Dir.entries(@temp_dir).should =~ ['.', '..']
+          expect(Dir.entries(@temp_dir)).to match_array(['.', '..'])
         end
       end
 
@@ -207,7 +207,7 @@ describe JobIncluder do
         end
 
         it "updates status to failed" do
-          @run.status.should eq :failed
+          expect(@run.status).to eq :failed
         end
       end
     end

@@ -19,12 +19,12 @@ describe AnalyzersController do
 
     it "returns http success" do
       get 'show', {id: @azr.id }
-      response.should be_success
+      expect(response).to be_success
     end
 
     it "assigns the requested analyzer to @analyzer" do
       get 'show', {id: @azr.id }
-      assigns(:analyzer).should eq(@azr)
+      expect(assigns(:analyzer)).to eq(@azr)
     end
   end
 
@@ -37,7 +37,7 @@ describe AnalyzersController do
 
     it "assigns a new simulator as @simulator" do
       get :new, {simulator_id: @sim.to_param}, valid_session
-      assigns(:analyzer).should be_a_new(Analyzer)
+      expect(assigns(:analyzer)).to be_a_new(Analyzer)
     end
   end
 
@@ -51,7 +51,7 @@ describe AnalyzersController do
 
     it "assigns the requested simulator as @simulator" do
       get :edit, {:id => @azr.to_param}, valid_session
-      assigns(:analyzer).should eq(@azr)
+      expect(assigns(:analyzer)).to eq(@azr)
     end
   end
 
@@ -87,24 +87,24 @@ describe AnalyzersController do
       it "assigns attributes of newly created Analyzer" do
         post :create, @valid_post_parameter, valid_session
         azr = Analyzer.last
-        azr.name.should eq "analyzerA"
-        azr.type.should eq :on_run
-        azr.command.should eq "echo"
-        azr.auto_run.should eq :no
-        azr.description.should eq "xxx yyy"
-        azr.parameter_definition_for("param1").type.should eq "Integer"
-        azr.parameter_definition_for("param2").type.should eq "Float"
+        expect(azr.name).to eq "analyzerA"
+        expect(azr.type).to eq :on_run
+        expect(azr.command).to eq "echo"
+        expect(azr.auto_run).to eq :no
+        expect(azr.description).to eq "xxx yyy"
+        expect(azr.parameter_definition_for("param1").type).to eq "Integer"
+        expect(azr.parameter_definition_for("param2").type).to eq "Float"
       end
 
       it "assigns a newly created analyzer as @analyzer" do
         post :create, @valid_post_parameter, valid_session
-        assigns(:analyzer).should be_a(Analyzer)
-        assigns(:analyzer).should be_persisted
+        expect(assigns(:analyzer)).to be_a(Analyzer)
+        expect(assigns(:analyzer)).to be_persisted
       end
 
       it "redirects to the created analyzer" do
         post :create, @valid_post_parameter, valid_session
-        response.should redirect_to(Analyzer.last)
+        expect(response).to redirect_to(Analyzer.last)
       end
     end
 
@@ -113,14 +113,14 @@ describe AnalyzersController do
       it "assigns a newly created but unsaved analyzer as @analyzer" do
         expect {
           post :create, {simulator_id: @sim.id, analyzer: {}}, valid_session
-          assigns(:analyzer).should be_a_new(Analyzer)
+          expect(assigns(:analyzer)).to be_a_new(Analyzer)
         }.to_not change(Analyzer, :count)
       end
 
       it "re-renders the 'new' template" do
         # Trigger the behavior that occurs when invalid params are submitted
         post :create, {simulator_id: @sim.id, analyzer: {}}, valid_session
-        response.should render_template("new")
+        expect(response).to render_template("new")
       end
     end
 
@@ -185,27 +185,27 @@ describe AnalyzersController do
 
       it "assigns the requested analyzer as @analyzer" do
         put :update, {:id => @azr.to_param, :analyzer => @valid_post_parameter}, valid_session
-        assigns(:analyzer).should eq(@azr)
+        expect(assigns(:analyzer)).to eq(@azr)
       end
 
       it "redirects to the analyzer" do
         put :update, {:id => @azr.to_param, :analyzer => @valid_post_parameter}, valid_session
-        response.should redirect_to(@azr)
+        expect(response).to redirect_to(@azr)
       end
     end
 
     describe "with invalid params" do
 
       it "assigns the simulator as @simulator" do
-        Analyzer.any_instance.stub(:update_attributes).and_return(false)
+        allow_any_instance_of(Analyzer).to receive(:update_attributes).and_return(false)
         put :update, {:id => @azr.to_param, :analyzer => {}}, valid_session
-        assigns(:analyzer).should eq(@azr)
+        expect(assigns(:analyzer)).to eq(@azr)
       end
 
       it "re-renders the 'edit' template" do
-        Analyzer.any_instance.stub(:update_attributes).and_return(false)
+        allow_any_instance_of(Analyzer).to receive(:update_attributes).and_return(false)
         put :update, {:id => @azr.to_param, :analyzer => {}}, valid_session
-        response.should render_template("edit")
+        expect(response).to render_template("edit")
       end
     end
 
@@ -262,7 +262,7 @@ describe AnalyzersController do
 
     it "returns http success" do
       get '_parameters_form', {id: @azr.id}
-      response.should be_success
+      expect(response).to be_success
     end
   end
 

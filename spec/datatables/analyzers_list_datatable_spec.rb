@@ -7,10 +7,10 @@ describe "AnalyzersListDatatable" do
     before(:each) do
       @simulator = FactoryGirl.create(:simulator, analyzers_count: 25)
       @context = ActionController::Base.new.view_context
-      @context.stub(:params).and_return({id: @simulator.to_param, draw: 1, start: 0, length:10 , "order" => {"0" => {"column" => "0", "dir" => "desc"}}})
-      @context.stub(:link_to) {|str, link_path| link_path }
-      @context.stub(:shortened_id_monospaced).and_return("id")
-      @context.stub(:analyzer_path).and_return("/analyzers/00000000")
+      allow(@context).to receive(:params).and_return({id: @simulator.to_param, draw: 1, start: 0, length:10 , "order" => {"0" => {"column" => "0", "dir" => "desc"}}})
+      allow(@context).to receive(:link_to) {|str, link_path| link_path }
+      allow(@context).to receive(:shortened_id_monospaced).and_return("id")
+      allow(@context).to receive(:analyzer_path).and_return("/analyzers/00000000")
       @azrld = AnalyzersListDatatable.new(@context)
       @azrld_json = JSON.parse(@azrld.to_json)
     end
@@ -34,10 +34,10 @@ describe "AnalyzersListDatatable" do
           anz.save
         end
         @context = ActionController::Base.new.view_context
-        @context.stub(:params).and_return({id: @simulator.to_param, draw: 1, start: 0, length:10, "order" => {"0" => {"column" => "4", "dir" => "asc"}, "1" => {"column" => "0", "dir" => "desc"}}})
-        @context.stub(:link_to) {|str, link_path| link_path }
-        @context.stub(:shortened_id_monospaced).and_return("id")
-        @context.stub(:analyzer_path).and_return("/analyzers/00000000")
+        allow(@context).to receive(:params).and_return({id: @simulator.to_param, draw: 1, start: 0, length:10, "order" => {"0" => {"column" => "4", "dir" => "asc"}, "1" => {"column" => "0", "dir" => "desc"}}})
+        allow(@context).to receive(:link_to) {|str, link_path| link_path }
+        allow(@context).to receive(:shortened_id_monospaced).and_return("id")
+        allow(@context).to receive(:analyzer_path).and_return("/analyzers/00000000")
         @azrld = AnalyzersListDatatable.new(@context)
         @azrld_json = JSON.parse(@azrld.to_json)
       end

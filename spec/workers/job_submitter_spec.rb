@@ -37,7 +37,7 @@ describe JobSubmitter do
 
     it "does not create SSH connection if there is no submittable jobs" do
       @sim.runs.first.update_attribute(:status, :finished)
-      Host.any_instance.should_not_receive(:start_ssh)
+      expect_any_instance_of(Host).not_to receive(:start_ssh)
       JobSubmitter.perform(@logger)
     end
 
@@ -57,7 +57,7 @@ describe JobSubmitter do
       expect {
         JobSubmitter.perform(@logger)
       }.to change { Run.where(status: :submitted, priority: 0).count }.by(1)
-      Run.where(status: :submitted, priority: 1).count.should eq 0
+      expect(Run.where(status: :submitted, priority: 1).count).to eq 0
     end
 
     it "does not enqueue a job until polling interval has passed since the last submission" do

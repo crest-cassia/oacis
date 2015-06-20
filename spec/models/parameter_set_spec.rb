@@ -13,46 +13,46 @@ describe ParameterSet do
   describe "validation" do
 
     it "should create a Parameter when valid attributes are given" do
-      lambda {
+      expect {
         @sim.parameter_sets.create!(@valid_attr)
-      }.should_not raise_error
+      }.not_to raise_error
     end
 
     it "should not be balid when simulator is not related" do
       param = ParameterSet.new(@valid_attr)
-      param.should_not be_valid
+      expect(param).not_to be_valid
     end
 
     it "should not be valid when v does not exist" do
       invalid_attr = @valid_attr
       invalid_attr.delete(:v)
       built_param = @sim.parameter_sets.build(invalid_attr)
-      built_param.should_not be_valid
+      expect(built_param).not_to be_valid
     end
 
     it "should raise an error when v is not a Hash" do
       invalid_attr = @valid_attr.update({v: "xxx"})
-      lambda {
+      expect {
         @sim.parameter_sets.build(invalid_attr)
-      }.should raise_error
+      }.to raise_error
     end
 
     it "should not be valid when keys of v are not consistent with its Simulator" do
       pd = @sim.parameter_definitions.first
       pd.default = nil
       built_param = @sim.parameter_sets.build(@valid_attr.update({:v => {}}))
-      built_param.should_not be_valid
+      expect(built_param).not_to be_valid
     end
 
     it "should not be valid when v is not unique" do
       @sim.parameter_sets.create!(@valid_attr)
       built = @sim.parameter_sets.build(@valid_attr)
-      built.should_not be_valid
+      expect(built).not_to be_valid
       err = built.errors.messages
-      err.should have_key(:parameters)
-      err[:parameters].find {|x|
+      expect(err).to have_key(:parameters)
+      expect(err[:parameters].find {|x|
         x =~ /identical/
-      }.should be_truthy
+      }).to be_truthy
     end
 
     it "identical v is valid for a differnet simulator" do
@@ -61,15 +61,15 @@ describe ParameterSet do
       sim2 = FactoryGirl.create(:simulator,
                                 parameter_sets_count: 0)
       built_param = sim2.parameter_sets.build(@valid_attr)
-      built_param.should be_valid
+      expect(built_param).to be_valid
     end
 
     it "should cast the values of v properly" do
       updated_attr = @valid_attr.update(:v => {"L"=>"32","T"=>"2.0"})
       built = @sim.parameter_sets.build(updated_attr)
-      built.should be_valid
-      built[:v]["L"].should == 32
-      built[:v]["T"].should == 2.0
+      expect(built).to be_valid
+      expect(built[:v]["L"]).to eq(32)
+      expect(built[:v]["T"]).to eq(2.0)
     end
 
     it "uses default values if a parameter value is not given" do
@@ -77,14 +77,14 @@ describe ParameterSet do
       @sim.parameter_definition_for("L").default = 30
       @sim.parameter_definition_for("T").default = 2.0
       built = @sim.parameter_sets.build(updated_attr)
-      built.should be_valid
-      built[:v]["L"].should == 30
-      built[:v]["T"].should == 2.0
+      expect(built).to be_valid
+      expect(built[:v]["L"]).to eq(30)
+      expect(built[:v]["T"]).to eq(2.0)
     end
 
     it "should be valid once it is saved with valid attributes" do
       prm = @sim.parameter_sets.first
-      prm.should be_valid
+      expect(prm).to be_valid
     end
   end
 
@@ -95,16 +95,16 @@ describe ParameterSet do
     end
 
     it "has simulator method" do
-      @ps.should respond_to(:simulator)
+      expect(@ps).to respond_to(:simulator)
     end
 
     it "has runs method" do
-      @ps.should respond_to(:runs)
+      expect(@ps).to respond_to(:runs)
     end
 
     it "calls destroy of dependent runs when destroyed" do
       run = @ps.runs.first
-      run.should_receive(:destroy)
+      expect(run).to receive(:destroy)
       @ps.destroy
     end
 
@@ -114,14 +114,14 @@ describe ParameterSet do
                          type: :on_parameter_set
                          )
       anl = @ps.analyses.build(analyzable: @ps, analyzer: azr)
-      anl.should_receive(:destroy)
+      expect(anl).to receive(:destroy)
       @ps.destroy
     end
 
     it "calls cancel of dependent runs whose status is submitted or running when destroyed" do
       run = @ps.runs.first
       run.status = :submitted
-      run.should_receive(:cancel)
+      expect(run).to receive(:cancel)
       @ps.destroy
     end
   end
@@ -141,7 +141,7 @@ describe ParameterSet do
     it "is created when a new item is added" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
       prm = sim.parameter_sets.create!(@valid_attr)
-      FileTest.directory?(ResultDirectory.parameter_set_path(prm)).should be_truthy
+      expect(FileTest.directory?(ResultDirectory.parameter_set_path(prm))).to be_truthy
     end
 
     it "is not created when validation fails" do
@@ -151,7 +151,7 @@ describe ParameterSet do
       h.save!
 
       prm = sim.parameter_sets.create(@valid_attr.update({:v => {"L"=>"abc"}}))
-      (Dir.entries(ResultDirectory.simulator_path(sim)) - ['.','..']).should be_empty
+      expect(Dir.entries(ResultDirectory.simulator_path(sim)) - ['.','..']).to be_empty
     end
   end
 
@@ -160,7 +160,7 @@ describe ParameterSet do
     it "returns the result directory of the parameter" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       prm = sim.parameter_sets.first
-      prm.dir.should == ResultDirectory.parameter_set_path(prm)
+      expect(prm.dir).to eq(ResultDirectory.parameter_set_path(prm))
     end
   end
 
@@ -194,33 +194,33 @@ describe ParameterSet do
 
     it "returns parameter_sets whose sim_parameter is same as self except for the specified key" do
       prms_L = @prm.parameter_sets_with_different("L")
-      prms_L.count.should == 5
+      expect(prms_L.count).to eq(5)
       prms_L.each do |prm_L|
-        prm_L.v["T"].should == @prm.v["T"]
+        expect(prm_L.v["T"]).to eq(@prm.v["T"])
       end
 
       prms_T = @prm.parameter_sets_with_different("T")
-      prms_T.count.should == 5
+      expect(prms_T.count).to eq(5)
       prms_T.each do |prm_T|
-        prm_T.v["L"].should == @prm.v["L"]
+        expect(prm_T.v["L"]).to eq(@prm.v["L"])
       end
     end
 
     it "includes self" do
       found = @prm.parameter_sets_with_different("L").find(@prm)
-      found.should be_a(ParameterSet)
+      expect(found).to be_a(ParameterSet)
     end
 
     it "returns parameter_sets sorted by the given key" do
       prms_L = @prm.parameter_sets_with_different("L")
-      prms_L.map {|x| x.v["L"]}.should eq [1,2,3,4,5]
+      expect(prms_L.map {|x| x.v["L"]}).to eq [1,2,3,4,5]
     end
 
     context "when irrelevant keys are given" do
 
       it "ignores irrelevant keys when searching parameter sets" do
         prms_L = @prm.parameter_sets_with_different("L", ["P"])
-        prms_L.map {|x| x.v["L"]}.should eq [1,1,1,1,1,2,3,3,4,5]
+        expect(prms_L.map {|x| x.v["L"]}).to eq [1,1,1,1,1,2,3,3,4,5]
       end
     end
   end
@@ -249,7 +249,7 @@ describe ParameterSet do
     end
 
     it "returns array of parameter keys which have multiple distinct parameter values" do
-      @prm.parameter_keys_having_distinct_values.should eq ["L", "T"]
+      expect(@prm.parameter_keys_having_distinct_values).to eq ["L", "T"]
     end
   end
 
@@ -267,31 +267,31 @@ describe ParameterSet do
 
     it "returns the runs count" do
       prm = prepare_runs
-      prm.runs_status_count.values.inject(:+).should eq prm.runs.count
-      prm.runs_status_count[:created].to_i.should eq prm.runs.where(status: :created).count
-      prm.runs_status_count[:submitted].to_i.should eq prm.runs.where(status: :submitted).count
-      prm.runs_status_count[:running].should eq prm.runs.where(status: :running).count
-      prm.runs_status_count[:finished].should eq prm.runs.where(status: :finished).count
-      prm.runs_status_count[:failed].should eq prm.runs.where(status: :failed).count
-      prm.runs_status_count[:cancelled].should eq prm.runs.where(status: :cancelled).count
+      expect(prm.runs_status_count.values.inject(:+)).to eq prm.runs.count
+      expect(prm.runs_status_count[:created].to_i).to eq prm.runs.where(status: :created).count
+      expect(prm.runs_status_count[:submitted].to_i).to eq prm.runs.where(status: :submitted).count
+      expect(prm.runs_status_count[:running]).to eq prm.runs.where(status: :running).count
+      expect(prm.runs_status_count[:finished]).to eq prm.runs.where(status: :finished).count
+      expect(prm.runs_status_count[:failed]).to eq prm.runs.where(status: :failed).count
+      expect(prm.runs_status_count[:cancelled]).to eq prm.runs.where(status: :cancelled).count
     end
 
     it "save the result into runs_status_count_cache field" do
       prm = prepare_runs
-      prm.runs_status_count_cache.should be_nil
+      expect(prm.runs_status_count_cache).to be_nil
 
-      Run.should_receive(:collection).and_call_original
+      expect(Run).to receive(:collection).and_call_original
       prm.runs_status_count
-      prm.runs_status_count_cache.should be_a(Hash)
+      expect(prm.runs_status_count_cache).to be_a(Hash)
     end
 
     it "update progress_rate_cache field" do
       prm = prepare_runs
-      prm.runs_status_count_cache.should be_nil
+      expect(prm.runs_status_count_cache).to be_nil
 
-      Run.should_receive(:collection).and_call_original
+      expect(Run).to receive(:collection).and_call_original
       prm.runs_status_count
-      prm.progress_rate_cache.should be_a(Integer)
+      expect(prm.progress_rate_cache).to be_a(Integer)
     end
   end
 
@@ -301,7 +301,7 @@ describe ParameterSet do
       ps = @sim.parameter_sets.first
       dir = ps.dir
       ps.destroy
-      File.directory?(dir).should be_falsey
+      expect(File.directory?(dir)).to be_falsey
     end
   end
 end

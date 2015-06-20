@@ -20,56 +20,56 @@ describe Analysis do
 
     it "is valid with proper attributes" do
       arn = @run.analyses.build(@valid_attr)
-      arn.should be_valid
+      expect(arn).to be_valid
     end
 
     it "is valid even if 'parameters' field is not given when default parameters are specified" do
       invalid_attr = @valid_attr
       invalid_attr.delete(:parameters)
       arn = @run.analyses.build(invalid_attr)
-      arn.should be_valid
+      expect(arn).to be_valid
     end
 
     it "assigns 'created' stauts by default" do
       arn = @run.analyses.create!(@valid_attr)
-      arn.status.should == :created
+      expect(arn.status).to eq(:created)
     end
 
     it "is invalid if Analyzer is not related" do
       invalid_attr = @valid_attr
       invalid_attr.delete(:analyzer)
       arn = @run.analyses.build(invalid_attr)
-      arn.should_not be_valid
+      expect(arn).not_to be_valid
     end
 
     it "is invalid if there is no parent document" do
       arn = Analysis.new(@valid_attr)
-      lambda {
+      expect {
         arn.save!
-      }.should raise_error
+      }.to raise_error
     end
 
     it "is invalid when status is not an allowed value" do
       arn = @run.analyses.create!(@valid_attr)
 
       arn.status = :status_XXX
-      arn.should_not be_valid
+      expect(arn).not_to be_valid
     end
 
     it "casts the parameter values according to the definition" do
       updated_attr = @valid_attr.update(parameters: {"param1"=>"32","param2"=>"3.0"})
       arn = @run.analyses.create!(updated_attr)
       type1 = @azr.parameter_definition_for("param1").type.constantize
-      arn.parameters["param1"].should be_a(type1)
+      expect(arn.parameters["param1"]).to be_a(type1)
       type2 = @azr.parameter_definition_for("param2").type.constantize
-      arn.parameters["param2"].should be_a(type2)
+      expect(arn.parameters["param2"]).to be_a(type2)
     end
 
     it "adopts default values if a parameter is not explicitly specified" do
       updated_attr = @valid_attr.update(parameters: {"param1"=>"32"})
       arn = @run.analyses.create!(updated_attr)
       default_val = arn.analyzer.parameter_definition_for("param2").default
-      arn.parameters["param2"].should eq(default_val)
+      expect(arn.parameters["param2"]).to eq(default_val)
     end
 
     it "adopts default values when parameter hash is not given" do
@@ -78,8 +78,8 @@ describe Analysis do
       arn = @run.analyses.create(updated_attr)
       default_val1 = arn.analyzer.parameter_definition_for("param1").default
       default_val2 = arn.analyzer.parameter_definition_for("param2").default
-      arn.parameters["param1"].should eq(default_val1)
-      arn.parameters["param2"].should eq(default_val2)
+      expect(arn.parameters["param1"]).to eq(default_val1)
+      expect(arn.parameters["param2"]).to eq(default_val2)
     end
   end
 
@@ -87,21 +87,21 @@ describe Analysis do
 
     it "can be embedded in a run" do
       @arn = @run.analyses.build(@valid_attr)
-      @run.analyses.last.should be_a(Analysis)
-      @arn.analyzable.should be_a(Run)
+      expect(@run.analyses.last).to be_a(Analysis)
+      expect(@arn.analyzable).to be_a(Run)
     end
 
     it "can be embedded in a parameter_set" do
       ps = @sim.parameter_sets.first
       @arn = ps.analyses.build(@valid_attr)
-      ps.analyses.last.should be_a(Analysis)
-      @arn.analyzable.should be_a(ParameterSet)
+      expect(ps.analyses.last).to be_a(Analysis)
+      expect(@arn.analyzable).to be_a(ParameterSet)
     end
 
     it "refers to analyzer" do
       @arn = @run.analyses.create!(@valid_attr)
       @arn.reload
-      @arn.analyzer.should be_a(Analyzer)
+      expect(@arn.analyzer).to be_a(Analyzer)
     end
   end
 
@@ -109,8 +109,8 @@ describe Analysis do
 
     it "sets parameter_set when created" do
       anl = @run.analyses.create(@valid_attr)
-      anl.should respond_to(:parameter_set)
-      anl.parameter_set.should eq @run.parameter_set
+      expect(anl).to respond_to(:parameter_set)
+      expect(anl.parameter_set).to eq @run.parameter_set
     end
   end
 
@@ -118,11 +118,11 @@ describe Analysis do
 
     it "updates status to 'running' and sets hostname" do
       ret = @arn.update_status_running(hostname: 'host_ABC')
-      ret.should be_truthy
+      expect(ret).to be_truthy
 
       @arn.reload
-      @arn.status.should == :running
-      @arn.hostname.should == 'host_ABC'
+      expect(@arn.status).to eq(:running)
+      expect(@arn.hostname).to eq('host_ABC')
     end
   end
 
@@ -140,17 +140,17 @@ describe Analysis do
     end
 
     it "returns true" do
-      @arn.update_status_finished(@arg).should be_truthy
+      expect(@arn.update_status_finished(@arg)).to be_truthy
     end
 
     it "sets status of runs" do
       @arn.update_status_finished(@arg)
       @arn.reload
-      @arn.cpu_time.should eq @arg[:cpu_time]
-      @arn.real_time.should eq @arg[:real_time]
-      @arn.result.should eq @arg[:result]
-      @arn.finished_at.should be_within(0.0001).of(@arg[:finished_at].utc)
-      @arn.included_at.should be_a(DateTime)
+      expect(@arn.cpu_time).to eq @arg[:cpu_time]
+      expect(@arn.real_time).to eq @arg[:real_time]
+      expect(@arn.result).to eq @arg[:result]
+      expect(@arn.finished_at).to be_within(0.0001).of(@arg[:finished_at].utc)
+      expect(@arn.included_at).to be_a(DateTime)
     end
   end
 
@@ -162,9 +162,9 @@ describe Analysis do
 
     it "updates status to failed" do
       ret = @arn.update_status_failed
-      ret.should be_truthy
+      expect(ret).to be_truthy
       @arn.reload
-      @arn.status.should eq(:failed)
+      expect(@arn.status).to eq(:failed)
     end
   end
 
@@ -193,7 +193,7 @@ describe Analysis do
       it "delete analysis directory" do
         dir = @analysis.dir
         @analysis.destroy
-        File.directory?(dir).should be_falsey
+        expect(File.directory?(dir)).to be_falsey
       end
     end
 
@@ -204,7 +204,7 @@ describe Analysis do
       end
 
       it "calls cancel" do
-        @analysis.should_receive(:cancel)
+        expect(@analysis).to receive(:cancel)
         @analysis.destroy
       end
 
@@ -217,7 +217,7 @@ describe Analysis do
       it "deletes analysis_directory" do
         dir = @analysis.dir
         @analysis.destroy
-        File.directory?(dir).should be_falsey
+        expect(File.directory?(dir)).to be_falsey
       end
 
       it "does not destroy analysis even if #destroy is called twice" do
@@ -231,12 +231,12 @@ describe Analysis do
 
         it "updates status to :cancelled" do
           @analysis.__send__(:cancel)
-          @analysis.status.should eq :cancelled
+          expect(@analysis.status).to eq :cancelled
         end
 
         it "sets analyzable_id to nil" do
           @analysis.__send__(:cancel)
-          @analysis.analyzable.should be_nil
+          expect(@analysis.analyzable).to be_nil
         end
       end
     end
@@ -247,11 +247,11 @@ describe Analysis do
     describe "for :on_run type" do
 
       it "returns a Hash having 'simulation_parameters'" do
-        @arn.input[:simulation_parameters].should eq(@run.parameter_set.v)
+        expect(@arn.input[:simulation_parameters]).to eq(@run.parameter_set.v)
       end
 
       it "returns a Hash having 'analysis_parameters'" do
-        @arn.input[:analysis_parameters].should eq(@arn.parameters)
+        expect(@arn.input[:analysis_parameters]).to eq(@arn.parameters)
       end
     end
 
@@ -265,11 +265,11 @@ describe Analysis do
       end
 
       it "returns a Hash having 'simulation_parameters'" do
-        @arn.input[:simulation_parameters].should eq(@ps.v)
+        expect(@arn.input[:simulation_parameters]).to eq(@ps.v)
       end
 
       it "returns a Hash having 'analysis_parameters'" do
-        @arn.input[:analysis_parameters].should eq(@arn.parameters)
+        expect(@arn.input[:analysis_parameters]).to eq(@arn.parameters)
       end
 
       it "returns an Array having Run ids" do
@@ -279,8 +279,8 @@ describe Analysis do
         run3 = FactoryGirl.create(:run, parameter_set: @ps)
         run3.status = :failed
         run3.save
-        @arn.input[:run_ids].size.should eq(2)
-        @arn.input[:run_ids].should =~ [@run.id.to_s, run2.id.to_s]
+        expect(@arn.input[:run_ids].size).to eq(2)
+        expect(@arn.input[:run_ids]).to match_array([@run.id.to_s, run2.id.to_s])
       end
     end
   end
@@ -303,20 +303,20 @@ describe Analysis do
 
       it "returns a file entries in run directory" do
         paths = @arn.input_files
-        paths.should be_a(Array)
+        expect(paths).to be_a(Array)
         expect(paths.size).to eq 2
-        paths.should =~ [@dummy_path, @dummy_dir]
+        expect(paths).to match_array([@dummy_path, @dummy_dir])
       end
 
       it "does not include analysis directory of self" do
         paths = @arn.input_files
-        paths.should_not include(@arn.dir)
+        expect(paths).not_to include(@arn.dir)
       end
 
       it "does not include directories of other Analyses by defualt" do
         another_arn = @run.analyses.create!(analyzer: @azr, parameters: {})
         paths = @arn.input_files
-        paths.should_not include(another_arn.dir)
+        expect(paths).not_to include(another_arn.dir)
       end
     end
 
@@ -342,9 +342,9 @@ describe Analysis do
       end
 
       it "returns a array whose values are dirs of finished runs" do
-        @arn2.input_files.should be_a(Array)
-        @arn2.input_files.should eq([@run2.dir])
-        @arn2.input_files.should_not include(@run.dir)
+        expect(@arn2.input_files).to be_a(Array)
+        expect(@arn2.input_files).to eq([@run2.dir])
+        expect(@arn2.input_files).not_to include(@run.dir)
       end
     end
   end
@@ -352,7 +352,7 @@ describe Analysis do
   describe "#dir" do
 
     it "returns directory for analysis" do
-      @arn.dir.should eq(ResultDirectory.analysis_path(@arn))
+      expect(@arn.dir).to eq(ResultDirectory.analysis_path(@arn))
     end
   end
 
@@ -373,17 +373,17 @@ describe Analysis do
     it "returns list of result files" do
       res = @arn.result_paths
       @temp_files.each do |f|
-        res.should include(f)
+        expect(res).to include(f)
       end
-      res.should include(@temp_dir)
-      res.size.should eq(3)
+      expect(res).to include(@temp_dir)
+      expect(res.size).to eq(3)
     end
   end
 
   describe "result directory" do
 
     it "is created when a new item is saved" do
-      FileTest.directory?(@arn.dir).should be_truthy
+      expect(FileTest.directory?(@arn.dir)).to be_truthy
     end
 
     it "is not created when validation fails" do
@@ -398,7 +398,7 @@ describe Analysis do
     it "is deleted when an item is destroyed" do
       dir_path = @arn.dir
       @arn.destroy
-      FileTest.directory?(dir_path).should be_falsey
+      expect(FileTest.directory?(dir_path)).to be_falsey
     end
   end
 end

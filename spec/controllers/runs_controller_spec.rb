@@ -25,7 +25,7 @@ describe RunsController do
 
     it "returns http success" do
       get 'index', {}, valid_session
-      response.should be_success
+      expect(response).to be_success
     end
   end
 
@@ -33,13 +33,13 @@ describe RunsController do
 
     it "returns http success" do
       get 'show', {id: @run}, valid_session
-      response.should be_success
+      expect(response).to be_success
     end
 
     it "assigns instance variables" do
       get 'show', {id: @run}, valid_session
-      assigns(:run).should eq(@run)
-      assigns(:param_set).should eq(@par)
+      expect(assigns(:run)).to eq(@run)
+      expect(assigns(:param_set)).to eq(@par)
     end
   end
 
@@ -61,7 +61,7 @@ describe RunsController do
         seed_val = 12345
         @req_param[:run].update({seed: seed_val})
         post 'create', @req_param, valid_session
-        Run.where(parameter_set_id: @par).last.seed.should == seed_val
+        expect(Run.where(parameter_set_id: @par).last.seed).to eq(seed_val)
       end
 
       it "create multiple items when params[num_runs] is given" do
@@ -76,9 +76,9 @@ describe RunsController do
 
       it "raises an error when the ParameterSet is not found" do
         @req_param.update(parameter_set_id: 1234)
-        lambda {
+        expect {
           post 'create', @req_param, valid_session
-        }.should raise_error
+        }.to raise_error
       end
 
       it "fails with a duplicated seed" do
@@ -124,13 +124,13 @@ describe RunsController do
       end
 
       it "calls preview method" do
-        RunsController.any_instance.should_receive(:preview).and_call_original
+        expect_any_instance_of(RunsController).to receive(:preview).and_call_original
         xhr 'post', 'create', @req_param, valid_session
       end
 
       it "renders preview" do
         xhr 'post', 'create', @req_param, valid_session
-        response.should render_template("preview")
+        expect(response).to render_template("preview")
       end
 
       it "does not create new Run" do

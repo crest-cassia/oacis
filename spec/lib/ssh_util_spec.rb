@@ -20,7 +20,7 @@ describe SSHUtil do
       FileUtils.touch(remote_path)
       local_path = @temp_dir.join('__def__').expand_path
       SSHUtil.download(@ssh, remote_path, local_path)
-      File.exist?(local_path).should be_truthy
+      expect(File.exist?(local_path)).to be_truthy
     end
   end
 
@@ -34,7 +34,7 @@ describe SSHUtil do
       local_path = @temp_dir.join('local')
       FileUtils.mkdir_p(local_path)
       SSHUtil.download_recursive(@ssh, remote_path, local_path)
-      File.exist?(local_path.join('file')).should be_truthy
+      expect(File.exist?(local_path.join('file'))).to be_truthy
     end
 
     it "creates local directory if specified directory does not exist" do
@@ -45,8 +45,8 @@ describe SSHUtil do
       local_path = @temp_dir.join('local')
 
       SSHUtil.download_recursive(@ssh, remote_path, local_path)
-      File.directory?(local_path).should be_truthy
-      File.exist?(local_path.join('file')).should be_truthy
+      expect(File.directory?(local_path)).to be_truthy
+      expect(File.exist?(local_path.join('file'))).to be_truthy
     end
 
     it "download file if the remote_path is not directory but file" do
@@ -55,7 +55,7 @@ describe SSHUtil do
 
       local_path = @temp_dir.join('local')
       SSHUtil.download_recursive(@ssh, remote_path, local_path)
-      File.exist?(local_path).should be_truthy
+      expect(File.exist?(local_path)).to be_truthy
     end
   end
 
@@ -66,7 +66,7 @@ describe SSHUtil do
       FileUtils.touch(local_path)
       remote_path = @temp_dir.join('__def__').expand_path
       SSHUtil.upload(@ssh, local_path, remote_path)
-      File.exist?(remote_path).should be_truthy
+      expect(File.exist?(remote_path)).to be_truthy
     end
   end
 
@@ -79,19 +79,19 @@ describe SSHUtil do
 
     it "removes specified file" do
       SSHUtil.rm_r(@ssh, @temp_file.expand_path)
-      File.exist?(@temp_file).should be_falsey
+      expect(File.exist?(@temp_file)).to be_falsey
     end
 
     it "removes specified directory even if the directory is not empty" do
       SSHUtil.rm_r(@ssh, @temp_dir.expand_path)
-      File.directory?(@temp_dir).should be_falsey
+      expect(File.directory?(@temp_dir)).to be_falsey
     end
   end
 
   describe ".uname" do
 
     it "returns the result of 'uname' on remote host" do
-      SSHUtil.uname(@ssh).should satisfy {|u|
+      expect(SSHUtil.uname(@ssh)).to satisfy {|u|
         ["Linux", "Darwin"].include?(u)
       }
     end
@@ -100,7 +100,7 @@ describe SSHUtil do
   describe ".execute" do
 
     it "executes command and returns its standard output" do
-      SSHUtil.execute(@ssh, 'pwd').chomp.should eq ENV['HOME']
+      expect(SSHUtil.execute(@ssh, 'pwd').chomp).to eq ENV['HOME']
     end
   end
 
@@ -122,8 +122,8 @@ describe SSHUtil do
     it "handles redirection properly" do
       remote_path = @temp_dir.join('abc').expand_path
       SSHUtil.execute_in_background(@ssh, "echo $USER > #{remote_path}")
-      File.exist?(remote_path).should be_truthy
-      File.open(remote_path).read.chomp.should eq ENV['USER']
+      expect(File.exist?(remote_path)).to be_truthy
+      expect(File.open(remote_path).read.chomp).to eq ENV['USER']
     end
   end
 
@@ -131,18 +131,18 @@ describe SSHUtil do
 
     it "execute command and return outputs and exit_codes" do
       stdout, stderr, rc, sig = SSHUtil.execute2(@ssh, 'pwd')
-      stdout.chomp.should eq ENV['HOME']
-      stderr.should eq ""
-      rc.should eq 0
-      sig.should be_nil
+      expect(stdout.chomp).to eq ENV['HOME']
+      expect(stderr).to eq ""
+      expect(rc).to eq 0
+      expect(sig).to be_nil
     end
 
     it "for error case" do
       out, err, rc, sig = SSHUtil.execute2(@ssh, 'foobar')
-      out.should eq ""
-      err.should_not be_empty
-      rc.should_not eq 0
-      sig.should be_nil
+      expect(out).to eq ""
+      expect(err).not_to be_empty
+      expect(rc).not_to eq 0
+      expect(sig).to be_nil
     end
 
     it "does not freeze if execute2 is called after write_remote_file" do
@@ -159,14 +159,14 @@ describe SSHUtil do
     it "write contents to remote file" do
       output_file = @temp_dir.join('abc').expand_path
       SSHUtil.write_remote_file(@ssh, output_file, "foobar")
-      File.open(output_file, 'r').read.should eq "foobar"
+      expect(File.open(output_file, 'r').read).to eq "foobar"
     end
 
     it "succeeds even when called twice" do
       output_file = @temp_dir.join('abc').expand_path
       SSHUtil.write_remote_file(@ssh, output_file, "foobar")
       SSHUtil.write_remote_file(@ssh, output_file, "foobar")
-      File.open(output_file, 'r').read.should eq "foobar"
+      expect(File.open(output_file, 'r').read).to eq "foobar"
     end
   end
 
@@ -175,18 +175,18 @@ describe SSHUtil do
     it "returns true when the remote file exists" do
       remote_path = @temp_dir.join('abc').expand_path
       FileUtils.touch(remote_path)
-      SSHUtil.exist?(@ssh, remote_path).should be_truthy
+      expect(SSHUtil.exist?(@ssh, remote_path)).to be_truthy
     end
 
     it "returns false when the remote file does not exist" do
       remote_path = @temp_dir.join('abc').expand_path
-      SSHUtil.exist?(@ssh, remote_path).should be_falsey
+      expect(SSHUtil.exist?(@ssh, remote_path)).to be_falsey
     end
 
     it "returns true if the remote directory exist" do
       remote_path = @temp_dir.join('abc').expand_path
       FileUtils.mkdir_p(remote_path)
-      SSHUtil.exist?(@ssh, remote_path).should be_truthy
+      expect(SSHUtil.exist?(@ssh, remote_path)).to be_truthy
     end
   end
 
@@ -195,18 +195,18 @@ describe SSHUtil do
     it "returns true if the path is a directory" do
       remote_path = @temp_dir.join('abc').expand_path
       FileUtils.mkdir_p(remote_path)
-      SSHUtil.directory?(@ssh, remote_path).should be_truthy
+      expect(SSHUtil.directory?(@ssh, remote_path)).to be_truthy
     end
 
     it "returns false if the path is a file" do
       remote_path = @temp_dir.join('abc').expand_path
       FileUtils.touch(remote_path)
-      SSHUtil.directory?(@ssh, remote_path).should be_falsey
+      expect(SSHUtil.directory?(@ssh, remote_path)).to be_falsey
     end
 
     it "returns false if the path does not exist" do
       remote_path = @temp_dir.join('abc').expand_path
-      SSHUtil.directory?(@ssh, remote_path).should be_falsey
+      expect(SSHUtil.directory?(@ssh, remote_path)).to be_falsey
     end
   end
 end
