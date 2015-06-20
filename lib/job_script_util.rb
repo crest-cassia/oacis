@@ -2,7 +2,8 @@ module JobScriptUtil
 
   TEMPLATE = <<-EOS
 #!/bin/bash
-LANG=C
+export LANG=C
+export LC_ALL=C
 
 # VARIABLE DEFINITIONS ------------
 OACIS_RUN_ID=<%= run_id %>
