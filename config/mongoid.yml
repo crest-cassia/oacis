@@ -87,3 +87,17 @@ test:
         # low amounts for fast failures.
         max_retries: 1
         retry_interval: 0
+production:
+  sessions:
+    default:
+      # use same database as development env
+      database: oacis_development
+      hosts:
+        - localhost:27017
+      options:
+        # Change whether the session persists in safe mode by default.
+        #write: {w: -1 } # Don't verify writes and raise no network errors.
+        #write: { w: 0 } # Don't verify writes and raise network errors.
+        write: { w: 1 } # Verify writes on the primary node. (default)
+        #write: { w: n } # Verify writes on n number of nodes.
+  options:
