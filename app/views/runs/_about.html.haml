@@ -64,6 +64,10 @@
 %h3 Directory
 %pre= @run.dir
 
+- if @run.error_messages
+  %h3 Error messages
+  %pre~ @run.error_messages
+
 - if @run.submitted_to
   %h3 Script
   %pre~ @run.job_script

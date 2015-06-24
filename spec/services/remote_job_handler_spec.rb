@@ -63,13 +63,21 @@ describe RemoteJobHandler do
             RemoteJobHandler.new(@host).submit_remote_job(@run)
           rescue RemoteJobHandler::RemoteOperationError
             nil
+          rescue RemoteJobHandler::RemoteSchedulerError
+            nil
           end
         end
 
-        it "raises RemoteOperationError" do
+        it "not raises any error" do
           expect {
             RemoteJobHandler.new(@host).submit_remote_job(@run)
-          }.to raise_error(RemoteJobHandler::RemoteOperationError)
+          }.not_to raise_error
+        end
+
+        it "raises RemoteJobError" do
+          expect {
+            RemoteJobHandler.new(@host).submit_remote_job(@run)
+          }.to change { @run.reload.error_messages }
         end
 
         it "raises an exception and sets status of Run to failed" do
@@ -143,6 +151,48 @@ describe RemoteJobHandler do
         RemoteJobHandler.new(@host).submit_remote_job(@run)
       end
     end
+
+    describe "prepaer_job_script" do
+
+      before(:each) do
+        @sim = FactoryGirl.create(:simulator,
+                                  command: "echo",
+                                  parameter_sets_count: 1, runs_count: 1)
+        @run = @sim.parameter_sets.first.runs.first
+        @host = @sim.executable_on.where(name: "localhost").first
+        @temp_dir = Pathname.new( Dir.mktmpdir )
+        @host.work_base_dir = @temp_dir.expand_path
+        @host.save!
+      end
+
+      it "raise RemoteJobHandler::RemoteOperationError if rc != 0" do
+        expect_any_instance_of(SSHUtil).to receive(:write_remote_file).and_return("exit 1")
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@run)
+        }.to raise_error(RemoteJobHandler::RemoteOperationError)
+      end
+    end
+
+    describe "submit_to_scheduler" do
+
+      before(:each) do
+        @sim = FactoryGirl.create(:simulator,
+                                  command: "echo",
+                                  parameter_sets_count: 1, runs_count: 1)
+        @run = @sim.parameter_sets.first.runs.first
+        @host = @sim.executable_on.where(name: "localhost").first
+        @temp_dir = Pathname.new( Dir.mktmpdir )
+        @host.work_base_dir = @temp_dir.expand_path
+        @host.save!
+      end
+
+      it "raise RemoteJobHandler::RemoteSchedulerError if rc != 0" do
+        expect_any_instance_of(SchedulerWrapper).to receive(:submit_command).and_return("exit 1")
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@run)
+        }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
+      end
+    end
   end
 
   describe ".remote_status" do
@@ -169,9 +219,25 @@ describe RemoteJobHandler do
       expect(RemoteJobHandler.new(@host).remote_status(@run)).to eq :submitted
     end
 
-    it "returns :unknown if remote status is not obtained by SchedulerWrapper" do
+    it "raise RemoteSchedulerError if remote status is not obtained by SchedulerWrapper" do
       allow(SSHUtil).to receive(:execute2).and_return([nil, nil, 1, nil])
-      expect(RemoteJobHandler.new(@host).remote_status(@run)).to eq :unknown
+      expect {
+        RemoteJobHandler.new(@host).remote_status(@run)
+      }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
+    end
+
+    it "run.error_message is updated if remote status is not obtained by SchedulerWrapper" do
+      def call_remote_status
+        begin
+          RemoteJobHandler.new(@host).remote_status(@run)
+        rescue RemoteJobHandler::RemoteSchedulerError
+          nil
+        end
+      end
+      allow(SSHUtil).to receive(:execute2).and_return([nil, nil, 1, nil])
+      expect {
+        call_remote_status
+      }.to change { @run.reload.error_messages }
     end
   end
 
@@ -247,6 +313,64 @@ describe RemoteJobHandler do
         FileUtils.mkdir_p(dummy_work_dir)
         @handler.cancel_remote_job(@run)
         expect(File.directory?(dummy_work_dir)).to be_falsey
+      end
+    end
+  end
+
+  describe "error_handle" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                command: "echo",
+                                parameter_sets_count: 1, runs_count: 1)
+      @run = @sim.parameter_sets.first.runs.first
+      @host = @sim.executable_on.where(name: "localhost").first
+      @host.save!
+      def call_submit_remote_job
+        begin
+          RemoteJobHandler.new(@host).submit_remote_job(@run)
+        rescue RemoteJobHandler::RemoteOperationError
+          nil
+        rescue RemoteJobHandler::RemoteJobError
+          nil
+        rescue RemoteJobHandler::RemoteSchedulerError
+          nil
+        end
+      end
+    end
+
+    context "when it get RemoteJobHandler::RemoteOperationError" do
+
+      it "write error_message" do
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteOperationError, "error")
+        expect {
+          call_submit_remote_job
+        }.to change { @run.reload.error_messages }
+      end
+    end
+    context "when it get RemoteJobHandler::RemoteJobError" do
+
+      it "write error_message" do
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteJobError, "error")
+        expect {
+          call_submit_remote_job
+        }.to change { @run.reload.error_messages }
+      end
+
+      it "change run status to :failed" do
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteJobError)
+        expect {
+          call_submit_remote_job
+        }.to change { @run.reload.status }.to(:failed)
+      end
+    end
+    context "when it get RemoteJobHandler::RemoteSchedulerError" do
+
+      it "write error_message" do
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteSchedulerError, "error")
+        expect {
+          call_submit_remote_job
+        }.to change { @run.reload.error_messages }
       end
     end
   end
