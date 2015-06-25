@@ -145,7 +145,6 @@ EOS
       if error_message.length > 0
         run.update_attribute(:error_messages, error_message)
       end
-      binding.pry
 
       if is_updated
         run.included_at = DateTime.now

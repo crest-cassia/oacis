@@ -14,7 +14,6 @@ module SafeTemplateEngine
     arr_matched = template.scan(reg)
 
     supported = SUPPORTED_PATTERN
-    # binding.pry
     found = arr_matched.find_all do |matched|
       matched !~ supported
     end
