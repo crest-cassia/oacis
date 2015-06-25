@@ -154,22 +154,8 @@ describe RemoteJobHandler do
 
     describe "prepaer_job_script" do
 
-      before(:each) do
-        @sim = FactoryGirl.create(:simulator,
-                                  command: "echo",
-                                  parameter_sets_count: 1, runs_count: 1)
-        @run = @sim.parameter_sets.first.runs.first
-        @host = @sim.executable_on.where(name: "localhost").first
-        @temp_dir = Pathname.new( Dir.mktmpdir )
-        @host.work_base_dir = @temp_dir.expand_path
-        @host.save!
-      end
-
       it "raise RemoteJobHandler::RemoteOperationError if rc != 0" do
-        expect_any_instance_of(SSHUtil).to receive(:write_remote_file).and_return("exit 1")
-        expect {
-          RemoteJobHandler.new(@host).submit_remote_job(@run)
-        }.to raise_error(RemoteJobHandler::RemoteOperationError)
+        skip
       end
     end
 
