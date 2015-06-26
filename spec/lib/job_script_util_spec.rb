@@ -128,15 +128,8 @@ describe JobScriptUtil do
 
         expect(JobScriptUtil).to receive(:system)
         expect($?).to receive(:to_i).and_return(1)
-        def call_expand_result_file
-          begin
-          JobScriptUtil.expand_result_file(@run)
-          rescue => ex
-            nil
-          end
-        end
         expect {
-          call_expand_result_file
+          JobScriptUtil.expand_result_file(@run) rescue nil
         }.to change { @run.reload.error_messages }
       end
     end

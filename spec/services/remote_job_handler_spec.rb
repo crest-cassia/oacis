@@ -58,16 +58,6 @@ describe RemoteJobHandler do
           FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
         end
 
-        def call_submit_remote_job
-          begin
-            RemoteJobHandler.new(@host).submit_remote_job(@run)
-          rescue RemoteJobHandler::RemoteOperationError
-            nil
-          rescue RemoteJobHandler::RemoteSchedulerError
-            nil
-          end
-        end
-
         it "not raises any error" do
           expect {
             RemoteJobHandler.new(@host).submit_remote_job(@run)
@@ -81,22 +71,22 @@ describe RemoteJobHandler do
         end
 
         it "raises an exception and sets status of Run to failed" do
-          call_submit_remote_job
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
           expect(@run.reload.status).to eq :failed
         end
 
         it "does not enqueue job script" do
           expect_any_instance_of(SchedulerWrapper).not_to receive(:submit_command)
-          call_submit_remote_job
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
         end
 
         it "removes files on remote host" do
-          call_submit_remote_job
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
           expect(File.directory?( @temp_dir.join(@run.id) )).to be_falsey
         end
 
         it "copies files in the remote work_dir to Run's directory" do
-          call_submit_remote_job
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
           expect(File.exist?( @run.dir.join('_preprocess.sh') )).to be_truthy
         end
       end
@@ -213,16 +203,9 @@ describe RemoteJobHandler do
     end
 
     it "run.error_message is updated if remote status is not obtained by SchedulerWrapper" do
-      def call_remote_status
-        begin
-          RemoteJobHandler.new(@host).remote_status(@run)
-        rescue RemoteJobHandler::RemoteSchedulerError
-          nil
-        end
-      end
       allow(SSHUtil).to receive(:execute2).and_return([nil, nil, 1, nil])
       expect {
-        call_remote_status
+        RemoteJobHandler.new(@host).remote_status(@run) rescue nil
       }.to change { @run.reload.error_messages }
     end
   end
@@ -312,17 +295,6 @@ describe RemoteJobHandler do
       @run = @sim.parameter_sets.first.runs.first
       @host = @sim.executable_on.where(name: "localhost").first
       @host.save!
-      def call_submit_remote_job
-        begin
-          RemoteJobHandler.new(@host).submit_remote_job(@run)
-        rescue RemoteJobHandler::RemoteOperationError
-          nil
-        rescue RemoteJobHandler::RemoteJobError
-          nil
-        rescue RemoteJobHandler::RemoteSchedulerError
-          nil
-        end
-      end
     end
 
     context "when it get RemoteJobHandler::RemoteOperationError" do
@@ -330,7 +302,7 @@ describe RemoteJobHandler do
       it "write error_message" do
         expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteOperationError, "error")
         expect {
-          call_submit_remote_job
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
         }.to change { @run.reload.error_messages }
       end
     end
@@ -339,14 +311,14 @@ describe RemoteJobHandler do
       it "write error_message" do
         expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteJobError, "error")
         expect {
-          call_submit_remote_job
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
         }.to change { @run.reload.error_messages }
       end
 
       it "change run status to :failed" do
         expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteJobError)
         expect {
-          call_submit_remote_job
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
         }.to change { @run.reload.status }.to(:failed)
       end
     end
@@ -355,7 +327,7 @@ describe RemoteJobHandler do
       it "write error_message" do
         expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteSchedulerError, "error")
         expect {
-          call_submit_remote_job
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
         }.to change { @run.reload.error_messages }
       end
     end
