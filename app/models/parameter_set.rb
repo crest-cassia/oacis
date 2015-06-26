@@ -10,10 +10,13 @@ class ParameterSet
   has_many :analyses, as: :analyzable, dependent: :destroy
 
   validates :simulator, :presence => true
-  validate :cast_and_validate_parameter_values, on: :create
+  validate :cast_parameter_values, on: :create
+  validate :validate_parameter_values, on: :create, unless: :skip_check_uniquness
 
   after_create :create_parameter_set_dir
   before_destroy :delete_parameter_set_dir
+
+  attr_accessor :skip_check_uniquness
 
   public
   def dir
@@ -67,7 +70,7 @@ class ParameterSet
   end
 
   private
-  def cast_and_validate_parameter_values
+  def cast_parameter_values
     unless v.is_a?(Hash)
       errors.add(:v, "v is not a Hash")
       return
@@ -82,7 +85,9 @@ class ParameterSet
       return
     end
     self.v = casted
+  end
 
+  def validate_parameter_values
     found = self.class.find_identical_parameter_set(simulator, v)
     if found and found.id != self.id
       errors.add(:parameters, "An identical parameters already exists : #{found.to_param}")

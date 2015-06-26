@@ -51,6 +51,7 @@ class OacisCli < Thor
     simulator = get_simulator(options[:simulator])
 
     input = expand_input(input)
+    input = check_uniqueness(input, simulator)
 
     progressbar = ProgressBar.create(total: input.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
@@ -59,10 +60,11 @@ class OacisCli < Thor
     end
 
     parameter_sets = []
-    input.each_with_index.map do |ps_value, idx|
+    input.each_with_index.map do |h_ps_value, idx|
+      ps_value = h_ps_value[:value]
       progressbar.log "  parameter values : #{ps_value.inspect}" if options[:verbose]
-      param_set = simulator.parameter_sets.build({v: ps_value})
-      if param_set.valid?
+      param_set = simulator.parameter_sets.build({v: ps_value, skip_check_uniquness: true})
+      if h_ps_value[:status] == :build
         param_set.save! unless options[:dry_run]
         parameter_sets << param_set
       elsif param_set.errors.keys == [:parameters] # An identical parameter_set is found
@@ -128,6 +130,21 @@ class OacisCli < Thor
       end
     else
       [h]
+    end
+  end
+
+  def check_uniqueness(input, simulator)
+    old_size = input.size
+    input.uniq!
+    if old_size > input.size
+      raise "same parameter values are inputed"
+    end
+    created_ps_v = simulator.parameter_sets.only(:v).map(:v)
+    input.map do |ps_v|
+      {
+        status: created_ps_v.include?(ps_v) ? :exists : :build,
+        value: ps_v
+      }
     end
   end
 
