@@ -101,6 +101,7 @@ EOS
           is_updated = true
         rescue => ex
           error_message+="loading _status.json is failed: #{ex.message}\n"
+          run.update_attribute(:status, :failed)
         end
       end
 

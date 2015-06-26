@@ -173,7 +173,7 @@ describe JobScriptUtil do
 
     context "when _status.json has invalid json format" do
 
-      it "do not update status" do
+      it "update status from :submitted to :failed" do
 
         parsed = JSON.load(File.open(@run.dir.join("_status.json")))
         File.open(@run.dir.join("_status.json"), "w") do |io|
@@ -185,7 +185,7 @@ describe JobScriptUtil do
 
         # parse status
         @run.reload
-        expect(@run.status).to eq :created
+        expect(@run.status).to eq :failed
         expect(@run.hostname).to be_nil
         expect(@run.started_at).to be_nil
         expect(@run.finished_at).to be_nil
