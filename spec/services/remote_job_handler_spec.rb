@@ -142,7 +142,7 @@ describe RemoteJobHandler do
       end
     end
 
-    describe "prepaer_job_script" do
+    describe "prepare_job_script" do
 
       it "raise RemoteJobHandler::RemoteOperationError if rc != 0" do
         skip
