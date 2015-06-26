@@ -74,7 +74,10 @@ EOS
     Dir.chdir(run.dir.join('..')) {
       cmd = "tar xjf #{run.id}.tar.bz2"
       system(cmd)
-      raise "failed to extract the archive"  unless $?.to_i == 0
+      unless $?.to_i == 0
+        run.update_attribute(:error_messages, "failed to extract the archive")
+        raise "failed to extract the archive"
+      end
     }
   end
 
@@ -82,6 +85,7 @@ EOS
 
     Dir.chdir(run.dir) {
       is_updated = false
+      error_message = run.error_messages || ""
 
       if File.exist?("_status.json")
         begin
@@ -89,10 +93,16 @@ EOS
           run.hostname = parsed["hostname"]
           run.started_at = parsed["started_at"]
           run.finished_at = parsed["finished_at"]
-          run.status = (parsed["rc"].to_i == 0) ? :finished : :failed
+          if parsed["rc"].to_i == 0
+            run.status = :finished
+          else
+            run.status = :failed
+            error_message+="simulator return code: #{parsed["rc"]}\n"
+          end
           is_updated = true
         rescue => ex
-          $stderr.puts ex.message
+          error_message+="failed to load _status.json: #{ex.message}\n"
+          run.update_attribute(:status, :failed)
         end
       end
 
@@ -106,9 +116,10 @@ EOS
               run.cpu_time = run.cpu_time.to_f + line.sub(/^user /,'').to_f
             end
           end
+          error_message+="_time.txt has invalid format"  if run.real_time.nil? or run.cpu_time.nil?
           is_updated = true
         rescue => ex
-          $stderr.puts ex.message
+          error_message+="failed to load _time.json: #{ex.message}\n"
         end
       end
 
@@ -118,7 +129,7 @@ EOS
           run.simulator_version = version
           is_updated = true
         rescue => ex
-          $stderr.puts ex.message
+          error_message+="failed to load _version.txt: #{ex.message}"
         end
       end
 
@@ -129,8 +140,12 @@ EOS
           run.result = {"result"=>run.result} unless run.result.is_a?(Hash)
           is_updated = true
         rescue => ex
-          $stderr.puts ex.message
+          error_message+="failed to load _output.json: #{ex.message}"
         end
+      end
+
+      if error_message.length > 0
+        run.update_attribute(:error_messages, error_message)
       end
 
       if is_updated

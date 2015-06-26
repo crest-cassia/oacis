@@ -19,6 +19,7 @@ class Run
   field :job_id, type: String
   field :job_script, type: String
   field :priority, type: Integer, default: 1
+  field :error_messages, type: String
   index({ status: 1 }, { name: "run_status_index" })
   index({ priority: 1 }, { name: "run_priority_index" })
   belongs_to :parameter_set, autosave: false

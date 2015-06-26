@@ -1,6 +1,8 @@
 class RemoteJobHandler
 
   class RemoteOperationError < StandardError; end
+  class RemoteSchedulerError < StandardError; end
+  class RemoteJobError < StandardError; end
 
   def initialize(host)
     @host = host
@@ -15,11 +17,7 @@ class RemoteJobHandler
         job_script_path = prepare_job_script(run)
         submit_to_scheduler(run, job_script_path)
       rescue => ex
-        work_dir = RemoteFilePath.work_dir_path(@host, run)
-        SSHUtil.download_recursive(ssh, work_dir, run.dir) if SSHUtil.exist?(ssh, work_dir)
-        remove_remote_files(run)
-        run.update_attribute(:status, :failed)
-        raise ex
+        error_handle(ex, run, ssh)
       end
     end
   end
@@ -29,8 +27,16 @@ class RemoteJobHandler
     scheduler = SchedulerWrapper.new(@host)
     cmd = scheduler.status_command(run.job_id)
     @host.start_ssh do |ssh|
-      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      status = scheduler.parse_remote_status(out) if rc == 0
+      begin
+        out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+        if rc == 0
+          status = scheduler.parse_remote_status(out) if rc == 0
+        else
+          raise RemoteSchedulerError, "remote_status failed: rc:#{rc}, #{out}, #{err}"
+        end
+      rescue => ex
+        error_handle(ex, run, ssh)
+      end
     end
     status
   end
@@ -41,8 +47,12 @@ class RemoteJobHandler
       scheduler = SchedulerWrapper.new(@host)
       cmd = scheduler.cancel_command(run.job_id)
       @host.start_ssh do |ssh|
-        out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-        $stderr.puts out, err, rc unless rc == 0
+        begin
+          out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+          raise RemoteSchedulerError, "cancel_remote_jos failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
+        rescue => ex
+          error_handle(ex, run, ssh)
+        end
       end
     end
     remove_remote_files(run)
@@ -53,7 +63,7 @@ class RemoteJobHandler
     cmd = "mkdir -p #{RemoteFilePath.work_dir_path(@host,run)}"
     @host.start_ssh do |ssh|
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      raise RemoteOperationError, "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
+      raise RemoteOperationError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
     end
   end
 
@@ -73,10 +83,10 @@ class RemoteJobHandler
       @host.start_ssh do |ssh|
         SSHUtil.write_remote_file(ssh, path, script)
         out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
-        raise RemoteOperationError, "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
+        raise RemoteOperationError, "chmod failed : rc:#{rc}, #{out}, #{err}" unless rc == 0
         cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} #{run.args} 1>> _stdout.txt 2>> _stderr.txt"
         out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-        raise RemoteOperationError, "\"#{cmd}\" failed: #{rc}, #{out}, #{err}" unless rc == 0
+        raise RemoteJobError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
       end
     end
   end
@@ -86,7 +96,7 @@ class RemoteJobHandler
     @host.start_ssh do |ssh|
       SSHUtil.write_remote_file(ssh, jspath, run.job_script)
       out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{jspath}")
-      raise RemoteOperationError, "chmod failed : #{rc}, #{out}, #{err}" unless rc == 0
+      raise RemoteOperationError, "chmod failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
     end
     jspath
   end
@@ -99,7 +109,7 @@ class RemoteJobHandler
     cmd = wrapper.submit_command(job_script_path, run.id.to_s, job_parameters)
     @host.start_ssh do |ssh|
       out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      raise RemoteOperationError, "#{cmd} failed : #{rc}, #{err}" unless rc == 0
+      raise RemoteSchedulerError, "#{cmd} failed: rc:#{rc}, #{err}" unless rc == 0
       run.status = :submitted
 
       job_id = wrapper.parse_jobid_from_submit_command(out)
@@ -114,6 +124,31 @@ class RemoteJobHandler
       RemoteFilePath.all_file_paths(@host, run).each do |path|
         SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
       end
+    end
+  end
+
+  def error_handle(exception, run, ssh)
+    if exception.is_a?(RemoteOperationError)
+      run.update_attribute(:error_messages, "RemoteOperaion is failed.\n#{exception.inspect}\n#{exception.backtrace}")
+      #retry the operation in next time
+      raise exception # this error is catched by job_observer
+    elsif exception.is_a?(RemoteJobError)
+        work_dir = RemoteFilePath.work_dir_path(@host, run)
+        SSHUtil.download_recursive(ssh, work_dir, run.dir) if SSHUtil.exist?(ssh, work_dir)
+        remove_remote_files(run) # try it once even when remove operation is failed.
+        run.update_attribute(:status, :failed)
+        run.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
+    elsif exception.is_a?(RemoteSchedulerError)
+      run.update_attribute(:error_messages, "Xsub is failed. \n#{exception.inspect}\n#{exception.backtrace}")
+      #retry the operation in next time
+      raise exception # this error is catched by job_observer
+    else
+      if exception.inspect.to_s =~ /#<NoMethodError: undefined method `stat' for nil:NilClass>/
+        run.update_attribute(:error_messages, "failed to establish ssh connection to host(#{run.submitted_to.name})\n#{exception.inspect}\n#{exception.backtrace}")
+      else
+        run.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
+      end
+      raise exception # this error is catched by job_observer
     end
   end
 end

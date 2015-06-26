@@ -114,12 +114,23 @@ describe JobScriptUtil do
     end
 
     context "when archive is invalid archive" do
+
       it "raise error" do
+
         expect(JobScriptUtil).to receive(:system)
         expect($?).to receive(:to_i).and_return(1)
         expect {
           JobScriptUtil.expand_result_file(@run)
         }.to raise_error
+      end
+
+      it "update run.error_messages" do
+
+        expect(JobScriptUtil).to receive(:system)
+        expect($?).to receive(:to_i).and_return(1)
+        expect {
+          JobScriptUtil.expand_result_file(@run) rescue nil
+        }.to change { @run.reload.error_messages }
       end
     end
   end
@@ -155,7 +166,7 @@ describe JobScriptUtil do
 
     context "when _status.json has invalid json format" do
 
-      it "do not update status" do
+      it "update status from :submitted to :failed" do
 
         parsed = JSON.load(File.open(@run.dir.join("_status.json")))
         File.open(@run.dir.join("_status.json"), "w") do |io|
@@ -167,13 +178,27 @@ describe JobScriptUtil do
 
         # parse status
         @run.reload
-        expect(@run.status).to eq :created
+        expect(@run.status).to eq :failed
         expect(@run.hostname).to be_nil
         expect(@run.started_at).to be_nil
         expect(@run.finished_at).to be_nil
         expect(@run.real_time).not_to be_nil
         expect(@run.cpu_time).not_to be_nil
         expect(@run.included_at).to be_a(DateTime)
+      end
+
+      it "update run.error_messages" do
+
+        parsed = JSON.load(File.open(@run.dir.join("_status.json")))
+        File.open(@run.dir.join("_status.json"), "w") do |io|
+          #puts a part of string
+          io.puts parsed.to_json[0..10]
+        end
+
+        expect {
+          JobScriptUtil.update_run(@run)
+        }.to change { @run.reload.error_messages }
+
       end
     end
 
@@ -269,6 +294,20 @@ describe JobScriptUtil do
         expect(@run.cpu_time).not_to be_nil
         expect(@run.included_at).to be_a(DateTime)
       end
+
+      it "update run.error_messages" do
+
+        parsed = JSON.load(File.open(@run.dir.join("_output.json")))
+        File.open(@run.dir.join("_output.json"), "w") do |io|
+          #puts a part of string
+          io.puts parsed.to_json[0..10]
+        end
+
+        expect {
+          JobScriptUtil.update_run(@run)
+        }.to change { @run.reload.error_messages }
+
+      end
     end
 
     it "parse elapsed times" do
@@ -315,27 +354,60 @@ EOS
         expect(@run.cpu_time).not_to be_nil
         expect(@run.included_at).to be_a(DateTime)
       end
+
+      it "update run.error_messages" do
+
+        time_str=<<EOS
+user 0.20
+sys 0.10
+EOS
+        File.open(@run.dir.join("_time.txt"), "w") do |io|
+          io.puts time_str
+        end
+
+        expect {
+          JobScriptUtil.update_run(@run)
+        }.to change { @run.reload.error_messages }
+
+      end
     end
 
-    it "parse failed jobs" do
+    context "when job return code other than 0" do
 
-      parsed = JSON.load(File.open(@run.dir.join("_status.json")))
-      parsed["rc"] = "-1"
-      File.open(@run.dir.join("_status.json"), "w") do |io|
-        io.puts parsed.to_json
+      it "parse failed jobs" do
+
+        parsed = JSON.load(File.open(@run.dir.join("_status.json")))
+        parsed["rc"] = "-1"
+        File.open(@run.dir.join("_status.json"), "w") do |io|
+          io.puts parsed.to_json
+        end
+
+        JobScriptUtil.update_run(@run)
+
+        @run.reload
+        expect(@run.status).to eq :failed
+        expect(@run.hostname).not_to be_empty
+        expect(@run.started_at).to be_a(DateTime)
+        expect(@run.finished_at).to be_a(DateTime)
+        expect(@run.real_time).not_to be_nil
+        expect(@run.cpu_time).not_to be_nil
+        expect(@run.included_at).to be_a(DateTime)
+        expect(File.exist?(@run.dir.join('_stdout.txt'))).to be_truthy
       end
 
-      JobScriptUtil.update_run(@run)
+      it "update run.error_messages" do
 
-      @run.reload
-      expect(@run.status).to eq :failed
-      expect(@run.hostname).not_to be_empty
-      expect(@run.started_at).to be_a(DateTime)
-      expect(@run.finished_at).to be_a(DateTime)
-      expect(@run.real_time).not_to be_nil
-      expect(@run.cpu_time).not_to be_nil
-      expect(@run.included_at).to be_a(DateTime)
-      expect(File.exist?(@run.dir.join('_stdout.txt'))).to be_truthy
+        parsed = JSON.load(File.open(@run.dir.join("_status.json")))
+        parsed["rc"] = "-1"
+        File.open(@run.dir.join("_status.json"), "w") do |io|
+          io.puts parsed.to_json
+        end
+
+        expect {
+          JobScriptUtil.update_run(@run)
+        }.to change { @run.reload.error_messages }
+
+      end
     end
 
     it "parses simulator version printed by Simulator#print_version_command" do
@@ -348,6 +420,13 @@ EOS
 
       @run.reload
       expect(@run.simulator_version).to eq "simulator version: 1.0.0"
+    end
+
+    context "fails to parse simulator version" do
+
+      it "update run.error_messages" do
+        skip
+      end
     end
   end
 end

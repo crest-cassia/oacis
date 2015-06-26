@@ -150,7 +150,7 @@ describe ParameterSet do
       h.default = nil
       h.save!
 
-      prm = sim.parameter_sets.create(@valid_attr.update({:v => {"L"=>"abc"}}))
+      sim.parameter_sets.create(@valid_attr.update({:v => {"L"=>"abc"}}))
       expect(Dir.entries(ResultDirectory.simulator_path(sim)) - ['.','..']).to be_empty
     end
   end

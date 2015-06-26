@@ -17,5 +17,8 @@
     %div.tab-pane#tab-about
       = render "about"
     %div.tab-pane.active#tab-analyses
+      - if @run.error_messages
+        %h3 Error messages
+        %pre~ @run.error_messages
       = render partial: "shared/results", locals: {result: @run.result, result_paths: @run.result_paths, archived_result_path: @run.archived_result_path }
       = render "analyses", run: @run
