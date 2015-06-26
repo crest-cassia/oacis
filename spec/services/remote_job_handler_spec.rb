@@ -331,5 +331,25 @@ describe RemoteJobHandler do
         }.to change { @run.reload.error_messages }
       end
     end
+
+    context "when it get ssh connection error" do
+
+      it "write error_message" do
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise("#<NoMethodError: undefined method `stat' for nil:NilClass>")
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
+        }.to change { @run.reload.error_messages }.to match(/failed to establish ssh connection to host\(#{@run.submitted_to.name}\)/)
+      end
+    end
+
+    context "when it get unknown error" do
+
+      it "write error_message" do
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise("test error")
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
+        }.to change { @run.reload.error_messages }.to match(/#<RuntimeError: test error>\n/)
+      end
+    end
   end
 end

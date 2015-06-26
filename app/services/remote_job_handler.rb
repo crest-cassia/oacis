@@ -143,6 +143,11 @@ class RemoteJobHandler
       #retry the operation in next time
       raise exception # this error is catched by job_observer
     else
+      if exception.inspect.to_s =~ /#<NoMethodError: undefined method `stat' for nil:NilClass>/
+        run.update_attribute(:error_messages, "failed to establish ssh connection to host(#{run.submitted_to.name})\n#{exception.inspect}\n#{exception.backtrace}")
+      else
+        run.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
+      end
       raise exception # this error is catched by job_observer
     end
   end
