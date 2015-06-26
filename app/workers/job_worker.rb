@@ -8,6 +8,7 @@ class JobWorker < DaemonSpawn::Base
 
   def start(args)
     @logger = Logger.new(WORKER_LOG_FILE, 7)
+    @logger.formatter = LoggerFormatWithTime.new
     @logger.level = Logger::INFO
     @logger.info("starting")
 

@@ -48,9 +48,19 @@ AcmProto::Application.configure do
 
   config.eager_load = false
 
+  class LoggerFormatWithTime
+    def call(severity, timestamp, progname, msg)
+      format = "[%s] %5s -- %s: %s\n"
+      format % ["#{timestamp.strftime("%Y/%m/%d %H:%M:%S")}.#{'%06d' % timestamp.usec.to_s}", severity, progname, String === msg ? msg : msg.inspect]
+    end
+  end
+
   config.log_level = :error
   FileUtils.mkdir_p( Rails.root.join("log") )
   config.logger = Logger.new(Rails.root.join("log/development.log"), 5, 1.megabytes)
+  config.logger.formatter = LoggerFormatWithTime.new
   Mongoid.logger.level = Logger::WARN
+  Mongoid.logger.formatter = LoggerFormatWithTime.new
   Moped.logger.level = Logger::WARN
+  Moped.logger.formatter = LoggerFormatWithTime.new
 end
