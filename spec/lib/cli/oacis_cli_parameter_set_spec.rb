@@ -35,7 +35,7 @@ describe OacisCli do
         OacisCli.new.invoke(:parameter_sets_template, [], option)
 
         parameters = Hash[ @sim.parameter_definitions.map {|pd| [pd.key, pd.default]} ]
-        loaded = expect(JSON.load(File.read('parameter_sets.json'))).to eq [parameters]
+        expect(JSON.load(File.read('parameter_sets.json'))).to eq [parameters]
       }
     end
 
@@ -330,11 +330,11 @@ describe OacisCli do
       end
 
       def invoke_create_parameter_sets_with_invalid_parameter_sets_json
-          create_simulator_id_json(@sim, 'simulator_id.json')
-          create_invalid_parameter_sets_json('parameter_sets.json')
-          option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
-          OacisCli.new.invoke(:create_parameter_sets, [], option)
-        end
+        create_simulator_id_json(@sim, 'simulator_id.json')
+        create_invalid_parameter_sets_json('parameter_sets.json')
+        option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
+        OacisCli.new.invoke(:create_parameter_sets, [], option)
+      end
 
       it "raises an exception" do
         at_temp_dir {

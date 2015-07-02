@@ -425,7 +425,7 @@ EOS
     context "fails to parse simulator version" do
 
       it "update run.error_messages" do
-        skip
+        skip "not yet implemented"
       end
     end
   end

@@ -64,10 +64,10 @@ class OacisCli < Thor
       ps_value = h_ps_value[:value]
       progressbar.log "  parameter values : #{ps_value.inspect}" if options[:verbose]
       param_set = simulator.parameter_sets.build({v: ps_value, skip_check_uniquness: true})
-      if h_ps_value[:status] == :build
+      if h_ps_value[:status] == :build and param_set.valid?
         param_set.save! unless options[:dry_run]
         parameter_sets << param_set
-      elsif param_set.errors.keys == [:parameters] # An identical parameter_set is found
+      elsif h_ps_value[:status] == :exists # An identical parameter_set is found
         progressbar.log "  An identical parameter_set already exists. Skipping..."
         parameter_sets << simulator.parameter_sets.where(v: param_set.v).first
         # do not use 'ps_value' instead of 'param_set.v'.
@@ -141,9 +141,16 @@ class OacisCli < Thor
     end
     created_ps_v = simulator.parameter_sets.only(:v).map(:v)
     input.map do |ps_v|
+      if created_ps_v.include?(ps_v)
+        status = :exists
+        value = created_ps_v[created_ps_v.index(ps_v)] # get the same order of parameter keys
+      else
+        status = :build
+        value = ps_v
+      end
       {
-        status: created_ps_v.include?(ps_v) ? :exists : :build,
-        value: ps_v
+        status: status,
+        value: value
       }
     end
   end

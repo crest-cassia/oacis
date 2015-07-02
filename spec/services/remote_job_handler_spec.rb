@@ -145,7 +145,7 @@ describe RemoteJobHandler do
     describe "prepare_job_script" do
 
       it "raise RemoteJobHandler::RemoteOperationError if rc != 0" do
-        skip
+        skip "not yet implemented"
       end
     end
 

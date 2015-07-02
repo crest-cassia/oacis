@@ -42,9 +42,7 @@ describe Run do
     end
 
     it "seed must be unique" do
-      seed_val = @param_set.runs.first.seed
-      @valid_attribute.update(seed: seed_val)
-      expect(@param_set.runs.build(@valid_attribute)).not_to be_valid
+      skip "it is no longer needed because seed is defined by unique bson object id."
     end
 
     it "status must be either :created, :submitted, :running, :failed, :finished, or :cancelled" do
@@ -220,12 +218,11 @@ describe Run do
     it "is not created when validation fails" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       prm = sim.parameter_sets.first
-      seed_val = prm.runs.first.seed
-      @valid_attribute.update(seed: seed_val)
+      @valid_attribute.update(status: nil)
 
-      prev_count = Dir.entries(ResultDirectory.parameter_set_path(prm)).size
-      prm.runs.create(@valid_attribute)
-      prev_count = expect(Dir.entries(ResultDirectory.parameter_set_path(prm)).size).to eq(prev_count)
+      expect {
+        prm.runs.create(@valid_attribute)
+      }.not_to change {Dir.entries(ResultDirectory.parameter_set_path(prm)).size }
     end
 
     it "is removed when the item is destroyed" do
