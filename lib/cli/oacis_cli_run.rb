@@ -73,13 +73,17 @@ class OacisCli < Thor
     mpi_procs = job_parameters["mpi_procs"]
     omp_threads = job_parameters["omp_threads"]
     priority = job_parameters["priority"]
+    puts "set job param"
 
-    runs = create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority, seeds)
+    run_ids = create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority, seeds)
+
+  rescue => ex
+    puts ex.inspect
 
   ensure
     return if options[:dry_run]
     return unless options[:yes] or overwrite_file?(options[:output])
-    write_run_ids_to_file(options[:output], runs)
+    write_run_ids_to_file(options[:output], run_ids)
   end
 
   private
@@ -89,16 +93,25 @@ class OacisCli < Thor
       progressbar.log "Number of parameter_sets : #{parameter_sets.count}"
     end
 
-    runs = []
-    # no_timeout enables creation of 10000 or more runs
-    # parameter_sets.no_timeout.each_with_index.map do |ps, idx|
-    parameter_sets.each_with_index.map do |ps, idx|
+    run_ids = []
+    aggregated = Run.collection.aggregate(
+      { '$match' => {'parameter_set_id' => {'$in'=>parameter_sets.map(&:id)}} },
+      { '$group' => {'_id' => '$parameter_set_id', run_ids: {'$push' => '$_id'}} }
+    )
+    aggregated.each do |ps_runs|
+      existing_run_ids = ps_runs['run_ids']
+      new_runs_count = num_runs - existing_run_ids.count
+      if new_runs_count < 1
+        run_ids += existing_run_ids[0..num_runs]
+        progressbar.increment
+        next
+      end
+      run_ids += existing_run_ids
+      ps = ParameterSet.find(ps_runs['_id'])
       sim = ps.simulator
       mpi_procs = sim.support_mpi ? mpi_procs : 1
       omp_threads = sim.support_omp ? omp_threads : 1
-      existing_runs = ps.runs.limit(num_runs).to_a
-      runs += existing_runs
-      (num_runs - existing_runs.count).times do |i|
+      new_runs_count.times do |i|
         run = ps.runs.build(submitted_to: submitted_to,
                             mpi_procs: mpi_procs,
                             omp_threads: omp_threads,
@@ -107,7 +120,7 @@ class OacisCli < Thor
         run.seed = seeds[i] if seeds[i]
         if run.valid?
           run.save! unless options[:dry_run]
-          runs << run
+          run_ids << run.id
         else
           progressbar.log "Failed to create a Run for ParameterSet #{ps.id}"
           progressbar.log run.errors.full_messages
@@ -116,15 +129,14 @@ class OacisCli < Thor
       end
       progressbar.increment
     end
-    runs
+    run_ids
   end
 
   private
-  def write_run_ids_to_file(path, runs)
-    return unless runs.present?
+  def write_run_ids_to_file(path, run_ids)
+    return unless run_ids.present?
     File.open(path, 'w') {|io|
-      ids = runs.map {|run| "  #{{'run_id' => run.id.to_s}.to_json}"}
-      io.puts "[", ids.join(",\n"), "]"
+      io.puts "[", run_ids.join(",\n"), "]"
       io.flush
     }
   end
