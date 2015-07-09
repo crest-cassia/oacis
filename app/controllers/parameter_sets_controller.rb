@@ -80,7 +80,7 @@ class ParameterSetsController < ApplicationController
   def permitted_run_params(params)
     if params[:run].present?
       params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed).tap do |whitelisted|
-        whitelisted[:host_parameters] = params[:run][:host_parameters]
+        whitelisted[:host_parameters] = params[:run][:host_parameters] || {}
       end
     else
       {}
