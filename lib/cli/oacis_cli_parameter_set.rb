@@ -59,17 +59,17 @@ class OacisCli < Thor
       progressbar.log "simulator :", JSON.pretty_generate(JSON.load(simulator.to_json))
     end
 
-    parameter_sets = []
-    input.each_with_index.map do |h_ps_value, idx|
-      ps_value = h_ps_value[:value]
+    parameter_set_ids = []
+    input.each_with_index.map do |psid_value|
+      ps_value = psid_value[:value]
       progressbar.log "  parameter values : #{ps_value.inspect}" if options[:verbose]
       param_set = simulator.parameter_sets.build({v: ps_value, skip_check_uniquness: true})
-      if h_ps_value[:status] == :build and param_set.valid?
+      if (! psid_value[:id]) and param_set.valid?
         param_set.save! unless options[:dry_run]
-        parameter_sets << param_set
-      elsif h_ps_value[:status] == :exists # An identical parameter_set is found
+        parameter_set_ids << param_set.id
+      elsif psid_value[:id] # An identical parameter_set is found
         progressbar.log "  An identical parameter_set already exists. Skipping..."
-        parameter_sets << simulator.parameter_sets.where(v: param_set.v).first
+        parameter_set_ids << psid_value[:id]
         # do not use 'ps_value' instead of 'param_set.v'.
         # Otherwise the existing ps is not found because 'ps_value' is not casted and ordered properly.
       else
@@ -89,6 +89,7 @@ class OacisCli < Thor
       mpi_procs = run_option["mpi_procs"] || 1
       omp_threads = run_option["omp_threads"] || 1
       priority = run_option["priority"] || 1
+      parameter_sets = ParameterSet.in(id: parameter_set_ids)
 
       create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority, [])
     end
@@ -96,7 +97,7 @@ class OacisCli < Thor
   ensure
     return if options[:dry_run]
     return unless options[:yes] or overwrite_file?(options[:output])
-    write_parameter_set_ids_to_file(options[:output], parameter_sets)
+    write_parameter_set_ids_to_file(options[:output], parameter_set_ids)
   end
 
   private
@@ -135,32 +136,42 @@ class OacisCli < Thor
 
   def check_uniqueness(input, simulator)
     old_size = input.size
-    input.uniq!
+    input.uniq! # this operation can remove {p2:0, p1:0} from [{p1:0, p2:0}, {p2:0, p1:0}]
     if old_size > input.size
-      raise "same parameter values are inputed"
+      raise "same parameter values exist in input file"
     end
-    created_ps_v = simulator.parameter_sets.only(:v).map(:v)
+    ps_key_order = simulator.parameter_definitions.map(&:key)
+    input.map! do |ps_v|
+      Hash[ps_key_order.map {|key| [key, ps_v[key]]}]
+    end
+    list_created_ps = {}
+    ParameterSet.collection.aggregate(
+      { '$match' => {'v' => {'$in'=>input}} },
+      { '$group' => {'_id' => '$_id', v: {'$first' => '$v'}} }
+    ).each do |psid_v|
+      list_created_ps[psid_v['v']]=psid_v['_id']
+    end
     input.map do |ps_v|
-      if created_ps_v.include?(ps_v)
-        status = :exists
-        value = created_ps_v[created_ps_v.index(ps_v)] # get the same order of parameter keys
+      if list_created_ps[ps_v]
+        id = list_created_ps[ps_v]
+        value = ps_v
       else
-        status = :build
+        id = nil
         value = ps_v
       end
       {
-        status: status,
+        id: id,
         value: value
       }
     end
   end
 
-  def write_parameter_set_ids_to_file(path, parameter_sets)
-    return unless parameter_sets.present?
+  def write_parameter_set_ids_to_file(path, parameter_set_ids)
+    return unless parameter_set_ids.present?
     File.open(path, 'w') do |io|
       io.puts "["
-      rows = parameter_sets.map do |ps|
-        h = {"parameter_set_id" => ps.id.to_s}
+      rows = parameter_set_ids.map do |psid|
+        h = {"parameter_set_id" => psid.to_s}
         "  #{h.to_json}"
       end
       io.puts rows.join(",\n")
