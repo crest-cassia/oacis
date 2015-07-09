@@ -35,7 +35,7 @@ class ParameterSetsController < ApplicationController
     @param_set = simulator.parameter_sets.build(permitted_params)
     # this run is not saved, but used when rendering new
     if @num_runs > 0
-      permitted_params = params[:run].present? ? params.require(:run).permit(:mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to, :seed) : {}
+      permitted_params = permitted_run_params(params)
       @run = @param_set.runs.build(permitted_params)
       unless @run.valid?
         render action: "new"
@@ -54,7 +54,7 @@ class ParameterSetsController < ApplicationController
     @num_runs.times do |i|
       created.each do |ps|
         next if ps.runs.count > i
-        permitted_params = params[:run].present? ? params.require(:run).permit(:mpi_procs, :omp_threads, :host_parameters, :priority, :submitted_to, :seed) : {}
+        permitted_params = permitted_run_params(params)
         ps.runs.create(permitted_params)
       end
     end
@@ -76,6 +76,18 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  private
+  def permitted_run_params(params)
+    if params[:run].present?
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed).tap do |whitelisted|
+        whitelisted[:host_parameters] = params[:run][:host_parameters]
+      end
+    else
+      {}
+    end
+  end
+
+  public
   def _create_cli
     simulator = Simulator.find(params[:simulator_id])
     parameters = params[:v].dup
