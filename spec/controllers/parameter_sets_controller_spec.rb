@@ -93,11 +93,22 @@ describe ParameterSetsController do
         }.to change { Run.count }.by(3)
       end
 
-      it "creates runs with host_parameters" do
-        @sim.support_mpi = true
-        @sim.save!
-        post :create, @valid_param.update(num_runs: 3, run: {submitted_to: Host.first, mpi_procs: 8}), valid_session
+      it "creates runs with mpi_procs/omp_threads/priority" do
+        @sim.update_attribute(:support_mpi, true)
+        @sim.update_attribute(:support_omp, true)
+        post :create, @valid_param.update(num_runs: 1, run: {submitted_to: Host.first, mpi_procs: 8, omp_threads: 4, priority: 2, host_parameters: {} }), valid_session
         expect(Run.last.mpi_procs).to eq 8
+        expect(Run.last.omp_threads).to eq 4
+        expect(Run.last.priority).to eq 2
+      end
+
+      it "creates runs with host_parameters" do
+        h = FactoryGirl.create(:host_with_parameters)
+        h.executable_simulators.push @sim
+        h.save!
+        host_param = {"param1" => "foo", "param2" => "bar" }
+        post :create, @valid_param.update(num_runs: 1, run: {submitted_to: h, host_parameters: host_param }), valid_session
+        expect(Run.last.host_parameters).to eq host_param
       end
 
       context "when duplicated parameter_set exists" do
