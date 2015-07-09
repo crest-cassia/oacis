@@ -77,9 +77,6 @@ class OacisCli < Thor
 
     run_ids = create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority, seeds)
 
-  rescue => ex
-    puts ex.inspect
-
   ensure
     return if options[:dry_run]
     return unless options[:yes] or overwrite_file?(options[:output])
@@ -94,20 +91,26 @@ class OacisCli < Thor
     end
 
     run_ids = []
-    aggregated = Run.collection.aggregate(
+    list_runs = {}
+    Run.collection.aggregate(
       { '$match' => {'parameter_set_id' => {'$in'=>parameter_sets.map(&:id)}} },
       { '$group' => {'_id' => '$parameter_set_id', run_ids: {'$push' => '$_id'}} }
-    )
-    aggregated.each do |ps_runs|
-      existing_run_ids = ps_runs['run_ids']
-      new_runs_count = num_runs - existing_run_ids.count
-      if new_runs_count < 1
-        run_ids += existing_run_ids[0..num_runs]
-        progressbar.increment
-        next
+    ).each do |ps_runs|
+      list_runs[ps_runs['_id']] = ps_runs['run_ids']
+    end
+    parameter_sets.map(&:id).each do |ps_id|
+      new_runs_count = num_runs
+      if list_runs[ps_id]
+        existing_run_ids = list_runs[ps_id]
+        new_runs_count -= existing_run_ids.count
+        if new_runs_count < 1
+          run_ids += existing_run_ids[0..(num_runs-1)]
+          progressbar.increment
+          next
+        end
       end
-      run_ids += existing_run_ids
-      ps = ParameterSet.find(ps_runs['_id'])
+      run_ids += existing_run_ids || []
+      ps = ParameterSet.find(ps_id)
       sim = ps.simulator
       mpi_procs = sim.support_mpi ? mpi_procs : 1
       omp_threads = sim.support_omp ? omp_threads : 1
@@ -135,8 +138,9 @@ class OacisCli < Thor
   private
   def write_run_ids_to_file(path, run_ids)
     return unless run_ids.present?
+    ids = run_ids.map {|run_id| "  #{{'run_id' => run_id.to_s}.to_json}"}
     File.open(path, 'w') {|io|
-      io.puts "[", run_ids.join(",\n"), "]"
+      io.puts "[", ids.join(",\n"), "]"
       io.flush
     }
   end
