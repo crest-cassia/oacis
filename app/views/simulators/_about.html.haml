@@ -97,9 +97,7 @@
 :javascript
   $("#simulator_version_table #show_cli").on("click", function(){
     $('#version_dialog_modal').modal("show");
-  });
-  $("#version_dialog_modal").on('show.bs.modal', function (event) {
-    $('#version_dialog').append($("#simulator_version_table #show_cli").attr("data"));
+    $('#version_dialog').append($(this).attr("data"));
   });
   $("#version_dialog_modal").on('hidden.bs.modal', function (event) {
     $('#version_dialog').empty();
