@@ -34,5 +34,7 @@
         });
       }
       $('#analysis_analyzer').change(show_analysis_parameter_form);
-      show_analysis_parameter_form();
+      if( $('#analysis_analyzer').length > 0 ) {
+        show_analysis_parameter_form();
+      }
     });
