@@ -7,8 +7,8 @@ describe ApplicationHelper, type: :helper do
   describe "#shortened_id" do
 
     it "returns shortened id" do
-      id_org = "51d0f8e5899e53cf2e00000a"
-      expect(helper.shortened_id(id_org)).to eq "0f8e..00a"
+      id_org = "51d0f8e5899e53cf2e031001"
+      expect(helper.shortened_id(id_org)).to eq "f8e503"
     end
   end
 
