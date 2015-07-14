@@ -80,10 +80,6 @@ describe RunsController do
           post 'create', @req_param, valid_session
         }.to raise_error
       end
-
-      it "fails with a duplicated seed" do
-        skip "it is no longer needed because seed is defined by unique bson object id."
-      end
     end
 
     describe "with no permitted params" do
