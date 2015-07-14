@@ -80,14 +80,6 @@ describe RunsController do
           post 'create', @req_param, valid_session
         }.to raise_error
       end
-
-      it "fails with a duplicated seed" do
-        seed_val = @par.runs.first.seed
-        @req_param[:run].update(seed: seed_val)
-        expect {
-          post 'create', @req_param, valid_session
-        }.to change(Run, :count).by(0)
-      end
     end
 
     describe "with no permitted params" do

@@ -32,7 +32,7 @@ class Run
   # validations
   validates :status, presence: true,
                      inclusion: {in: [:created,:submitted,:running,:failed,:finished, :cancelled]}
-  validates :seed, presence: true, uniqueness: {scope: :parameter_set_id}
+  validates :seed, presence: true
   validates :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true}
   validates :priority, presence: true,
@@ -156,18 +156,10 @@ class Run
     end
   end
 
-  SeedMax = 2 ** 31
-  SeedIterationLimit = 1024
   def set_unique_seed
     unless seed
-      SeedIterationLimit.times do |i|
-        candidate = rand(SeedMax)
-        if self.class.where(:parameter_set_id => parameter_set, :seed => candidate).exists? == false
-          self.seed = candidate
-          break
-        end
-      end
-      errors.add(:seed, "Failed to set unique seed") unless seed
+      counter_epoch = self.id.to_s[-6..-1] + self.id.to_s[0..7]
+      self.seed = counter_epoch.hex
     end
   end
 
