@@ -99,22 +99,18 @@ class OacisCli < Thor
       list_runs[ps_runs['_id']] = ps_runs['run_ids']
     end
     parameter_sets.map(&:id).each do |ps_id|
-      new_runs_count = num_runs
-      if list_runs[ps_id]
-        existing_run_ids = list_runs[ps_id]
-        new_runs_count -= existing_run_ids.count
-        if new_runs_count < 1
-          run_ids += existing_run_ids[0..(num_runs-1)]
-          progressbar.increment
-          next
-        end
+      if list_runs[ps_id] and list_runs[ps_id].size >= num_runs
+        run_ids += list_runs[ps_id][0..(num_runs-1)]
+        progressbar.increment
+        next
       end
-      run_ids += existing_run_ids || []
+      existing_run_ids = list_runs[ps_id] || []
+      run_ids += existing_run_ids
       ps = ParameterSet.find(ps_id)
       sim = ps.simulator
       mpi_procs = sim.support_mpi ? mpi_procs : 1
       omp_threads = sim.support_omp ? omp_threads : 1
-      new_runs_count.times do |i|
+      (num_runs - existing_run_ids.count).times do |i|
         run = ps.runs.build(submitted_to: submitted_to,
                             mpi_procs: mpi_procs,
                             omp_threads: omp_threads,
