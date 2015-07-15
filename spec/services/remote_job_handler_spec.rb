@@ -305,6 +305,13 @@ describe RemoteJobHandler do
           RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
         }.to change { @run.reload.error_messages }
       end
+
+      it "does not change run status" do
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteOperationError, "error")
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
+        }.not_to change { @run.reload.status }
+      end
     end
     context "when it get RemoteJobHandler::RemoteJobError" do
 
@@ -315,7 +322,7 @@ describe RemoteJobHandler do
         }.to change { @run.reload.error_messages }
       end
 
-      it "change run status to :failed" do
+      it "changes run status to :failed" do
         expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteJobError)
         expect {
           RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
@@ -330,6 +337,13 @@ describe RemoteJobHandler do
           RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
         }.to change { @run.reload.error_messages }
       end
+
+      it "changes run status to :failed" do
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(RemoteJobHandler::RemoteSchedulerError, "error")
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
+        }.to change { @run.reload.status }.to(:failed)
+      end
     end
 
     context "when it get ssh connection error" do
@@ -339,6 +353,13 @@ describe RemoteJobHandler do
         expect {
           RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
         }.to change { @run.reload.error_messages }.to match(/failed to establish ssh connection to host\(#{@run.submitted_to.name}\)/)
+      end
+
+      it "does not change run status" do
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise("#<NoMethodError: undefined method `stat' for nil:NilClass>")
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@run) rescue nil
+        }.not_to change { @run.reload.status }
       end
     end
 
