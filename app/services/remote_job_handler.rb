@@ -133,14 +133,14 @@ class RemoteJobHandler
       #retry the operation in next time
       raise exception # this error is catched by job_observer
     elsif exception.is_a?(RemoteJobError)
-        work_dir = RemoteFilePath.work_dir_path(@host, run)
-        SSHUtil.download_recursive(ssh, work_dir, run.dir) if SSHUtil.exist?(ssh, work_dir)
-        remove_remote_files(run) # try it once even when remove operation is failed.
-        run.update_attribute(:status, :failed)
-        run.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
+      work_dir = RemoteFilePath.work_dir_path(@host, run)
+      SSHUtil.download_recursive(ssh, work_dir, run.dir) if SSHUtil.exist?(ssh, work_dir)
+      remove_remote_files(run) # try it once even when remove operation is failed.
+      run.update_attribute(:status, :failed)
+      run.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
     elsif exception.is_a?(RemoteSchedulerError)
       run.update_attribute(:error_messages, "Xsub is failed. \n#{exception.inspect}\n#{exception.backtrace}")
-      #retry the operation in next time
+      run.update_attribute(:status, :failed)
       raise exception # this error is catched by job_observer
     else
       if exception.inspect.to_s =~ /#<NoMethodError: undefined method `stat' for nil:NilClass>/
