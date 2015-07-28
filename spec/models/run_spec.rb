@@ -45,6 +45,11 @@ describe Run do
       skip "it is no longer needed because seed is defined by unique bson object id."
     end
 
+    it "seeds must be less than 2**31-1" do
+      run = @param_set.runs.build
+      expect( run.seed ).to be < 2**31
+    end
+
     it "status must be either :created, :submitted, :running, :failed, :finished, or :cancelled" do
       run = @param_set.runs.build(@valid_attribute)
       run.status = :unknown

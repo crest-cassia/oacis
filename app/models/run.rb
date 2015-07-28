@@ -159,7 +159,7 @@ class Run
   def set_unique_seed
     unless seed
       counter_epoch = self.id.to_s[-6..-1] + self.id.to_s[0..7]
-      self.seed = counter_epoch.hex
+      self.seed = counter_epoch.hex % (2**31-1)
     end
   end
 
