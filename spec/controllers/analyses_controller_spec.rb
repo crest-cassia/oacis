@@ -82,6 +82,9 @@ describe AnalysesController do
           }.to change{
             @run.reload.analyses.count
           }.by(1)
+          anl = @run.reload.analyses.last
+          expect(anl.parameters["param1"]).to eq 1
+          expect(anl.parameters["param2"]).to eq 2.0
         end
 
         it "redirects to 'analysis' tab of Run#show page" do
