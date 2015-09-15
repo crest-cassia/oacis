@@ -32,7 +32,7 @@ describe JobScriptUtil do
         result_file = "#{@run.id}.tar.bz2"
         expect(File.exist?(result_file)).to be_truthy
 
-        expect(File.directory?(@run.id.to_s)).to be_falsey
+        expect(File.directory?(@run.id.to_s)).to be_truthy
 
         system("tar xjf #{result_file}")
         json_path = File.join(@run.id.to_s, '_status.json')
