@@ -43,8 +43,12 @@ cd ..
 tar cf ${OACIS_RUN_ID}.tmp.tar ${OACIS_RUN_ID}
 if test $? -ne 0; then { echo "// Failed to make an archive for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
 bzip2 ${OACIS_RUN_ID}.tmp.tar
-if test $? -ne 0; then { echo "// Failed to compress for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
-mv ${OACIS_RUN_ID}.tmp.tar.bz2 ${OACIS_RUN_ID}.tar.bz2
+if test $? -eq 0; then {
+  mv ${OACIS_RUN_ID}.tmp.tar.bz2 ${OACIS_RUN_ID}.tar.bz2
+}
+else {
+  echo "// Failed to compress for ${OACIS_RUN_ID}" >> ./_log.txt; exit;
+} fi
 EOS
 
   EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "mounted_work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
