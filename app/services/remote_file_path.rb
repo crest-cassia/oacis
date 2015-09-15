@@ -33,7 +33,8 @@ module RemoteFilePath
       result_file_path(host, run),
       Pathname.new(host.work_base_dir).join("#{run.id}_status.json"),
       Pathname.new(host.work_base_dir).join("#{run.id}_time.txt"),
-      Pathname.new(host.work_base_dir).join("#{run.id}.tar")
+      Pathname.new(host.work_base_dir).join("#{run.id}.tmp.tar"),
+      Pathname.new(host.work_base_dir).join("#{run.id}.tmp.tar.bz2")
     ].flatten
   end
 end
