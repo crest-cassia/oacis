@@ -40,14 +40,11 @@ echo "}" >> ../${OACIS_RUN_ID}_status.json
 cd ..
 \\mv -f ${OACIS_RUN_ID}_status.json ${OACIS_RUN_ID}/_status.json
 \\mv -f ${OACIS_RUN_ID}_time.txt ${OACIS_RUN_ID}/_time.txt
-tar cf ${OACIS_RUN_ID}.tar ${OACIS_RUN_ID}
+tar cf ${OACIS_RUN_ID}.tmp.tar ${OACIS_RUN_ID}
 if test $? -ne 0; then { echo "// Failed to make an archive for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
-bzip2 ${OACIS_RUN_ID}.tar
+bzip2 ${OACIS_RUN_ID}.tmp.tar
 if test $? -ne 0; then { echo "// Failed to compress for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
-if [ -z "$OACIS_MOUNTED_WORK_BASE_DIR" ]
-then
-  rm -rf ${OACIS_RUN_ID}
-fi
+mv ${OACIS_RUN_ID}.tmp.tar.bz2 ${OACIS_RUN_ID}.tar.bz2
 EOS
 
   EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "mounted_work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]

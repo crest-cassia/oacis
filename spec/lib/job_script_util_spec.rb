@@ -58,6 +58,14 @@ describe JobScriptUtil do
       }
     end
 
+    it "does not remove work_dir" do
+      run_test_script_in_temp_dir
+      work_dir = @temp_dir.join("#{@run.id}")
+      archive = @temp_dir.join("#{@run.id}.tar.bz2")
+      expect( File.directory?(work_dir) ).to be_truthy
+      expect( File.exist?(archive) ).to be_truthy
+    end
+
     it "set OACIS_MPI envs and do not call mpiexec when Simulator#support_mpi is true" do
       @sim.support_mpi = true
       @sim.save!
