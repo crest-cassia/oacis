@@ -8,7 +8,6 @@ export LC_ALL=C
 # VARIABLE DEFINITIONS ------------
 OACIS_RUN_ID=<%= run_id %>
 OACIS_IS_MPI_JOB=<%= is_mpi_job %>
-OACIS_MOUNTED_WORK_BASE_DIR=<%= mounted_work_base_dir %>
 OACIS_MPI_PROCS=<%= mpi_procs %>
 OACIS_OMP_THREADS=<%= omp_threads %>
 OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
