@@ -2,13 +2,12 @@ require 'spec_helper'
 
 describe JobIncluder do
 
-  def make_valid_archive_file(run, keep_work_dir = false)
+  def make_valid_archive_file(run)
     Dir.chdir(@temp_dir) {
       work_dir = Pathname.new(run.id.to_s)
       make_valid_work_dir(work_dir)
       archive_path = Pathname.new("#{run.id}.tar.bz2")
       system("tar cjf #{archive_path} #{work_dir}")
-      FileUtils.remove_entry_secure(work_dir) unless keep_work_dir
       @archive_full_path = archive_path.expand_path
     }
   end
@@ -134,6 +133,13 @@ describe JobIncluder do
         include_job
         expect(@run.dir.join(@run.id.to_s+'_log', 'scheduler_log')).to be_exist
       end
+
+      it "deletes remote work_dir after inclusion" do
+        work_dir = File.join(@temp_dir, @run.id.to_s)
+        expect {
+          include_job
+        }.to change { File.directory?(work_dir) }.to(false)
+      end
     end
 
     describe "mounted_work_base_dir is not empty" do
@@ -141,19 +147,12 @@ describe JobIncluder do
       before(:each) do
         @host.mounted_work_base_dir = @host.work_base_dir
         @host.save
-        make_valid_archive_file(@run, true)
+        make_valid_archive_file(@run)
       end
 
       let(:include_job) { JobIncluder.include_remote_job(@host, @run) }
 
       it_behaves_like "included correctly"
-
-      it "deletes remote work_dir and archive file" do
-        work_dir = File.join(@temp_dir, @run.id.to_s)
-        expect {
-          include_job
-        }.to change { File.directory?(work_dir) }.from(true).to(false)
-      end
 
       it "does not call SSHUtil.download" do
         expect(SSHUtil).to_not receive(:download)
@@ -164,6 +163,13 @@ describe JobIncluder do
         include_job
         expect(@run.dir.join(@run.id.to_s+'_log', 'scheduler_log')).to be_exist
       end
+
+      it "deletes remote work_dir after inclusion" do
+        work_dir = File.join(@temp_dir, @run.id.to_s)
+        expect {
+          include_job
+        }.to change { File.directory?(work_dir) }.to(false)
+      end
     end
 
     # A test case for error handling
@@ -173,7 +179,7 @@ describe JobIncluder do
       context "if _status.json exists in downloded work_dir" do
 
         before(:each) do
-          make_valid_archive_file(@run, true)
+          make_valid_archive_file(@run)
           FileUtils.rm(@archive_full_path)
           JobIncluder.include_remote_job(@host, @run)
           @run.reload
@@ -191,7 +197,7 @@ describe JobIncluder do
           expect(@run.dir.join('..', @run.id.to_s+'.tar.bz2')).not_to be_exist
         end
 
-        it "deletes remote work_dir and archive file" do
+        it "deletes remote work_dir" do
           expect(Dir.entries(@temp_dir)).to match_array(['.', '..'])
         end
       end
@@ -199,7 +205,7 @@ describe JobIncluder do
       context "if _status.json does not exist in downloded work_dir" do
 
         before(:each) do
-          make_valid_archive_file(@run, true)
+          make_valid_archive_file(@run)
           FileUtils.rm( @temp_dir.join(@run.id.to_s,"_status.json") )
           FileUtils.rm( @archive_full_path )
           JobIncluder.include_remote_job(@host, @run)

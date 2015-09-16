@@ -32,7 +32,7 @@ describe JobScriptUtil do
         result_file = "#{@run.id}.tar.bz2"
         expect(File.exist?(result_file)).to be_truthy
 
-        expect(File.directory?(@run.id.to_s)).to be_falsey
+        expect(File.directory?(@run.id.to_s)).to be_truthy
 
         system("tar xjf #{result_file}")
         json_path = File.join(@run.id.to_s, '_status.json')
@@ -58,16 +58,25 @@ describe JobScriptUtil do
       }
     end
 
-    it "calls mpiexec when Simulator#support_mpi is true" do
+    it "does not remove work_dir" do
+      run_test_script_in_temp_dir
+      work_dir = @temp_dir.join("#{@run.id}")
+      archive = @temp_dir.join("#{@run.id}.tar.bz2")
+      expect( File.directory?(work_dir) ).to be_truthy
+      expect( File.exist?(archive) ).to be_truthy
+    end
+
+    it "set OACIS_MPI envs and do not call mpiexec when Simulator#support_mpi is true" do
       @sim.support_mpi = true
       @sim.save!
       @run.mpi_procs = 8
       script = JobScriptUtil.script_for(@run, @host)
       expect(script).to match(/OACIS_MPI_PROCS=8/)
       expect(script).to match(/OACIS_IS_MPI_JOB=true/)
+      expect(script).not_to match(/mpiexec/)
     end
 
-    it "does not call insert mpiexec when Simulator#support_mpi is false" do
+    it "do not set OACIS_MPI envs when Simulator#support_mpi is false" do
       @sim.support_mpi = false
       @sim.save!
       @run.mpi_procs = 8
