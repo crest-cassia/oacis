@@ -50,14 +50,13 @@ else {
 } fi
 EOS
 
-  EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "mounted_work_base_dir", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
+  EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
 
   def self.script_for(run, host)
     variables = {
       "run_id" => run.id.to_s,
       "is_mpi_job" => run.simulator.support_mpi ? "true" : "false",
       "work_base_dir" => host ? host.work_base_dir : '.',
-      "mounted_work_base_dir" => host ? host.mounted_work_base_dir.to_s : "",
       "omp_threads" => run.omp_threads,
       "mpi_procs" => run.mpi_procs,
       "cmd" => run.command_and_input[0].sub(/;$/, ''),
