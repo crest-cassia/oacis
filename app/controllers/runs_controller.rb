@@ -2,8 +2,9 @@ class RunsController < ApplicationController
 
   def index
     # check if worker is alive
-    if JobWorker.alive? and AnalyzerWorker.alive? and ServiceWorker.alive?
-      if JobWorker.log_recently_updated? and AnalyzerWorker.log_recently_updated? and ServiceWorker.log_recently_updated?
+    workers = [JobSubmitterWorker, JobObserverWorker, ServiceWorker, AnalyzerWorker]
+    if workers.all? {|worker| worker.alive? }
+      if workers.all? {|worker| worker.log_recently_updated? }
         flash.now[:notice] = "Worker process is running"
       else
         flash.now[:alert] = "Worker process exists, but may be hanging up"

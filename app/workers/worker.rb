@@ -24,10 +24,14 @@ class Worker < DaemonSpawn::Base
         task.call(@logger)
         break if $term_received
       end
-      sleep self.INTERVAL
+      sleep self.class::INTERVAL
       break if $term_received
     end
 
+  rescue => ex
+    @logger.fatal(ex.message)
+    @logger.fatal(ex.backtrace)
+  ensure
     @logger.info("stopped")
   end
 
@@ -36,8 +40,8 @@ class Worker < DaemonSpawn::Base
   end
 
   def self.alive?
-    if File.file?(self.class::WORKER_PID_FILE)
-      pid = (IO.read(self.class::WORKER_PID_FILE).to_i)
+    if File.file?(self::WORKER_PID_FILE)
+      pid = (IO.read(self::WORKER_PID_FILE).to_i)
       DaemonSpawn.alive? pid
     else
       false
@@ -47,8 +51,8 @@ class Worker < DaemonSpawn::Base
   # return true if the time stamp of the log file is updated within five minutes
   LOG_UPDATE_THRESHOLD = 60 * 5 # 5 minutes
   def self.log_recently_updated?
-    if File.file?(self.WORKER_LOG_FILE)
-      s = File.stat(self.WORKER_LOG_FILE)
+    if File.file?(self::WORKER_LOG_FILE)
+      s = File.stat(self::WORKER_LOG_FILE)
       return true if Time.now - s.mtime < LOG_UPDATE_THRESHOLD
     end
     false
