@@ -55,7 +55,7 @@ module Submittable
                              :update_default_host_parameter_on_its_simulator,
                              :update_default_mpi_procs_omp_threads)
     base.send(:before_destroy,
-              :delete_archived_result_file, :delete_files_for_manual_submission)
+              :delete_files_for_manual_submission)
   end
 
   def input
@@ -66,9 +66,16 @@ module Submittable
     raise "IMPLEMENT ME"
   end
 
-  def cancel
-    self.update_attribute(:status, :cancelled)
-    delete_archived_result_file
+  def destroy(call_super = false)
+    if call_super
+      super
+    else
+      if status == :submitted or status == :running or status == :cancelled
+        cancel
+      else
+        super
+      end
+    end
   end
 
   private
@@ -201,15 +208,6 @@ EOS
     end
   end
 
-  def delete_archived_result_file
-    # if self.parameter_set.nil, parent ParameterSet is already destroyed.
-    # Therefore, self.archived_result_path raises an exception
-    if parameter_set
-      archive = archived_result_path
-      FileUtils.rm(archive) if File.exist?(archive)
-    end
-  end
-
   def delete_files_for_manual_submission
     sh_path = ResultDirectory.manual_submission_job_script_path(self)
     FileUtils.rm(sh_path) if sh_path.exist?
@@ -219,5 +217,11 @@ EOS
     FileUtils.rm(pre_process_script_path) if pre_process_script_path.exist?
     pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(self)
     FileUtils.rm(pre_process_executor_path) if pre_process_executor_path.exist?
+  end
+
+
+  # subroutines of public methods
+  def cancel
+    self.update_attribute(:status, :cancelled)
   end
 end

@@ -19,8 +19,8 @@ class Run
   before_create :set_simulator
   before_save :remove_runs_status_count_cache, :if => :status_changed?
   after_create :create_run_dir
-  before_destroy :delete_run_dir, :delete_archived_result_file ,
-                 :delete_files_for_manual_submission, :remove_runs_status_count_cache
+  before_destroy :delete_run_dir, :delete_archived_result_file,
+                 :remove_runs_status_count_cache
 
   public
   def initialize(*arg)
@@ -91,18 +91,6 @@ class Run
     dir.join('..', "#{id}.tar.bz2")
   end
 
-  def destroy(call_super = false)
-    if call_super
-      super
-    else
-      if status == :submitted or status == :running or status == :cancelled
-        cancel
-      else
-        super
-      end
-    end
-  end
-
   private
   def set_simulator
     if parameter_set
@@ -131,6 +119,15 @@ class Run
     end
   end
 
+  def delete_archived_result_file
+    # if self.parameter_set.nil, parent ParameterSet is already destroyed.
+    # Therefore, self.archived_result_path raises an exception
+    if parameter_set
+      archive = archived_result_path
+      FileUtils.rm(archive) if File.exist?(archive)
+    end
+  end
+
   def remove_runs_status_count_cache
     if parameter_set and parameter_set.reload.runs_status_count_cache
       parameter_set.update_attribute(:runs_status_count_cache, nil)
@@ -140,6 +137,7 @@ class Run
   def cancel
     super
     delete_run_dir
+    delete_archived_result_file
     self.update_attribute(:parameter_set, nil)
   end
 end
