@@ -37,6 +37,10 @@ class Run
     end
   end
 
+  def executable
+    simulator
+  end
+
   def command
     cmd = simulator.command
     cmd += " #{args}" if args.length > 0

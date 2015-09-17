@@ -52,10 +52,14 @@ module Submittable
     # callbacks
     base.send(:before_create, :remove_redundant_host_parameters, :set_job_script)
     base.send(:after_create, :create_job_script_for_manual_submission,
-                             :update_default_host_parameter_on_its_simulator,
+                             :update_default_host_parameter_on_its_executable,
                              :update_default_mpi_procs_omp_threads)
     base.send(:before_destroy,
               :delete_files_for_manual_submission)
+  end
+
+  def executable
+    raise "IMPLEMENT ME"
   end
 
   def input
@@ -143,14 +147,14 @@ module Submittable
     FileUtils.mkdir_p(ResultDirectory.manual_submission_path)
     js_path = ResultDirectory.manual_submission_job_script_path(self)
     File.open(js_path, 'w') {|io| io.puts job_script; io.flush }
-    if simulator.support_input_json
+    if executable.support_input_json
       input_json_path = ResultDirectory.manual_submission_input_json_path(self)
       File.open(input_json_path, 'w') {|io| io.puts input.to_json; io.flush }
     end
 
-    if simulator.pre_process_script.present?
+    if executable.pre_process_script.present?
       pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(self)
-      File.open(pre_process_script_path, 'w') {|io| io.puts simulator.pre_process_script.gsub(/\r\n/, "\n"); io.flush } # Since a string taken from DB may contain \r\n, gsub is necessary
+      File.open(pre_process_script_path, 'w') {|io| io.puts executable.pre_process_script.gsub(/\r\n/, "\n"); io.flush } # Since a string taken from DB may contain \r\n, gsub is necessary
       pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(self)
       File.open(pre_process_executor_path, 'w') {|io| io.puts pre_process_executor; io.flush }
       cmd = "cd #{pre_process_executor_path.dirname}; chmod +x #{pre_process_executor_path.basename}"
@@ -166,7 +170,7 @@ mkdir ${RUN_ID}
 cp ${RUN_ID}_preprocess.sh ${RUN_ID}/_preprocess.sh
 chmod +x ${RUN_ID}/_preprocess.sh
 EOS
-    if simulator.support_input_json
+    if executable.support_input_json
       script += <<-EOS
 if [ -f ${RUN_ID}_input.json ]
 then
@@ -185,26 +189,26 @@ EOS
     return script
   end
 
-  def update_default_host_parameter_on_its_simulator
-    unless self.host_parameters == self.simulator.get_default_host_parameter(self.submitted_to)
+  def update_default_host_parameter_on_its_executable
+    unless self.host_parameters == self.executable.get_default_host_parameter(self.submitted_to)
       host_id = self.submitted_to.present? ? self.submitted_to.id.to_s : "manual_submission"
-      new_host_parameters = self.simulator.default_host_parameters
+      new_host_parameters = self.executable.default_host_parameters
       new_host_parameters[host_id] = self.host_parameters
-      self.simulator.timeless.update_attribute(:default_host_parameters, new_host_parameters)
+      self.executable.timeless.update_attribute(:default_host_parameters, new_host_parameters)
     end
   end
 
   def update_default_mpi_procs_omp_threads
     host_id = submitted_to.present? ? submitted_to.id.to_s : "manual_submission"
-    unless mpi_procs == simulator.default_mpi_procs[host_id]
-      new_default_mpi_procs = simulator.default_mpi_procs
+    unless mpi_procs == executable.default_mpi_procs[host_id]
+      new_default_mpi_procs = executable.default_mpi_procs
       new_default_mpi_procs[host_id] = mpi_procs
-      simulator.timeless.update_attribute(:default_mpi_procs, new_default_mpi_procs)
+      executable.timeless.update_attribute(:default_mpi_procs, new_default_mpi_procs)
     end
-    unless omp_threads == simulator.default_omp_threads[host_id]
-      new_default_omp_threads = simulator.default_omp_threads
+    unless omp_threads == executable.default_omp_threads[host_id]
+      new_default_omp_threads = executable.default_omp_threads
       new_default_omp_threads[host_id] = omp_threads
-      simulator.timeless.update_attribute(:default_omp_threads, new_default_omp_threads)
+      executable.timeless.update_attribute(:default_omp_threads, new_default_omp_threads)
     end
   end
 
