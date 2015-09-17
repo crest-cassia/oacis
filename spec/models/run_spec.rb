@@ -141,13 +141,15 @@ describe Run do
         expect(run).not_to be_valid
       end
 
-      it "is valid when host_parameters have rendundant keys" do
+      it "is valid when host_parameters have redundant keys" do
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
         run.omp_threads = 8
         run.host_parameters = {"node" => "abd", "shape" => "xyz"}
         expect(run).to be_valid
+        run.save
+        expect(run.host_parameters).to_not include("shape")
       end
 
       it "is invalid when host_parameters does not match the defined format" do
