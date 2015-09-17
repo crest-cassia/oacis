@@ -1,28 +1,18 @@
 class Simulator
   include Mongoid::Document
   include Mongoid::Timestamps
-  field :name, type: String
-  field :command, type: String
-  field :description, type: String
-  field :support_input_json, type: Boolean, default: false
-  field :support_mpi, type: Boolean, default: false
-  field :support_omp, type: Boolean, default: false
-  field :pre_process_script, type: String
-  field :print_version_command, type: String
-  field :position, type: Integer # position in the table. start from zero
-  field :default_host_parameters, type: Hash, default: {} # {Host.id => {host_param1 => foo, ...}}
-  field :default_mpi_procs, type: Hash, default: {} # {Host.id => 4, ...}
-  field :default_omp_threads, type: Hash, default: {} # {Host.id => 8, ...}
+  include Executable
 
+  field :name, type: String
+  field :description, type: String
+  field :position, type: Integer # position in the table. start from zero
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :runs
   has_many :parameter_set_queries, dependent: :destroy
   has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
-  has_and_belongs_to_many :executable_on, class_name: "Host", inverse_of: :executable_simulators
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
-  validates :command, presence: true
   validates :parameter_definitions, presence: true
 
   accepts_nested_attributes_for :parameter_definitions, allow_destroy: true
