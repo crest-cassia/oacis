@@ -52,15 +52,15 @@ EOS
 
   EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
 
-  def self.script_for(run, host)
+  def self.script_for(job, host)
     variables = {
-      "run_id" => run.id.to_s,
-      "is_mpi_job" => run.simulator.support_mpi ? "true" : "false",
+      "run_id" => job.id.to_s,
+      "is_mpi_job" => job.executable.support_mpi ? "true" : "false",
       "work_base_dir" => host ? host.work_base_dir : '.',
-      "omp_threads" => run.omp_threads,
-      "mpi_procs" => run.mpi_procs,
-      "cmd" => run.command_and_input[0].sub(/;$/, ''),
-      "print_version_command" => run.simulator.print_version_command.to_s.gsub(/\"/, '\\"')
+      "omp_threads" => job.omp_threads,
+      "mpi_procs" => job.mpi_procs,
+      "cmd" => job.command_with_args.sub(/;$/, ''),
+      "print_version_command" => job.executable.print_version_command.to_s.gsub(/\"/, '\\"')
     }
     # semi-colon in the last of the command causes bash syntax error
 
@@ -68,40 +68,40 @@ EOS
     rendered_script.gsub(/(\r\n|\r|\n)/, "\n")
   end
 
-  def self.expand_result_file(run)
+  def self.expand_result_file(job)
 
-    Dir.chdir(run.dir.join('..')) {
-      cmd = "tar xjf #{run.id}.tar.bz2"
+    Dir.chdir(job.dir.join('..')) {
+      cmd = "tar xjf #{job.id}.tar.bz2"
       system(cmd)
       unless $?.to_i == 0
-        run.update_attribute(:error_messages, "failed to extract the archive")
+        job.update_attribute(:error_messages, "failed to extract the archive")
         raise "failed to extract the archive"
       end
     }
   end
 
-  def self.update_run(run)
+  def self.update_run(job)
 
-    Dir.chdir(run.dir) {
+    Dir.chdir(job.dir) {
       is_updated = false
-      error_message = run.error_messages || ""
+      error_message = job.error_messages || ""
 
       if File.exist?("_status.json")
         begin
           parsed = JSON.load(File.open("_status.json"))
-          run.hostname = parsed["hostname"]
-          run.started_at = parsed["started_at"]
-          run.finished_at = parsed["finished_at"]
+          job.hostname = parsed["hostname"]
+          job.started_at = parsed["started_at"]
+          job.finished_at = parsed["finished_at"]
           if parsed["rc"].to_i == 0
-            run.status = :finished
+            job.status = :finished
           else
-            run.status = :failed
+            job.status = :failed
             error_message+="simulator return code: #{parsed["rc"]}\n"
           end
           is_updated = true
         rescue => ex
           error_message+="failed to load _status.json: #{ex.message}\n"
-          run.update_attribute(:status, :failed)
+          job.update_attribute(:status, :failed)
         end
       end
 
@@ -109,13 +109,13 @@ EOS
         begin
           File.open("_time.txt", 'r').each do |line|
             if line =~ /^real \d/
-              run.real_time = line.sub(/^real /, '').to_f
+              job.real_time = line.sub(/^real /, '').to_f
             elsif line =~ /^user \d/
               # sum up cpu_times over processes
-              run.cpu_time = run.cpu_time.to_f + line.sub(/^user /,'').to_f
+              job.cpu_time = job.cpu_time.to_f + line.sub(/^user /,'').to_f
             end
           end
-          error_message+="_time.txt has invalid format"  if run.real_time.nil? or run.cpu_time.nil?
+          error_message+="_time.txt has invalid format"  if job.real_time.nil? or job.cpu_time.nil?
           is_updated = true
         rescue => ex
           error_message+="failed to load _time.json: #{ex.message}\n"
@@ -125,7 +125,7 @@ EOS
       if File.exist?("_version.txt")
         begin
           version = File.open("_version.txt", 'r').read.chomp
-          run.simulator_version = version
+          job.simulator_version = version
           is_updated = true
         rescue => ex
           error_message+="failed to load _version.txt: #{ex.message}"
@@ -135,8 +135,8 @@ EOS
       json_path = '_output.json'
       if File.exist?(json_path)
         begin
-          run.result = JSON.load(File.open(json_path))
-          run.result = {"result"=>run.result} unless run.result.is_a?(Hash)
+          job.result = JSON.load(File.open(json_path))
+          job.result = {"result"=>job.result} unless job.result.is_a?(Hash)
           is_updated = true
         rescue => ex
           error_message+="failed to load _output.json: #{ex.message}"
@@ -144,12 +144,12 @@ EOS
       end
 
       if error_message.length > 0
-        run.update_attribute(:error_messages, error_message)
+        job.update_attribute(:error_messages, error_message)
       end
 
       if is_updated
-        run.included_at = DateTime.now
-        run.save!
+        job.included_at = DateTime.now
+        job.save!
       end
     }
   end

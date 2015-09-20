@@ -241,7 +241,7 @@ describe Run do
     end
   end
 
-  describe "#command_and_input" do
+  describe "#command_with_args" do
 
     context "for simulators which receives parameters as arguments" do
 
@@ -249,9 +249,9 @@ describe Run do
         sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: false)
         prm = sim.parameter_sets.first
         run = prm.runs.first
-        command, input = run.command_and_input
+        command = run.command_with_args
         expect(command).to eq "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
-        expect(input).to be_nil
+        expect(run.input).to be_nil
       end
     end
 
@@ -261,8 +261,9 @@ describe Run do
         sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: true)
         prm = sim.parameter_sets.first
         run = prm.runs.first
-        command, input = run.command_and_input
+        command = run.command_with_args
         expect(command).to eq "#{sim.command}"
+        input = run.input
         prm.v.each do |key, val|
           expect(input[key]).to eq val
         end

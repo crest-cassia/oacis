@@ -70,6 +70,12 @@ module Submittable
     raise "IMPLEMENT ME"
   end
 
+  def command_with_args
+    cmd = executable.command
+    cmd += " #{args}" if args.length > 0
+    cmd
+  end
+
   def destroy(call_super = false)
     if call_super
       super

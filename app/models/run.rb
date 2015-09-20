@@ -41,12 +41,6 @@ class Run
     simulator
   end
 
-  def command
-    cmd = simulator.command
-    cmd += " #{args}" if args.length > 0
-    cmd
-  end
-
   def input
     if simulator.support_input_json
       input = parameter_set.v.dup
@@ -68,10 +62,6 @@ class Run
       params << seed
       params.join(' ')
     end
-  end
-
-  def command_and_input
-    [command, input]
   end
 
   def dir
