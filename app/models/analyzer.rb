@@ -15,7 +15,6 @@ class Analyzer
   validates :name, presence: true, uniqueness: {scope: :simulator}, format: {with: /\A\w+\z/}
   validates :type, presence: true, 
                    inclusion: {in: [:on_run, :on_parameter_set]}
-  validates :command, presence: true
   validates :auto_run, inclusion: {in: [:yes, :no, :first_run_only]}
 
   accepts_nested_attributes_for :parameter_definitions, allow_destroy: true
