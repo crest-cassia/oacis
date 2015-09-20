@@ -27,7 +27,8 @@ module Submittable
     base.send(:field, :finished_at, type: DateTime)
     base.send(:field, :included_at, type: DateTime)
     base.send(:field, :result)  # can be any type. it's up to Simulator spec
-    base.send(:field, :simulator_version, type: String)
+    version_field = base == Run ? :simulator_version : :analyzer_version
+    base.send(:field, version_field, type: String)
 
     # indexes
     base.send(:index, { status: 1 }, { name: "#{base.to_s.downcase}_status_index" })
