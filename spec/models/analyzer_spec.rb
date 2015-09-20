@@ -259,7 +259,7 @@ describe Analyzer do
       end
 
       it "return {} as default_host_parameter for manual submission" do
-        run = @sim.parame.first.runs.first
+        run = @sim.parameter_sets.first.runs.first
         anl = run.analyses.build( analyzer: @azr, submitted_to: nil )
         expect(@azr.get_default_host_parameter(nil)).to eq Hash.new
       end
