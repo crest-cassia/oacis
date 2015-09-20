@@ -113,6 +113,13 @@ FactoryGirl.define do
     end
 
     after(:create) do |analyzer, evaluator|
+      if Host.where(name: "localhost").present?
+        h = Host.where(name: "localhost").first
+        h.executable_analyzers.push analyzer
+        h.save!
+      else
+        h = FactoryGirl.create(:localhost, executable_analzyers: [analyzer])
+      end
       if evaluator.run_analysis
         case analyzer.type
         when :on_run

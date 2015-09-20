@@ -21,6 +21,7 @@ class Host
   field :position, type: Integer # position in the table. start from zero
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
+  has_and_belongs_to_many :executable_analyzers, class_name: "Analyzer", inverse_of: :executable_on
   embeds_many :host_parameter_definitions
   accepts_nested_attributes_for :host_parameter_definitions, allow_destroy: true
 

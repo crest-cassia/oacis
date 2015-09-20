@@ -15,6 +15,9 @@ describe Analyzer do
         parameter_definitions_attributes: [
           { key: "initial_skip", type: "Integer", default: "0", description: "Number of inital step" }
         ],
+        support_input_json: true,
+        support_mpi: false,
+        support_omp: false,
         command: "ruby ~/path/to/time_series_analyzer.rb",
         print_version_command: "echo \"v0.1.0\"",
         description: "time series analysis"
@@ -211,6 +214,55 @@ describe Analyzer do
       output = @azr.analyzer_versions
       expect(output.map {|h| h['count'][:finished].to_i }.inject(:+)).to eq finished_count
       expect(output.map {|h| h['count'][:failed].to_i }.inject(:+)).to eq failed_count
+    end
+  end
+
+  describe "get_default_host_parameter" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1
+                               )
+      @host = FactoryGirl.create(:host_with_parameters)
+      @azr = @sim.analyzers.first
+      @azr.executable_on.destroy
+      @azr.executable_on << @host
+    end
+
+    context "when there is no run" do
+
+      it "return default_host_parameter associated with a host" do
+        key_value = @host.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
+        expect(@azr.get_default_host_parameter(@host)).to eq Hash[*key_value.flatten]
+      end
+
+      it "return default_host_parameter for manual submission" do
+        expect(@sim.get_default_host_parameter(nil)).to eq Hash.new
+      end
+    end
+
+    context "when new run is created" do
+
+      it "return the host parameters of the last created run" do
+        host_parameters = @sim.get_default_host_parameter(@host)
+        # => {"param1"=>nil, "param2"=>"XXX"}
+        host_parameters["param2"] = "YYY"
+        run = @sim.parameter_sets.first.runs.first
+        anl = run.analyses.build( analyzer: @azr, host_parameters: host_parameters, submitted_to: @host)
+        expect {
+          anl.save
+        }.to change {
+          @azr.reload.get_default_host_parameter(@host)["param2"]
+        }.from("XXX").to("YYY")
+      end
+
+      it "return {} as default_host_parameter for manual submission" do
+        run = @sim.parame.first.runs.first
+        anl = run.analyses.build( analyzer: @azr, submitted_to: nil )
+        expect(@azr.get_default_host_parameter(nil)).to eq Hash.new
+      end
     end
   end
 end

@@ -14,6 +14,9 @@ class Analysis
   field :analyzer_version, type: String
   index({ status: 1 }, { name: "analysis_status_index" })
 
+  field :host_parameters, type: Hash, default: {}  ## Tentative REMOVE LATER
+  belongs_to :submitted_to, class_name: "Host"  ## Tentative REMOVE LATER
+
   belongs_to :analyzer
   belongs_to :analyzable, polymorphic: true, autosave: false
   belongs_to :parameter_set
