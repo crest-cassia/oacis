@@ -11,9 +11,17 @@
       %th Auto-Run Flag
       %td= analyzer.auto_run
     %tr
-      %th Print version command
-      %td= analyzer.print_version_command || "-"
-
+      %th Parameter Input Type
+      %td= analyzer.support_input_json ? "JSON" : "Arguments"
+    %tr
+      %th Support MPI
+      %td= analyzer.support_mpi ? "Yes" : "No"
+    %tr
+      %th Support OMP
+      %td= analyzer.support_omp ? "Yes" : "No"
+    %tr
+      %th Executable On
+      %td= raw( analyzer.executable_on.map {|host| h(host.name) }.join('<br />') )
 
 - if analyzer.parameter_definitions.present?
   %h3 Defined Parameters
@@ -32,9 +40,23 @@
           %td= pd.default || '-'
           %td= pd.description ? pd.description : "-"
 
-%h3 Command
-%pre
-  = h(analyzer.command)
+%h3 Commands
+%ul
+  %li
+    Pre-process Script
+    %br
+    %pre
+      = analyzer.pre_process_script
+  %li
+    Analyzer Command
+    %br
+    %pre
+      = analyzer.command
+  %li
+    Print-version Command
+    %br
+    %pre
+      = analyzer.print_version_command
 
 %h3 List of Analyzer Versions
 %table.table.table-striped#analyzer_version_table
