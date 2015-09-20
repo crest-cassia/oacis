@@ -116,7 +116,8 @@ class HostsController < ApplicationController
                                            :max_mpi_procs,
                                            :min_omp_threads,
                                            :max_omp_threads,
-                                           executable_simulator_ids: []
+                                           executable_simulator_ids: [],
+                                           executable_analyzer_ids: []
                                           ) : {}
   end
 end

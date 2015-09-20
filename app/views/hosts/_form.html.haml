@@ -74,6 +74,17 @@
             = check_box_tag "host[executable_simulator_ids][]", sim.id.to_s, @host.executable_simulator_ids.include?(sim.id), id: dom_id(sim)
             = sim.name
   .form-group
+    %label.col-md-2.control-label
+      Executable Analyzers
+    .col-md-10
+      = hidden_field_tag "host[executable_analyzer_ids][]", nil
+      - Simulator.all.each do |sim|
+        - sim.analyzers.each do |azr|
+          .checkbox
+            %label{ for: dom_id(azr) }
+              = check_box_tag "host[executable_analyzer_ids][]", azr.id.to_s, @host.executable_analyzer_ids.include?(azr.id), id: dom_id(azr)
+              = sim.name + " / " + azr.name
+  .form-group
     .col-md-4.col-md-offset-2
       = f.submit('Save', class: 'btn btn-primary')
       = link_to('Cancel', (@host.persisted? ? @host : hosts_path), class: 'btn btn-default')
