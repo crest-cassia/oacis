@@ -49,7 +49,7 @@ describe AnalyzersController do
       @azr = @sim.analyzers.first
     end
 
-    it "assigns the requested simulator as @simulator" do
+    it "assigns the requested analyzer as @analyzer" do
       get :edit, {:id => @azr.to_param}, valid_session
       expect(assigns(:analyzer)).to eq(@azr)
     end
@@ -66,6 +66,7 @@ describe AnalyzersController do
     describe "with valid params" do
 
       before(:each) do
+        @host = FactoryGirl.create(:host)
         definitions = {
           "0" => {key: "param1", type: "Integer"},
           "1" => {key: "param2", type: "Float"}
@@ -73,7 +74,10 @@ describe AnalyzersController do
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
-          auto_run: "no", description: "xxx yyy"
+          auto_run: "no", description: "xxx yyy",
+          support_input_json: "1", support_mpi: "1", support_omp: "0",
+          pre_process_script: "echo preprocess",
+          executable_on_ids: [@host.id.to_s]
         }
         @valid_post_parameter = {simulator_id: @sim.id, analyzer: analyzer}
       end
@@ -94,6 +98,11 @@ describe AnalyzersController do
         expect(azr.description).to eq "xxx yyy"
         expect(azr.parameter_definition_for("param1").type).to eq "Integer"
         expect(azr.parameter_definition_for("param2").type).to eq "Float"
+        expect(azr.support_input_json).to be_truthy
+        expect(azr.support_mpi).to be_truthy
+        expect(azr.support_omp).to be_falsey
+        expect(azr.pre_process_script).to eq("echo preprocess")
+        expect(azr.executable_on).to eq [@host]
       end
 
       it "assigns a newly created analyzer as @analyzer" do
@@ -124,7 +133,7 @@ describe AnalyzersController do
       end
     end
 
-    describe "with no permitted params" do
+    describe "with non-permitted params" do
 
       before(:each) do
         definitions = {
@@ -141,7 +150,7 @@ describe AnalyzersController do
         @valid_post_parameter = {simulator_id: @sim.id, analyzer: analyzer}
       end
 
-      it "create a new analyzer but no permitted params are not saved" do
+      it "create a new analyzer but non-permitted params are not saved" do
         invalid_analyzer_params = @valid_post_parameter[:analyzer].update(admin_flg: 1)
         invalid_params = @valid_post_parameter
         invalid_params[:analyzer] = invalid_analyzer_params
@@ -172,7 +181,10 @@ describe AnalyzersController do
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
-          auto_run: "no", description: "xxx yyy"
+          auto_run: "no", description: "xxx yyy",
+          support_input_json: "1", support_mpi: "1", support_omp: "0",
+          pre_process_script: "echo preprocess",
+          executable_on: []
         }
         @valid_post_parameter = {analyzer: analyzer}
       end
@@ -196,7 +208,7 @@ describe AnalyzersController do
 
     describe "with invalid params" do
 
-      it "assigns the simulator as @simulator" do
+      it "assigns the analyzer as @analyzer" do
         allow_any_instance_of(Analyzer).to receive(:update_attributes).and_return(false)
         put :update, {:id => @azr.to_param, :analyzer => {}}, valid_session
         expect(assigns(:analyzer)).to eq(@azr)
@@ -209,7 +221,7 @@ describe AnalyzersController do
       end
     end
 
-    describe "with no permitted params" do
+    describe "with non-permitted params" do
 
       before(:each) do
         definitions = {
@@ -226,7 +238,7 @@ describe AnalyzersController do
         @valid_post_parameter = {id: @azr.to_param, analyzer: analyzer}
       end
 
-      it "update the analyzer but no permitted params are not saved" do
+      it "update the analyzer but non-permitted params are not saved" do
         invalid_analyzer_params = @valid_post_parameter[:analyzer].update(admin_flg: 1)
         invalid_params = @valid_post_parameter
         invalid_params[:analyzer] = invalid_analyzer_params

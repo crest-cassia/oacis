@@ -87,7 +87,12 @@ class AnalyzersController < ApplicationController
                                                :auto_run,
                                                :print_version_command,
                                                :simulator,
-                                               parameter_definitions_attributes: [[:id, :key, :type, :default, :description]]
+                                               :support_input_json,
+                                               :support_mpi,
+                                               :support_omp,
+                                               :pre_process_script,
+                                               parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
+                                               executable_on_ids: []
                                               ) : {}
     if analyzer_params.has_key?(:parameter_definitions_attributes) and analyzer_params[:parameter_definitions_attributes].is_a?(Hash)
       analyzer_params[:parameter_definitions_attributes].select! {|pdef_id, pdef_val| pdef_val.has_key?(:key)} # remove empty hash
