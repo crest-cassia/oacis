@@ -10,8 +10,8 @@
     .form-group
       = f.label :analyzer, class: 'col-md-2 control-label'
       .col-md-3
-        = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }, {}, {class: 'form-control'}
-    %div#parameters_form
+        = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }, {}, {class: 'form-control', id: 'analysis_form_analyzer'}
+    %div#analysis_parameters_form
       = render 'analyses/parameters_form', analyzer: azrs.first
     .form-group
       .col-md-2.col-md-offset-2
@@ -30,9 +30,13 @@
 
 :javascript
   $(function() {
-    $('#analysis_analyzer').change(function(){
-      $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',$(this).val()), function(data) {
-        $('#parameters_form').html(data)
+    $('#analysis_form_analyzer').change(function(){
+      var analyzer_id = $(this).val();
+      $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',analyzer_id), function(data) {
+        $('#analysis_parameters_form').html(data);
+        $('select#analysis_submitted_to').change(function() {
+          var host_id = $(this).val();
+        });
       });
     });
   });
