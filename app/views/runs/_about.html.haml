@@ -17,9 +17,6 @@
     %tr
       %th job_id
       %td= @run.job_id
-    %tr
-      %th hostname
-      %td= @run.hostname
     - if @run.simulator.support_mpi
       %tr
         %th MPI processes
@@ -33,6 +30,12 @@
       %td
         - if @run.host_parameters.present?
           %pre= @run.host_parameters.to_json
+    %tr
+      %th priority
+      %td= Submittable::PRIORITY_ORDER[@run.priority]
+    %tr
+      %th hostname
+      %td= @run.hostname
     %tr
       %th CPU time
       %td= formatted_elapsed_time(@run.cpu_time)
