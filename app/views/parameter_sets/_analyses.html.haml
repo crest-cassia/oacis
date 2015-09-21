@@ -5,13 +5,14 @@
 - azrs = sim.analyzers_on_parameter_set
 - unless OACIS_READ_ONLY or azrs.empty?
   %h3 Create Analysis
-  = form_for( parameter_set.analyses.build, :url => parameter_set_analyses_path(parameter_set), html: {class: 'form-horizontal'}, remote: true ) do |f|
+  - anl = parameter_set.analyses.build
+  = form_for( anl, :url => parameter_set_analyses_path(parameter_set), html: {class: 'form-horizontal'}, remote: true ) do |f|
     .form-group
       = f.label :analyzer, class: 'col-md-2 control-label'
       .col-md-3
         = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }, {}, {class: 'form-control'}
     %div#parameters_form
-      = render 'analyses/parameters_form', param_def: azrs.first.parameter_definitions
+      = render 'analyses/parameters_form', analyzer: azrs.first
     .form-group
       .col-md-2.col-md-offset-2
         = f.submit "Analyze", :class => 'btn btn-primary'

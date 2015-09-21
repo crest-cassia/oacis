@@ -67,9 +67,8 @@ class AnalyzersController < ApplicationController
   # GET /analyzers/:id/_parameters_form
   def _parameters_form
     analyzer = Analyzer.find(params[:id])
-    param_def = analyzer.parameter_definitions
 
-    render partial: 'analyses/parameters_form', layout: false, locals: {param_def: param_def}
+    render partial: 'analyses/parameters_form', layout: false, locals: {analyzer: analyzer}
   end
 
   def _inner_show
