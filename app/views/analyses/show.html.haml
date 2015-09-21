@@ -1,7 +1,15 @@
 = render partial: "shared/breadcrumb", locals: {links: breadcrumb_links_for(@analysis)}
 
 .page-header
-  %h1 Analysis
+  %h1= "Analysis"
+  %h4
+    Analyzer: 
+    = link_to(@analysis.analyzer.name, analyzer_path(@analysis.analyzer) )
+  - param_string = @analysis.parameters.map {|key,val| "#{key}=#{val}" }.join(', ')
+  - if param_string.present?
+    %h4
+      Parameter:
+      = "#{param_string}"
 
 %table.table.table-condensed.table-striped
   %thead
