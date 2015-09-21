@@ -13,16 +13,16 @@ class AnalysesController < ApplicationController
     analyzable = fetch_analyzable(params)
     azr = analyzable.simulator.analyzers.find(params[:analysis][:analyzer])
     permitted_params = permitted_analysis_params( azr )
-    arn = analyzable.analyses.build(analyzer: azr, parameters: permitted_params )
+    anl = analyzable.analyses.build(analyzer: azr, parameters: permitted_params )
 
     respond_to do |format|
-      if arn.save
-        format.json { render json: arn, status: :created, location: arn}
+      if anl.save
+        format.json { render json: anl, status: :created, location: anl}
         format.js
       else
         # UPDATE ME: a tentative implementation
         format.html { redirect_to analyzable, alert: "Failed to create analysis" }
-        format.json { render json: arn.errors, status: :unprocessable_entity}
+        format.json { render json: anl.errors, status: :unprocessable_entity}
       end
     end
   end
@@ -38,8 +38,8 @@ class AnalysesController < ApplicationController
   end
 
   def _result
-    arn = Analysis.find(params[:id])
-    render partial: "shared/results", layout: false, locals: {result: arn.result, result_paths: arn.result_paths, archived_result_path: nil}
+    anl = Analysis.find(params[:id])
+    render partial: "shared/results", layout: false, locals: {result: anl.result, result_paths: anl.result_paths, archived_result_path: nil}
   end
 
   def _analyses_table
@@ -60,13 +60,13 @@ class AnalysesController < ApplicationController
     return analyzable
   end
 
-  def after_create_redirect_path(arn)
-    case arn.analyzer.type
+  def after_create_redirect_path(anl)
+    case anl.analyzer.type
     when :on_parameter_set
-      ps = arn.analyzable
+      ps = anl.analyzable
       parameter_set_path(ps, anchor: '!tab-analyses')
     when :on_run
-      run = arn.analyzable
+      run = anl.analyzable
       run_path(run, anchor: '!tab-analyses')
     else
       raise "must not happen"
