@@ -21,6 +21,8 @@ describe AnalysesController do
     @azr = FactoryGirl.create(:analyzer,
                               simulator: @sim,
                               type: :on_run,
+                              support_mpi: true,
+                              support_omp: true,
                               run_analysis: true
                               )
     @arn = @run.analyses.first
@@ -28,9 +30,15 @@ describe AnalysesController do
     @azr2 = FactoryGirl.create(:analyzer,
                                simulator: @sim,
                                type: :on_parameter_set,
+                               support_mpi: true,
+                               support_omp: true,
                                run_analysis: true
                                )
     @arn2 = @par.analyses.first
+
+    @host = FactoryGirl.create(:host_with_parameters)
+    @azr.executable_on.push @host
+    @azr2.executable_on.push @host
   end
 
   describe "GET 'show'" do
@@ -71,8 +79,15 @@ describe AnalysesController do
         before(:each) do
           @valid_param = {
             run_id: @run.to_param,
-            analysis: { analyzer: @azr.to_param},
-            parameters: {"param1" => 1, "param2" => 2.0}
+            analysis: {
+              analyzer: @azr.to_param,
+              submitted_to: @host.to_param,
+              host_parameters: {"param1" => "foo", "param2" => "bar"},
+              mpi_procs: 2,
+              omp_threads: 8,
+              priority: 2,
+              parameters: {"param1" => 1, "param2" => 2.0}
+            }
           }
         end
 
@@ -85,6 +100,16 @@ describe AnalysesController do
           anl = @run.reload.analyses.last
           expect(anl.parameters["param1"]).to eq 1
           expect(anl.parameters["param2"]).to eq 2.0
+        end
+
+        it "sets fields appropriately" do
+          post :create, @valid_param.update(format: 'json'), valid_session
+          anl = @run.reload.analyses.last
+          expect(anl.submitted_to).to eq @host
+          expect(anl.host_parameters).to eq @valid_param[:analysis][:host_parameters]
+          expect(anl.mpi_procs).to eq 2
+          expect(anl.omp_threads).to eq 8
+          expect(anl.priority).to eq 2
         end
 
         it "redirects to 'analysis' tab of Run#show page" do
@@ -105,39 +130,45 @@ describe AnalysesController do
         end
       end
 
-      describe "with no permitted params" do
+      describe "with non-permitted params" do
 
         before(:each) do
-          @valid_param = {
+          @invalid_param = {
             run_id: @run.to_param,
-            analysis: { analyzer: @azr.to_param },
-            parameters: {"param1" => 1, "param2" => 2.0 }
-          }
+            analysis: {
+              analyzer: @azr.to_param,
+              submitted_to: @host.to_param,
+              host_parameters: {"param1" => "foo", "param2" => "bar"},
+              mpi_procs: 2,
+              omp_threads: 8,
+              priority: 2,
+              parameters: {"param1" => 1, "param2" => 2.0}
+            }
+          }.update(
+            status: :finished,
+            hostname: "Foo",
+            cpu_time: -100.0,
+            real_time: 10.0,
+            result: {"r1" => 0},
+            analyzer_version: "v9999",
+            host_parameters: {"param1"=>"foo", "param2"=>"bar", "param3"=>"baz"},
+            parameters: {"param1"=>1, "param2"=>2.0, "param3"=>3}
+          )
         end
 
-        it "create new analysis but no permitted params are not saved" do
-          invalid_analysis_params = @valid_param[:analysis].update(parameters: {"param1"=>2, "param2"=>4.0, invalid: 1})
-                                                           .update(status: :finished)
-                                                           .update(hostname: "Foo")
-                                                           .update(cpu_time: -100.0)
-                                                           .update(real_time: -100.0)
-                                                           .update(result: {"r1"=>0})
-                                                           .update(analyzer_version: "v9999")
-                                                           .update(invalid: 1)
-          invalid_params = @valid_param.update(invalid: 1)
-          invalid_params[:parameters].update(invalid: 1)
-          invalid_params[:analysis] = invalid_analysis_params
+        it "create new analysis but non-permitted params are not saved" do
           expect {
-            post :create, invalid_params.update(format: 'json'), valid_session
+            post :create, @invalid_param.update(format: 'json'), valid_session
           }.to change{Analysis.count}.by(1)
           anl = Analysis.last
-          expect(anl.parameters).not_to eq ({"param1"=>2, "param2"=>4.0})
-          expect(anl.status).not_to eq :finished
-          expect(anl.hostname).not_to eq "Foo"
-          expect(anl.cpu_time).not_to eq -100.0
-          expect(anl.real_time).not_to eq -100.0
-          expect(anl.result).not_to eq ({"r1"=>0})
-          expect(anl.analyzer_version).not_to eq "v9999"
+          expect(anl.status).to eq :created
+          expect(anl.hostname).to be_nil
+          expect(anl.cpu_time).to be_nil
+          expect(anl.real_time).to be_nil
+          expect(anl.result).to be_nil
+          expect(anl.analyzer_version).to be_nil
+          expect(anl.parameters).to eq ({"param1"=>1, "param2"=>2.0})
+          expect(anl.host_parameters).to eq ({"param1" => "foo", "param2" => "bar"})
         end
       end
     end
@@ -149,8 +180,15 @@ describe AnalysesController do
         before(:each) do
           @valid_param = {
             parameter_set_id: @par.to_param,
-            analysis: { analyzer: @azr2.to_param},
-            parameters: {}
+            analysis: {
+              analyzer: @azr2.to_param,
+              submitted_to: @host.to_param,
+              host_parameters: {"param1" => "foo", "param2" => "bar"},
+              mpi_procs: 2,
+              omp_threads: 8,
+              priority: 2,
+              parameters: {"param1" => 1, "param2" => 2.0}
+            }
           }
         end
 
@@ -160,6 +198,17 @@ describe AnalysesController do
           }.to change {
             @par.reload.analyses.count
           }.by(1)
+        end
+
+        it "sets fields appropriately" do
+          post :create, @valid_param.update(format: 'json'), valid_session
+          anl = @par.reload.analyses.last
+          expect(anl.submitted_to).to eq @host
+          expect(anl.host_parameters).to eq @valid_param[:analysis][:host_parameters]
+          expect(anl.mpi_procs).to eq 2
+          expect(anl.omp_threads).to eq 8
+          expect(anl.priority).to eq 2
+          expect(anl.parameters).to eq @valid_param[:analysis][:parameters]
         end
 
         it "redirects to 'analysis' tab of ParameterSet#show page" do
@@ -179,36 +228,42 @@ describe AnalysesController do
       describe "with no permitted params" do
 
         before(:each) do
-          @valid_param = {
+          @invalid_param = {
             parameter_set_id: @par.to_param,
-            analysis: { analyzer: @azr2.to_param},
-            parameters: {}
-          }
+            analysis: {
+              analyzer: @azr2.to_param,
+              submitted_to: @host.to_param,
+              host_parameters: {"param1" => "foo", "param2" => "bar"},
+              mpi_procs: 2,
+              omp_threads: 8,
+              priority: 2,
+              parameters: {"param1" => 1, "param2" => 2.0}
+            }
+          }.update(
+            status: :finished,
+            hostname: "Foo",
+            cpu_time: -100.0,
+            real_time: 10.0,
+            result: {"r1" => 0},
+            analyzer_version: "v9999",
+            host_parameters: {"param1"=>"foo", "param2"=>"bar", "param3"=>"baz"},
+            parameters: {"param1"=>1, "param2"=>2.0, "param3"=>3}
+          )
         end
 
         it "create new analysis but no permitted params are not saved" do
-          invalid_analysis_params = @valid_param[:analysis].update(parameters: {"param1"=>2, "param2"=>4.0})
-                                                           .update(status: :finished)
-                                                           .update(hostname: "Foo")
-                                                           .update(cpu_time: -100.0)
-                                                           .update(real_time: -100.0)
-                                                           .update(result: {"r1"=>0})
-                                                           .update(analyzer_version: "v9999")
-                                                           .update(invalid: 1)
-          invalid_params = @valid_param.update(invalid: 1)
-          invalid_params[:parameters].update(invalid: 1)
-          invalid_params[:analysis] = invalid_analysis_params
           expect {
-            post :create, invalid_params.update(format: 'json'), valid_session
+            post :create, @invalid_param.update(format: 'json'), valid_session
           }.to change{Analysis.count}.by(1)
           anl = Analysis.last
-          expect(anl.parameters).not_to eq ({"param1"=>2, "param2"=>4.0})
-          expect(anl.status).not_to eq :finished
-          expect(anl.hostname).not_to eq "Foo"
-          expect(anl.cpu_time).not_to eq -100.0
-          expect(anl.real_time).not_to eq -100.0
-          expect(anl.result).not_to eq ({"r1"=>0})
-          expect(anl.analyzer_version).not_to eq "v9999"
+          expect(anl.status).to eq :created
+          expect(anl.hostname).to be_nil
+          expect(anl.cpu_time).to be_nil
+          expect(anl.real_time).to be_nil
+          expect(anl.result).to be_nil
+          expect(anl.analyzer_version).to be_nil
+          expect(anl.parameters).to eq ({"param1"=>1, "param2"=>2.0})
+          expect(anl.host_parameters).to eq ({"param1" => "foo", "param2" => "bar"})
         end
       end
     end

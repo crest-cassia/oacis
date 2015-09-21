@@ -12,8 +12,10 @@ class AnalysesController < ApplicationController
   def create
     analyzable = fetch_analyzable(params)
     azr = analyzable.simulator.analyzers.find(params[:analysis][:analyzer])
-    permitted_params = permitted_analysis_params( azr )
-    anl = analyzable.analyses.build(analyzer: azr, parameters: permitted_params )
+    host_id = params[:analysis]["submitted_to"]
+    host = host_id.present? ? Host.find(host_id) : nil
+    permitted_params = permitted_analysis_params(azr, host)
+    anl = analyzable.analyses.build(permitted_params)
 
     respond_to do |format|
       if anl.save
@@ -73,7 +75,17 @@ class AnalysesController < ApplicationController
     end
   end
 
-  def permitted_analysis_params(azr)
-    params[:parameters].present? ? params.require(:parameters).permit(azr.parameter_definitions.map {|pd| pd.key.to_sym}) : {}
+  def permitted_analysis_params(azr, host)
+    analysis_param_keys = azr.parameter_definitions.map {|pd| pd.key.to_sym }
+    analysis_param_keys = {} if analysis_param_keys.empty?
+
+    host_param_keys = {}
+    host_param_keys = host.host_parameter_definitions.map {|hpd| hpd[:key] } if host
+
+    params.require(:analysis).permit(
+      :analyzer, :submitted_to, :mpi_procs, :omp_threads, :priority,
+      host_parameters: host_param_keys,
+      parameters: analysis_param_keys
+      )
   end
 end
