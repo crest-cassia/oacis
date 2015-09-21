@@ -10,21 +10,64 @@
       %th ID
       %td= @analysis.to_param
     %tr
-      %th Status
+      %th status
       %td= raw(status_label(@analysis.status))
     %tr
-      %th Directory
-      %td= @analysis.dir
+      %th submitted_to
+      - host = @analysis.submitted_to
+      %td= (host ? link_to( host.name, host_path(host) ) : "(manual submission)")
     %tr
-      %th Analyzer
-      - azr = @analysis.analyzer
-      %td= link_to(azr.name, analyzer_path(azr))
+      %th job_id
+      %td= @analysis.job_id
+    - if @analysis.analyzer.support_mpi
+      %tr
+        %th MPI processes
+        %td= @analysis.mpi_procs ? @analysis.mpi_procs : "-"
+    - if @analysis.analyzer.support_omp
+      %tr
+        %th OMP threads
+        %td= @analysis.omp_threads ? @analysis.omp_threads : "-"
     %tr
-      %th Elapsed Real Time
-      %td= @analysis.real_time
+      %th Host parameters
+      %td
+        - if @analysis.host_parameters.present?
+          %pre= @analysis.host_parameters.to_json
     %tr
-      %th Elapsed CPU Time
-      %td= @analysis.cpu_time
+      %th priority
+      %td= Submittable::PRIORITY_ORDER[@analysis.priority]
+    %tr
+      %th hostname
+      %td= @analysis.hostname
+    %tr
+      %th CPU time
+      %td= formatted_elapsed_time(@analysis.cpu_time)
+    %tr
+      %th real time
+      %td= formatted_elapsed_time(@analysis.real_time)
+    %tr
+      %th analyzer version
+      %td= @analysis.analyzer_version
+    %tr
+      %th created at
+      %td= @analysis.created_at
+    %tr
+      %th submitted at
+      %td= @analysis.submitted_at
+    %tr
+      %th started at
+      %td= @analysis.started_at
+    %tr
+      %th finished at
+      %td= @analysis.finished_at
+    %tr
+      %th included at
+      %td= @analysis.included_at
+    %tr
+      %th updated at
+      %td= @analysis.updated_at
+
+%h3 Directory
+%pre= @analysis.dir
 
 %hr
 - unless @analysis.parameters.empty?
