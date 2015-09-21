@@ -8,9 +8,9 @@
       .form-group
         = f.label :analyzer, class: 'col-md-2 control-label'
         .col-md-3
-          = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }, {}, {class: 'form-control'}
+          = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }, {}, {class: 'form-control', id: 'run_analysis_form_analyzer'}
       %div#parameters_form
-        = render 'analyses/parameters_form', param_def: @sim.analyzers_on_run.first.parameter_definitions
+        = render 'analyses/parameters_form', analyzer: @sim.analyzers_on_run.first
       .form-group
         .col-md-2.col-md-offset-2
           = f.submit "Analyze", :class => 'btn btn-primary'
@@ -29,12 +29,12 @@
   :javascript
     $(function() {
       var show_analysis_parameter_form = function() {
-        $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',$('#analysis_analyzer').val()), function(data) {
+        $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',$('#run_analysis_form_analyzer').val()), function(data) {
           $('#parameters_form').html(data)
         });
       }
-      $('#analysis_analyzer').change(show_analysis_parameter_form);
-      if( $('#analysis_analyzer').length > 0 ) {
+      $('#run_analysis_form_analyzer').change(show_analysis_parameter_form);
+      if( $('#run_analysis_form_analyzer').length > 0 ) {
         show_analysis_parameter_form();
       }
     });
