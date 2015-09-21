@@ -278,4 +278,52 @@ describe AnalyzersController do
     end
   end
 
+  describe "GET _default_mpi_omp" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 0, analyzers_count: 1)
+      @azr = @sim.analyzers.first
+      @azr.executable_on.push(@host)
+    end
+
+    it "returns http success" do
+      valid_param = {id: @azr.to_param, host_id: @host.to_param}
+      get :_default_mpi_omp, valid_param, valid_session
+      expect(response).to be_success
+    end
+
+    context "when default_mpi_procs and/or defualt_omp_threads are set" do
+
+      before(:each) do
+        @azr.update_attribute(:default_mpi_procs, {@host.id.to_s => 8})
+        @azr.update_attribute(:default_omp_threads, {@host.id.to_s => 4})
+      end
+
+      it "returns mpi_procs and omp_threads in json" do
+        valid_param = {id: @azr.to_param, host_id: @host.to_param}
+        get :_default_mpi_omp, valid_param, valid_session
+        expect(response.header['Content-Type']).to include 'application/json'
+        parsed = JSON.parse(response.body)
+        expect(parsed).to eq ({'mpi_procs' => 8, 'omp_threads' => 4})
+      end
+    end
+
+    context "when default_mpi_procs or default_omp_threads is not set" do
+
+      before(:each) do
+        @azr.update_attribute(:default_mpi_procs, {})
+        @azr.update_attribute(:default_omp_threads, {})
+      end
+
+      it "returns mpi_procs and omp_threads in json" do
+        valid_param = {id: @azr.to_param, host_id: @host.to_param}
+        get :_default_mpi_omp, valid_param, valid_session
+        expect(response.header['Content-Type']).to include 'application/json'
+        parsed = JSON.parse(response.body)
+        expect(parsed).to eq ({'mpi_procs' => 1, 'omp_threads' => 1})
+      end
+    end
+  end
 end
