@@ -21,7 +21,6 @@
       = f.text_field(:omp_threads, class: 'form-control')
 
 #host_parameters
-  = render 'runs/host_parameter_fields', {run: run, sim: run.simulator, host: run.submitted_to}
 
 :javascript
   $(function() {

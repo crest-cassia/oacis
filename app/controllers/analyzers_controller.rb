@@ -79,7 +79,7 @@ class AnalyzersController < ApplicationController
   def _host_parameters_field
     azr = Analyzer.find(params[:id])
     host = Host.where(id: params[:host_id]).first
-    render partial: "runs/host_parameter_fields", locals: {executable: azr, host: host}
+    render partial: "analyses/host_parameter_fields", locals: {analyzer: azr, host: host}
   end
 
   def _default_mpi_omp
