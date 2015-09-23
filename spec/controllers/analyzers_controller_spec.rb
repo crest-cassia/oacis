@@ -278,6 +278,28 @@ describe AnalyzersController do
     end
   end
 
+  describe "GET _host_parameters_field" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
+      @azr = @sim.analyzers.first
+      @azr.executable_on.push(@host)
+    end
+
+    it "returns http success" do
+      valid_param = {id: @azr.to_param, host_id: @host.to_param}
+      get :_host_parameters_field, valid_param, valid_session
+      expect(response).to be_success
+    end
+
+    it "returns http success if host_id is not found" do
+      param = {id: @azr.to_param, host_id: "manual"}
+      get :_host_parameters_field, param, valid_session
+      expect(response).to be_success
+    end
+  end
+
   describe "GET _default_mpi_omp" do
 
     before(:each) do

@@ -1,5 +1,5 @@
 - if host
-  - sim.get_default_host_parameter(host).each do |key, val|
+  - executable.get_default_host_parameter(host).each do |key, val|
     .form-group
       = label_tag(:"run[host_parameters][#{key}]", key, class: 'col-md-2 control-label')
       .col-md-3

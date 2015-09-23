@@ -168,7 +168,7 @@ class SimulatorsController < ApplicationController
   def _host_parameters_field
     sim = Simulator.find(params[:id])
     host = Host.where(id: params[:host_id]).first
-    render partial: "runs/host_parameter_fields", locals: {sim: sim, host: host}
+    render partial: "runs/host_parameter_fields", locals: {executable: sim, host: host}
   end
 
   def _default_mpi_omp
