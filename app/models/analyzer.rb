@@ -19,6 +19,7 @@ class Analyzer
   validates :type, presence: true, 
                    inclusion: {in: [:on_run, :on_parameter_set]}
   validates :auto_run, inclusion: {in: [:yes, :no, :first_run_only]}
+  validate :auto_run_submitted_to_is_in_executable_on
 
   accepts_nested_attributes_for :parameter_definitions, allow_destroy: true
 
@@ -67,5 +68,13 @@ class Analyzer
     end
 
     anl_versions.map {|key,val| val['version'] = key; val }.sort_by {|a| a['latest_started_at']}
+  end
+
+  private
+  def auto_run_submitted_to_is_in_executable_on
+    return if auto_run_submitted_to.blank?
+    unless executable_on.where(id: auto_run_submitted_to).first
+       errors.add(:auto_run_submitted_to, "is not included in executable hosts")
+    end
   end
 end

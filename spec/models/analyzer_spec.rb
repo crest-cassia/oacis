@@ -123,6 +123,26 @@ describe Analyzer do
         expect(@sim.analyzers.build(fields)).to be_valid
       end
     end
+
+    describe "'auto_run_submitted_to' field" do
+
+      it "is valid when auto_run_submitted_to is included in executable_on" do
+        another_host = FactoryGirl.create(:host)
+        valid_fields = @valid_fields.update(
+          executable_on: [another_host],
+          auto_run_submitted_to: another_host
+          )
+        azr = @sim.analyzers.build(valid_fields)
+        expect(azr).to be_valid
+      end
+
+      it "is not valid if auto_run_submitted_to is not included in executable_on" do
+        another_host = FactoryGirl.create(:host)
+        invalid_fields = @valid_fields.update(auto_run_submitted_to: another_host.id)
+        azr = @sim.analyzers.build(invalid_fields)
+        expect(azr).not_to be_valid
+      end
+    end
   end
 
   describe "relation" do
