@@ -14,9 +14,6 @@ class Analyzer
 
   ## fields for auto run
   belongs_to :auto_run_submitted_to, class_name: "Host"
-  field :auto_run_host_parameters, type: Hash, default: {}
-  field :auto_run_mpi_procs, type: Integer, default: 1
-  field :auto_run_omp_threads, type: Integer, default: 1
 
   validates :name, presence: true, uniqueness: {scope: :simulator}, format: {with: /\A\w+\z/}
   validates :type, presence: true, 

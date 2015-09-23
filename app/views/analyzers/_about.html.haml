@@ -22,6 +22,9 @@
     %tr
       %th Executable On
       %td= raw( analyzer.executable_on.map {|host| h(host.name) }.join('<br />') )
+    %tr
+      %th Host for Auto-Run Analyses
+      %td= analyzer.auto_run_submitted_to.try(:name)
 
 - if analyzer.parameter_definitions.present?
   %h3 Defined Parameters
@@ -39,24 +42,6 @@
           %td= pd.type
           %td= pd.default || '-'
           %td= pd.description ? pd.description : "-"
-
-- if analyzer.auto_run != :no
-  %h3 Parameters for Auto-run
-  %table.table.table-striped
-    %thead
-    %tbody
-      %tr
-        %th Submitted to
-        %td= analyzer.auto_run_submitted_to.try(:name)
-      %tr
-        %th MPI Processes
-        %td= analyzer.auto_run_mpi_procs
-      %tr
-        %th OMP Threads
-        %td= analyzer.auto_run_omp_threads
-      %tr
-        %th Host Parameters
-        %td= analyzer.auto_run_host_parameters
 
 %h3 Commands
 %ul
