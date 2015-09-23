@@ -21,9 +21,10 @@
       = text_field(:analysis, :omp_threads, value: 1, class: 'form-control')
 - analyzer.parameter_definitions.each do |definition|
   .form-group
-    = label 'parameters', definition.key, class: 'col-md-2 control-label'
+    = label(:analysis, "parameters[#{definition.key}]", definition.key, class: 'col-md-2 control-label')
     .col-md-3
-      = text_field_tag "parameters[#{definition.key}]", definition.default, class: 'form-control'
+      = text_field(:analysis, "parameters[#{definition.key}]", value: definition.default, class: 'form-control')
     .col-md-6
       = definition.description
       = definition.type
+#host_parameters
