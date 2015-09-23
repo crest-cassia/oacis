@@ -106,6 +106,7 @@ class AnalyzersController < ApplicationController
                                                :support_mpi,
                                                :support_omp,
                                                :pre_process_script,
+                                               :auto_run_submitted_to,
                                                parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
                                                executable_on_ids: []
                                               ) : {}

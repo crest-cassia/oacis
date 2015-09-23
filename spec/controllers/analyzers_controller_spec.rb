@@ -77,7 +77,8 @@ describe AnalyzersController do
           auto_run: "no", description: "xxx yyy",
           support_input_json: "1", support_mpi: "1", support_omp: "0",
           pre_process_script: "echo preprocess",
-          executable_on_ids: [@host.id.to_s]
+          executable_on_ids: [@host.id.to_s],
+          auto_run_submitted_to: @host.id.to_s
         }
         @valid_post_parameter = {simulator_id: @sim.id, analyzer: analyzer}
       end
@@ -103,6 +104,7 @@ describe AnalyzersController do
         expect(azr.support_omp).to be_falsey
         expect(azr.pre_process_script).to eq("echo preprocess")
         expect(azr.executable_on).to eq [@host]
+        expect(azr.auto_run_submitted_to).to eq @host
       end
 
       it "assigns a newly created analyzer as @analyzer" do
@@ -184,7 +186,8 @@ describe AnalyzersController do
           auto_run: "no", description: "xxx yyy",
           support_input_json: "1", support_mpi: "1", support_omp: "0",
           pre_process_script: "echo preprocess",
-          executable_on: []
+          executable_on: [],
+          auto_run_submitted_to: ''
         }
         @valid_post_parameter = {analyzer: analyzer}
       end
