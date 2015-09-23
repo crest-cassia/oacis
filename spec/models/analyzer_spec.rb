@@ -231,7 +231,7 @@ describe Analyzer do
       @azr.executable_on << @host
     end
 
-    context "when there is no run" do
+    context "when there is no analysis" do
 
       it "return default_host_parameter associated with a host" do
         key_value = @host.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
