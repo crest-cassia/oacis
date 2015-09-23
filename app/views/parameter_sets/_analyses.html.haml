@@ -53,5 +53,7 @@
         update_analysis_mpi_omp_fields( analyzer_id, submitted_to.val() );
       });
     });
-    analyzer_field.trigger('change');
+    if( $('#analysis_form_analyzer').length > 0 ) {
+      analyzer_field.trigger('change');
+    }
   });
