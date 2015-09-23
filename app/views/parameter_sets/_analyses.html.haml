@@ -12,7 +12,6 @@
       .col-md-3
         = f.select :analyzer, azrs.map { |x| [x.name, x.to_param] }, {}, {class: 'form-control', id: 'analysis_form_analyzer'}
     %div#analysis_parameters_form
-      = render 'analyses/parameters_form', analyzer: azrs.first
     .form-group
       .col-md-2.col-md-offset-2
         = f.submit "Analyze", :class => 'btn btn-primary'
@@ -30,13 +29,29 @@
 
 :javascript
   $(function() {
-    $('#analysis_form_analyzer').change(function(){
+    var update_analysis_mpi_omp_fields = function(analyzer_id, host_id) {
+      var mpi_field = $('input#analysis_mpi_procs');
+      var omp_field = $('input#analysis_omp_threads');
+      if( mpi_field.size() + omp_field.size() == 0 ) return;
+      var url = "#{_default_mpi_omp_analyzer_url(':analyzer_id')}.json" + "?host_id=" + host_id;
+      url = url.replace(':analyzer_id', analyzer_id);
+      $.get(url, function(data) {
+        if( mpi_field.size() > 0 ) { mpi_field.val(data['mpi_procs']); }
+        if( omp_field.size() > 0 ) { omp_field.val(data['omp_threads']); }
+      });
+    }
+    var analyzer_field = $('#analysis_form_analyzer')
+    analyzer_field.change(function(){
       var analyzer_id = $(this).val();
       $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',analyzer_id), function(data) {
         $('#analysis_parameters_form').html(data);
-        $('select#analysis_submitted_to').change(function() {
-          var host_id = $(this).val();
+        var submitted_to = $('#analysis_parameters_form select#analysis_submitted_to');
+        var host_id = submitted_to.val() || 'manual';
+        submitted_to.change(function() {
+          update_analysis_mpi_omp_fields( analyzer_id, host_id );
         });
+        update_analysis_mpi_omp_fields( analyzer_id, host_id );
       });
     });
+    analyzer_field.trigger('change');
   });
