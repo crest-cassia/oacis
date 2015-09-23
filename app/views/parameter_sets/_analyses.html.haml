@@ -40,6 +40,13 @@
         if( omp_field.size() > 0 ) { omp_field.val(data['omp_threads']); }
       });
     }
+    var update_host_parameters = function(analyzer_id, host_id) {
+      var url = "#{_host_parameters_field_analyzer_url(':analyzer_id')}" + "?host_id=" + host_id;
+      url = url.replace(':analyzer_id', analyzer_id);
+      $.get(url, function(data) {
+        $('#analysis_host_parameters').html(data);
+      });
+    }
     var analyzer_field = $('#analysis_form_analyzer')
     analyzer_field.change(function(){
       var analyzer_id = $(this).val();
@@ -49,8 +56,9 @@
         submitted_to.change(function() {
           var host_id = $(this).val();
           update_analysis_mpi_omp_fields( analyzer_id, host_id );
+          update_host_parameters( analyzer_id, host_id );
         });
-        update_analysis_mpi_omp_fields( analyzer_id, submitted_to.val() );
+        submitted_to.trigger('change');
       });
     });
     if( $('#analysis_form_analyzer').length > 0 ) {

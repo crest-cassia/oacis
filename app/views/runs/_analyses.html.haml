@@ -38,6 +38,13 @@
           if( omp_field.size() > 0 ) { omp_field.val(data['omp_threads']); }
         });
       }
+      var update_host_parameters = function(analyzer_id, host_id) {
+        var url = "#{_host_parameters_field_analyzer_url(':analyzer_id')}" + "?host_id=" + host_id;
+        url = url.replace(':analyzer_id', analyzer_id);
+        $.get(url, function(data) {
+          $('#analysis_host_parameters').html(data);
+        });
+      }
       var show_analysis_parameter_form = function() {
         var analyzer_id = $('#run_analysis_form_analyzer').val();
         $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id', analyzer_id), function(data) {
@@ -46,8 +53,9 @@
           submitted_to.change(function() {
             var host_id = $(this).val();
             update_analysis_mpi_omp_fields( analyzer_id, host_id );
+            update_host_parameters( analyzer_id, host_id );
           });
-          update_analysis_mpi_omp_fields( analyzer_id, submitted_to.val() );
+          submitted_to.trigger('change');
         });
       }
       $('#run_analysis_form_analyzer').change(show_analysis_parameter_form);

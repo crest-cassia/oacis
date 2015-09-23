@@ -16,7 +16,6 @@ class AnalysesController < ApplicationController
     host = host_id.present? ? Host.find(host_id) : nil
     permitted_params = permitted_analysis_params(azr, host)
     anl = analyzable.analyses.build(permitted_params)
-
     respond_to do |format|
       if anl.save
         format.json { render json: anl, status: :created, location: anl}
