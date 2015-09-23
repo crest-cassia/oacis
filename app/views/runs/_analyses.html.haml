@@ -9,8 +9,7 @@
         = f.label :analyzer, class: 'col-md-2 control-label'
         .col-md-3
           = f.select :analyzer, @sim.analyzers_on_run.map { |x| [x.name, x.to_param] }, {}, {class: 'form-control', id: 'run_analysis_form_analyzer'}
-      %div#parameters_form
-        = render 'analyses/parameters_form', analyzer: @sim.analyzers_on_run.first
+      %div#analysis_parameters_form
       .form-group
         .col-md-2.col-md-offset-2
           = f.submit "Analyze", :class => 'btn btn-primary'
@@ -28,9 +27,27 @@
 
   :javascript
     $(function() {
+      var update_analysis_mpi_omp_fields = function(analyzer_id, host_id) {
+        var mpi_field = $('input#analysis_mpi_procs');
+        var omp_field = $('input#analysis_omp_threads');
+        if( mpi_field.size() + omp_field.size() == 0 ) return;
+        var url = "#{_default_mpi_omp_analyzer_url(':analyzer_id')}.json" + "?host_id=" + host_id;
+        url = url.replace(':analyzer_id', analyzer_id);
+        $.get(url, function(data) {
+          if( mpi_field.size() > 0 ) { mpi_field.val(data['mpi_procs']); }
+          if( omp_field.size() > 0 ) { omp_field.val(data['omp_threads']); }
+        });
+      }
       var show_analysis_parameter_form = function() {
-        $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',$('#run_analysis_form_analyzer').val()), function(data) {
-          $('#parameters_form').html(data)
+        var analyzer_id = $('#run_analysis_form_analyzer').val();
+        $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id', analyzer_id), function(data) {
+          $('#analysis_parameters_form').html(data);
+          var submitted_to = $('#analysis_parameters_form select#analysis_submitted_to');
+          submitted_to.change(function() {
+            var host_id = $(this).val();
+            update_analysis_mpi_omp_fields( analyzer_id, host_id );
+          });
+          update_analysis_mpi_omp_fields( analyzer_id, submitted_to.val() );
         });
       }
       $('#run_analysis_form_analyzer').change(show_analysis_parameter_form);
