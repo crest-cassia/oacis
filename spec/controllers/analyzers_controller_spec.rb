@@ -294,6 +294,12 @@ describe AnalyzersController do
       expect(response).to be_success
     end
 
+    it "does not cause an error even when host is not found" do
+      param = {id: @azr.to_param, host_id: 'DO_NOT_EXIST'}
+      get :_default_mpi_omp, param, valid_session
+      expect(response).to be_success
+    end
+
     context "when default_mpi_procs and/or defualt_omp_threads are set" do
 
       before(:each) do

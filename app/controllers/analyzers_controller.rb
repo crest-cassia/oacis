@@ -79,8 +79,9 @@ class AnalyzersController < ApplicationController
   def _default_mpi_omp
     azr = Analyzer.find(params[:id])
     host = Host.where(id: params[:host_id]).first
-    mpi = azr.default_mpi_procs[host.id.to_s] || 1
-    omp = azr.default_omp_threads[host.id.to_s] || 1
+    host_id = host ? host.id.to_s : nil
+    mpi = azr.default_mpi_procs[host_id] || 1
+    omp = azr.default_omp_threads[host_id] || 1
     data = {'mpi_procs' => mpi, 'omp_threads' => omp}
     render json: data
   end

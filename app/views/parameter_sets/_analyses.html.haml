@@ -46,11 +46,11 @@
       $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',analyzer_id), function(data) {
         $('#analysis_parameters_form').html(data);
         var submitted_to = $('#analysis_parameters_form select#analysis_submitted_to');
-        var host_id = submitted_to.val() || 'manual';
         submitted_to.change(function() {
+          var host_id = $(this).val();
           update_analysis_mpi_omp_fields( analyzer_id, host_id );
         });
-        update_analysis_mpi_omp_fields( analyzer_id, host_id );
+        update_analysis_mpi_omp_fields( analyzer_id, submitted_to.val() );
       });
     });
     analyzer_field.trigger('change');
