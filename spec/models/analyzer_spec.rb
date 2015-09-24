@@ -201,11 +201,11 @@ describe Analyzer do
       analyses[4].update_attribute(:status, :failed)
     end
 
-    it "returns list of simulator_versions in Array" do
+    it "returns list of analyzer_versions in Array" do
       expect(@azr.analyzer_versions).to be_a(Array)
     end
 
-    it "returns array of hash whose 'version' field is simulator_versions" do
+    it "returns array of hash whose 'version' field is analyzer_versions" do
       expect(@azr.analyzer_versions.map {|h| h['version']}).to match_array(["v1", "v2"])
     end
 
