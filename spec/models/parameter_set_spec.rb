@@ -189,7 +189,7 @@ describe ParameterSet do
         sim.parameter_sets.create( v: val )
       end
       sim.parameter_sets.create(v: {"L" => 3, "T" => 1.0, "P" => 3.0})
-      @prm = sim.parameter_sets.first
+      @prm = sim.parameter_sets.where('v.L'=>1,'v.T'=>1.0,'v.P'=>1.0).first
     end
 
     it "returns parameter_sets whose sim_parameter is same as self except for the specified key" do
