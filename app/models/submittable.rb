@@ -71,6 +71,14 @@ module Submittable
     raise "IMPLEMENT ME"
   end
 
+  def version
+    self.is_a?(Run) ? simulator_version : analyzer_version
+  end
+
+  def version=(arg)
+    self.is_a?(Run) ? self.simulator_version=arg : self.analyzer_version=arg
+  end
+
   def command_with_args
     cmd = executable.command
     cmd += " #{args}" if args.length > 0

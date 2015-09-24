@@ -125,7 +125,7 @@ EOS
       if File.exist?("_version.txt")
         begin
           version = File.open("_version.txt", 'r').read.chomp
-          job.simulator_version = version
+          job.version = version
           is_updated = true
         rescue => ex
           error_message+="failed to load _version.txt: #{ex.message}"
