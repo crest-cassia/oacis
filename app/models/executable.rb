@@ -2,7 +2,7 @@ module Executable
 
   def self.included(base)
     base.send(:field, :command, type: String)
-    base.send(:field, :support_input_json, type: Boolean, default: false)
+    base.send(:field, :support_input_json, type: Boolean, default: true)
     base.send(:field, :support_mpi, type: Boolean, default: false)
     base.send(:field, :support_omp, type: Boolean, default: false)
     base.send(:field, :pre_process_script, type: String)
