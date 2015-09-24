@@ -272,7 +272,7 @@ describe RemoteJobHandler do
         allow(@handler).to receive(:remote_status).and_return(:includable)
       end
 
-      it "calls cancel_command of the scheduler" do
+      it "does not call cancel_command of the scheduler" do
         expect_any_instance_of(SchedulerWrapper).not_to receive(:cancel_command)
         @handler.cancel_remote_job(@run)
       end
