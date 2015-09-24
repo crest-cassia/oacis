@@ -31,11 +31,15 @@ fi
 # JOB EXECUTION -------------------
 export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
 { time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
-echo "  \\"rc\\": $?," >> ../${OACIS_RUN_ID}_status.json
+RC=$?
+echo "  \\"rc\\": $RC," >> ../${OACIS_RUN_ID}_status.json
 echo "  \\"finished_at\\": \\"`date`\\"" >> ../${OACIS_RUN_ID}_status.json
 echo "}" >> ../${OACIS_RUN_ID}_status.json
 
 # POST-PROCESS --------------------
+if [ -d _input ] && [ $RC -eq 0 ]; then {
+  \\rm -rf _input
+} fi
 cd ..
 \\mv -f ${OACIS_RUN_ID}_status.json ${OACIS_RUN_ID}/_status.json
 \\mv -f ${OACIS_RUN_ID}_time.txt ${OACIS_RUN_ID}/_time.txt

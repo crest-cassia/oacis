@@ -97,7 +97,7 @@ FactoryGirl.define do
   factory :analyzer do
     sequence(:name, 'A') {|n| "analyzer_#{n}"}
     type { :on_run }
-    command { "cat _input.json" }
+    command { "echo" }
     parameter_definitions {
       [
       ParameterDefinition.new(

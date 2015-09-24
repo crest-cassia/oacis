@@ -53,6 +53,27 @@ shared_examples_for JobScriptUtil do
       expect( File.exist?(archive) ).to be_truthy
     end
 
+    it "removes _input dir when job finished successfully" do
+      work_dir = @temp_dir.join(@submittable.id.to_s)
+      input_dir = work_dir.join('_input')
+      FileUtils.mkdir_p(input_dir)
+      FileUtils.touch( input_dir.join('temp.txt') )
+
+      run_test_script_in_temp_dir
+      expect( File.directory?(input_dir) ).to be_falsey
+    end
+
+    it "does not remove _input dir when job failed" do
+      work_dir = @temp_dir.join(@submittable.id.to_s)
+      input_dir = work_dir.join('_input')
+      FileUtils.mkdir_p(input_dir)
+      FileUtils.touch( input_dir.join('temp.txt') )
+      @executable.update_attribute(:command, 'invalid')
+
+      run_test_script_in_temp_dir
+      expect( File.directory?(input_dir) ).to be_truthy
+    end
+
     it "set OACIS_MPI envs and do not call mpiexec when Simulator#support_mpi is true" do
       @executable.support_mpi = true
       @executable.save!
