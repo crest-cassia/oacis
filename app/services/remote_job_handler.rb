@@ -77,7 +77,7 @@ class RemoteJobHandler
   end
 
   def execute_pre_process(job)
-    script = job.simulator.pre_process_script
+    script = job.executable.pre_process_script
     if script.present?
       path = RemoteFilePath.pre_process_script_path(@host, job)
       @host.start_ssh do |ssh|

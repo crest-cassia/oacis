@@ -31,7 +31,8 @@ shared_examples_for RemoteJobHandler do
         @executable.update_attribute(:support_input_json, false)
         @executable.update_attribute(:pre_process_script, "echo $# > preprocess.txt")
         RemoteJobHandler.new(@host).submit_remote_job(@submittable)
-        expect(File.open( @temp_dir.join(@submittable.id, 'preprocess.txt') ).read.chomp).to eq "3"
+        num_args = @submittable.args.split.size
+        expect(File.open( @temp_dir.join(@submittable.id, 'preprocess.txt') ).read.chomp.to_i ).to eq num_args
       end
 
       describe "when pre_process_script fails" do
@@ -308,6 +309,39 @@ describe "for Run" do
 
     @executable = sim
     @submittable = run
+    @host = host
+  end
+
+  after(:each) do
+    begin
+      FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
+    rescue
+      sleep 1
+      retry
+    end
+  end
+
+  it_behaves_like RemoteJobHandler
+end
+
+describe "for Analysis" do
+
+  before(:each) do
+    sim = FactoryGirl.create(:simulator,
+                              command: "echo",
+                              parameter_sets_count: 1, runs_count: 1,
+                              analyzers_count: 1, run_analysis: false
+                              )
+    run = sim.parameter_sets.first.runs.first
+    azr = sim.analyzers.first
+    host = sim.executable_on.where(name: "localhost").first
+    azr.update_attribute(:executable_on, [azr])
+    anl = run.analyses.create(analyzer: azr, submitted_to: host)
+    @temp_dir = Pathname.new( Dir.mktmpdir )
+    host.update_attribute(:work_base_dir, @temp_dir.expand_path)
+
+    @executable = azr
+    @submittable = anl
     @host = host
   end
 
