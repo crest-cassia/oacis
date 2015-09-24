@@ -61,12 +61,24 @@ describe SSHUtil do
 
   describe ".upload" do
 
-    it "upload local path" do
+    it "upload local file" do
       local_path = @temp_dir.join('__abc__')
       FileUtils.touch(local_path)
       remote_path = @temp_dir.join('__def__').expand_path
       SSHUtil.upload(@ssh, local_path, remote_path)
       expect(File.exist?(remote_path)).to be_truthy
+    end
+
+    it "upload local directory recursively" do
+      local_dir = @temp_dir.join('dir/dir2')
+      FileUtils.mkdir_p(local_dir)
+      local_file = local_dir.join('file')
+      FileUtils.touch(local_file)
+      remote_path = @temp_dir.join('remote').expand_path
+      FileUtils.mkdir_p(remote_path)
+      SSHUtil.upload(@ssh, @temp_dir.join('dir'), remote_path.join('dir'))
+      expect( File.directory?(@temp_dir.join('remote/dir/dir2')) ).to be_truthy
+      expect( File.exist?( @temp_dir.join('remote/dir/dir2/file')) ).to be_truthy
     end
   end
 

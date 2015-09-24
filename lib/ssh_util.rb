@@ -17,9 +17,14 @@ module SSHUtil
 
   def self.upload(ssh, local_path, remote_path)
     rpath = expand_remote_home_path(ssh, remote_path)
+    is_dir = File.directory?(local_path)
     sftp = ssh.sftp
     sftp.connect! if sftp.closed?
-    sftp.upload!(local_path.to_s, remote_path)
+    if is_dir
+      sftp.upload!(local_path.to_s, rpath, mkdir: true)
+    else
+      sftp.upload!(local_path.to_s, rpath.to_s)
+    end
   end
 
   def self.rm_r(ssh, remote_path)
