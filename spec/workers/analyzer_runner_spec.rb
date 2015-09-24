@@ -23,7 +23,6 @@ describe AnalyzerRunner do
 
       before(:each) do
         @arn.update_attribute(:status, :cancelled)
-        @arn.save!
       end
 
       it "calls Analysis#destroy when status is cancelled" do
@@ -66,10 +65,10 @@ describe AnalyzerRunner do
         Dir.chdir(@work_dir) {
           dummy_input = @arn.analyzable.dir.join('dummy.txt')
           FileUtils.touch(dummy_input)
-          expect(@arn).to receive(:input_files).and_return([@arn.analyzable.dir])
+          expect(@arn).to receive(:input_files).and_return(['dummy.txt'])
           AnalyzerRunner.__send__(:prepare_inputs, @arn)
           expect(File.directory?('_input')).to be_truthy
-          expect(File.exist?("_input/#{@arn.analyzable.to_param}/dummy.txt")).to be_truthy
+          expect(File.symlink?("_input/dummy.txt")).to be_truthy
         }
       end
     end
