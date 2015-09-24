@@ -155,9 +155,8 @@ shared_examples_for JobScriptUtil do
   describe ".update_run" do
 
     before(:each) do
-      @executable.command = "echo '{\"timeline\":[1,2,3]}' > _output.json"
-      @executable.support_input_json = true
-      @executable.save!
+      @executable.update_attribute(:command, "echo '{\"timeline\":[1,2,3]}' > _output.json")
+      @executable.update_attribute(:support_input_json, true)
       run_test_script_in_temp_dir
       Dir.chdir(@temp_dir) {
         result_file = "#{@submittable.id}.tar.bz2"
