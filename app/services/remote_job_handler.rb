@@ -13,6 +13,7 @@ class RemoteJobHandler
       begin
         create_remote_work_dir(job)
         prepare_input_json(job)
+        prepare_input_files(job)
         execute_pre_process(job)
         job_script_path = prepare_job_script(job)
         submit_to_scheduler(job, job_script_path)
@@ -72,6 +73,21 @@ class RemoteJobHandler
     if input
       @host.start_ssh do |ssh|
         SSHUtil.write_remote_file(ssh, RemoteFilePath.input_json_path(@host,job), input.to_json)
+      end
+    end
+  end
+
+  def prepare_input_files(job)
+    return if job.is_a?(Run)
+    # make remote input files directory
+    remote_input_dir = RemoteFilePath.input_files_dir_path(@host,job)
+    cmd = "mkdir -p #{remote_input_dir}"
+    @host.start_ssh do |ssh|
+      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+      raise RemoteOperationError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
+      job.input_files.each do |file|
+        remote_path = remote_input_dir.join( File.basename(file) )
+        SSHUtil.upload(ssh, file, remote_path)
       end
     end
   end

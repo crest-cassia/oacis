@@ -15,6 +15,30 @@ shared_examples_for RemoteJobHandler do
         expect(File.directory?( @temp_dir.join(@submittable.id) )).to be_truthy
       end
 
+      it "creates _input/ directory and copy input files on remote host" do
+        if @submittable.is_a?(Analysis)
+          input_file = @submittable.analyzable.dir.join('dummy.txt')
+          FileUtils.touch(input_file)
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+          input_dir_path = @temp_dir.join(@submittable.id.to_s, '_input')
+          expect( File.directory?(input_dir_path) ).to be_truthy
+          expect( File.exist?(input_dir_path.join('dummy.txt')) ).to be_truthy
+        end
+      end
+
+      it "creates _input/ directory recursively for input directory" do
+        if @submittable.is_a?(Analysis)
+          input_dir = @submittable.analyzable.dir.join('dir1/dir2')
+          FileUtils.mkdir_p(input_dir)
+          input_file = input_dir.join('file1')
+          FileUtils.touch(input_file)
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+          input_dir_path = @temp_dir.join(@submittable.id.to_s, '_input')
+          remote_input_file_path = input_dir_path.join('dir1/dir2/file1')
+          expect( File.exist?(remote_input_file_path) ).to be_truthy
+        end
+      end
+
       it "creates _input.json on remote host if simulator.support_input_json is true" do
         @executable.update_attribute(:support_input_json, true)
         RemoteJobHandler.new(@host).submit_remote_job(@submittable)
