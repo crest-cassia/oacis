@@ -409,13 +409,14 @@ EOS
     it "parses simulator version printed by Simulator#print_version_command" do
 
       File.open(@submittable.dir.join("_version.txt"), "w") do |io|
-        io.puts "simulator version: 1.0.0"
+        io.puts "version: 1.0.0"
       end
 
       JobScriptUtil.update_run(@submittable)
 
       @submittable.reload
-      expect(@submittable.simulator_version).to eq "simulator version: 1.0.0"
+      method = @executable.is_a?(Simulator) ? :simulator_version : :analyzer_version
+      expect( @submittable.send(method) ).to eq "version: 1.0.0"
     end
 
     context "fails to parse simulator version" do
@@ -436,6 +437,34 @@ context "for Run" do
     run = sim.parameter_sets.first.runs.first
     @executable = sim
     @submittable = run
+    @host = host
+    @temp_dir = Pathname.new('__temp__')
+    FileUtils.mkdir_p(@temp_dir)
+    @host.work_base_dir = @temp_dir.expand_path
+  end
+
+  after(:each) do
+    FileUtils.rm_r(@temp_dir) if File.directory?(@temp_dir)
+  end
+
+  it_should_behave_like JobScriptUtil
+end
+
+context "for Analysis" do
+
+  before(:each) do
+    sim = FactoryGirl.create(:simulator,
+      parameter_sets_count: 1, runs_count: 1,
+      analyzers_count: 1, run_analysis: false
+      )
+    run = sim.parameter_sets.first.runs.first
+    host = Host.where(name: "localhost").first
+    azr = sim.analyzers.first
+    azr.update_attribute(:executable_on, [host])
+    anl = run.analyses.create(analyzer: azr, submitted_to: host)
+
+    @executable = azr
+    @submittable = anl
     @host = host
     @temp_dir = Pathname.new('__temp__')
     FileUtils.mkdir_p(@temp_dir)
