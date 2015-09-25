@@ -227,6 +227,31 @@ describe JobIncluder do
     it_behaves_like "remote job"
   end
 
+  describe "for Analysis" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1, runs_count: 1,
+                               analyzers_count: 1, run_analysis: false)
+      run = sim.parameter_sets.first.runs.first
+      azr = sim.analyzers.first
+      anl = run.analyses.build(analyzer: azr)
+      @host = sim.executable_on.where(name: "localhost").first
+      @temp_dir = Pathname.new( Dir.mktmpdir )
+      @host.update_attribute(:work_base_dir, @temp_dir.expand_path)
+      azr.update_attribute(:executable_on, [@host])
+      @executable = azr
+      @submittable = anl
+    end
+
+    after(:each) do
+      FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it_behaves_like "manual job"
+    it_behaves_like "remote job"
+  end
+
   describe ".create_auto_run_analyses" do
 
     def invoke
