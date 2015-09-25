@@ -47,12 +47,12 @@ module JobIncluder
 
     if run.status == :finished
       analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
-        run.analyses.create(analyzer: azr)
+        create_auto_analysis(run, azr)
       end
 
       analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
         unless runs.where(status: :finished).ne(id: run.id).exists?
-          run.analyses.create(analyzer: azr)
+          create_auto_analysis(run, azr)
         end
       end
     end
@@ -60,10 +60,24 @@ module JobIncluder
     if run.status == :finished or run.status == :failed
       analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
         unless runs.nin(status: [:finished, :failed]).exists?
-          run.parameter_set.analyses.create(analyzer: azr)
+          create_auto_analysis(run.parameter_set, azr)
         end
       end
     end
+  end
+
+  def self.create_auto_analysis(analyzable, analyzer)
+    host = analyzer.auto_run_submitted_to
+    anl = analyzable.analyses.build(analyzer: analyzer, submitted_to: host)
+    if host
+      host_param = {}
+      host.host_parameter_definitions.each {|hpd| host_param[hpd.key] = hpd.default }
+      anl.host_parameters = host_param
+      anl.mpi_procs = host.min_mpi_procs if analyzer.support_mpi
+      anl.omp_threads = host.min_omp_threads if analyzer.support_omp
+    end
+    anl.save!
+    anl
   end
 
   def self.remote_file_is_ready_to_include(host, submittable, ssh)

@@ -261,6 +261,8 @@ describe JobIncluder do
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 0,
+                                analyzers_count: 0,
+                                analyzers_on_parameter_set_count: 0,
                                 command: "echo")
       @temp_dir = Pathname.new( Dir.mktmpdir )
       @run = @sim.parameter_sets.first.runs.create
@@ -271,10 +273,44 @@ describe JobIncluder do
       FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
     end
 
+    shared_examples_for "analysis with valid host parameters" do
+
+      before(:each) do
+        @host = FactoryGirl.create(:host_with_parameters,
+          min_mpi_procs: 2, max_mpi_procs: 8, min_omp_threads: 4, max_omp_threads: 10
+          )
+        analyzer = @sim.analyzers.first
+        analyzer.update!(
+          executable_on:[@host],
+          auto_run_submitted_to: @host,
+          support_mpi: true,
+          support_omp: true
+          )
+      end
+
+      let(:created_analysis) { invoke; Analysis.first }
+
+      it "creates analysis whose submitted_to is auto_run_submitted_to" do
+        expect( created_analysis.submitted_to ).to eq @host
+      end
+
+      it "creates analysis whose host parameter is default of host" do
+        array = @host.host_parameter_definitions.map {|hpd| [hpd.key, hpd.default] }
+        default_host_params = Hash[*array.flatten]
+        expect( created_analysis.host_parameters ).to eq default_host_params
+      end
+
+      it "creates analysis whose mpi_procs/omp_threads are minimum value for host" do
+        anl = created_analysis
+        expect( anl.mpi_procs ).to eq 2
+        expect( anl.omp_threads ).to eq 4
+      end
+    end
+
     describe "auto run of analyzers for on_run type" do
 
       before(:each) do
-        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_run)
+        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_run, run_analysis: false)
       end
 
       context "when Analyzer#auto_run is :yes" do
@@ -289,6 +325,8 @@ describe JobIncluder do
           @run.update_attribute(:status, :failed)
           expect { invoke }.to_not change { @run.reload.analyses.count }
         end
+
+        it_behaves_like "analysis with valid host parameters"
       end
 
       context "when Analyzer#auto_run is :no" do
@@ -313,13 +351,16 @@ describe JobIncluder do
           FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :finished)
           expect { invoke }.to_not change { @run.reload.analyses.count }
         end
+
+        it_behaves_like "analysis with valid host parameters"
       end
     end
 
     describe "auto run of analyzers for on_parameter_set type" do
 
       before(:each) do
-        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_parameter_set)
+        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_parameter_set,
+                                  run_analysis: false)
       end
 
       context "when Analyzer#auto_run is :yes" do
@@ -336,6 +377,8 @@ describe JobIncluder do
           FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :submitted)
           expect { invoke }.to_not change { @run.parameter_set.reload.analyses.count }
         end
+
+        it_behaves_like "analysis with valid host parameters"
       end
 
       context "when Analyzer#auto_run is :no" do
