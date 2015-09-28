@@ -2,7 +2,7 @@
   %h1 Analyses
 
 %h3 Running Analyses
-%table.table.table-condensed.table-hover.table-striped.analyses_datatable{:'data-source' => "#{_analyses_table_analyses_path(format: "json", analysis_status: "running")}"}
+%table.table.table-condensed.table-hover.table-striped.analyses_datatable.has_analysis_modal{:'data-source' => "#{_analyses_table_analyses_path(format: "json", analysis_status: "running")}"}
   %thead
     %tr
       - AnalysesListDatatable::HEADER.each do |header|
@@ -11,7 +11,7 @@
 
 %hr
 %h3 Submitted Analyses
-%table.table.table-condensed.table-hover.table-striped.analyses_datatable{:'data-source' => "#{_analyses_table_analyses_path(format: "json", analysis_status: "submitted")}"}
+%table.table.table-condensed.table-hover.table-striped.analyses_datatable.has_analysis_modal{:'data-source' => "#{_analyses_table_analyses_path(format: "json", analysis_status: "submitted")}"}
   %thead
     %tr
       - AnalysesListDatatable::HEADER.each do |header|
@@ -20,12 +20,23 @@
 
 %hr
 %h3 Created Analyses
-%table.table.table-condensed.table-hover.table-striped.analyses_datatable{:'data-source' => "#{_analyses_table_analyses_path(format: "json", analysis_status: "created")}"}
+%table.table.table-condensed.table-hover.table-striped.analyses_datatable.has_analysis_modal{:'data-source' => "#{_analyses_table_analyses_path(format: "json", analysis_status: "created")}"}
   %thead
     %tr
       - AnalysesListDatatable::HEADER.each do |header|
         = raw(header)
   %tbody
+
+#analyses_list_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.modal-title
+      .modal-body.large#analyses_list_modal_page
+      .modal-footer
+        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
 
 :javascript
   $(function() {
