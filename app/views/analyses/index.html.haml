@@ -10,6 +10,15 @@
   %tbody
 
 %hr
+%h3 Submitted Analyses
+%table.table.table-condensed.table-hover.table-striped.analyses_datatable{:'data-source' => "#{_analyses_table_analyses_path(format: "json", analysis_status: "submitted")}"}
+  %thead
+    %tr
+      - AnalysesListDatatable::HEADER.each do |header|
+        = raw(header)
+  %tbody
+
+%hr
 %h3 Created Analyses
 %table.table.table-condensed.table-hover.table-striped.analyses_datatable{:'data-source' => "#{_analyses_table_analyses_path(format: "json", analysis_status: "created")}"}
   %thead
