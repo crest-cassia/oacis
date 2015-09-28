@@ -83,3 +83,6 @@
 
 %hr
 = render partial: "shared/results", locals: {result: @analysis.result, result_paths: @analysis.result_paths, archived_result_path: @analysis.archived_result_path}
+
+%h3 Script
+%pre~ @analysis.job_script
