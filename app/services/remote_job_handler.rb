@@ -79,6 +79,24 @@ class RemoteJobHandler
 
   def prepare_input_files(job)
     return if job.is_a?(Run)
+    if @host.mounted_work_base_dir.present?
+      prepare_input_files_via_copy(job)
+    else
+      prepare_input_files_via_ssh(job)
+    end
+  end
+
+  def prepare_input_files_via_copy(job)
+    remote_path = RemoteFilePath.input_files_dir_path(@host,job)
+    relative_path = remote_path.relative_path_from(Pathname.new(@host.work_base_dir))
+    mounted_remote_path = Pathname.new(@host.mounted_work_base_dir).join(relative_path)
+    FileUtils.mkdir_p(mounted_remote_path)
+    job.input_files.each do |file|
+      FileUtils.cp_r(file, mounted_remote_path)
+    end
+  end
+
+  def prepare_input_files_via_ssh(job)
     # make remote input files directory
     remote_input_dir = RemoteFilePath.input_files_dir_path(@host,job)
     cmd = "mkdir -p #{remote_input_dir}"
