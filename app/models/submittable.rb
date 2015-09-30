@@ -240,6 +240,7 @@ EOS
 
 
   # subroutines of public methods
+  # This method will be overwritten by Run and Anslysis
   def cancel
     self.update_attribute(:status, :cancelled)
   end
