@@ -31,7 +31,7 @@ private
       [
         @view.content_tag(:i, '', analysis_id: arn.id.to_s, align: "center", class: "fa fa-search clickable"),
         @view.link_to( @view.shortened_id_monospaced(arn.id), @view.analysis_path(arn) ),
-        @view.link_to( analyzer.name, @view.analyzer_path(analyzer) ),
+        analyzer.name,
         arn.parameters.to_s,
         @view.status_label(arn.status),
         arn.analyzer_version.to_s,

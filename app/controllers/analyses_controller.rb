@@ -39,8 +39,8 @@ class AnalysesController < ApplicationController
   end
 
   def _result
-    anl = Analysis.find(params[:id])
-    render partial: "shared/results", layout: false, locals: {result: anl.result, result_paths: anl.result_paths, archived_result_path: nil}
+    @analysis = Analysis.find(params[:id])
+    render partial: "attributes", layout: false
   end
 
   def _analyses_table

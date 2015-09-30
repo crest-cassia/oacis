@@ -33,6 +33,10 @@ class Analysis
     return paths
   end
 
+  def archived_result_path
+    dir.join('..', "#{id}.tar.bz2")
+  end
+
   def update_status_running(option = {hostname: 'localhost'})
     merged = {hostname: 'localhost'}.merge(option)
     self.status = :running
