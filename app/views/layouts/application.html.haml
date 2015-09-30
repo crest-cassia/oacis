@@ -29,6 +29,9 @@
         %footer
           .pull-right
             = "OACIS: Version #{APP_VERSION}"
+            %br
+            Send your feedback to 
+            = mail_to "oacis-dev@googlegroups.com"
 
 :javascript
   window.bEnableAutoReload = #{AUTO_RELOAD_TABLES};
