@@ -6,22 +6,22 @@ export LANG=C
 export LC_ALL=C
 
 # VARIABLE DEFINITIONS ------------
-OACIS_RUN_ID=<%= run_id %>
+OACIS_JOB_ID=<%= run_id %>
 OACIS_IS_MPI_JOB=<%= is_mpi_job %>
 OACIS_MPI_PROCS=<%= mpi_procs %>
 OACIS_OMP_THREADS=<%= omp_threads %>
 OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
 
 # PRE-PROCESS ---------------------
-if [ `basename $(pwd)` != ${OACIS_RUN_ID} ]; then  # for manual submission
-  mkdir -p ${OACIS_RUN_ID} && cd ${OACIS_RUN_ID}
-  if [ -e ../${OACIS_RUN_ID}_input.json ]; then
-    \\mv ../${OACIS_RUN_ID}_input.json ./_input.json
+if [ `basename $(pwd)` != ${OACIS_JOB_ID} ]; then  # for manual submission
+  mkdir -p ${OACIS_JOB_ID} && cd ${OACIS_JOB_ID}
+  if [ -e ../${OACIS_JOB_ID}_input.json ]; then
+    \\mv ../${OACIS_JOB_ID}_input.json ./_input.json
   fi
 fi
-echo "{" > ../${OACIS_RUN_ID}_status.json
-echo "  \\"started_at\\": \\"`date`\\"," >> ../${OACIS_RUN_ID}_status.json
-echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${OACIS_RUN_ID}_status.json
+echo "{" > ../${OACIS_JOB_ID}_status.json
+echo "  \\"started_at\\": \\"`date`\\"," >> ../${OACIS_JOB_ID}_status.json
+echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${OACIS_JOB_ID}_status.json
 
 # PRINT SIMULATOR VERSION ---------
 if [ -n "$OACIS_PRINT_VERSION_COMMAND" ]; then
@@ -30,27 +30,27 @@ fi
 
 # JOB EXECUTION -------------------
 export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
-{ time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_RUN_ID}_time.txt
+{ time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_JOB_ID}_time.txt
 RC=$?
-echo "  \\"rc\\": $RC," >> ../${OACIS_RUN_ID}_status.json
-echo "  \\"finished_at\\": \\"`date`\\"" >> ../${OACIS_RUN_ID}_status.json
-echo "}" >> ../${OACIS_RUN_ID}_status.json
+echo "  \\"rc\\": $RC," >> ../${OACIS_JOB_ID}_status.json
+echo "  \\"finished_at\\": \\"`date`\\"" >> ../${OACIS_JOB_ID}_status.json
+echo "}" >> ../${OACIS_JOB_ID}_status.json
 
 # POST-PROCESS --------------------
 if [ -d _input ] && [ $RC -eq 0 ]; then {
   \\rm -rf _input
 } fi
 cd ..
-\\mv -f ${OACIS_RUN_ID}_status.json ${OACIS_RUN_ID}/_status.json
-\\mv -f ${OACIS_RUN_ID}_time.txt ${OACIS_RUN_ID}/_time.txt
-tar cf ${OACIS_RUN_ID}.tmp.tar ${OACIS_RUN_ID}
-if test $? -ne 0; then { echo "// Failed to make an archive for ${OACIS_RUN_ID}" >> ./_log.txt; exit; } fi
-bzip2 ${OACIS_RUN_ID}.tmp.tar
+\\mv -f ${OACIS_JOB_ID}_status.json ${OACIS_JOB_ID}/_status.json
+\\mv -f ${OACIS_JOB_ID}_time.txt ${OACIS_JOB_ID}/_time.txt
+tar cf ${OACIS_JOB_ID}.tmp.tar ${OACIS_JOB_ID}
+if test $? -ne 0; then { echo "// Failed to make an archive for ${OACIS_JOB_ID}" >> ./_log.txt; exit; } fi
+bzip2 ${OACIS_JOB_ID}.tmp.tar
 if test $? -eq 0; then {
-  mv ${OACIS_RUN_ID}.tmp.tar.bz2 ${OACIS_RUN_ID}.tar.bz2
+  mv ${OACIS_JOB_ID}.tmp.tar.bz2 ${OACIS_JOB_ID}.tar.bz2
 }
 else {
-  echo "// Failed to compress for ${OACIS_RUN_ID}" >> ./_log.txt; exit;
+  echo "// Failed to compress for ${OACIS_JOB_ID}" >> ./_log.txt; exit;
 } fi
 EOS
 
