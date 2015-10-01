@@ -18,13 +18,33 @@
       - unless has_child
         = link_to_add_fields "Add Parameter", f, :parameter_definitions, 'simulators/parameter_definition_fields'
   .form-group
+    = f.label(:pre_process_script, class: ['col-md-2','control-label'])
+    .col-md-6
+      = f.text_area(:pre_process_script, rows: 3, class: 'form-control')
+  .form-group
     = f.label(:command, class: 'col-md-2 control-label')
-    .col-md-3
+    .col-md-6
       = f.text_field(:command, class: 'form-control')
   .form-group
     = f.label(:print_version_command, class: 'col-md-2 control-label')
-    .col-md-3
+    .col-md-6
       = f.text_field(:print_version_command, class: 'form-control')
+  .form-group
+    = f.label(:support_input_json, "Input type", class: ['col-md-2','control-label'])
+    .col-md-3
+      = f.select(:support_input_json, {"Argument" => false, "JSON" => true}, {},{class: 'form-control'})
+  .form-group
+    = f.label(:support_mpi, class: ['col-md-2','control-label'])
+    .col-md-2
+      .checkbox
+        %label
+          = f.check_box(:support_mpi)
+  .form-group
+    = f.label(:support_omp, class: ['col-md-2','control-label'])
+    .col-md-2
+      .checkbox
+        %label
+          = f.check_box(:support_omp)
   .form-group
     = f.label(:auto_run, class: 'col-md-2 control-label')
     .col-md-3
@@ -33,6 +53,21 @@
     = f.label(:description, class: 'col-md-2 control-label')
     .col-md-6
       = f.text_area(:description, rows: 5, class: 'form-control')
+  .form-group
+    %label.col-md-2.control-label
+      Executable_on
+    .col-md-10
+      = hidden_field_tag "analyzer[executable_on_ids][]", nil
+      - Host.all.each do |host|
+        .checkbox
+          %label{ for: dom_id(host) }
+            = check_box_tag "analyzer[executable_on_ids][]", host.id.to_s, analyzer.executable_on_ids.include?(host.id), id: dom_id(host)
+            = host.name
+  .form-group
+    = f.label(:auto_run_submitted_to, "Host for Auto Run", class: ['col-md-2','control-label'])
+    .col-md-3
+      - host_options = options_for_select( Host.all.map {|h| [h.name, h.id]}.push(["(manual submission)", '']) )
+      = f.select(:auto_run_submitted_to, host_options, {}, {class: 'form-control'})
   .form-group
     .col-md-3.col-md-offset-2
       = f.submit(class: 'btn btn-primary')

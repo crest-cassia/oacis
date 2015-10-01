@@ -49,7 +49,7 @@ describe AnalyzersController do
       @azr = @sim.analyzers.first
     end
 
-    it "assigns the requested simulator as @simulator" do
+    it "assigns the requested analyzer as @analyzer" do
       get :edit, {:id => @azr.to_param}, valid_session
       expect(assigns(:analyzer)).to eq(@azr)
     end
@@ -66,6 +66,7 @@ describe AnalyzersController do
     describe "with valid params" do
 
       before(:each) do
+        @host = FactoryGirl.create(:host)
         definitions = {
           "0" => {key: "param1", type: "Integer"},
           "1" => {key: "param2", type: "Float"}
@@ -73,7 +74,11 @@ describe AnalyzersController do
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
-          auto_run: "no", description: "xxx yyy"
+          auto_run: "no", description: "xxx yyy",
+          support_input_json: "1", support_mpi: "1", support_omp: "0",
+          pre_process_script: "echo preprocess",
+          executable_on_ids: [@host.id.to_s],
+          auto_run_submitted_to: @host.id.to_s
         }
         @valid_post_parameter = {simulator_id: @sim.id, analyzer: analyzer}
       end
@@ -94,6 +99,12 @@ describe AnalyzersController do
         expect(azr.description).to eq "xxx yyy"
         expect(azr.parameter_definition_for("param1").type).to eq "Integer"
         expect(azr.parameter_definition_for("param2").type).to eq "Float"
+        expect(azr.support_input_json).to be_truthy
+        expect(azr.support_mpi).to be_truthy
+        expect(azr.support_omp).to be_falsey
+        expect(azr.pre_process_script).to eq("echo preprocess")
+        expect(azr.executable_on).to eq [@host]
+        expect(azr.auto_run_submitted_to).to eq @host
       end
 
       it "assigns a newly created analyzer as @analyzer" do
@@ -124,7 +135,7 @@ describe AnalyzersController do
       end
     end
 
-    describe "with no permitted params" do
+    describe "with non-permitted params" do
 
       before(:each) do
         definitions = {
@@ -141,7 +152,7 @@ describe AnalyzersController do
         @valid_post_parameter = {simulator_id: @sim.id, analyzer: analyzer}
       end
 
-      it "create a new analyzer but no permitted params are not saved" do
+      it "create a new analyzer but non-permitted params are not saved" do
         invalid_analyzer_params = @valid_post_parameter[:analyzer].update(admin_flg: 1)
         invalid_params = @valid_post_parameter
         invalid_params[:analyzer] = invalid_analyzer_params
@@ -172,7 +183,11 @@ describe AnalyzersController do
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
-          auto_run: "no", description: "xxx yyy"
+          auto_run: "no", description: "xxx yyy",
+          support_input_json: "1", support_mpi: "1", support_omp: "0",
+          pre_process_script: "echo preprocess",
+          executable_on: [],
+          auto_run_submitted_to: ''
         }
         @valid_post_parameter = {analyzer: analyzer}
       end
@@ -196,7 +211,7 @@ describe AnalyzersController do
 
     describe "with invalid params" do
 
-      it "assigns the simulator as @simulator" do
+      it "assigns the analyzer as @analyzer" do
         allow_any_instance_of(Analyzer).to receive(:update_attributes).and_return(false)
         put :update, {:id => @azr.to_param, :analyzer => {}}, valid_session
         expect(assigns(:analyzer)).to eq(@azr)
@@ -209,7 +224,7 @@ describe AnalyzersController do
       end
     end
 
-    describe "with no permitted params" do
+    describe "with non-permitted params" do
 
       before(:each) do
         definitions = {
@@ -226,7 +241,7 @@ describe AnalyzersController do
         @valid_post_parameter = {id: @azr.to_param, analyzer: analyzer}
       end
 
-      it "update the analyzer but no permitted params are not saved" do
+      it "update the analyzer but non-permitted params are not saved" do
         invalid_analyzer_params = @valid_post_parameter[:analyzer].update(admin_flg: 1)
         invalid_params = @valid_post_parameter
         invalid_params[:analyzer] = invalid_analyzer_params
@@ -266,4 +281,80 @@ describe AnalyzersController do
     end
   end
 
+  describe "GET _host_parameters_field" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
+      @azr = @sim.analyzers.first
+      @azr.executable_on.push(@host)
+    end
+
+    it "returns http success" do
+      valid_param = {id: @azr.to_param, host_id: @host.to_param}
+      get :_host_parameters_field, valid_param, valid_session
+      expect(response).to be_success
+    end
+
+    it "returns http success if host_id is not found" do
+      param = {id: @azr.to_param, host_id: "manual"}
+      get :_host_parameters_field, param, valid_session
+      expect(response).to be_success
+    end
+  end
+
+  describe "GET _default_mpi_omp" do
+
+    before(:each) do
+      @host = FactoryGirl.create(:host_with_parameters)
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 0, analyzers_count: 1)
+      @azr = @sim.analyzers.first
+      @azr.executable_on.push(@host)
+    end
+
+    it "returns http success" do
+      valid_param = {id: @azr.to_param, host_id: @host.to_param}
+      get :_default_mpi_omp, valid_param, valid_session
+      expect(response).to be_success
+    end
+
+    it "does not cause an error even when host is not found" do
+      param = {id: @azr.to_param, host_id: 'DO_NOT_EXIST'}
+      get :_default_mpi_omp, param, valid_session
+      expect(response).to be_success
+    end
+
+    context "when default_mpi_procs and/or defualt_omp_threads are set" do
+
+      before(:each) do
+        @azr.update_attribute(:default_mpi_procs, {@host.id.to_s => 8})
+        @azr.update_attribute(:default_omp_threads, {@host.id.to_s => 4})
+      end
+
+      it "returns mpi_procs and omp_threads in json" do
+        valid_param = {id: @azr.to_param, host_id: @host.to_param}
+        get :_default_mpi_omp, valid_param, valid_session
+        expect(response.header['Content-Type']).to include 'application/json'
+        parsed = JSON.parse(response.body)
+        expect(parsed).to eq ({'mpi_procs' => 8, 'omp_threads' => 4})
+      end
+    end
+
+    context "when default_mpi_procs or default_omp_threads is not set" do
+
+      before(:each) do
+        @azr.update_attribute(:default_mpi_procs, {})
+        @azr.update_attribute(:default_omp_threads, {})
+      end
+
+      it "returns mpi_procs and omp_threads in json" do
+        valid_param = {id: @azr.to_param, host_id: @host.to_param}
+        get :_default_mpi_omp, valid_param, valid_session
+        expect(response.header['Content-Type']).to include 'application/json'
+        parsed = JSON.parse(response.body)
+        expect(parsed).to eq ({'mpi_procs' => 1, 'omp_threads' => 1})
+      end
+    end
+  end
 end

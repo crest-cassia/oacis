@@ -71,6 +71,8 @@ AcmProto::Application.routes.draw do
       member do
         get '_parameters_form' # for ajax
         get "_inner_show" # for ajax, get
+        get "_host_parameters_field" # for ajax, get the fields for host_parameters
+        get "_default_mpi_omp" # for ajax, get the default mpi_procs and omp_threads
       end
     end
   end

@@ -82,7 +82,7 @@ class OacisCli < Thor
         end
       end
     end
-    created_analyses = analyses.select {|anl| anl.status == nil}
+    created_analyses = analyses.select {|anl| anl.persisted? == false }
 
     progressbar = ProgressBar.create(total: created_analyses.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]

@@ -1,26 +1,14 @@
 class Analysis
   include Mongoid::Document
   include Mongoid::Timestamps
+  include Submittable
 
   field :parameters, type: Hash
-  field :status, type: Symbol
-  field :hostname, type: String
-  field :cpu_time, type: Float
-  field :real_time, type: Float
-  field :started_at, type: DateTime
-  field :finished_at, type: DateTime
-  field :included_at, type: DateTime
-  field :result
-  field :analyzer_version, type: String
-  index({ status: 1 }, { name: "analysis_status_index" })
 
   belongs_to :analyzer
   belongs_to :analyzable, polymorphic: true, autosave: false
   belongs_to :parameter_set
 
-  before_validation :set_status
-  validates :status, presence: true,
-                     inclusion: {in: [:created,:running,:failed,:cancelled,:finished]}
   validates :analyzer, :presence => true
   validate :cast_and_validate_parameter_values
 
@@ -33,6 +21,10 @@ class Analysis
     ResultDirectory.analysis_path(self)
   end
 
+  def executable
+    analyzer
+  end
+
   # returns result files and directories
   def result_paths
     paths = Dir.glob( dir.join('*') ).map {|x|
@@ -41,13 +33,8 @@ class Analysis
     return paths
   end
 
-  def destroy( called_by_worker = false )
-    s = self.status
-    if s == :failed or s == :finished or called_by_worker
-      super
-    else
-      cancel
-    end
+  def archived_result_path
+    dir.join('..', "#{id}.tar.bz2")
   end
 
   def update_status_running(option = {hostname: 'localhost'})
@@ -93,6 +80,17 @@ class Analysis
     return obj
   end
 
+  def args
+    if analyzer.support_input_json
+      ""
+    else
+      params = analyzer.parameter_definitions.map do |pd|
+        parameters[pd.key]
+      end
+      params.join(' ')
+    end
+  end
+
   # returns an array
   #   array of run.results_paths or run.dir(s) to be linked to _input/
   def input_files
@@ -114,10 +112,6 @@ class Analysis
   end
 
   private
-  def set_status
-    self.status ||= :created
-  end
-
   def cast_and_validate_parameter_values
     return unless analyzer
     defn = analyzer.parameter_definitions
@@ -152,9 +146,8 @@ class Analysis
   end
 
   def cancel
+    super
     delete_dir
-    self.status = :cancelled
-    self.analyzable_id = nil
-    self.save
+    self.update_attribute(:analyzable_id, nil)
   end
 end

@@ -62,6 +62,9 @@
     %tr
       %th Executable simulators
       %td= raw( @host.executable_simulators.map {|sim| h(sim.name) }.join('<br />') )
+    %tr
+      %th Executable analyzers
+      %td= raw( @host.executable_analyzers.map {|azr| h("#{azr.simulator.name} / #{azr.name}") }.join('<br />') )
 
 - unless OACIS_READ_ONLY
   = link_to 'Edit', edit_host_path(@host), class: 'btn btn-info'

@@ -1,16 +1,17 @@
-class JobWorker < DaemonSpawn::Base
+class Worker < DaemonSpawn::Base
 
-  INTERVAL = 5
-
-  WORKER_PID_FILE = Rails.root.join('tmp', 'pids', "job_worker_#{Rails.env}.pid")
-  WORKER_LOG_FILE = Rails.root.join('log', "job_worker_#{Rails.env}.log")
-  WORKER_STDOUT_FILE = Rails.root.join('log', "job_worker_#{Rails.env}_out.log")
+  # In subclass, define the following constants
+  #   - INTERVAL
+  #   - WORKER_PID_FILE
+  #   - WORKER_LOG_FILE
+  #   - WORKER_STDOUT_FILE
+  #   - TASKS
 
   def start(args)
-    @logger = Logger.new(WORKER_LOG_FILE, 7)
+    @logger = Logger.new(self.class::WORKER_LOG_FILE, 7)
     @logger.formatter = LoggerFormatWithTime.new
     @logger.level = Logger::INFO
-    @logger.info("starting")
+    @logger.info("starting #{self.class}")
 
     $term_received = false
     trap('TERM') {
@@ -19,14 +20,18 @@ class JobWorker < DaemonSpawn::Base
     }
 
     loop do
-      JobSubmitter.perform(@logger)
-      break if $term_received
-      JobObserver.perform(@logger)
-      break if $term_received
-      sleep INTERVAL
+      self.class::TASKS.each do |task|
+        task.call(@logger)
+        break if $term_received
+      end
+      sleep self.class::INTERVAL
       break if $term_received
     end
 
+  rescue => ex
+    @logger.fatal(ex.message)
+    @logger.fatal(ex.backtrace)
+  ensure
     @logger.info("stopped")
   end
 
@@ -35,8 +40,8 @@ class JobWorker < DaemonSpawn::Base
   end
 
   def self.alive?
-    if File.file?(WORKER_PID_FILE)
-      pid = (IO.read(WORKER_PID_FILE).to_i)
+    if File.file?(self::WORKER_PID_FILE)
+      pid = (IO.read(self::WORKER_PID_FILE).to_i)
       DaemonSpawn.alive? pid
     else
       false
@@ -46,10 +51,11 @@ class JobWorker < DaemonSpawn::Base
   # return true if the time stamp of the log file is updated within five minutes
   LOG_UPDATE_THRESHOLD = 60 * 5 # 5 minutes
   def self.log_recently_updated?
-    if File.file?(WORKER_LOG_FILE)
-      s = File.stat(WORKER_LOG_FILE)
+    if File.file?(self::WORKER_LOG_FILE)
+      s = File.stat(self::WORKER_LOG_FILE)
       return true if Time.now - s.mtime < LOG_UPDATE_THRESHOLD
     end
     false
   end
 end
+

@@ -1,5 +1,5 @@
 $(function () {
-  $("#analyses_list").on("click", "i.fa.fa-search[analysis_id]", function() {
+  $(".has_analysis_modal").on("click", "i.fa.fa-search[analysis_id]", function() {
     var analysis_id = $(this).attr("analysis_id");
     $('#analyses_list_modal').modal("show", {
       analysis_id: analysis_id

@@ -67,14 +67,29 @@ class AnalyzersController < ApplicationController
   # GET /analyzers/:id/_parameters_form
   def _parameters_form
     analyzer = Analyzer.find(params[:id])
-    param_def = analyzer.parameter_definitions
 
-    render partial: 'analyses/parameters_form', layout: false, locals: {param_def: param_def}
+    render partial: 'analyses/parameters_form', layout: false, locals: {analyzer: analyzer}
   end
 
   def _inner_show
     analyzer = Analyzer.find(params[:id])
     render partial: "inner_show", locals: {analyzer: analyzer}
+  end
+
+  def _host_parameters_field
+    azr = Analyzer.find(params[:id])
+    host = Host.where(id: params[:host_id]).first
+    render partial: "analyses/host_parameter_fields", locals: {analyzer: azr, host: host}
+  end
+
+  def _default_mpi_omp
+    azr = Analyzer.find(params[:id])
+    host = Host.where(id: params[:host_id]).first
+    host_id = host ? host.id.to_s : nil
+    mpi = azr.default_mpi_procs[host_id] || 1
+    omp = azr.default_omp_threads[host_id] || 1
+    data = {'mpi_procs' => mpi, 'omp_threads' => omp}
+    render json: data
   end
 
   private
@@ -87,7 +102,13 @@ class AnalyzersController < ApplicationController
                                                :auto_run,
                                                :print_version_command,
                                                :simulator,
-                                               parameter_definitions_attributes: [[:id, :key, :type, :default, :description]]
+                                               :support_input_json,
+                                               :support_mpi,
+                                               :support_omp,
+                                               :pre_process_script,
+                                               :auto_run_submitted_to,
+                                               parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
+                                               executable_on_ids: []
                                               ) : {}
     if analyzer_params.has_key?(:parameter_definitions_attributes) and analyzer_params[:parameter_definitions_attributes].is_a?(Hash)
       analyzer_params[:parameter_definitions_attributes].select! {|pdef_id, pdef_val| pdef_val.has_key?(:key)} # remove empty hash

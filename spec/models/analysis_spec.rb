@@ -197,10 +197,10 @@ describe Analysis do
       end
     end
 
-    context "when status is either :created, :running, or :cancelled" do
+    context "when status is either :running, :submitted or :cancelled" do
 
       before(:each) do
-        @analysis.update_attribute(:status, :created)
+        @analysis.update_attribute(:status, :running)
       end
 
       it "calls cancel" do

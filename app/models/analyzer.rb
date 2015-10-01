@@ -1,23 +1,25 @@
 class Analyzer
   include Mongoid::Document
   include Mongoid::Timestamps
+  include Executable
 
   field :name, type: String
   field :type, type: Symbol
-  field :command, type: String
   field :auto_run, type: Symbol, default: :no
   field :description, type: String
-  field :print_version_command, type: String
 
   embeds_many :parameter_definitions
   belongs_to :simulator
   has_many :analyses, dependent: :destroy
 
+  ## fields for auto run
+  belongs_to :auto_run_submitted_to, class_name: "Host"
+
   validates :name, presence: true, uniqueness: {scope: :simulator}, format: {with: /\A\w+\z/}
   validates :type, presence: true, 
                    inclusion: {in: [:on_run, :on_parameter_set]}
-  validates :command, presence: true
   validates :auto_run, inclusion: {in: [:yes, :no, :first_run_only]}
+  validate :auto_run_submitted_to_is_in_executable_on
 
   accepts_nested_attributes_for :parameter_definitions, allow_destroy: true
 
@@ -66,5 +68,13 @@ class Analyzer
     end
 
     anl_versions.map {|key,val| val['version'] = key; val }.sort_by {|a| a['latest_started_at']}
+  end
+
+  private
+  def auto_run_submitted_to_is_in_executable_on
+    return if auto_run_submitted_to.blank?
+    unless executable_on.where(id: auto_run_submitted_to).first
+       errors.add(:auto_run_submitted_to, "is not included in executable hosts")
+    end
   end
 end

@@ -21,6 +21,7 @@ class Host
   field :position, type: Integer # position in the table. start from zero
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
+  has_and_belongs_to_many :executable_analyzers, class_name: "Analyzer", inverse_of: :executable_on
   embeds_many :host_parameter_definitions
   accepts_nested_attributes_for :host_parameter_definitions, allow_destroy: true
 
@@ -91,6 +92,14 @@ class Host
     Run.where(submitted_to: self).in(status: [:submitted, :running, :cancelled])
   end
 
+  def submittable_analyses
+    Analysis.where(status: :created, submitted_to: self)
+  end
+
+  def submitted_analyses
+    Analysis.where(submitted_to: self).in(status: [:submitted, :running, :cancelled])
+  end
+
   def runs_status_count
     count = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0, cancelled: 0}
     Run.collection.aggregate(
@@ -103,11 +112,12 @@ class Host
   end
 
   def work_base_dir_is_not_editable?
-    self.persisted? and submitted_runs.any?
+    self.persisted? and (submitted_runs.any? or submitted_analyses.any?)
   end
 
   def destroyable?
-    submittable_runs.empty? and submitted_runs.empty?
+    submittable_runs.empty? and submitted_runs.empty? and
+    submittable_analyses.empty? and submitted_analyses.empty?
   end
 
   def start_ssh

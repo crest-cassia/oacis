@@ -80,17 +80,21 @@ describe HostsController do
         expect(response).to redirect_to(Host.last)
       end
 
-      context "with executable_simulators" do
+      context "with executable_simulators and executable_analyzers" do
 
         before(:each) do
-          @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, runs_count: 0)
-          @valid_attributes_with_sim = valid_attributes.update(executable_simulator_ids: [@sim.id.to_s])
+          @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, runs_count: 0, analyzers_count: 1)
+          @valid_attributes_with_sim = valid_attributes.update(
+            executable_simulator_ids: [@sim.id.to_s],
+            executable_analyzer_ids: [@sim.analyzers.first.id.to_s]
+          )
         end
 
         it "create a new Host" do
           post :create, {host: @valid_attributes_with_sim}, valid_session
           host = assigns(:host)
           expect(host.executable_simulator_ids).to include(@sim.id)
+          expect(host.executable_analyzer_ids).to include(@sim.analyzers.first.id)
         end
       end
     end

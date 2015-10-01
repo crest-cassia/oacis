@@ -22,11 +22,11 @@ namespace :daemon do
     else
       here = File.dirname(__FILE__)
       threads << Thread.new do
-        cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_job_worker.rb')} start"
+        cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_job_submitter_worker.rb')} start"
         system(cmd)
       end
       threads << Thread.new do
-        cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_analyzer_worker.rb')} start"
+        cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_job_observer_worker.rb')} start"
         system(cmd)
       end
       threads << Thread.new do
@@ -56,12 +56,12 @@ namespace :daemon do
 
     here = File.dirname(__FILE__)
     threads << Thread.new do
-      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_job_worker.rb')} stop"
+      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_job_submitter_worker.rb')} stop"
       system(cmd)
     end
 
     threads << Thread.new do
-      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_analyzer_worker.rb')} stop"
+      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_job_observer_worker.rb')} stop"
       system(cmd)
     end
 

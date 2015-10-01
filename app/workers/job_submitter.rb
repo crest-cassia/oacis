@@ -6,8 +6,15 @@ class JobSubmitter
       break if $term_received
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
       begin
-        num = host.max_num_jobs - host.submitted_runs.count
+        num = host.max_num_jobs - host.submitted_runs.count - host.submitted_analyses.count
         Run::PRIORITY_ORDER.keys.sort.each do |priority|
+          break if $term_received
+          break unless num > 0
+          analyses = host.submittable_analyses.where(priority: priority).limit(num)
+          logger.info("submitting jobs to #{host.name}: #{analyses.map do |r| r.id.to_s end.inspect}")
+          num -= analyses.length  # [warining] analyses.length ignore 'limit', so 'num' can be negative.
+          submit(analyses, host, logger) if analyses.present?
+
           break if $term_received
           break unless num > 0
           runs = host.submittable_runs.where(priority: priority).limit(num)
@@ -24,14 +31,14 @@ class JobSubmitter
   end
 
   private
-  def self.submit(runs, host, logger)
+  def self.submit(submittables, host, logger)
     # call start_ssh in order to avoid establishing SSH connection for each run
     host.start_ssh do |ssh|
       handler = RemoteJobHandler.new(host)
-      runs.each do |run|
+      submittables.each do |job|
         break if $term_received
         begin
-          handler.submit_remote_job(run)
+          handler.submit_remote_job(job)
         rescue => ex
           logger.info ex.inspect
           logger.info ex.backtrace

@@ -1,0 +1,9 @@
+- if host
+  - analyzer.get_default_host_parameter(host).each do |key, val|
+    .form-group
+      = label(:analysis, :"host_parameters[#{key}]", key, class: 'col-md-2 control-label')
+      .col-md-3
+        = text_field(:analysis, :"host_parameters[#{key}]", value: val, id: "analysis_host_parameters_#{key}_#{host.id}", class: "form-control", 'aria-describedby': "desc_analysis_host_param_#{key}")
+      .col-md-4
+        %span{id: "desc_analysis_host_param_#{key}", class: "help-block"}
+          = "Format: /#{host.host_parameter_definitions.select {|hpd| hpd.key == key}.first.format }/"

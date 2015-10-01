@@ -2,11 +2,11 @@ require 'spec_helper'
 
 describe JobIncluder do
 
-  def make_valid_archive_file(run)
+  def make_valid_archive_file(submittable)
     Dir.chdir(@temp_dir) {
-      work_dir = Pathname.new(run.id.to_s)
+      work_dir = Pathname.new(submittable.id.to_s)
       make_valid_work_dir(work_dir)
-      archive_path = Pathname.new("#{run.id}.tar.bz2")
+      archive_path = Pathname.new("#{submittable.id}.tar.bz2")
       system("tar cjf #{archive_path} #{work_dir}")
       @archive_full_path = archive_path.expand_path
     }
@@ -32,47 +32,36 @@ describe JobIncluder do
     }
   end
 
-  def make_scheduler_log(host, run)
-    log_dir = @temp_dir.join(@run.id.to_s+'_log')
+  def make_scheduler_log(host, submittable)
+    log_dir = @temp_dir.join(submittable.id.to_s+'_log')
     FileUtils.mkdir_p(log_dir)
     FileUtils.touch(log_dir.join('scheduler_log'))
   end
 
-  before(:each) do
-    @sim = FactoryGirl.create(:simulator,
-                              parameter_sets_count: 1, runs_count: 0,
-                              command: "sleep 1")
-    @temp_dir = Pathname.new( Dir.mktmpdir )
-  end
-
-  after(:each) do
-    FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
-  end
-
   shared_examples_for "included correctly" do
 
-    it "copies reuslt files into the run directory" do
+    it "copies result files into the run/analysis directory" do
       include_job
-      expect(@run.dir.join("_stdout.txt")).to be_exist
+      expect(@submittable.dir.join("_stdout.txt")).to be_exist
     end
 
     it "copies archive result file" do
       include_job
-      expect(@run.dir.join("..", File.basename(@archive_full_path))).to be_exist
+      expect(@submittable.dir.join("..", File.basename(@archive_full_path))).to be_exist
     end
 
     it "parses _status.json" do
       include_job
-      expect(@run.hostname).to eq "hostXXX"
-      expect(@run.started_at).to be_a(DateTime)
-      expect(@run.finished_at).to be_a(DateTime)
-      expect(@run.status).to eq :finished
+      expect(@submittable.hostname).to eq "hostXXX"
+      expect(@submittable.started_at).to be_a(DateTime)
+      expect(@submittable.finished_at).to be_a(DateTime)
+      expect(@submittable.status).to eq :finished
     end
 
     it "parses _time.txt" do
       include_job
-      expect(@run.cpu_time).to be_within(0.01).of(8.0)
-      expect(@run.real_time).to be_within(0.01).of(10.0)
+      expect(@submittable.cpu_time).to be_within(0.01).of(8.0)
+      expect(@submittable.real_time).to be_within(0.01).of(10.0)
     end
 
     it "deletes archive file after the inclusion finishes" do
@@ -86,41 +75,40 @@ describe JobIncluder do
     end
   end
 
-  describe "manual job" do
+  shared_examples_for "manual job" do
 
     before(:each) do
-      @run = @sim.parameter_sets.first.runs.create(submitted_to: nil)
-      expect(ResultDirectory.manual_submission_job_script_path(@run)).to be_exist
-      make_valid_archive_file(@run)
+      @submittable.submitted_to = nil
+      @submittable.save!
+      expect(ResultDirectory.manual_submission_job_script_path(@submittable)).to be_exist
+      make_valid_archive_file(@submittable)
     end
 
-    let(:include_job) { JobIncluder.include_manual_job(@archive_full_path, @run) }
+    let(:include_job) { JobIncluder.include_manual_job(@archive_full_path, @submittable) }
 
     it_behaves_like "included correctly"
 
     it "deletes job script after inclusion" do
       include_job
-      expect(ResultDirectory.manual_submission_job_script_path(@run)).not_to be_exist
+      expect(ResultDirectory.manual_submission_job_script_path(@submittable)).not_to be_exist
     end
   end
 
-  describe "remote job" do
+  shared_examples_for "remote job" do
 
     before(:each) do
-      @host = @sim.executable_on.where(name: "localhost").first
-      @host.work_base_dir = @temp_dir.expand_path
-      @host.save!
-      @run = @sim.parameter_sets.first.runs.create(submitted_to: @host)
-      make_scheduler_log(@host, @run)
+      @submittable.submitted_to = @host
+      @submittable.save!
+      make_scheduler_log(@host, @submittable)
     end
 
     describe "correct case" do
 
       before(:each) do
-        make_valid_archive_file(@run)
+        make_valid_archive_file(@submittable)
       end
 
-      let(:include_job) { JobIncluder.include_remote_job(@host, @run) }
+      let(:include_job) { JobIncluder.include_remote_job(@host, @submittable) }
 
       it_behaves_like "included correctly"
 
@@ -131,11 +119,11 @@ describe JobIncluder do
 
       it "includes scheduler_log" do
         include_job
-        expect(@run.dir.join(@run.id.to_s+'_log', 'scheduler_log')).to be_exist
+        expect(@submittable.dir.join(@submittable.id.to_s+'_log', 'scheduler_log')).to be_exist
       end
 
       it "deletes remote work_dir after inclusion" do
-        work_dir = File.join(@temp_dir, @run.id.to_s)
+        work_dir = File.join(@temp_dir, @submittable.id.to_s)
         expect {
           include_job
         }.to change { File.directory?(work_dir) }.to(false)
@@ -147,10 +135,10 @@ describe JobIncluder do
       before(:each) do
         @host.mounted_work_base_dir = @host.work_base_dir
         @host.save
-        make_valid_archive_file(@run)
+        make_valid_archive_file(@submittable)
       end
 
-      let(:include_job) { JobIncluder.include_remote_job(@host, @run) }
+      let(:include_job) { JobIncluder.include_remote_job(@host, @submittable) }
 
       it_behaves_like "included correctly"
 
@@ -161,11 +149,11 @@ describe JobIncluder do
 
       it "includes scheduler_log" do
         include_job
-        expect(@run.dir.join(@run.id.to_s+'_log', 'scheduler_log')).to be_exist
+        expect(@submittable.dir.join(@submittable.id.to_s+'_log', 'scheduler_log')).to be_exist
       end
 
       it "deletes remote work_dir after inclusion" do
-        work_dir = File.join(@temp_dir, @run.id.to_s)
+        work_dir = File.join(@temp_dir, @submittable.id.to_s)
         expect {
           include_job
         }.to change { File.directory?(work_dir) }.to(false)
@@ -179,22 +167,22 @@ describe JobIncluder do
       context "if _status.json exists in downloded work_dir" do
 
         before(:each) do
-          make_valid_archive_file(@run)
+          make_valid_archive_file(@submittable)
           FileUtils.rm(@archive_full_path)
-          JobIncluder.include_remote_job(@host, @run)
-          @run.reload
+          JobIncluder.include_remote_job(@host, @submittable)
+          @submittable.reload
         end
 
         it "updates status to finished" do
-          expect(@run.status).to eq :finished
+          expect(@submittable.status).to eq :finished
         end
 
         it "copies files in work_dir" do
-          expect(@run.dir.join("_stdout.txt")).to be_exist
+          expect(@submittable.dir.join("_stdout.txt")).to be_exist
         end
 
         it "does not copy archive file" do
-          expect(@run.dir.join('..', @run.id.to_s+'.tar.bz2')).not_to be_exist
+          expect(@submittable.dir.join('..', @submittable.id.to_s+'.tar.bz2')).not_to be_exist
         end
 
         it "deletes remote work_dir" do
@@ -205,18 +193,63 @@ describe JobIncluder do
       context "if _status.json does not exist in downloded work_dir" do
 
         before(:each) do
-          make_valid_archive_file(@run)
-          FileUtils.rm( @temp_dir.join(@run.id.to_s,"_status.json") )
+          make_valid_archive_file(@submittable)
+          FileUtils.rm( @temp_dir.join(@submittable.id.to_s,"_status.json") )
           FileUtils.rm( @archive_full_path )
-          JobIncluder.include_remote_job(@host, @run)
-          @run.reload
+          JobIncluder.include_remote_job(@host, @submittable)
+          @submittable.reload
         end
 
         it "updates status to failed" do
-          expect(@run.status).to eq :failed
+          expect(@submittable.status).to eq :failed
         end
       end
     end
+  end
+
+  describe "for Run" do
+
+    before(:each) do
+      @executable = FactoryGirl.create(:simulator,
+                                       parameter_sets_count: 1, runs_count: 0,
+                                       command: "echo")
+      @host = @executable.executable_on.where(name: "localhost").first
+      @temp_dir = Pathname.new( Dir.mktmpdir )
+      @host.update_attribute(:work_base_dir, @temp_dir.expand_path)
+      @submittable = @executable.parameter_sets.first.runs.build
+    end
+
+    after(:each) do
+      FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it_behaves_like "manual job"
+    it_behaves_like "remote job"
+  end
+
+  describe "for Analysis" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1, runs_count: 1,
+                               analyzers_count: 1, run_analysis: false)
+      run = sim.parameter_sets.first.runs.first
+      azr = sim.analyzers.first
+      anl = run.analyses.build(analyzer: azr)
+      @host = sim.executable_on.where(name: "localhost").first
+      @temp_dir = Pathname.new( Dir.mktmpdir )
+      @host.update_attribute(:work_base_dir, @temp_dir.expand_path)
+      azr.update_attribute(:executable_on, [@host])
+      @executable = azr
+      @submittable = anl
+    end
+
+    after(:each) do
+      FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    it_behaves_like "manual job"
+    it_behaves_like "remote job"
   end
 
   describe ".create_auto_run_analyses" do
@@ -226,14 +259,58 @@ describe JobIncluder do
     end
 
     before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 0,
+                                analyzers_count: 0,
+                                analyzers_on_parameter_set_count: 0,
+                                command: "echo")
+      @temp_dir = Pathname.new( Dir.mktmpdir )
       @run = @sim.parameter_sets.first.runs.create
       @run.update_attribute(:status, :finished)
+    end
+
+    after(:each) do
+      FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
+    end
+
+    shared_examples_for "analysis with valid host parameters" do
+
+      before(:each) do
+        @host = FactoryGirl.create(:host_with_parameters,
+          min_mpi_procs: 2, max_mpi_procs: 8, min_omp_threads: 4, max_omp_threads: 10
+          )
+        analyzer = @sim.analyzers.first
+        analyzer.update!(
+          executable_on:[@host],
+          auto_run_submitted_to: @host,
+          support_mpi: true,
+          support_omp: true
+          )
+      end
+
+      let(:created_analysis) { invoke; Analysis.first }
+
+      it "creates analysis whose submitted_to is auto_run_submitted_to" do
+        expect( created_analysis.submitted_to ).to eq @host
+      end
+
+      it "creates analysis whose host parameter is default of host" do
+        array = @host.host_parameter_definitions.map {|hpd| [hpd.key, hpd.default] }
+        default_host_params = Hash[*array.flatten]
+        expect( created_analysis.host_parameters ).to eq default_host_params
+      end
+
+      it "creates analysis whose mpi_procs/omp_threads are minimum value for host" do
+        anl = created_analysis
+        expect( anl.mpi_procs ).to eq 2
+        expect( anl.omp_threads ).to eq 4
+      end
     end
 
     describe "auto run of analyzers for on_run type" do
 
       before(:each) do
-        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_run)
+        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_run, run_analysis: false)
       end
 
       context "when Analyzer#auto_run is :yes" do
@@ -248,6 +325,8 @@ describe JobIncluder do
           @run.update_attribute(:status, :failed)
           expect { invoke }.to_not change { @run.reload.analyses.count }
         end
+
+        it_behaves_like "analysis with valid host parameters"
       end
 
       context "when Analyzer#auto_run is :no" do
@@ -272,13 +351,16 @@ describe JobIncluder do
           FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :finished)
           expect { invoke }.to_not change { @run.reload.analyses.count }
         end
+
+        it_behaves_like "analysis with valid host parameters"
       end
     end
 
     describe "auto run of analyzers for on_parameter_set type" do
 
       before(:each) do
-        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_parameter_set)
+        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_parameter_set,
+                                  run_analysis: false)
       end
 
       context "when Analyzer#auto_run is :yes" do
@@ -295,6 +377,8 @@ describe JobIncluder do
           FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :submitted)
           expect { invoke }.to_not change { @run.parameter_set.reload.analyses.count }
         end
+
+        it_behaves_like "analysis with valid host parameters"
       end
 
       context "when Analyzer#auto_run is :no" do

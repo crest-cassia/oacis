@@ -18,33 +18,40 @@ class JobObserver
   private
   def self.observe_host(host, logger)
     # host.check_submitted_job_status(logger)
-    return if host.submitted_runs.count == 0
+    return if host.submitted_runs.count == 0 and host.submitted_analyses.count == 0
     return unless is_enough_disk_space_left?(logger)
     host.start_ssh do |ssh|
       handler = RemoteJobHandler.new(host)
       # check if job is finished
       host.submitted_runs.each do |run|
         break if $term_received
-        begin
-          if run.status == :cancelled
-            handler.cancel_remote_job(run)
-            run.destroy(true)
-            next
-          end
-          case handler.remote_status(run)
-          when :submitted
-            # DO NOTHING
-          when :running
-            run.update_attribute(:status, :running) if run.status == :submitted
-          when :includable, :unknown
-            JobIncluder.include_remote_job(host, run)
-          end
-        rescue => ex
-          logger.error("Error in RemoteJobHandler#remote_status: #{ex.inspect}")
-          logger.error ex.backtrace
-        end
+        observe_job(run, host, handler, logger)
+      end
+      host.submitted_analyses.each do |anl|
+        break if $term_received
+        observe_job(anl, host, handler, logger)
       end
     end
+  end
+
+  def self.observe_job(job, host, handler, logger)
+    if job.status == :cancelled
+      handler.cancel_remote_job(job)
+      job.destroy(true)
+      return
+    end
+    case handler.remote_status(job)
+    when :submitted
+      # DO NOTHING
+    when :running
+      job.update_attribute(:status, :running) if job.status == :submitted
+    when :includable, :unknown
+      logger.info("including #{job.class}:#{job.id} from #{host.name}")
+      JobIncluder.include_remote_job(host, job)
+    end
+  rescue => ex
+    logger.error("Error in RemoteJobHandler#remote_status: #{ex.inspect}")
+    logger.error ex.backtrace
   end
 
   def self.is_enough_disk_space_left?(logger)

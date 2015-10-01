@@ -141,13 +141,15 @@ describe Run do
         expect(run).not_to be_valid
       end
 
-      it "is valid when host_parameters have rendundant keys" do
+      it "is valid when host_parameters have redundant keys" do
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
         run.mpi_procs = 8
         run.omp_threads = 8
         run.host_parameters = {"node" => "abd", "shape" => "xyz"}
         expect(run).to be_valid
+        run.save
+        expect(run.host_parameters).to_not include("shape")
       end
 
       it "is invalid when host_parameters does not match the defined format" do
@@ -239,7 +241,7 @@ describe Run do
     end
   end
 
-  describe "#command_and_input" do
+  describe "#command_with_args" do
 
     context "for simulators which receives parameters as arguments" do
 
@@ -247,9 +249,9 @@ describe Run do
         sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: false)
         prm = sim.parameter_sets.first
         run = prm.runs.first
-        command, input = run.command_and_input
+        command = run.command_with_args
         expect(command).to eq "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
-        expect(input).to be_nil
+        expect(run.input).to be_nil
       end
     end
 
@@ -259,8 +261,9 @@ describe Run do
         sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: true)
         prm = sim.parameter_sets.first
         run = prm.runs.first
-        command, input = run.command_and_input
+        command = run.command_with_args
         expect(command).to eq "#{sim.command}"
+        input = run.input
         prm.v.each do |key, val|
           expect(input[key]).to eq val
         end

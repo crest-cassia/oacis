@@ -164,6 +164,20 @@ describe Host do
       expect(host.errors.full_messages).not_to be_empty
     end
 
+    it "cannot be destroyed when submittable_analyses or submitted_analyses exist" do
+      sim = FactoryGirl.create(:simulator,
+        parameter_sets_count: 1, runs_count: 1,
+        analyzers_count: 1
+        )
+      run = sim.parameter_sets.first.runs.first
+      run.update_attribute(:status, :finished)
+      azr = sim.analyzers.first
+      host = azr.executable_on.first
+      run.analyses.create(analyzer: azr, submitted_to: host)
+      expect(host.destroy).to be_falsey
+      expect(host.errors.full_messages).not_to be_empty
+    end
+
     it "can be destroyed when neither submittable_runs nor submitted_runs exist" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       run = sim.parameter_sets.first.runs.first
