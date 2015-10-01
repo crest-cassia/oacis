@@ -149,15 +149,6 @@ class SimulatorsController < ApplicationController
     render json: data
   end
 
-  def explorer
-    @simulator = Simulator.find(params[:id])
-    @param_set = @simulator.parameter_sets.first
-
-    respond_to do |format|
-      format.html
-    end
-  end
-
   def _sort
     params[:simulator].each_with_index do |sim_id, index|
       Simulator.find(sim_id).timeless.update_attribute(:position, index)
