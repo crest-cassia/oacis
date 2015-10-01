@@ -66,11 +66,6 @@ namespace :daemon do
     end
 
     threads << Thread.new do
-      cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_analyzer_worker.rb')} stop"
-      system(cmd)
-    end
-
-    threads << Thread.new do
       cmd = "bundle exec ruby -r #{Rails.root.join('config','environment.rb')} #{File.join(here, 'boot_service_worker.rb')} stop"
       system(cmd)
     end
