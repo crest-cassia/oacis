@@ -99,8 +99,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 - We would also like to create a list of researches to which OACIS contributed to.
     - We will be happy if you are willing to include your work. Let us know about your work when your paper is published.
 
-## Mailing List
+## Contact
 
-- You can post questions or feature requests to the following Google group.
-    - [OACIS-users](https://groups.google.com/forum/#!forum/oacis-users)
-- Announcements of new releases are also available there.
+- Just send your feedback to us!
+    - `oacis-dev _at_ googlegroups.com` (replace _at_ with @)
+    - We appreciate your questions, feature requests, and bug reports.
+- You'll have announcements of new releases if you join the following google group. Take a look.
+    - https://groups.google.com/forum/#!forum/oacis-users
+
