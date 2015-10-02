@@ -89,7 +89,8 @@ class RemoteJobHandler
   def prepare_input_files_via_copy(job)
     remote_path = RemoteFilePath.input_files_dir_path(@host,job)
     relative_path = remote_path.relative_path_from(Pathname.new(@host.work_base_dir))
-    mounted_remote_path = Pathname.new(@host.mounted_work_base_dir).join(relative_path).expand_path #expand_path needs to change relative path to absolute path for FileUtils
+    mounted_remote_path = Pathname.new(@host.mounted_work_base_dir).join(relative_path).expand_path
+    # expand_path is necessary to copy file using FileUtils
     FileUtils.mkdir_p(mounted_remote_path)
     job.input_files.each do |file|
       FileUtils.cp_r(file, mounted_remote_path)
