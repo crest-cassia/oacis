@@ -3,25 +3,28 @@
 [![release](https://img.shields.io/github/release/crest-cassia/oacis.svg)](https://github.com/crest-cassia/oacis/releases/latest)
 [![oaics_docker](http://img.shields.io/badge/oaics_docker-building-yellow.svg)](https://github.com/crest-cassia/oacis_docker)
 
-*OACIS* (''Organizing Assistant for Comprehensive and Interactive Simulations'') is developed for efficient management of simulation jobs and results.
-See [wiki](https://github.com/crest-cassia/oacis/wiki) or docs (doc/build/html/index.html) for the sequence of installation and usage.
 
-OACIS is a job management software for large scale simulations.
+## What is OACIS?
+
+*OACIS* (''Organizing Assistant for Comprehensive and Interactive Simulations'') is a **job management software** for large scale simulations.
+
 As the number of simulation jobs increases, it is often difficult to keep track of vast and various simulation results in an organized way.
-OACIS is a job management software aiming at overcoming these difficulties.
 
-Using a user-friendly web-browser front end, you can easily submit various jobs to appropriate remote hosts.
+OACIS is a job management software aiming at overcoming these difficulties.
+With a user-friendly interface of OACIS, you can easily submit various jobs to appropriate remote hosts.
 After these jobs are finished, all the result files are automatically downloaded from the remote hosts and stored in a traceable way together with logs of the date, host, and elapsed time of the jobs.
 
 If you have a trouble of handling many simulation jobs, OACIS will definitely help you!
 
 ## Getting Started
 
-### Using Docker (Quickest way)
+### Using Docker (Recommended)
 
 The easiest way to start OACIS is using the docker image.
-Install [docker](https://www.docker.com/) (Linux) or [docker Toolbox](https://www.docker.com/toolbox) (MacOS, Windows).
-Then git clone [oacis_docker](https://github.com/crest-cassia/oacis_docker) repository, and follow the instruction there.
+
+- Install [docker](https://www.docker.com/) (Linux) or [docker Toolbox](https://www.docker.com/toolbox) (MacOS, Windows).
+- Then git clone [oacis_docker](https://github.com/crest-cassia/oacis_docker) repository, and follow the instruction there.
+
 You can start OACIS in a few minutes!
 
 ### Manual installation
@@ -107,6 +110,10 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Documents
+
+You can find a link to the documents at the upper-right corner of the OACIS pages.
 
 ## Publications
 - A list of publications about OACIS is available at this [wiki page](https://github.com/crest-cassia/oacis/wiki/List-of-publications).
