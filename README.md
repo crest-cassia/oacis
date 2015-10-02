@@ -6,10 +6,28 @@
 *OACIS* (''Organizing Assistant for Comprehensive and Interactive Simulations'') is developed for efficient management of simulation jobs and results.
 See [wiki](https://github.com/crest-cassia/oacis/wiki) or docs (doc/build/html/index.html) for the sequence of installation and usage.
 
+OACIS is a job management software for large scale simulations.
+As the number of simulation jobs increases, it is often difficult to keep track of vast and various simulation results in an organized way.
+OACIS is a job management software aiming at overcoming these difficulties.
+
+Using a user-friendly web-browser front end, you can easily submit various jobs to appropriate remote hosts.
+After these jobs are finished, all the result files are automatically downloaded from the remote hosts and stored in a traceable way together with logs of the date, host, and elapsed time of the jobs.
+
+If you have a trouble of handling many simulation jobs, OACIS will definitely help you!
+
 ## Getting Started
 
-This is a minimal procedure to try OACIS.
-For the detailed installation process, please refer to the document.
+### Using Docker (Quickest way)
+
+The easiest way to start OACIS is using the docker image.
+Install [docker](https://www.docker.com/) (Linux) or [docker Toolbox](https://www.docker.com/toolbox) (MacOS, Windows).
+Then git clone [oacis_docker](https://github.com/crest-cassia/oacis_docker) repository, and follow the instruction there.
+You can start OACIS in a few minutes!
+
+### Manual installation
+
+Basic procedure to install OACIS is as follows.
+For the details, please refer to the document.
 
 - Supported OS: you need unix like system such as Linux or MacOSX.
     - If you are using Windows, we recommend using a virtual machine.
