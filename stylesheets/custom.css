@@ -2,3 +2,6 @@ img {
   display: block;
   margin: 0 auto;
 }
+table.table {
+  border: 1px solid black;
+}
