@@ -1,0 +1,9 @@
+# Site settings
+title: OACIS DOC
+email: oacis-dev@googlegroups.com
+description: > # this means to ignore newlines until "baseurl:"
+  User document of OACIS.
+baseurl: "/oacis" # the subpath of your site, e.g. /blog/
+
+# Build settings
+markdown: kramdown
