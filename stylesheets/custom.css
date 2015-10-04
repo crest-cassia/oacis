@@ -3,5 +3,8 @@ img {
   margin: 0 auto;
 }
 table.table {
-  border: 1px solid black;
+  border: 1px #bbb solid
+}
+table.table thead {
+  border: 1px #bbb solid
 }
