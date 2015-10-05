@@ -7,3 +7,4 @@ baseurl: "/oacis" # the subpath of your site, e.g. /blog/
 
 # Build settings
 markdown: kramdown
+
