@@ -34,10 +34,12 @@
         </div>
         <div class="navbar-collapse collapse" id="navbar-main">
           <ul class="nav navbar-nav">
-            {% if page.lang %}
-            <li>
-            <a href="{{ site.baseurl }}/{{ page.lang }}/overview.html">Overview</a>
-            </li>
+            {% if page.lang == 'ja' %}
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/index.html">はじめに</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/overview.html">システム概要</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/basic_usage.html">基本的な使い方</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/advanced_usage.html">高度な使い方</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/cli.html">CLI</a> </li>
             {% endif %}
           </ul>
           <ul class="nav navbar-nav navbar-right">
