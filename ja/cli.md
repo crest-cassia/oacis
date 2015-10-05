@@ -158,12 +158,13 @@ Simulatorを新規作成する
 
 #### 入力ファイル
 
-    - hostファイルは show_host で出力されるJSON形式のファイルを指定する。
-    - inputファイルは simulator_template で出力されるJSON形式のファイルを指定する。
-        - JSONのパスを指定してもよいし、JSONの文字列をそのまま渡しても良い
+- hostファイルは show_host で出力されるJSON形式のファイルを指定する。
+- inputファイルは simulator_template で出力されるJSON形式のファイルを指定する。
+    - JSONのパスを指定してもよいし、JSONの文字列をそのまま渡しても良い
 
 #### 出力
-    - 新規作成されたsimulatorのidをObjectとしてJSON形式で出力する。
+
+新規作成されたsimulatorのidをObjectとしてJSON形式で出力する。
 
 {% highlight json %}
 {
@@ -195,16 +196,17 @@ create_parameter_setsの時に使用するparameter_sets.jsonファイルのテ�
 
 #### 入力ファイル
 
-    - simulatorはSimulatorのIDを渡すか、create_simulator で出力されるJSON形式のファイルを指定する。
+simulatorはSimulatorのIDを渡すか、create_simulator で出力されるJSON形式のファイルを指定する。
 
 #### 出力
-    - ParameterSet作成時に使用するパラメータ指定ファイルのテンプレートを出力する。
+
+ParameterSet作成時に使用するパラメータ指定ファイルのテンプレートを出力する。
 
 {% highlight json %}
-  [
-    {"p1":0,"p2":5.0}
-  ]
-  {% endhighlight %}
+[
+  {"p1":0,"p2":5.0}
+]
+{% endhighlight %}
 
 ---
 
@@ -238,38 +240,39 @@ ParameterSetを新規作成する
 
 #### 入力ファイル
 
-    - simulatorはIDを渡すか、create_simulatorで出力されるJSON形式のファイルを指定する。
-    - inputファイルは parameter_sets_template で出力されるJSON形式のファイルを指定する。
-        - またはJSONの文字列を指定しても良い。
-        - パラメータとして配列を指定すると、複数のパラメータセットを同時に作る事ができる。
-    - runは、指定されたParameterSetに対してRunの作成をする場合に指定する。
-        - JSON形式の文字列、またはJSONファイルのパスを指定する。
-        - runのフォーマットは以下の通り。
+- simulatorはIDを渡すか、create_simulatorで出力されるJSON形式のファイルを指定する。
+- inputファイルは parameter_sets_template で出力されるJSON形式のファイルを指定する。
+    - またはJSONの文字列を指定しても良い。
+    - パラメータとして配列を指定すると、複数のパラメータセットを同時に作る事ができる。
+- runは、指定されたParameterSetに対してRunの作成をする場合に指定する。
+    - JSON形式の文字列、またはJSONファイルのパスを指定する。
+    - runのフォーマットは以下の通り。
 
 {% highlight json %}
-  { "num_runs":1,"mpi_procs":1,"omp_threads":1,"priority":1,
-    "submitted_to":"522fe89a899e53ec05000005",
-    "host_parameters":{"nodes":"1","ppn":"1","walltime":"10:00"}
-  }
+{
+  "num_runs":1,"mpi_procs":1,"omp_threads":1,"priority":1,
+  "submitted_to":"522fe89a899e53ec05000005",
+  "host_parameters":{"nodes":"1","ppn":"1","walltime":"10:00"}
+}
 {% endhighlight %}
 
-
-        - "submitted_to"フィールドにはHostのIDを指定する。
-        - "host_parameters"フィールドは、各ホストで必要とされるパラメータを入力する。
-        - それぞれのParameterSetが "num_runs" 個のRunを持つまでRunが作成される。
+- "submitted_to"フィールドにはHostのIDを指定する。
+- "host_parameters"フィールドは、各ホストで必要とされるパラメータを入力する。
+- それぞれのParameterSetが "num_runs" 個のRunを持つまでRunが作成される。
 
 #### 出力
 
-    - 新規作成されたParameterSetのidをObjectの配列としてJSON形式で出力する。
+新規作成されたParameterSetのidをObjectの配列としてJSON形式で出力する。
 
 {% highlight json %}
-  [
-    {"parameter_set_id":"52b3ddc7b93f969b8c000001"}
-  ]
+[
+  {"parameter_set_id":"52b3ddc7b93f969b8c000001"}
+]
 {% endhighlight %}
 
-- その他
-    - 同じParameterの値を持つParameterSetが既に存在する場合には、新規にParameterSetを作成せずに既存のParameterSetのidを出力として返す。エラーにはならない。
+#### その他
+
+同じParameterの値を持つParameterSetが既に存在する場合には、新規にParameterSetを作成せずに既存のParameterSetのidを出力として返す。エラーにはならない。
 
 ---
 
@@ -294,23 +297,25 @@ create_runsの時に使用するjob_parameter.jsonファイルのテンプレー
 |----------|--------|--------------------------------|-----------|
 
 #### 入力
-    - host idはHostのidを文字列で指定する。指定が無い場合はmanualでのジョブを投入する。
+
+host idはHostのidを文字列で指定する。指定が無い場合はmanualでのジョブを投入する。
 
 #### 出力
-    - Run作成時に使用するジョブパラメータ指定ファイルのテンプレートを出力する。
+
+Run作成時に使用するジョブパラメータ指定ファイルのテンプレートを出力する。
 
 {% highlight json %}
-  {
-    "host_id": "522fe89a899e53ec05000005",
-    "host_parameters": {
-      "nodes": "1",
-      "ppn": "1",
-      "walltime": "10:00"
-    },
-    "mpi_procs": 1,
-    "omp_threads": 1,
-    "priority": 1
-  }
+{
+  "host_id": "522fe89a899e53ec05000005",
+  "host_parameters": {
+    "nodes": "1",
+    "ppn": "1",
+    "walltime": "10:00"
+  },
+  "mpi_procs": 1,
+  "omp_threads": 1,
+  "priority": 1
+}
 {% endhighlight %}
 
 ---
@@ -343,23 +348,25 @@ Runを新規作成する
 
 #### 入力ファイル
 
-    - parameter_setsファイルは create_parameter_sets で出力されるJSON形式のファイルまたは文字列を指定する。
-    - job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルまたは文字列を指定する。
-    - number_of_runs はRunの数を数値で指定する。各ParameterSetごとに、ここで指定された数になるまでRunが作られる。デフォルトは1。
-    - seeds はRunのseedを数値の配列で指定する(--seeds "[0, 1, 2, 3]")。number_of_runs以上のseedが指定された場合、number_of_runsで指定された数になるまで指定されたseedでRunが作られる。
+- parameter_setsファイルは create_parameter_sets で出力されるJSON形式のファイルまたは文字列を指定する。
+- job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルまたは文字列を指定する。
+- number_of_runs はRunの数を数値で指定する。各ParameterSetごとに、ここで指定された数になるまでRunが作られる。デフォルトは1。
+- seeds はRunのseedを数値の配列で指定する(--seeds "[0, 1, 2, 3]")。number_of_runs以上のseedが指定された場合、number_of_runsで指定された数になるまで指定されたseedでRunが作られる。
 
 #### 出力
-    - RunのidをObjectの配列としてJSON形式で出力する。
-    - 新規作成されていないRunについても、各ParameterSetごとにnで指定された数の分だけRunのidを出力する。
+
+RunのidをObjectの配列としてJSON形式で出力する。
+新規作成されていないRunについても、各ParameterSetごとにnで指定された数の分だけRunのidを出力する。
 
 {% highlight json %}
-  [
-    {"run_id":"52b3eaebb93f96933f000001"}
-  ]
+[
+  {"run_id":"52b3eaebb93f96933f000001"}
+]
 {% endhighlight %}
 
 #### その他
-    - 既に指定された数のRunが存在する場合には、新規にRunを作成せずに既存のRunのidを出力として返す。エラーにはならない。
+
+既に指定された数のRunが存在する場合には、新規にRunを作成せずに既存のRunのidを出力として返す。エラーにはならない。
 
 ---
 
@@ -383,20 +390,21 @@ Runの実行状況を確認する
 
 #### 入力ファイル
 
-    - run_idsファイルは create_runs で出力されるJSON形式のファイルを指定する
+run_idsファイルは create_runs で出力されるJSON形式のファイルを指定する
 
 #### 出力
-    - 指定されたRunのステータスを集計し、標準出力に表示する
+
+指定されたRunのステータスを集計し、標準出力に表示する
 
 {% highlight json %}
-  {
-    "total": 1,
-    "created": 0,
-    "submitted": 0,
-    "running": 0,
-    "failed": 1,
-    "finished": 0
-  }
+{
+  "total": 1,
+  "created": 0,
+  "submitted": 0,
+  "running": 0,
+  "failed": 1,
+  "finished": 0
+}
 {% endhighlight %}
 
 ---
@@ -421,8 +429,8 @@ Runの実行状況を確認する
 
 #### 入力ファイル
 
-    - inputファイルは手動実行後に生成される結果のアーカイブファイル(.tar.bz2)を指定する。
-        - アーカイブファイルは空白区切り、またはコンマ区切りで複数指定可能。
+- inputファイルは手動実行後に生成される結果のアーカイブファイル(.tar.bz2)を指定する。
+  - アーカイブファイルは空白区切り、またはコンマ区切りで複数指定可能。
 
 ---
 
@@ -448,26 +456,25 @@ Runを削除する
 
 #### 入力形式
 
-    - simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。
-    - queryは連想配列で指定する。
-        - 連想配列は {key}:{value} という形式で指定する。
-        - keyとして可能な値は"status", "simulator_version"のみ。
+- simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。
+- queryは連想配列で指定する。
+    - 連想配列は {key}:{value} という形式で指定する。
+    - keyとして可能な値は"status", "simulator_version"のみ。
 
 #### 実行例
 
-    - simulator_versionが"1.0.0"のRunを削除する
-
+- simulator_versionが"1.0.0"のRunを削除する
 {% highlight sh %}
 ../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
 {% endhighlight %}
 
-    - simulator_version が存在しないRunを削除する。
+- simulator_version が存在しないRunを削除する。
 
 {% highlight sh %}
 ../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:
 {% endhighlight %}
 
-    - statusが "created" （ジョブ投入前）のRunを削除する。
+- statusが "created" （ジョブ投入前）のRunを削除する。
 
 {% highlight sh %}
 ../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:created
@@ -480,11 +487,12 @@ Runを削除する
 指定したRunを削除して、同じ設定で新しいRunを再作成する
 
 #### ユースケース
-    | 例えば、ジョブを大量に流したが古いコードにバグが見つかり再実験が必要になった場合などに使える。
-    | 以前のRunと同じジョブパラメータ（投入ホスト、MPIプロセス数、OMPスレッド数、ホストパラメータ）で実行される。
-    | ただし、乱数の種 _seed は変更される。
 
-    #### 実行方法
+例えば、ジョブを大量に流したが古いコードにバグが見つかり再実験が必要になった場合などに使える。
+以前のRunと同じジョブパラメータ（投入ホスト、MPIプロセス数、OMPスレッド数、ホストパラメータ）で実行される。
+ただし、乱数の種 _seed は変更される。
+
+#### 実行方法
 
 {% highlight sh %}
 ../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:0.0.1
@@ -502,15 +510,15 @@ Runを削除する
 
 #### 入力形式
 
-    - simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。
-    - queryは連想配列で指定する。
-        - 連想配列は {key}:{value} という形式で指定する。
-        - keyとして可能な値は"status", "simulator_version"のみ。
-        - "simulator_version" が空のものを指定したい場合には "simulator_version:" と指定する。
+- simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。
+- queryは連想配列で指定する。
+  - 連想配列は {key}:{value} という形式で指定する。
+  - keyとして可能な値は"status", "simulator_version"のみ。
+  - "simulator_version" が空のものを指定したい場合には "simulator_version:" と指定する。
 
 #### 実行例
 
-    - simulator_versionが"1.0.0"のRunを削除し、同じ設定で新しいRunを再作成する。
+simulator_versionが"1.0.0"のRunを削除し、同じ設定で新しいRunを再作成する。
 
 {% highlight sh %}
 ../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
@@ -540,15 +548,16 @@ create_analysesの時に使用するanalysis_parameters.jsonファイルのテ�
 
 #### 入力ファイル
 
-    - analyzer_id はIDの文字列を指定する。
+analyzer_id はIDの文字列を指定する。
 
 #### 出力
-    - Analysis作成時に使用するパラメータ指定ファイルのテンプレートを出力する。
+
+Analysis作成時に使用するパラメータ指定ファイルのテンプレートを出力する。
 
 {% highlight json %}
-  [
-    {"parameter1":50,"parametr2":1.0}
-  ]
+[
+  {"parameter1":50,"parametr2":1.0}
+]
 {% endhighlight %}
 
 ---
@@ -581,12 +590,13 @@ Analysisを新規作成する
 
 #### 入力ファイル
 
-    - analyzerはanalyzerのIDを指定する。
-    - inputは analyses_template で出力されるJSON形式のファイルまたはJSON形式の文字列を指定する。デフォルトは、Analyzerに登録されたパラメータのデフォルト値。
+- analyzerはanalyzerのIDを指定する。
+- inputは analyses_template で出力されるJSON形式のファイルまたはJSON形式の文字列を指定する。デフォルトは、Analyzerに登録されたパラメータのデフォルト値。
 
-        #### 出力
-    - AnalysisのidをObjectの配列としてJSON形式で出力する。
-    - 新規作成されていないAnalysisについても、Analysisのidを出力する
+#### 出力
+
+- AnalysisのidをObjectの配列としてJSON形式で出力する。
+- 新規作成されていないAnalysisについても、Analysisのidを出力する
 
 {% highlight json %}
   [
@@ -595,27 +605,29 @@ Analysisを新規作成する
 {% endhighlight %}
 
 #### 実行例
-    - 各ParameterSet のRun 1つに対してのみanalyzer を実行する。
+
+- 各ParameterSet のRun 1つに対してのみanalyzer を実行する。
 
 {% highlight sh %}
 ./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json --first_run_only
 {% endhighlight %}
 
-    - 指定したParameterSet に対してanalyzer(:on_parameter_set) を実行する。
+- 指定したParameterSet に対してanalyzer(:on_parameter_set) を実行する。
 
 {% highlight sh %}
 ./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json -t parameter_set_ids.json
 {% endhighlight %}
 
-    - 指定したRun に対してanalyzer(:on_run) を実行する。
+- 指定したRun に対してanalyzer(:on_run) を実行する。
 
 {% highlight sh %}
 ./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json -t run_ids.json
 {% endhighlight %}
 
 #### その他
-    - 既にAnalysisが存在する場合には、新規にAnalysisを作成せずに既存のAnalysisのidを出力として返す。エラーにはならない。
-    - ParamterSetに対するAnalyzerを実行するとき、status:finished のRunが存在しないParameterSetを対象としたAnalysisは作成されない。
+
+- 既にAnalysisが存在する場合には、新規にAnalysisを作成せずに既存のAnalysisのidを出力として返す。エラーにはならない。
+- ParamterSetに対するAnalyzerを実行するとき、status:finished のRunが存在しないParameterSetを対象としたAnalysisは作成されない。
 
 ---
 
@@ -639,10 +651,11 @@ Analysisの実行状況を確認する
 
 #### 入力ファイル
 
-    - analysis_idsファイルは create_analyses で出力されるJSON形式のファイルを指定する
+analysis_idsファイルは create_analyses で出力されるJSON形式のファイルを指定する
 
-        #### 出力
-    - 指定されたAnalysisのステータスを集計し、標準出力に表示する
+#### 出力
+
+指定されたAnalysisのステータスを集計し、標準出力に表示する
 
 {% highlight json %}
   {
@@ -678,15 +691,15 @@ Analysisを削除する
 
 #### 入力形式
 
-    - analyzer_id はIDの文字列を指定する。
-    - queryは連想配列で指定する。
-        - 連想配列は {key}:{value} という形式で指定する。
-        - keyとして可能な値は"status","analyzer_version"のみ。
-        - “analyzer_version” が空のものを指定したい場合には “analyzer_version:” と指定する。
+- analyzer_id はIDの文字列を指定する。
+- queryは連想配列で指定する。
+    - 連想配列は {key}:{value} という形式で指定する。
+    - keyとして可能な値は"status","analyzer_version"のみ。
+    - “analyzer_version” が空のものを指定したい場合には “analyzer_version:” と指定する。
 
-            #### 実行例
+#### 実行例
 
-    - statusが "failed" （解析失敗）かつanalyzer_versionが "nil"のAnalysisを削除する
+statusが "failed" （解析失敗）かつanalyzer_versionが "nil"のAnalysisを削除する
 
 {% highlight sh %}
 ../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:
@@ -699,8 +712,8 @@ Analysisを削除する
 指定したAnalysisを削除して、同じ設定で新しいAnalysisを再作成する
 
 #### ユースケース
-    | 例えば、Analyzerを更新して、結果の図を差し替える場合などに使える。
-    | 以前のAnalysisと同じAnalyzer、同じパラメータで実行される。
+
+- 実行したAnalyzerにバグがあり、修正したAnalyzerで計算を再実行したい
 
 #### 実行方法
 
@@ -720,15 +733,15 @@ Analysisを削除する
 
 #### 入力形式
 
-    - analyzer_id はIDの文字列を指定する。
-    - queryは連想配列で指定する。
-        - 連想配列は {key}:{value} という形式で指定する。
-        - keyとして可能な値は"status","analyzer_version"のみ。
-        - “analyzer_version” が空のものを指定したい場合には “analyzer_version:” と指定する。
+- analyzer_id はIDの文字列を指定する。
+- queryは連想配列で指定する。
+    - 連想配列は {key}:{value} という形式で指定する。
+    - keyとして可能な値は"status","analyzer_version"のみ。
+    - “analyzer_version” が空のものを指定したい場合には “analyzer_version:” と指定する。
 
 #### 実行例
 
-    - statusが"finished"のAnalysisを削除し、同じ設定で新しいAnalysisを再作成する。
+- statusが"finished"のAnalysisを削除し、同じ設定で新しいAnalysisを再作成する。
 
 {% highlight sh %}
 ../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
@@ -741,7 +754,8 @@ Analysisを削除する
 指定したSimulatorに、新しいParameterを追加する。
 
 #### ユースケース
-    | 既存のSimulatorを拡張したいが、既存のデータを破棄したくない場合に使用する。
+
+既存のSimulatorを拡張したいが、既存のデータを破棄したくない場合に使用する。
 
 #### 実行方法
 
@@ -765,22 +779,22 @@ Analysisを削除する
 
 #### 入力形式
 
-    - simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。
-    - name は新規パラメータの名前を指定する。既存のパラメータと重複するとエラー。
-    - type は新規パラメータの型を指定する。指定可能な値は "Integer", "Float", "String", "Boolean" の４種類。
-    - default は新規パラメータのデフォルト値を指定する。
-        - type と整合性が取れていない場合はエラー
-        - 既存のパラメータセットのパラメータはこの値で保存される。
+- simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。
+- name は新規パラメータの名前を指定する。既存のパラメータと重複するとエラー。
+- type は新規パラメータの型を指定する。指定可能な値は "Integer", "Float", "String", "Boolean" の４種類。
+- default は新規パラメータのデフォルト値を指定する。
+    - type と整合性が取れていない場合はエラー
+    - 既存のパラメータセットのパラメータはこの値で保存される。
 
 #### 実行例
 
-    - "p3" という名前の整数型のパラメータ（デフォルト値 0）を追加する。
+"p3" という名前の整数型のパラメータ（デフォルト値 0）を追加する。
 
 {% highlight sh %}
 ./bin/oacis_cli append_parameter_definition -s 522442de899e53dd8d000034 -n p3 -t Integer -e 0
 {% endhighlight %}
 
 #### 注意事項
-    - 既に作成済みのRunについては更新されない。
-簡単なシミュレータを実際に実行し、結果を参照するまでの最小の手順をここで示す。
+
+既に作成済みのRunについては更新されない。
 
