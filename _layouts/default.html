@@ -41,6 +41,7 @@
             <li> <a href="{{ site.baseurl }}/{{ page.lang }}/basic_usage.html">基本的な使い方</a> </li>
             <li> <a href="{{ site.baseurl }}/{{ page.lang }}/advanced_usage.html">高度な使い方</a> </li>
             <li> <a href="{{ site.baseurl }}/{{ page.lang }}/cli.html">CLI</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/tips.html">TIPs</a> </li>
             {% endif %}
           </ul>
           <ul class="nav navbar-nav navbar-right">
@@ -55,9 +56,11 @@
       </div>
       {{ content }}
 
+      {% if page.next_page %}
       <div class="text-center">
         <a href="{{ site.baseurl }}/{{ page.lang }}/{{ page.next_page }}.html" class="btn btn-info">Next »</a>
       </div>
+      {% endif %}
 
       <hr>
       <footer class="site-footer">

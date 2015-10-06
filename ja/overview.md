@@ -2,6 +2,7 @@
 layout: default
 title: "システム概要"
 lang: ja
+next_page: install
 ---
 
 # {{ page.title }}

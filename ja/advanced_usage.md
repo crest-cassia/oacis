@@ -2,6 +2,7 @@
 layout: default
 title: "高度な使い方"
 lang: ja
+next_page: cli
 ---
 
 # {{ page.title }}

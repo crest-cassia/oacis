@@ -2,6 +2,7 @@
 layout: default
 title: "基本の使い方"
 lang: ja
+next_page: advanced_usage
 ---
 
 # {{ page.title }}

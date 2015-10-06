@@ -2,6 +2,7 @@
 layout: default
 title: "インストール"
 lang: ja
+next_page: basic_usage
 ---
 
 # インストール方法
