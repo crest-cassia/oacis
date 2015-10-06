@@ -23,11 +23,15 @@ Linuxだけでなく、Windows、MacOSにも導入することができる。
 手順の概要は以下のようになる。
 
 1. Dockerを導入
+  - dockerの導入方法はDockerの[ドキュメント](https://docs.docker.com/)を参照のこと
+    - (Mac,Windows) [Docker Toolbox](https://www.docker.com/toolbox)を使ってインストールする。
+        - インストール後、Docker Quickstart Terminal という端末を起動できるようになる。以下の作業はこの端末上で実行すること
 1. [oacis_docker](https://github.com/crest-cassia/oacis_docker) というリポジトリをcloneする
+  - `git clone https://github.com/crest-cassia/oacis_docker.git` を実行
 1. oacis_docker のスクリプトを実行
+  - `cd oacis_docker && ./bin/start.sh PROJECT_NAME` を実行。PROJECT_NAMEは任意の名前で良い。
 
 スクリプトを実行すると、仮想マシンのイメージをダウンロードし、仮想環境上で起動し、ホストOSのブラウザからアクセスできるようになる。
-
 詳細は[oacis_docker](https://github.com/crest-cassia/oacis_docker) のREADMEを参照のこと。
 
 ## (2) 手動インストール
@@ -102,6 +106,7 @@ bundle exec rake daemon:stop RAILS_ENV=production
   - OACISは計算ホストとして登録したサーバー内で任意のコマンドを実行できるので、悪意のあるユーザーからアクセスされるとセキュリティホールになる
   - 各個人のマシン上で起動し、ファイアウォールによりOACISには外部からのアクセスを許可しないように設定しておくのが望ましい
     - Railsは3000番、MongoDBは27017番のポートをそれぞれ使用しているので、これらのポートへのアクセスを制限する。
+  - Mac,WindowsからDocker環境を使用している場合は、デフォルトで外部からのアクセスはできないので特に対応をする必要はない。
 - OACISへのアクセスをローカルホストからに制限した場合でもsshポートフォワーディングを使用する事で、別の端末からOACISにアクセスすることが可能である。
   - OACISを server.example.com で起動している場合、以下のコマンドを実行すると localhost:3000 でOACISにアクセスできるようになる。
 {% highlight sh %}
