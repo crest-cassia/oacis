@@ -9,14 +9,14 @@ next_page: tips
 
 ---
 
-Web browser経由で対話的な操作に加え、コマンドライン経由でSimulator, ParameterSet, Runの作成をするためのプログラム(CLI)が用意されている。
-対話的な操作ではできないような多数のParameterSetやRunを一度に作成したい場合に有効であるだけでなく、他のプログラムからOACISを操作する用途にも利用可能である。
-ここではCLIの基本的な使い方を説明する。
+Web browser経由で対話的な操作に加え、コマンドライン経由でSimulator, ParameterSet, Runの作成をするためのプログラム(CLI)が用意されています。
+対話的な操作ではできないような多数のParameterSetやRunを一度に作成したい場合に有効であるだけでなく、他のプログラムからOACISを操作する用途にも利用可能です。
+ここではCLIの基本的な使い方を説明していきます。
 
 
 ## CLIで利用可能な操作一覧
 
-CLIで利用可能な操作は以下の通りである。
+CLIで利用可能な操作は以下の通りです。
 
 - 登録済みHost一覧の取得 (show_host)
 - Simulator作成用テンプレート作成 (simulator_template)
@@ -36,14 +36,14 @@ CLIで利用可能な操作は以下の通りである。
 - Analysis再作成（replace_analyses）
 - 既存SimulatorへのParameterDefinition追加 (append_parameter_definition)
 
-OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行する操作を指定する。
+OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行する操作を指定します。
 例えば
 
 {% highlight sh %}
 ./bin/oacis_cli usage
 {% endhighlight %}
 
-このドキュメント内ではOACISのチェックアウトディレクトリから実行することを想定してコマンド例を示すが、どのディレクトリから実行しても良い。
+このドキュメント内ではOACISのチェックアウトディレクトリから実行することを想定してコマンド例を示すが、どのディレクトリから実行しても構いません。
 
 ---
 

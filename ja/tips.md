@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Tips"
+title: "TIPs"
 lang: ja
 ---
 
@@ -10,54 +10,69 @@ lang: ja
 
 ## バックアップ・レストア
 
-#### OACISのバックアップとレストア方法について
+OACISによって管理されているデータは、DB上のレコード（MongoDBではコレクションと呼ばれる）と、ファイルシステム上のpublicディレクトリ以下に保存されています。
+両方のデータをそれぞれバックアップおよびレストアする必要があります。
+ここでは、その手順を説明します。
 
-OACISによって管理されているデータは、DB上のレコード(MongoDBではコレクションと呼ぶ。)とファイルシステム上のpublicディレクトリ以下に保存されている。
-以下では、コレクションとpublicディレクトリそれぞれに対して、バックアップ・レストア手順を示す。
+### バックアップ
 
-#### コレクションのバックアップ
+#### Docker環境を利用している場合
 
-OACISが利用しているDBの名前をoacis_developmentとする。（DB名は、confing/mongoid.ymlに記載されている。）
-
-1. コレクションのバックアップ(バックアップデータは./dump/以下に作成される。)
-    - `mongodump --db oacis_development`
-
-#### コレクションのレストア
-
-2. DBのレストア
-    - `mongorestore --db oacis_development /path/to/DB_data/dump/oacis_development`
-
-#### publicディレクトリのバックアップ
-
-OACISは、結果のファイル群をpublicディレクトリ以下に保管している。
-
-ローカルのディレクトリに差分コピーする場合
+ホストOS上のoacis_dockerをcloneしたディレクトリで以下のコマンドを実行します。
 
 {% highlight sh %}
-rsync -av -P --delete /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 /path/to/backup_dir/Reuslt_development/
+./bin/backup_db.sh PROJECT_NAME
 {% endhighlight %}
 
-リモートマシンに差分コピーする場合
+*PROJECT_NAME/db/dump-YYYYMMDD-hhmm/oacis_development* というディレクトリが作成され、その下にDBが保存されます。
+
+ファイルシステム上に保存されているデータはコンテナとホストOSと共有されているので、ホストOSのファイルシステムに常に出力されています。
+*PROJECT_NAME/Result_development* というディレクトリをバックアップしてください。
+
+#### Docker環境を利用していない場合
+
+まずDBのコレクションを保存するために以下のコマンドを実行します。dumpというディレクトリが作成され、その中にデータがダンプされます。
 
 {% highlight sh %}
-rsync -avz -P --delete -e "ssh -i ~/.ssh/id_rsa" /path/to/OACIS/public/Reuslt_development/526638c781e31e98cf000001 username@remotehost:/path/to/backup_dir/Reuslt_development/
+mongodump --db oacis_development
 {% endhighlight %}
 
-- 補足
-    - ``cp -r`` や ``scp -r`` では、バックアップ先に同じ名前のディレクトリが存在しているとき、挙動が変わるので非推奨
-
-#### publicディレクトリのレストア
-
-ローカルからの場合
+ファイルシステムのデータについては *OACIS_PROJECT_ROOT/public/Result_development* 以下のファイルを全て保存してください。
+（cpコマンドを使っても良いですが、容量が大きい場合にはrsyncを使った方がよいでしょう）
 
 {% highlight sh %}
-rsync -av -P /path/to/backup_dir/Reuslt_development/526638c781e31e98cf000001 /path/to/OACIS/public/Reuslt_development/
+rsync -av -P --delete /path/to/OACIS/public/Result_development /backup_dir
 {% endhighlight %}
 
-リモートマシンからの場合
+### レストア
+
+#### Docker環境を利用している場合
+
+DBをレストアするためにはoacis_dockerのディレクトリから以下のコマンドを実行します。
 
 {% highlight sh %}
-rsync -avz -P -e "ssh -i ~/.ssh/id_rsa" username@oacishost:/path/to/backup_dir/Reuslt_development/526638c781e31e98cf000001 /path/to/OACIS/public/Reuslt_development/
+./bin/restore_db.sh PROJECT_NAME path/to/dump/oacis_development
+{% endhighlight %}
+
+PROJECT_NAMEはバックアップ先のプロジェクト名を指定します。
+
+ファイルは*Result_development*ディレクトリを PROJECT_NAME/ 以下に配置します。
+
+#### Docker環境を利用していない場合
+
+下記のコマンドを実行します。
+
+{% highlight sh %}
+mongo  oacis_development --eval 'db.dropDatabase();'
+mongorestore --db oacis_development /path/to/DB_data/dump/oacis_development
+{% endhighlight %}
+
+（注）上記のコマンドはDB内の既存のレコードを一度削除しています。つまり上書きしています。
+
+ファイルのレストアはバックアップと同様にrsyncで行います。
+
+{% highlight sh %}
+rsync -av -P --delete /backup_dir/Result_development /path/to/OACIS/public
 {% endhighlight %}
 
 #### 参考
@@ -68,20 +83,20 @@ rsync -avz -P -e "ssh -i ~/.ssh/id_rsa" username@oacishost:/path/to/backup_dir/R
 
 ## READ_ONLY モード
 
-地理的に離れた研究者とデータの共有をする場合など、データを共有のサーバーにアップロードしてOACISを経由してシミュレーション結果を見てもらいたい場合がある。
-この場合アップロードしたサーバー上でOACISを起動する事になるが、その際には閲覧のみを可能にし、リモートジョブの実行や新規シミュレーターの登録などはできないようにした方が安全である。
-OACISを閲覧専用モードで起動すると結果の閲覧のみが可能な状態で利用できる。
+地理的に離れた研究者とデータの共有をする場合など、データを共有のサーバーにアップロードしてOACISを経由してシミュレーション結果を見てもらいたい場合があります。
+この場合アップロードしたサーバー上でOACISを起動する事になりますが、その際には閲覧のみを可能にし、リモートジョブの実行や新規シミュレーターの登録などはできないようにした方が安全です。
+OACISを閲覧専用モードで起動すると結果の閲覧のみが可能な状態で利用できます。
 
-`config/user_config.yml` というファイルを用意する。
-サンプルが `config/user_config.sample.yml` にあるので、参考にしてほしい。
-READ_ONLYモードにする場合には以下のようにファイルに記述する。（sampleの全てのフィールドを書く必要はなく、必要な設定のみuser_config.ymlに記述すれば良い）
-
+OACISのプロジェクトのディレクトリで `config/user_config.yml` というファイルを用意します。
+サンプルが `config/user_config.sample.yml` にあるので、参考にしてください。
+READ_ONLYモードにする場合には以下のようにファイルに記述します。
+（sampleの全てのフィールドを書く必要はなく、必要な設定のみuser_config.ymlに記述すれば良いです）
 
 {% highlight yaml %}
 ---
 read_only: true
 {% endhighlight %}
 
-このように設定後OACISを起動するとバックグラウンドのワーカープロセスは起動せず、ブラウザ上からの新規レコードの作成や編集もできなくなる。
-ローカルマシンで起動したOACISからジョブを実行しつつ共有マシンではREAD_ONLYモードで起動しておき、定期的に共有サーバーにバックアップコマンドでデータを同期するとデータの共有が容易にできる。
+このように設定後OACISを起動するとバックグラウンドのワーカープロセスは起動せず、ブラウザ上からの新規レコードの作成や編集もできなくなります。
+ローカルマシンで起動したOACISからジョブを実行しつつ共有マシンではREAD_ONLYモードで起動しておき、定期的に共有サーバーにバックアップコマンドでデータを同期するとデータの共有が容易にできます。
 
