@@ -113,7 +113,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Documents
 
-You can find a link to the documents at the upper-right corner of the OACIS pages.
+http://crest-cassia.github.io/oacis/
 
 ## Publications
 - A list of publications about OACIS is available at this [wiki page](https://github.com/crest-cassia/oacis/wiki/List-of-publications).
