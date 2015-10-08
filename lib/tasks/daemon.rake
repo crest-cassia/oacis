@@ -4,6 +4,7 @@ namespace :daemon do
 
   desc "start daemons"
   task :start do
+    ENV['RAILS_ENV'] ||= 'production'
     Rake::Task['db:update_schema'].invoke
 
     threads = []
@@ -40,6 +41,7 @@ namespace :daemon do
 
   desc "stop daemons"
   task :stop do
+    ENV['RAILS_ENV'] ||= 'production'
     threads = []
     threads << Thread.new do
       if File.exist?(SERVER_PID)
