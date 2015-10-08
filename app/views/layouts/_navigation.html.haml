@@ -17,11 +17,4 @@
         %li
           = link_to 'Hosts', hosts_path
       %ul.nav.navbar-nav.navbar-right
-        %li.dropdown
-          %a.dropdown-toggle{href:"#", 'data-toggle':"dropdown", role:"button", "aria-haspopup":"true", "aria-expanded":"false" }
-            Document
-            %span.caret
-          %ul.dropdown-menu
-            %li
-              = link_to 'English', "https://github.com/crest-cassia/oacis/wiki", target: '_blank'
-              = link_to '日本語', "#{root_path}oacis_document/index.html", target: '_blank'
+        %li= link_to 'Document', 'http://crest-cassia.github.io/oacis/', target: '_blank'
