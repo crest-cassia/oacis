@@ -31,7 +31,10 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 1. [oacis_docker](https://github.com/crest-cassia/oacis_docker) というリポジトリをcloneする
   - `git clone https://github.com/crest-cassia/oacis_docker.git` を実行
 1. oacis_docker のスクリプトを実行
-  - `cd oacis_docker && ./bin/start.sh PROJECT_NAME` を実行。PROJECT_NAMEは任意の名前で良い。
+  - `oacis_docker/bin/start.sh PROJECT_NAME` を実行。PROJECT_NAMEは任意の名前で良い。
+  - 任意のディレクトリから実行可能。
+  - 実行するとカレントディレクトリ以下に *PROJECT_NAME* という名前のディレクトリが作られる。そこに実行結果のファイルが格納される。
+      - 一度OACISの起動イメージを作成すると、イメージを削除するまでこのディレクトリを別のパスに移動することができないので注意。
 
 スクリプトを実行すると、仮想マシンのイメージをダウンロードし、仮想環境上で起動し、ホストOSのブラウザからアクセスできるようになります。
 詳細は[oacis_docker](https://github.com/crest-cassia/oacis_docker) のREADMEを参照してください。
