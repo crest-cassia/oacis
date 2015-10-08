@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -eux
+cd $(dirname $BASH_SOURCE)/..
+bundle exec rake daemon:stop
+git pull origin
+bundle
+bundle exec rake daemon:start
+
