@@ -50,9 +50,7 @@ For the details, please refer to the document.
 ps aux | grep "mongod"
         ```
 
-- install ruby1.9.3 and [bundler](http://bundler.io/)
-    - version 1.9.3 is supported
-        - probably version 2.0 or higher works as well, but is not extensively tested.
+- install ruby2.2.0 or later and [bundler](http://bundler.io/)
     - to install bundler gem, run the following command
         - when using Ruby installed to the system, you might need to run as `sudo`
 
