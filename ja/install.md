@@ -31,12 +31,18 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 1. [oacis_docker](https://github.com/crest-cassia/oacis_docker) というリポジトリをcloneする
   - `git clone https://github.com/crest-cassia/oacis_docker.git` を実行
 1. oacis_docker のスクリプトを実行
-  - `oacis_docker/bin/start.sh PROJECT_NAME` を実行。PROJECT_NAMEは任意の名前で良い。
-  - 任意のディレクトリから実行可能。
-  - 実行するとカレントディレクトリ以下に *PROJECT_NAME* という名前のディレクトリが作られる。そこに実行結果のファイルが格納される。
-      - 一度OACISの起動イメージを作成すると、イメージを削除するまでこのディレクトリを別のパスに移動することができないので注意。
+    - 実行結果を保存したいパスに移動した後、`/path/to/oacis_docker/bin/start.sh PROJECT_NAME` を実行。
+        - PROJECT_NAMEは任意の名前で良い。
+        - スクリプトのパスは各自の環境に合わせて変更してください。
+    - スクリプトを実行すると、仮想マシンのイメージをダウンロード後に起動する。
+    - 実行するとカレントディレクトリ以下に *PROJECT_NAME* という名前のディレクトリが作られる。そこに実行結果のファイルが格納される。
+        - 一度OACISの起動イメージを作成すると、イメージを削除するまでこのディレクトリを別のパスに移動することができないので注意。
+1. ブラウザでアクセス
+  - (Linux) http://localhost:3000, (Mac or Windows) http://192.168.99.100:3000 でOACISのトップページにアクセスできる。
+1. 仮想マシンの停止と再起動を行いたい場合は、start.shを実行したディレクトリにcdした後で以下のコマンドを実行する。
+  - 仮想マシンを停止したい場合 : `/path/to/oacis_docker/bin/stop.sh PROJECT_NAME`
+  - 停止した仮想マシンの再起動したい場合 : `/path/to/oacis_docker/bin/restart PROJECT_NAME`
 
-スクリプトを実行すると、仮想マシンのイメージをダウンロードし、仮想環境上で起動し、ホストOSのブラウザからアクセスできるようになります。
 詳細は[oacis_docker](https://github.com/crest-cassia/oacis_docker) のREADMEを参照してください。
 
 ## (2) 手動インストール
@@ -105,7 +111,7 @@ bundle exec rake daemon:restart RAILS_ENV=production
 bundle exec rake daemon:stop RAILS_ENV=production
 {% endhighlight %}
 
-## 注意点
+## 注意点（(1)の場合も(2)の場合も共通）
 
 - OACISはイントラネット内で使用してください
   - OACISは計算ホストとして登録したサーバー内で任意のコマンドを実行できるので、悪意のあるユーザーからアクセスされるとセキュリティホールになります

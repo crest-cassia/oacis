@@ -18,16 +18,18 @@ OACISによって管理されているデータは、DB上のレコード（Mong
 
 #### Docker環境を利用している場合
 
-ホストOS上のoacis_dockerをcloneしたディレクトリで以下のコマンドを実行します。
+ホストOS (Mac or Windowsの場合は、Docker Quickstart Terminal) 上でstart.shを実行したディレクトリに移動し、以下のコマンドを実行します。
 
 {% highlight sh %}
-./bin/backup_db.sh PROJECT_NAME
+/path/to/oacis_docker/bin/dump.sh PROJECT_NAME
 {% endhighlight %}
 
-*PROJECT_NAME/db/dump-YYYYMMDD-hhmm/oacis_development* というディレクトリが作成され、その下にDBが保存されます。
+*PROJECT_NAME* ディレクトリ以下にDBのデータがダンプされます。
+OACISの仮想環境が停止しているとエラーになります。その場合は、restart.shで仮想環境を再起動してください。
 
-ファイルシステム上に保存されているデータはコンテナとホストOSと共有されているので、ホストOSのファイルシステムに常に出力されています。
-*PROJECT_NAME/Result_development* というディレクトリをバックアップしてください。
+ファイルシステム上に保存されているデータはコンテナとホストOSと共有されているので、ホストOSのファイルシステムの *PROJECT_NAME* ディレクトリ以下に常に出力されています。
+つまり、dump.shを実行後に *PROJECT_NAME* というディレクトリをrsyncなどを使って丸ごとバックアップすればよいです。
+
 
 #### Docker環境を利用していない場合
 
@@ -48,15 +50,15 @@ rsync -av -P --delete /path/to/OACIS/public/Result_development /backup_dir
 
 #### Docker環境を利用している場合
 
-DBをレストアするためにはoacis_dockerのディレクトリから以下のコマンドを実行します。
+DBをレストアするためには、バックアップしたディレクトリが存在するディレクトリに移動して以下のコマンドを実行します。
 
 {% highlight sh %}
-./bin/restore_db.sh PROJECT_NAME path/to/dump/oacis_development
+/path/to/oacis_docker/bin/restore.sh PROJECT_NAME
 {% endhighlight %}
 
 PROJECT_NAMEはバックアップ先のプロジェクト名を指定します。
-
-ファイルは*Result_development*ディレクトリを PROJECT_NAME/ 以下に配置します。
+すでにPROJECT_NAMEのコンテナが存在している場合にはエラーになります。
+（既存のコンテナを削除するには *oacis_docker/bin/remove.sh* というスクリプトを使用してください。）
 
 #### Docker環境を利用していない場合
 
