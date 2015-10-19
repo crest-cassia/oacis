@@ -58,8 +58,11 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 - bundler (http://bundler.io/)
 
 Rubyのインストールにはrbenvまたはrvmを使って環境を整えるのがよいです。
-Mac OS Xの場合、homebrew (http://brew.sh/) を使ってインストールするのが手軽です。
+
+Mac OS Xの場合、homebrew (http://brew.sh/) を使ってrbenvとMongoDBをインストールするのが手軽です。
 Linuxの場合、yumやaptコマンドを使ってインストールできます。
+
+bundlerは正しいRubyのバージョンをインストールした後に、 `gem install bundler` コマンドを実行してください。（rbenvを使っている場合、 `rbenv rehash` コマンドも実行する必要があります）
 
 以下のコマンドでRubyのバージョン、bundlerのインストール、MongoDBのバージョン、MongoDBのデーモンが起動していることを確認する事ができます。
 {% highlight sh %}
@@ -71,7 +74,7 @@ ${OACIS_PROJECT_ROOT}/bin/check_oacis_env
 まず手元にOACISのソースコード一式をgit clonします。（gitがない場合はダウンロードします。）
 
 {% highlight sh %}
-git clone https://github.com/crest-cassia/oacis.git
+git clone -b master https://github.com/crest-cassia/oacis.git
 {% endhighlight %}
 
 次にRailsおよび関連gemのインストールを行います。ダウンロードしたディレクトリ内に移動し、
@@ -92,7 +95,7 @@ http://localhost:3000 にアクセスし、ページが適切に表示されれ�
 
 Railsおよびworkerの起動は以下のコマンドを実行します。
 {% highlight sh %}
-bundle exec rake daemon:start RAILS_ENV=production
+bundle exec rake daemon:start
 {% endhighlight %}
 http://localhost:3000 にアクセスできればRailsの起動が成功しています。
 またWorkerプロセスが起動しているかどうかは http://localhost:3000/runs にアクセスすれば確認できます。
@@ -101,8 +104,8 @@ Workerが起動していない場合にはエラーメッセージが表示さ�
 これらのプロセスの再起動、および停止は以下のコマンドで実行できます。
 
 {% highlight sh %}
-bundle exec rake daemon:restart RAILS_ENV=production
-bundle exec rake daemon:stop RAILS_ENV=production
+bundle exec rake daemon:restart
+bundle exec rake daemon:stop
 {% endhighlight %}
 
 ## 注意点
