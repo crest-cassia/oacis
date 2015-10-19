@@ -70,17 +70,17 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
 
 bundlerは正しいRubyのバージョンをインストールした後に、 `gem install bundler` コマンドを実行してください。（rbenvを使っている場合、 `rbenv rehash` コマンドも実行する必要があります）
 
-以下のコマンドでRubyのバージョン、bundlerのインストール、MongoDBのバージョン、MongoDBのデーモンが起動していることを確認する事ができます。
-{% highlight sh %}
-${OACIS_PROJECT_ROOT}/bin/check_oacis_env
-{% endhighlight %}
-
 ### インストール
 
 まず手元にOACISのソースコード一式をgit clonします。（gitがない場合はダウンロードします。）
 
 {% highlight sh %}
 git clone -b master https://github.com/crest-cassia/oacis.git
+{% endhighlight %}
+
+クローンしたディレクトリに移動し、以下のコマンドを実行するとRubyのバージョン、bundlerのインストール、MongoDBのバージョン、MongoDBのデーモンが起動していることを確認する事ができます。
+{% highlight sh %}
+./bin/check_oacis_env
 {% endhighlight %}
 
 次にRailsおよび関連gemのインストールを行います。ダウンロードしたディレクトリ内に移動し、
