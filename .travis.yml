@@ -10,5 +10,5 @@ install:
   - bundle install --jobs=3 --retry=3
 before_script:
   - sleep 15
-script: bundle exec rspec models
+script: bundle exec rspec spec/models
 
