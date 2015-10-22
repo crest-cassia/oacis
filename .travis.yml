@@ -7,6 +7,7 @@ install:
   - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
   - chmod 600 ~/.ssh/authorized_keys
+  - ssh-keyscan -H localhost >> ~/.ssh/known_hosts
   - ssh localhost ls
   - bundle install --jobs=3 --retry=3 --path=vendor/bundle
 cache:
