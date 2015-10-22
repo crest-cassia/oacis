@@ -1,10 +1,13 @@
 language: ruby
 rvm:
   - "2.2.2"
-script: bundle exec rake spec
+services: mongodb
 install:
   - ssh-keygen -t rsa -N '' -f ~/.ssh/test_rsa
   - cat ~/.ssh/test_rsa.pub >> ~/.ssh/authorized_keys
   - chmod 600 ~/.ssh/authorized_keys
   - bundle install --jobs=3 --retry=3
+before_script:
+  - sleep 15
+script: bundle exec rake spec
 
