@@ -1,6 +1,7 @@
 # OACIS
 
 [![release](https://img.shields.io/github/release/crest-cassia/oacis.svg)](https://github.com/crest-cassia/oacis/releases/latest)
+[![Build Status](https://travis-ci.org/crest-cassia/oacis.svg?branch=Development)](https://travis-ci.org/crest-cassia/oacis)
 [![oaics_docker](http://img.shields.io/badge/oaics_docker-building-yellow.svg)](https://github.com/crest-cassia/oacis_docker)
 
 
