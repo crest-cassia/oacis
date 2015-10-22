@@ -19,5 +19,5 @@ cache:
     - vendor/bundle
 before_script:
   - sleep 15
-script: bundle exec rspec spec/models/run_spec.rb
+script: bundle exec rspec spec/models
 
