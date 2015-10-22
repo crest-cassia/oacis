@@ -2,6 +2,7 @@ language: ruby
 rvm:
   - "2.2.2"
 services: mongodb
+sudo: false
 install:
   - ssh-keygen -t rsa -N '' -f ~/.ssh/test_rsa
   - cat ~/.ssh/test_rsa.pub >> ~/.ssh/authorized_keys
