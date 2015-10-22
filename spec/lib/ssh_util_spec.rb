@@ -134,6 +134,7 @@ describe SSHUtil do
     it "handles redirection properly" do
       remote_path = @temp_dir.join('abc').expand_path
       SSHUtil.execute_in_background(@ssh, "echo $USER > #{remote_path}")
+      sleep 1
       expect(File.exist?(remote_path)).to be_truthy
       expect(File.open(remote_path).read.chomp).to eq ENV['USER']
     end
