@@ -245,7 +245,7 @@ describe ParameterSet do
         val = {"L" => 5-n, "T" => 1.0, "P" => 1.0}
         sim.parameter_sets.create( v: val )
       end
-      @prm = sim.parameter_sets.first
+      @prm = sim.parameter_sets.where("v.L": 1, "v.T":1.0).first
     end
 
     it "returns array of parameter keys which have multiple distinct parameter values" do
