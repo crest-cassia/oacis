@@ -14,7 +14,7 @@ OACISをインストールする方法には、
     
 の２種類があります。
 
-(1)が推奨ですが、Unix系OS(Linux,Mac)の場合には(2)の方法によっても環境構築ができます。
+Windowsの方は(1)を選択してください。Unix系OS(Linux,Mac)の場合にはどちらの方法によっても環境構築ができます。
 
 ---
 
@@ -82,6 +82,7 @@ git clone -b master https://github.com/crest-cassia/oacis.git
 {% highlight sh %}
 ./bin/check_oacis_env
 {% endhighlight %}
+(注) OACIS v2.0.0 ではmongo3以降を入れるとこのコマンドはエラーを返しますが、mongo3以降も問題なく利用できます。
 
 次にRailsおよび関連gemのインストールを行います。ダウンロードしたディレクトリ内に移動し、
 {% highlight sh %}
