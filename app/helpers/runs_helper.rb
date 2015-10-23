@@ -29,4 +29,30 @@ module RunsHelper
       "<span class=\"label status-label\">#{status}</span>"
     end
   end
+
+  def make_tree_from_result_paths( result_paths, depth = 3 )
+    base_dir = File.dirname( result_paths.first )
+    sio = StringIO.new()
+    sio.puts '<ul>'
+    result_paths.each do |result_path|
+      if File.directory?( result_path )
+        subpaths = Dir.glob( result_path.join('*') ).map {|x| Pathname.new(x) }
+        sio.puts '<li class="folder">' + File.basename(result_path)
+        if depth > 1
+          sio.puts make_tree_from_result_paths( subpaths, depth - 1 )
+        end
+        sio.puts '</li>'
+      else
+        sio.puts "<li><a href=\"#{file_path_to_link_path(result_path)}\">"
+        sio.puts File.basename(result_path)
+        if result_path.to_s =~ /(\.png|\.jpg|\.bmp)$/i
+          sio.puts '<br />'
+          sio.puts image_tag( file_path_to_link_path(result_path) )
+        end
+        sio.puts '</a></li>'
+      end
+    end
+    sio.puts '</ul>'
+    sio.string.html_safe
+  end
 end
