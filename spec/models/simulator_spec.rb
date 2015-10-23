@@ -397,7 +397,7 @@ describe Simulator do
     end
 
     it "returns array of hash which has 'oldest_started_at' and 'latest_started_at' fields" do
-      runs = @sim.runs.in(status: [:finished, :failed]).asc(&:id)
+      runs = @sim.runs.in(status: [:finished, :failed]).asc(:id)
       expected = [
         { "version" => "v1",
           "oldest_started_at" => runs[0].started_at,
