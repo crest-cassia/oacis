@@ -245,14 +245,11 @@ describe ParameterSet do
         val = {"L" => 5-n, "T" => 1.0, "P" => 1.0}
         sim.parameter_sets.create( v: val )
       end
-      @prm = sim.parameter_sets.first
+      @prm = sim.parameter_sets.where("v.L": 1, "v.T":1.0).first
     end
 
     it "returns array of parameter keys which have multiple distinct parameter values" do
-      result = @prm.parameter_keys_having_distinct_values
-      STDERR.puts @prm.inspect
-      STDERR.puts (@prm.simulator.parameter_sets.map {|ps| ps.v }).inspect
-      expect(result).to eq ["L", "T"]
+      expect(@prm.parameter_keys_having_distinct_values).to eq ["L", "T"]
     end
   end
 
