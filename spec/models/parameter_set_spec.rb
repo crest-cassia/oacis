@@ -249,7 +249,10 @@ describe ParameterSet do
     end
 
     it "returns array of parameter keys which have multiple distinct parameter values" do
-      expect(@prm.parameter_keys_having_distinct_values).to eq ["L", "T"]
+      result = @prm.parameter_keys_having_distinct_values
+      STDERR.puts @prm.inspect
+      STDERR.puts (@prm.simulator.parameter_sets.map {|ps| ps.v }).inspect
+      expect(result).to eq ["L", "T"]
     end
   end
 

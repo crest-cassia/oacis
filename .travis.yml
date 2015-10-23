@@ -19,5 +19,5 @@ cache:
     - vendor/bundle
 before_script:
   - sleep 15
-script: bundle exec rspec spec/models/parameter_set_spec.rb:252
+script: bundle exec rspec
 
