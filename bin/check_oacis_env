@@ -37,7 +37,10 @@ end
 def verify_mongodb_version
   print "checking mongodb version ...     "
   v = `mongo --version`
-  if v =~ /2\.(\d)\.\d/ and $1.to_i >= 4
+  if v =~ /3\.\d+\.\d+/
+    puts_ok
+    return true
+  elsif v =~ /2\.(\d)\.\d/ and $1.to_i >= 4
     puts_ok
     return true
   else
