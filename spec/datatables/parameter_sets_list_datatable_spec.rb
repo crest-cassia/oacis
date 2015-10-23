@@ -113,7 +113,7 @@ describe "ParameterSetsListDatatable" do
         expect(@psld_json["recordsFiltered"]).to eq(30)
         expect(@psld_json["data"].size).to eq(25)
         expect(@psld_json["data"].first[4].to_i).to eq(ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).max("v.L"))
-        expect(@psld_json["data"].first[5].to_i).to eq(ParameterSet.only("v.T").where(:simulator_id => @simulator.to_param).where({"v.L"=>14}).min("v.T"))
+        expect(@psld_json["data"].first[5].to_f).to eq(ParameterSet.only("v.T").where(:simulator_id => @simulator.to_param).where({"v.L"=>14}).min("v.T"))
       end
     end
   end

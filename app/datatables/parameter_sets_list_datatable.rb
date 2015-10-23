@@ -110,14 +110,14 @@ private
 
   def sort_columns
     return ["updated_at"] if @view.params["order"].nil?
-    @view.params["order"].keys.map do |key|
+    @view.params["order"].keys.sort.map do |key|
       sort_by[@view.params["order"][key]["column"].to_i]
     end
   end
 
   def sort_directions
     return ["desc"] if @view.params["order"].nil?
-    @view.params["order"].keys.map do |key|
+    @view.params["order"].keys.sort.map do |key|
       @view.params["order"][key]["dir"] == "desc" ? "desc" : "asc"
     end
   end
