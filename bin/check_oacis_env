@@ -68,4 +68,6 @@ if verify_ruby_version and
    verify_mongodb_version and
    verify_mongod_process_is_running
   puts "\e[32mAll the environment checks have passed!\e[0m"
+else
+  exit 1
 end
