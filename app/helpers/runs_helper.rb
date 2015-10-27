@@ -31,7 +31,6 @@ module RunsHelper
   end
 
   def make_tree_from_result_paths( result_paths, depth = 3 )
-    base_dir = File.dirname( result_paths.first )
     sio = StringIO.new()
     sio.puts '<ul>'
     result_paths.each do |result_path|
