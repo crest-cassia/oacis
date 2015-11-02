@@ -26,16 +26,11 @@ If you have a trouble of handling many simulation jobs, OACIS will definitely he
 
 ## Getting Started
 
-### Using Docker (Recommended)
+There are two ways to install OACIS. One is to use a virtual machine environment, and the other is to install on your system natively.
+If you are using Linux or Mac, install it on your system directly.
+If you are using Windows, please use a virtual machine environment using Docker.
 
-The easiest way to start OACIS is using the docker image.
-
-- Install [docker](https://www.docker.com/) (Linux) or [docker Toolbox](https://www.docker.com/toolbox) (MacOS, Windows).
-- Then git clone [oacis_docker](https://github.com/crest-cassia/oacis_docker) repository, and follow the instruction there.
-
-You can start OACIS in a few minutes!
-
-### Manual installation
+### Installing on your system
 
 Basic procedure to install OACIS is as follows.
 For the details, please refer to the document.
@@ -45,7 +40,7 @@ For the details, please refer to the document.
 
 - install [MongoDB](http://www.mongodb.org/) on your system.
     - using package management system such as yum or [homebrew](http://brew.sh/) will be easy for you.
-    - check if MongoDB is running
+    - After the installation, check if MongoDB is running
 
         ```sh:check_db_daemons.sh
 ps aux | grep "mongod"
@@ -63,12 +58,6 @@ gem install bundler
 
     ```sh:clone.sh
 git clone -b master https://github.com/crest-cassia/oacis.git
-    ```
-
-- check if the prerequisites are installed correctly by running the following command.
-
-    ```sh:check_oacis_env.sh
-./bin/check_oacis_env
     ```
 
 - install dependent gems using bundle command
@@ -93,6 +82,15 @@ bundle exec rake daemon:stop
 
 - Please refer to the documents located at `doc/build/html`.
     - At the moment, only Japanese documents are prepared.
+
+### Installing on virtual machine
+
+The easiest way to start OACIS for windows users is using Docker.
+
+- Install [docker](https://www.docker.com/) (Linux) or [docker Toolbox](https://www.docker.com/toolbox) (MacOS, Windows).
+- Then git clone [oacis_docker](https://github.com/crest-cassia/oacis_docker) repository, and follow the instruction there.
+
+You can start OACIS in a few minutes.
 
 ## License
 
@@ -119,7 +117,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Documents
 
-http://crest-cassia.github.io/oacis/
+- http://crest-cassia.github.io/oacis/
+- https://github.com/crest-cassia/oacis/wiki
 
 ## Publications
 - A list of publications about OACIS is available at this [wiki page](https://github.com/crest-cassia/oacis/wiki/List-of-publications).
