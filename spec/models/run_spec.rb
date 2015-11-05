@@ -356,6 +356,15 @@ describe Run do
       }.to change { Run.count }.by(-1)
     end
 
+    it "removes runs_status_count_cache of parent PS" do
+      ps = @run.parameter_set
+      ps.runs_status_count  # this saves runs_status_count_cache
+      expect {
+        expect(@run).to receive(:remove_runs_status_count_cache).and_call_original
+        @run.destroy
+      }.to change { ps.reload.runs_status_count_cache }.to(nil)
+    end
+
     it "deletes job script and _input.json created for manual submission" do
       sim = @run.simulator
       sim.update_attribute(:support_input_json, true)
@@ -427,6 +436,16 @@ describe Run do
           @run.destroy
         }.to_not change { Run.count }
         expect(@run.status).to eq :cancelled
+      end
+
+      it "does not call cancel but destroy when true is given as argument" do
+        ps = @run.parameter_set
+        ps.runs_status_count  # this saves runs_status_count_cache
+        expect {
+          expect(@run).to_not receive(:cancel)
+          expect(@run).to receive(:remove_runs_status_count_cache).and_call_original
+          @run.destroy(true)
+        }.to change { ps.reload.runs_status_count_cache }.to(nil)
       end
     end
   end
