@@ -132,7 +132,6 @@ class Run
     super
     delete_run_dir
     delete_archived_result_file
-    remove_runs_status_count_cache
     self.update_attribute(:parameter_set, nil)
   end
 end

@@ -412,6 +412,15 @@ describe Run do
         expect(File.exist?(archive)).to be_falsey
       end
 
+      it "removes runs_status_count_cache of parent PS" do
+        ps = @run.parameter_set
+        ps.runs_status_count  # this saves runs_status_count_cache
+        expect {
+          expect(@run).to receive(:remove_runs_status_count_cache).and_call_original
+          @run.destroy
+        }.to change { ps.reload.runs_status_count_cache }.to(nil)
+      end
+
       it "does not destroy run even if #destroy is called twice" do
         expect {
           @run.destroy
