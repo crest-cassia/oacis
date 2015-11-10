@@ -20,7 +20,7 @@
 
 - if result_paths.present?
   %h3 Output Files
-  #result-tree
+  .result-tree
     = File.dirname(file_path_to_link_path(result_paths.first))+"/"
     = make_tree_from_result_paths( result_paths )
   - if File.exist?( archived_result_path.to_s )
@@ -38,11 +38,13 @@
 
 :javascript
   $(function () {
-    $("#result-tree").dynatree({
-      onClick: function(node) {
-        if (node.data.href) {
-          location.href=node.data.href;
+    $(".result-tree").each( function() {
+      $(this).dynatree({
+        onClick: function(node) {
+          if (node.data.href) {
+            location.href=node.data.href;
+          }
         }
-      }
+      });
     });
   });

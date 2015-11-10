@@ -1,0 +1,9 @@
+%h2
+  Result of Run
+= render partial: "shared/results", locals: {result: @run.result, result_paths: @run.result_paths, archived_result_path: @run.archived_result_path }
+
+- @run.analyses.where(status: :finished).each do |anl|
+  %hr
+  %h2= "Result of Analysis: #{anl.analyzer.name}"
+  = link_to(anl.id,anl)
+  = render partial: "shared/results", locals: {result: anl.result, result_paths: anl.result_paths, archived_result_path: anl.archived_result_path }
