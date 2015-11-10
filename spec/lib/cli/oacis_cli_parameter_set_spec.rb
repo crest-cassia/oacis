@@ -198,6 +198,23 @@ describe OacisCli do
           expect(loaded.size).to eq 1
         }
       end
+
+      context "when Float parameter is given" do
+
+        it "skips duplicate even when parameter is specified as integer" do
+          at_temp_dir {
+            ps = @sim.parameter_sets.create(v: {"L" => 10, "T" => 1.0})
+            File.open('parameter_sets.json', 'w') {|io|
+              io.puts [{"L" => 10, "T" => 1}].to_json
+              io.flush
+            }
+            option = {simulator: @sim.id.to_s, input: 'parameter_sets.json', output: "parameter_set_ids.json"}
+            expect {
+              OacisCli.new.invoke(:create_parameter_sets, [], option)
+            }.to_not change { @sim.parameter_sets.count }
+          }
+        end
+      end
     end
 
     context "when input parameter_sets is specified as object" do
