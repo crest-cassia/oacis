@@ -74,13 +74,19 @@ shared_examples_for JobScriptUtil do
       expect( File.directory?(input_dir) ).to be_truthy
     end
 
+    it "set OACIS_JOB_ID environment variable" do
+      job_id = @submittable.id.to_s
+      script = JobScriptUtil.script_for(@submittable, @host)
+      expect(script).to match(/export OACIS_JOB_ID=#{job_id}/)
+    end
+
     it "set OACIS_MPI envs and do not call mpiexec when Simulator#support_mpi is true" do
       @executable.support_mpi = true
       @executable.save!
       @submittable.mpi_procs = 8
       script = JobScriptUtil.script_for(@submittable, @host)
-      expect(script).to match(/OACIS_MPI_PROCS=8/)
-      expect(script).to match(/OACIS_IS_MPI_JOB=true/)
+      expect(script).to match(/export OACIS_MPI_PROCS=8/)
+      expect(script).to match(/export OACIS_IS_MPI_JOB=true/)
       expect(script).not_to match(/mpiexec/)
     end
 
@@ -89,7 +95,7 @@ shared_examples_for JobScriptUtil do
       @executable.save!
       @submittable.mpi_procs = 8
       script = JobScriptUtil.script_for(@submittable, @host)
-      expect(script).to match(/OACIS_IS_MPI_JOB=false/)
+      expect(script).to match(/export OACIS_IS_MPI_JOB=false/)
     end
 
     it "sets OMP_NUM_THREADS in the script" do
@@ -97,7 +103,7 @@ shared_examples_for JobScriptUtil do
       @executable.save!
       @submittable.omp_threads = 8
       script = JobScriptUtil.script_for(@submittable, @host)
-      expect(script).to match(/OACIS_OMP_THREADS=8/)
+      expect(script).to match(/export OACIS_OMP_THREADS=8/)
     end
 
     context "when host is nil" do
