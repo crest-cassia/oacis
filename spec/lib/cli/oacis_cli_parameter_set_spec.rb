@@ -360,17 +360,6 @@ describe OacisCli do
           }.to raise_error
         }
       end
-
-      it "outputs json if any ParameterSet is created" do
-        at_temp_dir {
-          begin
-            invoke_create_parameter_sets_with_invalid_parameter_sets_json
-          rescue
-          end
-          expected = @sim.reload.parameter_sets.map {|ps| {"parameter_set_id" => ps.id.to_s} }
-          expect(JSON.load(File.read('parameter_set_ids.json'))).to match_array(expected)
-        }
-      end
     end
 
     context "when dry_run option is specified" do
