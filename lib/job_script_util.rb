@@ -6,10 +6,10 @@ export LANG=C
 export LC_ALL=C
 
 # VARIABLE DEFINITIONS ------------
-OACIS_JOB_ID=<%= run_id %>
-OACIS_IS_MPI_JOB=<%= is_mpi_job %>
-OACIS_MPI_PROCS=<%= mpi_procs %>
-OACIS_OMP_THREADS=<%= omp_threads %>
+export OACIS_JOB_ID=<%= run_id %>
+export OACIS_IS_MPI_JOB=<%= is_mpi_job %>
+export OACIS_MPI_PROCS=<%= mpi_procs %>
+export OACIS_OMP_THREADS=<%= omp_threads %>
 OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
 
 # PRE-PROCESS ---------------------
