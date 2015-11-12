@@ -419,6 +419,16 @@ describe Run do
         }.to_not change { Run.count }
         expect(@run.status).to eq :cancelled
       end
+
+      it "does not call cancel but destroy when true is given as argument" do
+        ps = @run.parameter_set
+        ps.runs_status_count  # this saves runs_status_count_cache
+        expect {
+          expect(@run).to_not receive(:cancel)
+          expect(@run).to receive(:remove_runs_status_count_cache).and_call_original
+          @run.destroy(true)
+        }.to change { ps.reload.runs_status_count_cache }.to(nil)
+      end
     end
   end
 
@@ -524,27 +534,28 @@ describe Run do
 
     it "removes runs_status_count_cache when a new Run is created" do
       @param_set.runs.create!(@valid_attribute)
-      expect(@param_set.reload.runs_status_count_cache).to be_nil
+      expect(@param_set.reload.reload.runs_status_count_cache).to be_nil
     end
 
     it "removes runs_status_count_cache when status is changed" do
       run = @param_set.runs.first
-      run.status = :finished
-      run.save!
-      expect(@param_set.reload.runs_status_count_cache).to be_nil
+      expect {
+        run.update_attribute(:status, :finished)
+      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
     end
 
     it "removes runs_status_count_cache when destroyed" do
       run = @param_set.runs.first
-      run.destroy
-      expect(@param_set.reload.runs_status_count_cache).to be_nil
+      expect {
+        run.destroy
+      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
     end
 
     it "does not change runs_status_count_cache when status is not changed" do
       run = @param_set.runs.first
-      run.updated_at = DateTime.now
-      run.save!
-      expect(@param_set.reload.runs_status_count_cache).not_to be_nil
+      expect {
+        run.update_attribute(:updated_at, DateTime.now)
+      }.to_not change { @param_set.reload.runs_status_count_cache }
     end
   end
 end
