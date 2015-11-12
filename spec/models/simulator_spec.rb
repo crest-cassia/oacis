@@ -136,6 +136,13 @@ describe Simulator do
         @sim.destroy
       }.to change { Analyzer.count }.by(-1)
     end
+
+    it "deletes result_directory" do
+      dir_path = @sim.dir
+      expect {
+        @sim.destroy
+      }.to change { File.directory?(dir_path) }.from(true).to(false)
+    end
   end
 
   describe "#dir" do

@@ -19,6 +19,7 @@ class Simulator
 
   before_create :set_position
   after_create :create_simulator_dir
+  before_destroy :delete_simulator_dir
 
   public
   def dir
@@ -264,6 +265,10 @@ EOS
 
   def create_simulator_dir
     FileUtils.mkdir_p(ResultDirectory.simulator_path(self))
+  end
+
+  def delete_simulator_dir
+    FileUtils.rm_r(dir)
   end
 
   private
