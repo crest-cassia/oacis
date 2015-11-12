@@ -140,9 +140,25 @@ class OacisCli < Thor
     if old_size > input.size
       raise "same parameter values exist in input file"
     end
-    ps_key_order = simulator.parameter_definitions.map(&:key)
+    param_defs = simulator.parameter_definitions
     input.map! do |ps_v|
-      Hash[ps_key_order.map {|key| [key, ps_v[key]]}]
+      key_val_array = param_defs.map do |pd|
+        val = ps_v[pd.key]
+        # since JSON does not distinguish Integer and Float, we must cast the given value
+        if pd.type == "Integer"
+          raise "invalid type: #{pd.key}, #{val}" unless val.is_a?(Numeric)
+          val = val.to_i
+        elsif pd.type == "Float"
+          raise "invalid type: #{pd.key}, #{val}" unless val.is_a?(Numeric)
+          val = val.to_f
+        elsif pd.type == "String"
+          raise "invalid type: #{pd.key}, #{val}" unless val.is_a?(String)
+        elsif pd.type == "Boolean"
+          raise "invalid type: #{pd.key}, #{val}" unless val.is_a?(Boolean)
+        end
+        [pd.key, val]
+      end
+      Hash[key_val_array]
     end
     list_created_ps = {}
     ParameterSet.collection.aggregate(
