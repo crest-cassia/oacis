@@ -11,14 +11,18 @@
     %li
       %a{"href"=>"#tab-about", "data-toggle" => "tab"} About
     %li.active
-      %a{"href"=>"#tab-analyses", "data-toggle" => "tab"} Results and Analyses
+      %a{"href"=>"#tab-results", "data-toggle" => "tab"} Results
+    %li
+      %a{"href"=>"#tab-analyses", "data-toggle" => "tab"} Analyses
 
   %div.tab-content
     %div.tab-pane#tab-about
       = render "about"
-    %div.tab-pane.active#tab-analyses
+    %div.tab-pane.active#tab-results
       - if @run.error_messages
         %h3 Error messages
         %pre~ @run.error_messages
-      = render partial: "shared/results", locals: {result: @run.result, result_paths: @run.result_paths, archived_result_path: @run.archived_result_path }
+      = render "results"
+    %div.tab-pane#tab-analyses
       = render "analyses", run: @run
+
