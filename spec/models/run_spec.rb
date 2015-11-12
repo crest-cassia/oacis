@@ -356,15 +356,6 @@ describe Run do
       }.to change { Run.count }.by(-1)
     end
 
-    it "removes runs_status_count_cache of parent PS" do
-      ps = @run.parameter_set
-      ps.runs_status_count  # this saves runs_status_count_cache
-      expect {
-        expect(@run).to receive(:remove_runs_status_count_cache).and_call_original
-        @run.destroy
-      }.to change { ps.reload.runs_status_count_cache }.to(nil)
-    end
-
     it "deletes job script and _input.json created for manual submission" do
       sim = @run.simulator
       sim.update_attribute(:support_input_json, true)
@@ -419,15 +410,6 @@ describe Run do
         @run.destroy
         expect(File.exist?(run_dir)).to be_falsey
         expect(File.exist?(archive)).to be_falsey
-      end
-
-      it "removes runs_status_count_cache of parent PS" do
-        ps = @run.parameter_set
-        ps.runs_status_count  # this saves runs_status_count_cache
-        expect {
-          expect(@run).to receive(:remove_runs_status_count_cache).and_call_original
-          @run.destroy
-        }.to change { ps.reload.runs_status_count_cache }.to(nil)
       end
 
       it "does not destroy run even if #destroy is called twice" do
@@ -552,27 +534,28 @@ describe Run do
 
     it "removes runs_status_count_cache when a new Run is created" do
       @param_set.runs.create!(@valid_attribute)
-      expect(@param_set.reload.runs_status_count_cache).to be_nil
+      expect(@param_set.reload.reload.runs_status_count_cache).to be_nil
     end
 
     it "removes runs_status_count_cache when status is changed" do
       run = @param_set.runs.first
-      run.status = :finished
-      run.save!
-      expect(@param_set.reload.runs_status_count_cache).to be_nil
+      expect {
+        run.update_attribute(:status, :finished)
+      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
     end
 
     it "removes runs_status_count_cache when destroyed" do
       run = @param_set.runs.first
-      run.destroy
-      expect(@param_set.reload.runs_status_count_cache).to be_nil
+      expect {
+        run.destroy
+      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
     end
 
     it "does not change runs_status_count_cache when status is not changed" do
       run = @param_set.runs.first
-      run.updated_at = DateTime.now
-      run.save!
-      expect(@param_set.reload.runs_status_count_cache).not_to be_nil
+      expect {
+        run.update_attribute(:updated_at, DateTime.now)
+      }.to_not change { @param_set.reload.runs_status_count_cache }
     end
   end
 end
