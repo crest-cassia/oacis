@@ -105,7 +105,8 @@ EOS
           is_updated = true
         rescue => ex
           error_message+="failed to load _status.json: #{ex.message}\n"
-          job.update_attribute(:status, :failed)
+          job.status = :failed
+          is_updated = true
         end
       end
 
@@ -153,7 +154,8 @@ EOS
 
       if is_updated
         job.included_at = DateTime.now
-        job.save!
+        job.save! unless job.reload.status == :cancelled
+        # do not update status when job is canceled
       end
     }
   end

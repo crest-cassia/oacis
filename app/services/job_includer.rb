@@ -18,6 +18,8 @@ module JobIncluder
           include_archive(submittable)
         end
       else
+        # taking care of the case that a run is canceled during being included
+        return if submittable.reload.status == :cancelled
         submittable.status = :failed
         submittable.save!
         download_work_dir_if_exists(host, submittable, ssh)
