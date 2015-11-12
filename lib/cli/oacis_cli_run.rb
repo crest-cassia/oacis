@@ -218,7 +218,9 @@ class OacisCli < Thor
     if options[:yes] or yes?("Replace #{runs.count} runs with new ones?")
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
       # no_timeout enables replacement of 10000 or more runs
-      runs.no_timeout.each do |run|
+      run_ids = runs.only(:id).map(&:id)
+      run_ids.each do |runid|
+        run = Run.find(runid)
         run_attr = { submitted_to: run.submitted_to,
                      mpi_procs: run.mpi_procs,
                      omp_threads: run.omp_threads,
