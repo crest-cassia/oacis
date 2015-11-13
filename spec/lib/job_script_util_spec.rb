@@ -451,6 +451,16 @@ EOS
         skip "not yet implemented"
       end
     end
+
+    context "when job is canceled" do
+
+      it "does not update status of Run" do
+        @submittable.update_attribute(:status, :cancelled)
+        expect {
+          JobScriptUtil.update_run(@submittable)
+        }.to_not change { @submittable.reload.status }
+      end
+    end
   end
 end
 
