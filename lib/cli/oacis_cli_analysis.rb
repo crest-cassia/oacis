@@ -187,8 +187,9 @@ class OacisCli < Thor
 
     if options[:yes] or yes?("Replace #{analyses.count} analyses with new ones?")
       progressbar = ProgressBar.create(total: analyses.count, format: "%t %B %p%% (%c/%C)")
-      # no_timeout enables replacement of 10000 or more analyses
-      analyses.no_timeout.each do |anl|
+      anl_ids = analyses.only(:id).map(&:id)
+      anl_ids.each do |anlid|
+        anl = Analysis.find(anlid)
         if anl.analyzable_type == "Run"
           new_analysis = Run.find(anl.analyzable_id).analyses.build
           new_analysis.parameters = anl.parameters

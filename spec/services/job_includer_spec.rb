@@ -164,7 +164,7 @@ describe JobIncluder do
     # Even if .tar.bz2 is not found, try to include the files as much as possible
     describe "when archive file is not found but work_dir exists" do
 
-      context "if _status.json exists in downloded work_dir" do
+      context "if _status.json exists in downloaded work_dir" do
 
         before(:each) do
           make_valid_archive_file(@submittable)
@@ -190,7 +190,7 @@ describe JobIncluder do
         end
       end
 
-      context "if _status.json does not exist in downloded work_dir" do
+      context "if _status.json does not exist in downloaded work_dir" do
 
         before(:each) do
           make_valid_archive_file(@submittable)
@@ -202,6 +202,18 @@ describe JobIncluder do
 
         it "updates status to failed" do
           expect(@submittable.status).to eq :failed
+        end
+      end
+
+      context "when job is canceled" do
+
+        it "does not try to include work_dir" do
+          make_valid_archive_file(@submittable)
+          FileUtils.rm(@archive_full_path)
+          @submittable.update_attribute(:status, :cancelled)
+          expect {
+            JobIncluder.include_remote_job(@host, @submittable)
+          }.to_not change { @submittable.reload.status }
         end
       end
     end
