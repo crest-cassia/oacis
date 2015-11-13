@@ -210,7 +210,7 @@ describe Analyzer do
     end
 
     it "returns array of hash which has 'oldest_started_at' and 'latest_started_at' fields" do
-      analyses = Analysis.where(analyzer: @azr).asc(&:id)
+      analyses = Analysis.where(analyzer: @azr).asc(:id)
       expected = [
         { "version" => "v1",
           "oldest_started_at" => analyses[0].started_at,
