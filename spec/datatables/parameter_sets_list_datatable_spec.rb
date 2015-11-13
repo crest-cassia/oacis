@@ -97,7 +97,7 @@ describe "ParameterSetsListDatatable" do
         end
         @context = ActionController::Base.new.view_context
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
-        allow(@context).to receive(:params).and_return({id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => 4, "dir" => "desc"}, "1" => {"column" => 0, "dir" => "asc"}}})
+        allow(@context).to receive(:params).and_return({id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => 4, "dir" => "desc"}, "1" => {"column" => 5, "dir" => "asc"}}})
         allow(@context).to receive(:link_to).and_return("#{@simulator.to_param}")
         allow(@context).to receive(:distance_to_now_in_words).and_return("time")
         allow(@context).to receive(:progress_bar).and_return("<div></div>")
