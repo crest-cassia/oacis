@@ -113,6 +113,10 @@ class Analysis
     return files
   end
 
+  def destroyable?
+    true
+  end
+
   private
   def cast_and_validate_parameter_values
     return unless analyzer
@@ -145,9 +149,5 @@ class Analysis
     if self.analyzable && !self.analyzable.destroyed? && File.directory?(self.dir)
       FileUtils.rm_r(self.dir)
     end
-  end
-
-  def destroyable?
-    true
   end
 end
