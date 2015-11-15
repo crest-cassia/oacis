@@ -30,7 +30,7 @@ class AnalysesController < ApplicationController
 
   def destroy
     anl = Analysis.find(params[:id])
-    anl.destroy
+    anl.update_attribute(:to_be_destroyed, true)
 
     respond_to do |format|
       format.json { head :no_content }

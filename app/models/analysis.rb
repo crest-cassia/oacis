@@ -9,6 +9,8 @@ class Analysis
   belongs_to :analyzable, polymorphic: true, autosave: false
   belongs_to :parameter_set
 
+  default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
+
   validates :analyzer, :presence => true
   validate :cast_and_validate_parameter_values
 
@@ -145,9 +147,7 @@ class Analysis
     end
   end
 
-  def cancel
-    super
-    delete_dir
-    self.update_attribute(:analyzable_id, nil)
+  def destroyable?
+    true
   end
 end

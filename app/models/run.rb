@@ -10,6 +10,8 @@ class Run
   belongs_to :simulator, autosave: false  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable, dependent: :destroy
 
+  default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
+
   # validations
   validates :seed, presence: true
 
@@ -17,7 +19,7 @@ class Run
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
   before_create :set_simulator
-  before_save :remove_runs_status_count_cache, :if => :status_changed?
+  before_save :remove_runs_status_count_cache, :if => Proc.new {|run| run.status_changed? or run.to_be_destroyed_changed? }
   after_create :create_run_dir
   before_destroy :delete_run_dir, :delete_archived_result_file,
                  :remove_runs_status_count_cache
@@ -85,6 +87,10 @@ class Run
     dir.join('..', "#{id}.tar.bz2")
   end
 
+  def destroyable?
+    analyses.unscoped.empty?
+  end
+
   private
   def set_simulator
     if parameter_set
@@ -126,12 +132,5 @@ class Run
     if parameter_set and parameter_set.reload.runs_status_count_cache
       parameter_set.update_attribute(:runs_status_count_cache, nil)
     end
-  end
-
-  def cancel
-    super
-    delete_run_dir
-    delete_archived_result_file
-    self.update_attribute(:parameter_set, nil)
   end
 end
