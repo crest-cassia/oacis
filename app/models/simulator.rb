@@ -6,11 +6,14 @@ class Simulator
   field :name, type: String
   field :description, type: String
   field :position, type: Integer # position in the table. start from zero
+  field :to_be_destroyed, type: Boolean, default: false
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :runs
   has_many :parameter_set_queries, dependent: :destroy
   has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
+
+  default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
   validates :parameter_definitions, presence: true
@@ -130,6 +133,15 @@ class Simulator
       end
     end
     list
+  end
+
+  def destroyable?
+    if runs.unscoped.empty?
+      azr_ids = analyzers.unscoped.map {|azr| azr.id }
+      Analysis.unscoped.where(:analyzer_id.in => azr_ids).empty?
+    else
+      false
+    end
   end
 
   private

@@ -8,7 +8,7 @@ class Run
 
   belongs_to :parameter_set, autosave: false
   belongs_to :simulator, autosave: false  # for caching. do not edit this field explicitly
-  has_many :analyses, as: :analyzable, dependent: :destroy
+  has_many :analyses, as: :analyzable
 
   default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 

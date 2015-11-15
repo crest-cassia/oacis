@@ -4,10 +4,13 @@ class ParameterSet
   field :v, type: Hash
   field :runs_status_count_cache, type: Hash
   field :progress_rate_cache, type: Integer # used for sorting by progress. updated at the same time with the run_status_count_cache
+  field :to_be_destroyed, type: Boolean, default: false
   index({ v: 1 }, { name: "v_index" })
   belongs_to :simulator, autosave: false
-  has_many :runs, dependent: :destroy
-  has_many :analyses, as: :analyzable, dependent: :destroy
+  has_many :runs
+  has_many :analyses, as: :analyzable
+
+  default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 
   validates :simulator, :presence => true
   validate :cast_parameter_values, on: :create
@@ -67,6 +70,15 @@ class ParameterSet
     update_progress_rate_cache
 
     counts
+  end
+
+  def destroyable?
+    if runs.unscoped.empty? and analyses.unscoped.empty?
+      run_ids = runs.unscoped.map {|run| run.id }
+      Analysis.unscoped.where(:analyzable_id.in => run_ids).empty?
+    else
+      false
+    end
   end
 
   private
