@@ -91,6 +91,10 @@ class Run
     analyses.unscoped.empty?
   end
 
+  def set_lower_submittable_to_be_destroyed
+    analyses.update_all(to_be_destroyed: true)
+  end
+
   private
   def set_simulator
     if parameter_set

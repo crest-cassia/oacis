@@ -144,6 +144,12 @@ class Simulator
     end
   end
 
+  def set_lower_submittable_to_be_destroyed
+    runs.update_all(to_be_destroyed: true)
+    azr_ids = analyzers.unscoped.map {|azr| azr.id }
+    Analysis.where(:analyzer_id.in => azr_ids).update_all(to_be_destroyed: true)
+  end
+
   private
   def domains(collection_class, query, result_keys)
     group = {_id: 0}

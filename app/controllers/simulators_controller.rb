@@ -97,6 +97,7 @@ class SimulatorsController < ApplicationController
   def destroy
     @simulator = Simulator.find(params[:id])
     @simulator.update_attribute(:to_be_destroyed, true)
+    @simulator.set_lower_submittable_to_be_destroyed
 
     respond_to do |format|
       format.html { redirect_to simulators_url }

@@ -81,6 +81,13 @@ class ParameterSet
     end
   end
 
+  def set_lower_submittable_to_be_destroyed
+    runs.update_all(to_be_destroyed: true)
+    analyses.update_all(to_be_destroyed: true)
+    run_ids = runs.unscoped.map {|run| run.id }
+    Analysis.where(:analyzable_id.in => run_ids).update_all(to_be_destroyed: true)
+  end
+
   private
   def cast_parameter_values
     unless v.is_a?(Hash)
