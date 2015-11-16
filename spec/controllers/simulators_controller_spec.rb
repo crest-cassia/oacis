@@ -355,10 +355,16 @@ describe SimulatorsController do
       @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
     end
 
-    it "destroys the requested simulator" do
+    it "reduces the number of simulators in default scope" do
       expect {
         delete :destroy, {id: @sim.to_param}, valid_session
       }.to change(Simulator, :count).by(-1)
+    end
+
+    it "does not destroy simulator" do
+      expect {
+        delete :destroy, {id: @sim.to_param}, valid_session
+      }.to_not change { Simulator.unscoped.count }
     end
 
     it "redirects to the simulators list" do
