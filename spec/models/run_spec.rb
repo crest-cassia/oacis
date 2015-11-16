@@ -118,7 +118,7 @@ describe Run do
       expect(run.priority).to eq 1
     end
 
-   describe "'host_parameters' field" do
+    describe "'host_parameters' field" do
 
       before(:each) do
         hpds = [ HostParameterDefinition.new(key: "node", default: "x", format: '\w+') ]
