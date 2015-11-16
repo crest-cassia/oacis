@@ -40,7 +40,7 @@ class JobObserver
       handler.cancel_remote_job(job)
       logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
       job.destroy
-      logger.info("destroyed from DB")
+      logger.info("Destroyed #{job.class} #{job.id}")
       return
     end
     case handler.remote_status(job)
