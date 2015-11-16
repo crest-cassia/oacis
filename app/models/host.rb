@@ -89,7 +89,7 @@ class Host
   end
 
   def submitted_runs
-    Run.where(submitted_to: self).in(status: [:submitted, :running, :cancelled])
+    Run.where(submitted_to: self).in(status: [:submitted, :running])
   end
 
   def submittable_analyses
@@ -97,11 +97,11 @@ class Host
   end
 
   def submitted_analyses
-    Analysis.where(submitted_to: self).in(status: [:submitted, :running, :cancelled])
+    Analysis.where(submitted_to: self).in(status: [:submitted, :running])
   end
 
   def runs_status_count
-    count = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0, cancelled: 0}
+    count = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0}
     Run.collection.aggregate(
       { '$match' => Run.where(submitted_to: self).selector },
       { '$group' => {_id: '$status', count: {'$sum' => 1} } }
