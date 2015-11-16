@@ -79,7 +79,7 @@ describe ParameterSetQuery do
     end
 
     it "has valid selector" do
-      expect(@query.selector).to eq ({"simulator_id" => @sim.id, "v.L" => {"$lte" => 123}, "v.T" => {"$gte" => 456.0}})
+      expect(@query.selector).to eq @sim.parameter_sets.where("v.L" => {"$lte" => 123}, "v.T" => {"$gte" => 456.0}).selector
     end
   end
 
