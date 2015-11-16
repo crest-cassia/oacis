@@ -2,6 +2,7 @@ class JobObserver
 
   def self.perform(logger)
     @last_performed_at ||= {}
+    destroy_jobs_to_be_destroyed
     Host.where(status: :enabled).each do |host|
       break if $term_received
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
@@ -35,33 +36,14 @@ class JobObserver
   end
 
   def self.observe_job(job, host, handler, logger)
-    if job.status == :cancelled
-      logger.info("canceling remote job: #{job.class}:#{job.id} from #{host.name}")
-      handler.cancel_remote_job(job)
-      logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
-      job.destroy(true)
-      logger.info("removed from DB")
-      return
-    end
     case handler.remote_status(job)
     when :submitted
       # DO NOTHING
     when :running
-      if job.status == :submitted
-        current_stat = job.class.find(job.id).status
-        if current_stat == :submitted
-          job.update_attribute(:status, :running)
-        elsif current_stat == :cancelled
-          logger.info("job #{job.id} was canceled while checking remote status")
-        end
-      end
+      job.update_attribute(:status, :running) if job.status == :submitted
     when :includable, :unknown
       logger.info("including #{job.class}:#{job.id} from #{host.name}")
-      if job.class.find(job.id).status == :cancelled
-        logger.info("job #{job.id} was canceled while checking remote status")
-      else
-        JobIncluder.include_remote_job(host, job)
-      end
+      JobIncluder.include_remote_job(host, job)
     end
   rescue => ex
     logger.error("Error in RemoteJobHandler#remote_status: #{ex.inspect}")
@@ -80,5 +62,10 @@ class JobObserver
     end
     b
   end
-end
 
+  def self.destroy_jobs_to_be_destroyed
+    condition = {:status.in => [:submitted, :running], :to_be_destroyed => true}
+    Run.where(condition).destroy
+    Analysis.where(condition).destroy
+  end
+end
