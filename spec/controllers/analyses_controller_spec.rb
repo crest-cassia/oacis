@@ -272,18 +272,16 @@ describe AnalysesController do
 
   describe "DELETE 'destroy'" do
 
-    it "destroys the analysis when status is neither :failed nor :finished" do
+    it "destroys the number of analyses in default scope" do
       expect {
         delete :destroy, {id: @arn.to_param, format: 'json'}, valid_session
       }.to change(Analysis, :count).by(-1)
     end
 
-    it "cancels the analysis when status is either :created, :running" do
-      @arn.status = :running
-      @arn.save!
+    it "does not destroy the analysis" do
       expect {
         delete :destroy, {id: @arn.to_param, format: 'json'}, valid_session
-      }.to change { Analysis.where(status: :cancelled).count }.by(1)
+      }.to_not change { Analysis.unscoped.count }
     end
   end
 

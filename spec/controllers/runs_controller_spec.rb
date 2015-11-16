@@ -136,18 +136,16 @@ describe RunsController do
 
   describe "DELETE destroy" do
 
-    it "destroys the run when status is neither submitted nor running" do
+    it "reduces the number of runs in default scope" do
       expect {
         delete :destroy, {id: @run.to_param, format: 'json'}, valid_session
       }.to change(Run, :count).by(-1)
     end
 
-    it "cancels the run when status is either submitted or running" do
-      @run.status = :running
-      @run.save!
+    it "does not destroy the run" do
       expect {
         delete :destroy, {id: @run.to_param, format: 'json'}, valid_session
-      }.to change { Run.where(status: :cancelled).count }.by(1)
+      }.to_not change { Run.unscoped.count }
     end
   end
 end

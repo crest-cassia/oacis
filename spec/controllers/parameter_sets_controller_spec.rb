@@ -338,10 +338,16 @@ describe ParameterSetsController do
       @ps = @sim.parameter_sets.first
     end
 
-    it "destroys the parameter set" do
+    it "reduces the number of parameter_sets in default scope" do
       expect {
         delete :destroy, {id: @ps.to_param}, valid_session
       }.to change(ParameterSet, :count).by(-1)
+    end
+
+    it "does not destroy ParameterSet" do
+      expect {
+        delete :destroy, {id: @ps.to_param}, valid_session
+      }.to_not change{ ParameterSet.unscoped.count }
     end
 
     context "called by remote:true" do
