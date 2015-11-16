@@ -84,14 +84,13 @@ describe JobObserver do
       skip "not yet implemented"
     end
 
-    context "when run is cancelled" do
+    context "when to_be_destroyed is true" do
 
       before(:each) do
-        @run.status = :cancelled
-        @run.save!
+        @run.update_attribute(:to_be_destroyed, true)
       end
 
-      it "cancelles a remote job" do
+      it "cancels a remote job" do
         expect_any_instance_of(RemoteJobHandler).to receive(:cancel_remote_job) # do nothing
         JobObserver.__send__(:observe_host, @host, @logger)
       end
@@ -100,13 +99,7 @@ describe JobObserver do
         allow_any_instance_of(RemoteJobHandler).to receive(:remote_status) { :includable }
         expect {
           JobObserver.__send__(:observe_host, @host, @logger)
-        }.to change { Run.count }.by(-1)
-      end
-
-      it "does not include remote data even if remote status is 'includable'" do
-        allow_any_instance_of(RemoteJobHandler).to receive(:remote_status) { :includable }
-        expect(JobIncluder).not_to receive(:include_remote_job)
-        JobObserver.__send__(:observe_host, @host, @logger)
+        }.to change { Run.unscoped.count }.by(-1)
       end
     end
 

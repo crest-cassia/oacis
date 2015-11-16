@@ -2,7 +2,6 @@ class JobObserver
 
   def self.perform(logger)
     @last_performed_at ||= {}
-    destroy_jobs_to_be_destroyed
     Host.where(status: :enabled).each do |host|
       break if $term_received
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
@@ -36,6 +35,14 @@ class JobObserver
   end
 
   def self.observe_job(job, host, handler, logger)
+    if job.to_be_destroyed
+      logger.info("canceling remote job: #{job.class}:#{job.id} from #{host.name}")
+      handler.cancel_remote_job(job)
+      logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
+      job.destroy
+      logger.info("destroyed from DB")
+      return
+    end
     case handler.remote_status(job)
     when :submitted
       # DO NOTHING
@@ -61,11 +68,5 @@ class JobObserver
       logger.warn("Warn: Too little space left on device.")
     end
     b
-  end
-
-  def self.destroy_jobs_to_be_destroyed
-    condition = {:status.in => [:submitted, :running], :to_be_destroyed => true}
-    Run.where(condition).destroy
-    Analysis.where(condition).destroy
   end
 end

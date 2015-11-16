@@ -89,7 +89,7 @@ class Host
   end
 
   def submitted_runs
-    Run.where(submitted_to: self).in(status: [:submitted, :running])
+    Run.unscoped.where(submitted_to: self).in(status: [:submitted, :running])
   end
 
   def submittable_analyses
@@ -97,7 +97,7 @@ class Host
   end
 
   def submitted_analyses
-    Analysis.where(submitted_to: self).in(status: [:submitted, :running])
+    Analysis.unscoped.where(submitted_to: self).in(status: [:submitted, :running])
   end
 
   def runs_status_count
