@@ -29,5 +29,18 @@ namespace :db do
       host.timeless.update_attribute(:status, :enabled)
       progressbar.increment
     end
+
+    q = Run.where(status: :cancelled)
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |run|
+      run.destroy
+      progressbar.increment
+    end
+    q = Analysis.where(status: :cancelled)
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |anl|
+      anl.destroy
+      progressbar.increment
+    end
   end
 end
