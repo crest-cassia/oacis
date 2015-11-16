@@ -96,7 +96,7 @@ class SimulatorsController < ApplicationController
   # DELETE /simulators/1.json
   def destroy
     @simulator = Simulator.find(params[:id])
-    @simulator.destroy
+    @simulator.update_attribute(:to_be_destroyed, true)
 
     respond_to do |format|
       format.html { redirect_to simulators_url }
