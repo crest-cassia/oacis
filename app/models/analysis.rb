@@ -117,6 +117,10 @@ class Analysis
     true
   end
 
+  def set_lower_submittable_to_be_destroyed
+    # do nothing
+  end
+
   private
   def cast_and_validate_parameter_values
     return unless analyzer
