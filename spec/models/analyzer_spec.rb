@@ -6,6 +6,17 @@ describe Analyzer do
     @sim = FactoryGirl.create(:simulator, parameter_sets_count:0, runs_count:0)
   end
 
+  describe "default_scope" do
+
+    it "ignores Analyzer of to_be_destroyed=true by default" do
+      azr = Analyzer.first
+      expect {
+        azr.update_attribute(:to_be_destroyed, true)
+      }.to change { Analyzer.count }.by(-1)
+      expect( Analyzer.all.to_a ).to_not include(azr)
+    end
+  end
+
   describe "validations" do
 
     before(:each) do
@@ -158,6 +169,50 @@ describe Analyzer do
     end
   end
 
+  describe "#set_lower_submittable_to_be_destroyed" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1, run_analysis: true,
+                                analyzers_on_parameter_set_count: 1,
+                                run_analysis_on_parameter_set: true
+                                )
+    end
+
+    it "sets to_be_destroyed of lower Analysis" do
+      @sim.analyzers.each do |azr|
+        expect {
+          azr.set_lower_submittable_to_be_destroyed
+        }.to change { azr.reload.analyses.empty? }.from(false).to(true)
+      end
+    end
+  end
+
+  describe "#destroyable?" do
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1,
+                               runs_count: 1,
+                               analyzers_count: 1,
+                               run_analysis: true
+                               )
+      @azr = sim.analyzers.first
+    end
+
+    it "returns false when it has Run or Analysis" do
+      expect(@azr.destroyable?).to be_falsey
+    end
+
+    it "returns true when all the Run or Analysis is destroyed" do
+      @azr.set_lower_submittable_to_be_destroyed
+      expect( @azr.destroyable? ).to be_falsey
+      @azr.analyses.unscoped.destroy
+      expect( @azr.destroyable? ).to be_truthy
+    end
+  end
+
   describe "#destroy" do
 
     before(:each) do
@@ -172,10 +227,10 @@ describe Analyzer do
       }.to change { @sim.analyzers.count }.by(-1)
     end
 
-    it "destroys dependent analyses" do
+    it "does not destroy dependent analyses" do
       expect {
         @azr.destroy
-      }.to change { Analysis.count }.by(-1)
+      }.to_not change { Analysis.count }
     end
   end
 
