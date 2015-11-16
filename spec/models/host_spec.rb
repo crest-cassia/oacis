@@ -324,7 +324,7 @@ describe Host do
     end
 
     it "returns the number of runs for each status" do
-      expected = {created: 5, submitted: 4, running: 3, finished: 2, failed: 1, cancelled: 0}
+      expected = {created: 5, submitted: 4, running: 3, finished: 2, failed: 1}
       expect(@host.runs_status_count).to eq expected
     end
   end
