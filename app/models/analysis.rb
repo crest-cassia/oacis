@@ -9,6 +9,8 @@ class Analysis
   belongs_to :analyzable, polymorphic: true, autosave: false
   belongs_to :parameter_set
 
+  default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
+
   validates :analyzer, :presence => true
   validate :cast_and_validate_parameter_values
 
@@ -111,6 +113,14 @@ class Analysis
     return files
   end
 
+  def destroyable?
+    true
+  end
+
+  def set_lower_submittable_to_be_destroyed
+    # do nothing
+  end
+
   private
   def cast_and_validate_parameter_values
     return unless analyzer
@@ -143,11 +153,5 @@ class Analysis
     if self.analyzable && !self.analyzable.destroyed? && File.directory?(self.dir)
       FileUtils.rm_r(self.dir)
     end
-  end
-
-  def cancel
-    super
-    delete_dir
-    self.update_attribute(:analyzable_id, nil)
   end
 end

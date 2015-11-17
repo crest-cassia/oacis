@@ -260,10 +260,16 @@ describe AnalyzersController do
       @azr = @sim.analyzers.first
     end
 
-    it "destroys the requested analyzer" do
+    it "reduces the number of analyzers in default scope" do
       expect {
         delete :destroy, {id: @azr.to_param, format: 'json'}, valid_session
       }.to change { @sim.reload.analyzers.count }.by(-1)
+    end
+
+    it "does not destroy the analyzer" do
+      expect {
+        delete :destroy, {id: @azr.to_param, format: 'json'}, valid_session
+      }.to_not change { @sim.reload.analyzers.unscoped.count }
     end
   end
 

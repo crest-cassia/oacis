@@ -4,7 +4,8 @@ module Submittable
 
   def self.included(base)
     base.send(:field, :status, type: Symbol, default: :created)
-    # either :created, :submitted, :running, :failed, :finished, or :cancelled
+    # either :created, :submitted, :running, :failed, or :finished
+    base.send(:field, :to_be_destroyed, type: Boolean, default: false)
 
     # fields which are set when created
     base.send(:belongs_to, :submitted_to, class_name: "Host")
@@ -37,7 +38,7 @@ module Submittable
     # validations
     base.send(:validates, :status,
               presence: true,
-              inclusion: {in: [:created,:submitted,:running,:failed,:finished, :cancelled]}
+              inclusion: {in: [:created,:submitted,:running,:failed,:finished]}
               )
     base.send(:validates, :mpi_procs, numericality: {greater_than_or_equal_to: 1, only_integer: true})
     base.send(:validates, :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true})
@@ -83,18 +84,6 @@ module Submittable
     cmd = executable.command
     cmd += " #{args}" if args.length > 0
     cmd
-  end
-
-  def destroy(call_super = false)
-    if call_super
-      super
-    else
-      if status == :submitted or status == :running or status == :cancelled
-        cancel
-      else
-        super
-      end
-    end
   end
 
   private
@@ -236,12 +225,5 @@ EOS
     FileUtils.rm(pre_process_script_path) if pre_process_script_path.exist?
     pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(self)
     FileUtils.rm(pre_process_executor_path) if pre_process_executor_path.exist?
-  end
-
-
-  # subroutines of public methods
-  # This method will be overwritten by Run and Analysis
-  def cancel
-    self.update_attribute(:status, :cancelled)
   end
 end

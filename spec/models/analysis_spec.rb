@@ -16,6 +16,17 @@ describe Analysis do
     }
   end
 
+  describe "default_scope" do
+
+    it "ignores Analysis of to_be_destroyed=true by default" do
+      anl = Analysis.first
+      expect {
+        anl.update_attribute(:to_be_destroyed, true)
+      }.to change { Analysis.count }.by(-1)
+      expect( Analysis.all.to_a ).to_not include(anl)
+    end
+  end
+
   describe "validation" do
 
     it "is valid with proper attributes" do
@@ -168,6 +179,20 @@ describe Analysis do
     end
   end
 
+  describe "#destroyable?" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1, runs_count: 1,
+                               analyzers_count: 1, run_analysis: true
+                               )
+    end
+
+    it "always returns true" do
+      expect( Analysis.first.destroyable? ).to be_truthy
+    end
+  end
+
   describe "#destroy" do
 
     before(:each) do
@@ -178,67 +203,16 @@ describe Analysis do
       @analysis = sim.parameter_sets.first.runs.first.analyses.first
     end
 
-    context "when status is either :failed or :finished" do
-
-      before(:each) do
-        @analysis.update_attribute(:status, :finished)
-      end
-
-      it "destroys item" do
-        expect {
-          @analysis.destroy
-        }.to change { Analysis.count }.by(-1)
-      end
-
-      it "delete analysis directory" do
-        dir = @analysis.dir
+    it "destroys item" do
+      expect {
         @analysis.destroy
-        expect(File.directory?(dir)).to be_falsey
-      end
+      }.to change { Analysis.count }.by(-1)
     end
 
-    context "when status is either :running, :submitted or :cancelled" do
-
-      before(:each) do
-        @analysis.update_attribute(:status, :running)
-      end
-
-      it "calls cancel" do
-        expect(@analysis).to receive(:cancel)
-        @analysis.destroy
-      end
-
-      it "does not destroy the analysis" do
-        expect {
-          @analysis.destroy
-        }.to_not change { Analysis.count }
-      end
-
-      it "deletes analysis_directory" do
-        dir = @analysis.dir
-        @analysis.destroy
-        expect(File.directory?(dir)).to be_falsey
-      end
-
-      it "does not destroy analysis even if #destroy is called twice" do
-        expect {
-          @analysis.destroy
-          @analysis.destroy
-        }.to_not change { Analysis.count }
-      end
-
-      describe "#cancel" do
-
-        it "updates status to :cancelled" do
-          @analysis.__send__(:cancel)
-          expect(@analysis.status).to eq :cancelled
-        end
-
-        it "sets analyzable_id to nil" do
-          @analysis.__send__(:cancel)
-          expect(@analysis.analyzable).to be_nil
-        end
-      end
+    it "delete analysis directory" do
+      dir = @analysis.dir
+      @analysis.destroy
+      expect(File.directory?(dir)).to be_falsey
     end
   end
 

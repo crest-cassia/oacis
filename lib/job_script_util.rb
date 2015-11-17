@@ -154,8 +154,7 @@ EOS
 
       if is_updated
         job.included_at = DateTime.now
-        job.save! if job.class.find(job.id).status != :cancelled
-        # do not update status when job is canceled
+        job.save!
       end
     }
   end

@@ -15,6 +15,17 @@ describe Run do
     }
   end
 
+  describe "default_scope" do
+
+    it "ignores Run of to_be_destroyed=true by default" do
+      run = Run.first
+      expect {
+        run.update_attribute(:to_be_destroyed, true)
+      }.to change { Run.count }.by(-1)
+      expect( Run.all.to_a ).to_not include(run)
+    end
+  end
+
   describe "validations" do
 
     it "creates a Run with a valid attribute" do
@@ -50,7 +61,7 @@ describe Run do
       expect( run.seed ).to be < 2**31
     end
 
-    it "status must be either :created, :submitted, :running, :failed, :finished, or :cancelled" do
+    it "status must be either :created, :submitted, :running, :failed, or :finished" do
       run = @param_set.runs.build(@valid_attribute)
       run.status = :unknown
       expect(run).not_to be_valid
@@ -118,7 +129,7 @@ describe Run do
       expect(run.priority).to eq 1
     end
 
-   describe "'host_parameters' field" do
+    describe "'host_parameters' field" do
 
       before(:each) do
         hpds = [ HostParameterDefinition.new(key: "node", default: "x", format: '\w+') ]
@@ -196,10 +207,10 @@ describe Run do
       expect(run.simulator).to be_a(Simulator)
     end
 
-    it "destroys including analyses when destroyed" do
+    it "does not destroy including analyses" do
       expect {
         @run.destroy
-      }.to change { Analysis.all.count }.by(-2)
+      }.to_not change { Analysis.all.count }
     end
   end
 
@@ -350,7 +361,7 @@ describe Run do
       @run = sim.parameter_sets.first.runs.first
     end
 
-    it "calls destroy if status is either :created, :failed, or :finished" do
+    it "deletes the document" do
       expect {
         @run.destroy
       }.to change { Run.count }.by(-1)
@@ -383,52 +394,62 @@ describe Run do
       expect(pre_process_script_path).not_to be_exist
       expect(pre_process_executor_path).not_to be_exist
     end
+  end
 
-    context "when status is :submitted or :running" do
+  describe "#set_lower_submittable_to_be_destroyed" do
 
-      before(:each) do
-        @run.status = :submitted
-      end
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 2,
+                                run_analysis: true
+                                )
+    end
 
-      it "calls cancel if status is :submitted or :running" do
-        expect(@run).to receive(:cancel)
-        @run.destroy
-      end
+    it "sets to_be_destroyed of analyses" do
+      run = @sim.runs.first
+      expect {
+        run.set_lower_submittable_to_be_destroyed
+      }.to change { run.analyses.all.all?(&:to_be_destroyed?) }.from(false).to(true)
+    end
 
-      it "does not destroy run if status is :submitted or :running" do
-        expect {
-          @run.destroy
-        }.to_not change { Run.count }
-        expect(@run.status).to eq :cancelled
-        expect(@run.parameter_set).to be_nil
-      end
+    it "makes analyses empty" do
+      run = @sim.runs.first
+      expect {
+        run.set_lower_submittable_to_be_destroyed
+      }.to change { run.analyses.empty? }.from(false).to(true)
+    end
 
-      it "deletes run_directory and archived_result_file when cancel is called" do
-        run_dir = @run.dir
-        archive = @run.archived_result_path
-        FileUtils.touch(archive)
-        @run.destroy
-        expect(File.exist?(run_dir)).to be_falsey
-        expect(File.exist?(archive)).to be_falsey
-      end
+    it "does not destroy analyses" do
+      run = @sim.runs.first
+      expect {
+        run.set_lower_submittable_to_be_destroyed
+      }.to_not change { run.analyses.unscoped.count }
+    end
+  end
 
-      it "does not destroy run even if #destroy is called twice" do
-        expect {
-          @run.destroy
-          @run.destroy
-        }.to_not change { Run.count }
-        expect(@run.status).to eq :cancelled
-      end
+  describe "#destroyable?" do
 
-      it "does not call cancel but destroy when true is given as argument" do
-        ps = @run.parameter_set
-        ps.runs_status_count  # this saves runs_status_count_cache
-        expect {
-          expect(@run).to_not receive(:cancel)
-          expect(@run).to receive(:remove_runs_status_count_cache).and_call_original
-          @run.destroy(true)
-        }.to change { ps.reload.runs_status_count_cache }.to(nil)
-      end
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 2,
+                                run_analysis: true
+                                )
+    end
+
+    it "returns false when analyses exists" do
+      run = @sim.runs.first
+      run.set_lower_submittable_to_be_destroyed
+      expect( run.destroyable? ).to be_falsey
+    end
+
+    it "returns true when analyses does not exist" do
+      run = @sim.runs.first
+      run.analyses.unscoped.destroy
+      expect( run.destroyable? ).to be_truthy
     end
   end
 
@@ -541,6 +562,13 @@ describe Run do
       run = @param_set.runs.first
       expect {
         run.update_attribute(:status, :finished)
+      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
+    end
+
+    it "removes runs_status_count_cache when to_be_destroyed flag is set" do
+      run = @param_set.runs.first
+      expect {
+        run.update_attribute(:to_be_destroyed, true)
       }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
     end
 

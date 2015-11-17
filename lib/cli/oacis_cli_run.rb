@@ -185,7 +185,8 @@ class OacisCli < Thor
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
       # no_timeout enables destruction of 10000 or more runs
       runs.no_timeout.each do |run|
-        run.destroy
+        run.update_attribute(:to_be_destroyed, true)
+        run.set_lower_submittable_to_be_destroyed
         progressbar.increment
       end
     end
@@ -226,7 +227,8 @@ class OacisCli < Thor
                      host_parameters: run.host_parameters }
         new_run = run.parameter_set.runs.build(run_attr)
         if new_run.save
-          run.destroy
+          run.update_attribute(:to_be_destroyed, true)
+          run.set_lower_submittable_to_be_destroyed
         else
           progressbar.log "Failed to create Run #{new_run.errors.full_messages}"
         end

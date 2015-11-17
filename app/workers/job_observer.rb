@@ -35,33 +35,22 @@ class JobObserver
   end
 
   def self.observe_job(job, host, handler, logger)
-    if job.status == :cancelled
+    if job.to_be_destroyed
       logger.info("canceling remote job: #{job.class}:#{job.id} from #{host.name}")
       handler.cancel_remote_job(job)
       logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
-      job.destroy(true)
-      logger.info("removed from DB")
+      job.destroy
+      logger.info("Destroyed #{job.class} #{job.id}")
       return
     end
     case handler.remote_status(job)
     when :submitted
       # DO NOTHING
     when :running
-      if job.status == :submitted
-        current_stat = job.class.find(job.id).status
-        if current_stat == :submitted
-          job.update_attribute(:status, :running)
-        elsif current_stat == :cancelled
-          logger.info("job #{job.id} was canceled while checking remote status")
-        end
-      end
+      job.update_attribute(:status, :running) if job.status == :submitted
     when :includable, :unknown
       logger.info("including #{job.class}:#{job.id} from #{host.name}")
-      if job.class.find(job.id).status == :cancelled
-        logger.info("job #{job.id} was canceled while checking remote status")
-      else
-        JobIncluder.include_remote_job(host, job)
-      end
+      JobIncluder.include_remote_job(host, job)
     end
   rescue => ex
     logger.error("Error in RemoteJobHandler#remote_status: #{ex.inspect}")
@@ -81,4 +70,3 @@ class JobObserver
     b
   end
 end
-

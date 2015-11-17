@@ -91,7 +91,8 @@ class RunsController < ApplicationController
 
   def destroy
     @run = Run.find(params[:id])
-    @run.destroy
+    @run.update_attribute(:to_be_destroyed, true)
+    @run.set_lower_submittable_to_be_destroyed
 
     respond_to do |format|
       format.json { head :no_content }

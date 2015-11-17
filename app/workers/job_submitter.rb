@@ -2,6 +2,7 @@ class JobSubmitter
 
   def self.perform(logger)
     @last_performed_at ||= {}
+    destroy_jobs_to_be_destroyed(logger)
     Host.where(status: :enabled).each do |host|
       break if $term_received
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
@@ -43,6 +44,26 @@ class JobSubmitter
           logger.info ex.inspect
           logger.info ex.backtrace
         end
+      end
+    end
+  end
+
+  def self.destroy_jobs_to_be_destroyed(logger)
+    Run.where(status: :created, to_be_destroyed: true).each do |run|
+      if run.destroyable?
+        logger.info "Destroying Run #{run.id}"
+        run.destroy
+        run.set_lower_submittable_to_be_destroyed
+      else
+        logger.info "Run #{run.id} is not destroyable yet"
+      end
+    end
+    Analysis.where(status: :created, to_be_destroyed: true).each do |anl|
+      if anl.destroyable?
+        logger.info "Destroying Analysis #{anl.id}"
+        anl.destroy
+      else
+        logger.info "Analysis #{anl.id} is not destroyable yet"
       end
     end
   end

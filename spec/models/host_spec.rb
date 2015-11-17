@@ -286,18 +286,17 @@ describe Host do
                               parameter_set: ps, status: :submitted, submitted_to: @host)
       FactoryGirl.create_list(:run, 1,
                               parameter_set: ps, status: :running, submitted_to: @host)
-      ps.runs.where(status: :submitted).first.__send__(:cancel)
       FactoryGirl.create_list(:run, 1,
                               parameter_set: ps, status: :finished, submitted_to: @host)
       FactoryGirl.create_list(:run, 2,
                               parameter_set: ps, status: :submitted, submitted_to: host2)
     end
 
-    it "returns the number of runs submitted to the host" do
+    it "returns a query" do
       expect(@host.submitted_runs).to be_a(Mongoid::Criteria)
     end
 
-    it "returns runs whose status is ['submitted','running','cancelled'] and 'submitted_to' is the host" do
+    it "returns runs whose status is 'submitted' or 'running', and 'submitted_to' is the host" do
       expect(@host.submitted_runs.size).to eq 4
     end
   end
@@ -325,7 +324,7 @@ describe Host do
     end
 
     it "returns the number of runs for each status" do
-      expected = {created: 5, submitted: 4, running: 3, finished: 2, failed: 1, cancelled: 0}
+      expected = {created: 5, submitted: 4, running: 3, finished: 2, failed: 1}
       expect(@host.runs_status_count).to eq expected
     end
   end

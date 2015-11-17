@@ -204,18 +204,6 @@ describe JobIncluder do
           expect(@submittable.status).to eq :failed
         end
       end
-
-      context "when job is canceled" do
-
-        it "does not try to include work_dir" do
-          make_valid_archive_file(@submittable)
-          FileUtils.rm(@archive_full_path)
-          @submittable.update_attribute(:status, :cancelled)
-          expect {
-            JobIncluder.include_remote_job(@host, @submittable)
-          }.to_not change { @submittable.reload.status }
-        end
-      end
     end
   end
 

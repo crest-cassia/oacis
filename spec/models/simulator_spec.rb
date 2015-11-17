@@ -13,6 +13,21 @@ describe Simulator do
     }
   end
 
+  describe "default_scope" do
+
+    before(:each) do
+      FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 0)
+    end
+
+    it "ignores Simulator of to_be_destroyed=true by default" do
+      sim = Simulator.first
+      expect {
+        sim.update_attribute(:to_be_destroyed, true)
+      }.to change { Simulator.count }.by(-1)
+      expect( Simulator.all.to_a ).to_not include(sim)
+    end
+  end
+
   it "should be valid with appropriate fields" do
     expect(Simulator.new(@valid_fields)).to be_valid
   end
@@ -109,6 +124,66 @@ describe Simulator do
     end
   end
 
+  describe "#set_lower_submittable_to_be_destroyed" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1, run_analysis: true,
+                                analyzers_on_parameter_set_count: 1,
+                                run_analysis_on_parameter_set: true
+                                )
+    end
+
+    it "sets to_be_destroyed of lower Runs" do
+      expect {
+        @sim.set_lower_submittable_to_be_destroyed
+      }.to change { @sim.reload.runs.empty? }.from(false).to(true)
+    end
+
+    it "sets to_be_destroyed of lower run-Analysis" do
+      run = @sim.reload.runs.first
+      expect {
+        @sim.set_lower_submittable_to_be_destroyed
+      }.to change { run.reload.analyses.empty? }.from(false).to(true)
+    end
+
+    it "sets to_be_destroyed of lower ps-Analysis" do
+      ps = @sim.parameter_sets.first
+      expect {
+        @sim.set_lower_submittable_to_be_destroyed
+      }.to change { ps.reload.analyses.empty? }.from(false).to(true)
+    end
+  end
+
+  describe "#destroyable?" do
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1, run_analysis: true,
+                                analyzers_on_parameter_set_count: 1,
+                                run_analysis_on_parameter_set: true
+                                )
+    end
+
+    it "returns false when it has Run or Analysis" do
+      expect(@sim.destroyable?).to be_falsey
+    end
+
+    it "returns true when all the Run or Analysis is destroyed" do
+      @sim.set_lower_submittable_to_be_destroyed
+      expect( @sim.destroyable? ).to be_falsey
+      @sim.runs.unscoped.first.analyses.unscoped.destroy
+      expect( @sim.destroyable? ).to be_falsey
+      @sim.runs.unscoped.destroy
+      expect( @sim.destroyable? ).to be_falsey
+      @sim.parameter_sets.first.analyses.unscoped.destroy
+      expect( @sim.destroyable? ).to be_truthy
+    end
+  end
+
   describe "#destroy" do
 
     before(:each) do
@@ -125,13 +200,13 @@ describe Simulator do
       }.to change { ParameterSet.count }.by(-1)
     end
 
-    it "calls destroy of dependent runs when destroyed" do
+    it "does not call destroy of dependent runs when destroyed" do
       expect {
         @sim.destroy
-      }.to change { Run.count }.by(-1)
+      }.to_not change { Run.unscoped.count }
     end
 
-    it "calls destroy of dependent analyses when destroyed" do
+    it "calls destroy of dependent analyzer when destroyed" do
       expect {
         @sim.destroy
       }.to change { Analyzer.count }.by(-1)

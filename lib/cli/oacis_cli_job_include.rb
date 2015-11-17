@@ -22,7 +22,7 @@ class OacisCli < Thor
   def find_included_run(archive)
     run_id = File.basename(archive, '.tar.bz2')
     run = Run.find(run_id)
-    if [:finished, :failed, :cancelled].include?(run.status)
+    if [:finished, :failed].include?(run.status)
       raise "status of run #{run_id} is not valid"
     end
     run

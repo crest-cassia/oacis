@@ -10,6 +10,17 @@ describe ParameterSet do
     @valid_attr = {:v => {"L" => 32, "T" => 1.0}}
   end
 
+  describe "default_scope" do
+
+    it "ignores ParameterSet of to_be_destroyed=true by default" do
+      ps = ParameterSet.first
+      expect {
+        ps.update_attribute(:to_be_destroyed, true)
+      }.to change { ParameterSet.count }.by(-1)
+      expect( ParameterSet.all.to_a ).to_not include(ps)
+    end
+  end
+
   describe "validation" do
 
     it "should create a Parameter when valid attributes are given" do
@@ -102,26 +113,19 @@ describe ParameterSet do
       expect(@ps).to respond_to(:runs)
     end
 
-    it "calls destroy of dependent runs when destroyed" do
+    it "does not call destroy of dependent runs when destroyed" do
       run = @ps.runs.first
-      expect(run).to receive(:destroy)
+      expect(run).to_not receive(:destroy)
       @ps.destroy
     end
 
-    it "calls destroy of dependent analyses when destroyed" do
+    it "does not call destroy of dependent analyses when destroyed" do
       azr = FactoryGirl.create(:analyzer,
-                         simulator: @sim,
-                         type: :on_parameter_set
-                         )
-      anl = @ps.analyses.build(analyzable: @ps, analyzer: azr)
-      expect(anl).to receive(:destroy)
-      @ps.destroy
-    end
-
-    it "calls cancel of dependent runs whose status is submitted or running when destroyed" do
-      run = @ps.runs.first
-      run.status = :submitted
-      expect(run).to receive(:cancel)
+                               simulator: @sim,
+                               type: :on_parameter_set
+                               )
+      anl = @ps.analyses.create(analyzable: @ps, analyzer: azr)
+      expect(anl).to_not receive(:destroy)
       @ps.destroy
     end
   end
@@ -273,7 +277,6 @@ describe ParameterSet do
       expect(prm.runs_status_count[:running]).to eq prm.runs.where(status: :running).count
       expect(prm.runs_status_count[:finished]).to eq prm.runs.where(status: :finished).count
       expect(prm.runs_status_count[:failed]).to eq prm.runs.where(status: :failed).count
-      expect(prm.runs_status_count[:cancelled]).to eq prm.runs.where(status: :cancelled).count
     end
 
     it "save the result into runs_status_count_cache field" do
@@ -292,6 +295,67 @@ describe ParameterSet do
       expect(Run).to receive(:collection).and_call_original
       prm.runs_status_count
       expect(prm.progress_rate_cache).to be_a(Integer)
+    end
+  end
+
+  describe "#set_lower_submittable_to_be_destroyed" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1, run_analysis: true,
+                                analyzers_on_parameter_set_count: 1,
+                                run_analysis_on_parameter_set: true
+                                )
+      @ps = sim.parameter_sets.first
+    end
+
+    it "sets to_be_destroyed of lower Runs" do
+      expect {
+        @ps.set_lower_submittable_to_be_destroyed
+      }.to change { @ps.reload.runs.empty? }.from(false).to(true)
+    end
+
+    it "sets to_be_destroyed of lower run-Analysis" do
+      run = @ps.reload.runs.first
+      expect {
+        @ps.set_lower_submittable_to_be_destroyed
+      }.to change { run.reload.analyses.empty? }.from(false).to(true)
+    end
+
+    it "sets to_be_destroyed of lower ps-Analysis" do
+      expect {
+        @ps.set_lower_submittable_to_be_destroyed
+      }.to change { @ps.reload.analyses.empty? }.from(false).to(true)
+    end
+  end
+
+  describe "#destroyable?" do
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1, run_analysis: true,
+                                analyzers_on_parameter_set_count: 1,
+                                run_analysis_on_parameter_set: true
+                                )
+      @ps = sim.parameter_sets.first
+    end
+
+    it "returns false when it has Run or Analysis" do
+      expect(@ps.destroyable?).to be_falsey
+    end
+
+    it "returns true when all the Run or Analysis is destroyed" do
+      @ps.set_lower_submittable_to_be_destroyed
+      expect( @ps.destroyable? ).to be_falsey
+      @ps.runs.first.analyses.unscoped.destroy
+      expect( @ps.destroyable? ).to be_falsey
+      @ps.runs.unscoped.destroy
+      expect( @ps.destroyable? ).to be_falsey
+      @ps.analyses.unscoped.destroy
+      expect( @ps.destroyable? ).to be_truthy
     end
   end
 

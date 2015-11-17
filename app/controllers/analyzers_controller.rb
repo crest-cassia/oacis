@@ -55,7 +55,8 @@ class AnalyzersController < ApplicationController
   def destroy
     analyzer = Analyzer.find(params[:id])
     simulator = analyzer.simulator
-    analyzer.destroy
+    analyzer.update_attribute(:to_be_destroyed, true)
+    analyzer.set_lower_submittable_to_be_destroyed
 
     respond_to do |format|
       format.json { head :no_content }

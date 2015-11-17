@@ -17,7 +17,7 @@
   %tbody
     %tr
       - stat_count = @simulator.runs_status_count
-      - total = stat_count.reject {|status| status == :cancelled}.values.inject(:+)
+      - total = stat_count.values.inject(:+)
       %th= total
       %td= "#{stat_count[:finished]} (#{(100.0*stat_count[:finished]/total.to_f).round(1)} %)"
       %td= "#{stat_count[:failed]} (#{(100.0*stat_count[:failed]/total.to_f).round(1)} %)"

@@ -19,18 +19,18 @@ module ResultDirectory
   end
 
   def self.parameter_set_path(param_set)
-    prm = ParameterSet.find(param_set)
+    prm = ParameterSet.unscoped.find(param_set)
     simulator_path(prm.simulator_id).join(prm.to_param)
   end
 
   def self.run_path(run)
-    run = Run.find(run)
+    run = Run.unscoped.find(run)
     prm = run.parameter_set_id
     parameter_set_path(run.parameter_set_id).join(run.to_param)
   end
 
   def self.run_script_path(run)
-    run = Run.find(run)
+    run = Run.unscoped.find(run)
     prm = run.parameter_set_id
     parameter_set_path(run.parameter_set_id).join(run.to_param + '.sh')
   end

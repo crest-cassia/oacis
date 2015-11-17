@@ -6,11 +6,14 @@ class Simulator
   field :name, type: String
   field :description, type: String
   field :position, type: Integer # position in the table. start from zero
+  field :to_be_destroyed, type: Boolean, default: false
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :runs
   has_many :parameter_set_queries, dependent: :destroy
   has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
+
+  default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
   validates :parameter_definitions, presence: true
@@ -58,7 +61,7 @@ class Simulator
     counts = Hash[ aggregated.map {|d| [d["_id"], d["count"]] } ]
 
     # merge default value because some 'counts' do not have keys whose count is zero.
-    default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0, cancelled: 0}
+    default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0}
     counts.merge!(default) {|key, self_val, other_val| self_val }
   end
 
@@ -132,6 +135,21 @@ class Simulator
     list
   end
 
+  def destroyable?
+    if runs.unscoped.empty?
+      azr_ids = analyzers.unscoped.map {|azr| azr.id }
+      Analysis.unscoped.where(:analyzer_id.in => azr_ids).empty?
+    else
+      false
+    end
+  end
+
+  def set_lower_submittable_to_be_destroyed
+    runs.update_all(to_be_destroyed: true)
+    azr_ids = analyzers.unscoped.map {|azr| azr.id }
+    Analysis.where(:analyzer_id.in => azr_ids).update_all(to_be_destroyed: true)
+  end
+
   private
   def domains(collection_class, query, result_keys)
     group = {_id: 0}
@@ -191,7 +209,6 @@ function() {
     var cache = this.runs_status_count_cache;
     var total_runs = 0;
     for(var stat in cache) {
-      if (stat == "cancelled") continue;
       total_runs += cache[stat];
     }
     var val = {finished: cache["finished"], total: total_runs };
@@ -229,7 +246,7 @@ EOS
       if d["value"]["ids"].present?
         target_runs = Run.in(parameter_set_id: d["value"]["ids"])
         runs_count[0] += target_runs.where(status: :finished).count
-        runs_count[1] += target_runs.ne(status: :cancelled).count
+        runs_count[1] += target_runs.count
       end
 
       parameters_to_runs_count[ casted_parameters ] = runs_count

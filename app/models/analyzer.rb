@@ -7,13 +7,16 @@ class Analyzer
   field :type, type: Symbol
   field :auto_run, type: Symbol, default: :no
   field :description, type: String
+  field :to_be_destroyed, type: Boolean, default: false
 
   embeds_many :parameter_definitions
   belongs_to :simulator
-  has_many :analyses, dependent: :destroy
+  has_many :analyses
 
   ## fields for auto run
   belongs_to :auto_run_submitted_to, class_name: "Host"
+
+  default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 
   validates :name, presence: true, uniqueness: {scope: :simulator}, format: {with: /\A\w+\z/}
   validates :type, presence: true, 
@@ -68,6 +71,14 @@ class Analyzer
     end
 
     anl_versions.map {|key,val| val['version'] = key; val }.sort_by {|a| a['latest_started_at']}
+  end
+
+  def destroyable?
+    analyses.unscoped.empty?
+  end
+
+  def set_lower_submittable_to_be_destroyed
+    analyses.update_all(to_be_destroyed: true)
   end
 
   private
