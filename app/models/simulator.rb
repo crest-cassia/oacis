@@ -61,7 +61,7 @@ class Simulator
     counts = Hash[ aggregated.map {|d| [d["_id"], d["count"]] } ]
 
     # merge default value because some 'counts' do not have keys whose count is zero.
-    default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0, cancelled: 0}
+    default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0}
     counts.merge!(default) {|key, self_val, other_val| self_val }
   end
 
@@ -209,7 +209,6 @@ function() {
     var cache = this.runs_status_count_cache;
     var total_runs = 0;
     for(var stat in cache) {
-      if (stat == "cancelled") continue;
       total_runs += cache[stat];
     }
     var val = {finished: cache["finished"], total: total_runs };
@@ -247,7 +246,7 @@ EOS
       if d["value"]["ids"].present?
         target_runs = Run.in(parameter_set_id: d["value"]["ids"])
         runs_count[0] += target_runs.where(status: :finished).count
-        runs_count[1] += target_runs.ne(status: :cancelled).count
+        runs_count[1] += target_runs.count
       end
 
       parameters_to_runs_count[ casted_parameters ] = runs_count

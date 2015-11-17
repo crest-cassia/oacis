@@ -39,7 +39,6 @@ private
       tmp = []
       tmp << @view.content_tag(:i, '', parameter_set_id: param.id.to_s, align: "center", class: "fa fa-search clickable")
       counts = param.runs_status_count
-      counts.delete(:cancelled)
       progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
       tmp << @view.raw(progress)
       tmp << @view.link_to( @view.shortened_id_monospaced(param.id), @view.parameter_set_path(param) )

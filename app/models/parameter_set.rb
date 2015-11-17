@@ -59,7 +59,7 @@ class ParameterSet
     counts = Hash[ aggregated.map {|d| [d["_id"], d["count"]] } ]
 
     # merge default value because some 'counts' do not have keys whose count is zero.
-    default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0, cancelled: 0}
+    default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0}
     counts.merge!(default) {|key, self_val, other_val| self_val }
 
     # skip validation using update_attribute method in order to improve performance

@@ -277,7 +277,6 @@ describe ParameterSet do
       expect(prm.runs_status_count[:running]).to eq prm.runs.where(status: :running).count
       expect(prm.runs_status_count[:finished]).to eq prm.runs.where(status: :finished).count
       expect(prm.runs_status_count[:failed]).to eq prm.runs.where(status: :failed).count
-      expect(prm.runs_status_count[:cancelled]).to eq prm.runs.where(status: :cancelled).count
     end
 
     it "save the result into runs_status_count_cache field" do
