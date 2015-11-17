@@ -23,15 +23,6 @@ describe JobSubmitter do
         DocumentDestroyer.perform(logger)
       }.to_not change { Simulator.unscoped.count }
     end
-
-    it "calls set_lower_submittable_to_be_destroyed when it's not destroyable for 10 times" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-      sim.update_attribute(:to_be_destroyed, true)
-      expect_any_instance_of(Simulator).to receive(:set_lower_submittable_to_be_destroyed).once
-      10.times do |t|
-        DocumentDestroyer.perform(logger)
-      end
-    end
   end
 
   describe "destroying Runs" do

@@ -1,7 +1,5 @@
 class DocumentDestroyer
 
-  MAX_COUNT_FOR_CHECK_SUB_DOCUMENTS = 10
-
   def self.perform(logger)
     @skip_count ||= {}
     @logger = logger
@@ -33,13 +31,6 @@ class DocumentDestroyer
         @skip_count.delete(obj.id)
       else
         @logger.info "Skip destroying #{obj.class} #{obj.id}. not destroyable yet."
-        @skip_count[obj.id] = @skip_count[obj.id].to_i + 1
-        if @skip_count[obj.id] >= MAX_COUNT_FOR_CHECK_SUB_DOCUMENTS
-          @logger.warn "#{obj.id} has not been destroyable for #{MAX_COUNT_FOR_CHECK_SUB_DOCUMENTS} times"
-          @logger.warn "trying to run :set_lower_submittable_to_be_destroyed"
-          obj.set_lower_submittable_to_be_destroyed
-          @skip_count[obj.id] = 0
-        end
       end
     end
   end
