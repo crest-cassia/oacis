@@ -69,31 +69,33 @@ describe JobSubmitter do
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count: 1, runs_count: 3
+                                parameter_sets_count: 1, runs_count: 3,
+                                analyzers_count: 0
                                 )
+      @logger = Logger.new($stderr)
     end
 
     it "destroys runs whose status is created and to_be_destroyed is true" do
       @sim.parameter_sets.first.runs.update_all( status: :created, to_be_destroyed: true )
       expect {
-        JobSubmitter.destroy_jobs_to_be_destroyed
+        JobSubmitter.destroy_jobs_to_be_destroyed(@logger)
       }.to change { Run.unscoped.count }.to(0)
     end
 
     it "does not destroy if the status is not created" do
       ps = @sim.parameter_sets.first
       ps.runs.update_all(status: :finished)
-      ps.reload.runs.first.update_attribute(:status, :created)
+      ps.runs.first.update_attribute(:status, :created)
       ps.runs.update_all(to_be_destroyed: true)
       expect {
-        JobSubmitter.destroy_jobs_to_be_destroyed
+        JobSubmitter.destroy_jobs_to_be_destroyed(@logger)
       }.to change { Run.unscoped.count }.from(3).to(2)
     end
 
     it "does not destroy if to_be_destroyed is false" do
       @sim.parameter_sets.first.runs.update_all( status: :created )
       expect {
-        JobSubmitter.destroy_jobs_to_be_destroyed
+        JobSubmitter.destroy_jobs_to_be_destroyed(@logger)
       }.to_not change { Run.unscoped.count }
     end
   end
