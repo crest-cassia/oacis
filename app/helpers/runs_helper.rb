@@ -33,7 +33,7 @@ module RunsHelper
   def make_tree_from_result_paths( result_paths, depth = 3 )
     sio = StringIO.new()
     sio.puts '<ul>'
-    result_paths.each do |result_path|
+    result_paths.sort.each do |result_path|
       if File.directory?( result_path )
         subpaths = Dir.glob( result_path.join('*') ).map {|x| Pathname.new(x) }
         sio.puts '<li class="folder">' + File.basename(result_path)
