@@ -1,6 +1,10 @@
 AcmProto::Application.routes.draw do
 
-  resources :worker_logs, only: ['index']
+  resources :worker_logs, only: ['index'] do
+    collection do
+      get "_contents"
+    end
+  end
 
   resources :runs, only: ["index"] do
     collection do
