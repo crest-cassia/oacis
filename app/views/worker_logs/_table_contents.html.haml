@@ -1,0 +1,7 @@
+- @logs.each do |log|
+  - klass = log.level >= 3 ? :danger : (log.level==2 ? :warning : nil)
+  = content_tag_for :tr, log, class: klass do
+    %td= log.worker
+    %td= log.created_at
+    %td= WorkerLog::SEVERITY[log.level]
+    %td= log.message
