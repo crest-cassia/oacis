@@ -11,7 +11,8 @@ describe JobSubmitter do
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
 
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+                                ssh_host: true)
       @sim.executable_on.push @host
       @sim.save!
 

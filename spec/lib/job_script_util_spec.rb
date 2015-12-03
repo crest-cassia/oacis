@@ -457,8 +457,9 @@ end
 context "for Run" do
 
   before(:each) do
-    sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
-    host = Host.where(name: "localhost").first
+    sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+                             ssh_host: true)
+    host = sim.executable_on.first #Host.where(name: "localhost").first
     sim.update_attribute(:executable_on, [host])
     run = sim.parameter_sets.first.runs.first
     @executable = sim
@@ -481,10 +482,11 @@ context "for Analysis" do
   before(:each) do
     sim = FactoryGirl.create(:simulator,
       parameter_sets_count: 1, runs_count: 1,
-      analyzers_count: 1, run_analysis: false
+      analyzers_count: 1, run_analysis: false,
+      ssh_host: true
       )
     run = sim.parameter_sets.first.runs.first
-    host = Host.where(name: "localhost").first
+    host = sim.executable_on.first #Host.where(name: "localhost").first
     azr = sim.analyzers.first
     azr.update_attribute(:executable_on, [host])
     anl = run.analyses.create(analyzer: azr, submitted_to: host)

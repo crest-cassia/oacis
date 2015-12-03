@@ -100,7 +100,6 @@ describe OacisCli do
                                 parameter_sets_count: 2, runs_count: 0,
                                 support_mpi: true, support_omp: true)
       @sim.executable_on.push @host
-      @sim.save!
     end
 
     def create_parameter_set_ids_json(parameter_sets, path)
@@ -205,9 +204,13 @@ describe OacisCli do
 
       before(:each) do
         @ps1 = @sim.parameter_sets.first
-        FactoryGirl.create_list(:run, 5, parameter_set: @ps1)
+        FactoryGirl.create_list(:run, 5, parameter_set: @ps1, submitted_to: @host,
+                                host_parameters: {"param1" => "XXX", "param2" => "YYY"}
+                                )
         @ps2 = @sim.parameter_sets[1]
-        FactoryGirl.create_list(:run, 1, parameter_set: @ps2)
+        FactoryGirl.create_list(:run, 1, parameter_set: @ps2, submitted_to: @host,
+                                host_parameters: {"param1" => "XXX", "param2" => "YYY"}
+                                )
       end
 
       it "iterates creation of runs up to the specified number" do
