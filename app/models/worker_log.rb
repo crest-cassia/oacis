@@ -1,6 +1,6 @@
 class WorkerLog
   include Mongoid::Document
-  include Mongoid::Timestamps
+  include Mongoid::Timestamps::Created
 
   field :w, type: String, as: :worker
   field :l, type: Integer, as: :level
