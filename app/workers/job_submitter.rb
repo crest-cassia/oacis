@@ -12,6 +12,7 @@ class JobSubmitter
           break if $term_received
           break unless num > 0
           analyses = host.submittable_analyses.where(priority: priority).limit(num)
+          WorkerLog.create({w: :submitter, l: 1, m: "submitting jobs to #{host.name}"} )
           logger.info("submitting jobs to #{host.name}: #{analyses.map do |r| r.id.to_s end.inspect}")
           num -= analyses.length  # [warining] analyses.length ignore 'limit', so 'num' can be negative.
           submit(analyses, host, logger) if analyses.present?
