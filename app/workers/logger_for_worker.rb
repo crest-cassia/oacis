@@ -4,7 +4,7 @@ class LoggerForWorker
     @type = worker_type
     @logger = Logger.new(logdev, shift_age, shift_size)
     @logger.formatter = LoggerFormatWithTime.new
-    @logger.level = Logger::INFO
+    @logger.level = Logger::DEBUG
   end
 
   def debug(message)

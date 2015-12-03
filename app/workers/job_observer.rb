@@ -5,8 +5,8 @@ class JobObserver
     Host.where(status: :enabled).each do |host|
       break if $term_received
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
+      logger.debug("observing #{host.name}")
       begin
-        logger.info("observing #{host.name}")
         observe_host(host, logger)
       rescue => ex
         logger.error("Error in JobObserver: #{ex.inspect}")
@@ -40,7 +40,7 @@ class JobObserver
       handler.cancel_remote_job(job)
       logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
       job.destroy
-      logger.info("Destroyed #{job.class} #{job.id}")
+      logger.info("destroyed #{job.class} #{job.id}")
       return
     end
     case handler.remote_status(job)
@@ -63,9 +63,9 @@ class JobObserver
     b = true
     if rate > 0.95
       b = false
-      logger.error("Error: No enough space left on device.")
+      logger.error("no enough space left on device.")
     elsif rate > 0.9
-      logger.warn("Warn: Too little space left on device.")
+      logger.warn("little space left on device.")
     end
     b
   end

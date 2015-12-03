@@ -8,21 +8,28 @@ class JobSubmitter
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
       begin
         num = host.max_num_jobs - host.submitted_runs.count - host.submitted_analyses.count
+        prev_num = num
         Run::PRIORITY_ORDER.keys.sort.each do |priority|
           break if $term_received
           break unless num > 0
           analyses = host.submittable_analyses.where(priority: priority).limit(num)
-          WorkerLog.create({w: :submitter, l: 1, m: "submitting jobs to #{host.name}"} )
-          logger.info("submitting jobs to #{host.name}: #{analyses.map do |r| r.id.to_s end.inspect}")
-          num -= analyses.length  # [warining] analyses.length ignore 'limit', so 'num' can be negative.
-          submit(analyses, host, logger) if analyses.present?
+          if analyses.present?
+            logger.info("submitting analyses to #{host.name}: #{analyses.map do |r| r.id.to_s end.inspect}")
+            num -= analyses.length  # [warning] analyses.length ignore 'limit', so 'num' can be negative.
+            submit(analyses, host, logger)
+          end
 
           break if $term_received
           break unless num > 0
           runs = host.submittable_runs.where(priority: priority).limit(num)
-          logger.info("submitting jobs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
-          num -= runs.length  # [warining] runs.length ignore 'limit', so 'num' can be negative.
-          submit(runs, host, logger) if runs.present?
+          if runs.present?
+            logger.info("submitting runs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
+            num -= runs.length  # [warning] runs.length ignore 'limit', so 'num' can be negative.
+            submit(runs, host, logger)
+          end
+        end
+        if num == prev_num
+          logger.debug("no submittable runs or analyses is found for #{host.name}")
         end
       rescue => ex
         logger.error("Error in JobSubmitter: #{ex.inspect}")
@@ -42,8 +49,8 @@ class JobSubmitter
         begin
           handler.submit_remote_job(job)
         rescue => ex
-          logger.info ex.inspect
-          logger.info ex.backtrace
+          logger.error ex.inspect
+          logger.error ex.backtrace
         end
       end
     end

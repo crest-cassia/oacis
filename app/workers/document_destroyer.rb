@@ -4,17 +4,17 @@ class DocumentDestroyer
     @skip_count ||= {}
     @logger = logger
 
-    @logger.info "looking for Simulator to be destroyed"
+    @logger.debug "looking for Simulator to be destroyed"
     destroy_documents( Simulator.where(to_be_destroyed: true) )
-    @logger.info "looking for ParameterSet to be destroyed"
+    @logger.debug "looking for ParameterSet to be destroyed"
     destroy_documents( ParameterSet.where(to_be_destroyed: true) )
-    @logger.info "looking for Analyzer to be destroyed"
+    @logger.debug "looking for Analyzer to be destroyed"
     destroy_documents( Analyzer.where(to_be_destroyed: true) )
-    @logger.info "looking for Run to be destroyed"
+    @logger.debug "looking for Run to be destroyed"
     destroy_documents(
       Run.where(:to_be_destroyed => true, :status.in => [:finished, :failed])
     )
-    @logger.info "looking for Analysis to be destroyed"
+    @logger.debug "looking for Analysis to be destroyed"
     destroy_documents(
       Analysis.where(:to_be_destroyed => true, :status.in => [:finished, :failed])
     )
@@ -26,11 +26,11 @@ class DocumentDestroyer
   def self.destroy_documents(query)
     query.each do |obj|
       if obj.destroyable?
-        @logger.info "Destroying #{obj.class} #{obj.id}"
+        @logger.info "destroying #{obj.class} #{obj.id}"
         obj.destroy
         @skip_count.delete(obj.id)
       else
-        @logger.info "Skip destroying #{obj.class} #{obj.id}. not destroyable yet."
+        @logger.info "skip destroying #{obj.class} #{obj.id}. not destroyable yet."
       end
     end
   end

@@ -14,7 +14,7 @@ class Worker < DaemonSpawn::Base
     $term_received = false
     trap('TERM') {
       $term_received = true
-      @logger.info("TERM received. stopping")
+      puts "TERM received. stopping"
     }
 
     loop do
