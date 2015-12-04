@@ -42,5 +42,13 @@ namespace :db do
       anl.destroy
       progressbar.increment
     end
+
+    session = Mongoid::Sessions.default
+    if session.collections.find {|col| col.name== "worker_logs" }
+      raise "collection is not capped" unless session["worker_logs"].capped?
+    else
+      session.command(create: "worker_logs", capped: true, size: 1048576)
+      $stderr.puts "capped collection worker_logs was created"
+    end
   end
 end

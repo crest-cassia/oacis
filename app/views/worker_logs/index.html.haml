@@ -1,0 +1,23 @@
+.page-header
+  %h1 Logs
+%table.table.table-striped.table-condensed
+  %thead
+    %tr
+      %th Worker
+      %th Date
+      %th Severity
+      %th Message
+  %tbody#log_table_body
+    = render "table_contents"
+
+:javascript
+  $(function() {
+    function reload_table() {
+      $.get("/worker_logs/_contents", function(data) {
+        $('#log_table_body').html(data);
+      });
+    };
+    setInterval( function() {
+      reload_table();
+    }, 5000 );
+  });

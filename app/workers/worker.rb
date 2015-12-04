@@ -8,15 +8,13 @@ class Worker < DaemonSpawn::Base
   #   - TASKS
 
   def start(args)
-    @logger = Logger.new(self.class::WORKER_LOG_FILE, 7)
-    @logger.formatter = LoggerFormatWithTime.new
-    @logger.level = Logger::INFO
+    @logger = LoggerForWorker.new(self.class::WORKER_ID, self.class::WORKER_LOG_FILE, 7)
     @logger.info("starting #{self.class}")
 
     $term_received = false
     trap('TERM') {
       $term_received = true
-      @logger.info("TERM received. stopping")
+      puts "TERM received. stopping"
     }
 
     loop do
