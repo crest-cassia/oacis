@@ -6,7 +6,9 @@ describe JobObserver do
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count: 1, runs_count: 1)
+                                parameter_sets_count: 1, runs_count: 1,
+                                ssh_host: true
+                                )
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
       @host = @sim.executable_on.where(name: "localhost").first
@@ -41,7 +43,9 @@ describe JobObserver do
 
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
-                                parameter_sets_count: 1, runs_count: 1)
+                                parameter_sets_count: 1, runs_count: 1,
+                                ssh_host: true
+                                )
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
       @host = @sim.executable_on.where(name: "localhost").first

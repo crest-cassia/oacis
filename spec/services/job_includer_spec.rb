@@ -212,7 +212,9 @@ describe JobIncluder do
     before(:each) do
       @executable = FactoryGirl.create(:simulator,
                                        parameter_sets_count: 1, runs_count: 0,
-                                       command: "echo")
+                                       command: "echo",
+                                       ssh_host: true
+                                       )
       @host = @executable.executable_on.where(name: "localhost").first
       @temp_dir = Pathname.new( Dir.mktmpdir )
       @host.update_attribute(:work_base_dir, @temp_dir.expand_path)
@@ -232,7 +234,9 @@ describe JobIncluder do
     before(:each) do
       sim = FactoryGirl.create(:simulator,
                                parameter_sets_count: 1, runs_count: 1,
-                               analyzers_count: 1, run_analysis: false)
+                               analyzers_count: 1, run_analysis: false,
+                               ssh_host: true
+                               )
       run = sim.parameter_sets.first.runs.first
       azr = sim.analyzers.first
       anl = run.analyses.build(analyzer: azr)

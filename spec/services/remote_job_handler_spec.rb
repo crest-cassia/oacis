@@ -347,7 +347,9 @@ describe "for Run" do
   before(:each) do
     sim = FactoryGirl.create(:simulator,
                               command: "echo",
-                              parameter_sets_count: 1, runs_count: 1)
+                              parameter_sets_count: 1, runs_count: 1,
+                              ssh_host: true
+                              )
     run = sim.parameter_sets.first.runs.first
     host = sim.executable_on.where(name: "localhost").first
     @temp_dir = Pathname.new( Dir.mktmpdir )
@@ -376,7 +378,8 @@ describe "for Analysis" do
     sim = FactoryGirl.create(:simulator,
                               command: "echo",
                               parameter_sets_count: 1, runs_count: 1,
-                              analyzers_count: 1, run_analysis: false
+                              analyzers_count: 1, run_analysis: false,
+                              ssh_host: true
                               )
     run = sim.parameter_sets.first.runs.first
     azr = sim.analyzers.first

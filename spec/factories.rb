@@ -26,15 +26,20 @@ FactoryGirl.define do
       analyzers_on_parameter_set_count 0
       run_analysis_on_parameter_set true
       parameter_set_queries_count 0
+      ssh_host false
     end
 
     after(:create) do |simulator, evaluator|
-      if Host.where(name: "localhost").present?
-        h = Host.where(name: "localhost").first
-        h.executable_simulators.push simulator
-        h.save!
+      if evaluator.ssh_host
+        if Host.where(name: "localhost").present?
+          h = Host.where(name: "localhost").first
+          h.executable_simulators.push simulator
+          h.save!
+        else
+          h = FactoryGirl.create(:localhost, executable_simulators: [simulator])
+        end
       else
-        h = FactoryGirl.create(:localhost, executable_simulators: [simulator])
+        h = FactoryGirl.create(:host, executable_simulators: [simulator])
       end
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
                               simulator: simulator,
@@ -43,12 +48,14 @@ FactoryGirl.define do
                               )
       FactoryGirl.create_list(:analyzer, evaluator.analyzers_count,
                               simulator: simulator,
-                              run_analysis: evaluator.run_analysis
+                              run_analysis: evaluator.run_analysis,
+                              ssh_host: evaluator.ssh_host
                               )
       FactoryGirl.create_list(:analyzer, evaluator.analyzers_on_parameter_set_count,
                               simulator: simulator,
                               type: :on_parameter_set,
-                              run_analysis: evaluator.run_analysis_on_parameter_set
+                              run_analysis: evaluator.run_analysis_on_parameter_set,
+                              ssh_host: evaluator.ssh_host
                               )
       FactoryGirl.create_list(:parameter_set_query, evaluator.parameter_set_queries_count,
                               simulator: simulator
@@ -74,7 +81,10 @@ FactoryGirl.define do
 
   factory :run do
 
-    submitted_to { self.parameter_set.simulator.executable_on.where(name: "localhost").first }
+    submitted_to {
+      hosts = self.parameter_set.simulator.executable_on
+      hosts.where(name: "localhost").first || hosts.first
+    }
 
     factory :finished_run do
 
@@ -110,15 +120,20 @@ FactoryGirl.define do
 
     ignore do
       run_analysis true
+      ssh_host false
     end
 
     after(:create) do |analyzer, evaluator|
-      if Host.where(name: "localhost").present?
-        h = Host.where(name: "localhost").first
-        h.executable_analyzers.push analyzer
-        h.save!
+      if evaluator.ssh_host
+        if Host.where(name: "localhost").present?
+          h = Host.where(name: "localhost").first
+          h.executable_analyzers.push analyzer
+          h.save!
+        else
+          h = FactoryGirl.create(:localhost, executable_analzyers: [analyzer])
+        end
       else
-        h = FactoryGirl.create(:localhost, executable_analzyers: [analyzer])
+        h = FactoryGirl.create(:host, executable_analyzers: [analyzer])
       end
       if evaluator.run_analysis
         case analyzer.type
@@ -143,6 +158,10 @@ FactoryGirl.define do
     h = {"param1" => 1, "param2" => 2.0}
     parameters h
     status :finished
+    submitted_to {
+      hosts = self.analyzer.executable_on
+      hosts.where(name: "localhost").first || hosts.first
+    }
     sequence(:result) do |n|
       {"XXX" => n + 1, "YYY" => n*3.0}
     end
