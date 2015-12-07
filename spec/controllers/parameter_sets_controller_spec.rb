@@ -168,6 +168,18 @@ describe ParameterSetsController do
           }.to change { Run.count }.by(6)
         end
 
+        context "when sequential_seed is true" do
+
+          it "creates multiple parameter sets with sequential seeds" do
+            @valid_param.update(v: {"L" => "1", "T" => "1.0, 2.0"},
+                                num_runs: 3, run: {submitted_to: Host.first} )
+            post :create, @valid_param, valid_session
+            @sim.parameter_sets.each do |ps|
+              expect( ps.runs.map(&:seed) ).to match_array [1,2,3]
+            end
+          end
+        end
+
         describe "when some of parameter_sets are already created" do
 
           before(:each) do

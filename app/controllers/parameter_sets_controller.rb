@@ -51,13 +51,16 @@ class ParameterSetsController < ApplicationController
       return
     end
 
+    new_runs = []
     @num_runs.times do |i|
       created.each do |ps|
         next if ps.runs.count > i
         permitted_params = permitted_run_params(params)
-        ps.runs.create(permitted_params)
+        new_runs << ps.runs.build(permitted_params)
       end
     end
+    set_sequential_seeds(new_runs) if simulator.sequential_seed
+    new_runs.map(&:save)
 
     num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
     num_created_runs = simulator.runs.count - previous_num_runs
@@ -73,6 +76,20 @@ class ParameterSetsController < ApplicationController
       redirect_to @param_set
     else
       redirect_to simulator
+    end
+  end
+
+  private
+  def set_sequential_seeds(runs)
+    ps_runs = runs.group_by {|run| run.parameter_set }
+    ps_runs.each_pair do |ps, runs_in_ps|
+      seeds = ps.reload.runs.asc(:seed).only(:seed).map {|r| r.seed }
+      runs_in_ps.each do |run_in_ps|
+        found = seeds.each_with_index.find {|seed,idx| seed != idx + 1 }
+        next_seed_idx = found ? found[1] : seeds.size
+        run_in_ps.seed = next_seed_idx + 1
+        seeds.insert(next_seed_idx, next_seed_idx + 1 )
+      end
     end
   end
 
