@@ -138,6 +138,7 @@ describe SimulatorsController do
         simulator = {
           name: "simulatorA", command: "echo", support_input_json: "0",
           support_mpi: "0", support_omp: "1",
+          sequential_seed: "1",
           parameter_definitions_attributes: definitions,
           executable_on_ids: [host.id.to_s]
         }
@@ -160,6 +161,7 @@ describe SimulatorsController do
         expect(sim.parameter_definition_for("param2").type).to eq "Float"
         expect(sim.support_mpi).to be_falsey
         expect(sim.support_omp).to be_truthy
+        expect(sim.sequential_seed).to be_truthy
       end
 
       it "assigns a newly created simulator as @simulator" do
@@ -274,6 +276,7 @@ describe SimulatorsController do
         @valid_post_parameter = {
           name: "simulatorA", command: "echo", support_input_json: "0",
           support_mpi: "0", support_omp: "1",
+          sequential_seed: "1",
           parameter_definitions_attributes: definitions
         }
       end
@@ -292,6 +295,7 @@ describe SimulatorsController do
         expect(assigns(:simulator).support_input_json).to be_falsey
         expect(assigns(:simulator).support_mpi).to be_falsey
         expect(assigns(:simulator).support_omp).to be_truthy
+        expect(assigns(:simulator).sequential_seed).to be_truthy
       end
 
       it "redirects to the simulator" do

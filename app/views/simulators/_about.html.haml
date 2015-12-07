@@ -21,6 +21,9 @@
       %th Support OMP
       %td= simulator.support_omp ? "Yes" : "No"
     %tr
+      %th Sequential Seed
+      %td= simulator.sequential_seed ? "Yes" : "No"
+    %tr
       %th Executable On
       %td= raw( simulator.executable_on.map {|host| h(host.name) }.join('<br />') )
 
