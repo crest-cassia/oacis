@@ -217,6 +217,22 @@ describe OacisCli do
       end
     end
 
+    context "when PS with identical v exists under a different simulator" do
+
+      before(:each) do
+        s2 = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 0)
+        s2.parameter_sets.create(v: {"L" => 10, "T" => 0.1})
+      end
+
+      it "creates parameter sets" do
+        at_temp_dir {
+          expect {
+            invoke_create_parameter_sets
+          }.to change { @sim.parameter_sets.count }.by(6)
+        }
+      end
+    end
+
     context "when input parameter_sets is specified as object" do
 
       def create_parameter_sets_json2(path)
