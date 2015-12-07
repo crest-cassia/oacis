@@ -102,8 +102,15 @@ class Run
 
   def set_unique_seed
     unless seed
-      counter_epoch = self.id.to_s[-6..-1] + self.id.to_s[0..7]
-      self.seed = counter_epoch.hex % (2**31-1)
+      if simulator.sequential_seed
+        seeds = parameter_set.reload.runs.asc(:seed).only(:seed).map {|r| r.seed }
+        found = seeds.each_with_index.find {|seed,idx| seed != idx + 1 }
+        next_seed = found ? found[1] + 1 : seeds.last.to_i + 1
+        self.seed = next_seed
+      else
+        counter_epoch = self.id.to_s[-6..-1] + self.id.to_s[0..7]
+        self.seed = counter_epoch.hex % (2**31-1)
+      end
     end
   end
 
