@@ -130,7 +130,8 @@ Simulator一覧ページ(/simulators)で[New Simulator]ボタンをクリック�
 | Input type                 | パラメータを引数形式で渡すか、JSON形式で渡すか指定する。|
 | Support mpi                | シミュレータがMPIで実行されるか。チェックを入れた場合、Runの作成時にMPI並列数を指定することができる。 |
 | Support omp                | シミュレータがOpenMPで並列化されているか。チェックを入れた場合、Runの作成時にOMP並列数を指定することができる。 |
-| Description                | シミュレータの説明を入力する。（markdownフォーマット[http://daringfireball.net/projects/markdown/syntax]で入力できる。）|
+| Sequential seed            | Runの作成時に指定されるseedをランダムな順番に与えるか、各ParameterSetごとに1から順番に与えるか指定することができる。 |
+| Description                | シミュレータの説明を入力する。[markdownフォーマット](http://daringfireball.net/projects/markdown/syntax) で入力できる。|
 | Executable_on              | 実行可能Hostを指定する。                                            |
 |----------------------------|---------------------------------------------------------------------|
 
