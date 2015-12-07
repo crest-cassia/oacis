@@ -71,6 +71,7 @@ class Analysis
     when :on_run
       run = self.analyzable
       obj[:simulation_parameters] = run.parameter_set.v
+      obj[:simulation_parameters][:_seed] = run.seed
     when :on_parameter_set
       ps = self.analyzable
       obj[:simulation_parameters] = ps.v

@@ -221,7 +221,8 @@ describe Analysis do
     describe "for :on_run type" do
 
       it "returns a Hash having 'simulation_parameters'" do
-        expect(@arn.input[:simulation_parameters]).to eq(@run.parameter_set.v)
+        expected = @run.parameter_set.v.merge( {_seed: @run.seed} )
+        expect(@arn.input[:simulation_parameters]).to eq(expected)
       end
 
       it "returns a Hash having 'analysis_parameters'" do
