@@ -60,7 +60,7 @@ class OacisCli < Thor
     end
 
     parameter_set_ids = []
-    input.each_with_index.map do |psid_value|
+    input.each do |psid_value|
       ps_value = psid_value[:value]
       progressbar.log "  parameter values : #{ps_value.inspect}" if options[:verbose]
       param_set = simulator.parameter_sets.build({v: ps_value, skip_check_uniquness: true})
