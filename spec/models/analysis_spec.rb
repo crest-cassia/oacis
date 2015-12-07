@@ -125,60 +125,6 @@ describe Analysis do
     end
   end
 
-  describe "#update_status_running" do
-
-    it "updates status to 'running' and sets hostname" do
-      ret = @arn.update_status_running(hostname: 'host_ABC')
-      expect(ret).to be_truthy
-
-      @arn.reload
-      expect(@arn.status).to eq(:running)
-      expect(@arn.hostname).to eq('host_ABC')
-    end
-  end
-
-  describe "#update_status_finished" do
-
-    before(:each) do
-      @arn.update_status_running(:hostname => 'host_ABC')
-      @arg = { result: {"x" => 1.0}, cpu_time: 1.5, real_time: 2.0, finished_at: DateTime.now }
-    end
-
-    it "updates status to 'finished'" do
-      expect {
-        ret = @arn.update_status_finished(@arg)
-      }.to change { @arn.reload.status }.from(:running).to(:finished)
-    end
-
-    it "returns true" do
-      expect(@arn.update_status_finished(@arg)).to be_truthy
-    end
-
-    it "sets status of runs" do
-      @arn.update_status_finished(@arg)
-      @arn.reload
-      expect(@arn.cpu_time).to eq @arg[:cpu_time]
-      expect(@arn.real_time).to eq @arg[:real_time]
-      expect(@arn.result).to eq @arg[:result]
-      expect(@arn.finished_at).to be_within(0.0001).of(@arg[:finished_at].utc)
-      expect(@arn.included_at).to be_a(DateTime)
-    end
-  end
-
-  describe "#update_status_failed" do
-
-    before(:each) do
-      @arn.update_status_running(hostname: 'host_ABC')
-    end
-
-    it "updates status to failed" do
-      ret = @arn.update_status_failed
-      expect(ret).to be_truthy
-      @arn.reload
-      expect(@arn.status).to eq(:failed)
-    end
-  end
-
   describe "#destroyable?" do
 
     before(:each) do
