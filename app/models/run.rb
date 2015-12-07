@@ -12,14 +12,10 @@ class Run
 
   default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 
-  # validations
-  validates :seed, presence: true
-
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  before_validation :set_unique_seed
-  before_create :set_simulator
+  before_create :set_unique_seed, :set_simulator
   before_save :remove_runs_status_count_cache, :if => Proc.new {|run| run.status_changed? or run.to_be_destroyed_changed? }
   after_create :create_run_dir
   before_destroy :delete_run_dir, :delete_archived_result_file,
