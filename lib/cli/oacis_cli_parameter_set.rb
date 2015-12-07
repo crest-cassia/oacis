@@ -162,7 +162,7 @@ class OacisCli < Thor
     end
     list_created_ps = {}
     ParameterSet.collection.aggregate(
-      { '$match' => {'v' => {'$in'=>input}} },
+      { '$match' => {'simulator_id' => simulator.id, 'v' => {'$in'=>input}} },
       { '$group' => {'_id' => '$_id', v: {'$first' => '$v'}} }
     ).each do |psid_v|
       list_created_ps[psid_v['v']]=psid_v['_id']
