@@ -39,30 +39,6 @@ class Analysis
     dir.join('..', "#{id}.tar.bz2")
   end
 
-  def update_status_running(option = {hostname: 'localhost'})
-    merged = {hostname: 'localhost'}.merge(option)
-    self.status = :running
-    self.hostname = option[:hostname]
-    self.started_at = DateTime.now
-    self.save
-  end
-
-  def update_status_finished(status)
-    self.cpu_time = status[:cpu_time]
-    self.real_time = status[:real_time]
-    self.result = status[:result] if status.has_key?(:result)
-    self.finished_at = status[:finished_at]
-    self.status = :finished
-    self.analyzer_version = status[:analyzer_version] if status.has_key?(:analyzer_version)
-    self.included_at = DateTime.now
-    self.save
-  end
-
-  def update_status_failed
-    self.status = :failed
-    self.save
-  end
-
   # returns an hash object which is going to be dumped into _input.json
   def input
     obj = {}
