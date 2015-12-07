@@ -57,7 +57,7 @@ describe Run do
     end
 
     it "seeds must be less than 2**31-1" do
-      run = @param_set.runs.build
+      run = @param_set.runs.create
       expect( run.seed ).to be < 2**31
     end
 
