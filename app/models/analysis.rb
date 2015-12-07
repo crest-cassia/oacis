@@ -50,7 +50,7 @@ class Analysis
     when :on_parameter_set
       ps = self.analyzable
       obj[:simulation_parameters] = ps.v
-      run_ids = ps.runs.where(status: :finished).only(:id).map {|run| run.id.to_s}
+      run_ids = ps.runs.where(status: :finished).only(:id).map {|r| r.id.to_s}
       obj[:run_ids] = run_ids
     else
       raise "not supported type"
