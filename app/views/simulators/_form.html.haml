@@ -52,6 +52,12 @@
         %label
           = f.check_box(:support_omp)
   .form-group
+    = f.label(:sequential_seed, class: ['col-md-2','control-label'])
+    .col-md-2
+      .checkbox
+        %label
+          = f.check_box(:sequential_seed)
+  .form-group
     = f.label(:description, class: ['col-md-2','control-label'])
     .col-md-6
       = f.text_area(:description, rows: 5, class: 'form-control')

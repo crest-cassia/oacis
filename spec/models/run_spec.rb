@@ -37,30 +37,6 @@ describe Run do
       expect(run.status).to eq(:created)
     end
 
-    it "assigns a seed by default" do
-      run = @param_set.runs.create
-      expect(run.seed).to be_a(Integer)
-    end
-
-    it "automatically assigned seeds are unique" do
-      seeds = []
-      n = 10
-      n.times do |i|
-        run = @param_set.runs.create
-        seeds << run.seed
-      end
-      expect(seeds.uniq.size).to eq(n)
-    end
-
-    it "seed must be unique" do
-      skip "it is no longer needed because seed is defined by unique bson object id."
-    end
-
-    it "seeds must be less than 2**31-1" do
-      run = @param_set.runs.build
-      expect( run.seed ).to be < 2**31
-    end
-
     it "status must be either :created, :submitted, :running, :failed, or :finished" do
       run = @param_set.runs.build(@valid_attribute)
       run.status = :unknown
@@ -127,6 +103,54 @@ describe Run do
     it "automatically assigned priority is 1" do
       run = @param_set.runs.create
       expect(run.priority).to eq 1
+    end
+
+    describe "seed" do
+      it "assigns a seed by default" do
+        run = @param_set.runs.create
+        expect(run.seed).to be_a(Integer)
+      end
+
+      it "automatically assigned seeds are unique" do
+        seeds = []
+        n = 10
+        n.times do |i|
+          run = @param_set.runs.create
+          seeds << run.seed
+        end
+        expect(seeds.uniq.size).to eq(n)
+      end
+
+      it "seeds must be less than 2**31-1" do
+        run = @param_set.runs.create
+        expect( run.seed ).to be < 2**31
+      end
+
+      context "when Simulator#sequential_seed is true" do
+
+        before(:each) do
+          @simulator.update_attribute(:sequential_seed, true)
+          @param_set.runs.destroy
+        end
+
+        it "creates seed in sequential order starting from one" do
+          3.times do |i|
+            run = @param_set.runs.create
+            expect(run.seed).to eq i+1
+          end
+        end
+
+        it "does not override when seed is explicitly specified" do
+          run = @param_set.runs.create(seed: 2)
+          expect( run.seed ).to eq 2
+          seeds = []
+          3.times do |i|
+            r = @param_set.runs.create
+            seeds << r.seed
+          end
+          expect( seeds ).to eq [1,3,4]
+        end
+      end
     end
 
     describe "'host_parameters' field" do

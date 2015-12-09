@@ -183,6 +183,7 @@ class SimulatorsController < ApplicationController
                                                 :support_input_json,
                                                 :support_omp,
                                                 :support_mpi,
+                                                :sequential_seed,
                                                 :print_version_command,
                                                 parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
                                                 executable_on_ids: []

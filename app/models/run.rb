@@ -12,24 +12,16 @@ class Run
 
   default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 
-  # validations
-  validates :seed, presence: true
-
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
-  before_create :set_simulator
+  before_create :set_unique_seed, :set_simulator
   before_save :remove_runs_status_count_cache, :if => Proc.new {|run| run.status_changed? or run.to_be_destroyed_changed? }
   after_create :create_run_dir
   before_destroy :delete_run_dir, :delete_archived_result_file,
                  :remove_runs_status_count_cache
 
   public
-  def initialize(*arg)
-    super
-    set_unique_seed
-  end
-
   def simulator
     set_simulator if simulator_id.nil?
     if simulator_id
@@ -106,8 +98,15 @@ class Run
 
   def set_unique_seed
     unless seed
-      counter_epoch = self.id.to_s[-6..-1] + self.id.to_s[0..7]
-      self.seed = counter_epoch.hex % (2**31-1)
+      if simulator.sequential_seed
+        seeds = parameter_set.reload.runs.asc(:seed).only(:seed).map {|r| r.seed }
+        found = seeds.each_with_index.find {|seed,idx| seed != idx + 1 }
+        next_seed = found ? found[1] + 1 : seeds.last.to_i + 1
+        self.seed = next_seed
+      else
+        counter_epoch = self.id.to_s[-6..-1] + self.id.to_s[0..7]
+        self.seed = counter_epoch.hex % (2**31-1)
+      end
     end
   end
 
