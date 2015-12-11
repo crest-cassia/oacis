@@ -279,7 +279,7 @@ ParameterSetを新規作成する
 
 ## job_parameter_template
 
-create_runsの時に使用するjob_parameter.jsonファイルのテンプレートを作成する
+create_runs, create_analyses の時に使用するjob_parameter.jsonファイルのテンプレートを作成する
 
 #### 実行方法
 
@@ -570,7 +570,7 @@ Analysisを新規作成する
 #### 実行方法
 
 {% highlight sh %}
-./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json
+./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -j job_parameter.json -o analysis_ids.json
 {% endhighlight %}
 
 #### オプション
@@ -581,6 +581,8 @@ Analysisを新規作成する
 |--analyzer       |-a      |analyzer id                                        |yes        |
 |-----------------|--------|---------------------------------------------------|-----------|
 |--input          |-i      |input file path                                    |no         |
+|-----------------|--------|---------------------------------------------------|-----------|
+|--job_parameters |-j      |job parameter file                                 |yes        |
 |-----------------|--------|---------------------------------------------------|-----------|
 |--output         |-o      |output file path                                   |yes        |
 |-----------------|--------|---------------------------------------------------|-----------|
@@ -593,6 +595,7 @@ Analysisを新規作成する
 
 - analyzerはanalyzerのIDを指定する。
 - inputは analyses_template で出力されるJSON形式のファイルまたはJSON形式の文字列を指定する。デフォルトは、Analyzerに登録されたパラメータのデフォルト値。
+- job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルまたは文字列を指定する。
 
 #### 出力
 
@@ -610,19 +613,19 @@ Analysisを新規作成する
 - 各ParameterSet のRun 1つに対してのみanalyzer を実行する。
 
 {% highlight sh %}
-./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json --first_run_only
+./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -j job_parameter.json -o analysis_ids.json --first_run_only
 {% endhighlight %}
 
 - 指定したParameterSet に対してanalyzer(:on_parameter_set) を実行する。
 
 {% highlight sh %}
-./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json -t parameter_set_ids.json
+./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -j job_parameter.json -o analysis_ids.json -t parameter_set_ids.json
 {% endhighlight %}
 
 - 指定したRun に対してanalyzer(:on_run) を実行する。
 
 {% highlight sh %}
-./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -o analysis_ids.json -t run_ids.json
+./bin/oacis_cli create_analyses -a 5226f430899e532cf6000009 -i analysis_parameters.json -j job_parameter.json -o analysis_ids.json -t run_ids.json
 {% endhighlight %}
 
 #### その他
