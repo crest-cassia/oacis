@@ -16,6 +16,20 @@ describe OacisCli do
     end
   end
 
+  def create_job_parameters_json(path)
+    File.open(path, 'w') {|io|
+      job_parameters = {
+        "host_id" => @host.id.to_s,
+        "host_parameters" => {"param1" => "foo", "param2" => "bar"},
+        "mpi_procs" => 2,
+        "omp_threads" => 8,
+        "priority" => 0
+      }
+      io.puts job_parameters.to_json
+      io.flush
+    }
+  end
+
   def invoke_create_analyses(type, option={})
     case type
     when :on_run
@@ -23,8 +37,9 @@ describe OacisCli do
     when :on_parameter_set
       analyzer_id = @sim.analyzers.where(type: :on_parameter_set).first.id.to_s
     end
+    create_job_parameters_json('job_parameters.json')
     options = { analyzer_id: analyzer_id, input: 'azr_parameters.json',
-                output: 'analysis_ids.json'}
+                output: 'analysis_ids.json', job_parameters: 'job_parameters.json'}
     options.merge!(option)
     OacisCli.new.invoke(:analyses_template, [], {analyzer_id: analyzer_id, output: "azr_parameters.json"})
     OacisCli.new.invoke(:create_analyses, [], options)
@@ -101,11 +116,17 @@ describe OacisCli do
 
   describe "#create_analyses" do
 
-    it "creates analyses on finished runs" do
+    it "creates analyses on finished runs with correct attributes" do
       at_temp_dir {
         expect {
           invoke_create_analyses(:on_run)
         }.to change { Analysis.where(analyzable_type: "Run").count }.by(4)
+        anl = Analysis.where(analyzable_type: "Run").first
+        expect(anl.submitted_to).to eq @host
+        expect(anl.mpi_procs).to eq 2
+        expect(anl.omp_threads).to eq 8
+        expect(anl.priority).to eq 0
+        expect(anl.host_parameters).to eq({"param1" => "foo", "param2" => "bar"})
       }
     end
 
@@ -114,6 +135,12 @@ describe OacisCli do
         expect {
           invoke_create_analyses(:on_parameter_set)
         }.to change { Analysis.where(analyzable_type: "ParameterSet").count }.by(2)
+        anl = Analysis.where(analyzable_type: "ParameterSet").first
+        expect(anl.submitted_to).to eq @host
+        expect(anl.mpi_procs).to eq 2
+        expect(anl.omp_threads).to eq 8
+        expect(anl.priority).to eq 0
+        expect(anl.host_parameters).to eq({"param1" => "foo", "param2" => "bar"})
       }
     end
 
