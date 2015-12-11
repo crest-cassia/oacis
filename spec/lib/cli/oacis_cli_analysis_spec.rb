@@ -326,7 +326,7 @@ describe OacisCli do
     it "destroys analyses specified by 'status'" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
-        invoke_create_analyses(:on_run, {output: "analysis_ids.json"})
+        invoke_create_analyses(:on_run)
         Analysis.limit(3).each do |anl|
           anl.status = :failed
           anl.save
@@ -341,7 +341,7 @@ describe OacisCli do
     it "destroys analyses specified by 'analyzer_version'" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
-        invoke_create_analyses(:on_run, {output: "analysis_ids.json"})
+        invoke_create_analyses(:on_run)
         Analysis.limit(3).each do |anl|
           anl.update_attribute(:status, :finished)
           anl.update_attribute(:analyzer_version, "v0.1.0")
@@ -356,7 +356,7 @@ describe OacisCli do
     it "destroys analyses of analyzer_version=nil when analyzer_version is empty" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
-        invoke_create_analyses(:on_run, {output: "analysis_ids.json"})
+        invoke_create_analyses(:on_run)
         Analysis.each do |anl|
           anl.update_attribute(:status, :finished)
         end
@@ -375,7 +375,7 @@ describe OacisCli do
       it "raises an exception" do
         analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
         at_temp_dir {
-          invoke_create_analyses(:on_run, {output: "analysis_ids.json"})
+          invoke_create_analyses(:on_run)
           options = {analyzer_id: analyzer_id, query: "DO_NOT_EXIST", yes: true}
           expect {
             $stdout = StringIO.new # set new string stream not to write Thor#say message on test result
@@ -399,7 +399,7 @@ describe OacisCli do
       it "destroys nothing" do
         analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
         at_temp_dir {
-          invoke_create_analyses(:on_run, {output: "analysis_ids.json"})
+          invoke_create_analyses(:on_run)
           Analysis.each do |anl|
             anl.update_attribute(:status, :finished)
           end
@@ -420,7 +420,7 @@ describe OacisCli do
       it "destroys analyses without confirmation" do
         analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
         at_temp_dir {
-          invoke_create_analyses(:on_run, {output: "analysis_ids.json"})
+          invoke_create_analyses(:on_run)
           Analysis.each do |anl|
             anl.update_attribute(:status, :finished)
           end
@@ -442,13 +442,13 @@ describe OacisCli do
     it "newly create analyses have the same attribute as old ones" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
-        invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "azr_parameters.json"})
+        invoke_create_analyses(:on_run)
         Analysis.limit(2).each do |anl|
           anl.status = :failed
           anl.save
         end
         h = Analysis.first.parameters
-        options = {analyzer_id: analyzer_id, query: {"status" => "failed"}, input: "azr_parameters.json", yes: true}
+        options = {analyzer_id: analyzer_id, query: {"status" => "failed"}, yes: true}
         expect {
           OacisCli.new.invoke(:replace_analyses, [], options)
         }.to change { Analysis.where(status: :created).count }.by(2)
@@ -459,12 +459,12 @@ describe OacisCli do
     it "destroys old analysis" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
-        invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "azr_parameters.json", yes: true})
+        invoke_create_analyses(:on_run)
         Analysis.limit(2).each do |anl|
           anl.status = :failed
           anl.save
         end
-        options = {analyzer_id: analyzer_id, query: {"status" => "failed"}, input: "azr_parameters.json", yes: true}
+        options = {analyzer_id: analyzer_id, query: {"status" => "failed"}, yes: true}
         expect {
           OacisCli.new.invoke(:replace_analyses, [], options)
         }.to change { Analysis.where(status: :failed).count  }.from(2).to(0)
@@ -476,38 +476,36 @@ describe OacisCli do
       it "replaces nothing" do
         analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
         at_temp_dir {
-          invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "azr_parameters.json"})
+          invoke_create_analyses(:on_run)
           Analysis.limit(2).each do |anl|
             anl.status = :failed
             anl.save
           end
           expect(Thor::LineEditor).to receive(:readline).with("Replace 2 analyses with new ones? ", :add_to_history => false).and_return("n")
-          options = {analyzer_id: analyzer_id, query: {"status" => "failed"}, input: "azr_parameters.json"}
+          options = {analyzer_id: analyzer_id, query: {"status" => "failed"} }
           expect {
             OacisCli.new.invoke(:replace_analyses, [], options)
           }.not_to change { Analysis.where(status: :created).count }
         }
       end
     end
-  end
 
-  context "with yes option" do
-
-    it "replaces analyses with out confirmation" do
+    it "shows confirmation messages without :yes option" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
-        invoke_create_analyses(:on_run, {output: "analysis_ids.json", input: "azr_parameters.json"})
+        invoke_create_analyses(:on_run)
         Analysis.limit(2).each do |anl|
           anl.status = :failed
           anl.save
         end
-        expect(Thor::LineEditor).not_to receive(:readline).with("Replace 2 analyses with new ones? ", :add_to_history => false)
-        options = {analyzer_id: analyzer_id, query: {"status" => "failed"}, input: "azr_parameters.json", yes: true}
+        expect(Thor::LineEditor).to receive(:readline).with("Replace 2 analyses with new ones? ", :add_to_history => false).and_return("y")
+        options = {analyzer_id: analyzer_id, query: {"status" => "failed"} }
         expect {
           OacisCli.new.invoke(:replace_analyses, [], options)
         }.to change { Analysis.where(status: :created).count }.by(2)
       }
     end
+
   end
 end
 
