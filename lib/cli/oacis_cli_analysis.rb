@@ -89,19 +89,7 @@ class OacisCli < Thor
     end
     created_analyses = analyses.select {|anl| anl.persisted? == false }
 
-    job_parameters = load_json_file_or_string(options[:job_parameters])
-    submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
-    host_parameters = job_parameters["host_parameters"].to_hash
-    mpi_procs = job_parameters["mpi_procs"]
-    omp_threads = job_parameters["omp_threads"]
-    priority = job_parameters["priority"]
-    created_analyses.each do |anl|
-      anl.submitted_to = submitted_to
-      anl.host_parameters = host_parameters
-      anl.mpi_procs = mpi_procs
-      anl.omp_threads = omp_threads
-      anl.priority = priority
-    end
+    set_job_parameters(created_analyses, options[:job_parameters])
 
     progressbar = ProgressBar.create(total: created_analyses.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
@@ -137,6 +125,22 @@ class OacisCli < Thor
       io.puts "[", ids.join(",\n"), "]"
       io.flush
     }
+  end
+
+  def set_job_parameters(analyses, job_param_json_path)
+    job_parameters = load_json_file_or_string( job_param_json_path )
+    submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
+    host_parameters = job_parameters["host_parameters"].to_hash
+    mpi_procs = job_parameters["mpi_procs"]
+    omp_threads = job_parameters["omp_threads"]
+    priority = job_parameters["priority"]
+    analyses.each do |anl|
+      anl.submitted_to = submitted_to
+      anl.host_parameters = host_parameters
+      anl.mpi_procs = mpi_procs
+      anl.omp_threads = omp_threads
+      anl.priority = priority
+    end
   end
 
   public
