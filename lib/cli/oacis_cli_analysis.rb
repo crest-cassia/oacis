@@ -213,14 +213,17 @@ class OacisCli < Thor
       anl_ids = analyses.only(:id).map(&:id)
       anl_ids.each do |anlid|
         anl = Analysis.find(anlid)
+        anl_attr = { analyzer: anl.analyzer,
+                     submitted_to: anl.submitted_to,
+                     mpi_procs: anl.mpi_procs,
+                     omp_threads: anl.omp_threads,
+                     host_parameters: anl.host_parameters,
+                     priority: anl.priority,
+                     parameters: anl.parameters }
         if anl.analyzable_type == "Run"
-          new_analysis = Run.find(anl.analyzable_id).analyses.build
-          new_analysis.parameters = anl.parameters
-          new_analysis.analyzer_id = anl.analyzer_id
+          new_analysis = Run.find(anl.analyzable_id).analyses.build(anl_attr)
         elsif anl.analyzable_type == "ParameterSet"
-          new_analysis = ParameterSet.find(anl.analyzable_id).analyses.build
-          new_analysis.parameters = anl.parameters
-          new_analysis.analyzer_id = anl.analyzer_id
+          new_analysis = ParameterSet.find(anl.analyzable_id).analyses.build(anl_attr)
         end
         if new_analysis.save
           anl.update_attribute(:to_be_destroyed, true)

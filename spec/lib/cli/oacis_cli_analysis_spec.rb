@@ -439,31 +439,48 @@ describe OacisCli do
 
   describe "#replace_analyses" do
 
+    def prepare_finished_and_failed_analyses
+      invoke_create_analyses(:on_run)
+      Analysis.limit(2).each do |anl|
+        anl.update_attribute(:status, :failed)
+      end
+      Analysis.where(status: :created).each do |anl|
+        anl.update_attribute(:status, :finished)
+      end
+    end
+
     it "newly create analyses have the same attribute as old ones" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
-        invoke_create_analyses(:on_run)
-        Analysis.limit(2).each do |anl|
-          anl.status = :failed
-          anl.save
-        end
-        h = Analysis.first.parameters
+        prepare_finished_and_failed_analyses
+
+        old_anl = Analysis.where(status: :failed).first
+        old_attributes = {
+          parameters: old_anl.parameters,
+          submitted_to: old_anl.submitted_to,
+          host_parameters: old_anl.host_parameters,
+          mpi_procs: old_anl.mpi_procs,
+          omp_threads: old_anl.omp_threads,
+          priority: old_anl.priority
+        }
         options = {analyzer_id: analyzer_id, query: {"status" => "failed"}, yes: true}
         expect {
           OacisCli.new.invoke(:replace_analyses, [], options)
         }.to change { Analysis.where(status: :created).count }.by(2)
-        expect(Analysis.where(status: :created).first.parameters).to eq h
+        anl = Analysis.where(status: :created).first
+        expect(anl.parameters).to eq old_attributes[:parameters]
+        expect(anl.submitted_to).to eq old_attributes[:submitted_to]
+        expect(anl.host_parameters).to eq old_attributes[:host_parameters]
+        expect(anl.mpi_procs).to eq old_attributes[:mpi_procs]
+        expect(anl.omp_threads).to eq old_attributes[:omp_threads]
+        expect(anl.priority).to eq old_attributes[:priority]
       }
     end
 
     it "destroys old analysis" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
-        invoke_create_analyses(:on_run)
-        Analysis.limit(2).each do |anl|
-          anl.status = :failed
-          anl.save
-        end
+        prepare_finished_and_failed_analyses
         options = {analyzer_id: analyzer_id, query: {"status" => "failed"}, yes: true}
         expect {
           OacisCli.new.invoke(:replace_analyses, [], options)
@@ -476,11 +493,8 @@ describe OacisCli do
       it "replaces nothing" do
         analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
         at_temp_dir {
-          invoke_create_analyses(:on_run)
-          Analysis.limit(2).each do |anl|
-            anl.status = :failed
-            anl.save
-          end
+          prepare_finished_and_failed_analyses
+
           expect(Thor::LineEditor).to receive(:readline).with("Replace 2 analyses with new ones? ", :add_to_history => false).and_return("n")
           options = {analyzer_id: analyzer_id, query: {"status" => "failed"} }
           expect {
@@ -493,11 +507,8 @@ describe OacisCli do
     it "shows confirmation messages without :yes option" do
       analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
       at_temp_dir {
-        invoke_create_analyses(:on_run)
-        Analysis.limit(2).each do |anl|
-          anl.status = :failed
-          anl.save
-        end
+        prepare_finished_and_failed_analyses
+
         expect(Thor::LineEditor).to receive(:readline).with("Replace 2 analyses with new ones? ", :add_to_history => false).and_return("y")
         options = {analyzer_id: analyzer_id, query: {"status" => "failed"} }
         expect {
