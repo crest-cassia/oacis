@@ -73,7 +73,6 @@ class OacisCli < Thor
     mpi_procs = job_parameters["mpi_procs"]
     omp_threads = job_parameters["omp_threads"]
     priority = job_parameters["priority"]
-    puts "set job param"
 
     run_ids = create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority, seeds)
 
