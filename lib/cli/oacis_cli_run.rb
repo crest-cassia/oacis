@@ -223,7 +223,8 @@ class OacisCli < Thor
         run_attr = { submitted_to: run.submitted_to,
                      mpi_procs: run.mpi_procs,
                      omp_threads: run.omp_threads,
-                     host_parameters: run.host_parameters }
+                     host_parameters: run.host_parameters,
+                     priority: run.priority }
         new_run = run.parameter_set.runs.build(run_attr)
         if new_run.save
           run.update_attribute(:to_be_destroyed, true)
