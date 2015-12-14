@@ -217,11 +217,6 @@ describe Analysis do
         FileUtils.mkdir_p(@dummy_dir)
       end
 
-      after(:each) do
-        FileUtils.rm( @dummy_path ) if File.exist?(@dummy_path)
-        FileUtils.rm_r(@dummy_dir) if File.directory?(@dummy_dir)
-      end
-
       it "returns file entries in run directory" do
         paths = @arn.input_files
         expected = [
@@ -277,11 +272,6 @@ describe Analysis do
         @dummy_dirs = [@run2.dir.join('__dummy_dir__'), @run3.dir.join('__dummy_dir__')]
         @dummy_files.each {|path| FileUtils.touch(path) }
         @dummy_dirs.each {|dir| FileUtils.mkdir_p(dir) }
-      end
-
-      after(:each) do
-        @dummy_files.each {|file| FileUtils.rm(file) if File.exist?(file) }
-        @dummy_dirs.each {|dir| FileUtils.rm_r(dir) if File.directory?(dir) }
       end
 
       it "returns files of finished runs" do
