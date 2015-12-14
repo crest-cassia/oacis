@@ -222,10 +222,8 @@ describe Analysis do
         FileUtils.rm_r(@dummy_dir) if File.directory?(@dummy_dir)
       end
 
-      it "returns a file entries in run directory" do
+      it "returns file entries in run directory" do
         paths = @arn.input_files
-        expect(paths).to be_a(Array)
-        expect(paths.size).to eq 2
         expect(paths).to match_array([@dummy_path, @dummy_dir])
       end
 
@@ -234,7 +232,7 @@ describe Analysis do
         expect(paths).not_to include(@arn.dir)
       end
 
-      it "does not include directories of other Analyses by defualt" do
+      it "does not include directories of other Analyses by default" do
         another_arn = @run.analyses.create!(analyzer: @azr, parameters: {})
         paths = @arn.input_files
         expect(paths).not_to include(another_arn.dir)
