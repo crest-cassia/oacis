@@ -224,18 +224,41 @@ describe Analysis do
 
       it "returns file entries in run directory" do
         paths = @arn.input_files
-        expect(paths).to match_array([@dummy_path, @dummy_dir])
+        expected = [
+          [@dummy_path, @dummy_path.basename],
+          [@dummy_dir, @dummy_dir.basename]
+        ]
+        expect(paths).to match_array expected
       end
 
-      it "does not include analysis directory of self" do
-        paths = @arn.input_files
-        expect(paths).not_to include(@arn.dir)
-      end
-
-      it "does not include directories of other Analyses by default" do
+      it "does not include directories of other Analyses" do
         another_arn = @run.analyses.create!(analyzer: @azr, parameters: {})
-        paths = @arn.input_files
+        paths = @arn.input_files.map(&:first)
         expect(paths).not_to include(another_arn.dir)
+      end
+
+      context "when analyzer#files_to_copy is set" do
+
+        before(:each) do
+          FileUtils.touch( @run.dir.join('TO_NOT_MATCH.txt') )
+          FileUtils.touch( @dummy_dir.join('subfile.txt') )
+        end
+
+        it "returns files which matches pattern" do
+          @arn.analyzer.update_attribute(:files_to_copy, "__dummy_dir__/subfile.txt")
+          paths = @arn.input_files
+          expected = [
+            [@dummy_dir.join('subfile.txt'), Pathname.new('__dummy_dir__/subfile.txt') ]
+          ]
+          expect(paths).to eq expected
+        end
+
+        it "excludes files in analysis even if it matches the pattern" do
+          another_anl = @run.analyses.create!(analyzer: @azr, parameters: {})
+          @arn.analyzer.update_attribute(:files_to_copy, another_anl.id.to_s)
+          expect( @run.dir.join(another_anl.id) ).to be_exist
+          expect( @arn.input_files ).to be_empty
+        end
       end
     end
 
@@ -248,9 +271,10 @@ describe Analysis do
         @arn2 = @ps.analyses.first
 
         @run2 = FactoryGirl.create(:finished_run, parameter_set: @ps)
+        @run3 = FactoryGirl.create(:finished_run, parameter_set: @ps)
 
-        @dummy_files = [@run2.dir.join('__dummy__')]
-        @dummy_dirs = [@run2.dir.join('__dummy_dir__')]
+        @dummy_files = [@run2.dir.join('__dummy__'), @run3.dir.join('__dummy__')]
+        @dummy_dirs = [@run2.dir.join('__dummy_dir__'), @run3.dir.join('__dummy_dir__')]
         @dummy_files.each {|path| FileUtils.touch(path) }
         @dummy_dirs.each {|dir| FileUtils.mkdir_p(dir) }
       end
@@ -260,10 +284,23 @@ describe Analysis do
         @dummy_dirs.each {|dir| FileUtils.rm_r(dir) if File.directory?(dir) }
       end
 
-      it "returns a array whose values are dirs of finished runs" do
-        expect(@arn2.input_files).to be_a(Array)
-        expect(@arn2.input_files).to eq([@run2.dir])
-        expect(@arn2.input_files).not_to include(@run.dir)
+      it "returns files of finished runs" do
+        expected = [
+          [ @run2.dir.join('__dummy__'), Pathname.new("#{@run2.id}/__dummy__") ],
+          [ @run2.dir.join('__dummy_dir__'), Pathname.new("#{@run2.id}/__dummy_dir__") ],
+          [ @run3.dir.join('__dummy__'), Pathname.new("#{@run3.id}/__dummy__") ],
+          [ @run3.dir.join('__dummy_dir__'), Pathname.new("#{@run3.id}/__dummy_dir__") ]
+        ]
+        expect( @arn2.input_files ).to match_array expected
+      end
+
+      it "returns only matched files" do
+        @azr.update_attribute(:files_to_copy, "__dummy__")
+        expected = [
+          [ @run2.dir.join('__dummy__'), Pathname.new("#{@run2.id}/__dummy__") ],
+          [ @run3.dir.join('__dummy__'), Pathname.new("#{@run3.id}/__dummy__") ]
+        ]
+        expect( @arn2.input_files ).to match_array expected
       end
     end
   end
