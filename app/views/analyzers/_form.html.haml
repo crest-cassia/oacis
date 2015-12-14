@@ -34,6 +34,10 @@
     .col-md-3
       = f.select(:support_input_json, {"Argument" => false, "JSON" => true}, {},{class: 'form-control'})
   .form-group
+    = f.label(:files_to_copy, class: 'col-md-2 control-label')
+    .col-md-6
+      = f.text_area(:files_to_copy, rows:2, class: 'form-control')
+  .form-group
     = f.label(:support_mpi, class: ['col-md-2','control-label'])
     .col-md-2
       .checkbox

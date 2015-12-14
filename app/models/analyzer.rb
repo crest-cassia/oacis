@@ -6,6 +6,7 @@ class Analyzer
   field :name, type: String
   field :type, type: Symbol
   field :auto_run, type: Symbol, default: :no
+  field :files_to_copy, type: String, default: '*'
   field :description, type: String
   field :to_be_destroyed, type: Boolean, default: false
 

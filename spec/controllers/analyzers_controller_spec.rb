@@ -74,7 +74,9 @@ describe AnalyzersController do
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
-          auto_run: "no", description: "xxx yyy",
+          auto_run: "no",
+          files_to_copy: "abc.txt\ndef.txt",
+          description: "xxx yyy",
           support_input_json: "1", support_mpi: "1", support_omp: "0",
           pre_process_script: "echo preprocess",
           executable_on_ids: [@host.id.to_s],
@@ -96,6 +98,7 @@ describe AnalyzersController do
         expect(azr.type).to eq :on_run
         expect(azr.command).to eq "echo"
         expect(azr.auto_run).to eq :no
+        expect(azr.files_to_copy).to eq "abc.txt\ndef.txt"
         expect(azr.description).to eq "xxx yyy"
         expect(azr.parameter_definition_for("param1").type).to eq "Integer"
         expect(azr.parameter_definition_for("param2").type).to eq "Float"
@@ -183,7 +186,9 @@ describe AnalyzersController do
         analyzer = {
           name: "analyzerA", type: "on_run", command: "echo",
           parameter_definitions_attributes: definitions,
-          auto_run: "no", description: "xxx yyy",
+          auto_run: "no",
+          files_to_copy: "abc.txt\ndef.txt",
+          description: "xxx yyy",
           support_input_json: "1", support_mpi: "1", support_omp: "0",
           pre_process_script: "echo preprocess",
           executable_on: [],

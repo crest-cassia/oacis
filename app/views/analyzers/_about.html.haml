@@ -14,6 +14,9 @@
       %th Parameter Input Type
       %td= analyzer.support_input_json ? "JSON" : "Arguments"
     %tr
+      %th Files to Copy
+      %td= raw( analyzer.files_to_copy.chomp.gsub("\n", '<br />') )
+    %tr
       %th Support MPI
       %td= analyzer.support_mpi ? "Yes" : "No"
     %tr

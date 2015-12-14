@@ -101,6 +101,7 @@ class AnalyzersController < ApplicationController
                                                :command,
                                                :description,
                                                :auto_run,
+                                               :files_to_copy,
                                                :print_version_command,
                                                :simulator,
                                                :support_input_json,
