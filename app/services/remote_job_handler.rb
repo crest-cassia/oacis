@@ -102,18 +102,19 @@ class RemoteJobHandler
   end
 
   def prepare_input_files_via_ssh(job)
+    remote_mkdir_p = lambda {|ssh,remote_dir|
+      cmd = "mkdir -p #{remote_dir}"
+      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+      raise RemoteOperationError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}, #{sig}" unless rc == 0
+    }
     # make remote input files directory
     remote_input_dir = RemoteFilePath.input_files_dir_path(@host,job)
-    cmd = "mkdir -p #{remote_input_dir}"
     @host.start_ssh do |ssh|
-      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      raise RemoteOperationError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
+      remote_mkdir_p.call(ssh, remote_input_dir)
       job.input_files.each do |origin,dest|
         remote_path = remote_input_dir.join( dest )
         unless File.dirname(dest) == "."
-          remote_dir = File.dirname( remote_path )
-          out, err, rc, sig = SSHUtil.execute2(ssh, "mkdir -p #{remote_dir}")
-          raise RemoteOperationError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
+          remote_mkdir_p.call( ssh, File.dirname(remote_path) )
         end
         SSHUtil.upload(ssh, origin, remote_path)
       end
