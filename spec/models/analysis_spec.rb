@@ -237,6 +237,7 @@ describe Analysis do
         before(:each) do
           FileUtils.touch( @run.dir.join('TO_NOT_MATCH.txt') )
           FileUtils.touch( @dummy_dir.join('subfile.txt') )
+          FileUtils.touch( @dummy_dir.join('subfile2.txt') )
         end
 
         it "returns files which matches pattern" do
@@ -253,6 +254,18 @@ describe Analysis do
           @arn.analyzer.update_attribute(:files_to_copy, another_anl.id.to_s)
           expect( @run.dir.join(another_anl.id) ).to be_exist
           expect( @arn.input_files ).to be_empty
+        end
+
+        it "accepts multiple patterns separated by new line characters" do
+          @arn.analyzer.update_attribute(:files_to_copy,
+                                         "__dummy_dir__/subfile.txt\r\n__dummy_dir__/subfile2.txt")
+          paths = @arn.input_files
+          expected = [
+            [@dummy_dir.join('subfile.txt'), Pathname.new('__dummy_dir__/subfile.txt') ],
+            [@dummy_dir.join('subfile2.txt'), Pathname.new('__dummy_dir__/subfile2.txt') ],
+          ]
+          expect(paths).to match_array expected
+
         end
       end
     end
