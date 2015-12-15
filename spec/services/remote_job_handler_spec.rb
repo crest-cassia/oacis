@@ -40,6 +40,28 @@ shared_examples_for RemoteJobHandler do
             expect( File.exist?(remote_input_file_path) ).to be_truthy
           end
         end
+
+        context "when Analyzer#files_to_copy is specified" do
+
+          it "copies only specified files" do
+            next unless @submittable.is_a?(Analysis)
+            # run
+            #  |- f1.txt
+            #  |- dir1
+            #      |- dir2
+            #          |- f2.txt
+            @submittable.analyzer.update_attribute(:files_to_copy, "dir1/dir2/f2.txt")
+            run = @submittable.analyzable
+            FileUtils.touch( run.dir.join('f1.txt') )
+            FileUtils.mkdir_p( run.dir.join('dir1/dir2') )
+            FileUtils.touch( run.dir.join('dir1/dir2/f2.txt') )
+
+            RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+            input_dir = @temp_dir.join(@submittable.id.to_s, '_input')
+            expect( input_dir.join('dir1/dir2/f2.txt') ).to be_exist
+            expect( input_dir.join('f1.txt') ).to_not be_exist
+          end
+        end
       end
 
       context "when mounted_work_base_dir is not set" do

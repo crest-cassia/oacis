@@ -93,6 +93,10 @@ class RemoteJobHandler
     # expand_path is necessary to copy file using FileUtils
     FileUtils.mkdir_p(mounted_remote_path)
     job.input_files.each do |origin,dest|
+      unless File.dirname(dest) == "."
+        d = File.dirname( mounted_remote_path.join(dest) )
+        FileUtils.mkdir_p( d )
+      end
       FileUtils.cp_r(origin, mounted_remote_path.join(dest) )
     end
   end
@@ -106,6 +110,11 @@ class RemoteJobHandler
       raise RemoteOperationError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
       job.input_files.each do |origin,dest|
         remote_path = remote_input_dir.join( dest )
+        unless File.dirname(dest) == "."
+          remote_dir = File.dirname( remote_path )
+          out, err, rc, sig = SSHUtil.execute2(ssh, "mkdir -p #{remote_dir}")
+          raise RemoteOperationError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
+        end
         SSHUtil.upload(ssh, origin, remote_path)
       end
     end
