@@ -70,24 +70,24 @@ class Analysis
     end
   end
 
-  # returns an array
-  #   array of run.results_paths or run.dir(s) to be linked to _input/
+  # returns an array of
+  #   [ absolute input path, destination relative path ]
   def input_files
-    files = []
-    case self.analyzer.type
+    pattern = analyzer.files_to_copy.chomp.gsub(/(\r\n|\r|\n)/, "\0")
+    case analyzer.type
     when :on_run
       run = self.analyzable
-      files = run.result_paths
-      # TODO: add directories of dependent analysis
+      matched = run.result_paths(pattern)
+      matched.map {|path| [ path, path.relative_path_from(run.dir) ] }
     when :on_parameter_set
       ps = self.analyzable
-      run_ids = ps.runs.where(status: :finished).only(:id).map {|run| run.id.to_s}
-      base_dir = ps.runs.where(status: :finished).first.dir.join('../')
-      files = run_ids.map {|run_id| base_dir.join(run_id)}
+      ps.runs.where(status: :finished).map do |run|
+        matched = run.result_paths(pattern)
+        matched.map {|path| [ path, path.relative_path_from(run.dir.join('..')) ] }
+      end.inject(:+)
     else
       raise "not supported type"
     end
-    return files
   end
 
   def destroyable?

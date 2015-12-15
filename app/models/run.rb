@@ -63,16 +63,18 @@ class Run
   end
 
   # returns result files and directories
+  #   sub-directories and files in them are not included
   # directories for Analysis are not included
-  def result_paths
-    paths = Dir.glob( dir.join('*') ).map {|x|
-      Pathname(x)
+  def result_paths( pattern = '*' )
+    paths = nil
+    Dir.chdir(dir) {
+      paths = Dir.glob(pattern).map {|x| Pathname.new(x).expand_path }
     }
     # remove directories of Analysis
-    paths -= analyses.map {|x| x.dir}
-
-    # return all files and directories on result path (these do not include sub-dirs and files in sub-dirs)
-    return paths
+    anl_dirs = analyses.map {|anl| /^#{anl.dir.to_s}/ }
+    paths.reject do |path|
+      anl_dirs.find {|anl_dir| anl_dir =~ path.to_s }
+    end
   end
 
   def archived_result_path

@@ -18,26 +18,51 @@ shared_examples_for RemoteJobHandler do
       shared_examples_for "prepare input directory" do
 
         it "creates _input/ directory and copy input files on remote host" do
-          if @submittable.is_a?(Analysis)
-            input_file = @submittable.analyzable.dir.join('dummy.txt')
-            FileUtils.touch(input_file)
-            RemoteJobHandler.new(@host).submit_remote_job(@submittable)
-            input_dir_path = @temp_dir.join(@submittable.id.to_s, '_input')
-            expect( File.directory?(input_dir_path) ).to be_truthy
-            expect( File.exist?(input_dir_path.join('dummy.txt')) ).to be_truthy
-          end
+          next unless @submittable.is_a?(Analysis)
+          # preparing input files as follows
+          # run
+          #  |- f1.txt
+          input_file = @submittable.analyzable.dir.join('f1.txt')
+          FileUtils.touch(input_file)
+
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+          copied = @temp_dir.join(@submittable.id.to_s, '_input', 'f1.txt')
+          expect( copied ).to be_exist
         end
 
         it "creates _input/ directory recursively for input directory" do
-          if @submittable.is_a?(Analysis)
-            input_dir = @submittable.analyzable.dir.join('dir1/dir2')
-            FileUtils.mkdir_p(input_dir)
-            input_file = input_dir.join('file1')
-            FileUtils.touch(input_file)
+          next unless @submittable.is_a?(Analysis)
+          # preparing input files as follows
+          # run
+          #  |- dir1/dir2/f1.txt
+          input_dir = @submittable.analyzable.dir.join('dir1/dir2')
+          FileUtils.mkdir_p( input_dir )
+          FileUtils.touch( input_dir.join('f1.txt') )
+
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+          copied = @temp_dir.join(@submittable.id.to_s, '_input/dir1/dir2/f1.txt' )
+          expect( copied ).to be_exist
+        end
+
+        context "when Analyzer#files_to_copy is specified" do
+
+          it "copies only specified files" do
+            next unless @submittable.is_a?(Analysis)
+            # run
+            #  |- f1.txt
+            #  |- dir1
+            #      |- dir2
+            #          |- f2.txt
+            @submittable.analyzer.update_attribute(:files_to_copy, "dir1/dir2/f2.txt")
+            run = @submittable.analyzable
+            FileUtils.touch( run.dir.join('f1.txt') )
+            FileUtils.mkdir_p( run.dir.join('dir1/dir2') )
+            FileUtils.touch( run.dir.join('dir1/dir2/f2.txt') )
+
             RemoteJobHandler.new(@host).submit_remote_job(@submittable)
-            input_dir_path = @temp_dir.join(@submittable.id.to_s, '_input')
-            remote_input_file_path = input_dir_path.join('dir1/dir2/file1')
-            expect( File.exist?(remote_input_file_path) ).to be_truthy
+            input_dir = @temp_dir.join(@submittable.id.to_s, '_input')
+            expect( input_dir.join('dir1/dir2/f2.txt') ).to be_exist
+            expect( input_dir.join('f1.txt') ).to_not be_exist
           end
         end
       end

@@ -352,8 +352,25 @@ describe Run do
       entries_in_run_dir = Dir.glob(@run.dir.join('*'))
       expect(entries_in_run_dir.size).to eq(4)
       expect(@run.result_paths.size).to eq(3)
-      arn_dir = @run.analyses.first.dir
-      expect(@run.result_paths).not_to include(arn_dir)
+      anl_dir = @run.analyses.first.dir
+      expect(@run.result_paths).not_to include(anl_dir)
+    end
+
+    context "when pattern is given" do
+
+      it "returns matched files" do
+        pattern = "result1.txt\0result_dir/result3.txt"
+        paths = @run.result_paths(pattern)
+        expected = %w(result1.txt result_dir/result3.txt).map {|f| @run.dir.join(f) }
+        expect(paths).to match_array expected
+      end
+
+      it "does not include analysis directories even if it matches the pattern" do
+        pattern = "*"
+        paths = @run.result_paths(pattern)
+        expected = %w(result1.txt result2.txt result_dir).map {|f| @run.dir.join(f) }
+        expect(paths).to match_array expected
+      end
     end
   end
 

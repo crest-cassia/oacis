@@ -116,6 +116,7 @@ FactoryGirl.define do
         { key: "param2", type: "Float", default: 1.0, description: "param2 desc" })
       ]
     }
+    files_to_copy { '*' }
     description { Faker::Lorem.paragraphs.join("\n") }
 
     ignore do
