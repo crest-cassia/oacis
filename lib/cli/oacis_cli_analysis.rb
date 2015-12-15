@@ -36,6 +36,11 @@ class OacisCli < Thor
     aliases:  '-i',
     desc:     'input file',
     required: false
+  method_option :job_parameters,
+    type:     :string,
+    aliases:  '-j',
+    desc:     'path to job_parameters.json',
+    required: true
   option :first_run_only,
     desc:     'create analyses only on first runs',
     required: false
@@ -84,6 +89,8 @@ class OacisCli < Thor
     end
     created_analyses = analyses.select {|anl| anl.persisted? == false }
 
+    set_job_parameters(created_analyses, options[:job_parameters])
+
     progressbar = ProgressBar.create(total: created_analyses.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
       progressbar.log "Number of analyses : #{created_analyses.count}"
@@ -118,6 +125,22 @@ class OacisCli < Thor
       io.puts "[", ids.join(",\n"), "]"
       io.flush
     }
+  end
+
+  def set_job_parameters(analyses, job_param_json_path)
+    job_parameters = load_json_file_or_string( job_param_json_path )
+    submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
+    host_parameters = job_parameters["host_parameters"].to_hash
+    mpi_procs = job_parameters["mpi_procs"]
+    omp_threads = job_parameters["omp_threads"]
+    priority = job_parameters["priority"]
+    analyses.each do |anl|
+      anl.submitted_to = submitted_to
+      anl.host_parameters = host_parameters
+      anl.mpi_procs = mpi_procs
+      anl.omp_threads = omp_threads
+      anl.priority = priority
+    end
   end
 
   public
@@ -190,14 +213,17 @@ class OacisCli < Thor
       anl_ids = analyses.only(:id).map(&:id)
       anl_ids.each do |anlid|
         anl = Analysis.find(anlid)
+        anl_attr = { analyzer: anl.analyzer,
+                     submitted_to: anl.submitted_to,
+                     mpi_procs: anl.mpi_procs,
+                     omp_threads: anl.omp_threads,
+                     host_parameters: anl.host_parameters,
+                     priority: anl.priority,
+                     parameters: anl.parameters }
         if anl.analyzable_type == "Run"
-          new_analysis = Run.find(anl.analyzable_id).analyses.build
-          new_analysis.parameters = anl.parameters
-          new_analysis.analyzer_id = anl.analyzer_id
+          new_analysis = Run.find(anl.analyzable_id).analyses.build(anl_attr)
         elsif anl.analyzable_type == "ParameterSet"
-          new_analysis = ParameterSet.find(anl.analyzable_id).analyses.build
-          new_analysis.parameters = anl.parameters
-          new_analysis.analyzer_id = anl.analyzer_id
+          new_analysis = ParameterSet.find(anl.analyzable_id).analyses.build(anl_attr)
         end
         if new_analysis.save
           anl.update_attribute(:to_be_destroyed, true)

@@ -497,7 +497,7 @@ describe OacisCli do
       @sim = FactoryGirl.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 0)
       ps = @sim.parameter_sets.first
-      FactoryGirl.create(:finished_run, parameter_set: ps, mpi_procs: 8)
+      FactoryGirl.create(:finished_run, parameter_set: ps, mpi_procs: 8, priority: 0)
         .update_attribute(:simulator_version, "1.0.0")
       FactoryGirl.create(:finished_run, parameter_set: ps, mpi_procs: 4)
         .update_attribute(:simulator_version, "1.0.1")
@@ -509,7 +509,9 @@ describe OacisCli do
         expect {
           OacisCli.new.invoke(:replace_runs, [], options)
         }.to change { Run.where(status: :created).count }.by(1)
-        expect(Run.where(status: :created).first.mpi_procs).to eq 8
+        new_run = Run.where(status: :created).first
+        expect(new_run.mpi_procs).to eq 8
+        expect(new_run.priority).to eq 0
       }
     end
 

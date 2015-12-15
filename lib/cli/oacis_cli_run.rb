@@ -73,7 +73,6 @@ class OacisCli < Thor
     mpi_procs = job_parameters["mpi_procs"]
     omp_threads = job_parameters["omp_threads"]
     priority = job_parameters["priority"]
-    puts "set job param"
 
     run_ids = create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority, seeds)
 
@@ -224,7 +223,8 @@ class OacisCli < Thor
         run_attr = { submitted_to: run.submitted_to,
                      mpi_procs: run.mpi_procs,
                      omp_threads: run.omp_threads,
-                     host_parameters: run.host_parameters }
+                     host_parameters: run.host_parameters,
+                     priority: run.priority }
         new_run = run.parameter_set.runs.build(run_attr)
         if new_run.save
           run.update_attribute(:to_be_destroyed, true)
