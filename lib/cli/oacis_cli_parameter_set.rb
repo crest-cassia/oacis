@@ -91,7 +91,7 @@ class OacisCli < Thor
       priority = run_option["priority"] || 1
       parameter_sets = ParameterSet.in(id: parameter_set_ids)
 
-      create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority, [])
+      create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority)
     end
 
   ensure
