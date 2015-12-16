@@ -232,7 +232,7 @@ Analyzerの登録時にパラメータの定義を登録することができま
 
 Simulatorと異なるのは、Analyzerには解析対象となるRunのデータに実行時にアクセスできます。
 ジョブの実行時に作られる一時ディレクトリに、Runの結果のファイルが配置されます。
-解析対象がRunかParameterSetかによって異なるため以下で個別に説明します
+解析対象がRunかParameterSetかによって配置の仕方が異なるため以下で個別に説明します
 
 ### Runに対する解析
 
@@ -249,6 +249,11 @@ Simulatorと異なるのは、Analyzerには解析対象となるRunのデータ
 
 Analyzerの実行時には、Runの結果は実行ディレクトリ以下の *_input/* というディレクトリに配置されます。
 Analyzerはそのディレクトリにあるファイルを解析できるように実装する必要があります。
+
+Runの結果のファイルすべてがAnalyzerには必要ではない場合、`Files to Copy`というフィールドに必要なファイル名を指定するとそのファイルだけが_inputディレクトリにコピーされます。
+不要なファイル転送が減るのでAnalyzerの実行が速くなる場合があります。
+ファイル名の指定にはワイルドカード('\*')が利用でき、デフォルトの値は'\*'になっています。
+複数のファイルを指定する場合は、複数行に分けて入力してください。
 
 上記の例にあるような入力の時系列をgnuplotでプロットしましょう。
 次に示すようなgnuplot入力ファイルを作成し、どこかのパス（例として ~/path/to/plotfile.pltというパスにする）に保存します。
@@ -277,6 +282,7 @@ Simulatorの画面を開き、[About]タブをクリックするとAnalyzerを�
 | Command                    | Analyzerを実行するコマンド。 |
 | Print version command      | Analyzerのバージョンを標準出力に出力するコマンド。 |
 | Input type                 | JSON入力か引数入力か指定する。 |
+| Files to Copy              | 解析時に_inputディレクトリにコピーするファイルを指定する。 |
 | Support MPI                | MPI並列の場合はチェックを入れる。Analysis作成時に並列数を指定できるようになる。 |
 | Support MPI                | OpenMP並列の場合はチェックを入れる。Analysis作成時に並列数を指定できるようになる。 |
 | Auto Run                   | Runの終了後に解析が自動実行されるか指定する。(後述) |
@@ -306,7 +312,8 @@ Runに対する解析の場合、 `_input.json` のフォーマットは以下�
  },
  "simulation_parameters": {
    "L": 32,
-   "T": 0.5
+   "T": 0.5,
+   "_seed": 1787809130
  }
 }
 {% endhighlight %}
@@ -347,6 +354,18 @@ _input/
     "run_id3"
   ]
 }
+{% endhighlight %}
+
+Runに対するAnalyzerの場合と同じように、`Files to Copy`というフィールドに必要なファイル名を指定するとそのファイルだけが_inputディレクトリにコピーされます。
+例えば、"xxx.txt"というファイル名を指定した場合のディレクトリ構成は以下のようになります。
+
+{% highlight text %}
+_input/
+  #{run_id1}/     # run_id1 の結果のファイル。xxx.txt以外のファイルは含まれない。
+    xxx.txt
+  #{run_id2}/
+    xxx.txt
+ .....            # 以後、ParameterSet内で"finished"になっている全てのRunの結果が同様に配置される
 {% endhighlight %}
 
 AnalyzerからRunの結果ファイルを取得する例(言語：ruby)
