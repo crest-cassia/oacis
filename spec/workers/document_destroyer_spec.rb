@@ -50,6 +50,28 @@ describe JobSubmitter do
         DocumentDestroyer.perform(logger)
       }.to_not change { Run.unscoped.count }
     end
+
+    context "when run is to_be_destroyed but analysis is not to_be_destroyed" do
+
+      it "does not destroy run, but set analysis to_be_destroyed to true" do
+        # run: to_be_destroyed=true
+        #   |- analysis: to_be_destroyed=false
+        # This can happen run#to_be_destroyed is set to true
+        # while analysis is being created.
+        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+                                 analyzers_count: 1, run_analysis: false)
+        run = sim.parameter_sets.first.runs.first
+        run.status = :finished
+        run.to_be_destroyed = true
+        run.save!
+        anl = run.analyses.create(analyzer: sim.analyzers.first)
+
+        expect {
+          DocumentDestroyer.perform(logger)
+        }.to_not change{ Run.unscoped.count }
+        expect( anl.reload.to_be_destroyed ).to be_truthy
+      end
+    end
   end
 
   describe "destroying Analysis" do

@@ -30,6 +30,7 @@ class DocumentDestroyer
         obj.destroy
         @skip_count.delete(obj.id)
       else
+        obj.set_lower_submittable_to_be_destroyed
         @logger.info "skip destroying #{obj.class} #{obj.id}. not destroyable yet."
       end
     end

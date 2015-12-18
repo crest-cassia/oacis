@@ -36,12 +36,17 @@ class JobObserver
 
   def self.observe_job(job, host, handler, logger)
     if job.to_be_destroyed
-      logger.info("canceling remote job: #{job.class}:#{job.id} from #{host.name}")
-      handler.cancel_remote_job(job)
-      logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
-      job.destroy
-      logger.info("destroyed #{job.class} #{job.id}")
-      return
+      if job.destroyable?
+        logger.info("canceling remote job: #{job.class}:#{job.id} from #{host.name}")
+        handler.cancel_remote_job(job)
+        logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
+        job.destroy
+        logger.info("destroyed #{job.class} #{job.id}")
+        return
+      else
+        logger.warn("should not happen: #{job.class}:#{job.id} is not destroyable")
+        job.set_lower_submittable_to_be_destroyed
+      end
     end
     case handler.remote_status(job)
     when :submitted
