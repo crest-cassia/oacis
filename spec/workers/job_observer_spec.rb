@@ -44,6 +44,7 @@ describe JobObserver do
     before(:each) do
       @sim = FactoryGirl.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 1,
+                                analyzers_count: 1, run_analysis: false,
                                 ssh_host: true
                                 )
       @temp_dir = Pathname.new('__temp__')
