@@ -62,8 +62,8 @@ class JobSubmitter
         logger.info "Destroying Run #{run.id}"
         run.destroy
       else
+        logger.warn("should not happen: #{job.class}:#{job.id} is not destroyable")
         run.set_lower_submittable_to_be_destroyed
-        logger.info "Run #{run.id} is not destroyable yet"
       end
     end
     Analysis.where(status: :created, to_be_destroyed: true).each do |anl|
