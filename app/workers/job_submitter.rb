@@ -61,8 +61,8 @@ class JobSubmitter
       if run.destroyable?
         logger.info "Destroying Run #{run.id}"
         run.destroy
-        run.set_lower_submittable_to_be_destroyed
       else
+        run.set_lower_submittable_to_be_destroyed
         logger.info "Run #{run.id} is not destroyable yet"
       end
     end
