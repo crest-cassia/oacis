@@ -92,19 +92,23 @@ describe AnalysesController do
         end
 
         it "creates a new Analysis" do
+          analyses_ids = @run.analyses.map(&:id)
           expect {
             post :create, @valid_param.update(format: 'json'), valid_session
           }.to change{
             @run.reload.analyses.count
           }.by(1)
-          anl = @run.reload.analyses.last
+          new_anl_id = @run.reload.analyses.map(&:id) - analyses_ids
+          anl = Analysis.find(new_anl_id[0])
           expect(anl.parameters["param1"]).to eq 1
           expect(anl.parameters["param2"]).to eq 2.0
         end
 
         it "sets fields appropriately" do
+          analyses_ids = @run.analyses.map(&:id)
           post :create, @valid_param.update(format: 'json'), valid_session
-          anl = @run.reload.analyses.last
+          new_anl_id = @run.reload.analyses.map(&:id) - analyses_ids
+          anl = Analysis.find(new_anl_id[0])
           expect(anl.submitted_to).to eq @host
           expect(anl.host_parameters).to eq @valid_param[:analysis][:host_parameters]
           expect(anl.mpi_procs).to eq 2
