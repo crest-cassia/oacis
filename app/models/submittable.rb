@@ -52,8 +52,11 @@ module Submittable
     # because Host#max_mpi_procs, max_omp_threads can change during a job is running
 
     # callbacks
-    base.send(:before_create, :remove_redundant_host_parameters, :set_job_script)
-    base.send(:after_create, :create_job_script_for_manual_submission,
+    base.send(:before_create, :remove_redundant_host_parameters)
+    base.send(:after_create, :set_job_script,
+                             # set_job_script must be called at after_create
+                             # since seed is set at before_create callback
+                             :create_job_script_for_manual_submission,
                              :update_default_host_parameter_on_its_executable,
                              :update_default_mpi_procs_omp_threads)
     base.send(:before_destroy,
@@ -142,7 +145,9 @@ module Submittable
   end
 
   def set_job_script
-    self.job_script = JobScriptUtil.script_for(self, self.submitted_to)
+    self.update_attribute(:job_script,
+                          JobScriptUtil.script_for(self, self.submitted_to)
+                          )
   end
 
   def create_job_script_for_manual_submission

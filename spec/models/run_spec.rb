@@ -503,6 +503,15 @@ describe Run do
       expect(run.job_script).to be_present
     end
 
+    it "sets job script after seed is set" do
+      @param_set.simulator.update_attribute(:support_input_json, false)
+      run = @param_set.runs.create(submitted_to: Host.first)
+      pattern = /#{run.command_with_args}; }/
+      expect( run.job_script ).to match pattern
+      # if job script was made before seed is set,
+      # the job script will generate a command without seed
+    end
+
     it "sets default_host_parameters to simulator" do
       host = FactoryGirl.create(:host_with_parameters)
       param = {"param1" => 3, "param2" => 1}
