@@ -305,6 +305,11 @@ describe Analysis do
         ]
         expect( @arn2.input_files ).to match_array expected
       end
+
+      it "returns an empty array when PS has no finished runs" do
+        @ps.runs.destroy
+        expect( @arn2.input_files ).to eq []
+      end
     end
   end
 
