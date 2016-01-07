@@ -14,24 +14,9 @@ OACISによって管理されているデータは、DB上のレコード（Mong
 両方のデータをそれぞれバックアップおよびレストアする必要があります。
 ここでは、その手順を説明します。
 
-### バックアップ
+### Docker環境を利用していない場合
 
-#### Docker環境を利用している場合
-
-ホストOS (Mac or Windowsの場合は、Docker Quickstart Terminal) 上でstart.shを実行したディレクトリに移動し、以下のコマンドを実行します。
-
-{% highlight sh %}
-/path/to/oacis_docker/bin/dump.sh PROJECT_NAME
-{% endhighlight %}
-
-*PROJECT_NAME* ディレクトリ以下にDBのデータがダンプされます。
-OACISの仮想環境が停止しているとエラーになります。その場合は、restart.shで仮想環境を再起動してください。
-
-ファイルシステム上に保存されているデータはコンテナとホストOSと共有されているので、ホストOSのファイルシステムの *PROJECT_NAME* ディレクトリ以下に常に出力されています。
-つまり、dump.shを実行後に *PROJECT_NAME* というディレクトリをrsyncなどを使って丸ごとバックアップすればよいです。
-
-
-#### Docker環境を利用していない場合
+#### バックアップ
 
 まずDBのコレクションを保存するために以下のコマンドを実行します。dumpというディレクトリが作成され、その中にデータがダンプされます。
 
@@ -46,21 +31,7 @@ mongodump --db oacis_development
 rsync -av -P --delete /path/to/OACIS/public/Result_development /backup_dir
 {% endhighlight %}
 
-### レストア
-
-#### Docker環境を利用している場合
-
-DBをレストアするためには、バックアップしたディレクトリが存在するディレクトリに移動して以下のコマンドを実行します。
-
-{% highlight sh %}
-/path/to/oacis_docker/bin/restore.sh PROJECT_NAME
-{% endhighlight %}
-
-PROJECT_NAMEはバックアップ先のプロジェクト名を指定します。
-すでにPROJECT_NAMEのコンテナが存在している場合にはエラーになります。
-（既存のコンテナを削除するには *oacis_docker/bin/remove.sh* というスクリプトを使用してください。）
-
-#### Docker環境を利用していない場合
+#### レストア
 
 下記のコマンドを実行します。
 
@@ -82,6 +53,10 @@ rsync -av -P --delete /backup_dir/Result_development /path/to/OACIS/public
 * MongoDB mongodump: http://docs.mongodb.org/manual/reference/program/mongodump/
 * MongoDB mongorestore: http://docs.mongodb.org/manual/reference/program/mongorestore/
 * MongoDB ObjectID: http://docs.mongodb.org/manual/reference/object-id/
+
+### Docker環境を利用している場合
+
+oacis_docerリポジトリの [Backup and Restore](https://github.com/crest-cassia/oacis_docker/blob/master/README.md#backup-and-restore) を参照してください。
 
 ## READ_ONLY モード
 
