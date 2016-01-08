@@ -84,7 +84,7 @@ class Analysis
       ps.runs.where(status: :finished).map do |run|
         matched = run.result_paths(pattern)
         matched.map {|path| [ path, path.relative_path_from(run.dir.join('..')) ] }
-      end.inject(:+)
+      end.inject([], :+)
     else
       raise "not supported type"
     end
