@@ -9,4 +9,13 @@
     .tab-pane.active#tab-list-runs
       = render "runs", parameter_set: parameter_set
     .tab-pane#tab-parameter-analyzers
-      = render "analyses", parameter_set: parameter_set
+      - if parameter_set.analyses.where(status: :finished).empty?
+        No finished analysis is found.
+      - else
+        - parameter_set.analyses.where(status: :finished).each do |anl|
+          %hr
+          %h3= "Result of Analysis: #{anl.analyzer.name}"
+          = link_to(anl.id,anl)
+          - if anl.parameters.present?
+            = render partial: "shared/parameters_table", locals: {parameters_hash: anl.parameters}
+          = render partial: "shared/results", locals: {result: anl.result, result_paths: anl.result_paths, archived_result_path: anl.archived_result_path }
