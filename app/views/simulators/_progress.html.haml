@@ -60,11 +60,19 @@
               %a.btn.btn-primary#show_progress_button Show
 :javascript
   var url = "#{_progress_simulator_path}" + ".json";
-  $('#show_progress_button').on('click', function () {
+  function show_progress() {
     var cp = $('#column_parameter option:selected').val();
     var rp = $('#row_parameter option:selected').val();
     var url_with_param = url + "?row_parameter=" + rp + "&column_parameter=" + cp;
     draw_progress_overview(url_with_param);
+  }
+  $('#show_progress_button').on('click', function() {
+    show_progress();
+    if( window.bEnableAutoReload ) {
+      setInterval( function() {
+      show_progress();
+      }, 10000);
+    }
   });
   $(function() {
       // in order to avoid 'position: relative' style of '.col-lg-12' tag, we put 'tooltip' before '.col-lg-12' tag
