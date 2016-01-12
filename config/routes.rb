@@ -85,6 +85,9 @@ AcmProto::Application.routes.draw do
   host_actions = ["index", "show"]
   host_actions += ["new", "create", "edit", "update", "destroy"] unless OACIS_READ_ONLY
   resources :hosts, only: host_actions do
+    member do
+      get '_check_scheduler_status'
+    end
     collection do
       post "_sort" # for ajax, update order of the table
     end

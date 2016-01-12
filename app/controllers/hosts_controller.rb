@@ -14,17 +14,22 @@ class HostsController < ApplicationController
   # GET /hosts/1.json
   def show
     @host = Host.find(params[:id])
-    if (@host.connected? rescue false)
-      @scheduler_status = @host.scheduler_status
-    else
-      flash.now[:alert] = "Failed to establish connection. Check host information."
-      @scheduler_status = @host.connection_error.inspect
-    end
 
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @host }
     end
+  end
+
+  # return remote scheduler status
+  def _check_scheduler_status
+    @host = Host.find(params[:id])
+    if (@host.connected? rescue false)
+      status = @host.scheduler_status
+    else
+      status = "Failed to establish connection. Check host information."
+    end
+    render text: status
   end
 
   # GET /hosts/new

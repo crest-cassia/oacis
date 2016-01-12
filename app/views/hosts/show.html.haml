@@ -3,13 +3,13 @@
 
 %div.tabbable
   %ul.nav.nav-tabs
-    %li
-      %a{"href"=>"#tab-about", "data-toggle" => "tab"} About
     %li.active
-      %a{"href"=>"#tab-info", "data-toggle" => "tab"} Infomation
+      %a{"href"=>"#tab-about", "data-toggle" => "tab"} About
+    %li
+      %a{"href"=>"#tab-info", "data-toggle" => "tab"} Job Information
 
   %div.tab-content
-    %div.tab-pane#tab-about
+    %div.tab-pane.active#tab-about
       = render "about"
-    %div.tab-pane.active#tab-info
+    %div.tab-pane#tab-info
       = render "info"

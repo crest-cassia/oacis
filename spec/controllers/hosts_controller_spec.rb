@@ -44,6 +44,16 @@ describe HostsController do
     end
   end
 
+  describe "GET _check_scheduler_status" do
+    it "returns status of remote job-scheduler" do
+      host = Host.create! valid_attributes
+      expect_any_instance_of(Host).to receive(:scheduler_status).and_return("status")
+      get :_check_scheduler_status, {id: host.to_param}, valid_session
+      expect(response).to be_success
+      expect(response.body).to eq "status"
+    end
+  end
+
   describe "GET new" do
     it "assigns a new host as @host" do
       get :new, {}, valid_session
