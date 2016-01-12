@@ -27,4 +27,6 @@
 
 %h3 Scheduler status
 
-%pre= @scheduler_status.force_encoding('utf-8')
+%pre
+  - if @scheduler_status
+    = @scheduler_status.force_encoding('utf-8')
