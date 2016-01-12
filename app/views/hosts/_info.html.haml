@@ -27,6 +27,18 @@
 
 %h3 Scheduler status
 
-%pre
-  - if @scheduler_status
-    = @scheduler_status.force_encoding('utf-8')
+%a.btn.btn-info#btn_check_scheduler_status
+  Check Scheduler Status
+  %i.fa.fa-refresh#runs_list_refresh
+
+%pre#scheduler_status{style: "margin-top: 10px;"}
+
+:javascript
+  $(function() {
+    $('#btn_check_scheduler_status').on('click', function() {
+      var url = "#{_check_scheduler_status_host_url(@host)}";
+      $.get(url, {}, function(dat) {
+        $('#scheduler_status').text(dat);
+      })
+    })
+  })
