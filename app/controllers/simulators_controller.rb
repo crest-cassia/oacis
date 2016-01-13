@@ -25,7 +25,7 @@ class SimulatorsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { render json: @simulator }
+      format.json
     end
   end
 
