@@ -24,7 +24,7 @@ class SimulatorsController < ApplicationController
     end
 
     respond_to do |format|
-      format.html # show.html.erb
+      format.html
       format.json { render json: @simulator }
     end
   end
@@ -35,7 +35,7 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.new
 
     respond_to do |format|
-      format.html # new.html.erb
+      format.html
       format.json { render json: @simulator }
     end
   end
