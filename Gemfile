@@ -5,6 +5,7 @@ gem 'thin'
 gem "mongoid"
 gem "net-ssh"
 gem "net-sftp"
+gem "jbuilder", '2.4.0'
 
 # assets
 gem "haml-rails"

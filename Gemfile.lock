@@ -85,6 +85,9 @@ GEM
       nokogiri (~> 1.6.0)
       ruby_parser (~> 3.5)
     i18n (0.7.0)
+    jbuilder (2.4.0)
+      activesupport (>= 3.0.0, < 5.1)
+      multi_json (~> 1.2)
     jquery-datatables-rails (3.2.0)
       actionpack (>= 3.1)
       jquery-rails
@@ -254,6 +257,7 @@ DEPENDENCIES
   factory_girl_rails
   faker
   haml-rails
+  jbuilder (= 2.4.0)
   jquery-datatables-rails
   jquery-rails
   jquery-ui-rails
@@ -278,3 +282,6 @@ DEPENDENCIES
   therubyracer
   thin
   twitter-bootstrap-rails (= 3.2.0)
+
+BUNDLED WITH
+   1.11.2
