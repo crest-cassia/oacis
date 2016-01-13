@@ -41,6 +41,11 @@ describe RunsController do
       expect(assigns(:run)).to eq(@run)
       expect(assigns(:param_set)).to eq(@par)
     end
+
+    it "returns success for json format" do
+      get :show, {id: @run, format: :json}, valid_session
+      expect(response).to be_success
+    end
   end
 
   describe "POST 'create'" do
