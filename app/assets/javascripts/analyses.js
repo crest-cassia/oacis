@@ -29,6 +29,7 @@ $(function() {
       serverSide: true,
       bFilter: false,
       destroy: true,
+      dom: 'C<"clear">lrtip',
       ajax: $('#analyses_list').data('source')
     });
     $('#analyses_list_length').append(

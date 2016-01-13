@@ -23,6 +23,7 @@
 //= require sortable.js
 //= require dataTables/jquery.dataTables
 //= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
+//= require dataTables/extras/dataTables.colVis
 //= require dynatree/jquery.dynatree
 
 // Handle back button issues with Twitter Bootstrap's tab component.

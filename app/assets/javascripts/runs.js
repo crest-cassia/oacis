@@ -13,6 +13,7 @@ $(function() {
       searching: false,
       order: [[ 8, "desc" ]],
       destroy: true,
+      dom: 'C<"clear">lrtip',
       ajax: $('#runs_list').data('source')
     });
     $('#runs_list_length').append(

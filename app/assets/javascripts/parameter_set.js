@@ -6,6 +6,7 @@ function create_parameter_sets_list(selector, default_length) {
     order: [[ 3, "desc" ]],
     autoWidth: false,
     pageLength: default_length,
+    dom: 'C<"clear">lrtip',
     ajax: $(selector).data('source')
   });
   $(selector+'_length').append(
