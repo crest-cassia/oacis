@@ -18,13 +18,18 @@ describe AnalyzersController do
     end
 
     it "returns http success" do
-      get 'show', {id: @azr.id }
+      get 'show', {id: @azr }
       expect(response).to be_success
     end
 
     it "assigns the requested analyzer to @analyzer" do
-      get 'show', {id: @azr.id }
+      get 'show', {id: @azr }
       expect(assigns(:analyzer)).to eq(@azr)
+    end
+
+    it "returns success for json format" do
+      get :show, {id: @azr, format: :json}, valid_session
+      expect(response).to be_success
     end
   end
 

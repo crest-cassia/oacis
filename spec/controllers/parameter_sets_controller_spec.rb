@@ -11,25 +11,28 @@ describe ParameterSetsController do
   
   describe "GET 'show'" do
 
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                runs_count: 1,
+                                analyzers_count: 1,
+                                run_analysis: true)
+    end
+
     it "returns http success" do
-      sim = FactoryGirl.create(:simulator,
-                               parameter_sets_count: 1,
-                               runs_count: 1,
-                               analyzers_count: 1,
-                               run_analysis: true)
-      get 'show', {id: sim.parameter_sets.first}, valid_session
+      get 'show', {id: @sim.parameter_sets.first}, valid_session
       expect(response).to be_success
     end
 
     it "assigns instance variables" do
-      sim = FactoryGirl.create(:simulator,
-                               parameter_sets_count: 1,
-                               runs_count: 1,
-                               analyzers_count: 1,
-                               run_analysis: true)
-      prm = sim.parameter_sets.first
+      prm = @sim.parameter_sets.first
       get 'show', {id: prm}, valid_session
       expect(assigns(:param_set)).to eq(prm)
+    end
+
+    it "returns success for json format" do
+      get :show, {id: @sim.parameter_sets.first, format: :json}, valid_session
+      expect(response).to be_success
     end
   end
 
