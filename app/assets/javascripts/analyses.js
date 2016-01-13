@@ -29,6 +29,11 @@ $(function() {
       serverSide: true,
       bFilter: false,
       destroy: true,
+      "columnDefs": [{
+        "searchable": false,
+        "orderable": false,
+        "targets": [0, -1]
+      }],
       dom: 'C<"clear">lrtip',
       ajax: $('#analyses_list').data('source')
     });
