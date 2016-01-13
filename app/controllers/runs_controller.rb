@@ -31,8 +31,8 @@ class RunsController < ApplicationController
     @run = Run.find(params[:id])
     @param_set = @run.parameter_set
     respond_to do |format|
-      format.html # show.html.erb
-      format.json { render json: @run }
+      format.html
+      format.json
     end
   end
 

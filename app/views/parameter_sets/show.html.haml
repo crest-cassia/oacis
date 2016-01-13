@@ -22,6 +22,8 @@
       - unless OACIS_READ_ONLY
         = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
         = link_to 'Destroy', @param_set, method: :delete, data: { confirm: 'Are you sure?'}, class: 'btn btn-warning'
+      = link_to 'Show in JSON', parameter_set_path(@param_set, format: :json), class: 'btn btn-default'
+
     .tab-pane.active#tab-list-runs
       = render "runs", parameter_set: @param_set
     .tab-pane#tab-analyses

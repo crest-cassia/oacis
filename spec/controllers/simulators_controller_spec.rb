@@ -78,6 +78,11 @@ describe SimulatorsController do
       expect(assigns(:query_id)).to be_nil
       expect(assigns(:query_list).size).to eq 5
     end
+
+    it "returns success for json format" do
+      get :show, {id: @simulator, format: :json}, valid_session
+      expect(response).to be_success
+    end
   end
 
   describe "GET new" do

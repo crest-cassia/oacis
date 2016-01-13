@@ -4,8 +4,8 @@ class AnalyzersController < ApplicationController
     @analyzer = Analyzer.find(params[:id])
 
     respond_to do |format|
-      format.html # show.html.erb
-      format.json { render json: @analyzers }
+      format.html
+      format.json
     end
   end
 
@@ -14,7 +14,7 @@ class AnalyzersController < ApplicationController
     @analyzer = simulator.analyzers.build
 
     respond_to do |format|
-      format.html # new.html.erb
+      format.html
       format.json { render json: @analyzer }
     end
   end

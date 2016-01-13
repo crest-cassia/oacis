@@ -3,8 +3,8 @@ class ParameterSetsController < ApplicationController
   def show
     @param_set = ParameterSet.find(params[:id])
     respond_to do |format|
-      format.html # show.html.erb
-      format.json { render json: @param_set }
+      format.html
+      format.json
     end
   end
 

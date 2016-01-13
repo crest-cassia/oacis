@@ -4,6 +4,7 @@
   = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
   = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
   = link_to 'Destroy', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
+= link_to 'Show in JSON', simulator_path(simulator, format: :json), class: 'btn btn-default'
 
 
 %h3 About

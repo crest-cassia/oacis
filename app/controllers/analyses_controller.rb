@@ -4,8 +4,8 @@ class AnalysesController < ApplicationController
     @analysis = Analysis.find(params[:id])
 
     respond_to do |format|
-      format.html # show.html.erb
-      format.json { render json: @analysis }
+      format.html
+      format.json
     end
   end
 

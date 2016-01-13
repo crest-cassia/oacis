@@ -54,6 +54,11 @@ describe AnalysesController do
         get 'show', {id: @arn}, valid_session
         expect(assigns(:analysis)).to eq(@arn)
       end
+
+      it "returns success for json format" do
+        get :show, {id: @arn, format: :json}, valid_session
+        expect(response).to be_success
+      end
     end
 
     describe "for :on_parameter_set type" do
@@ -66,6 +71,11 @@ describe AnalysesController do
       it "assigns instance variables" do
         get 'show', {id: @arn2}, valid_session
         expect(assigns(:analysis)).to eq(@arn2)
+      end
+
+      it "returns success for json format" do
+        get :show, {id: @arn2, format: :json}, valid_session
+        expect(response).to be_success
       end
     end
   end
