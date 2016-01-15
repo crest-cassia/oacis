@@ -18,7 +18,6 @@ $(function() {
         "orderable": false,
         "targets": -1
       }],
-      dom: 'C<"clear">lrtip',
       ajax: $('#runs_list').data('source')
     });
     $('#runs_list_length').append(

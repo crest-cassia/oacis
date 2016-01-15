@@ -28,13 +28,13 @@ $(function() {
       processing: true,
       serverSide: true,
       bFilter: false,
+      order: [[6, "desc"]],
       destroy: true,
       "columnDefs": [{
         "searchable": false,
         "orderable": false,
         "targets": [0, -1]
       }],
-      dom: 'C<"clear">lrtip',
       ajax: $('#analyses_list').data('source')
     });
     $('#analyses_list_length').append(

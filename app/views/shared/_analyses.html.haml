@@ -7,14 +7,8 @@
 %table.table.table-condensed.table-striped#analyses_list.has_analysis_modal{:'data-source' => "#{path_to_analyses_list}"}
   %thead
     %tr
-      %th{style: "min-width: 18px; width: 1%;"}
-      %th AnalysisID
-      %th analyzer
-      %th parameters
-      %th status
-      %th version
-      %th created_at
-      %th{style: "min-width: 18px; width: 1%;"}
+      - AnalysesListDatatable::HEADER.each do |header|
+        = raw(header)
   %tbody
 
 :javascript
