@@ -6,6 +6,16 @@ function create_parameter_sets_list(selector, default_length) {
     order: [[ 3, "desc" ]],
     autoWidth: false,
     pageLength: default_length,
+    "columnDefs": [{
+      "searchable": false,
+      "orderable": false,
+      "targets": [0, -1]
+    }],
+    dom: 'C<"clear">lrtip',
+    colVis: {
+      exclude: [0, ($("th", selector).size()-1)],
+      restore: "Show All Columns"
+    },
     ajax: $(selector).data('source')
   });
   $(selector+'_length').append(

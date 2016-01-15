@@ -3,7 +3,7 @@ class AnalysesListDatatable
   HEADER  = ['<th style="min-width: 18px; width: 1%;"></th>',
              '<th>AnalysisID</th>', '<th>analyzer</th>', '<th>parameters</th>',
              '<th>status</th>',
-             '<th>version</th>', '<th>created_at</th>',
+             '<th>version</th>', '<th>updated_at</th>',
              '<th style="min-width: 18px; width: 1%;"></th>']
   SORT_BY = ["id", "id", "analyzer_id", "parameters", "status", "analyzer_version", "updated_at", "id"]
 

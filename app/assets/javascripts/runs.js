@@ -13,6 +13,11 @@ $(function() {
       searching: false,
       order: [[ 8, "desc" ]],
       destroy: true,
+      "columnDefs": [{
+        "searchable": false,
+        "orderable": false,
+        "targets": -1
+      }],
       ajax: $('#runs_list').data('source')
     });
     $('#runs_list_length').append(
