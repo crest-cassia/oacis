@@ -25,6 +25,7 @@ json.analyses do
   json.array! @run.analyses do |anl|
     json.id anl.id.to_s
     json.analyzer anl.analyzer.name
+    json.status anl.status
     json.parameters anl.parameters
   end
 end
