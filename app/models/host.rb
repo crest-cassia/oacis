@@ -124,7 +124,7 @@ class Host
     if @ssh
       yield @ssh
     else
-      Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port) do |ssh|
+      Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port, non_interactive: true) do |ssh|
         @ssh = ssh
         begin
           yield ssh
