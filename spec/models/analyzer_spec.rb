@@ -65,6 +65,18 @@ describe Analyzer do
         analyzer = @sim.analyzers.build(@valid_fields.update({name:"b l a n k"}))
         expect(analyzer).not_to be_valid
       end
+
+      it "is valid when name is identical to an analyzer being destroyed" do
+        azr = @sim.analyzers.create!(@valid_fields)
+        azr.update_attribute(:to_be_destroyed, true)
+        expect( @sim.analyzers.build(@valid_fields) ).to be_valid
+      end
+
+      it "can take identical name for simulators being destroyed" do
+        attr = @valid_fields.update(to_be_destroyed: true)
+        azr = @sim.analyzers.create!(attr)
+        expect( @sim.analyzers.build(attr) ).to be_valid
+      end
     end
 
     describe "'type' field" do

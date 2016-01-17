@@ -16,7 +16,7 @@ class Simulator
 
   default_scope ->{ where(to_be_destroyed: false) }
 
-  validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
+  validates :name, presence: true, uniqueness: {scope: :to_be_destroyed}, format: {with: /\A\w+\z/}, unless: :to_be_destroyed
   validates :parameter_definitions, presence: true
 
   accepts_nested_attributes_for :parameter_definitions, allow_destroy: true

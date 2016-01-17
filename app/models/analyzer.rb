@@ -19,7 +19,7 @@ class Analyzer
 
   default_scope ->{ where(to_be_destroyed: false) }
 
-  validates :name, presence: true, uniqueness: {scope: :simulator}, format: {with: /\A\w+\z/}
+  validates :name, presence: true, uniqueness: {scope: [:simulator, :to_be_destroyed] }, format: {with: /\A\w+\z/}, unless: :to_be_destroyed
   validates :type, presence: true, 
                    inclusion: {in: [:on_run, :on_parameter_set]}
   validates :auto_run, inclusion: {in: [:yes, :no, :first_run_only]}
