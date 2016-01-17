@@ -17,7 +17,7 @@ class Analyzer
   ## fields for auto run
   belongs_to :auto_run_submitted_to, class_name: "Host"
 
-  default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
+  default_scope ->{ where(to_be_destroyed: false) }
 
   validates :name, presence: true, uniqueness: {scope: :simulator}, format: {with: /\A\w+\z/}
   validates :type, presence: true, 

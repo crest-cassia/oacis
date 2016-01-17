@@ -50,5 +50,19 @@ namespace :db do
       session.command(create: "worker_logs", capped: true, size: 1048576)
       $stderr.puts "capped collection worker_logs was created"
     end
+
+    q = Simulator.where(to_be_destroyed: nil)
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |sim|
+      sim.update_attribute(:to_be_destroyed, false)
+      progressbar.increment
+    end
+
+    q = Analyzer.where(to_be_destroyed: nil)
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |azr|
+      azr.update_attribute(:to_be_destroyed, false)
+      progressbar.increment
+    end
   end
 end

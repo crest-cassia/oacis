@@ -14,7 +14,7 @@ class Simulator
   has_many :parameter_set_queries, dependent: :destroy
   has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
 
-  default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
+  default_scope ->{ where(to_be_destroyed: false) }
 
   validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
   validates :parameter_definitions, presence: true
