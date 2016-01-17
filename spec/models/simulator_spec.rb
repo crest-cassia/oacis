@@ -121,7 +121,6 @@ describe Simulator do
     it "the largest number within existing simulators is assigned when created" do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 0)
       expect(sim.position).to eq 2
-      # expect(Simulator.create!(@valid_fields.update(name: 'simulatorC')).position).to eq 2
       expect(Simulator.all.map(&:position)).to match_array([0,1,2])
     end
   end
