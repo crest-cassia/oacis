@@ -174,7 +174,7 @@ describe AnalysesController do
           expect {
             post :create, @invalid_param.update(format: 'json'), valid_session
           }.to change{Analysis.count}.by(1)
-          anl = Analysis.last
+          anl = Analysis.order_by(created_at: 'desc').first
           expect(anl.status).to eq :created
           expect(anl.hostname).to be_nil
           expect(anl.cpu_time).to be_nil
