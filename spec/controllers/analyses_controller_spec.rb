@@ -171,10 +171,12 @@ describe AnalysesController do
         end
 
         it "create new analysis but non-permitted params are not saved" do
+          old_ids = Analysis.all.map(&:id)
           expect {
             post :create, @invalid_param.update(format: 'json'), valid_session
           }.to change{Analysis.count}.by(1)
-          anl = Analysis.order_by(created_at: 'desc').first
+          new_id = (Analysis.all.map(&:id) - old_ids).first
+          anl = Analysis.find(new_id)
           expect(anl.status).to eq :created
           expect(anl.hostname).to be_nil
           expect(anl.cpu_time).to be_nil
@@ -215,8 +217,10 @@ describe AnalysesController do
         end
 
         it "sets fields appropriately" do
+          old_ids = @par.analyses.map(&:id)
           post :create, @valid_param.update(format: 'json'), valid_session
-          anl = @par.reload.analyses.last
+          new_id = ( @par.reload.analyses.map(&:id) - old_ids ).first
+          anl = Analysis.find(new_id)
           expect(anl.submitted_to).to eq @host
           expect(anl.host_parameters).to eq @valid_param[:analysis][:host_parameters]
           expect(anl.mpi_procs).to eq 2
