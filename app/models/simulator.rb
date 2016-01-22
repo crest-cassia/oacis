@@ -14,9 +14,9 @@ class Simulator
   has_many :parameter_set_queries, dependent: :destroy
   has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
 
-  default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
+  default_scope ->{ where(to_be_destroyed: false) }
 
-  validates :name, presence: true, uniqueness: true, format: {with: /\A\w+\z/}
+  validates :name, presence: true, uniqueness: {scope: :to_be_destroyed}, format: {with: /\A\w+\z/}, unless: :to_be_destroyed
   validates :parameter_definitions, presence: true
 
   accepts_nested_attributes_for :parameter_definitions, allow_destroy: true

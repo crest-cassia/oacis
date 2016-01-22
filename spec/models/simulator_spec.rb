@@ -52,6 +52,18 @@ describe Simulator do
       sim.name = "AnotherSimulator"
       expect(sim).to be_valid
     end
+
+    it "is valid when name is identical to a simulator being destroyed" do
+      sim = Simulator.create!(@valid_fields)
+      sim.update_attribute(:to_be_destroyed, true)
+      expect( Simulator.new(@valid_fields) ).to be_valid
+    end
+
+    it "can take identical name for simulators being destroyed" do
+      attr = @valid_fields.update(to_be_destroyed: true)
+      Simulator.create!(attr)
+      expect( Simulator.new(attr) ).to be_valid
+    end
   end
 
   describe "'command' field" do
