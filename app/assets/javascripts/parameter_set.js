@@ -16,6 +16,7 @@ function create_parameter_sets_list(selector, default_length) {
       exclude: [0, ($("th", selector).size()-1)],
       restore: "Show All Columns"
     },
+    bStateSave: true,
     ajax: $(selector).data('source')
   });
   $(selector+'_length').append(
