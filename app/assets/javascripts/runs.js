@@ -11,7 +11,7 @@ $(function() {
       processing: true,
       serverSide: true,
       searching: false,
-      order: [[ 8, "desc" ]],
+      order: [[ 8, "desc" ], [ 1, "desc"]],
       destroy: true,
       "columnDefs": [{
         "searchable": false,
