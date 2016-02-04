@@ -61,6 +61,15 @@ describe JobSubmitter do
       expect(Run.where(status: :submitted, priority: 1).count).to eq 0
     end
 
+    it "enqueus jobs to remote host in order of created_at.acs on runs" do
+      run1 = @sim.parameter_sets.first.runs.build(priority:0, submitted_to: @host.to_param)
+      run2 = @sim.parameter_sets.first.runs.build(priority:0, submitted_to: @host.to_param)
+      run2.save!
+      run1.save!
+      JobSubmitter.perform(@logger)
+      expect(Run.where(status: :submitted).first.id).to eq run2.id
+    end
+
     it "does not enqueue a job until polling interval has passed since the last submission" do
       skip "not yet implemented"
     end
