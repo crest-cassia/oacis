@@ -41,7 +41,7 @@ describe "RunsListDatatable" do
       @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 30)
       @param_set = @simulator.parameter_sets.first
       @runs = @param_set.runs
-      run = @runs.first
+      run = @runs.order_by({"id" => "asc"}).first
       run.priority = :low
       run.save
       @context = ActionController::Base.new.view_context
@@ -64,8 +64,8 @@ describe "RunsListDatatable" do
         expect(@rld_json["recordsTotal"]).to eq 30
         expect(@rld_json["recordsFiltered"]).to eq 30
         expect(@rld_json["data"].size).to eq 25
-        expect(@rld_json["data"][0][0].to_s).not_to eq @runs.order_by({"id"=>" desc"}).first.id.to_s
-        expect(@rld_json["data"][0][0].to_s).to eq @runs.order_by({"priority"=>"asc", "id"=>" desc"}).first.id.to_s
+        expect(@rld_json["data"][0][0].to_s).not_to eq @runs.order_by({"id"=>"desc"}).first.id.to_s
+        expect(@rld_json["data"][0][0].to_s).to eq @runs.order_by({"priority"=>"asc", "id"=>"desc"}).first.id.to_s
       end
     end
   end
