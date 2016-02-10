@@ -16,7 +16,6 @@ class OacisCli < Thor
     mapped = sim.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
     parameter_set = Hash[mapped]
 
-    return if options[:dry_run]
     return unless options[:yes] or overwrite_file?(options[:output])
     File.open(options[:output], 'w') do |io|
       # for visibility, manually print the json object as follows
@@ -65,7 +64,7 @@ class OacisCli < Thor
       progressbar.log "  parameter values : #{ps_value.inspect}" if options[:verbose]
       param_set = simulator.parameter_sets.build({v: ps_value, skip_check_uniquness: true})
       if (! psid_value[:id]) and param_set.valid?
-        param_set.save! unless options[:dry_run]
+        param_set.save!
         parameter_set_ids << param_set.id
       elsif psid_value[:id] # An identical parameter_set is found
         progressbar.log "  An identical parameter_set already exists. Skipping..."
@@ -95,7 +94,6 @@ class OacisCli < Thor
     end
 
   ensure
-    return if options[:dry_run]
     return unless options[:yes] or overwrite_file?(options[:output])
     write_parameter_set_ids_to_file(options[:output], parameter_set_ids)
   end

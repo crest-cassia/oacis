@@ -30,7 +30,6 @@ class OacisCli < Thor
       job_parameters["host_parameters"] = host_parameters
     end
 
-    return if options[:dry_run]
     return unless options[:yes] or overwrite_file?(options[:output])
     File.open(options[:output], 'w') do |io|
       io.puts JSON.pretty_generate(job_parameters)
@@ -71,7 +70,6 @@ class OacisCli < Thor
     run_ids = create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority)
 
   ensure
-    return if options[:dry_run]
     return unless options[:yes] or overwrite_file?(options[:output])
     write_run_ids_to_file(options[:output], run_ids)
   end
@@ -110,7 +108,7 @@ class OacisCli < Thor
                             host_parameters: host_parameters,
                             priority: priority)
         if run.valid?
-          run.save! unless options[:dry_run]
+          run.save!
           run_ids << run.id
         else
           progressbar.log "Failed to create a Run for ParameterSet #{ps.id}"

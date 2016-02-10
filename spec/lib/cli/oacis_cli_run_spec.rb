@@ -48,21 +48,6 @@ describe OacisCli do
       end
     end
 
-    context "when dry_run option is specified" do
-
-      it "does not create output file" do
-        at_temp_dir {
-          options = {
-            host_id: @host.id.to_s,
-            output: 'job_parameters.json',
-            dry_run: true
-          }
-          OacisCli.new.invoke(:job_parameter_template, [], options)
-          expect(File.exist?('job_parameters.json')).to be_falsey
-        }
-      end
-    end
-
     context "when output file exists" do
 
       it "asks a question to overwrite the output file" do
@@ -273,37 +258,6 @@ describe OacisCli do
         }
       end
 
-    end
-
-    context "when dry_run option is given" do
-
-      def invoke_create_runs_with_dry_run
-        create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
-        create_job_parameters_json('job_parameters.json')
-        options = {
-          parameter_sets: 'parameter_set_ids.json',
-          job_parameters: 'job_parameters.json',
-          number_of_runs: 3,
-          output: 'run_ids.json',
-          dry_run: true
-        }
-        OacisCli.new.invoke(:create_runs, [], options)
-      end
-
-      it "does not save Runs" do
-        at_temp_dir {
-          expect {
-            invoke_create_runs_with_dry_run
-          }.to_not change { Run.count }
-        }
-      end
-
-      it "does not create output file" do
-        at_temp_dir {
-          invoke_create_runs_with_dry_run
-          expect(File.exist?('run_ids.json')).to be_falsey
-        }
-      end
     end
 
     context "when output file exists" do

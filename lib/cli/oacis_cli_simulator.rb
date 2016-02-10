@@ -25,7 +25,6 @@ EOS
     desc:     'output file',
     required: true
   def simulator_template
-    return if options[:dry_run]
     return unless options[:yes] or overwrite_file?(options[:output])
     File.open(options[:output], 'w') {|io|
       io.puts SIMULATOR_TEMPLATE
@@ -66,11 +65,9 @@ EOS
     end
 
     if sim.valid?
-      unless options[:dry_run]
-        return unless options[:yes] or overwrite_file?(options[:output])
-        sim.save!
-        write_simulator_id_to_file(options[:output], sim)
-      end
+      return unless options[:yes] or overwrite_file?(options[:output])
+      sim.save!
+      write_simulator_id_to_file(options[:output], sim)
     else
       $stderr.puts sim.inspect
       $stderr.puts sim.errors.full_messages
@@ -115,16 +112,14 @@ EOS
     new_param_def = simulator.parameter_definitions.build(key: options[:name], type: options[:type], default: options[:default])
 
     if new_param_def.valid?
-      unless options[:dry_run]
-        total = simulator.parameter_sets.count
-        progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
-        simulator.parameter_sets.each do |ps|
-          ps.v[ new_param_def.key ] = new_param_def.default
-          ps.timeless.save!
-          progressbar.increment
-        end
-        new_param_def.save!
+      total = simulator.parameter_sets.count
+      progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
+      simulator.parameter_sets.each do |ps|
+        ps.v[ new_param_def.key ] = new_param_def.default
+        ps.timeless.save!
+        progressbar.increment
       end
+      new_param_def.save!
     else
       $stderr.puts new_param_def.inspect
       $stderr.puts new_param_def.errors.full_messages
