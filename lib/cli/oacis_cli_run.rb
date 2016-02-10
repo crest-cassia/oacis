@@ -226,25 +226,22 @@ class OacisCli < Thor
     end
 
     if options[:yes] or yes?("Replace #{runs.count} runs with new ones?")
-      progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
-      run_ids = runs.only(:id).map(&:id)
-      run_ids.each do |runid|
-        run = Run.find(runid)
-        run_attr = { submitted_to: run.submitted_to,
-                     mpi_procs: run.mpi_procs,
-                     omp_threads: run.omp_threads,
-                     host_parameters: run.host_parameters,
-                     priority: run.priority }
-        new_run = run.parameter_set.runs.build(run_attr)
-        if new_run.save
-          run.update_attribute(:to_be_destroyed, true)
-          run.set_lower_submittable_to_be_destroyed
-        else
-          progressbar.log "Failed to create Run #{new_run.errors.full_messages}"
-        end
-        progressbar.increment
-      end
+      replace_runs_imple(runs)
     end
+  end
+
+  desc 'replace_runs_by_ids', "replace runs specified by IDs"
+  def replace_runs_by_ids(*run_ids)
+    runs = Run.where(:_id.in => run_ids)
+
+    found_ids = runs.only(:_id).map(&:id)
+    not_found = run_ids - found_ids
+    if not_found.size > 0
+      say("#{not_found.size} Runs are not found: #{not_found.inspect}")
+      return unless options[:yes] or yes?("Continue for the other runs?")
+    end
+
+    replace_runs_imple(runs)
   end
 
   private
@@ -262,5 +259,26 @@ class OacisCli < Thor
       runs = runs.where(simulator_version: version)
     end
     runs
+  end
+
+  def replace_runs_imple(runs)
+    progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
+    run_ids = runs.only(:id).map(&:id)
+    run_ids.each do |runid|
+      run = Run.find(runid)
+      run_attr = { submitted_to: run.submitted_to,
+                   mpi_procs: run.mpi_procs,
+                   omp_threads: run.omp_threads,
+                   host_parameters: run.host_parameters,
+                   priority: run.priority }
+      new_run = run.parameter_set.runs.build(run_attr)
+      if new_run.save
+        run.update_attribute(:to_be_destroyed, true)
+        run.set_lower_submittable_to_be_destroyed
+      else
+        progressbar.log "Failed to create Run #{new_run.errors.full_messages}"
+      end
+      progressbar.increment
+    end
   end
 end
