@@ -3,6 +3,7 @@ json.simulator do
   json.id @run.simulator.id.to_s
   json.name @run.simulator.name
 end
+json.directory @run.dir.to_s
 json.extract! @run,
               :status, :seed, :job_script, :host_parameters, :mpi_procs, :omp_threads,
               :priority, :job_id, :submitted_at, :error_messages,
