@@ -411,6 +411,34 @@ describe OacisCli do
     end
   end
 
+  describe "#destroy_runs_by_ids" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 5)
+    end
+
+    it "destroys runs specified by ids" do
+      at_temp_dir {
+        options = {}
+        run_ids = @sim.runs.map(&:id)[0..2]
+        expect {
+          OacisCli.new.invoke(:destroy_runs_by_ids, run_ids, options)
+        }.to change { Run.count }.by(-3)
+      }
+    end
+
+    it "ignore runs which are not found, when -y is given" do
+      at_temp_dir {
+        options = {yes: true}
+        run_ids = @sim.runs.map(&:id)[0..2] + ["DO_NOT_EXIST"]
+        expect {
+          OacisCli.new.invoke(:destroy_runs_by_ids, run_ids, options)
+        }.to change { Run.count }.by(-3)
+      }
+    end
+  end
+
   describe "#replace_runs" do
 
     before(:each) do

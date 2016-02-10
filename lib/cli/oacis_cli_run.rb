@@ -182,6 +182,25 @@ class OacisCli < Thor
     end
   end
 
+  desc 'destroy_runs_by_ids', "destroy runs specified by IDs"
+  def destroy_runs_by_ids(*run_ids)
+    runs = Run.where(:_id.in => run_ids)
+
+    found_ids = runs.only(:_id).map(&:id)
+    not_found = run_ids - found_ids
+    if not_found.size > 0
+      say("#{not_found.size} Runs are not found: #{not_found.inspect}")
+      return unless options[:yes] or yes?("Continue for the other runs?")
+    end
+
+    progressbar = ProgressBar.create( total: found_ids.count, format: "%t %B %p%% (%c/%C)")
+    runs.each do |run|
+      run.update_attribute(:to_be_destroyed, true)
+      run.set_lower_submittable_to_be_destroyed
+      progressbar.increment
+    end
+  end
+
   desc 'replace_runs', "replace runs"
   method_option :simulator,
     type:     :string,
