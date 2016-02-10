@@ -334,3 +334,10 @@ function draw_progress_overview(url) {
     loading.remove();
   })
 };
+
+$(function() {
+  $(".progress").tooltip({
+      placement: 'bottom'
+  });
+});
+
