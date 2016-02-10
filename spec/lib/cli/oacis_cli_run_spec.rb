@@ -508,7 +508,7 @@ describe OacisCli do
       FactoryGirl.create_list(:finished_run, 5, parameter_set: ps, mpi_procs: 8)
     end
 
-    it "destroys runs specified by ids" do
+    it "replaces runs specified by ids" do
       at_temp_dir {
         options = {}
         run_ids = Run.all.map(&:id)[0..2]
