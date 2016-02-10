@@ -517,7 +517,40 @@ describe OacisCli do
         }.to change { Analysis.where(status: :created).count }.by(2)
       }
     end
+  end
 
+  describe "#replace_analyses_by_ids" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1,
+                               finished_runs_count: 5,
+                               run_analysis: true)
+    end
+
+    it "replaces runs specified by ids" do
+      at_temp_dir {
+        options = {}
+        anl_ids = Analysis.all.map(&:id)[0..2]
+        expect {
+          OacisCli.new.invoke(:replace_analyses_by_ids, anl_ids, options)
+        }.to_not change { Analysis.count }
+
+        expect( (Analysis.all.map(&:id) - anl_ids).size ).to eq Analysis.count
+      }
+    end
+
+    it "ignore runs which are not found, when -y is given" do
+      at_temp_dir {
+        options = {yes: true}
+        anl_ids = Analysis.all.map(&:id)[0..2] + ["DO_NOT_EXIST"]
+        expect {
+          OacisCli.new.invoke(:replace_analyses_by_ids, anl_ids, options)
+        }.to_not change { Analysis.count }
+
+        expect( (Analysis.all.map(&:id) - anl_ids).size ).to eq Analysis.count
+      }
+    end
   end
 end
 
