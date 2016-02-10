@@ -187,6 +187,25 @@ class OacisCli < Thor
     end
   end
 
+  desc 'destroy_analyses_by_ids', "destroy analyses specified by IDs"
+  def destroy_analyses_by_ids(*anl_ids)
+    anls = Analysis.where(:_id.in => anl_ids)
+
+    found_ids = anls.only(:_id).map(&:id)
+    not_found = anl_ids - found_ids
+    if not_found.size > 0
+      say("#{not_found.size} Runs are not found: #{not_found.inspect}")
+      return unless options[:yes] or yes?("Continue for the other analyses?")
+    end
+
+    progressbar = ProgressBar.create( total: found_ids.count, format: "%t %B %p%% (%c/%C)")
+    anls.each do |anl|
+      anl.update_attribute(:to_be_destroyed, true)
+      anl.set_lower_submittable_to_be_destroyed
+      progressbar.increment
+    end
+  end
+
   desc 'replace_analyses', "replace analyses"
   method_option :analyzer_id,
     type:     :string,

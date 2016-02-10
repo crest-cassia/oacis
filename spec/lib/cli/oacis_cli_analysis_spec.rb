@@ -408,6 +408,36 @@ describe OacisCli do
     end
   end
 
+  describe "#destroy_analyses_by_ids" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1,
+                                finished_runs_count: 5,
+                                run_analysis: true)
+    end
+
+    it "destroys analyses specified by ids" do
+      at_temp_dir {
+        options = {}
+        anl_ids = Analysis.all.map(&:id)[0..2]
+        expect {
+          OacisCli.new.invoke(:destroy_analyses_by_ids, anl_ids, options)
+        }.to change { Analysis.count }.by(-3)
+      }
+    end
+
+    it "ignore runs which are not found, when -y is given" do
+      at_temp_dir {
+        options = {yes: true}
+        anl_ids = Analysis.all.map(&:id)[0..2] + ["DO_NOT_EXIST"]
+        expect {
+          OacisCli.new.invoke(:destroy_analyses_by_ids, anl_ids, options)
+        }.to change { Analysis.count }.by(-3)
+      }
+    end
+  end
+
   describe "#replace_analyses" do
 
     def prepare_finished_and_failed_analyses
