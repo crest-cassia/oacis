@@ -1,6 +1,5 @@
 class OacisCli < Thor
 
-  class_option :dry_run, type: :boolean, aliases: '-d', desc: 'dry run'
   class_option :verbose, type: :boolean, aliases: '-v', desc: 'verbose mode'
   class_option :yes, type: :boolean, aliases: '-y', desc: 'say "yes" for all questions'
 
@@ -39,7 +38,6 @@ EOS
     hosts = Host.all.map do |host|
       {id: host.id.to_s, name: host.name, hostname: host.hostname, user: host.user}
     end
-    return if options[:dry_run]
     File.open(options[:output], 'w') {|io|
       io.puts JSON.pretty_generate(hosts)
       io.flush

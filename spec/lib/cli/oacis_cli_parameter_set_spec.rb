@@ -59,18 +59,6 @@ describe OacisCli do
       end
     end
 
-    context "when dry_run option is specified" do
-
-      it "does not create output file" do
-        at_temp_dir {
-          create_simulator_id_json(@sim, 'simulator_id.json')
-          option = {simulator: 'simulator_id.json', output: 'parameter_sets.json', dry_run: true}
-          OacisCli.new.invoke(:parameter_sets_template, [], option)
-          expect(File.exist?('parameter_sets.json')).to be_falsey
-        }
-      end
-    end
-
     context "when output file exists" do
 
       it "asks a question to overwrite the output file" do
@@ -374,36 +362,6 @@ describe OacisCli do
           expect {
             invoke_create_parameter_sets_with_invalid_parameter_sets_json
           }.to raise_error
-        }
-      end
-    end
-
-    context "when dry_run option is specified" do
-
-      def invoke_create_parameter_sets_with_dry_run
-        create_simulator_id_json(@sim, 'simulator_id.json')
-        create_parameter_sets_json('parameter_sets.json')
-        option = {
-          simulator: 'simulator_id.json',
-          input: 'parameter_sets.json',
-          output: "parameter_set_ids.json",
-          dry_run: true
-        }
-        OacisCli.new.invoke(:create_parameter_sets, [], option)
-      end
-
-      it "does not create ParameterSet" do
-        at_temp_dir {
-          expect {
-            invoke_create_parameter_sets_with_dry_run
-          }.not_to change { ParameterSet.count }
-        }
-      end
-
-      it "does not create output file" do
-        at_temp_dir {
-          invoke_create_parameter_sets_with_dry_run
-          expect(File.exist?('parameter_set_ids.json')).to be_falsey
         }
       end
     end

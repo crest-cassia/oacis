@@ -76,17 +76,6 @@ describe OacisCli do
       }
     end
 
-    context "when dry_run option is specified" do
-
-      it "does not create output file" do
-        at_temp_dir {
-          options = { analyzer_id: @sim.analyzers.first.id.to_s, output: 'analyzres.json', dry_run: true }
-          OacisCli.new.invoke(:analyses_template, [], options)
-          expect(File.exist?('analyzers.json')).to be_falsey
-        }
-      end
-    end
-
     context "when output file exists" do
 
       it "asks a question to overwrite the output file" do
@@ -235,24 +224,6 @@ describe OacisCli do
           expect(File.exist?('analysis_ids_tmp.json')).to be_truthy
           expected = Analysis.all.map {|anl| {"analysis_id" => anl.id.to_s} }.sort_by {|h| h["analysis_id"]}
           expect(JSON.load(File.read('analysis_ids_tmp.json'))).to match_array(expected)
-        }
-      end
-    end
-
-    context "when dry_run option is given" do
-
-      it "does not save Anasyses" do
-        at_temp_dir {
-          expect {
-            invoke_create_analyses(:on_run, {dry_run: true})
-          }.to_not change { Analysis.count }
-        }
-      end
-
-      it "does not create output file" do
-        at_temp_dir {
-          invoke_create_analyses(:on_run, {output: "analysis_ids_dry_run.json", dry_run: true})
-          expect(File.exist?('analysis_ids_dry_run.json')).to be_falsey
         }
       end
     end

@@ -16,7 +16,6 @@ class OacisCli < Thor
     mapped = anz.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
     anz_parameters = Hash[mapped]
 
-    return if options[:dry_run]
     return unless options[:yes] or overwrite_file?(options[:output])
     File.open(options[:output], 'w') do |io|
       # for visibility, manually print the json object as follows
@@ -98,7 +97,7 @@ class OacisCli < Thor
 
     created_analyses.each_with_index.map do |anl, idx|
       if anl.valid?
-        anl.save! unless options[:dry_run]
+        anl.save!
       else
         if anl.analyzable_type == "Run"
           progressbar.log "Failed to create an Analysis with Analyzer #{anl.analyzer_id} on Run #{anl.analyzable_id}"
@@ -112,7 +111,6 @@ class OacisCli < Thor
     end
 
   ensure
-    return if options[:dry_run]
     return unless options[:yes] or overwrite_file?(options[:output])
     write_analysis_ids_to_file(options[:output], analyses)
   end

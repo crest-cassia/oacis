@@ -12,7 +12,6 @@ class OacisCli < Thor
     progressbar = ProgressBar.create(total: archives.size, format: "%t %B %p%% (%c/%C)")
     archives.each do |archive|
       run = find_included_run(archive)
-      next if options[:dry_run]
       JobIncluder.include_manual_job(archive, run)
       progressbar.increment
     end
