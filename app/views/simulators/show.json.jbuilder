@@ -3,6 +3,7 @@ json.extract! @simulator,
               :name, :description, :command, :sequential_seed,
               :support_input_json, :support_mpi, :support_omp,
               :pre_process_script, :print_version_command
+json.directory @simulator.dir.to_s
 json.parameter_definitions do
   json.array! @simulator.parameter_definitions, :key, :type, :default, :description
 end

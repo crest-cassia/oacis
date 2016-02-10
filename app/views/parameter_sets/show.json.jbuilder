@@ -1,5 +1,6 @@
 json.id @param_set.id.to_s
 json.extract! @param_set, :v
+json.directory @param_set.dir.to_s
 json.simulator do
   json.id = @param_set.simulator.id.to_s
   json.name = @param_set.simulator.name

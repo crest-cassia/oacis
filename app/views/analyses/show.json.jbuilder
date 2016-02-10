@@ -3,6 +3,7 @@ json.analyzer do
   json.id @analysis.analyzer.id.to_s
   json.name @analysis.analyzer.name
 end
+json.directory @analysis.dir.to_s
 json.extract! @analysis,
               :status, :parameters, :job_script, :host_parameters, :mpi_procs, :omp_threads,
               :priority, :job_id, :submitted_at, :error_messages,
