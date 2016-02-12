@@ -11,12 +11,12 @@ end
 def verify_ruby_version
   print "checking ruby version ...        "
   v = `ruby --version`
-  if v =~ /2\.2\.\d+/
+  if v =~ /2\.(\d+)\.\d+/ and $1.to_i >= 2
     puts_ok
     return true
   else
     puts_error
-    puts "\tRuby version must be 2.2.*, but is #{v}"
+    puts "\tRuby version must be 2.2.* or later, but is #{v}"
     return false
   end
 end
