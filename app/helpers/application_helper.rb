@@ -45,7 +45,7 @@ module ApplicationHelper
     end
 
     tags = <<-EOS
-      <div class="progress" data-toggle="tooltip" title=#{{finished: num_success, running: num_danger, failed: num_warning, submitted: num_submitted}.to_json}>
+      <div class="progress" data-toggle="tooltip" title=#{{finished: num_success, failed: num_danger, running: num_warning, submitted: num_submitted}.to_json}>
         #{progress_bar_tag_for('success', percent_success)}
         #{progress_bar_tag_for('danger', percent_danger)}
         #{progress_bar_tag_for('warning', percent_warning)}
