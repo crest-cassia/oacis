@@ -76,7 +76,6 @@ git clone -b master https://github.com/crest-cassia/oacis.git
 {% highlight sh %}
 ./bin/check_oacis_env
 {% endhighlight %}
-(注) OACIS v2.0.0 ではmongo3以降を入れるとこのコマンドはエラーを返しますが、mongo3以降も問題なく利用できます。
 
 次にRailsおよび関連gemのインストールを行います。ダウンロードしたディレクトリ内に移動し、
 {% highlight sh %}
