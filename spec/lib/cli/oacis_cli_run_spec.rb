@@ -411,6 +411,34 @@ describe OacisCli do
     end
   end
 
+  describe "#destroy_runs_by_ids" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 5)
+    end
+
+    it "destroys runs specified by ids" do
+      at_temp_dir {
+        options = {}
+        run_ids = @sim.runs.map(&:id)[0..2].map(&:to_s)
+        expect {
+          OacisCli.new.invoke(:destroy_runs_by_ids, run_ids, options)
+        }.to change { Run.count }.by(-3)
+      }
+    end
+
+    it "ignore runs which are not found, when -y is given" do
+      at_temp_dir {
+        options = {yes: true}
+        run_ids = @sim.runs.map(&:id)[0..2].map(&:to_s) + ["DO_NOT_EXIST"]
+        expect {
+          OacisCli.new.invoke(:destroy_runs_by_ids, run_ids, options)
+        }.to change { Run.count }.by(-3)
+      }
+    end
+  end
+
   describe "#replace_runs" do
 
     before(:each) do
@@ -468,6 +496,42 @@ describe OacisCli do
           }.to change { Run.where(status: :created).count }.by(1)
         }
       end
+    end
+  end
+
+  describe "#replace_runs_by_ids" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                                parameter_sets_count: 1, runs_count: 0)
+      ps = sim.parameter_sets.first
+      FactoryGirl.create_list(:finished_run, 5, parameter_set: ps, mpi_procs: 8)
+    end
+
+    it "replaces runs specified by ids" do
+      at_temp_dir {
+        options = {}
+        run_ids = Run.all.map(&:id)[0..2].map(&:to_s)
+        expect {
+          OacisCli.new.invoke(:replace_runs_by_ids, run_ids, options)
+        }.to_not change { Run.count }
+
+        expect( (Run.all.map(&:id) - run_ids).size ).to eq Run.count
+        expect( Run.all.all? {|run| run.mpi_procs == 8 } ).to be_truthy
+      }
+    end
+
+    it "ignore runs which are not found, when -y is given" do
+      at_temp_dir {
+        options = {yes: true}
+        run_ids = Run.all.map(&:id)[0..2].map(&:to_s) + ["DO_NOT_EXIST"]
+        expect {
+          OacisCli.new.invoke(:replace_runs_by_ids, run_ids, options)
+        }.to_not change { Run.count }
+
+        expect( (Run.all.map(&:id) - run_ids).size ).to eq Run.count
+        expect( Run.all.all? {|run| run.mpi_procs == 8 } ).to be_truthy
+      }
     end
   end
 end

@@ -187,6 +187,25 @@ class OacisCli < Thor
     end
   end
 
+  desc 'destroy_analyses_by_ids', "destroy analyses specified by IDs"
+  def destroy_analyses_by_ids(*anl_ids)
+    anls = Analysis.where(:_id.in => anl_ids)
+
+    found_ids = anls.only(:_id).map(&:id).map(&:to_s)
+    not_found = anl_ids - found_ids
+    if not_found.size > 0
+      say("#{not_found.size} Analyses are not found: #{not_found.inspect}")
+      return unless options[:yes] or yes?("Continue for the other analyses?")
+    end
+
+    progressbar = ProgressBar.create( total: found_ids.count, format: "%t %B %p%% (%c/%C)")
+    anls.each do |anl|
+      anl.update_attribute(:to_be_destroyed, true)
+      anl.set_lower_submittable_to_be_destroyed
+      progressbar.increment
+    end
+  end
+
   desc 'replace_analyses', "replace analyses"
   method_option :analyzer_id,
     type:     :string,
@@ -207,30 +226,21 @@ class OacisCli < Thor
     end
 
     if options[:yes] or yes?("Replace #{analyses.count} analyses with new ones?")
-      progressbar = ProgressBar.create(total: analyses.count, format: "%t %B %p%% (%c/%C)")
-      anl_ids = analyses.only(:id).map(&:id)
-      anl_ids.each do |anlid|
-        anl = Analysis.find(anlid)
-        anl_attr = { analyzer: anl.analyzer,
-                     submitted_to: anl.submitted_to,
-                     mpi_procs: anl.mpi_procs,
-                     omp_threads: anl.omp_threads,
-                     host_parameters: anl.host_parameters,
-                     priority: anl.priority,
-                     parameters: anl.parameters }
-        if anl.analyzable_type == "Run"
-          new_analysis = Run.find(anl.analyzable_id).analyses.build(anl_attr)
-        elsif anl.analyzable_type == "ParameterSet"
-          new_analysis = ParameterSet.find(anl.analyzable_id).analyses.build(anl_attr)
-        end
-        if new_analysis.save
-          anl.update_attribute(:to_be_destroyed, true)
-        else
-          progressbar.log "Failed to create Analysis #{new_analysis.errors.full_messages}"
-        end
-        progressbar.increment
-      end
+      replace_analyses_impl(analyses)
     end
+  end
+
+  desc 'replace_analyses_by_ids', "replace runs specified by IDs"
+  def replace_analyses_by_ids(*anl_ids)
+    analyses = Analysis.where(:_id.in => anl_ids)
+
+    found_ids = analyses.only(:_id).map(&:id).map(&:to_s)
+    not_found = anl_ids - found_ids
+    if not_found.size > 0
+      say("#{not_found.size} Analyses are not found: #{not_found.inspect}")
+      return unless options[:yes] or yes?("Continue for the other analyses?")
+    end
+    replace_analyses_impl(analyses)
   end
 
   private
@@ -249,5 +259,31 @@ class OacisCli < Thor
     end
     raise "No analysis is found with query:#{query}" if analyses.count == 0
     analyses
+  end
+
+  def replace_analyses_impl(analyses)
+    progressbar = ProgressBar.create(total: analyses.count, format: "%t %B %p%% (%c/%C)")
+    anl_ids = analyses.only(:id).map(&:id)
+    anl_ids.each do |anlid|
+      anl = Analysis.find(anlid)
+      anl_attr = { analyzer: anl.analyzer,
+                   submitted_to: anl.submitted_to,
+                   mpi_procs: anl.mpi_procs,
+                   omp_threads: anl.omp_threads,
+                   host_parameters: anl.host_parameters,
+                   priority: anl.priority,
+                   parameters: anl.parameters }
+      if anl.analyzable_type == "Run"
+        new_analysis = Run.find(anl.analyzable_id).analyses.build(anl_attr)
+      elsif anl.analyzable_type == "ParameterSet"
+        new_analysis = ParameterSet.find(anl.analyzable_id).analyses.build(anl_attr)
+      end
+      if new_analysis.save
+        anl.update_attribute(:to_be_destroyed, true)
+      else
+        progressbar.log "Failed to create Analysis #{new_analysis.errors.full_messages}"
+      end
+      progressbar.increment
+    end
   end
 end
