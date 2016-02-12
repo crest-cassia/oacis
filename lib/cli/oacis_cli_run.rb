@@ -186,7 +186,7 @@ class OacisCli < Thor
   def destroy_runs_by_ids(*run_ids)
     runs = Run.where(:_id.in => run_ids)
 
-    found_ids = runs.only(:_id).map(&:id)
+    found_ids = runs.only(:_id).map(&:id).map(&:to_s)
     not_found = run_ids - found_ids
     if not_found.size > 0
       say("#{not_found.size} Runs are not found: #{not_found.inspect}")
@@ -234,7 +234,7 @@ class OacisCli < Thor
   def replace_runs_by_ids(*run_ids)
     runs = Run.where(:_id.in => run_ids)
 
-    found_ids = runs.only(:_id).map(&:id)
+    found_ids = runs.only(:_id).map(&:id).map(&:to_s)
     not_found = run_ids - found_ids
     if not_found.size > 0
       say("#{not_found.size} Runs are not found: #{not_found.inspect}")

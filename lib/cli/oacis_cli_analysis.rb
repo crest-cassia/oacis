@@ -191,7 +191,7 @@ class OacisCli < Thor
   def destroy_analyses_by_ids(*anl_ids)
     anls = Analysis.where(:_id.in => anl_ids)
 
-    found_ids = anls.only(:_id).map(&:id)
+    found_ids = anls.only(:_id).map(&:id).map(&:to_s)
     not_found = anl_ids - found_ids
     if not_found.size > 0
       say("#{not_found.size} Analyses are not found: #{not_found.inspect}")
@@ -234,7 +234,7 @@ class OacisCli < Thor
   def replace_analyses_by_ids(*anl_ids)
     analyses = Analysis.where(:_id.in => anl_ids)
 
-    found_ids = analyses.only(:_id).map(&:id)
+    found_ids = analyses.only(:_id).map(&:id).map(&:to_s)
     not_found = anl_ids - found_ids
     if not_found.size > 0
       say("#{not_found.size} Analysis are not found: #{not_found.inspect}")

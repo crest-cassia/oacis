@@ -420,7 +420,7 @@ describe OacisCli do
     it "destroys analyses specified by ids" do
       at_temp_dir {
         options = {}
-        anl_ids = Analysis.all.map(&:id)[0..2]
+        anl_ids = Analysis.all.map(&:id)[0..2].map(&:to_s)
         expect {
           OacisCli.new.invoke(:destroy_analyses_by_ids, anl_ids, options)
         }.to change { Analysis.count }.by(-3)
@@ -430,7 +430,7 @@ describe OacisCli do
     it "ignore runs which are not found, when -y is given" do
       at_temp_dir {
         options = {yes: true}
-        anl_ids = Analysis.all.map(&:id)[0..2] + ["DO_NOT_EXIST"]
+        anl_ids = Analysis.all.map(&:id)[0..2].map(&:to_s) + ["DO_NOT_EXIST"]
         expect {
           OacisCli.new.invoke(:destroy_analyses_by_ids, anl_ids, options)
         }.to change { Analysis.count }.by(-3)
@@ -531,7 +531,7 @@ describe OacisCli do
     it "replaces analyses specified by ids" do
       at_temp_dir {
         options = {}
-        anl_ids = Analysis.all.map(&:id)[0..2]
+        anl_ids = Analysis.all.map(&:id)[0..2].map(&:to_s)
         expect {
           OacisCli.new.invoke(:replace_analyses_by_ids, anl_ids, options)
         }.to_not change { Analysis.count }
@@ -543,7 +543,7 @@ describe OacisCli do
     it "ignore analyses which are not found, when -y is given" do
       at_temp_dir {
         options = {yes: true}
-        anl_ids = Analysis.all.map(&:id)[0..2] + ["DO_NOT_EXIST"]
+        anl_ids = Analysis.all.map(&:id)[0..2].map(&:to_s) + ["DO_NOT_EXIST"]
         expect {
           OacisCli.new.invoke(:replace_analyses_by_ids, anl_ids, options)
         }.to_not change { Analysis.count }

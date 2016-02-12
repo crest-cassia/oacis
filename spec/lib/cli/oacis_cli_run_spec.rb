@@ -421,7 +421,7 @@ describe OacisCli do
     it "destroys runs specified by ids" do
       at_temp_dir {
         options = {}
-        run_ids = @sim.runs.map(&:id)[0..2]
+        run_ids = @sim.runs.map(&:id)[0..2].map(&:to_s)
         expect {
           OacisCli.new.invoke(:destroy_runs_by_ids, run_ids, options)
         }.to change { Run.count }.by(-3)
@@ -431,7 +431,7 @@ describe OacisCli do
     it "ignore runs which are not found, when -y is given" do
       at_temp_dir {
         options = {yes: true}
-        run_ids = @sim.runs.map(&:id)[0..2] + ["DO_NOT_EXIST"]
+        run_ids = @sim.runs.map(&:id)[0..2].map(&:to_s) + ["DO_NOT_EXIST"]
         expect {
           OacisCli.new.invoke(:destroy_runs_by_ids, run_ids, options)
         }.to change { Run.count }.by(-3)
@@ -511,7 +511,7 @@ describe OacisCli do
     it "replaces runs specified by ids" do
       at_temp_dir {
         options = {}
-        run_ids = Run.all.map(&:id)[0..2]
+        run_ids = Run.all.map(&:id)[0..2].map(&:to_s)
         expect {
           OacisCli.new.invoke(:replace_runs_by_ids, run_ids, options)
         }.to_not change { Run.count }
@@ -524,7 +524,7 @@ describe OacisCli do
     it "ignore runs which are not found, when -y is given" do
       at_temp_dir {
         options = {yes: true}
-        run_ids = Run.all.map(&:id)[0..2] + ["DO_NOT_EXIST"]
+        run_ids = Run.all.map(&:id)[0..2].map(&:to_s) + ["DO_NOT_EXIST"]
         expect {
           OacisCli.new.invoke(:replace_runs_by_ids, run_ids, options)
         }.to_not change { Run.count }
