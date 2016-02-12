@@ -528,7 +528,7 @@ describe OacisCli do
                                run_analysis: true)
     end
 
-    it "replaces runs specified by ids" do
+    it "replaces analyses specified by ids" do
       at_temp_dir {
         options = {}
         anl_ids = Analysis.all.map(&:id)[0..2]
@@ -540,7 +540,7 @@ describe OacisCli do
       }
     end
 
-    it "ignore runs which are not found, when -y is given" do
+    it "ignore analyses which are not found, when -y is given" do
       at_temp_dir {
         options = {yes: true}
         anl_ids = Analysis.all.map(&:id)[0..2] + ["DO_NOT_EXIST"]
