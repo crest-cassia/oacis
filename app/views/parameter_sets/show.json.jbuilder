@@ -6,13 +6,13 @@ json.simulator do
   json.name = @param_set.simulator.name
 end
 json.runs do
-  json.array! @param_set.runs do |run|
+  json.array! @param_set.runs.only(:id, :status) do |run|
     json.id run.id.to_s
     json.status run.status
   end
 end
 json.analyses do
-  json.array! @param_set.analyses do |anl|
+  json.array! @param_set.analyses.only(:id, :analyzer, :status, :parameters) do |anl|
     json.id anl.id.to_s
     json.analyzer anl.analyzer.name
     json.status anl.status

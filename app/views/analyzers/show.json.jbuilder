@@ -9,7 +9,7 @@ json.parameter_definitions do
               :key, :type, :default, :description
 end
 json.executable_on do
-  json.array! @analyzer.executable_on do |host|
+  json.array! @analyzer.executable_on.only(:id, :name) do |host|
     json.id host.id.to_s
     json.name host.name
   end
