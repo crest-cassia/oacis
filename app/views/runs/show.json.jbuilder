@@ -23,7 +23,7 @@ json.parameter_set do
   json.v @run.parameter_set.v
 end
 json.analyses do
-  json.array! @run.analyses do |anl|
+  json.array! @run.analyses.only(:id, :analyzer, :status, :parameters) do |anl|
     json.id anl.id.to_s
     json.analyzer anl.analyzer.name
     json.status anl.status
