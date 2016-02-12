@@ -237,7 +237,7 @@ class OacisCli < Thor
     found_ids = analyses.only(:_id).map(&:id).map(&:to_s)
     not_found = anl_ids - found_ids
     if not_found.size > 0
-      say("#{not_found.size} Analysis are not found: #{not_found.inspect}")
+      say("#{not_found.size} Analyses are not found: #{not_found.inspect}")
       return unless options[:yes] or yes?("Continue for the other analyses?")
     end
     replace_analyses_impl(analyses)
