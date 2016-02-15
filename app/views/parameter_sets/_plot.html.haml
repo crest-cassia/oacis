@@ -174,7 +174,6 @@
   $(function() {  // parse plot parameters from URL
     add_tooltip();
     function get_query_param() {
-      console.log('hoge');
       if( 1 < document.location.search.length ) {
         var query = document.location.search.substring(1);  // remove first '?'
         var parameters = query.split('&');

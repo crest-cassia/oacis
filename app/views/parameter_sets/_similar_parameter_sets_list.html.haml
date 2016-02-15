@@ -19,10 +19,16 @@
           Close
 
 :javascript
-  var reload_parameter_sets_table;
   $(function() {
     var oPsTable = create_parameter_sets_list('#similar_params_list', 10);
-    reload_parameter_sets_table = function() {
-      oPsTable.ajax.reload(null, false);
+    if( window.bEnableAutoReload ) {
+      setInterval( function() {
+        if( $("#tab-about").length > 0 ) { // About tab in ParameterSet show page
+          if( $("#tab-about")[0].classList.contains("active") ) {
+            console.log('similar ps table');
+            oPsTable.ajax.reload(null, false);
+          }
+        }
+      }, 5000);
     }
   });

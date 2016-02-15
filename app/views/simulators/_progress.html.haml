@@ -70,12 +70,15 @@
     show_progress();
     if( window.bEnableAutoReload ) {
       setInterval( function() {
-      show_progress();
+        if( $("#tab-progress").length > 0 && $("#tab-progress")[0].classList.contains("active") ) {
+          console.log('progress');
+          show_progress();
+        }
       }, 10000);
     }
   });
   $(function() {
-      // in order to avoid 'position: relative' style of '.col-lg-12' tag, we put 'tooltip' before '.col-lg-12' tag
+    // in order to avoid 'position: relative' style of '.col-lg-12' tag, we put 'tooltip' before '.col-lg-12' tag
     // See http://stackoverflow.com/questions/8828387
     $('#progress-tooltip').insertBefore('.col-lg-12');
   });

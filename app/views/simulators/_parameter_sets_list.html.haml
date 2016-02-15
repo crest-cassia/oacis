@@ -10,7 +10,7 @@
 - unless OACIS_READ_ONLY
   %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
     New Parameter Set
-  
+
 %h3 Parameter Filter
 = form_tag( _make_query_simulator_path(@simulator) ) do |f|
   %table
@@ -106,4 +106,14 @@
 :javascript
   $(function() {
     var oPsTable = create_parameter_sets_list('#params_list', 100);
+    if( window.bEnableAutoReload ) {
+      setInterval( function() {
+        if( $("#tab-list-parameters").length > 0 ) { // ParameterSet tab in Simulator show page
+          if( $("#tab-list-parameters")[0].classList.contains("active") ) {
+            console.log('ps table');
+            oPsTable.ajax.reload(null, false);
+          }
+        }
+      }, 5000);
+    }
   });
