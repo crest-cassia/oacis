@@ -14,4 +14,14 @@
 :javascript
   $(function() {
     var oTable = datatables_for_analyses_table();
-  })
+    if( window.bEnableAutoReload ) {
+      setInterval( function() {
+        if( $("#tab-list-analyses").length > 0 ) { // Analyses tab in PS show page or in Run show page
+          if( $("#tab-list-analyses")[0].classList.contains("active") ) {
+            oTable.ajax.reload(null, false);
+          }
+        }
+      }, 5000);
+    }
+  });
+

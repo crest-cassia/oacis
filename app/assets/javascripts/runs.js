@@ -1,13 +1,7 @@
 $(function() {
-  var oRunsTableToReload = null;
-  setInterval( function() {
-    if( window.bEnableAutoReload && oRunsTableToReload ) {
-      oRunsTableToReload.ajax.reload(null, false);
-    }
-  }, 5000);
-
   var datatables_for_runs_table = function() {
-    var oTable = $('#runs_list').DataTable({
+    var selector='#runs_list';
+    var oTable = $(selector).DataTable({
       processing: true,
       serverSide: true,
       searching: false,
@@ -18,14 +12,13 @@ $(function() {
         "orderable": false,
         "targets": -1
       }],
-      ajax: $('#runs_list').data('source')
+      ajax: $(selector).data('source')
     });
-    $('#runs_list_length').append(
+    $(selector+'_length').append(
       '<i class="fa fa-refresh padding-half-em clickable" id="runs_list_refresh"></i>'
     );
-    var refresh_icon = $('#runs_list_length').children('#runs_list_refresh');
+    var refresh_icon = $(selector+'_length').children('#runs_list_refresh');
     refresh_icon.on('click', function() { oTable.ajax.reload(null, false);});
-    oRunsTableToReload = oTable;
     return oTable;
   };
 

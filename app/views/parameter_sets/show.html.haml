@@ -11,7 +11,7 @@
     %li.active
       %a{"href"=>"#tab-list-runs", "data-toggle" => "tab"} Runs
     %li
-      %a{"href"=>"#tab-analyses", "data-toggle" => "tab"} Analyses
+      %a{"href"=>"#tab-list-analyses", "data-toggle" => "tab"} Analyses
     %li
       %a{"href"=>"#tab-plot", "data-toggle" => "tab"} Plot
 
@@ -26,7 +26,7 @@
 
     .tab-pane.active#tab-list-runs
       = render "runs", parameter_set: @param_set
-    .tab-pane#tab-analyses
+    .tab-pane#tab-list-analyses
       = render "analyses", parameter_set: @param_set
     .tab-pane#tab-plot
       = render "plot", parameter_set: @param_set

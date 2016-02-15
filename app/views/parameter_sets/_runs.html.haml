@@ -37,5 +37,14 @@
 
 :javascript
   $(function() {
-    var oTable = datatables_for_runs_table();
-  })
+    var oRunsTable = datatables_for_runs_table();
+    if( window.bEnableAutoReload ) {
+      setInterval( function() {
+        if( $("#tab-list-runs").length > 0 ) { // Runs tab in ParameterSet show page
+          if( $("#tab-list-runs")[0].classList.contains("active") ) {
+            oRunsTable.ajax.reload(null, false);
+          }
+        }
+      }, 5000);
+    }
+  });

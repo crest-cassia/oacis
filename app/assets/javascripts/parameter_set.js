@@ -22,15 +22,9 @@ function create_parameter_sets_list(selector, default_length) {
   $(selector+'_length').append(
     '<i class="fa fa-refresh padding-half-em clickable" id="params_list_refresh"></i>'
   );
-  $('#params_list_length').children('#params_list_refresh').on('click', function() {
+  $(selector+'_length').children('#params_list_refresh').on('click', function() {
     oPsTable.ajax.reload(null, false);
   });
-
-  if( window.bEnableAutoReload ) {
-    setInterval( function() {
-        oPsTable.ajax.reload(null, false);
-    }, 5000);
-  }
 
   $(selector).on("click", "i.fa.fa-search[parameter_set_id]", function() {
     var param_id = $(this).attr("parameter_set_id");

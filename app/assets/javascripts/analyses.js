@@ -18,11 +18,6 @@ $(function () {
 });
 
 $(function() {
-  var oAnalysesTableToReload = null;
-  setInterval( function() {
-    if( window.bEnableAutoReload && oAnalysesTableToReload ) { oAnalysesTableToReload.ajax.reload(null, false); }
-  }, 5000);
-
   var datatables_for_analyses_table = function() {
     var oTable = $('#analyses_list').DataTable({
       processing: true,
@@ -42,7 +37,6 @@ $(function() {
     );
     var refresh_icon = $('#analyses_list_length').children('#analyses_list_refresh');
     refresh_icon.on('click', function() { oTable.ajax.reload(null, false); });
-    oAnalysesTableToReload = oTable;
     return oTable;
   };
 
