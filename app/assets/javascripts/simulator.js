@@ -336,8 +336,9 @@ function draw_progress_overview(url) {
 };
 
 $(function() {
-  $(".progress").tooltip({
-      placement: 'bottom'
+  $('body').tooltip({
+    selector: '.progress[data-toggle="tooltip"]',
+    placement: 'bottom'
   });
 });
 
