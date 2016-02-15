@@ -42,7 +42,6 @@
       setInterval( function() {
         if( $("#tab-list-runs").length > 0 ) {
           if( $("#tab-list-runs")[0].classList.contains("active") ) {
-            console.log('run table');
             oRunsTable.ajax.reload(null, false);
           }
         }

@@ -25,7 +25,6 @@
       setInterval( function() {
         if( $("#tab-about").length > 0 ) { // About tab in ParameterSet show page
           if( $("#tab-about")[0].classList.contains("active") ) {
-            console.log('similar ps table');
             oPsTable.ajax.reload(null, false);
           }
         }
