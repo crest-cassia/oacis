@@ -28,12 +28,16 @@ CLIで利用可能な操作は以下の通りです。
 - 作成済みRunのステータス確認 (run_status)
 - 手動実行したジョブの実行結果の取り込み (job_include)
 - Run削除（destroy_runs）
+- IDを指定してRun削除（destroy_runs_by_ids）
 - Run再作成（replace_runs）
+- IDを指定してRun再作成（replace_runs_by_ids）
 - Analysis作成用テンプレート作成 (analyses_template)
 - Analysis作成（create_analyses）
 - 作成済みAnalysisのステータス確認（analysis_status）
 - Analysis削除（destroy_analyses）
+- IDを指定してAnalysis削除（destroy_analyses_by_ids）
 - Analysis再作成（replace_analyses）
+- IDを指定してAnalysis再作成（replace_analyses_by_ids）
 - 既存SimulatorへのParameterDefinition追加 (append_parameter_definition)
 
 OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行する操作を指定します。
