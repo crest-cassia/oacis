@@ -593,6 +593,7 @@ Analysisを新規作成する
 - analyzerはanalyzerのIDを指定する。
 - inputは analyses_template で出力されるJSON形式のファイルまたはJSON形式の文字列を指定する。デフォルトは、Analyzerに登録されたパラメータのデフォルト値。
 - job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルまたは文字列を指定する。
+- --first_run_onlyオプションまたは、-tオプションで解析対象のRunまたはPSを指定できる。どちらも指定がない場合は全てのRunまたはPSを対象にしてAnalysisを作成する。
 
 #### 出力
 
