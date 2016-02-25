@@ -37,10 +37,12 @@ READMEに書いてある通りにセットアップして、`run.sh`というス
 1. 結果の確認
 1. パラメータスイープ
 
+Docker環境の場合はHost登録まで完了しています。
+
 ## 1. Host登録
 
 シミュレータを実行するためのホストを登録します。ここではローカルホストを実行ホストとして登録していきましょう。
-Docker環境の場合は、すでにローカルホストが実行ホストとして登録されているのでこの手順は不要です。
+
 
 前提条件として、サーバーからシミュレータを実行するホストに鍵認証を使用してパスワード無しでSSHログインできるようにする必要があります。
 ここでは鍵認証でリモートホストにSSHログインできるようになっているという前提で話を進めます。
@@ -51,7 +53,7 @@ xsub の設定方法については、https://github.com/crest-cassia/xsub を�
 
 ナビゲーションバーの[Hosts]をクリックし、[New Hosts]のボタンを押すと新規Host登録画面が表示されます。
 
-![ホスト登録]({{ site.baseurl }}/images/hosts.png){:width="600px"}
+<iframe width="420" height="315" src="https://www.youtube.com/embed/PooTP9GTroc" frameborder="0" allowfullscreen class="youtube" ></iframe>
 
 このページの入力フィールドにホストの情報を登録します。OACISはここで登録された情報をもとにSSH接続しジョブを投入します。
 
@@ -104,9 +106,9 @@ OACISにシミュレーターを登録する際にはシミュレーターの実
 
 本チュートリアルで登録する交通流シミュレーターは上記の要件を満たしています。OACISに登録していきましょう。
 
-Simulator一覧ページ(/simulators)で[New Simulator]ボタンをクリックすると新規Simulator登録画面が表示されます。
+<iframe width="420" height="315" src="https://www.youtube.com/embed/tF_9EYMxVoA" frameborder="0" allowfullscreen class="youtube"></iframe>
 
-![ホスト登録]({{ site.baseurl }}/images/new_simulator.png){:width="400px"}
+Simulator一覧ページ(/simulators)で[New Simulator]ボタンをクリックすると新規Simulator登録画面が表示されます。
 
 このページの入力フィールドにシミュレータの情報を登録します。登録する項目は [シミュレーターの仕様]({{ site.baseurl }}/{{ page.lang }}/simulator.html) のページで説明しています。
 
@@ -129,13 +131,11 @@ Simulator一覧ページ(/simulators)で[New Simulator]ボタンをクリック�
 ## 3. ParameterSet登録
 
 Simulator一覧ページで登録したシミュレータ名のリンクをクリックすると、ParameterSet一覧画面が出ます。
-現時点では、ParameterSetが何も作られていないので空のテーブルが表示されるだけですが、ParameterSetを作成した後は下図のように一覧で表示されます。
-
-![PS一覧]({{ site.baseurl }}/images/parameter_sets.png){:width="500px"}
+現時点では、ParameterSetが何も作られていないので空のテーブルが表示されるだけですが、ParameterSetを作成した後はここに一覧で表示されます。
 
 ParameterSetを新規作成するために[New Parameter Set]のボタンをクリックします。
 
-![PS登録]({{ site.baseurl }}/images/new_parameter_set.png){:width="500px"}
+<iframe width="420" height="315" src="https://www.youtube.com/embed/hzVnuW2M7oc" frameborder="0" allowfullscreen class="youtube"></iframe>
 
 上の様に登録フォームが現れるので、シミュレーションを実行したいパラメータを入力して[Create]をクリックします。
 （この画面からRunも作成する事ができますが、今回は「# of Runs」のフィールドは０のままにしておきましょう。
@@ -150,6 +150,8 @@ ParameterSetを新規作成するために[New Parameter Set]のボタンをク�
 作成したParameterSetに対してRunを作成してシミュレーションを実行します。
 Create New Runsと書かれている箇所でRunの数と投入Host（Simulator登録時に実行可能ホストとして指定されたHostしか選択できない）を選択して[Create Run]ボタンを押します。
 
+<iframe width="420" height="315" src="https://www.youtube.com/embed/p6q9FYIxAIQ" frameborder="0" allowfullscreen class="youtube"></iframe>
+
 （注）実行可能Hostが一つも表示されない場合は、Simulatorの登録時に実行可能Hostを指定し忘れたと考えられます。
 その場合はSimulatorのEditボタンで設定を修正してください。
 
@@ -158,41 +160,35 @@ Hostに登録したMPIプロセス数、OpenMPスレッド数の最小値・最�
 また投入するホストによっては、ジョブスケジューラのパラメータの入力が要求されます。（詳細はホストの仕様のページを参照）
 
 ここでは１本のRunを作成してみましょう。
-![Run登録]({{ site.baseurl }}/images/new_run.png){:width="400px"}
 
 （注）この時、[Preview]ボタンをクリックすると実際に投入されるジョブスクリプトをプレビューできます。
 ジョブがうまく実行できない場合はこちらを確認すると良いです。
 
 Runを作成するとバックグラウンドでリモートホストにジョブが順次投入されます。
 
-## 6. 実行中のジョブの確認
-
-ナビゲーションバーの[Jobs]をクリックすると、実行中(running)、スケジューラに投入済み(submitted)、実行待ち（created）のジョブ一覧を確認できます。
-
-多くのRunを作成した場合、こちらで確認するとよいでしょう。
-
-![Job確認]({{ site.baseurl }}/images/jobs.png){:width="400px"}
-
-## 7. 結果の確認
+## 5. 結果の確認
 
 ジョブの実行が完了すると自動的に結果がサーバー内のデータベースに取り込まれます。
-Runの作成時のページに移動するとRunの一覧が表示され、そのRunのステータスが *finished* になっている事が確認できます。
+今回のシミュレーターの場合、10秒ほどでRunのステータスが *finished* になっている事が確認できます。
 (実行に失敗した場合、 *failed* というステータスになります。その際も結果のファイルはデータベースに格納されるので、そこからエラーの発生原因を調査できます。）
 
 各RunをクリックするとRunの結果のファイルをブラウザから確認できます。
+ジョブ実行時にカレントディレクトリ内に作成されるファイルは全て結果のファイルとして保存されます。
 画像のファイルはブラウザ上で直接参照することもできます。
+
+出力ファイルの中に"_output.json"という特殊な名前で結果をJSONフォーマットで保存すると、結果をデータベースに保存することができ後述するようなプロットツールを使って閲覧することもできます。
 
 またAboutタブをクリックすると、実行日時・CPU時間などの詳細な情報を取得できます。
 データが格納されたパスも表示されるため、ブラウザ経由だけではなく直接そのパスから結果を取得する事もできます。
 
-![Run確認]({{ site.baseurl }}/images/show_run.png){:width="400px"}
-
-## 8. 他のパラメータでの実行
+## 6. 他のパラメータでの実行
 
 ParameterSetとRunを作ってジョブを実行し、結果を確認する方法を学びました。
 次はパラメータの値を変えながら多数のジョブをまとめて作る方法を試してみましょう
 
 ここでは車両密度と最大速度の値をそれぞれ５種類ずつ変えていき、結果がどう変わるかみていきます。
+
+<iframe width="420" height="315" src="https://www.youtube.com/embed/Lnta80r7vCA" frameborder="0" allowfullscreen class="youtube"></iframe>
 
 ParameterSetの新規作成ボタンをクリックしてください。値をコンマ区切りで入力すると複数のParameterSetを同時に作ることができます。
 Vmaxに「3,4,5,6,7」、densityに「0.1,0.2,0.3,0.4,0.5」をそれぞれ入力してください。
@@ -201,22 +197,34 @@ Vmaxに「3,4,5,6,7」、densityに「0.1,0.2,0.3,0.4,0.5」をそれぞれ入�
 
 （注）一度に作成できるParameterSetの数は100個に制限されています。それ以上、多数のParameterSetを作る場合はCommand Line Interfaceを使用します。
 
-さらに "Number of Runs"の値を５にします。すると25個のParameterSet、それぞれの配下にRunが５つになるまで作成されます。
-
+さらに "Number of Runs"の値を1にします。すると25個のParameterSetそれぞれの配下にRunが１つになるまで作成されます。
 "Create"ボタンを押すと、ParameterSetとRunが作成されたことがわかると思います。
+
+ナビゲーションバーの[Runs]をクリックすると、実行中(running)、スケジューラに投入済み(submitted)、実行待ち（created）のジョブ一覧を確認できます。
+多くのRunを作成した場合、こちらで実行状況を確認するとよいでしょう。
 
 これらの結果を一つ一つ確認していくのは手間がかかります。OAICSはパラメータを変えた時に結果がどのように変わるか素早く結果を確認するためのツールを用意しています。
 
+<iframe width="420" height="315" src="https://www.youtube.com/embed/QXOycX9fnOw" frameborder="0" allowfullscreen class="youtube"></iframe>
+
 まず流量がパラメータによってどのように変化していくか見ていきましょう。
 あるParameterSetを選んで、プロットのタブを選択します。
-[Line plot]-[density]-[flow]を選択してプロットすると、横軸にdensity、縦軸に結果のflowの値をプロットすることができます。
-選択したParameterSetに対してdensityだけが異なるParameterSetを集めてそれぞれに対してflowの平均値を計算しプロットしています。
+[Line plot]-[density]-[flow]を選択してプロットします。
+現在選択されているParameterSetに対してdensityのみが異なるParameterSetを集めてきて、flowのdensity依存性をプロットすることができます。
 自動車の密度を上げていくとある値までは流量が増えるものの、ある閾値を超えてしまうと渋滞が発生して逆に流量が下がっていくことがわかります。
+各点をダブルクリックするとそのParameterSetのページが異なるタブで開きます。詳細を確認する時に役に立つでしょう。
 
-スナップショットがパラメータを変えていくとどのように変わるかも見てみましょう。
+パラメータを変えていくとスナップショットがどのように変わるかも見てみましょう。
 [Figure viewer]-[density]-[Vmax]-[flow] と選択します。
 横軸に密度、縦軸に車の最高速度としてスナップショットが散布図上に表示されます。
 画像をマウスオーバーすると拡大画像も見ることができます。
 このようにして渋滞の様子がパラメータを変えていくとどのように変化していくかを直感的に確認することができるようになっています。
 
+さらに流量が最大になる付近の様子を詳細に調べましょう。
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/BBdLcDwtLcI" frameborder="0" allowfullscreen class="youtube"></iframe>
+
+ParameterSetの新規作成画面に行って、Vmaxを[3,4,5,6,7]、densityを[0.05, 0.1, 0.15, 0.2, 0.25, 0.3] と入力します。
+また統計誤差を少なくするために "Number of Runs" を5にして実行しましょう。
+実行が終わるとより詳細に流量が最大になる様子が見られると思います。
 
