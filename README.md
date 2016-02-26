@@ -1,9 +1,7 @@
 # OACIS
 
 [![GitHub version](https://badge.fury.io/gh/crest-cassia%2Foacis.svg)](https://badge.fury.io/gh/crest-cassia%2Foacis)
-[![Build Status](https://travis-ci.org/crest-cassia/oacis.svg?branch=Development)](https://travis-ci.org/crest-cassia/oacis)
-[![oaics_docker](http://img.shields.io/badge/oaics_docker-building-yellow.svg)](https://github.com/crest-cassia/oacis_docker)
-
+[![Build Status](https://travis-ci.org/crest-cassia/oacis.svg?branch=master)](https://travis-ci.org/crest-cassia/oacis)
 
 ## What is OACIS?
 
@@ -80,10 +78,7 @@ bundle exec rake daemon:start
 bundle exec rake daemon:stop
     ```
 
-- Please refer to the documents located at `doc/build/html`.
-    - At the moment, only Japanese documents are prepared.
-
-### Installing on virtual machine
+### Installing on virtual machine using Docker
 
 The easiest way to start OACIS for windows users is using Docker.
 
@@ -96,7 +91,7 @@ You can start OACIS in a few minutes.
 
 The MIT License (MIT)
 
-Copyright (c) 2013,2014 RIKEN, AICS
+Copyright (c) 2013-2016 RIKEN, AICS
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -118,22 +113,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ## Documents
 
 - http://crest-cassia.github.io/oacis/
-- https://github.com/crest-cassia/oacis/wiki
 
 ## Publications
-- A list of publications about OACIS is available at this [wiki page](https://github.com/crest-cassia/oacis/wiki/List-of-publications).
+
 - We would greatly appreciate if you cite the following article when you publish your research using OACIS.
     - Y. Murase, T. Uchitane, and N. Ito, "A tool for parameter-space explorations", Physics Procedia, 57, p73-76 (2014)
       - http://www.sciencedirect.com/science/article/pii/S187538921400279X
     - You can cite it as **"The systematic simulations in this study were assisted by OACIS."**, for example, in appendix or method section.
-- We would also like to create a list of researches to which OACIS contributed to.
-    - We will be happy if you are willing to include your work. Let us know about your work when your paper is published.
 
 ## Contact
 
 - Just send your feedback to us!
     - `oacis-dev _at_ googlegroups.com` (replace _at_ with @)
-    - We appreciate your questions, feature requests, and bug reports.
-- You'll have announcements of new releases if you join the following google group. Take a look.
+    - We appreciate your questions, feature requests, and bug reports. Do not hesitate to give us your feedbacks.
+- You'll have announcements of new releases if you join the following google group. Take a look at
     - https://groups.google.com/forum/#!forum/oacis-users
 
