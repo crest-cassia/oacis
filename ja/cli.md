@@ -28,12 +28,16 @@ CLIで利用可能な操作は以下の通りです。
 - 作成済みRunのステータス確認 (run_status)
 - 手動実行したジョブの実行結果の取り込み (job_include)
 - Run削除（destroy_runs）
+- IDを指定してRun削除（destroy_runs_by_ids）
 - Run再作成（replace_runs）
+- IDを指定してRun再作成（replace_runs_by_ids）
 - Analysis作成用テンプレート作成 (analyses_template)
 - Analysis作成（create_analyses）
 - 作成済みAnalysisのステータス確認（analysis_status）
 - Analysis削除（destroy_analyses）
+- IDを指定してAnalysis削除（destroy_analyses_by_ids）
 - Analysis再作成（replace_analyses）
+- IDを指定してAnalysis再作成（replace_analyses_by_ids）
 - 既存SimulatorへのParameterDefinition追加 (append_parameter_definition)
 
 OACISのチェックアウトディレクトリ以下の bin/oacis_cli に引数を渡して実行する操作を指定します。
@@ -480,6 +484,34 @@ Runを削除する
 
 ---
 
+## destroy_runs_by_ids
+
+IDを指定してRunを削除する
+
+#### 実行方法
+
+{% highlight sh %}
+./bin/oacis_cli destroy_runs_by_ids 52f9c5b4b93f963b8f000021 52f9c53db93f96a22200001d
+{% endhighlight %}
+
+#### オプション
+
+なし
+
+#### 入力形式
+
+- 削除するRunのIDを引数として指定する。
+- 指定されたIDが見つからない場合は、他のRunに対して削除を実行するか確認するダイアログが出る。
+
+#### 実行例
+
+- IDが52f9c5b4b93f963b8f000021のRunを削除する
+{% highlight sh %}
+./bin/oacis_cli destroy_runs_by_ids 52f9c5b4b93f963b8f000021
+{% endhighlight %}
+
+---
+
 ## replace_runs
 
 指定したRunを削除して、同じ設定で新しいRunを再作成する
@@ -520,6 +552,34 @@ simulator_versionが"1.0.0"のRunを削除し、同じ設定で新しいRunを�
 
 {% highlight sh %}
 ../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
+{% endhighlight %}
+
+---
+
+## replace_runs_by_ids
+
+IDを指定してRunを置換する
+
+#### 実行方法
+
+{% highlight sh %}
+./bin/oacis_cli replace_runs_by_ids 52f9c5b4b93f963b8f000021 52f9c53db93f96a22200001d
+{% endhighlight %}
+
+#### オプション
+
+なし
+
+#### 入力形式
+
+- 置換するRunのIDを引数として指定する。
+- 指定されたIDが見つからない場合は、他のRunに対して置換を実行するか確認するダイアログが出る。
+
+#### 実行例
+
+- IDが52f9c5b4b93f963b8f000021のRunを置換する
+{% highlight sh %}
+./bin/oacis_cli replace_runs_by_ids 52f9c5b4b93f963b8f000021
 {% endhighlight %}
 
 ---
@@ -593,6 +653,7 @@ Analysisを新規作成する
 - analyzerはanalyzerのIDを指定する。
 - inputは analyses_template で出力されるJSON形式のファイルまたはJSON形式の文字列を指定する。デフォルトは、Analyzerに登録されたパラメータのデフォルト値。
 - job_parameterファイルは job_parameter_template で出力されるJSON形式のファイルまたは文字列を指定する。
+- --first_run_onlyオプションまたは、-tオプションで解析対象のRunまたはPSを指定できる。どちらも指定がない場合は全てのRunまたはPSを対象にしてAnalysisを作成する。
 
 #### 出力
 
@@ -708,6 +769,34 @@ statusが "failed" （解析失敗）かつanalyzer_versionが "nil"のAnalysis�
 
 ---
 
+## destroy_analyses_by_ids
+
+IDを指定してAnalysisを削除する
+
+#### 実行方法
+
+{% highlight sh %}
+./bin/oacis_cli destroy_analyses_by_ids 52f9c5b4b93f963b8f000021 52f9c53db93f96a22200001d
+{% endhighlight %}
+
+#### オプション
+
+なし
+
+#### 入力形式
+
+- 削除するAnalysisのIDを引数として指定する。
+- 指定されたIDが見つからない場合は、他のAnalysisに対して削除を実行するか確認するダイアログが出る。
+
+#### 実行例
+
+- IDが52f9c5b4b93f963b8f000021のAnalysisを削除する
+{% highlight sh %}
+./bin/oacis_cli destroy_analyses_by_ids 52f9c5b4b93f963b8f000021
+{% endhighlight %}
+
+---
+
 ## replace_analyses
 
 指定したAnalysisを削除して、同じ設定で新しいAnalysisを再作成する
@@ -746,6 +835,34 @@ statusが "failed" （解析失敗）かつanalyzer_versionが "nil"のAnalysis�
 
 {% highlight sh %}
 ../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
+{% endhighlight %}
+
+---
+
+## replace_analyses_by_ids
+
+IDを指定してAnalysisを置換する
+
+#### 実行方法
+
+{% highlight sh %}
+./bin/oacis_cli replace_analyses_by_ids 52f9c5b4b93f963b8f000021 52f9c53db93f96a22200001d
+{% endhighlight %}
+
+#### オプション
+
+なし
+
+#### 入力形式
+
+- 置換するAnalysisのIDを引数として指定する。
+- 指定されたIDが見つからない場合は、他のAnalysisに対して置換を実行するか確認するダイアログが出る。
+
+#### 実行例
+
+- IDが52f9c5b4b93f963b8f000021のAnalysisを置換する
+{% highlight sh %}
+./bin/oacis_cli replace_analyses_by_ids 52f9c5b4b93f963b8f000021
 {% endhighlight %}
 
 ---
