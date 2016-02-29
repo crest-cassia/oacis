@@ -74,7 +74,7 @@ xsub の設定方法については、https://github.com/crest-cassia/xsub を�
 - Polling interval: 5 
     - workerがステータスをチェックする時間間隔。本チュートリアルでは早く挙動を確認したいので短めに設定しています。
 
-各項目の詳細は [別ページ]({{ site.baseurl }}/{{ page.lang }}/host.html) で説明しています。
+各項目の詳細は [別ページ]({{ site.baseurl }}/{{ page.lang }}/advanced_usage.html#host_specification) で説明しています。
 他の実行ホストを登録する際にはこちらを参照してください。
 
 ## 2. Simulator登録
@@ -110,7 +110,7 @@ OACISにシミュレーターを登録する際にはシミュレーターの実
 
 Simulator一覧ページ(/simulators)で[New Simulator]ボタンをクリックすると新規Simulator登録画面が表示されます。
 
-このページの入力フィールドにシミュレータの情報を登録します。登録する項目は [シミュレーターの仕様]({{ site.baseurl }}/{{ page.lang }}/simulator.html) のページで説明しています。
+このページの入力フィールドにシミュレータの情報を登録します。登録する項目は [シミュレーターの仕様]({{ site.baseurl }}/{{ page.lang }}/advanced_usage.html#simulator_specification) のページで説明しています。
 
 本チュートリアルでは以下のように設定します。その他はデフォルトにしてください。
 
