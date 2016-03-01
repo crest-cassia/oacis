@@ -8,3 +8,9 @@ table.table {
 table.table thead {
   border: 1px #bbb solid
 }
+iframe.youtube {
+  display: block;
+  margin: 0 auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
