@@ -89,6 +89,18 @@ module Submittable
     cmd
   end
 
+  def result
+    r=nil
+    if self.job_result
+      r = self.job_result.result
+    end
+    r
+  end
+
+  def submittable_parameter
+    self.is_a?(Run) ? self.parameter_set : self.analyzer
+  end
+
   private
   # validations
   def host_parameters_given

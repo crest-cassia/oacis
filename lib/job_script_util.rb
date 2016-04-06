@@ -140,8 +140,9 @@ EOS
       json_path = '_output.json'
       if File.exist?(json_path)
         begin
-          job.result = JSON.load(File.open(json_path))
-          job.result = {"result"=>job.result} unless job.result.is_a?(Hash)
+          persed = JSON.load(File.open(json_path))
+          persed = {"result"=>persed} unless persed.is_a?(Hash)
+          job.create_job_result(submittable_parameter: job.submittable_parameter, result: persed)
           is_updated = true
         rescue => ex
           error_message+="failed to load _output.json: #{ex.message}"

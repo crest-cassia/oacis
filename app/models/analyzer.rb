@@ -13,6 +13,7 @@ class Analyzer
   embeds_many :parameter_definitions
   belongs_to :simulator
   has_many :analyses
+  has_many :job_results, as: :submittable_parameter
 
   ## fields for auto run
   belongs_to :auto_run_submitted_to, class_name: "Host"

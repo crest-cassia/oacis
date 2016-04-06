@@ -282,12 +282,12 @@ describe Simulator do
                                run_analysis: true)
       run = @sim.parameter_sets.first.runs.first
       run.status = :finished
-      run.result = { r1: 1, r2: { r3: 3, r4: 4}, r5: [1,2,3] }
+      run.create_job_result(submittable_parameter: run.parameter_set, result: { r1: 1, r2: { r3: 3, r4: 4}, r5: [1,2,3] })
       run.save!
 
       anl = @sim.analyzers.first.analyses.first
       anl.status = :finished
-      anl.result = { a1: 1, a2: { a3: 3, a4: 4}, a5: [1,2,3] }
+      anl.create_job_result(submittable_parameter: anl.analyzer, result: { a1: 1, a2: { a3: 3, a4: 4}, a5: [1,2,3] })
       anl.save!
     end
 
@@ -312,7 +312,7 @@ describe Simulator do
       runs = @sim.parameter_sets.first.runs.asc(:_id)
       runs.each_with_index do |run, idx|
         run.status = :finished
-        run.result = { r1: 1+idx, r2: { r3: 3+idx, r4: 4+idx}, r5: [1,2,3] }
+        run.create_job_result(submittable_parameter: run.parameter_set, result: { r1: 1+idx, r2: { r3: 3+idx, r4: 4+idx}, r5: [1,2,3] })
         run.cpu_time = 10.0 + idx
         run.real_time = 3.0 + idx
         run.save!
@@ -320,7 +320,7 @@ describe Simulator do
 
       @sim.analyzers.first.analyses.each_with_index do |anl, idx|
         anl.status = :finished
-        anl.result = { a1: 1+idx, a2: { a3: 3+idx, a4: 4+idx}, a5: [1,2,3] }
+        anl.create_job_result(submittable_parameter: anl.analyzer, result: { a1: 1+idx, a2: { a3: 3+idx, a4: 4+idx}, a5: [1,2,3] })
         anl.save!
       end
     end

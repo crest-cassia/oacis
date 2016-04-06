@@ -153,7 +153,7 @@ describe AnalysesController do
             hostname: "Foo",
             cpu_time: -100.0,
             real_time: 10.0,
-            result: {"r1" => 0},
+            job_result: {result: {"r1" => 0}, submittable_parameter: @run.parameter_set},
             analyzer_version: "v9999",
             host_parameters: {"param1"=>"foo", "param2"=>"bar", "param3"=>"baz"},
             parameters: {"param1"=>1, "param2"=>2.0, "param3"=>3}

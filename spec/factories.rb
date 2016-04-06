@@ -92,7 +92,6 @@ FactoryGirl.define do
         run.hostname = 'hostXYZ'
         run.cpu_time = rand * 100.0
         run.real_time = run.cpu_time + rand * 2.0
-        run.result = {"Energy" => rand*1.0, "Flow" => rand*3.0}
         d = DateTime.now
         run.started_at = d
         run.finished_at = d
@@ -163,8 +162,15 @@ FactoryGirl.define do
       hosts = self.analyzer.executable_on
       hosts.where(name: "localhost").first || hosts.first
     }
+  end
+
+  factory :job_result do
     sequence(:result) do |n|
-      {"XXX" => n + 1, "YYY" => n*3.0}
+      if self.submittable.class == Run
+        {"Energy" => rand*1.0, "Flow" => rand*3.0}
+      else
+        {"XXX" => n + 1, "YYY" => n*3.0}
+      end
     end
   end
 

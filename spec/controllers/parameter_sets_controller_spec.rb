@@ -465,7 +465,7 @@ describe ParameterSetsController do
         run = ps.runs.create
         run.status = :finished
         run.submitted_to = host
-        run.result = {"ResultKey1" => 99}
+        run.create_job_result(submittable_parameter: run.parameter_set, result: {"ResultKey1" => 99})
         run.cpu_time = 10.0
         run.real_time = 3.0
         run.save!
@@ -589,7 +589,7 @@ describe ParameterSetsController do
         run.cpu_time = 10.0
         run.real_time = 3.0
         run.submitted_to = host
-        run.result = {"ResultKey1" => 99}
+        run.create_job_result(submittable_parameter: run.parameter_set, result: {"ResultKey1" => 99})
         run.save!
         ps
       end

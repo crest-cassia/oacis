@@ -196,7 +196,7 @@ describe Analysis do
       it "returns an Array having Run ids" do
         @run.status = :finished
         @run.save!
-        run2 = FactoryGirl.create(:finished_run, parameter_set: @ps, result: {"zzz" => true})
+        run2 = FactoryGirl.create(:finished_run, parameter_set: @ps, job_result: {result: {"zzz" => true}, submittable_parameter: @ps})
         run3 = FactoryGirl.create(:run, parameter_set: @ps)
         run3.status = :failed
         run3.save

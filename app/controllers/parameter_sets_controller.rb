@@ -278,24 +278,22 @@ class ParameterSetsController < ApplicationController
   def collect_result_values(ps_ids, analyzer, result_keys)
     aggregated = []
     if analyzer.nil?
-      aggregated = Run.collection.aggregate(
-        { '$match' => Run.in(parameter_set_id: ps_ids)
-                         .where(status: :finished)
+      aggregated = JobResult.collection.aggregate(
+        { '$match' => JobResult.in(submittable_id: Run.in(parameter_set_id: ps_ids).where(status: :finished).map(&:id))
                          .exists("result.#{result_keys.join('.')}" => true)
                          .selector },
-        { '$project' => { parameter_set_id: 1,
-                          result_val: "$result.#{result_keys.join('.')}"
+        { '$project' => { submittable_parameter_id: 1,
+                          result_val: "$result.#{result_keys.join('.')}" 
                         }},
-        { '$group' => { _id: '$parameter_set_id',
+        { '$group' => { _id: '$submittable_parameter_id',
                         average: {'$avg' => '$result_val'},
                         square_average: {'$avg' => {'$multiply' =>['$result_val', '$result_val']} },
                         count: {'$sum' => 1}
                       }}
         )
     elsif analyzer.type == :on_run
-      aggregated = Analysis.collection.aggregate(
-        { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
-                              .in(parameter_set_id: ps_ids)
+      aggregated = JobResult.collection.aggregate(
+        { '$match' => JobResult.in(submittable: Analysis.where(analyzer_id: analyzer.id, status: :finished).map(&:id), submittable_parameter_id: ps_ids)
                               .exists("result.#{result_keys.join('.')}" => true)
                               .selector },
         { '$sort' => {'updated_at' => -1} }, # get the latest analysis
@@ -327,6 +325,25 @@ class ParameterSetsController < ApplicationController
                         average: {'$first' => '$result_val'},
                         square_average: {'$first' => {'$multiply' =>['$result_val', '$result_val']}},
                         count: {'$first' => 1}
+                      }}
+        )
+      aggregated = JobResult.collection.aggregate(
+        { '$match' => JobResult.in(submittable: Analysis.where(analyzer_id: analyzer.id, status: :finished).map(&:id), submittable_parameter_id: ps_ids)
+                              .exists("result.#{result_keys.join('.')}" => true)
+                              .selector },
+        { '$sort' => {'updated_at' => -1} }, # get the latest analysis
+        { '$project' => { parameter_set_id: '$parameter_set_id',
+                          run_id: '$analyzable_id',
+                          result_val: "$result.#{result_keys.join('.')}"
+                        }},
+        { '$group' => { _id: '$run_id',  # get one analysis for each run
+                        parameter_set_id: {'$first' => '$parameter_set_id'},
+                        result_val: {'$first' => '$result_val'}
+                      }},
+        { '$group' => { _id: '$parameter_set_id',  # calculate average for each parameter_set
+                        average: {'$avg' => '$result_val'},
+                        square_average: {'$avg' => {'$multiply' =>['$result_val', '$result_val']}},
+                        count: {'$sum' => 1}
                       }}
         )
     else

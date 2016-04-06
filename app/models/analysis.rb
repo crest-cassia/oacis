@@ -8,6 +8,7 @@ class Analysis
   belongs_to :analyzer
   belongs_to :analyzable, polymorphic: true, autosave: false
   belongs_to :parameter_set
+  has_one :job_result, as: :submittable, dependent: :destroy
 
   default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 
