@@ -43,6 +43,24 @@ namespace :db do
       progressbar.increment
     end
 
+    q = Run.where(status: :finished, "result": {"$ne": nil})
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |run|
+      result = run[:result]
+      run.timeless.update_attribute(:result, nil)
+      run.create_job_result(submittable_parameter: run.submittable_parameter, result: result)
+      progressbar.increment
+    end
+    q = Analysis.where(status: :finished, "result": {"$ne": nil})
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |anl|
+      result = anl[:result]
+      anl.timeless.update_attribute(:result, nil)
+      anl.create_job_result(submittable_parameter: anl.submittable_parameter, result: result)
+      anl.timeless.save!
+      progressbar.increment
+    end
+
     session = Mongoid::Sessions.default
     if session.collections.find {|col| col.name== "worker_logs" }
       raise "collection is not capped" unless session["worker_logs"].capped?
