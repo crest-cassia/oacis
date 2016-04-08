@@ -27,7 +27,6 @@ module Submittable
     base.send(:field, :started_at, type: DateTime)
     base.send(:field, :finished_at, type: DateTime)
     base.send(:field, :included_at, type: DateTime)
-    base.send(:field, :result)  # can be any type. it's up to Simulator spec
     version_field = base == Run ? :simulator_version : :analyzer_version
     base.send(:field, version_field, type: String)
 

@@ -43,21 +43,20 @@ namespace :db do
       progressbar.increment
     end
 
-    q = Run.where(status: :finished, "result": {"$ne": nil})
+    q = Run.where(status: :finished, "result": {"$exists": "true"})
     progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
     q.each do |run|
-      result = run[:result]
-      run.timeless.update_attribute(:result, nil)
-      run.create_job_result(submittable_parameter: run.submittable_parameter, result: result)
+      result = run[:result] #returns result values not from Run model but from BSON Object
+      Run.collection.find({_id: run.id).update_all({"$unset": { "result": true }})
+      run.create_job_result(submittable_parameter: run.submittable_parameter, result: result) unless result
       progressbar.increment
     end
-    q = Analysis.where(status: :finished, "result": {"$ne": nil})
+    q = Analysis.where(status: :finished, "result": {"$exists": "true"})
     progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
     q.each do |anl|
-      result = anl[:result]
-      anl.timeless.update_attribute(:result, nil)
-      anl.create_job_result(submittable_parameter: anl.submittable_parameter, result: result)
-      anl.timeless.save!
+      result = anl[:result] #returns result values not from Analysis model but from BSON Object
+      Analysis.collection.find({_id: anl.id).update_all({"$unset": { "result": true }})
+      anl.create_job_result(submittable_parameter: anl.submittable_parameter, result: result) unless result
       progressbar.increment
     end
 
