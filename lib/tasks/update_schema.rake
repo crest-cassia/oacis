@@ -47,7 +47,7 @@ namespace :db do
     progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
     q.each do |run|
       result = run[:result] #returns result values not from Run model but from BSON Object
-      Run.collection.find({_id: run.id).update_all({"$unset": { "result": true }})
+      Run.collection.find({_id: run.id}).update_all({"$unset": { "result": true }})
       run.create_job_result(submittable_parameter: run.submittable_parameter, result: result) unless result
       progressbar.increment
     end
@@ -55,7 +55,7 @@ namespace :db do
     progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
     q.each do |anl|
       result = anl[:result] #returns result values not from Analysis model but from BSON Object
-      Analysis.collection.find({_id: anl.id).update_all({"$unset": { "result": true }})
+      Analysis.collection.find({_id: anl.id}).update_all({"$unset": { "result": true }})
       anl.create_job_result(submittable_parameter: anl.submittable_parameter, result: result) unless result
       progressbar.increment
     end
