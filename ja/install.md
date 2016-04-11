@@ -28,7 +28,7 @@ Windowsの方は(1.1)を選択してください。Unix系OS(Linux,Mac)の場合
 
 ---
 
-## (1.1) 仮想環境を使ったアプリケーションサーバーのインストール
+## (1.1) 仮想環境を使ったOACISのインストール
 
 [Docker](https://www.docker.com/)というツールを使ってOACISがインストールされた仮想環境を手軽に導入することができます。
 Linuxだけでなく、Windows、MacOSにも導入することができます。
@@ -49,7 +49,7 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 
 詳細は[oacis_docker](https://github.com/crest-cassia/oacis_docker) のREADMEを参照してください。
 
-## (1.2) 手動でのアプリケーションサーバーのインストール
+## (1.2) 手動でのOACISのインストール
 
 ### 対象プラットフォーム
 
