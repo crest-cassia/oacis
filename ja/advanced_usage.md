@@ -41,12 +41,7 @@ Mounted work base dirを指定するとホストとのファイル転送にSFTP�
 localhostを指定する場合には、Work base dirと同じ値を指定するとよいです。
 {% endcapture %}{% include tips %}
 
-XSUBの設定を変更した場合。
 ホスト登録時に"no such command xsub" というエラーが発生した場合は、そのホストでXSUBの設定を確認してください。正しく設定されていれば、OACISのマシンの端末から下記のコマンドを実行するとリモートホストの設定が取得できるはずです。
-
-```
-ssh remotehost 'bash -l -c xstat'
-```
 
 ## Simulatorの仕様 {#simulator_specification}
 
