@@ -90,6 +90,30 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     - `gem install bundler`
     - `which bundle` でコマンドへのパスが表示されればインストールに成功
 
+#### Ubuntu14.04での前提条件の整え方
+
+ここではapt-getを用いてセットアップしていきます。
+
+- rbenvのインストール
+    - `sudo apt-get update; sudo apt-get install -y git build-essential wget libssl-dev libreadline-dev zlib1g-dev`
+    - `git clone https://github.com/rbenv/rbenv.git ~/.rbenv`
+    - `git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build`
+    - `echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc`
+    - `echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bashrc`
+    - `eval "$(rbenv init -)"`
+- rbenvを用いてrubyをインストール
+    - `rbenv install 2.2.4 && rbenv global 2.2.4`
+    - `ruby --version` を実行して、`ruby 2.2.4....`と出力されれば成功
+- mongoDB v2.6をインストール
+    - `sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10`
+    - `echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list`
+    - `sudo apt-get update && sudo apt-get install mongodb-org`
+    - `service mongod start`によってmongodを起動することができる。再起動後は自動的に起動される。
+    - `mongo` コマンドを実行し端末が表示されれば成功。`exit`で端末から抜ける
+- bundlerのインストール
+    - `gem install bundler`
+    - `which bundle` でコマンドへのパスが表示されればインストールに成功
+
 ### インストール
 
 まず手元にOACISのソースコード一式をgit clonします。（gitがない場合はダウンロードします。）
