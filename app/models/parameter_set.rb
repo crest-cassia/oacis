@@ -9,6 +9,7 @@ class ParameterSet
   belongs_to :simulator, autosave: false
   has_many :runs
   has_many :analyses, as: :analyzable
+  has_many :job_results
 
   default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 

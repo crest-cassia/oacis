@@ -140,8 +140,9 @@ EOS
       json_path = '_output.json'
       if File.exist?(json_path)
         begin
-          job.result = JSON.load(File.open(json_path))
-          job.result = {"result"=>job.result} unless job.result.is_a?(Hash)
+          parsed = JSON.load(File.open(json_path))
+          parsed = {"result"=>parsed} unless parsed.is_a?(Hash)
+          job.create_job_result(parameter_set: job.parameter_set, result: parsed)
           is_updated = true
         rescue => ex
           error_message+="failed to load _output.json: #{ex.message}"

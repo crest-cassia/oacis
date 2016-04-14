@@ -278,9 +278,8 @@ class ParameterSetsController < ApplicationController
   def collect_result_values(ps_ids, analyzer, result_keys)
     aggregated = []
     if analyzer.nil?
-      aggregated = Run.collection.aggregate(
-        { '$match' => Run.in(parameter_set_id: ps_ids)
-                         .where(status: :finished)
+      aggregated = JobResult.collection.aggregate(
+        { '$match' => JobResult.in(submittable_id: Run.in(parameter_set_id: ps_ids).where(status: :finished).map(&:id))
                          .exists("result.#{result_keys.join('.')}" => true)
                          .selector },
         { '$project' => { parameter_set_id: 1,
@@ -293,9 +292,68 @@ class ParameterSetsController < ApplicationController
                       }}
         )
     elsif analyzer.type == :on_run
+      analysis2job_result={}
+      anl_ids=[]
+      job_results = JobResult.collection.aggregate(
+        { '$match' => JobResult.in(submittable_id: Analysis.where(analyzer_id: analyzer.id, status: :finished).in(parameter_set_id: ps_ids).map(&:id)).exists("result.#{result_keys.join('.')}" => true)
+          .selector },
+        { '$project' => { submittable_id: '$submittable_id',
+                              result_val: "$result.#{result_keys.join('.')}"
+          }}
+      )
+      job_results.each do |job_result|
+        analysis2job_result[job_result["submittable_id"]]=job_result["result_val"]
+        anl_ids << job_result["submittable_id"]
+      end
+      group1 = Analysis.collection.aggregate(
+        { '$match' => Analysis.in(id: anl_ids)
+          .selector },
+        { '$sort' => {'updated_at' => -1} }, # get the latest analysis
+        { '$project' => { parameter_set_id: '$parameter_set_id',
+                              run_id: '$analyzable_id'
+          }}
+      )
+      group2={}
+      group1.each do |document|
+        group2[document["run_id"]] ||= {parameter_set_id: document["parameter_set_id"], result_val: analysis2job_result[document["_id"]]}
+      end
+      group3={}
+      group2.keys.each do |key|
+        group3[group2[key][:parameter_set_id]] ||= {}
+        group3[group2[key][:parameter_set_id]]["average"] ||= []
+        group3[group2[key][:parameter_set_id]]["average"] << group2[key][:result_val]
+        group3[group2[key][:parameter_set_id]]["square_average"] ||= []
+        group3[group2[key][:parameter_set_id]]["square_average"] << group2[key][:result_val] * group2[key][:result_val]
+        group3[group2[key][:parameter_set_id]]["count"] ||= 0
+        group3[group2[key][:parameter_set_id]]["count"] += 1
+      end
+      aggregated = group3.keys.map do |key|
+        h={}
+        h["_id"]=key
+        h["average"]=group3[key]["average"].inject(:+)/group3[key]["count"].to_f
+        h["square_average"]=group3[key]["square_average"].inject(:+)/group3[key]["count"].to_f
+        h["count"]=group3[key]["count"]
+        h
+      end
+      binding.pry
+    elsif analyzer.type == :on_parameter_set
       aggregated = Analysis.collection.aggregate(
         { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
                               .in(parameter_set_id: ps_ids)
+                              .exists("result.#{result_keys.join('.')}" => true)
+                              .selector },
+        { '$sort' => {'updated_at' => -1} }, # get the latest analysis
+        { '$project' => { parameter_set_id: '$parameter_set_id',
+                          result_val: "$result.#{result_keys.join('.')}"
+                        }},
+        { '$group' => { _id: '$parameter_set_id',
+                        average: {'$first' => '$result_val'},
+                        square_average: {'$first' => {'$multiply' =>['$result_val', '$result_val']}},
+                        count: {'$first' => 1}
+                      }}
+        )
+      aggregated = JobResult.collection.aggregate(
+        { '$match' => JobResult.in(submittable: Analysis.where(analyzer_id: analyzer.id, status: :finished).in(parameter_set_id: ps_ids).map(&:id))
                               .exists("result.#{result_keys.join('.')}" => true)
                               .selector },
         { '$sort' => {'updated_at' => -1} }, # get the latest analysis
@@ -311,22 +369,6 @@ class ParameterSetsController < ApplicationController
                         average: {'$avg' => '$result_val'},
                         square_average: {'$avg' => {'$multiply' =>['$result_val', '$result_val']}},
                         count: {'$sum' => 1}
-                      }}
-        )
-    elsif analyzer.type == :on_parameter_set
-      aggregated = Analysis.collection.aggregate(
-        { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
-                              .in(parameter_set_id: ps_ids)
-                              .exists("result.#{result_keys.join('.')}" => true)
-                              .selector },
-        { '$sort' => {'updated_at' => -1} }, # get the latest analysis
-        { '$project' => { parameter_set_id: '$parameter_set_id',
-                          result_val: "$result.#{result_keys.join('.')}"
-                        }},
-        { '$group' => { _id: '$parameter_set_id',
-                        average: {'$first' => '$result_val'},
-                        square_average: {'$first' => {'$multiply' =>['$result_val', '$result_val']}},
-                        count: {'$first' => 1}
                       }}
         )
     else

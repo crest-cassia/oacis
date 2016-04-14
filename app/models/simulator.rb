@@ -160,8 +160,8 @@ class Simulator
       group["max_#{result_key.gsub('.', '_')}"] = {'$max' => "$result.#{result_key}" }
     end
 
-    aggregated = collection_class.collection.aggregate(
-      {'$match' =>  query.selector },
+    aggregated = JobResult.collection.aggregate(
+      {'$match' =>  JobResult.in(submittable: query.map(&:id)).selector },
       {'$group' => group }
     )
     aggregated = aggregated.first

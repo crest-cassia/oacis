@@ -27,9 +27,9 @@ module Submittable
     base.send(:field, :started_at, type: DateTime)
     base.send(:field, :finished_at, type: DateTime)
     base.send(:field, :included_at, type: DateTime)
-    base.send(:field, :result)  # can be any type. it's up to Simulator spec
     version_field = base == Run ? :simulator_version : :analyzer_version
     base.send(:field, version_field, type: String)
+    base.send(:has_one, :job_result, as: :submittable, dependent: :destroy)
 
     # indexes
     base.send(:index, { status: 1 }, { name: "#{base.to_s.downcase}_status_index" })
@@ -87,6 +87,18 @@ module Submittable
     cmd = executable.command
     cmd += " #{args}" if args.length > 0
     cmd
+  end
+
+  def result
+    r=nil
+    if self.job_result
+      r = self.job_result.result
+    end
+    r
+  end
+
+  def submittable_parameter
+    self.is_a?(Run) ? self.parameter_set : self.analyzer
   end
 
   private
