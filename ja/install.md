@@ -84,7 +84,7 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     - `ruby --version` を実行して、`ruby 2.2.4....`と出力されれば成功
 - mongoDBをインストール
     - `brew install mongo` でインストール
-    - `launchctl load ~/Library/LaunchAgents/homebrew.mxcl.mongodb.plist` によってmongodを起動することができる。以後ログイン時にも起動される。
+    - `launchctl load ~/Library/LaunchAgents/homebrew.mxcl.mongodb.plist` によってmongodを起動することができる。以後ログイン時にmongodも自動的に起動する。
     - `mongo` コマンドを実行し端末が表示されれば成功。`exit`で端末から抜ける
 - bundlerのインストール
     - `gem install bundler`
@@ -108,7 +108,7 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     - `sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10`
     - `echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list`
     - `sudo apt-get update && sudo apt-get install mongodb-org`
-    - `sudo service mongod start`によってmongodを起動することができる。再起動後は自動的に起動される。
+    - `sudo service mongod start`によってmongodを起動することができる。以後、システムの再起動時にmongodも自動的に起動する。
     - `mongo` コマンドを実行し端末が表示されれば成功。`exit`で端末から抜ける
 - bundlerのインストール
     - `gem install bundler`
