@@ -29,6 +29,7 @@ module Submittable
     base.send(:field, :included_at, type: DateTime)
     version_field = base == Run ? :simulator_version : :analyzer_version
     base.send(:field, version_field, type: String)
+    base.send(:has_one, :job_result, as: :submittable, dependent: :destroy)
 
     # indexes
     base.send(:index, { status: 1 }, { name: "#{base.to_s.downcase}_status_index" })

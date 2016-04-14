@@ -465,10 +465,10 @@ describe ParameterSetsController do
         run = ps.runs.create
         run.status = :finished
         run.submitted_to = host
-        run.create_job_result(submittable_parameter: run.parameter_set, result: {"ResultKey1" => 99})
         run.cpu_time = 10.0
         run.real_time = 3.0
         run.save!
+        run.create_job_result(parameter_set: run.parameter_set, result: {"ResultKey1" => 99}, updated_at: run.updated_at)
         ps
       end
     end
@@ -561,6 +561,46 @@ describe ParameterSetsController do
         expect(response.body).to eq expected
       end
     end
+
+    describe "from job_results in analysis on run" do
+
+      before(:each) do
+        @analyzer=@sim.analyzers.create({name: "AnalyzerRun", type: :on_run, command: "echo", files_to_copy: '*'})
+        @ps_array.each do |ps|
+          ps.reload.runs.each do |run|
+            anl=@analyzer.analyses.build({analyzable: run, analyzer: @analyzer, parameters: {}, status: :finished})
+            anl.save!
+            anl.create_job_result({parameter_set: ps, result: {"ResultKey1" => 99}, updated_at: anl.updated_at})
+            anl=@analyzer.analyses.build({analyzable: run, analyzer: @analyzer, parameters: {}, status: :finished})
+            anl.save!
+            anl.create_job_result({parameter_set: ps, result: {"ResultKey1" => 100}, updated_at: anl.updated_at})
+          end
+        end
+      end
+
+      it "returns in json format" do
+        get :_line_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "AnalyzerRun.ResultKey1", series: "", irrelevants: "", format: :json}
+        expect(response.header['Content-Type']).to include 'application/json'
+      end
+
+      it "returns valid json" do
+        get :_line_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "AnalyzerRun.ResultKey1", series: "", irrelevants: "", format: :json}
+        expected = {
+          xlabel: "L", ylabel: "ResultKey1", series: "", series_values: [], irrelevants: [],
+          plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=AnalyzerRun.ResultKey1&series=&irrelevants=#!tab-plot",
+          data: [
+            [
+              [1, 100.0, nil, @ps_array[0].id.to_s],
+              [2, 100.0, nil, @ps_array[1].id.to_s],
+              [3, 100.0, nil, @ps_array[2].id.to_s]
+            ]
+          ]
+        }.to_json
+        expect(response.body).to eq expected
+      end
+    end
   end
 
   describe "GET _scatter_plot" do
@@ -589,7 +629,7 @@ describe ParameterSetsController do
         run.cpu_time = 10.0
         run.real_time = 3.0
         run.submitted_to = host
-        run.create_job_result(submittable_parameter: run.parameter_set, result: {"ResultKey1" => 99})
+        run.create_job_result(parameter_set: run.parameter_set, result: {"ResultKey1" => 99})
         run.save!
         ps
       end

@@ -48,7 +48,7 @@ namespace :db do
     q.each do |run|
       result = run[:result] #returns result values not from Run model but from BSON Object
       Run.collection.find({_id: run.id}).update_all({"$unset": { "result": true }})
-      run.create_job_result(submittable_parameter: run.submittable_parameter, result: result) unless result
+      run.create_job_result(parameter_set: run.parameter_set, result: result) unless result
       progressbar.increment
     end
     q = Analysis.where(status: :finished, "result": {"$exists": "true"})
@@ -56,7 +56,7 @@ namespace :db do
     q.each do |anl|
       result = anl[:result] #returns result values not from Analysis model but from BSON Object
       Analysis.collection.find({_id: anl.id}).update_all({"$unset": { "result": true }})
-      anl.create_job_result(submittable_parameter: anl.submittable_parameter, result: result) unless result
+      anl.create_job_result(parameter_set: anl.parameter_set, result: result) unless result
       progressbar.increment
     end
 
