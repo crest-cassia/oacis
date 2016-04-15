@@ -6,6 +6,8 @@ namespace :daemon do
   task :start do
     ENV['RAILS_ENV'] ||= 'production'
     Rake::Task['db:update_schema'].invoke
+    Rake::Task['db:mongoid:remove_indexes'].invoke
+    Rake::Task['db:mongoid:create_indexes'].invoke
 
     threads = []
     threads << Thread.new do
