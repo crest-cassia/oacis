@@ -64,5 +64,20 @@ namespace :db do
       azr.update_attribute(:to_be_destroyed, false)
       progressbar.increment
     end
+
+    # to fix issue #460
+    q = Simulator.where(:h.exists => true)
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |sim|
+      sim.unset(:h)
+      progressbar.increment
+    end
+
+    q = Analyzer.where(:h.exists => true)
+    progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+    q.each do |azr|
+      azr.unset(:h)
+      progressbar.increment
+    end
   end
 end
