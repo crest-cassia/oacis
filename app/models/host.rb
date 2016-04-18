@@ -193,7 +193,7 @@ class Host
     self.executable_simulators.each do |sim|
       [:default_host_parameters, :default_mpi_procs, :default_omp_threads].each do |h|
         modified = sim.send(h).delete_if{|key, value| key == id.to_s}
-        sim.timeless.update_attribute(:h, modified)
+        sim.timeless.update_attribute(h, modified)
       end
     end
   end
