@@ -394,6 +394,32 @@ describe OacisCli do
         }
       end
     end
+
+    context "performance" do
+      before(:each) do
+        require 'benchmark'
+      end
+
+      # create 10000 parameter_sets
+      it 'takes time' do
+        at_temp_dir {
+          create_simulator_id_json(@sim, 'simulator_id.json')
+          File.open('parameter_sets.json', 'w') {|io|
+            parameters = []
+            100.times do |i|
+              100.times do |j|
+                parameters << {"L" => i, "T" => j.to_f}
+              end
+            end
+            io.puts parameters.to_json
+          }
+          option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json", yes: true}
+          expect(Benchmark.realtime{
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+          }).to be < 60.0 # acctual results were 44.51, 43.56, 48.52, 44.87
+        }
+      end
+    end
   end
 end
 

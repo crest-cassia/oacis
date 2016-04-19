@@ -344,7 +344,7 @@ class ParameterSetsController < ApplicationController
   def collect_latest_elapsed_times(ps_ids)
     Run.collection.aggregate(
       { '$match' => Run.in(parameter_set_id: ps_ids).where(status: :finished).selector },
-      { '$sort' => { finished_at: -1 } },
+      { '$sort' => { updated_at: -1 } },
       { '$group' => { _id: '$parameter_set_id',
                       real_time: {'$first' => '$real_time'},
                       cpu_time: {'$first' => '$cpu_time'}}}
@@ -426,7 +426,7 @@ class ParameterSetsController < ApplicationController
   def collect_latest_analyses(ps_ids, analyzer)
     Analysis.collection.aggregate(
       { '$match' => Analysis.where(analyzer: analyzer).in(parameter_set_id: ps_ids).where(status: :finished).selector },
-      { '$sort' => { finished_at: -1 } },
+      { '$sort' => { updatd_at: -1 } },
       { '$group' => { _id: '$parameter_set_id',
                       analysis_id: {'$first' => '$_id'},
                       analyzable_id: {'$first' => '$analyzable_id'}}}
@@ -436,7 +436,7 @@ class ParameterSetsController < ApplicationController
   def collect_latest_runs(ps_ids)
     Run.collection.aggregate(
       { '$match' => Run.in(parameter_set_id: ps_ids).where(status: :finished).selector },
-      { '$sort' => { finished_at: -1 } },
+      { '$sort' => { updatd_at: -1 } },
       { '$group' => { _id: '$parameter_set_id',
                       run_id: {'$first' => '$_id'}}}
       )

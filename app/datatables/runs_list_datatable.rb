@@ -3,11 +3,11 @@ class RunsListDatatable
   HEADER  = ['<th>RunID</th>', '<th>status</th>', '<th>priority</th>',
              '<th>elapsed</th>',
              '<th>MPI</th>', '<th>OMP</th>', '<th>version</th>',
-             '<th>created_at</th>', '<th>finished_at</th>', '<th>host</th>', '<th>job_id</th>',
+             '<th>created_at</th>', '<th>updated_at</th>', '<th>host</th>', '<th>job_id</th>',
              '<th style="min-width: 18px; width: 1%;"></th>']
   SORT_BY = ["id", "status", "priority", "real_time",
              "mpi_procs", "omp_threads", "simulator_version",
-             "created_at", "finished_at", "submitted_to", "job_id", "id"]
+             "created_at", "updated_at", "submitted_to", "job_id", "id"]
 
   def initialize(runs, view)
     @view = view
@@ -37,7 +37,7 @@ private
       tmp << run.omp_threads
       tmp << run.simulator_version
       tmp << @view.distance_to_now_in_words(run.created_at)
-      tmp << @view.distance_to_now_in_words(run.finished_at)
+      tmp << @view.distance_to_now_in_words(run.updated_at)
       host = run.submitted_to
       tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "---")
       tmp << @view.shortened_job_id(run.job_id)
@@ -73,7 +73,7 @@ private
   end
 
   def sort_columns
-    return ["finished_at"] if @view.params["order"].nil?
+    return ["updated_at"] if @view.params["order"].nil?
     @view.params["order"].keys.map do |key|
       SORT_BY[@view.params["order"][key]["column"].to_i]
     end
