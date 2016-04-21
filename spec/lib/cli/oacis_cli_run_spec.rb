@@ -304,29 +304,6 @@ describe OacisCli do
         }
       end
     end
-
-    context "performance" do
-      before do
-        require 'benchmark'
-      end
-
-      # create 2000 runs ( 1000 runs for a parameter_set )
-      it 'takes time' do
-        at_temp_dir {
-          create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
-          create_job_parameters_json('job_parameters.json')
-          options = {
-            parameter_sets: 'parameter_set_ids.json',
-            job_parameters: 'job_parameters.json',
-            number_of_runs: 1000,
-            output: 'run_ids.json'
-          }
-          expect(Benchmark.realtime{
-            OacisCli.new.invoke(:create_runs, [], options)
-          }).to be < 60.0 # acctual results were 45.01, 45.50, 45.59, 51.08
-        }
-      end
-    end
   end
 
   describe "#run_status" do

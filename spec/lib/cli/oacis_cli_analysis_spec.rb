@@ -277,64 +277,6 @@ describe OacisCli do
         }
       end
     end
-
-    context "performance with type on_run" do
-      before(:each) do
-        require 'benchmark'
-        @sim = FactoryGirl.create(:simulator, parameter_sets_count: 2, runs_count: 0,
-                                  finished_runs_count: 1000,
-                                  analyzers_count: 1, run_analysis: false,
-                                  analyzers_on_parameter_set_count: 1,
-                                  run_analysis_on_parameter_set: false)
-        @sim.analyzers.each do |azr|
-          azr.update_attribute(:support_mpi, true)
-          azr.update_attribute(:support_omp, true)
-        end
-      end
-
-      #create 2000 analyses with type on_run
-      it 'takes time' do
-        at_temp_dir {
-          analyzer_id = @sim.analyzers.where(type: :on_run).first.id.to_s
-          create_job_parameters_json('job_parameters.json')
-          options = { analyzer_id: analyzer_id, input: 'azr_parameters.json',
-                      output: 'analysis_ids.json', job_parameters: 'job_parameters.json'}
-          OacisCli.new.invoke(:analyses_template, [], {analyzer_id: analyzer_id, output: "azr_parameters.json"})
-          expect(Benchmark.realtime{
-            OacisCli.new.invoke(:create_analyses, [], options)
-          }).to be < 60.0 # acctual results were 26.21, 24.66, 25.74, 25.87
-        }
-      end
-    end
-
-    context "performance with type on_parameter_set" do
-      before(:each) do
-        require 'benchmark'
-        @sim = FactoryGirl.create(:simulator, parameter_sets_count: 2000, runs_count: 0,
-                                  finished_runs_count: 2,
-                                  analyzers_count: 1, run_analysis: false,
-                                  analyzers_on_parameter_set_count: 1,
-                                  run_analysis_on_parameter_set: false)
-        @sim.analyzers.each do |azr|
-          azr.update_attribute(:support_mpi, true)
-          azr.update_attribute(:support_omp, true)
-        end
-      end
-
-      #create 2000 analyses with type on_parameter_set
-      it 'takes time' do
-        at_temp_dir {
-          analyzer_id = @sim.analyzers.where(type: :on_parameter_set).first.id.to_s
-          create_job_parameters_json('job_parameters.json')
-          options = { analyzer_id: analyzer_id, input: 'azr_parameters.json',
-                      output: 'analysis_ids.json', job_parameters: 'job_parameters.json'}
-          OacisCli.new.invoke(:analyses_template, [], {analyzer_id: analyzer_id, output: "azr_parameters.json"})
-          expect(Benchmark.realtime{
-            OacisCli.new.invoke(:create_analyses, [], options)
-          }).to be < 60.0 # acctual results were 35.46, 32.02, 32.37, 39.50
-        }
-      end
-    end
   end
 
   describe "#analysis_status" do
@@ -580,7 +522,7 @@ describe OacisCli do
   describe "#replace_analyses_by_ids" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
+      FactoryGirl.create(:simulator,
                                parameter_sets_count: 1,
                                finished_runs_count: 5,
                                run_analysis: true)
