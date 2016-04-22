@@ -522,7 +522,7 @@ describe OacisCli do
   describe "#replace_analyses_by_ids" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
+      FactoryGirl.create(:simulator,
                                parameter_sets_count: 1,
                                finished_runs_count: 5,
                                run_analysis: true)

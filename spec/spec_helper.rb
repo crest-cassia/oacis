@@ -68,7 +68,12 @@ Spork.prefork do
 
       root_dir = ResultDirectory.root
       FileUtils.rm_r(root_dir) if FileTest.directory?(root_dir)
+      system('bundle exec rake db:mongoid:create_indexes RAILS_ENV=test')
     end
+    config.after(:suite) do
+      system('bundle exec rake db:mongoid:remove_indexes RAILS_ENV=test')
+    end
+
     config.before(:each) do
       DatabaseCleaner.start
     end
