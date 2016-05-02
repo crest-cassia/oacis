@@ -2,7 +2,7 @@
 layout: default
 title: "チュートリアル"
 lang: ja
-next_page: advanced_usage
+next_page: configuring_host
 ---
 
 # {{ page.title }}
@@ -23,7 +23,7 @@ next_page: advanced_usage
 シミュレーターのソースコードはgithub上の[リポジトリ](https://github.com/yohm/nagel_schreckenberg_model)にあります。
 READMEに書いてある通りにセットアップして、`run.sh`というスクリプトにパラメータを引数として渡すとシミュレーションが実行されます。
 結果のファイルは実行したカレントディレクトリに作成されます。
-試しに手元で実行して、どのような挙動になるか確認してみてください。
+試しに手元で実行して、どのような挙動になるか確認してみるのもよいでしょう。
 
 以後、この実行スクリプトが `~/work/ns_model/run.sh` に存在するとします。
 
@@ -37,7 +37,7 @@ READMEに書いてある通りにセットアップして、`run.sh`というス
 1. 結果の確認
 1. パラメータスイープ
 
-Docker環境の場合はHost登録まで完了しています。
+**Docker環境の場合はSimulator登録まで完了しています。"ParameterSet登録"から始めてください。**
 
 ## 1. Host登録
 
@@ -74,7 +74,7 @@ xsub の設定方法については、https://github.com/crest-cassia/xsub を�
 - Polling interval: 5 
     - workerがステータスをチェックする時間間隔。本チュートリアルでは早く挙動を確認したいので短めに設定しています。
 
-各項目の詳細は [別ページ]({{ site.baseurl }}/{{ page.lang }}/advanced_usage.html#host_specification) で説明しています。
+各項目の詳細は [別ページ]({{ site.baseurl }}/{{ page.lang }}/configuring_host.html#host_specification) で説明しています。
 他の実行ホストを登録する際にはこちらを参照してください。
 
 ## 2. Simulator登録
@@ -110,7 +110,7 @@ OACISにシミュレーターを登録する際にはシミュレーターの実
 
 Simulator一覧ページ(/simulators)で[New Simulator]ボタンをクリックすると新規Simulator登録画面が表示されます。
 
-このページの入力フィールドにシミュレータの情報を登録します。登録する項目は [シミュレーターの仕様]({{ site.baseurl }}/{{ page.lang }}/advanced_usage.html#simulator_specification) のページで説明しています。
+このページの入力フィールドにシミュレータの情報を登録します。登録する項目は [シミュレーターの仕様]({{ site.baseurl }}/{{ page.lang }}/configuring_simulator.html#simulator_specification) のページで説明しています。
 
 本チュートリアルでは以下のように設定します。その他はデフォルトにしてください。
 
