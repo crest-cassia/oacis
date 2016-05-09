@@ -58,6 +58,7 @@
           .form-group
             .col-md-9.col-md-offset-3
               %a.btn.btn-primary#show_progress_button Show
+          %svg#spin_arc{width: 300, height: 100}
 :javascript
   var url = "#{_progress_simulator_path}" + ".json";
   function show_progress() {
