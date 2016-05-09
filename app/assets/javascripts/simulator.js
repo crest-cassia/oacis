@@ -70,7 +70,6 @@ function draw_progress_overview(url) {
   var toolTip = d3.select("#progress-tooltip");
 
   var progress_overview = d3.select("#progress-overview");
-  progress_overview.select("svg").remove();
   var svg = progress_overview.append("svg")
     .attr("id", "canvas")
     .attr("width", width + margin.left + margin.right)
@@ -80,6 +79,7 @@ function draw_progress_overview(url) {
 
   var xhr = d3.json(url)
     .on("load", function(dat) {
+    progress_overview.select("svg").remove();
     loading.remove();
 
     var rectSizeX = (width - rowLabelMargin) / dat.parameter_values[0].length;
