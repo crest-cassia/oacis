@@ -271,7 +271,7 @@ function draw_progress_overview(url) {
       .attr("width", rowLabelMargin-tickTextOffset[0])
       .attr("height", height - columnLabelMargin)
       .attr("preserveAspectRatio", "none")
-      .attr("viewBox", "" + 0 + " " + vbox_y + " " + rowLabelMargin-tickTextOffset[0] + " " + vbox_height);
+      .attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
 
     var rowLabelRegion = rowLabelsvg.append("g")
       .attr("id","rowLabelRegion")
@@ -307,7 +307,7 @@ function draw_progress_overview(url) {
       .attr("width", width - rowLabelMargin)
       .attr("height", columnLabelMargin-tickTextOffset[1])
       .attr("preserveAspectRatio", "none")
-      .attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + columnLabelMargin-tickTextOffset[1]);
+      .attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
 
     var columnLabelRegion = columnLabelsvg.append("g")
       .attr("id","columnLabelRegion")
