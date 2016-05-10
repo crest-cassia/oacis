@@ -19,10 +19,10 @@ function draw_color_map() {
 };
 
 function show_loading_spin_arc(svg, width, height) {
-  var loading_spin = svg.append("g")
-    .attr("transform", "translate(" + width/2 + "," + height/2 + ")")
-    .attr("id", "loading-spin");
   var radius = Math.min(width, height) / 2;
+  var loading_spin = svg.append("g")
+    .attr("transform", "translate(" + radius + "," + radius + ")")
+    .attr("id", "loading-spin");
   var arc = d3.svg.arc()
     .innerRadius(radius*0.5)
     .outerRadius(radius*0.9)
@@ -33,10 +33,12 @@ function show_loading_spin_arc(svg, width, height) {
     .attr("d", arc)
     .call(spin, 1500);
   var message = radius > 100 ? "LOADING: click here to cancel" : "LOADING";
-  loading_spin.append("text")
+  loading_spin.append("g")
+    .attr("transform", "translate(" + radius + ",0)")
+    .append("text")
     .style({
-      "text-anchor": "middle",
-      "font-size": radius*0.1
+      "text-anchor": "left",
+      "font-size": radius*0.3
     })
     .text(message);
 
@@ -68,15 +70,16 @@ function draw_progress_overview(url) {
   var toolTip = d3.select("#progress-tooltip");
 
   var progress_overview = d3.select("#progress-overview");
-  progress_overview.select("svg").remove();
   var svg = progress_overview.append("svg")
     .attr("id", "canvas")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom);
-  var loading = show_loading_spin_arc(svg, svg.attr("width"), svg.attr("height"));
+  var arc_svg = d3.select('#spin_arc');
+  var loading = show_loading_spin_arc(arc_svg, arc_svg.attr("width"), arc_svg.attr("height"));
 
   var xhr = d3.json(url)
     .on("load", function(dat) {
+    progress_overview.select("svg").remove();
     loading.remove();
 
     var rectSizeX = (width - rowLabelMargin) / dat.parameter_values[0].length;
@@ -268,7 +271,7 @@ function draw_progress_overview(url) {
       .attr("width", rowLabelMargin-tickTextOffset[0])
       .attr("height", height - columnLabelMargin)
       .attr("preserveAspectRatio", "none")
-      .attr("viewBox", "" + 0 + " " + vbox_y + " " + rowLabelMargin-tickTextOffset[0] + " " + vbox_height);
+      .attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
 
     var rowLabelRegion = rowLabelsvg.append("g")
       .attr("id","rowLabelRegion")
@@ -304,7 +307,7 @@ function draw_progress_overview(url) {
       .attr("width", width - rowLabelMargin)
       .attr("height", columnLabelMargin-tickTextOffset[1])
       .attr("preserveAspectRatio", "none")
-      .attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + columnLabelMargin-tickTextOffset[1]);
+      .attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
 
     var columnLabelRegion = columnLabelsvg.append("g")
       .attr("id","columnLabelRegion")
