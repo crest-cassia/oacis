@@ -118,4 +118,12 @@ pre {
 .tooltip-inner {
   max-width: unset;
 }
+// See http://stackoverflow.com/questions/19982651
+//     http://stackoverflow.com/questions/24448991
+//     https://github.com/crest-cassia/oacis/issues/455
+//     http://stackoverflow.com/questions/7229568
+.form-control {
+  padding-top: 0;
+  padding-bottom: 0;
+}
 
