@@ -24,3 +24,9 @@ $(function() {
 
   window.datatables_for_runs_table = datatables_for_runs_table;
 });
+
+// This function is used to adjust the size of iframe
+function resizeIframe(obj) {
+  obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+  obj.style.width = obj.contentWindow.document.body.scrollWidth + 'px';
+}

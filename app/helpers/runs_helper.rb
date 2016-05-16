@@ -47,6 +47,9 @@ module RunsHelper
         if result_path.to_s =~ /(\.png|\.jpg|\.bmp)$/i
           sio.puts '<br />'
           sio.puts image_tag( file_path_to_link_path(result_path) )
+        elsif result_path.to_s =~ /\.html$/
+          sio.puts '<br />'
+          sio.puts "<iframe src=#{file_path_to_link_path(result_path)} seamless sandbox=\"allow-same-origin allow-scripts\" onload=\"resizeIframe(this)\"></iframe>"
         end
         sio.puts '</a></li>'
       end
