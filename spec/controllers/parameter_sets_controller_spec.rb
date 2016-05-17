@@ -757,7 +757,8 @@ describe ParameterSetsController do
       @sim = FactoryGirl.create(:simulator,
                                parameter_definitions: pds,
                                parameter_sets_count: 0,
-                               analyzers_count: 0)
+                               analyzers_count: 1,
+                               analyzers_on_parameter_set_count: 1)
       param_values = [ {"L" => 1, "T" => 1.0, "P" => 1.0},
                        {"L" => 2, "T" => 1.0, "P" => 1.0},
                        {"L" => 3, "T" => 1.0, "P" => 1.0},
@@ -765,14 +766,14 @@ describe ParameterSetsController do
                        {"L" => 2, "T" => 2.0, "P" => 1.0},
                        {"L" => 3, "T" => 2.0, "P" => 2.0}  # P is different from others
                      ]
-      host = FactoryGirl.create(:host)
+      @host = FactoryGirl.create(:host)
       @ps_array = param_values.map do |v|
         ps = @sim.parameter_sets.create(v: v)
         run = ps.runs.create
         run.status = :finished
         run.cpu_time = 10.0
         run.real_time = 3.0
-        run.submitted_to = host
+        run.submitted_to = @host
         run.result = {"ResultKey1" => 99}
         run.save!
         ps
@@ -861,6 +862,172 @@ describe ParameterSetsController do
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "P", format: :json}
       loaded = JSON.load(response.body)
       expect(loaded["plot_url"]).to match (/\?plot_type=scatter&x_axis=L&y_axis=T&result=cpu_time&irrelevants=P\#\!tab-plot$/)
+    end
+
+    context "for analysis on run" do
+
+      before(:each) do
+        @analyzer = @sim.analyzers.where(type: :on_parameter_set).first
+        @ps_array.each do |ps|
+          ps.runs.each do |run|
+            anl = run.analyses.create
+            anl.analyzer = @analyzer
+            anl.status = :finished
+            anl.cpu_time = 100.0
+            anl.real_time = 60.0
+            anl.submitted_to = @host
+            anl.result = {"ResultKey1" => 999}
+            anl.save!
+          end
+        end
+      end
+
+      it "returns in json format" do
+        get :_scatter_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "", format: :json}
+        expect(response.header['Content-Type']).to include 'application/json'
+      end
+
+      it "returns valid json" do
+        get :_scatter_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "", format: :json}
+        expected_data = [
+          [@ps_array[0].v, 999.0, nil, @ps_array[0].id.to_s],
+          [@ps_array[3].v, 999.0, nil, @ps_array[3].id.to_s],
+          [@ps_array[1].v, 999.0, nil, @ps_array[1].id.to_s],
+          [@ps_array[4].v, 999.0, nil, @ps_array[4].id.to_s],
+          [@ps_array[2].v, 999.0, nil, @ps_array[2].id.to_s]
+        ]
+
+        loaded = JSON.load(response.body)
+        expect(loaded["xlabel"]).to eq "L"
+        expect(loaded["ylabel"]).to eq "T"
+        expect(loaded["result"]).to eq "ResultKey1"
+        expect(loaded["irrelevants"]).to eq []
+        expect(loaded["data"]).to match_array(expected_data)
+      end
+
+      it "returns records specified by range" do
+        get :_scatter_plot,
+          { id: @ps_array.first,
+            x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1",
+            irrelevants: "", range: {"L" => [1,2]}.to_json,
+            format: :json}
+          expected_data = [
+            [@ps_array[0].v, 999.0, nil, @ps_array[0].id.to_s],
+            [@ps_array[3].v, 999.0, nil, @ps_array[3].id.to_s],
+            [@ps_array[1].v, 999.0, nil, @ps_array[1].id.to_s],
+            [@ps_array[4].v, 999.0, nil, @ps_array[4].id.to_s]
+          ]
+
+          loaded = JSON.load(response.body)
+          expect(loaded["xlabel"]).to eq "L"
+          expect(loaded["ylabel"]).to eq "T"
+          expect(loaded["result"]).to eq "ResultKey1"
+          expect(loaded["irrelevants"]).to eq []
+          expect(loaded["data"]).to match_array(expected_data)
+      end
+
+      it "returns collect values when irrelevant keys are given" do
+        get :_scatter_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "P", format: :json}
+
+        loaded = JSON.load(response.body)
+        expect(loaded["xlabel"]).to eq "L"
+        expect(loaded["ylabel"]).to eq "T"
+        expect(loaded["result"]).to eq "ResultKey1"
+        expect(loaded["irrelevants"]).to eq ["P"]
+        expect(loaded["data"]).to include( [@ps_array[5].v, 999.0, nil, @ps_array[5].id.to_s] )
+      end
+
+      it "contains url for the plot" do
+        get :_scatter_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "P", format: :json}
+        loaded = JSON.load(response.body)
+        expect(loaded["plot_url"]).to match (/\?plot_type=scatter&x_axis=L&y_axis=T&result=#{@analyzer.name}.ResultKey1&irrelevants=P\#\!tab-plot$/)
+      end
+    end
+
+    context "for analysis on ps" do
+
+      before(:each) do
+        @analyzer = @sim.analyzers.where(type: :on_parameter_set).first
+        @ps_array.each do |ps|
+          anl = ps.analyses.create
+          anl.analyzer = @analyzer
+          anl.status = :finished
+          anl.cpu_time = 100.0
+          anl.real_time = 60.0
+          anl.submitted_to = @host
+          anl.result = {"ResultKey1" => 9999}
+          anl.save!
+        end
+      end
+
+      it "returns in json format" do
+        get :_scatter_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "", format: :json}
+        expect(response.header['Content-Type']).to include 'application/json'
+      end
+
+      it "returns valid json" do
+        get :_scatter_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "", format: :json}
+        expected_data = [
+          [@ps_array[0].v, 9999, nil, @ps_array[0].id.to_s],
+          [@ps_array[3].v, 9999, nil, @ps_array[3].id.to_s],
+          [@ps_array[1].v, 9999, nil, @ps_array[1].id.to_s],
+          [@ps_array[4].v, 9999, nil, @ps_array[4].id.to_s],
+          [@ps_array[2].v, 9999, nil, @ps_array[2].id.to_s]
+        ]
+
+        loaded = JSON.load(response.body)
+        expect(loaded["xlabel"]).to eq "L"
+        expect(loaded["ylabel"]).to eq "T"
+        expect(loaded["result"]).to eq "ResultKey1"
+        expect(loaded["irrelevants"]).to eq []
+        expect(loaded["data"]).to match_array(expected_data)
+      end
+
+      it "returns records specified by range" do
+        get :_scatter_plot,
+          { id: @ps_array.first,
+            x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1",
+            irrelevants: "", range: {"L" => [1,2]}.to_json,
+            format: :json}
+          expected_data = [
+            [@ps_array[0].v, 9999, nil, @ps_array[0].id.to_s],
+            [@ps_array[3].v, 9999, nil, @ps_array[3].id.to_s],
+            [@ps_array[1].v, 9999, nil, @ps_array[1].id.to_s],
+            [@ps_array[4].v, 9999, nil, @ps_array[4].id.to_s]
+          ]
+
+          loaded = JSON.load(response.body)
+          expect(loaded["xlabel"]).to eq "L"
+          expect(loaded["ylabel"]).to eq "T"
+          expect(loaded["result"]).to eq "ResultKey1"
+          expect(loaded["irrelevants"]).to eq []
+          expect(loaded["data"]).to match_array(expected_data)
+      end
+
+      it "returns collect values when irrelevant keys are given" do
+        get :_scatter_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "P", format: :json}
+
+        loaded = JSON.load(response.body)
+        expect(loaded["xlabel"]).to eq "L"
+        expect(loaded["ylabel"]).to eq "T"
+        expect(loaded["result"]).to eq "ResultKey1"
+        expect(loaded["irrelevants"]).to eq ["P"]
+        expect(loaded["data"]).to include( [@ps_array[5].v, 9999, nil, @ps_array[5].id.to_s] )
+      end
+
+      it "contains url for the plot" do
+        get :_scatter_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "P", format: :json}
+        loaded = JSON.load(response.body)
+        expect(loaded["plot_url"]).to match (/\?plot_type=scatter&x_axis=L&y_axis=T&result=#{@analyzer.name}.ResultKey1&irrelevants=P\#\!tab-plot$/)
+      end
     end
   end
 
