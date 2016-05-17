@@ -454,7 +454,8 @@ describe ParameterSetsController do
       @sim = FactoryGirl.create(:simulator,
                                parameter_definitions: pds,
                                parameter_sets_count: 0,
-                               analyzers_count: 0)
+                               analyzers_count: 1,
+                               analyzers_on_parameter_set_count: 1)
       param_values = [ {"L" => 1, "T" => 1.0, "P" => 1.0},
                        {"L" => 2, "T" => 1.0, "P" => 1.0},
                        {"L" => 3, "T" => 1.0, "P" => 1.0},
@@ -462,12 +463,12 @@ describe ParameterSetsController do
                        {"L" => 2, "T" => 2.0, "P" => 1.0},
                        {"L" => 3, "T" => 2.0, "P" => 2.0}  # P is different from others
                      ]
-      host = FactoryGirl.create(:host)
+      @host = FactoryGirl.create(:host)
       @ps_array = param_values.map do |v|
         ps = @sim.parameter_sets.create(v: v)
         run = ps.runs.create
         run.status = :finished
-        run.submitted_to = host
+        run.submitted_to = @host
         run.result = {"ResultKey1" => 99}
         run.cpu_time = 10.0
         run.real_time = 3.0
@@ -562,6 +563,186 @@ describe ParameterSetsController do
           ]
         }.to_json
         expect(response.body).to eq expected
+      end
+    end
+
+    context "for analysis on run" do
+
+      before(:each) do
+        @analyzer = @sim.analyzers.where(type: :on_run).first
+        @ps_array.each do |ps|
+          ps.runs.each do |run|
+            anl = run.analyses.create
+            anl.analyzer = @analyzer
+            anl.status = :finished
+            anl.cpu_time = 100.0
+            anl.real_time = 60.0
+            anl.submitted_to = @host
+            anl.result = {"ResultKey1" => 999}
+            anl.save!
+          end
+        end
+      end
+
+      it "returns in json format" do
+        get :_line_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "#{@analyzer.name}.ResultKey1", series: "", irrelevants: "", format: :json}
+        expect(response.header['Content-Type']).to include 'application/json'
+      end
+
+      it "returns valid json" do
+        get :_line_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "#{@analyzer.name}.ResultKey1", series: "", irrelevants: "", format: :json}
+        expected = {
+          xlabel: "L", ylabel: "ResultKey1", series: "", series_values: [], irrelevants: [],
+          plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=&irrelevants=#!tab-plot",
+          data: [
+            [
+              [1, 999.0, nil, @ps_array[0].id.to_s],
+              [2, 999.0, nil, @ps_array[1].id.to_s],
+              [3, 999.0, nil, @ps_array[2].id.to_s],
+            ]
+          ]
+        }.to_json
+        expect(response.body).to eq expected
+      end
+
+      context "when parameter 'series' is given" do
+
+        it "returns series of data when parameter 'series' is given" do
+          get :_line_plot,
+            {id: @ps_array.first, x_axis_key: "L", y_axis_key: "#{@analyzer.name}.ResultKey1", series: "T", irrelevants: "", format: :json}
+          expected = {
+            xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0], irrelevants: [],
+            plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=T&irrelevants=#!tab-plot",
+            data: [
+              [
+                [1, 999.0, nil, @ps_array[3].id.to_s],
+                [2, 999.0, nil, @ps_array[4].id.to_s],
+              ],
+              [
+                [1, 999.0, nil, @ps_array[0].id.to_s],
+                [2, 999.0, nil, @ps_array[1].id.to_s],
+                [3, 999.0, nil, @ps_array[2].id.to_s]
+              ]
+            ]
+          }.to_json
+          expect(response.body).to eq expected
+        end
+      end
+
+      context "when 'irrelevants' are given" do
+
+        it "data includes parameter sets having different irrelevant parameters " do
+          get :_line_plot,
+            {id: @ps_array.first, x_axis_key: "L", y_axis_key: "#{@analyzer.name}.ResultKey1", series: "T", irrelevants: "P", format: :json}
+          expected = {
+            xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0], irrelevants: ["P"],
+            plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=T&irrelevants=P#!tab-plot",
+            data: [
+              [
+                [1, 999.0, nil, @ps_array[3].id.to_s],
+                [2, 999.0, nil, @ps_array[4].id.to_s],
+                [3, 999.0, nil, @ps_array[5].id.to_s]
+              ],
+              [
+                [1, 999.0, nil, @ps_array[0].id.to_s],
+                [2, 999.0, nil, @ps_array[1].id.to_s],
+                [3, 999.0, nil, @ps_array[2].id.to_s]
+              ]
+            ]
+          }.to_json
+          expect(response.body).to eq expected
+        end
+      end
+    end
+
+    context "for analysis on ps" do
+
+      before(:each) do
+        @analyzer = @sim.analyzers.where(type: :on_parameter_set).first
+        @ps_array.each do |ps|
+          anl = ps.analyses.create
+          anl.analyzer = @analyzer
+          anl.status = :finished
+          anl.cpu_time = 100.0
+          anl.real_time = 60.0
+          anl.submitted_to = @host
+          anl.result = {"ResultKey1" => 9999}
+          anl.save!
+        end
+      end
+
+      it "returns in json format" do
+        get :_line_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "#{@analyzer.name}.ResultKey1", series: "", irrelevants: "", format: :json}
+        expect(response.header['Content-Type']).to include 'application/json'
+      end
+
+      it "returns valid json" do
+        get :_line_plot,
+          {id: @ps_array.first, x_axis_key: "L", y_axis_key: "#{@analyzer.name}.ResultKey1", series: "", irrelevants: "", format: :json}
+        expected = {
+          xlabel: "L", ylabel: "ResultKey1", series: "", series_values: [], irrelevants: [],
+          plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=&irrelevants=#!tab-plot",
+          data: [
+            [
+              [1, 9999, nil, @ps_array[0].id.to_s],
+              [2, 9999, nil, @ps_array[1].id.to_s],
+              [3, 9999, nil, @ps_array[2].id.to_s],
+            ]
+          ]
+        }.to_json
+        expect(response.body).to eq expected
+      end
+
+      context "when parameter 'series' is given" do
+
+        it "returns series of data when parameter 'series' is given" do
+          get :_line_plot,
+            {id: @ps_array.first, x_axis_key: "L", y_axis_key: "#{@analyzer.name}.ResultKey1", series: "T", irrelevants: "", format: :json}
+          expected = {
+            xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0], irrelevants: [],
+            plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=T&irrelevants=#!tab-plot",
+            data: [
+              [
+                [1, 9999, nil, @ps_array[3].id.to_s],
+                [2, 9999, nil, @ps_array[4].id.to_s],
+              ],
+              [
+                [1, 9999, nil, @ps_array[0].id.to_s],
+                [2, 9999, nil, @ps_array[1].id.to_s],
+                [3, 9999, nil, @ps_array[2].id.to_s]
+              ]
+            ]
+          }.to_json
+          expect(response.body).to eq expected
+        end
+      end
+
+      context "when 'irrelevants' are given" do
+
+        it "data includes parameter sets having different irrelevant parameters " do
+          get :_line_plot,
+            {id: @ps_array.first, x_axis_key: "L", y_axis_key: "#{@analyzer.name}.ResultKey1", series: "T", irrelevants: "P", format: :json}
+          expected = {
+            xlabel: "L", ylabel: "ResultKey1", series: "T", series_values: [2.0, 1.0], irrelevants: ["P"],
+            plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=T&irrelevants=P#!tab-plot",
+            data: [
+              [
+                [1, 9999, nil, @ps_array[3].id.to_s],
+                [2, 9999, nil, @ps_array[4].id.to_s],
+                [3, 9999, nil, @ps_array[5].id.to_s]
+              ],
+              [
+                [1, 9999, nil, @ps_array[0].id.to_s],
+                [2, 9999, nil, @ps_array[1].id.to_s],
+                [3, 9999, nil, @ps_array[2].id.to_s]
+              ]
+            ]
+          }.to_json
+          expect(response.body).to eq expected
+        end
       end
     end
   end
