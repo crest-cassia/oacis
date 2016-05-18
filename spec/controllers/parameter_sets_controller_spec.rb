@@ -845,7 +845,7 @@ describe ParameterSetsController do
       expect(loaded["data"]).to match_array(expected_data)
     end
 
-    it "returns collect values when irrelevant keys are given" do
+    it "returns collected values when irrelevant keys are given" do
       get :_scatter_plot,
         {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "P", format: :json}
 
@@ -928,7 +928,7 @@ describe ParameterSetsController do
           expect(loaded["data"]).to match_array(expected_data)
       end
 
-      it "returns collect values when irrelevant keys are given" do
+      it "returns collected values when irrelevant keys are given" do
         get :_scatter_plot,
           {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "P", format: :json}
 
@@ -1010,7 +1010,7 @@ describe ParameterSetsController do
           expect(loaded["data"]).to match_array(expected_data)
       end
 
-      it "returns collect values when irrelevant keys are given" do
+      it "returns collected values when irrelevant keys are given" do
         get :_scatter_plot,
           {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "P", format: :json}
 
