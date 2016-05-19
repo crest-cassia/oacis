@@ -9,4 +9,5 @@ require_relative 'oacis_cli_parameter_set'
 require_relative 'oacis_cli_run'
 require_relative 'oacis_cli_job_include'
 require_relative 'oacis_cli_analysis'
+require_relative 'oacis_cli_analyzer'
 
