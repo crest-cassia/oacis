@@ -6,7 +6,7 @@ class OacisCli < Thor
   "type": "on_run",
   "auto_run": "no",
   "files_to_copy": "*",
-  "dwscription": "",
+  "description": "",
   "command": "gnuplot #{File.expand_path("../lib/samples/tutorial/analyzer/analyzer.plt", File.dirname(__FILE__))}",
   "support_input_json": true,
   "support_mpi": false,
@@ -36,7 +36,7 @@ EOS
     }
   end
 
-  desc 'create_simulator', "create_simulator"
+  desc 'create_analyzer', "create_analyzer"
   method_option :host,
     type:     :string,
     aliases:  '-h',
@@ -56,7 +56,7 @@ EOS
     aliases:  '-o',
     desc:     'output file',
     required: true
-  def create_simulator
+  def create_analyzer
     input = load_json_file_or_string(options[:input])
 
     # create an analyzer
