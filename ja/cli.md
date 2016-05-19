@@ -31,6 +31,8 @@ CLIで利用可能な操作は以下の通りです。
 - IDを指定してRun削除（destroy_runs_by_ids）
 - Run再作成（replace_runs）
 - IDを指定してRun再作成（replace_runs_by_ids）
+- Analyzer作成用テンプレート作成 (analyzer_template)
+- Analyzer作成 (create_analyzer)
 - Analysis作成用テンプレート作成 (analyses_template)
 - Analysis作成（create_analyses）
 - 作成済みAnalysisのステータス確認（analysis_status）
@@ -123,7 +125,7 @@ Simulatorの属性情報のテンプレートを出力する
 
 {% highlight json %}
 {
-  "name": "b_sample_simulator",
+  "name": "a_sample_simulator",
   "command": "/Users/murase/program/oacis/lib/lib/samples/tutorial/simulator/simulator.out",
   "support_input_json": false,
   "support_mpi": false,
@@ -580,6 +582,93 @@ IDを指定してRunを置換する
 - IDが52f9c5b4b93f963b8f000021のRunを置換する
 {% highlight sh %}
 ./bin/oacis_cli replace_runs_by_ids 52f9c5b4b93f963b8f000021
+{% endhighlight %}
+
+---
+
+## analyzer_template
+
+create_analyzerの時に使用するanalyzer.jsonファイルのテンプレートを作成する
+
+#### 実行方法
+
+{% highlight sh %}
+./bin/oacis_cli analyzer_template -o analyzer.json
+{% endhighlight %}
+
+#### オプション
+
+|----------|--------|--------------------------------|-----------|
+|Option    |alias   |description                     |required?  |
+|:---------|:-------|:-------------------------------|:----------|
+|--output  |-o      |output file path                |yes        |
+|----------|--------|--------------------------------|-----------|
+
+#### 出力
+
+Analyzerの属性情報のテンプレートを出力する
+
+{% highlight json %}
+{
+  "name": "a_sample_analyzer",
+  "type": "on_run",
+  "auto_run": "no",
+  "files_to_copy": "*",
+  "description": "",
+  "command": "gnuplot /Users/murase/program/oacis/lib/samples/tutorial/analyzer/analyzer.plt",
+  "support_input_json": true,
+  "support_mpi": false,
+  "support_omp": false,
+  "print_version_command": null,
+  "pre_process_script": null,
+  "executable_on_ids": [],
+  "parameter_definitions": [
+    {"key": "p1","type": "Integer","default": 0,"description": "parameter1"},
+    {"key": "p2","type": "Float","default": 5.0,"description": "parameter2"}
+  ]
+}
+{% endhighlight %}
+
+---
+
+## create_analyze
+
+Analyzerを新規作成する
+
+#### 実行方法
+{% highlight sh %}
+./bin/oacis_cli create_analyzer -h host.json -s simulator_id.json -i analyzer.json -o analyzer_id.json
+{% endhighlight %}
+
+#### オプション
+
+|------------|--------|--------------------------------|-----------|
+|Option      |alias   |description                     |required?  |
+|:-----------|:-------|:-------------------------------|:----------|
+|--host      |-h      |executable hosts                |no         |
+|------------|--------|--------------------------------|-----------|
+|--simulator |-s      |analyzer's simulator            |yes        |
+|------------|--------|--------------------------------|-----------|
+|--input     |-i      |input file path                 |yes        |
+|------------|--------|--------------------------------|-----------|
+|--output    |-o      |output file path                |yes        |
+|------------|--------|--------------------------------|-----------|
+
+#### 入力ファイル
+
+- hostファイルは show_host で出力されるJSON形式のファイルを指定する。
+- simulatorは create_simulator で出力されるJSON形式のファイルを指定する。
+- inputファイルは analyzer_template で出力されるJSON形式のファイルを指定する。
+    - JSONのパスを指定してもよいし、JSONの文字列をそのまま渡しても良い
+
+#### 出力
+
+新規作成されたanalyzerのidをObjectとしてJSON形式で出力する。
+
+{% highlight json %}
+{
+  "analyzer_id": "52b3bcd7b93f964178000002"
+}
 {% endhighlight %}
 
 ---
