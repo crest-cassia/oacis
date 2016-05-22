@@ -631,7 +631,7 @@ Analyzerの属性情報のテンプレートを出力する
 
 ---
 
-## create_analyze
+## create_analyzer
 
 Analyzerを新規作成する
 
