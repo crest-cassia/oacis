@@ -71,8 +71,8 @@ EOS
     anz = sim.analyzers.new(input)
 
     if options[:verbose]
-      $stderr.puts "created_simulator :", JSON.pretty_generate(sim), ""
-      $stderr.puts "parameter_definitions :", JSON.pretty_generate(sim.parameter_definitions)
+      $stderr.puts "created_analyzer :", JSON.pretty_generate(anz), ""
+      $stderr.puts "parameter_definitions :", JSON.pretty_generate(anz.parameter_definitions)
     end
 
     if anz.valid?
@@ -82,7 +82,7 @@ EOS
     else
       $stderr.puts anz.inspect
       $stderr.puts anz.errors.full_messages
-      raise "validation of simulator failed"
+      raise "validation of analyzer failed"
     end
   end
 
