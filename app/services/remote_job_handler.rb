@@ -176,7 +176,8 @@ class RemoteJobHandler
     if exception.is_a?(RemoteOperationError)
       job.update_attribute(:error_messages, "RemoteOperaion is failed.\n#{exception.inspect}\n#{exception.backtrace}")
       #retry the operation in next time
-      raise exception # this error is catched by job_observer
+      # this error is caught by job_submitter or job_observer
+      raise exception
     elsif exception.is_a?(RemoteJobError)
       work_dir = RemoteFilePath.work_dir_path(@host, job)
       SSHUtil.download_recursive(ssh, work_dir, job.dir) if SSHUtil.exist?(ssh, work_dir)
@@ -193,7 +194,8 @@ class RemoteJobHandler
       else
         job.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
       end
-      raise exception # this error is catched by job_observer
+      # this error is caught by job_submitter or job_observer
+      raise exception
     end
   end
 end
