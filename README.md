@@ -1,12 +1,17 @@
-# 開発環境構築
+# Preparing the development environment
 
-github pagesを利用してページをレンダリングしている。github-pagesではserver側でjekyllを使ってページをレンダリングしている。
+OACIS doc uses "github pages" for page rendering.
+Jekyll gem is used to render markdown in the github-pages service.
 
-手元でレンダリングして結果を確認したい場合はbundle installで必要なgemをインストール後、
+In order to render the markdown on your machine, install the gem by `bundle install` and then run
+
 ```
 bundle exec jekyll serve -w --baseurl ''
 ```
-でサーバーを起動すると、localhost:4000 でアクセスできる。
 
-python2系に依存している。"Liquid Exception: Failed to get header." というメッセージがでた場合はpythonのバージョンを確認のこと。
+This command launches a web server which hosts rendered pages.
+Please access [localhost:4000](http://localhost:4000).
+
+In addition to ruby, Jekyll depends on python2.
+If you find an error like "Liquid Exception: Failed to get header.", then please setup the environment for python 2. 
 
