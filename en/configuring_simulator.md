@@ -1,122 +1,116 @@
 ---
 layout: default
-title: "シミュレーターの設定"
-lang: ja
+title: "Configuring Simulator"
+lang: en
 next_page: configuring_analyzer
 ---
 
 # {{ page.title }}
 
-ここではシミュレーターをOACISに登録する方法について解説します。
+In this page, we are going to demonstrate how to setup a simulator on OACIS.
 
-OACISから既存のシミュレーターを実行できるようにするには、OACISの実行方式にあうようにシミュレーターを設定する必要があります。
-例えば、OACISはパラメータを引数またはJSONでシミュレーターに渡しますが、既存のシミュレーターをその形式に合わせるために小さなスクリプトを用意する必要があります。
-ここではその設定方法について解説していきます。
+In order to execute an existing simulator from OACIS, the simulator must be prepared to conform to the requirements by OACIS.
+For example, OACIS gives input parameters to simulators by command-line arguments or JSON. Your must prepare a small script in order to adjust the interface of input parameters.
+In this page, how to prepare a simulator as well as a few samples are demonstrated.
 
 * TOC
 {:toc}
 
 ---
 
-## ジョブ実行の動作
+## Job Execution Sequence
 
-まず、OACISに登録されたSimulatorがどのようにジョブが実行されるかについてより詳細に説明します。
+First, the job execution sequence are explained in detail.
 
-OACISにSimulatorを登録する際には、実行プログラムそのものではなくコマンドの文字列を登録します。こうすることにより、OACISは任意の言語で書かれたプログラムを実行できるようにしていますが、実行プログラムは各ホストで事前にビルドしておく必要があります。
-OACISはジョブ実行時にコマンドが埋め込まれたシェルスクリプト（以降、ジョブスクリプトと呼ぶことにします）を作成し、そのジョブスクリプトをリモートホストのジョブスケジューラ（例えばTorque）にSSH経由で投入します。
-ジョブを投入する際には、各ジョブごとに一時ディレクトリ（以後、ワークディレクトリと呼びます）を作成します。
-ワークディレクトリはHost登録時に"work base dir"という項目で指定したパス以下に作成されます。
-ジョブスクリプトの中では、そのワークディレクトリに`cd`してからコマンドを実行するようになっています。
+When you register a simulator on OACIS, you save the command line string, not the execution program itself. By this specification, OACIS can run various programs written in any programming language. It also means that the simulation program must be compiled on computational hosts before submitting a job.
+OACIS generates a shell script including the command line to execute the program. We call this script "job script". For each run, one job script is created. Job scripts created by OACIS are submitted to the job schedulers (such as Torque) on computational hosts via SSH.
+Just before submitting job scripts, a temporary directory is created for each job. We call it "work directory". Jobs are executed in their work directories. Work directories are created under the "work base dir" directory which was specified when registering a computational host.
 
-
-時系列順により詳細にジョブ実行の流れを見ていきましょう。実行の流れは以下のようになっています。
+Here is the summary of the job sequence.
 
 ```text
 
-OACIS-server  |     remote host (login node)        |   computation node
---------------|-------------------------------------|---------------------------------------
-           ---|-->  SSH login                       |
-              |     create a work directory         |
-              |     prepare _input.json             |
-              |     create a job script             |
-              |     execute preprocess              |
-              |     submit job script               |
-              |                                     |   (when job script start)
-              |                                     |   execute print-version command
-              |                                     |   save execution logs to a file
-              |                                     |   execution of the simulation program
-              |                                     |   compress the work directory
-              |                                     |
-              |     (after the job finished)        |
-           ---|-->  SSH login                       |
-              |     download the compressed results |
+OACIS-server                                  |     computational host              |   computation node
+----------------------------------------------|-------------------------------------|---------------------------------------
+                                           ---|-->  SSH login                       |
+                                              |     create a work directory         |
+                                              |     prepare _input.json             |
+                                              |     create a job script             |
+                                              |     execute preprocess              |
+                                              |     submit job script               |
+                                              |                                     |   (when job script start)
+                                              |                                     |   execute print-version command
+                                              |                                     |   save execution logs to a file
+                                              |                                     |   execution of the simulation program
+                                              |                                     |   compress the work directory
+                                              |                                     |
+                                              |     (after the job finished)        |
+                                           ---|-->  SSH login                       |
+                                              |     download the compressed results |
+extract the results                           |                                     |
+move the output files to specified directory  |                                     |
+parse logs and save them in MongoDB           |                                     |
 ```
 
-まずOACISはリモートホストにログインし、ワークディレクトリを作成します。その後、実行パラメータが書かれた`_input.json`を配置します。（Simulator登録時にJSON形式を指定した場合）
+First, OACIS login to the computational host and create a work directory for the job.
+Then, put `_input.json` file if the simulator's input format is JSON. This file contains the input parameters for the job.
 
-ジョブスケジューラにジョブを投入する前に、ワークディレクトリで個別に実行する処理を定義することもできます。それをプリプロセスと呼んでいます。
-詳細は以後説明しますが、例えばジョブの実行に必要なファイルなどをコピーしたりするのに利用します。
-`_input.json`が作成された後、ジョブ投入前にこのプリプロセスが実行されます。
+You can define a process which is executed before submitting a job. We call it "pre-process".
+This is useful when you prepare the necessary files before conducting simulations. For example, you can use pre-process to copy some configuration files to the current directory.
+Pre-processes are executed after `_input.json` was created. The details of pre-process are also shown later.
 
-その後、ジョブがスケジューラに投入され、ジョブが実行待ちになります。ジョブがスケジューリングされるとジョブスクリプトが実行されることになります。
+Then, the job is submitted to a job scheduler. After the job is submitted to the scheduler, the scheduler handles the job queue.
 
-ジョブスクリプトでは、ジョブの実行を行うだけでなく、実行日時、実行ホスト、実行時間などの実行ログをファイルに書き出して保存する処理も行っています。
-`date`, `hostname`, `time` などの各種コマンドを使っています。
-これらの情報は`_status.json`というファイルに保存され、実行結果をOACISのサーバーに取り込む際に読み込まれます。
+When a job script is executed, it records various logs to files in addition to the simulation execution. For example, execution date, executed host, and elapsed time are recorded. To record these information, shell commands like `date`, `hostname`, and `time` are used.
+These logs are stored in `_status.json` file. This file is parsed when jobs are included into OACIS database.
 
-後述するようにSimulatorのバージョンを取得するコマンド("print-version command"と呼びます)を登録することもできます。
-その場合、print-version commandはシミュレーションプログラムの実行直前に実行され、その標準出力がシミュレーターのバージョンとして記録されます。
-この情報は`_version.txt`というファイル名で保存され、ジョブがOACISのDBに取り込まれる時に読み込まれます。
+As we will explain later, OACIS can record the version information of the simulators. When you register a simulator, you can set "print-version command", which is a command to print the version information of the simulator.
+If the print version command is defined, the command is embedded in the shell script. The command is executed just before executing the simulation to record the current version of the simulator. This information is saved in the file `_version.txt` and parsed by OACIS when the job is included.
 
-さらに、ジョブスクリプトの最後でワークディレクトリを圧縮して１ファイルにしています。
-こうすることにより結果のダウンロードに要する時間を削減しています。
+After the simulation finished, the work directory is compressed into a single file. By compressing the result, we can reduce the time to download the file.
 
-## 実行するシミュレーションプログラムの要件
+## Requirements for simulators
 
-OACISで実行するプログラムは以下の要件を満たす必要があります。
+To execute simulator from OACIS, simulators must satisfy the following requirements.
 
-1. 出力ファイルが実行時のディレクトリ以下に作成される事
-    - OACISは実行時にワークディレクトリを作り、その中でジョブを実行します。完了後、そのディレクトリ内のファイルすべてを出力結果として取り込みます。
-2. パラメータの入力を引数またはJSONで受け付ける事
-    - 引数渡しの場合はパラメータが定義された順番に引数で渡されて、最後の引数として乱数の種が渡されます。
-        - 例えば、param1=100, param2=3.0, seed(乱数の種)=12345 の場合、以下のコマンドが実行されます。
+1. The output files or directories must be created in the current directory.
+    - OACIS creates a work directory for each job and executes the job in that directory. All the files and directories in the work directory are stored in OACIS as the simulation outputs.
+2. Simulator must receive input parameters as either command line arguments or JSON file. You can choose one of these when registering the simulator on OACIS.
+    - If you choose the former one as a way to set input parameters, the parameters are given as the command line arguments in the defined sequence with a trailing random number seed.
+        - For example, if an input parameter is "*param1=100, param2=3.0, random number seed=12345*", the following command is embedded in the shell script.
             -  `~/path/to/simulator.out 100 3.0 12345`
-    - JSON形式の場合、実行時に次のような形式のJSONファイルを *_input.json* というファイル名でOACISが実行時に配置します。シミュレータはカレントディレクトリの *_input.json* をパースするように実装してください。
+    - If you choose JSON format as a way to set input parameters, a JSON file named **_input.json** is prepared in the temporary directory before execution of the jobs. Simulator must be implemented such that it reads the json file in the current directory.
         - `{"param1":100,"param2":3.0,"_seed":12345}`
-        - 乱数の種は _seed というキーで指定されます。
-        - 実行コマンドは以下のように引数なしで実行されます。
+            - Random number seed is specified by the key *"_seed"*.
+        - The command is executed without command line argument as follows.
             - `~/path/to/simulator.out`
-3. 以下の名前のファイルがカレントディレクトリにあっても問題なく動作し、これらのファイルを上書きしたりしないこと
+3. The simulator must work even with the files listed below in the current directory. These files must not be overwritten.
     - *_input.json* , *_output.json* , *_status.json* , *_time.txt*, *_version.txt*
-    - これらのファイルはOACISが使用するファイル名であるため干渉しないようにする必要があります
-4. 正常終了時にリターンコード０、エラー発生時に０以外を返す事
-    - リターンコードによってシミュレーションの正常終了/異常終了が判定されます。
+    - These files are used by OACIS in order to record the information of the job. Avoid conflicts with these files.
+4. The simulator must return 0 when finished successfully. The return code must be non-zero when an error occurs during the simulation.
+    - OACIS judges if the job finished successfully or not based on the return code.
 
-## シミュレーター設定用スクリプトのサンプル
+## Sample scripts for configuring simulators
 
-上記のように、OACISから実行プログラムにパラメータを渡す方法は引数またはJSONである必要があります。
-これらのパラメータの渡し方に準拠していない既存のシミュレーションプログラムをOACISで実行したい時には、シミュレーターの実行をラップするスクリプト（以後、ラップスクリプトと呼ぶ）をRubyやPythonなどの言語で書くのが簡単です。
+As we mentioned in the previous section, the program must receive input parameters either from command-line arguments or from JSON.
+Probably most of your simulation programs do not conform to the format of input parameters. In order to implement your simulators, you need to prepare a scritp that wraps your simulation program in order to adjust the I/O format. Let us call the script "wrap script" from now on.
+It is easier to prepare a wrap script using a light-weight scripting language such as a shell script, Python, or Ruby.
+After you prepared a wrap script, register the path to the wrap script as the simulation command in OACIS. OACIS executes the wrap script, which in turn executes the actual simulation program.
 
-OACISにはこのラップスクリプトをSimulatorとして登録し、ラップスクリプトから実際のシミュレーションプログラムを起動します。
+We are going to show a few samples for wrap scripts.
 
-ここではそのサンプルを示します。
+### Example 1: changing the command line argument
 
-### 例1: 引数を変更する場合
-
-既存のシミュレーションプログラムが、オプション引数としてパラメータをで渡す仕様だとしましょう。
-パラメータが４つあり、それぞれオプション引数 "-l", "-v", "-t", "--tmax" で渡すとします。
-また乱数の種は "--seed" というオプションで渡せるとします。
-
-例えば、
+Suppose you have a simulation program which has four input parameters. You can set these input parametes by command line options.
+Let us assume that the options to set parameters are "-l", "-v", "-t", "--tmax". In addition to these, we can set the seed of random number generator by "--seed" option.
+A command for this simulator would look like
 
 ```bash
 ~/my_proj/my_simulator.out -l 8 -v 0.25 -t 1234 --tmax 2000 --seed 1234
 ```
 
-という形で実行できるとします。
-
-OACISで引数形式でパラメータを渡す場合、各パラメータが引数として順番に渡されるだけなので上記の形式には合致しません。
-そこで、このプログラムをOACISのシミュレーターとして実行するために以下のようなシェルスクリプトを準備します。
+You can not run this program directly since the format of the command line is different from the one given by OACIS.
+To adjust the input format, we prepare a shell script `wrapper.sh` as follows:
 
 ```bash
 #!/bin/bash
@@ -126,14 +120,14 @@ script_dir=$(cd $(dirname $BASH_SOURCE); pwd)
 $script_dir/my_simulator.out -l $1 -v $2 -t $3 --tmax $4 --seed $5
 ```
 
-このようなシェルスクリプトを`my_proj`に配置して実行することで、OACISから引数で与えられるパラメータを適切な形式にしてシミュレーションプログラムを実行できるようになります。
+Put this shell script in the directory where the simulation program exists. By running this wrap script from OACIS, you can execute the simulation program with the input parameters given by OACIS.
 
-この際のポイントは
+The tips for this script are
 
-- `set -e`をスクリプト内で実行する。こうすることで`my_simulator.out`が異常終了(0以外のリターンコードで終了)した場合に、`wrapper.sh`も異常終了するようになります。
-    - OACISは`wrapper.sh`のリターンコードを見て、Runが正常終了したか異常終了したかを判定します。`set -e`が無いと、`my_simulator.out`が異常終了しても、`wrapper.sh`は正常終了するのでRun自体が正常終了したと判定され、OACIS上でのステータスが"finished"と誤判定されます。
-- `my_simulator.out`を実行する際に、パスは絶対パスで指定する必要があります。
-    - OACISはジョブ実行時に各Runごとに一時ディレクトリを作成し、そこにcdしてからジョブを実行します。そのため実行ファイルは**絶対パス**で指定する必要がある。
+- Put `set -e` within the script, which makes the return code of `wrapper.sh` to a non zero value when the simulation program returns non-zero code.
+    - OACIS checks the return code of `wrapper.sh` to judge if the job finished successfully or not. Without `set -e`, you always get a return code 0 even if the actual simulation program fails, which results in a misjudgement of the job status.
+- When you execute the actual simulation program (`my\_simulator.out`), you need to specify the absolute path of the executable.
+    - Since OACIS executes a job from its work directory, the path of the executable must be written in the absolute path.
 
 ### 例2. パラメータを別の形式の外部ファイルで実行する場合
 
