@@ -268,43 +268,40 @@ mpiexec -n $OACIS_MPI_PROCS ~/path/to/simulator.out
 
 ## [Advanced] Defining a pre-process {#preprocess}
 
-シミュレータによっては実際にシミュレーションジョブを開始する前に、入力ファイルを準備したりフォーマットを調整したりするプリプロセスが必要な場合がしばしばあります。
-しかしプリプロセスを計算ジョブの中で行うのが難しい場合があります。
-例えば
+Some simulation program requires a pre-process before doing an actual simulations. For example, a simulator may require a preparation of input file or may require the copy of some libraries to a proper directory.
+However, it is ocassionally impossible to do such a pre-process in a job script.
 
-- スクリプト言語など入力ファイルの準備に使うプログラムが計算ノードにインストールされていないケース
-- 外部へのネットワークが遮断され入力用ファイルを準備するために外部からファイルを転送することができないケース
-- ファイルのステージングの都合により、ジョブの実行前にファイルをすべて用意する必要があるケース
+For example, in some hpc environments, some scripting language such as Ruby or Python is not installed on the copmutational node. They are sometimes installed only on login nodes hence users must prepare use the script language in the login nodes. In such cases, a pre-process must be executed on login nodes if your pre-process is written in a scripting language.
 
-そこで、OACISにはジョブの実行前にプリプロセスを個別に実行する仕組みを用意しています。
-このプリプロセスはジョブの投入前にログインノードで実行されるため上記の問題は起きません。
+To avoid such issue, OACIS provides a way to define a pre-process for each simulator.
+This pre-process is executed on the login node before submitting the job. Therefore, you can avoid the problem described above.
 
-プリプロセスはジョブの投入前にworkerによってssh経由で実行されます。
-workerの実行手順は
+Pre-process is executed by worker via SSH. The detailed execution sequence of pre-processes are as follows.
 
-1. 各Runごとにワークディレクトリを作成する
-1. SimulatorがJSON入力の場合、_input.jsonを配置する
-1. Simulatorの **pre_process_script** フィールドに記載されたジョブスクリプトをワークディレクトリに配置し実行権限をつける。(_preprocess.sh というファイル名で配置される)
-1. _preprocess.sh をワークディレクトリをカレントディレクトリとして実行する
-    - この際Simulatorが引数形式ならば、同様の引数を与えて _preprocess.sh を実行する。この引数から実行パラメータを取得することができる。
-    - 標準出力、標準エラー出力は _stdout.txt, _stderr.txt にそれぞれリダイレクトされる。
-1. _preprocess.sh のリターンコードがノンゼロの場合には、SSHのセッションを切断しRunをfailedとする
-    - failedの時には、ワークディレクトリの内容をサーバーにコピーし、リモートサーバー上のファイルは削除する
-1. シミュレーションジョブをサブミットする。
+1. Make a work directory for each Run.
+1. If Simulator's input type is "JSON", write `_input.json` file in the work directory.
+1. Make a file `_preprocess.sh` in the work directory. The shell script contains the commands defined in **pre_process_script**.
+1. Change the current directory to the work directory and execute `_preprocess.sh`.
+    - If the simulator's input type is "Argument", input parameters are given to `_preprocess.sh`.
+    - Standard output and standard error are printed to _stdout.txt and _stderr.txt files, respectively.
+1. If the return code of _preprocess.sh is not zero, cancel the job submission and set the status of Run to failed.
+    - When a pre-process failed, copy the contents of the work directory to OACIS server so that users can see the output files.
+1. If the pre-process suceeded, the job script for the Run is submitted to the scheduler.
 
-ただし、 Simulatorの pre_process_script のフィールドが空の場合には、上記3~5の手順は実行されません。
+Note that the above sequences 3~5 are not executed when "pre_process_script" of Simulator is empty.
 
 
-## 結果をOACIS上でプロットする
+## Displaying results in browser
 
-通常シミュレータが出力したファイル群はそのままファイルとしてサーバー上に保存されますが、結果をデータベース内に保存することもできます。
-データベース内に保存されたデータはOACISのUI上からプロットをすることができるので、結果のスカラー値（例えば時系列データの平均値や分散）を保存しておくと便利です。
+Although the simulator's output files are stored in the file system by default, you may save some scalar value results in DB.
+You can instantly plot the values saved in the DB using web browser interface, which helps you quickly see the parameter dependence of the reuslt values.
+For example, you may wish to save the average or variance of some time series data.
 
-結果をDB内に保存するためには、保存したいデータをJSONフォーマットでシミュレータから出力すればよいです。
-**_output.json** という名前でカレントディレクトリ直下にJSONファイルを作成すれば、データベースへの格納時にファイルがパースされDB内に保存されます。
-（既存のプログラムがJSONを出力するようになっていない場合は、ラップスクリプトの中でJSON形式の出力に変換するのがよいでしょう。）
+To save the values in DB, you just need to save the values to **_output.json** file in JSON format.
+If your simulator writes **_output.json** file in the work directory, it is parsed and the contents are saved in the DB when OACIS includes the job result.
+In case your simulator does not write a JSON file, you can convert the output format in your wrap script.
 
-例えば、以下のような結果を保存しておくことができます。
+For example, you can save the output as follows.
 
 ```json
 {
@@ -314,44 +311,43 @@ workerの実行手順は
 }
 ```
 
-（注）ただしMongoDBの制限により、"."を含むキーは使えません。ジョブがfailedになります。
+(Warning) Because of the limitation of MongoDB, you can not use a key including ".".
 
-格納された結果は各Runのページから確認することもできます。
+You can see the stored values from the pages of Runs.
 
-![結果の閲覧]({{ site.baseurl }}/images/run_results.png){:width="400px"}
+![Showing results of Runs]({{ site.baseurl }}/images/run_results.png){:width="400px"}
 
-プロットはParameterSetのページからPlotタブをクリックすると、プロットの表示画面に移動します。
+If you click a "Plot" tab from the page of ParameterSet, you will see the page to display plots.
 
-プロットの種類と、横軸、縦軸や系列などを指定してください。
-必要なParameterSetを集めて平均や標準誤差を計算してプロットします。
+Select the type of plot, x-axis and y-axis. OACIS will collects the relevant ParameterSets and plots the average for each ParameterSet.
+If you drag a mini plot displayed in the right bottom region, you can magnify the plot. You can also switch scale (log or normal) of the axis.
+If you double click the data points, the page for the corresponding ParameterSet are opened.
+Each url has a unique url, with which you can reopen the current plot.
 
-右下のマップをドラッグすることで一部分を拡大したり、ログスケールに表示を切り替えることもできます。
-データ点をクリックすると対象となるParameterSetのページを表示することもできます。
-画面右に表示されているURLを開くと、今表示しているプロットを再度開くことができます。
-
-![プロット]({{ site.baseurl }}/images/lineplot.png){:width="400px"}
+![Plot]({{ site.baseurl }}/images/lineplot.png){:width="400px"}
 
 
-## シミュレーターのバージョンを記録する {#record_simulator_version}
+## [Advanced] Saving simulator versions {#record_simulator_version}
 
-シミュレーションの実行時にどのバージョンのシミュレーターで実行したかOACISに記録をさせておくことができます。
+If you configure the "print version command" field of the simulator, you can record the version of the simulator for each job.
 
-例えば、シミュレーションを実行していくうちにシミュレーションコードにバグが見つかり、一部のシミュレーションを再実行したい場合などがあります。
-RunとSimulatorのバージョンをひもづけて記録する事により、あるバージョンの実行結果を一括削除したり再実行したりすることができるようになります。
-シミュレーターのソースコードを変更する可能性がある時は、バージョンを記録しておくと効率的にやり直しができるようになります。
+This is useful, for example, when you find a bug in your simulator while conducting a series of jobs.
+Probably, you wish to delete or re-execute the Runs conducted with an inappropriate version of the simulator.
+If you have recorded the simulator version for each job, you can efficiently find the jobs which must be re-executed by the version information.
 
-バージョンを保存するには、Simulatorのバージョンを出力させるコマンドをOACISに登録します。
-例えば
+To save the version information, we need to save a command to print the version information of the simulator.
+Suppose that the version information of the simulator is printed by the following command for example.
 
 ```shell
 ~/path/to/simulator.out --version
 ```
 
-というコマンドでバージョン情報を出力されるシミュレーターがあるとします。
-このコマンドをSimulator登録時に "Print version command" というフィールドに登録しておくと、ジョブ実行時にこのコマンドを実行し、その標準出力をバージョン情報として記録することができます。
+When you register your simulator on OACIS, fill in this command to **Print version command** field.
+OACIS will embed this command into job scripts, and the standard output of this command is recorded as the version information in OACIS.
 
-Print version command の標準出力に出力された文字列がバージョンとして認識されるので、実行バイナリに引数を渡すだけでなく柔軟な指定が可能です。
-例えば、ビルドログの一部をバージョン情報として記録したり、バージョン管理システムのコミットIDを出力するような利用方法も考えられます。
+Since the string printed by "Print version command" is recognized as the version information, we can flexibly use this command.
+For instance, you may use a part of the bulid log as the version information.
+Or you may wish to save the commit ID of your version control system.
 
 ```shell
 head -n 1 ~/path/to/build_log.txt
@@ -360,6 +356,6 @@ head -n 1 ~/path/to/build_log.txt
 cd ~/path/to; git describe --always
 ```
 
-Runの一括削除や一括置換はCommand Line Interface(CLI)から実行できます。
-詳細は[CLI]({{ site.baseurl }}/ja/cli.html)のページを参照してください。
+You can delete or replace the runs having a specified by version at once using the command line interface (CLI).
+Please refer to the page for [CLI]({{ site.baseurl }}/ja/cli.html) for details.
 
