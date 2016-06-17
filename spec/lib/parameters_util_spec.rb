@@ -31,6 +31,24 @@ describe ParametersUtil do
       expect(casted["param4"]).to eq("12345")
     end
 
+    it "casts values properly even if the argument is a hash whose keys are symbol" do
+      parameters = {
+        param1: "70",
+        param2: "3.0",
+        param3: "1",
+        param4: 12345
+      }
+      casted = ParametersUtil.cast_parameter_values(parameters, @definitions)
+
+      expect(casted["param1"]).to be_a(Integer)
+      expect(casted["param1"]).to eq(70)
+      expect(casted["param2"]).to be_a(Float)
+      expect(casted["param2"]).to eq(3.0)
+      expect(casted["param3"]).to be_truthy
+      expect(casted["param4"]).to be_a(String)
+      expect(casted["param4"]).to eq("12345")
+    end
+
     it "uses the defined default value if a parameter is not specified" do
       parameters = {
         "param1" => "70"
