@@ -51,6 +51,22 @@
             <li> <a href="{{ site.baseurl }}/{{ page.lang }}/cli.html">CLI</a> </li>
             <li> <a href="{{ site.baseurl }}/{{ page.lang }}/tips.html">TIPs</a> </li>
             {% endif %}
+            {% if page.lang == 'en' %}
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/index.html">Introduction</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/overview.html">System Overview</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/install.html">Installation</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/tutorial.html">Tutorial</a> </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Configuration<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="{{ site.baseurl }}/{{ page.lang }}/configuring_host.html">Host</a></li>
+                <li><a href="{{ site.baseurl }}/{{ page.lang }}/configuring_simulator.html">Simulator</a></li>
+                <li><a href="{{ site.baseurl }}/{{ page.lang }}/configuring_analyzer.html">Analyzer</a></li>
+              </ul>
+            </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/cli.html">CLI</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/tips.html">TIPs</a> </li>
+            {% endif %}
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><a href="https://github.com/crest-cassia/oacis" target="_blank">View on Github</a></li>
