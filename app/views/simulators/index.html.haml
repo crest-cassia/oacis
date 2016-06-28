@@ -40,9 +40,15 @@
       .innerRadius(radius*0.5)
       .outerRadius(radius*0.9)
       .startAngle(0);
+    var color="#3cb521";
+    if(rate > 0.95) {
+      color="#cd0200";
+    } else if(rate > 0.9) {
+      color="#d47500";
+    }
     loading_spin.append("path")
       .datum({endAngle: rate*2.0*Math.PI})
-      .style("fill", "#3cb521")
+      .style("fill", color)
       .attr("d", arc)
     var message = "" + rate*100 + "%";
     svg.append("g")
