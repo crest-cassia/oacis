@@ -1,20 +1,56 @@
 - model_class = Simulator
 .page-header
   %h1=t '.title', :default => model_class.model_name.human.pluralize
-%table.table.table-striped.table-hover
-  %thead
-    %tr
-      %th Name
-      %th Updated_at
-      %th Progress
-  %tbody.sortable{data: {'sort-url' => _sort_simulators_url }}
-    - @simulators.each do |simulator|
-      = content_tag_for :tr, simulator do
-        %td= link_to h(simulator.name), simulator_path(simulator)
-        %td= distance_to_now_in_words(simulator.updated_at)
-        - counts = simulator.runs_status_count
-        %td#progress= progress_bar(counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted])
+.row
+  .col-lg-10
+    %table.table.table-striped.table-hover
+      %thead
+        %tr
+          %th Name
+          %th Updated_at
+          %th Progress
+      %tbody.sortable{data: {'sort-url' => _sort_simulators_url }}
+        - @simulators.each do |simulator|
+          = content_tag_for :tr, simulator do
+            %td= link_to h(simulator.name), simulator_path(simulator)
+            %td= distance_to_now_in_words(simulator.updated_at)
+            - counts = simulator.runs_status_count
+            %td#progress= progress_bar(counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted])
+  #disk_used.col-lg-2{data: {'disk-used-rate' => @disk_used_rate}}
+    %h3{align: "center"}
+      Disk Used
 
 - unless OACIS_READ_ONLY
   .well
     %a.btn.btn-primary.btn-sm{href: new_simulator_path} New Simulator
+
+:javascript
+  $(function() {
+    var rate = $("#disk_used").data("disk-used-rate");
+    var disk_used_element = d3.select("#disk_used");
+    var svg = disk_used_element.append("svg")
+      .attr("id", "canvas")
+      .attr("width", $("#disk_used").width())
+      .attr("height", $("#disk_used").width());
+    var radius = svg.attr("width") / 2;
+    var loading_spin = svg.append("g")
+      .attr("transform", "translate(" + radius + "," + radius + ")")
+      .attr("id", "loading-spin");
+    var arc = d3.svg.arc()
+      .innerRadius(radius*0.5)
+      .outerRadius(radius*0.9)
+      .startAngle(0);
+    loading_spin.append("path")
+      .datum({endAngle: rate*2.0*Math.PI})
+      .style("fill", "#3cb521")
+      .attr("d", arc)
+    var message = "" + rate*100 + "%";
+    svg.append("g")
+      .attr("transform", "translate(" + radius + "," + radius + ")")
+      .append("text")
+      .attr("font-size", radius*0.3)
+      .style({
+        "text-anchor": "middle"
+      })
+      .text(message);
+  });
