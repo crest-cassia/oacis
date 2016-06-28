@@ -41,9 +41,9 @@
       .outerRadius(radius*0.9)
       .startAngle(0);
     var color="#3cb521";
-    if(rate > 0.95) {
+    if(rate >= 0.95) {
       color="#cd0200";
-    } else if(rate > 0.9) {
+    } else if(rate >= 0.9) {
       color="#d47500";
     }
     loading_spin.append("path")
