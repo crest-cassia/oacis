@@ -10,7 +10,7 @@ next_page: configuring_analyzer
 In this page, we are going to demonstrate how to setup a simulator on OACIS.
 
 In order to execute an existing simulator from OACIS, the simulator must be prepared to conform to the requirements by OACIS.
-For example, OACIS gives input parameters to simulators by command-line arguments or JSON. Your must prepare a small script in order to adjust the interface of input parameters.
+For example, OACIS gives input parameters to simulators by command-line arguments or JSON. You must prepare a small script in order to adjust the interface of input parameters.
 In this page, how to prepare a simulator as well as a few samples are demonstrated.
 
 * TOC
@@ -61,7 +61,7 @@ Pre-processes are executed after `_input.json` was created. The details of pre-p
 
 Then, the job is submitted to a job scheduler. After the job is submitted to the scheduler, the scheduler handles the job queue.
 
-When a job script is executed, it records various logs to files in addition to the simulation execution. For example, execution date, executed host, and elapsed time are recorded. To record these information, shell commands like `date`, `hostname`, and `time` are used.
+When a job script is executed, it records various logs to files in addition to the simulation execution. For example, execution date, executed host, and elapsed time are recorded. To record this information, shell commands like `date`, `hostname`, and `time` are used.
 These logs are stored in `_status.json` file. This file is parsed when jobs are included into OACIS database.
 
 As we will explain later, OACIS can record the version information of the simulators. When you register a simulator, you can set "print-version command", which is a command to print the version information of the simulator.
@@ -71,7 +71,7 @@ After the simulation finished, the work directory is compressed into a single fi
 
 ## Requirements for simulators
 
-To execute simulator from OACIS, simulators must satisfy the following requirements.
+To execute a simulator from OACIS, simulators must satisfy the following requirements.
 
 1. The output files or directories must be created in the current directory.
     - OACIS creates a work directory for each job and executes the job in that directory. All the files and directories in the work directory are stored in OACIS as the simulation outputs.
@@ -95,14 +95,14 @@ To execute simulator from OACIS, simulators must satisfy the following requireme
 As we mentioned in the previous section, the program must receive input parameters either from command-line arguments or from JSON.
 Probably most of your simulation programs do not conform to the format of input parameters. In order to implement your simulators, you need to prepare a scritp that wraps your simulation program in order to adjust the I/O format. Let us call the script "wrap script" from now on.
 It is easier to prepare a wrap script using a light-weight scripting language such as a shell script, Python, or Ruby.
-After you prepared a wrap script, register the path to the wrap script as the simulation command in OACIS. OACIS executes the wrap script, which in turn executes the actual simulation program.
+After you have prepared a wrap script, register the path to the wrap script as the simulation command in OACIS. OACIS executes the wrap script, which in turn executes the actual simulation program.
 
 We are going to show a few samples for wrap scripts.
 
 ### Example 1: changing the command line argument
 
 Suppose you have a simulation program which has four input parameters. You can set these input parametes by command line options.
-Let us assume that the options to set parameters are "-l", "-v", "-t", "--tmax". In addition to these, we can set the seed of random number generator by "--seed" option.
+Let us assume that the options to set parameters are "-l", "-v", "-t", "--tmax". In addition to these, we can set the seed of random number generator by the "--seed" option.
 A command for this simulator would look like
 
 ```bash
@@ -157,7 +157,7 @@ To run the program with this XML, specify the path to the XML file as a command 
 
 In order to execute this simulator from OACIS, we prepare a wrap script `wrapper.py` written in Python.
 When registering this simulator on OACIS, let us set **Input type** to "JSON" because reading a JSON file from a python script is easier than reading command line arguments.
-We assume that `wrapper.py` is located at the same directory with that of the execution program `my_simulator.out`.
+We assume that `wrapper.py` is located in the same directory as the execution program `my_simulator.out`.
 
 The script `wrapper.py` looks the following.
 
@@ -226,7 +226,7 @@ The following is the list of items we set when registering a simulator.
 Required fields are indicated by by (*).
 
 When you enter **Definition of Parameters** fields, make sure that the specified type and the default value are consistent with each other.
-For example, if you specify a string value as a default value of an integer field, you get an error and required to fix the inconsistency.
+For example, if you specify a string value as a default value of an integer field, you get an error and are required to fix the inconsistency.
 
 When you specify **Preprocess Script**, you can define a pre-process which is executed just before the job execution.
 It is useful for preparing input files for simulators or doing some processes which is executable only on job submission nodes.
@@ -237,7 +237,7 @@ This string is embedded in the shell script, which is submitted to a job schedul
 Since each job is executed in a work directory, the command must be specified by a full path.
 In order to make the command executable on various hosts, we recommend to use the relative path from the home directory. (Example: *~/path/to/simulator.out*)
 
-If you set **Pirnt version command**, simulator version information is recorded for each run.
+If you set **Print version command**, simulator version information is recorded for each run.
 This command is also embedded in the job script, and will be executed just before executing the simulation program.
 The standard output of this command is used as the version information.
 If you record the version information, you can delete or replace Runs which are executed with an appropriate version at once.
@@ -254,12 +254,12 @@ If you enable the checks of **Suppot MPI** or **Support OMP** when reigstering a
 
 ![Specifying MPI processes, OpenMP threads]({{ site.baseurl }}/images/new_run_mpi_omp_support.png){:width="500px"}
 
-If you enable OpenMP option, environment variable **OMP_NUM_THREADS** is defined in the job script.
+If you enable the OpenMP option, the environment variable **OMP_NUM_THREADS** is defined in the job script.
 The number of threads specified when making the Run is set to this variable.
-Hence, your simulator must refer to **OMP_NUM_THREADS** environment variable to determine the number of threads. (If your program explicitly specifies the number of threads using *omp_set_num_threads()* function, the environment variable will be ignored.)
+Hence, your simulator must refer to the **OMP_NUM_THREADS** environment variable to determine the number of threads. (If your program explicitly specifies the number of threads using the *omp_set_num_threads()* function, the environment variable will be ignored.)
 
-If you enable MPI option, the number of processes you specified when making a Run is set to **OACIS_MPI_PROCS** environment variable.
-For the **Command** field of the simulator, mpiexec command which refers to this environment variable must be specified.
+If you enable the MPI option, the number of processes you specified when making a Run is set to the **OACIS_MPI_PROCS** environment variable.
+For the **Command** field of the simulator, the `mpiexec` command which refers to this environment variable must be specified.
 The following is an example of such commands.
 
 ```shell
@@ -268,15 +268,15 @@ mpiexec -n $OACIS_MPI_PROCS ~/path/to/simulator.out
 
 ## [Advanced] Defining a pre-process {#preprocess}
 
-Some simulation program requires a pre-process before doing an actual simulations. For example, a simulator may require a preparation of input file or may require the copy of some libraries to a proper directory.
+Some simulation programs require a pre-process before doing an actual simulation. For example, a simulator may require preparation of an input file or may require the copy of some libraries to a proper directory.
 However, it is ocassionally impossible to do such a pre-process in a job script.
 
-For example, in some hpc environments, some scripting language such as Ruby or Python is not installed on the copmutational node. They are sometimes installed only on login nodes hence users must prepare use the script language in the login nodes. In such cases, a pre-process must be executed on login nodes if your pre-process is written in a scripting language.
+For example, in some HPC environments, some scripting language such as Ruby or Python is not installed on the copmutational node. They are sometimes installed only on login nodes hence users must use the script language in the login nodes. In such cases, a pre-process must be executed on the login nodes if your pre-process is written in a scripting language.
 
-To avoid such issue, OACIS provides a way to define a pre-process for each simulator.
+To avoid such issues, OACIS provides a way to define a pre-process for each simulator.
 This pre-process is executed on the login node before submitting the job. Therefore, you can avoid the problem described above.
 
-Pre-process is executed by worker via SSH. The detailed execution sequence of pre-processes are as follows.
+Pre-process is executed by worker via SSH. The detailed execution sequence of pre-processes is as follows.
 
 1. Make a work directory for each Run.
 1. If Simulator's input type is "JSON", write `_input.json` file in the work directory.
@@ -288,13 +288,13 @@ Pre-process is executed by worker via SSH. The detailed execution sequence of pr
     - When a pre-process failed, copy the contents of the work directory to OACIS server so that users can see the output files.
 1. If the pre-process suceeded, the job script for the Run is submitted to the scheduler.
 
-Note that the above sequences 3~5 are not executed when "pre_process_script" of Simulator is empty.
+Note that the above sequence 3~5 is not executed when "pre_process_script" of Simulator is empty.
 
 
 ## Displaying results in browser
 
 Although the simulator's output files are stored in the file system by default, you may save some scalar value results in DB.
-You can instantly plot the values saved in the DB using web browser interface, which helps you quickly see the parameter dependence of the reuslt values.
+You can instantly plot the values saved in the DB using the web browser interface, which helps you quickly see the parameter dependence of the result values.
 For example, you may wish to save the average or variance of some time series data.
 
 To save the values in DB, you just need to save the values to **_output.json** file in JSON format.
@@ -319,7 +319,7 @@ You can see the stored values from the pages of Runs.
 
 If you click a "Plot" tab from the page of ParameterSet, you will see the page to display plots.
 
-Select the type of plot, x-axis and y-axis. OACIS will collects the relevant ParameterSets and plots the average for each ParameterSet.
+Select the type of plot, x-axis and y-axis. OACIS will collect the relevant ParameterSets and plot the average for each ParameterSet.
 If you drag a mini plot displayed in the right bottom region, you can magnify the plot. You can also switch scale (log or normal) of the axis.
 If you double click the data points, the page for the corresponding ParameterSet are opened.
 Each url has a unique url, with which you can reopen the current plot.

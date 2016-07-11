@@ -30,10 +30,10 @@ For instance, submitting only one simulation job would require the following tas
 1. analyze the results
 1. (If another job is necessary) go back to the first one.
 
-Using OACIS, you can automate most of the above tasks, which makes you efficiently explore the parameter space.
+Using OACIS, you can automate most of the above tasks, which lets you efficiently explore the parameter space.
 With a user-friendly interface, you can easily submit various jobs to appropriate remote hosts.
 After these jobs are finished, all the result files are automatically downloaded from the remote hosts and stored in a traceable way together with logs of the date, host, and elapsed time of the jobs.
-You can easily find the status of the jobs or results files from the browser-based UI, which makes you to focus on more productive and essential works in your research activities.
+You can easily find the status of the jobs or results files from the browser-based UI, which lets you focus on more productive and essential parts of your research activities.
 
 ## Screenshots
 
@@ -107,7 +107,7 @@ You can easily find the status of the jobs or results files from the browser-bas
 
 ## About this document
 
-This document illustrates a usage of OACIS.
+This document illustrates the usage of OACIS.
 The remaining pages are organized as follows.
 
 - System Overview

@@ -10,7 +10,7 @@ next_page: tutorial
 To start using OACIS, you need to set up both
 
 - (1) OACIS
-- (2) hosts where simulator runs
+- (2) hosts where simulators run
 
 There are two ways to set up OACIS.
 
@@ -21,10 +21,10 @@ If your OS is Windows, you must select (1.1).
 For Unix-based OS (Linux, Mac), either (1.1) or (1.2) is fine.
 
 If you use OACIS for the first time, we recommend (1.1) since you can quickly start trying OACIS.
-With the virtual machine environment, you can quickly start the tutorial in the next page.
+With the virtual machine environment, you can quickly start the tutorial on the next page.
 If you would like to use it more seriously, we recommend to move to the native environment.
 
-We also need to setup the host where simulator runs. Hereafter we call it "computational host".
+We also need to setup the host where the simulator runs. Hereafter we call it "computational host".
 
 In this page, the setup procedure are shown for each option.
 
@@ -40,7 +40,7 @@ The installation procedure is summarized in the README of [oacis_docker](https:/
 
 As indicated in the README, you can launch the virtual machine by `docker run --name oacis -p 3000:3000 -dt oacis/oacis` command.
 If you would like to start the tutorial in the next page as quickly as possible, execute `docker run --name oacis -p 3000:3000 -dt oacis/oacis_tutorial`.
-This command uses an image in which the step 2 of the tutorial in the next page has already been setup.
+This command uses an image in which step 2 of the tutorial in the next page has already been setup.
 
 
 ## (1.2) Installing OACIS on a native machine
@@ -66,11 +66,11 @@ We recommend rbenv or rvm to install proper version of Ruby.
 For MacOS X users, it is easy to use [homebrew](http://brew.sh/) to install rbenv and MongoDB.
 For Linux users, yum or apt commands are available to install these.
 
-In order to install bundler, run `gem install bundler` after you installed Ruby.
+In order to install bundler, run `gem install bundler` after you have installed Ruby.
 
 #### Setting up prerequisites in MacOS X
 
-Here we show the instruction on how to setup prerequisites using homebrew.
+Here we show the instructions on how to setup prerequisites using homebrew.
 
 - installing rbenv
     - `brew install rbenv ruby-build`
@@ -121,7 +121,7 @@ git clone -b master https://github.com/crest-cassia/oacis.git
 ```
 
 After this command, source codes for OACIS is downloaded to `oacis/` directory.
-Run the following command to verify that an appropriate prerequisites are already installed.
+Run the following command to verify that appropriate prerequisites are already installed.
 If you get an error, please check the installation of prerequisites.
 
 ```shell
@@ -163,7 +163,7 @@ bundle exec rake daemon:stop
 ```
 
 {% capture tips %}
-You can graciously stop the server even a submitted job is not finished.
+You can gracefully stop the server even if a submitted job is not finished.
 Even while OACIS is stopped, the jobs remain running on the remote hosts. When you boot OACIS again, the finished jobs are included in the database.
 {% endcapture %}{% include tips %}
 
@@ -195,29 +195,29 @@ Hereafter, we call the host where OACIS is running "OACIS host".
     - For setting up XSUB, plesae refer to the [README of XSUB](https://github.com/crest-cassia/xsub/blob/master/README.md).
 4. (At OACIS host) Verifying the set up
     - Run `ssh remotehost 'bash -l -c xstat'`. If you find the job status of the remote host without an error, all the setup has been correctly finished.
-        - If you find an SSH error, please check the procedure 1.
-        - If you find an error like "no such command : xsub", then please check the procedure 3.
+        - If you find an SSH error, please check Procedure 1.
+        - If you find an error like "no such command : xsub", then please check Procedure 3.
 
-## Note on the security ( for both (1.1),(1.2) )
+## Note on security ( for both (1.1),(1.2) )
 
 **Please skip this section if you are using docker from Mac or Windows.**
 
 Please use OACIS in intranet.
-Since OACIS can invoke an arbitrary command on the computational host, a serious security issue can happen if a malicious user has an access to OACIS.
+Since OACIS can invoke an arbitrary command on the computational host, a serious security issue can happen if a malicious user has access to OACIS.
 We recommend to run OACIS on a personal machine, and use firewall to deny access from other host.
-The web server and MongoDB use 3000 and 27017 port, respectively. Please deny the access to these port from other host.
+The web server and MongoDB use 3000 and 27017 port, respectively. Please deny access to these ports from other host.
 
 If you run Docker from Mac or Windows, the access from other host is prohibited by default. You do not have to do any further action.
 
 If you use Docker from Linux, we recommend to use "iptables" command to setup firewall.
-By running the following command, all the access to OACIS via ethernet is denied.
+By running the following command, all access to OACIS via ethernet is denied.
 
 ```shell
 iptables -I FORWARD -i eth+ -o docker0 -p tcp -m tcp --dport 3000 -j DROP
 ```
 
-Even if you setup the firewall, you can access to OACIS from other host using SSH port forwarding.
-If your OACIS is running on "server.example.com" for example, you can forward the port of OACSI to localhost:3000 by running the following command.
+Even if you setup the firewall, you can access OACIS from other host using SSH port forwarding.
+If your OACIS is running on "server.example.com" for example, you can forward the port of OACIS to localhost:3000 by running the following command.
 
 ```shell
 ssh -N -f -L 3000:localhost:3000 server.example.com

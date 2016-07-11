@@ -17,14 +17,14 @@ This tutorial is designed so that you can experience a basic workflow of OACIS.
 
 ## About the sample simulator
 
-In this tutorial, we are going to execute simulations of Nagel-Schereckenberg model, which is a simple model of traffic flow of vehicles.
-This simple model, proposed in 1990's, describes the motion of vehicles as a Cellular Automaton in one-dimensional lattice.
+In this tutorial, we are going to execute simulations of the Nagel-Schereckenberg model, which is a simple model of traffic flow of vehicles.
+This simple model, proposed in the 1990's, describes the motion of vehicles as a Cellular Automaton on a one-dimensional lattice.
 For more information about the model, please see [this page](https://en.wikipedia.org/wiki/Nagel%E2%80%93Schreckenberg_model).
 
 We provide a source code for this simulation. Please find the [repository on the github](https://github.com/yohm/nagel_schreckenberg_model).
-Follow README to setting up the simulator. When you run the script `run.sh`, give simulation parameters as command-line arguments.
+Follow README to set up the simulator. When you run the script `run.sh`, give simulation parameters as command-line arguments.
 The output file is generated in the current directory.
-Please try running the simulator and see how the output files look like.
+Please try running the simulator and see how the output files look.
 
 From now on, let us assume that the script is located at `~/work/ns_model/run.sh`.
 
@@ -57,7 +57,7 @@ You will find the [New Host] button. Click it.
 On this page, we are going to fill in the information about the computational host.
 OACIS submits jobs to the computational host based on this information.
 
-For this tutorial, fill in the form as follows. (For the fields not shown in this list, leave them default values.)
+For this tutorial, fill in the form as follows. (For the fields not shown in this list, leave them with default values.)
 
 - Name: *localhost*
     - The name used in OACIS. An arbitrary name which is easier for users to identify is fine.
@@ -70,7 +70,7 @@ For this tutorial, fill in the form as follows. (For the fields not shown in thi
 - Mounted work base dir: *~/oacis_work*
     - For this tutorial, please fill in the same path as the *work base dir*.
 - Polling interval: *5*
-    - Worker checks the status of the remote host on this interval. For this tutorial, we adopt a shorter duration since we would like to check the results quickly.
+    - Worker checks the status of the remote host with this interval in seconds. The unit is  For this tutorial, we adopt a shorter duration since we would like to check the results quickly.
 
 The specification of these fields are shown in [another page]({{ site.baseurl }}/{{ page.lang }}/configuring_host.html#host_specification).
 If you are going to register another computational host, please refer to this page.
@@ -107,10 +107,10 @@ The traffic simulator we are going to use satisfies all the above requirements. 
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/tF_9EYMxVoA" frameborder="0" allowfullscreen class="youtube"></iframe>
 
-From the top page, click *[New Simulator]* button to go to the registration page of a simulator.
-In this page, fill in the information of the simulator. For the full list of the specification of these fields, visit [Specification of Simulators]({{ site.baseurl }}/{{ page.lang }}/configuring_simulator.html#simulator_specification).
+From the top page, click the *[New Simulator]* button to go to the registration page of a simulator.
+In this page, fill in the information of the simulator. For the full list of the specifications of these fields, visit [Specification of Simulators]({{ site.baseurl }}/{{ page.lang }}/configuring_simulator.html#simulator_specification).
 
-In this tutorial, we setup the simulator as follows. Leave the unspecified fields default values.
+In this tutorial, we setup the simulator as follows. Leave the unspecified fields with default values.
 
 - Name: NS\_model
 - Definition of Parameters:
@@ -129,22 +129,22 @@ If there is an inconsistency between the default value and type of parameter def
 ## 3. Making a ParameterSet
 
 After you make a simulator, then a list of ParameterSets in the simulator is displayed.
-At this moment, the list is empty since no ParameterSet is created. After you created ParameterSets, they are displayed on this page.
+At this moment, the list is empty since no ParameterSet is created. After you create ParameterSets, they are displayed on this page.
 
-To make a ParameterSet, click [New Parameter Set] button.
+To make a ParameterSet, click the [New Parameter Set] button.
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/hzVnuW2M7oc" frameborder="0" allowfullscreen class="youtube"></iframe>
 
-You will find a form as in the above video. Fill in the parameters you want to create and click [Create] to create a parameter set.
-(For your information, we can create runs as well as the parameter sets by setting the number of runs to a non-zero value. However, let us keep the number of runs "0" for simplicity for now.)
+You will find a form as in the above video. Fill in the parameters you want to create and click [Create] to create a ParameterSet.
+(For your information, we can create runs as well as the ParameterSets by setting the number of runs to a non-zero value. However, let us keep the number of runs "0" for simplicity for now.)
 
-(Tips) We may create multiple parameter sets at once if you fill in multiple values in a comma separated format. Since it may take some time, we limit the maximum number of runs that we can create at once to 100.
+(Tips) You may create multiple ParameterSets at once if you fill in multiple values in a comma separated format. Since it may take some time, we limit the maximum number of runs that we can create at once to 100.
 
-For this tutorial, let us create a parameter set with the default values.
+For this tutorial, let us create a ParameterSet with the default values.
 
 ## 4. Making a Run
 
-Let us create runs for the created parameter set in order to execute simulation jobs.
+Let us create runs for the created ParameterSet in order to execute simulation jobs.
 See the section titled *"Create New Runs"*. You will find a form to fill in the number of runs (**# of Runs**) and the host the jobs are submitted (**Submitted to**).
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/p6q9FYIxAIQ" frameborder="0" allowfullscreen class="youtube"></iframe>
@@ -154,7 +154,7 @@ In that case, please edit the simulator information and fix the executable host 
 
 If the computational host requires additional parameters to submit a job, fields to set these parameters are also shown. Please see the next page for details.
 
-So, let us make a run for this parameter set.
+So, let us make a run for this ParameterSet.
 Fill in "1" and "localhost" for "# of Runs" and "Submitted to" fields, respectively.
 
 When a run is created, a job is submitted to the computational host in the background automatically.
@@ -162,60 +162,60 @@ When a run is created, a job is submitted to the computational host in the backg
 ## 5. Checking the results
 
 When a job is finished on the computational host, the results files are automatically included into the database of OACIS.
-For this tutorial, it will take about 10 seconds to see the status of the run changes to *"finished"*.
+For this tutorial, it will take about 10 seconds to see the status of the run change to *"finished"*.
 (If the job execution fails, you will find the status *"failed"*. Even if the job failed, the files are stored in the database. So you can investigate the cause of an error from these files.)
 
 If you click a run, you can find a list of the output files from a browser.
 All the files created in the temporary directory are stored in this place.
 Contents of figure files, such as png, jpg, and bmp files, are also displayed.
 
-If your output files contains a JSON file named "_output.json", you can save the contents of the JSON file to MongoDB. The values saved in MongoDB can be plotted on web browser front-end provided by OACIS. We will show how to make a plot on a browser.
+If your output files contains a JSON file named "_output.json", you can save the contents of the JSON file to MongoDB. The values saved in MongoDB can be plotted on the web browser front-end provided by OACIS. We will show how to make a plot on a browser.
 
-If you click *"About"* tab, you will find more detailed logs such as executed date, elapsed time, and cpu time.
+If you click the *"About"* tab, you will find more detailed logs such as executed date, elapsed time, and cpu time.
 The path where the output files are stored is also shown in this page. Using the path, you can directly access the output files using a file browser or a terminal.
 
 ## 6. Sweeping parameter space
 
-We have learned how to make parameter sets and runs. We have also learned how to see the output files.
-Next let us make multiple parameter sets at once in order to investigate the parameter dependence of the simulator.
+We have learned how to make ParameterSets and runs. We have also learned how to see the output files.
+Next let us make multiple ParameterSets at once in order to investigate the parameter dependence of the simulator.
 
-In this tutorial, we are going to change two parameters: the density and the maximum velocity. We create parameter sets with five different values for each of these parameters. So we are going to create 25 parameter sets in total.
+In this tutorial, we are going to change two parameters: the density and the maximum velocity. We create ParameterSets with five different values for each of these parameters. So we are going to create 25 ParameterSets in total.
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/Lnta80r7vCA" frameborder="0" allowfullscreen class="youtube"></iframe>
 
-Click [New Parameter Set] button from the page showing list of parameter sets. You will find a form to create a parameter set as we have seen in step 3.
-If you find a multiple value in a field, multiple parameter set are simultaneously created.
-Let us fill in *"3,4,5,6,7"* and *"0.1,0.2,0.3,0.4,0.5"* at "Vmax" and "density" fields, respectively.
-(More precisely speaking, 24 parameter sets are newly created since one of them is identical to the one we have already created.)
+Click the [New Parameter Set] button from the page showing the list of ParameterSets. You will find a form to create a ParameterSet as we have seen in step 3.
+If you find a multiple value in a field, multiple ParameterSets are simultaneously created.
+Let us fill in *"3,4,5,6,7"* and *"0.1,0.2,0.3,0.4,0.5"* at the "Vmax" and "density" fields, respectively.
+(More precisely speaking, 24 ParameterSets are newly created since one of them is identical to the one we have already created.)
 
-Then, set *"Number of Runs"* to 1. One run is created for each parameter set. Click [Create] button, then 25 parameter sets and 25 runs are created.
+Then, set *"Number of Runs"* to 1. One run is created for each ParameterSet. Click the [Create] button, then 25 ParameterSets and 25 runs are created.
 
-If you click [Runs] button in the navigation bar, you can check the list of running, submitted, and created runs.
+If you click the [Runs] button in the navigation bar, you can check the list of running, submitted, and created runs.
 The status *"created*" means that a job is not submitted to the job scheduler.
 Here, the status *"running"* means that a job is running on a computational host.
 The status *"submitted"* means that a job has been submitted to a job scheduler but is not running yet.
-Since this list shows status of all the jobs, it might be more convenient for you to see the overview of the job status.
+Since this list shows the status of all the jobs, it might be more convenient for you to see the overview of the job status.
 
 If you make many runs, it is tedious (or hardly possible) to see the results one by one.
-In order to quickly get a view on these results, OACIS provides a UI. With this UI, you can quickly investigate the parameter dependence.
+In order to quickly get a view of these results, OACIS provides a UI. With this UI, you can quickly investigate the parameter dependence.
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/QXOycX9fnOw" frameborder="0" allowfullscreen class="youtube"></iframe>
 
-First, let us investigate the parameter dependence of total amount of traffic flow.
-Select one of the parameter sets from the list of parameter set and select *"Plot"* tab.
+First, let us investigate the parameter dependence of the total amount of traffic flow.
+Select one of the ParameterSets from the list of ParameterSet and select the *"Plot"* tab.
 Select [Line plot]-[density]-[flow] and click [Add line plot].
-OACIS collects all the parameter sets which have a different "density" parameters from the selected parameter set, and calculates the average value of flow for each parameter set and show the dependence on density as a line plot.
-If you increase the density, you will find an initial increasing behavior up to a certain critical density. When the density is larger than the critical value, the flow shows decreasing trend as a function of the density.
-If you double-click one of the data points, a page for parameter set is opened in another tab, where you can check the details of the parameter set and its runs.
+OACIS collects all the ParameterSets which have a different "density" parameter from the selected ParameterSet, and calculates the average value of flow for each ParameterSet and shows the dependence on density as a line plot.
+If you increase the density, you will find an initial increasing behavior up to a certain critical density. When the density is larger than the critical value, the flow shows a decreasing trend as a function of the density.
+If you double-click one of the data points, a page for the ParameterSet is opened in another tab, where you can check the details of the ParameterSet and its runs.
 
 Let us also see the parameter dependence of the snapshots.
 Select [Figure viewer]-[density]-[Vmax]-[flow] and click [Add figure viewer].
-Snapshots figures are displayed on a scatter plot whose horizontal and vertical axes are density and Vmax, respectively.
+Snapshot figures are displayed on a scatter plot whose horizontal and vertical axes are density and Vmax, respectively.
 If you move your mouse over these snapshots, you will see a magnified figure.
-In this way, we can intuitively see how the snapshots changes as these parameter values change.
+In this way, you can intuitively see how the snapshots change as these parameter values change.
 
 Let us investigate the behavior in more detail at around the optimal density.
-Go to the page of creating parameter sets. Fill in *"3,4,5,6,7"* for Vmax, and *"0.05, 0.1, 0.15, 0.2, 0.25, 0.3"* for density.
+Go to the page of creating ParameterSets. Fill in *"3,4,5,6,7"* for Vmax, and *"0.05, 0.1, 0.15, 0.2, 0.25, 0.3"* for density.
 In order to reduce statistical errors, let us set "Number of Runs" to 5.
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/BBdLcDwtLcI" frameborder="0" allowfullscreen class="youtube"></iframe>

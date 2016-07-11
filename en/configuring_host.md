@@ -7,7 +7,7 @@ next_page: configuring_simulator
 
 # {{ page.title }}
 
-This page explains how to configure the information of computational host.
+This page explains how to configure the information of a computational host.
 
 * TOC
 {:toc}
@@ -19,19 +19,19 @@ This page explains how to configure the information of computational host.
 Generally speaking, we need to use a job scheduler, such as Torque, to submit a job to High-Performance Computers (HPCs) or CPU clusters.
 When submitting a job to a job scheduler, we usually need to specify various parameters such as the number of nodes required for the job, the maximum elapsed time, and the number of CPU cores.
 
-The problem is that the specifications of these job scheduler are different from each other showing a wide variety.
+The problem is that the specifications of these job schedulers are different from each other, showing a wide variety.
 Therefore, OACIS uses a small script, called [XSUB](https://github.com/crest-cassia/xsub) to absorb the difference between schedulers.
 XSUB must be prepared in the computational hosts before you register the host information on OACIS.
 
 About the installation procedure of XSUB, please refer to the [official document](https://github.com/crest-cassia/xsub).
 After you install XSUB properly, the commands **xsub**, **xstat**, and **xdel** became available.
 
-(Note) OACIS run these command from bash launched as a login-shell. Therefore, please set the environment variables required to use XSUB, such as PATH, in `.bash\_profile` file, not in `.bashrc`.
+(Note) OACIS runs these command from bash launched as a login-shell. Therefore, please set the environment variables required to use XSUB, such as PATH, in `.bash_profile` file, not in `.bashrc`.
 
 ![About XSUB]({{ site.baseurl }}/images/xsub.png){:width="500px"}
 
-The parameters required to specify when submitting a job is called **"host parameters"**.
-Required host parameters are different depending on the specification of the job schedulers. OACIS retrieves the information of the required host parameters using "xsub" command.
+The parameters required to specify when submitting a job are called **"host parameters"**.
+Required host parameters are different depending on the specification of the job schedulers. OACIS retrieves the information of the required host parameters using the "xsub" command.
 Hence, XSUB must be setup before registering the host information on OACIS.
 When you create a run, fields for the host parameters are shown in the page as shown in the figure below.
 
@@ -45,8 +45,8 @@ We will explain the list of information which you need to specify when registeri
 | field                      | explanation                                                         |
 |:---------------------------|:--------------------------------------------------------------------|
 | Name                       | The name used in OACIS. You can specify an arbitrary string. Must be unique. |
-| Hostname                   | hostname or IP address used as the destination of SSH connection |
-| Polling Status             | A flat controlling if you are going to use this host. When you would like to stop the submission temporarily, maybe due to the maintenance of the server, set this field to "disabled". |
+| Hostname                   | hostname or IP address used as the destination of the SSH connection |
+| Polling Status             | A switch controlling if you are going to use this host. When you would like to stop the submission temporarily, maybe due to maintenance of the server, set this field to "disabled". |
 | User                       | User name used for ssh connection. |
 | Port                       | Port used for SSH connection. Default value is 22. |
 | SSH key                    | SSH authentication key used for SSH connection. Default is *~/.ssh/id_rsa* |
@@ -98,7 +98,7 @@ All the simulation results are properly staged-out if all the output files are g
 
 If you make a Run on OACIS, the run is automatically submitted to the specified computational host by default.
 However, there is an option to run it manually.
-When creating a run, set *"Submitted to"* field to *"manual submission"*. The jobs are not submitted to the remote host, but only a shell script to run the job is created.
+When creating a run, set the *"Submitted to"* field to *"manual submission"*. The jobs are not submitted to the remote host, but only a shell script to run the job is created.
 You can execute the shell script manually and include the results into OACIS later on.
 
 By the manual submission, you can conduct a minute customization against the job script although the submission is not automated.
