@@ -105,7 +105,7 @@ GEM
     less-rails (2.6.0)
       actionpack (>= 3.1)
       less (~> 2.6.0)
-    libv8 (3.16.14.7)
+    libv8 (3.16.14.15)
     loofah (2.0.1)
       nokogiri (>= 1.5.9)
     mail (2.6.3)
@@ -284,4 +284,4 @@ DEPENDENCIES
   twitter-bootstrap-rails (= 3.2.0)
 
 BUNDLED WITH
-   1.11.2
+   1.12.5
