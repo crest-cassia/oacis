@@ -90,7 +90,7 @@ describe OacisCli do
         option = {simulator: @sim.id.to_s, input: 'analyzer.json', output: 'analyzer_id.json'}
         OacisCli.new.invoke(:create_analyzer, [], option)
 
-        anz = Analyzer.last
+        anz = Analyzer.order_by(id: :asc).last
         expect(anz.name).to eq "a_sample_analyzer"
         expect(anz.support_input_json).to be_truthy
         expect(anz.pre_process_script).to be_nil
@@ -109,7 +109,7 @@ describe OacisCli do
           ["p1", "Integer", 0, "parameter1"],
           ["p2", "Float", 5.0, "parameter2"]
         ]
-        expect(Analyzer.last.parameter_definitions.map { |pd|
+        expect(Analyzer.order_by(id: :asc).last.parameter_definitions.map { |pd|
           [pd.key, pd.type, pd.default, pd.description]
         }).to eq expected
       }
@@ -121,7 +121,7 @@ describe OacisCli do
         option = {simulator: @sim.id.to_s, input: 'analyzer.json', output: 'analyzer_id.json'}
         OacisCli.new.invoke(:create_analyzer, [], option)
 
-        expected = { "analyzer_id" => Analyzer.last.id.to_s }
+        expected = { "analyzer_id" => Analyzer.order_by(id: :asc).last.id.to_s }
         output = JSON.parse(File.read('analyzer_id.json'))
         expect(output).to eq expected
       }
@@ -139,15 +139,15 @@ describe OacisCli do
       it "sets executable_on_ids when host.json is specified" do
         at_temp_dir {
           create_analyzer_with_host_json
-          expect(Analyzer.last.executable_on).to include(@host)
-          expect(Analyzer.last.auto_run_submitted_to).to eq @host
+          expect(Analyzer.order_by(id: :asc).last.executable_on).to include(@host)
+          expect(Analyzer.order_by(id: :asc).last.auto_run_submitted_to).to eq @host
         }
       end
 
       it "sets Host#executable_simulators field" do
         at_temp_dir {
           create_analyzer_with_host_json
-          expect(@host.reload.executable_analyzers).to eq [Analyzer.last]
+          expect(@host.reload.executable_analyzers).to eq [Analyzer.order_by(id: :asc).last]
         }
       end
     end

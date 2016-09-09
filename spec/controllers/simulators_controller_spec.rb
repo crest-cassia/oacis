@@ -158,7 +158,7 @@ describe SimulatorsController do
 
       it "assigns attributes of newly created Simulator" do
         post :create, @valid_post_parameter, valid_session
-        sim = Simulator.last
+        sim = Simulator.order_by(id: :asc).last
         expect(sim.name).to eq "simulatorA"
         expect(sim.command).to eq "echo"
         expect(sim.support_input_json).to be_falsey
@@ -177,7 +177,7 @@ describe SimulatorsController do
 
       it "redirects to the created simulator" do
         post :create, @valid_post_parameter, valid_session
-        expect(response).to redirect_to(Simulator.last)
+        expect(response).to redirect_to(Simulator.order_by(id: :asc).last)
       end
     end
 
@@ -261,7 +261,7 @@ describe SimulatorsController do
         expect {
           post :create, {simulator: invalid_params, invalid: 1}, valid_session
         }.to change {Simulator.count}.by(1)
-        sim = Simulator.last
+        sim = Simulator.order_by(id: :asc).last
         expect(sim.position).not_to eq 100
         expect(sim.default_host_parameters).not_to include({"host_id"=>{"param1"=>123}})
         expect(sim.default_mpi_procs).not_to include({"host_id"=>12345})
@@ -415,8 +415,8 @@ describe SimulatorsController do
 
       it "redirects to show with the created parameter_set_query" do
         post :_make_query, @valid_post_parameter, valid_session
-        expect(response).to redirect_to( simulator_path(@simulator, query_id: ParameterSetQuery.last.to_param) )
-        expect(assigns(:query_id)).to eq(ParameterSetQuery.last.id.to_s)
+        expect(response).to redirect_to( simulator_path(@simulator, query_id: ParameterSetQuery.order_by(id: :asc).last.to_param) )
+        expect(assigns(:query_id)).to eq(ParameterSetQuery.order_by(id: :asc).last.id.to_s)
       end
 
       context "and with delete option" do

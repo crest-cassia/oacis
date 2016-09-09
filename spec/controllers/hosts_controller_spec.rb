@@ -87,7 +87,7 @@ describe HostsController do
 
       it "redirects to the created host" do
         post :create, {host: valid_attributes}, valid_session
-        expect(response).to redirect_to(Host.last)
+        expect(response).to redirect_to(Host.order_by(id: :asc).last)
       end
 
       context "with executable_simulators and executable_analyzers" do

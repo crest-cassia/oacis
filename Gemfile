@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rails', '~> 4.2.0'
 gem 'thin'
-gem "mongoid"
+gem "mongoid", ' ~> 5.1.0'
 gem "net-ssh"
 gem "net-sftp"
 gem "jbuilder", '2.4.0'

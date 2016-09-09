@@ -278,7 +278,7 @@ class ParameterSetsController < ApplicationController
   def collect_result_values(ps_ids, analyzer, result_keys)
     aggregated = []
     if analyzer.nil?
-      aggregated = Run.collection.aggregate(
+      aggregated = Run.collection.aggregate([
         { '$match' => Run.in(parameter_set_id: ps_ids)
                          .where(status: :finished)
                          .exists("result.#{result_keys.join('.')}" => true)
@@ -291,9 +291,9 @@ class ParameterSetsController < ApplicationController
                         square_average: {'$avg' => {'$multiply' =>['$result_val', '$result_val']} },
                         count: {'$sum' => 1}
                       }}
-        )
+        ])
     elsif analyzer.type == :on_run
-      aggregated = Analysis.collection.aggregate(
+      aggregated = Analysis.collection.aggregate([
         { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
                               .in(parameter_set_id: ps_ids)
                               .exists("result.#{result_keys.join('.')}" => true)
@@ -312,9 +312,9 @@ class ParameterSetsController < ApplicationController
                         square_average: {'$avg' => {'$multiply' =>['$result_val', '$result_val']}},
                         count: {'$sum' => 1}
                       }}
-        )
+        ])
     elsif analyzer.type == :on_parameter_set
-      aggregated = Analysis.collection.aggregate(
+      aggregated = Analysis.collection.aggregate([
         { '$match' => Analysis.where(analyzer_id: analyzer.id, status: :finished)
                               .in(parameter_set_id: ps_ids)
                               .exists("result.#{result_keys.join('.')}" => true)
@@ -328,7 +328,7 @@ class ParameterSetsController < ApplicationController
                         square_average: {'$first' => {'$multiply' =>['$result_val', '$result_val']}},
                         count: {'$first' => 1}
                       }}
-        )
+        ])
     else
       raise "must not happen"
     end
@@ -342,13 +342,13 @@ class ParameterSetsController < ApplicationController
   end
 
   def collect_latest_elapsed_times(ps_ids)
-    Run.collection.aggregate(
+    Run.collection.aggregate([
       { '$match' => Run.in(parameter_set_id: ps_ids).where(status: :finished).selector },
       { '$sort' => { updated_at: -1 } },
       { '$group' => { _id: '$parameter_set_id',
                       real_time: {'$first' => '$real_time'},
                       cpu_time: {'$first' => '$cpu_time'}}}
-      )
+      ])
   end
 
   SCATTER_PLOT_LIMIT = 10000
@@ -370,11 +370,11 @@ class ParameterSetsController < ApplicationController
       found_ps = found_ps.where({ "v.#{key}" => {"$gte" => range.first, "$lte" => range.last} })
     end
 
-    parameter_values = ParameterSet.collection.aggregate(
+    parameter_values = ParameterSet.collection.aggregate([
       { '$match' => found_ps.selector },
       { '$limit' => SCATTER_PLOT_LIMIT },
       { '$project' => {v: "$v"} }
-      )
+      ])
     # parameter_values should look like
     #   [{"_id"=>"52bb8662b93f96e193000007", "v"=> {...}}, {...}, {...}, ... ]
 
@@ -424,22 +424,22 @@ class ParameterSetsController < ApplicationController
 
   private
   def collect_latest_analyses(ps_ids, analyzer)
-    Analysis.collection.aggregate(
+    Analysis.collection.aggregate([
       { '$match' => Analysis.where(analyzer: analyzer).in(parameter_set_id: ps_ids).where(status: :finished).selector },
       { '$sort' => { updatd_at: -1 } },
       { '$group' => { _id: '$parameter_set_id',
                       analysis_id: {'$first' => '$_id'},
                       analyzable_id: {'$first' => '$analyzable_id'}}}
-      )
+      ])
   end
 
   def collect_latest_runs(ps_ids)
-    Run.collection.aggregate(
+    Run.collection.aggregate([
       { '$match' => Run.in(parameter_set_id: ps_ids).where(status: :finished).selector },
       { '$sort' => { updatd_at: -1 } },
       { '$group' => { _id: '$parameter_set_id',
                       run_id: {'$first' => '$_id'}}}
-      )
+      ])
   end
 
   public

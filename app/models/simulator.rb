@@ -54,10 +54,10 @@ class Simulator
   def runs_status_count
     # use aggregate function of MongoDB.
     # See http://blog.joshsoftware.com/2013/09/05/mongoid-and-the-mongodb-aggregation-framework/
-    aggregated = Run.collection.aggregate(
+    aggregated = Run.collection.aggregate([
       { '$match' => Run.where(simulator_id: id).selector },
       { '$group' => {'_id' => '$status', count: { '$sum' => 1}} }
-      )
+      ])
     # aggregated is an Array like [ {"_id" => :created, "count" => 3}, ...]
     counts = Hash[ aggregated.map {|d| [d["_id"], d["count"]] } ]
 
@@ -75,11 +75,11 @@ class Simulator
 
   def plottable
     list = ["cpu_time", "real_time"]
-    run = Run.where(simulator: self, status: :finished).last
+    run = Run.where(simulator: self, status: :finished).order_by(updated_at: :asc).last
     list += plottable_keys(run.try(:result)).map {|key| ".#{key}" }
 
     analyzers.each do |azr|
-      anl = azr.analyses.where(status: :finished).last
+      anl = azr.analyses.where(status: :finished).order_by(updated_at: :asc).last
       keys = plottable_keys(anl.try(:result)).map do |key|
         "#{azr.name}.#{key}"
       end
@@ -160,10 +160,10 @@ class Simulator
       group["max_#{result_key.gsub('.', '_')}"] = {'$max' => "$result.#{result_key}" }
     end
 
-    aggregated = collection_class.collection.aggregate(
+    aggregated = collection_class.collection.aggregate([
       {'$match' =>  query.selector },
       {'$group' => group }
-    )
+    ])
     aggregated = aggregated.first
 
     ranges = {}
@@ -184,10 +184,10 @@ class Simulator
       group["min-#{pd.key}"] = { '$min' => "$v.#{pd.key}" }
       group["max-#{pd.key}"] = { '$max' => "$v.#{pd.key}" }
     end
-    aggregated = ParameterSet.collection.aggregate(
+    aggregated = ParameterSet.collection.aggregate([
       {'$match' => query.selector },
       {'$group' => group }
-    ).first
+    ]).first
 
     ranges = {}
     parameter_definitions.each do |pd|
@@ -306,13 +306,14 @@ EOS
     #   "latest_started_at"=>2014-04-21 02:10:08 UTC,
     #   "count"=> {:finished => 2, :failed => 1} }]
     query = Run.where(simulator: self).exists(started_at: true)
-    aggregated = Run.collection.aggregate(
+    aggregated = Run.collection.aggregate([
       {'$match' => query.selector },
       { '$group' => {'_id' => { version: '$simulator_version', status: '$status'},
                      oldest_started_at: { '$min' => '$started_at'},
                      latest_started_at: { '$max' => '$started_at'},
                      count: {'$sum' => 1}
-                     }})
+                     }}
+    ])
 
     sim_versions = {}
     aggregated.each do |h|

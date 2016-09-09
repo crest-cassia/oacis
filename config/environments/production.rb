@@ -93,6 +93,6 @@ AcmProto::Application.configure do
   config.logger.formatter = LoggerFormatWithTime.new
   Mongoid.logger.level = Logger::WARN
   Mongoid.logger.formatter = LoggerFormatWithTime.new
-  Moped.logger.level = Logger::WARN
-  Moped.logger.formatter = LoggerFormatWithTime.new
+  Mongo::Logger.logger.level = Logger::WARN
+  Mongo::Logger.logger.formatter = LoggerFormatWithTime.new
 end

@@ -52,10 +52,10 @@ class ParameterSet
 
     # use aggregate function of MongoDB.
     # See http://blog.joshsoftware.com/2013/09/05/mongoid-and-the-mongodb-aggregation-framework/
-    aggregated = Run.collection.aggregate(
+    aggregated = Run.collection.aggregate([
       { '$match' => Run.where(parameter_set_id: id).selector },
       { '$group' => {'_id' => '$status', count: { '$sum' => 1}} }
-      )
+    ])
     # aggregated is an Array like [ {"_id" => :created, "count" => 3}, ...]
     counts = Hash[ aggregated.map {|d| [d["_id"], d["count"]] } ]
 
