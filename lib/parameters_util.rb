@@ -4,7 +4,7 @@ module ParametersUtil
 
   def self.cast_parameter_values(parameters, definitions, errors = nil)
     casted = {}
-    parameters ||= {}
+    parameters = parameters.try(:with_indifferent_access) || {}
 
     definitions.each do |pdef|
       key = pdef.key
