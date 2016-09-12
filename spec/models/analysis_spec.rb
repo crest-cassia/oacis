@@ -98,14 +98,14 @@ describe Analysis do
 
     it "can be embedded in a run" do
       @arn = @run.analyses.build(@valid_attr)
-      expect(@run.analyses.last).to be_a(Analysis)
+      expect(@run.analyses.order_by(id: :asc).last).to be_a(Analysis)
       expect(@arn.analyzable).to be_a(Run)
     end
 
     it "can be embedded in a parameter_set" do
       ps = @sim.parameter_sets.first
       @arn = ps.analyses.build(@valid_attr)
-      expect(ps.analyses.last).to be_a(Analysis)
+      expect(@arn).to be_a(Analysis)
       expect(@arn.analyzable).to be_a(ParameterSet)
     end
 

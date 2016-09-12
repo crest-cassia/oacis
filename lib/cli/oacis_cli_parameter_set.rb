@@ -159,10 +159,10 @@ class OacisCli < Thor
       Hash[key_val_array]
     end
     list_created_ps = {}
-    ParameterSet.collection.aggregate(
+    ParameterSet.collection.aggregate([
       { '$match' => {'simulator_id' => simulator.id, 'v' => {'$in'=>input}} },
       { '$group' => {'_id' => '$_id', v: {'$first' => '$v'}} }
-    ).each do |psid_v|
+    ]).each do |psid_v|
       list_created_ps[psid_v['v']]=psid_v['_id']
     end
     input.map do |ps_v|

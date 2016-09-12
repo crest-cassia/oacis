@@ -278,7 +278,7 @@ describe OacisCli do
             OacisCli.new.invoke(:create_parameter_sets, [], option)
             }.to change { @sim.runs.count }.by(12)
 
-          expect(@sim.reload.runs.last.host_parameters).to eq run_param["host_parameters"]
+          expect(@sim.reload.runs.order_by(id: :asc).last.host_parameters).to eq run_param["host_parameters"]
         }
       end
 

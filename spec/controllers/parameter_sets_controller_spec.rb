@@ -87,7 +87,7 @@ describe ParameterSetsController do
 
       it "redirects to the created parameter set" do
         post :create, @valid_param, valid_session
-        expect(response).to redirect_to(ParameterSet.last)
+        expect(response).to redirect_to(ParameterSet.order_by(id: :asc).last)
       end
 
       it "creates runs if num_runs are given" do
@@ -100,9 +100,9 @@ describe ParameterSetsController do
         @sim.update_attribute(:support_mpi, true)
         @sim.update_attribute(:support_omp, true)
         post :create, @valid_param.update(num_runs: 1, run: {submitted_to: Host.first, mpi_procs: 8, omp_threads: 4, priority: 2, host_parameters: {} }), valid_session
-        expect(Run.last.mpi_procs).to eq 8
-        expect(Run.last.omp_threads).to eq 4
-        expect(Run.last.priority).to eq 2
+        expect(Run.order_by(id: :asc).last.mpi_procs).to eq 8
+        expect(Run.order_by(id: :asc).last.omp_threads).to eq 4
+        expect(Run.order_by(id: :asc).last.priority).to eq 2
       end
 
       it "creates runs with host_parameters" do
@@ -111,7 +111,7 @@ describe ParameterSetsController do
         h.save!
         host_param = {"param1" => "foo", "param2" => "bar" }
         post :create, @valid_param.update(num_runs: 1, run: {submitted_to: h, host_parameters: host_param }), valid_session
-        expect(Run.last.host_parameters).to eq host_param
+        expect(Run.order_by(id: :asc).last.host_parameters).to eq host_param
       end
 
       context "when duplicated parameter_set exists" do
@@ -154,7 +154,7 @@ describe ParameterSetsController do
         it "redirects to parameter set when single paraemter set is created" do
           @valid_param.update(v: {"L" => "1", "T" => "1.0, abc"})
           post :create, @valid_param, valid_session
-          expect(response).to redirect_to(ParameterSet.last)
+          expect(response).to redirect_to(ParameterSet.order_by(id: :asc).last)
         end
 
         it "does not create duplicated parameter set" do
@@ -288,7 +288,7 @@ describe ParameterSetsController do
         expect {
           post :create, invalid_params, valid_session
         }.to change {ParameterSet.count}.by(1)
-        ps = ParameterSet.last
+        ps = ParameterSet.order_by(id: :asc).last
         expect(ps.runs_status_count_cache).not_to eq ({"kill"=>"all"})
         expect(ps.progress_rate_cache).not_to eq 123
       end

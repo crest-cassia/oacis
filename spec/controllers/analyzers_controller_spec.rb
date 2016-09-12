@@ -98,7 +98,7 @@ describe AnalyzersController do
 
       it "assigns attributes of newly created Analyzer" do
         post :create, @valid_post_parameter, valid_session
-        azr = Analyzer.last
+        azr = Analyzer.order_by(id: :asc).last
         expect(azr.name).to eq "analyzerA"
         expect(azr.type).to eq :on_run
         expect(azr.command).to eq "echo"
@@ -123,7 +123,7 @@ describe AnalyzersController do
 
       it "redirects to the created analyzer" do
         post :create, @valid_post_parameter, valid_session
-        expect(response).to redirect_to(Analyzer.last)
+        expect(response).to redirect_to(Analyzer.order_by(id: :asc).last)
       end
     end
 

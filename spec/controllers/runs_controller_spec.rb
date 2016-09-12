@@ -104,7 +104,7 @@ describe RunsController do
         expect {
           post :create, invalid_params, valid_session
         }.to change{Run.count}.by(1)
-        run = Run.last
+        run = Run.order_by(id: :asc).last
         expect(run.status).not_to eq :finished
         expect(run.hostname).not_to eq "Foo"
         expect(run.cpu_time).not_to eq -100.0

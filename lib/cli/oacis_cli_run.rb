@@ -83,10 +83,10 @@ class OacisCli < Thor
 
     run_ids = []
     list_runs = {}
-    Run.collection.aggregate(
+    Run.collection.aggregate([
       { '$match' => {'parameter_set_id' => {'$in'=>parameter_sets.map(&:id)}} },
       { '$group' => {'_id' => '$parameter_set_id', run_ids: {'$push' => '$_id'}} }
-    ).each do |ps_runs|
+    ]).each do |ps_runs|
       list_runs[ps_runs['_id']] = ps_runs['run_ids']
     end
     parameter_sets.map(&:id).each do |ps_id|
