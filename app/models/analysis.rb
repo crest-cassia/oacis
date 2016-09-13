@@ -94,6 +94,10 @@ class Analysis
     true
   end
 
+  def discard
+    update_attribute(:to_be_destroyed, true)
+  end
+
   def set_lower_submittable_to_be_destroyed
     # do nothing
   end

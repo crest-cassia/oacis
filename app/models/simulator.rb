@@ -136,6 +136,11 @@ class Simulator
     list
   end
 
+  def discard
+    update_attribute(:to_be_destroyed, true)
+    set_lower_submittable_to_be_destroyed
+  end
+
   def destroyable?
     if runs.unscoped.empty?
       azr_ids = analyzers.unscoped.map {|azr| azr.id }
