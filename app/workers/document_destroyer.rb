@@ -1,7 +1,6 @@
 class DocumentDestroyer
 
   def self.perform(logger)
-    @skip_count ||= {}
     @logger = logger
 
     @logger.debug "looking for Simulator to be destroyed"
@@ -28,7 +27,6 @@ class DocumentDestroyer
       if obj.destroyable?
         @logger.info "destroying #{obj.class} #{obj.id}"
         obj.destroy
-        @skip_count.delete(obj.id)
       else
         obj.set_lower_submittable_to_be_destroyed
         @logger.info "skip destroying #{obj.class} #{obj.id}. not destroyable yet."
