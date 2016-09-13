@@ -162,6 +162,25 @@ describe Analysis do
     end
   end
 
+  describe "#discard" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1,
+                               runs_count: 1,
+                               analyzers_count: 1,
+                               run_analysis: true
+                               )
+      @anl = sim.parameter_sets.first.runs.first.analyses.first
+    end
+
+    it "updates 'to_be_destroyed' to true" do
+      expect {
+        @anl.discard
+      }.to change { @anl.to_be_destroyed }.from(false).to(true)
+    end
+  end
+
   describe "#input" do
 
     describe "for :on_run type" do

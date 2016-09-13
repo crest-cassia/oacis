@@ -74,6 +74,11 @@ class Analyzer
     anl_versions.map {|key,val| val['version'] = key; val }.sort_by {|a| a['latest_started_at']}
   end
 
+  def discard
+    update_attribute(:to_be_destroyed, true)
+    set_lower_submittable_to_be_destroyed
+  end
+
   def destroyable?
     analyses.unscoped.empty?
   end

@@ -298,6 +298,25 @@ describe ParameterSet do
     end
   end
 
+  describe "#discard" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1)
+      @ps = sim.parameter_sets.first
+    end
+
+    it "updates 'to_be_destroyed' to true" do
+      expect {
+        @ps.discard
+      }.to change { @ps.to_be_destroyed }.from(false).to(true)
+    end
+
+    it "should receive 'set_lower_submittable_to_be_destroyed'" do
+      expect(@ps).to receive(:set_lower_submittable_to_be_destroyed)
+      @ps.discard
+    end
+  end
+
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do

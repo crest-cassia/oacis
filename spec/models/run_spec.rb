@@ -437,6 +437,25 @@ describe Run do
     end
   end
 
+  describe "#discard" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @run = sim.parameter_sets.first.runs.first
+    end
+
+    it "updates 'to_be_destroyed' to true" do
+      expect {
+        @run.discard
+      }.to change { @run.to_be_destroyed }.from(false).to(true)
+    end
+
+    it "should receive 'set_lower_submittable_to_be_destroyed'" do
+      expect(@run).to receive(:set_lower_submittable_to_be_destroyed)
+      @run.discard
+    end
+  end
+
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do
