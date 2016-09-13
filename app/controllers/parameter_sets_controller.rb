@@ -147,8 +147,7 @@ class ParameterSetsController < ApplicationController
   def destroy
     @ps = ParameterSet.find(params[:id])
     simulator = Simulator.find(@ps.simulator_id)
-    @ps.update_attribute(:to_be_destroyed, true)
-    @ps.set_lower_submittable_to_be_destroyed
+    @ps.discard
 
     respond_to do |format|
       format.json { head :no_content }
