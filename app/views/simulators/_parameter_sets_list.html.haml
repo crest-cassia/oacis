@@ -12,38 +12,32 @@
     New Parameter Set
 
 %h3 Parameter Filter
-= form_tag( _make_query_simulator_path(@simulator) ) do |f|
-  %table
-    %tbody
-      %tr
-        %td
-          "Key"
-        %td
-          "Matcher"
-        %td
-          "Value"
-      %tr#queries_form_original
-        %td#select_param_form
+.foo
+  = form_tag( _make_query_simulator_path(@simulator), class: 'form-horizontal' ) do |f|
+    #queries_form_original
+      .row
+        .form-group.col-md-2#select_param_form
           - prm_def = @simulator.parameter_definitions.map {|x| [x.key, {"type" => x.type, "default" => x.default}] }
           - prm_def = Hash[*prm_def.flatten]
-          = select_tag "query[][param]", options_for_select(prm_def)
-        %td#select_matcher_form
-          = select_tag "query[][matcher]", options_for_select({""=>""})
-        %td#select_value_form
-          = text_field_tag "query[][value]"
-  .controls
+          = select_tag "query[][param]", options_for_select(prm_def), class: 'form-control'
+        .form-group.col-md-1#select_matcher_form
+          = select_tag "query[][matcher]", options_for_select({""=>""}), class: 'form-control'
+        .form-group.col-md-3#select_value_form
+          = text_field_tag "query[][value]", "", class: 'form-control'
+        .col-md-6
     .btn#add_queries_form Add more filters
     = hidden_field_tag "query_id", @query_id
     = submit_tag "Save this Filter", :class => 'btn btn-primary'
 
 - if @query_list
-  %h4 Select Fileter
-  = form_for(@simulator, :url=>{:controller=>"simulators", :action=>"show"}, :html => { :method => :get } ) do |f|
-    = select_tag "query_id", options_for_select(@query_list, @query_id), :prompt => "all"
-    = f.submit "Load Filter", :class => 'btn btn-primary', :name => nil
+  %h4 Select Filter
+  = form_for(@simulator, url: {controller:"simulators", action:"show"}, html: {method: :get, class: 'form-inline'} ) do |f|
+    .form-group
+      = select_tag "query_id", options_for_select(@query_list, @query_id), prompt: "all", class: 'form-control'
+    = f.submit "Load", class: 'btn btn-primary', name: nil
 
 - unless @query_id.blank?
-  %h4 Delete Fileter
+  %h4 Delete Filter
   = form_tag( _make_query_simulator_path(@simulator) ) do |f|
     = hidden_field_tag "query_id", @query_id
     = submit_tag "Delete this Filter", :class => 'btn btn-primary', :name => :delete_query, :confirm => 'Are you sure?'
@@ -62,10 +56,10 @@
 
 :javascript
   $(function() {
+    var cloned = $('#queries_form_original').html();
     $('#add_queries_form').click(function() {
-      var cloned = $('#queries_form_original').clone();
-      $('#add_queries_form').before($(cloned));
-      $("select" ,cloned).trigger("change");
+      $('#add_queries_form').before( cloned );
+      $('.row:last select', $(this).parent() ).trigger('change');
     });
   });
 
@@ -92,8 +86,6 @@
       }
 
       var value_form_selector = $("#select_value_form",$(this).parent().parent())
-      $("input",value_form_selector).remove()
-      value_form_selector.append("<input id=\"query__value\" name=\"query[][value]\" type=\"text\" value="+ $(":selected",this).attr('default') +">")
     });
   });
 
