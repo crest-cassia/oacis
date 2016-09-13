@@ -31,12 +31,12 @@ gem "quiet_assets"
 
 # utility tool
 gem "pry"
-gem "rspec-rails", '~>3.2' # must be in :development group to use the rake task 'spec'
+gem "rspec-rails", '~>3.5' # must be in :development group to use the rake task 'spec'
 
 group :test do
   gem "factory_girl_rails"
   gem "database_cleaner"
-  gem "mongoid-rspec"
+  gem "mongoid-rspec", '3.0.0'
   gem "simplecov", :require => false
   gem "simplecov-rcov", :require => false
   gem "ci_reporter"
