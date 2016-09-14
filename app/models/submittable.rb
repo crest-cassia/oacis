@@ -96,7 +96,7 @@ module Submittable
   def host_parameters_given
     if submitted_to
       keys = submitted_to.host_parameter_definitions.map {|x| x.key}
-      diff = keys - host_parameters.keys
+      diff = keys - host_parameters.keys.map(&:to_s)
       if diff.any?
         errors.add(:host_parameters, "not given parameters: #{diff.inspect}")
       end
@@ -107,7 +107,8 @@ module Submittable
     if submitted_to
       submitted_to.host_parameter_definitions.each do |host_prm|
         key = host_prm.key
-        unless host_parameters[key].to_s =~ Regexp.new(host_prm.format.to_s)
+        regexp = Regexp.new(host_prm.format.to_s)
+        unless host_parameters.with_indifferent_access[key].to_s =~ regexp
           errors.add(:host_parameters, "#{key} must satisfy #{host_prm.format}")
         end
       end
@@ -140,9 +141,9 @@ module Submittable
   def remove_redundant_host_parameters
     if submitted_to
       host_params = submitted_to.host_parameter_definitions.map {|x| x.key}
-      host_parameters.select! do |key,val|
-        host_params.include?(key)
-      end
+      self.host_parameters = host_parameters.map {|k,v| [k.to_s,v] }
+        .select{|k,v| host_params.include?(k) }
+        .to_h
     end
   end
 
