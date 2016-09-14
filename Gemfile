@@ -31,6 +31,7 @@ gem "quiet_assets"
 
 # utility tool
 gem "pry"
+gem "pry-rails"
 gem "rspec-rails", '~>3.5' # must be in :development group to use the rake task 'spec'
 
 group :test do
