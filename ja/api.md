@@ -254,7 +254,8 @@ anl = Analysis.find("...ID...")
 ParameterSetに対するAnalysisの場合は `parameter_set.analyses.where`、Runに対するAnalysisの場合は `run.analyses.where`で検索できる。
 
 ```rb
-azr = Analyzer.where(name: "my_analyzer").first
+sim = Simulator.find("...ID...")
+azr = sim.analyzers.where(name: "my_analyzer").first
 ps.analyses.where( analyzer: azr, status: :finished ).each do |anl|
   p anl.id
 end
