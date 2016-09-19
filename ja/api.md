@@ -73,13 +73,13 @@ OACISの中でMongoidのドキュメントを定義したコードは https://gi
 
 #### 取得
 
-```
+```ruby
 sim = Simulator.find("...ID...")
 ```
 
 #### 検索
 
-```
+```ruby
 sim = Simulator.where(name: "my_simulator").first
 ```
 
@@ -100,7 +100,7 @@ sim.parameter_definitions
 
 IDから取得
 
-```
+```ruby
 ps = ParameterSet.find("...ID...")
 ```
 
@@ -109,7 +109,7 @@ ps = ParameterSet.find("...ID...")
 Simulatorから該当するパラメータのPSを検索。パラメータの値はParameterSetオブジェクトの"v"というフィールドに保存されている。"v"の子要素("v.p1", "v.p2"など) への検索条件を使って`where`メソッドで検索する。
 得られた結果に対してeachで回して要素を取得できる。(`count`, `exists?`などのEnumerableへのメソッドは同様に使える）
 
-```
+```ruby
 sim.parameter_sets.where("v.p1" => 1, "v.p2" => 2).each do |ps|
   puts ps.id
 end
@@ -120,14 +120,14 @@ end
 - `v`でパラメータの値をHashで取得できる
 - `dir`でディレクトリへのパスを取得できる
 
-```rb
+```ruby
 ps.v  #=> {"p1"=>1, "p2"=>2, "p3"=>0.4}
 ps.dir  # =><Pathname:/path/to/oacis/public/Result_development/522d751f899e533149000002/522d757d899e53a01400000b>
 ```
 
 #### 作成
 
-```
+```ruby
 created = sim.parameter_sets.create!(v: {"p1"=>19,"p2"=>20})
 ```
 
@@ -136,7 +136,7 @@ p1=19,p2=20のPSがつくられる。指定していないパラメータはデ�
 
 #### 削除
 
-```
+```ruby
 ps.discard
 ```
 
@@ -147,13 +147,13 @@ Mongoidの削除メソッドである`destroy`は呼ばずに、OACISのAPIで�
 
 #### 取得
 
-```
+```ruby
 run = Run.find("...ID...")
 ```
 
 #### 検索
 
-```
+```ruby
 ps.runs.where( :status => :finished ).each do |run|
   puts run.id
 end
@@ -163,7 +163,7 @@ end
 
 Runの情報を以下のように参照できる。
 
-```rb
+```ruby
 run.status  # => [:created,:submitted,:running,:failed,:finished]のいずれかが返る。
 run.submitted_to  #=> 投入先ホスト #<Host _id: 53a3f583b93f964b7f0000fc, ...>
 run.host_parameters  #=> {"ppn"=>"1", "walltime"=>"1:00:00"}
@@ -175,7 +175,7 @@ run.result        #=> {"result1"=>-0.016298, "result2"=>0.0264882}
 
 #### 作成
 
-```
+```ruby
 host = Host.find("...HOSTID...")
 host_param = {ppn:"4",walltime:"1:00:00"}
 # hostパラメータのデフォルト値を得るには以下のメソッドが有用
@@ -185,7 +185,7 @@ run = ps.runs.create!(submitted_to: host, host_parameters: host_param, mpi_procs
 
 #### 削除
 
-```
+```ruby
 run.discard
 ```
 
@@ -193,19 +193,19 @@ run.discard
 
 #### 取得
 
-```
+```ruby
 host = Host.find("...HOSTID...")
 ```
 
 #### 検索
 
-```
+```ruby
 host = Host.where("name"=>"localhost").first
 ```
 
 #### 参照
 
-```rb
+```ruby
 host.status   #=> [:enabled, :disabled] のどちらかが返る
 host.user     #=> user名
 host.port     #=> 22
@@ -221,13 +221,13 @@ host.host_parameter_definitions
 
 #### 取得
 
-```
+```ruby
 azr = Analyzer.find("...ID...")
 ```
 
 #### 検索
 
-```
+```ruby
 azr = sim.analyzers.where(name:"my_analyzer").first
 ```
 
@@ -235,7 +235,7 @@ azr = sim.analyzers.where(name:"my_analyzer").first
 
 Analyzerの設定値を確認できる。
 
-```rb
+```ruby
 azr.support_mpi     #=> true/false
 azr.support_omp     #=> true/false
 azr.command         #=> 実行コマンド
@@ -245,7 +245,7 @@ azr.command         #=> 実行コマンド
 
 #### 取得
 
-```
+```ruby
 anl = Analysis.find("...ID...")
 ```
 
@@ -253,7 +253,7 @@ anl = Analysis.find("...ID...")
 
 ParameterSetに対するAnalysisの場合は `parameter_set.analyses.where`、Runに対するAnalysisの場合は `run.analyses.where`で検索できる。
 
-```rb
+```ruby
 sim = Simulator.find("...ID...")
 azr = sim.analyzers.where(name: "my_analyzer").first
 ps.analyses.where( analyzer: azr, status: :finished ).each do |anl|
@@ -265,7 +265,7 @@ end
 
 Runとほぼ同じAPIが利用できる
 
-```rb
+```ruby
 anl.status   #=> [:created,:submitted,:running,:failed,:finished]のいずれかが返る。
 anl.submitted_to  #=> 投入先ホスト #<Host _id: 53a3f583b93f964b7f0000fc, ...>
 anl.host_parameters  #=> {"ppn"=>"1","walltime"=>"1:00:00"}
@@ -276,7 +276,7 @@ anl.result        #=> {"result1"=>-0.016298, "result2"=>0.0264882}
 
 作成の際には、Analyzer、投入ホスト、ホストパラメータを指定する必要がある
 
-```rb
+```ruby
 host_param = {"ppn"=>"1", "walltime"=>"1:00:00"}
 ps.analyses.create!(analyzer: azr, submitted_to: host, host_parameters: host_param )
 ```
