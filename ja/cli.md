@@ -23,6 +23,7 @@ CLIで利用可能な操作は以下の通りです。
 - Simulator作成 (create_simulator)
 - ParameterSet作成用テンプレート作成 (parameter_sets_template)
 - ParameterSet作成 (create_parameter_sets)
+- ParameterSet削除 (destroy_parameter_sets)
 - ジョブパラメータ指定用テンプレート作成 (job_parameter_template)
 - Run作成 (create_runs)
 - 作成済みRunのステータス確認 (run_status)
@@ -280,6 +281,30 @@ ParameterSetを新規作成する
 #### その他
 
 同じParameterの値を持つParameterSetが既に存在する場合には、新規にParameterSetを作成せずに既存のParameterSetのidを出力として返す。エラーにはならない。
+
+---
+
+## destroy_parameter_sets
+
+指定されたSimulator配下のParameterSetを一括削除する
+
+#### 実行方法
+
+{% highlight sh %}
+./bin/oacis_cli destroy_parameter_sets -s simulator_id.json
+{% endhighlight %}
+
+{% highlight sh %}
+./bin/oacis_cli destroy_parameter_sets -s 5361e421b93f96bbc500000e
+{% endhighlight %}
+
+#### オプション
+
+|----------|--------|--------------------------------|-----------|
+|Option    |alias   |description                     |required?  |
+|:---------|:-------|:-------------------------------|:----------|
+|--simulator|-s      |simulator                       |yes        |
+|-----------|--------|--------------------------------|-----------|
 
 ---
 
