@@ -55,6 +55,12 @@ describe ParameterSet do
       expect(built_param).not_to be_valid
     end
 
+    it "should not be valid when v contains an unknown key" do
+      invalid_attr = @valid_attr.update(v: {"l" => 32, "T" => 1.0} )  # key "l" does not exist in parameter_definitions
+      built = @sim.parameter_sets.build( invalid_attr )
+      expect( built ).to_not be_valid
+    end
+
     it "should not be valid when v is not unique" do
       @sim.parameter_sets.create!(@valid_attr)
       built = @sim.parameter_sets.build(@valid_attr)

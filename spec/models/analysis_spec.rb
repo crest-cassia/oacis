@@ -83,6 +83,12 @@ describe Analysis do
       expect(arn.parameters["param2"]).to eq(default_val)
     end
 
+    it "is invalid if a parameter contains an unknown key" do
+      invalid_attr = @valid_attr.update(parameters: {"unknown" => "32"})
+      anl = @run.analyses.build(invalid_attr)
+      expect(anl).to_not be_valid
+    end
+
     it "adopts default values when parameter hash is not given" do
       updated_attr = @valid_attr
       updated_attr.delete(:parameters)
