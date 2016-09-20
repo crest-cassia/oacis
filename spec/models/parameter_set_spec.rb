@@ -23,13 +23,13 @@ describe ParameterSet do
 
   describe "validation" do
 
-    it "should create a Parameter when valid attributes are given" do
+    it "should create a ParameterSet when valid attributes are given" do
       expect {
         @sim.parameter_sets.create!(@valid_attr)
       }.not_to raise_error
     end
 
-    it "should not be balid when simulator is not related" do
+    it "should not be valid when simulator is not related" do
       param = ParameterSet.new(@valid_attr)
       expect(param).not_to be_valid
     end
