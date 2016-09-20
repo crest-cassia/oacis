@@ -178,9 +178,16 @@ run.result        #=> {"result1"=>-0.016298, "result2"=>0.0264882}
 ```ruby
 host = Host.find("...HOSTID...")
 host_param = {ppn:"4",walltime:"1:00:00"}
+
 # hostパラメータのデフォルト値を得るには以下のメソッドが有用
 #  sim.get_default_host_parameter(host)
 run = ps.runs.create!(submitted_to: host, host_parameters: host_param, mpi_procs: 4)
+
+# To create multiple runs, call "create!" method as many times as you want
+runs = []
+10.times do |t|
+  runs << ps.runs.create!( submitted_to: host, host_parameters: host_param, mpi_procs: 4)
+end
 ```
 
 #### 削除

@@ -135,7 +135,7 @@ If you are going to create a ParameterSet whose parameters are identical to an e
 ps.discard
 ```
 
-This method removes a ParameterSet in a clean way. When removing a ParameterSet, its sub-elements (runs and analyses) must be removed as well. This method removes these sub-elements safely canceling the remote jobs as well.
+Call `discard` method to remove a ParameterSet. This method automatically removes its sub-elements (i.e., runs and analysis) as well even if remote jobs are running on a remote host.
 
 Do not call `destroy` method, which is defined by Mongoid library but not suitable for removing an element in OACIS.
 
@@ -176,7 +176,14 @@ host = Host.find("...HOSTID...")
 host_param = {ppn:"4",walltime:"1:00:00"}
 # To get default host parameters, the following method is available.
 #  sim.get_default_host_parameter(host)
+
 run = ps.runs.create!(submitted_to: host, host_parameters: host_param, mpi_procs: 4)
+
+# To create multiple runs, call "create!" method as many times as you want
+runs = []
+10.times do |t|
+  runs << ps.runs.create!( submitted_to: host, host_parameters: host_param, mpi_procs: 4)
+end
 ```
 
 #### removing
