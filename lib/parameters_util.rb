@@ -6,6 +6,16 @@ module ParametersUtil
     casted = {}
     parameters = parameters.try(:with_indifferent_access) || {}
 
+    # check if an unknown key exists or not
+    residual_keys = parameters.keys.map(&:to_s) - definitions.map(&:key)
+    if residual_keys.present?
+      if errors
+        errors.add(:v, "Unknown keys are given: #{residual_keys.inspect}")
+      else
+        return nil
+      end
+    end
+
     definitions.each do |pdef|
       key = pdef.key
       type = pdef.type
