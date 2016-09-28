@@ -256,7 +256,7 @@ DEPENDENCIES
   faker
   haml-rails
   jbuilder (= 2.4.0)
-  jquery-datatables-rails
+  jquery-datatables-rails (~> 3.2.0)
   jquery-rails
   jquery-ui-rails
   less-rails
