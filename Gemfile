@@ -34,12 +34,12 @@ gem "pry-rails"
 gem "rspec-rails", '~>3.5' # must be in :development group to use the rake task 'spec'
 
 group :test do
-  gem "factory_girl_rails"
+  gem "factory_girl_rails", '~> 4.7'
   gem "database_cleaner"
   gem "mongoid-rspec", '3.0.0'
   gem "simplecov", :require => false
   gem "simplecov-rcov", :require => false
-  gem "ci_reporter"
+  gem "ci_reporter", '~> 1.9'
   gem "spork"
   gem "faker"
   if RUBY_VERSION >= '2.0.0'
