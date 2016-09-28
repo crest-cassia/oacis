@@ -16,7 +16,7 @@ gem 'twitter-bootstrap-rails'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'jquery-datatables-rails', ' ~> 3.2.0'
-gem "d3-rails"
+gem "d3-rails", '~> 3.4'
 gem "redcarpet"
 gem 'dynatree-rails'
 
