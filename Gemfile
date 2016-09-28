@@ -23,7 +23,6 @@ gem 'dynatree-rails'
 # for workers
 gem 'daemon-spawn', :require => 'daemon_spawn'
 gem "sys-filesystem"
-gem "parallel"
 
 # for cli
 gem "ruby-progressbar"

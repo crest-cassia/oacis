@@ -132,7 +132,6 @@ GEM
       mini_portile2 (~> 2.1.0)
       pkg-config (~> 1.1.7)
     origin (2.2.0)
-    parallel (1.0.0)
     pkg-config (1.1.7)
     pry (0.10.4)
       coderay (~> 1.1.0)
@@ -264,7 +263,6 @@ DEPENDENCIES
   mongoid-rspec (= 3.0.0)
   net-sftp
   net-ssh
-  parallel
   pry
   pry-byebug
   pry-rails
