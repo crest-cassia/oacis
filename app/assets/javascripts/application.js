@@ -11,7 +11,7 @@
 // GO AFTER THE REQUIRES BELOW.
 //
 //= require jquery
-//= require jquery.ui.sortable
+//= require jquery-ui/sortable
 //= require jquery_ujs
 //= require twitter/bootstrap
 //= require analyses.js
@@ -35,7 +35,7 @@
 //   (Worked around this by converting #id values to #!id values before navigating.)
 $(document).ready(function () {
     if (document.location.hash.substr(0,2) == "#!") {
-      $('.nav-tabs a[href=' + document.location.hash.replace('!', '') + ']').tab('show');
+      $('.nav-tabs a[href="' + document.location.hash.replace('!', '') + '"]').tab('show');
     }
 
     $('.nav-tabs a').on('shown.bs.tab', function(e) {
