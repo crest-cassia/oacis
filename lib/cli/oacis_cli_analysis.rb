@@ -181,7 +181,7 @@ class OacisCli < Thor
       progressbar = ProgressBar.create(total: analyses.count, format: "%t %B %p%% (%c/%C)")
       # no_timeout enables destruction of 10000 or more analyses
       analyses.no_timeout.each do |anl|
-        anl.update_attribute(:to_be_destroyed, true)
+        anl.discard
         progressbar.increment
       end
     end
@@ -200,8 +200,7 @@ class OacisCli < Thor
 
     progressbar = ProgressBar.create( total: found_ids.count, format: "%t %B %p%% (%c/%C)")
     anls.each do |anl|
-      anl.update_attribute(:to_be_destroyed, true)
-      anl.set_lower_submittable_to_be_destroyed
+      anl.discard
       progressbar.increment
     end
   end
@@ -279,7 +278,7 @@ class OacisCli < Thor
         new_analysis = ParameterSet.find(anl.analyzable_id).analyses.build(anl_attr)
       end
       if new_analysis.save
-        anl.update_attribute(:to_be_destroyed, true)
+        anl.discard
       else
         progressbar.log "Failed to create Analysis #{new_analysis.errors.full_messages}"
       end

@@ -83,6 +83,12 @@ describe Analysis do
       expect(arn.parameters["param2"]).to eq(default_val)
     end
 
+    it "is invalid if a parameter contains an unknown key" do
+      invalid_attr = @valid_attr.update(parameters: {"unknown" => "32"})
+      anl = @run.analyses.build(invalid_attr)
+      expect(anl).to_not be_valid
+    end
+
     it "adopts default values when parameter hash is not given" do
       updated_attr = @valid_attr
       updated_attr.delete(:parameters)
@@ -98,14 +104,14 @@ describe Analysis do
 
     it "can be embedded in a run" do
       @arn = @run.analyses.build(@valid_attr)
-      expect(@run.analyses.last).to be_a(Analysis)
+      expect(@run.analyses.order_by(id: :asc).last).to be_a(Analysis)
       expect(@arn.analyzable).to be_a(Run)
     end
 
     it "can be embedded in a parameter_set" do
       ps = @sim.parameter_sets.first
       @arn = ps.analyses.build(@valid_attr)
-      expect(ps.analyses.last).to be_a(Analysis)
+      expect(@arn).to be_a(Analysis)
       expect(@arn.analyzable).to be_a(ParameterSet)
     end
 
@@ -159,6 +165,25 @@ describe Analysis do
       dir = @analysis.dir
       @analysis.destroy
       expect(File.directory?(dir)).to be_falsey
+    end
+  end
+
+  describe "#discard" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator,
+                               parameter_sets_count: 1,
+                               runs_count: 1,
+                               analyzers_count: 1,
+                               run_analysis: true
+                               )
+      @anl = sim.parameter_sets.first.runs.first.analyses.first
+    end
+
+    it "updates 'to_be_destroyed' to true" do
+      expect {
+        @anl.discard
+      }.to change { @anl.to_be_destroyed }.from(false).to(true)
     end
   end
 

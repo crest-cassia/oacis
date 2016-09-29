@@ -23,13 +23,13 @@ describe ParameterSet do
 
   describe "validation" do
 
-    it "should create a Parameter when valid attributes are given" do
+    it "should create a ParameterSet when valid attributes are given" do
       expect {
         @sim.parameter_sets.create!(@valid_attr)
       }.not_to raise_error
     end
 
-    it "should not be balid when simulator is not related" do
+    it "should not be valid when simulator is not related" do
       param = ParameterSet.new(@valid_attr)
       expect(param).not_to be_valid
     end
@@ -53,6 +53,12 @@ describe ParameterSet do
       pd.default = nil
       built_param = @sim.parameter_sets.build(@valid_attr.update({:v => {}}))
       expect(built_param).not_to be_valid
+    end
+
+    it "should not be valid when v contains an unknown key" do
+      invalid_attr = @valid_attr.update(v: {"l" => 32, "T" => 1.0} )  # key "l" does not exist in parameter_definitions
+      built = @sim.parameter_sets.build( invalid_attr )
+      expect( built ).to_not be_valid
     end
 
     it "should not be valid when v is not unique" do
@@ -295,6 +301,25 @@ describe ParameterSet do
       expect(Run).to receive(:collection).and_call_original
       prm.runs_status_count
       expect(prm.progress_rate_cache).to be_a(Integer)
+    end
+  end
+
+  describe "#discard" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1)
+      @ps = sim.parameter_sets.first
+    end
+
+    it "updates 'to_be_destroyed' to true" do
+      expect {
+        @ps.discard
+      }.to change { @ps.to_be_destroyed }.from(false).to(true)
+    end
+
+    it "should receive 'set_lower_submittable_to_be_destroyed'" do
+      expect(@ps).to receive(:set_lower_submittable_to_be_destroyed)
+      @ps.discard
     end
   end
 

@@ -137,6 +137,24 @@ describe Simulator do
     end
   end
 
+  describe "#discard" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator)
+    end
+
+    it "updates 'to_be_destroyed' to true" do
+      expect {
+        @sim.discard
+      }.to change { @sim.to_be_destroyed }.from(false).to(true)
+    end
+
+    it "should receive 'set_lower_submittable_to_be_destroyed'" do
+      expect(@sim).to receive(:set_lower_submittable_to_be_destroyed)
+      @sim.discard
+    end
+  end
+
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do

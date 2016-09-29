@@ -102,10 +102,10 @@ class Host
 
   def runs_status_count
     count = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0}
-    Run.collection.aggregate(
+    Run.collection.aggregate([
       { '$match' => Run.where(submitted_to: self).selector },
       { '$group' => {_id: '$status', count: {'$sum' => 1} } }
-    ).each do |h|
+    ]).each do |h|
       count[ h["_id"] ] = h["count"]
     end
     count

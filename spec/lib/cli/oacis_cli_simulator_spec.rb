@@ -202,7 +202,7 @@ describe OacisCli do
         OacisCli.new.invoke(:append_parameter_definition, [], option)
         @sim.reload
         expect(@sim.parameter_definitions.size).to eq 3
-        new_param_def = @sim.parameter_definitions.last
+        new_param_def = @sim.parameter_definitions.order_by(id: :asc).last
         expect(new_param_def.key).to eq "NEW_PARAM"
         expect(new_param_def.type).to eq "Float"
         expect(new_param_def.default).to eq 0.5
@@ -223,7 +223,7 @@ describe OacisCli do
       at_temp_dir {
         option = {simulator: @sim.id.to_s, name: "NEW_PARAM", type: "Boolean", default: false}
         OacisCli.new.invoke(:append_parameter_definition, [], option)
-        new_param_def = @sim.reload.parameter_definitions.last
+        new_param_def = @sim.reload.parameter_definitions.order_by(id: :asc).last
         expect(new_param_def.default).to eq false
       }
     end

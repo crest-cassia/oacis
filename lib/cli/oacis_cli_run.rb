@@ -83,10 +83,10 @@ class OacisCli < Thor
 
     run_ids = []
     list_runs = {}
-    Run.collection.aggregate(
+    Run.collection.aggregate([
       { '$match' => {'parameter_set_id' => {'$in'=>parameter_sets.map(&:id)}} },
       { '$group' => {'_id' => '$parameter_set_id', run_ids: {'$push' => '$_id'}} }
-    ).each do |ps_runs|
+    ]).each do |ps_runs|
       list_runs[ps_runs['_id']] = ps_runs['run_ids']
     end
     parameter_sets.map(&:id).each do |ps_id|
@@ -175,8 +175,7 @@ class OacisCli < Thor
       progressbar = ProgressBar.create(total: runs.count, format: "%t %B %p%% (%c/%C)")
       # no_timeout enables destruction of 10000 or more runs
       runs.no_timeout.each do |run|
-        run.update_attribute(:to_be_destroyed, true)
-        run.set_lower_submittable_to_be_destroyed
+        run.discard
         progressbar.increment
       end
     end
@@ -195,8 +194,7 @@ class OacisCli < Thor
 
     progressbar = ProgressBar.create( total: found_ids.count, format: "%t %B %p%% (%c/%C)")
     runs.each do |run|
-      run.update_attribute(:to_be_destroyed, true)
-      run.set_lower_submittable_to_be_destroyed
+      run.discard
       progressbar.increment
     end
   end
@@ -273,8 +271,7 @@ class OacisCli < Thor
                    priority: run.priority }
       new_run = run.parameter_set.runs.build(run_attr)
       if new_run.save
-        run.update_attribute(:to_be_destroyed, true)
-        run.set_lower_submittable_to_be_destroyed
+        run.discard
       else
         progressbar.log "Failed to create Run #{new_run.errors.full_messages}"
       end

@@ -82,6 +82,11 @@ class Run
     dir.join('..', "#{id}.tar.bz2")
   end
 
+  def discard
+    update_attribute(:to_be_destroyed, true)
+    set_lower_submittable_to_be_destroyed
+  end
+
   def destroyable?
     analyses.unscoped.empty?
   end

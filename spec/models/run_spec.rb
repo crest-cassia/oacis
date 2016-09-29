@@ -168,6 +168,14 @@ describe Run do
         expect(run).to be_valid
       end
 
+      it "is valid when key of the host parameters are symbols" do
+        run = @param_set.runs.build(@valid_attribute)
+        run.submitted_to = @host
+        run.mpi_procs = 8
+        run.host_parameters = {node: "abc"}
+        expect(run).to be_valid
+      end
+
       it "is invalid when all the host_parameters are not specified" do
         run = @param_set.runs.build(@valid_attribute)
         run.submitted_to = @host
@@ -437,6 +445,25 @@ describe Run do
     end
   end
 
+  describe "#discard" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @run = sim.parameter_sets.first.runs.first
+    end
+
+    it "updates 'to_be_destroyed' to true" do
+      expect {
+        @run.discard
+      }.to change { @run.to_be_destroyed }.from(false).to(true)
+    end
+
+    it "should receive 'set_lower_submittable_to_be_destroyed'" do
+      expect(@run).to receive(:set_lower_submittable_to_be_destroyed)
+      @run.discard
+    end
+  end
+
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do
@@ -510,6 +537,16 @@ describe Run do
       expect( run.job_script ).to match pattern
       # if job script was made before seed is set,
       # the job script will generate a command without seed
+    end
+
+    it "sets keys of host_parameters to string even if given as a symbol" do
+      host = FactoryGirl.create(:host_with_parameters)
+      param = {param1: 3, param2: 1}
+      expected = {"param1" => 3, "param2" => 1}
+      run = @param_set.runs.build(submitted_to: host, host_parameters: param)
+      expect {
+        run.save!
+      }.to change { run.host_parameters }.from(param).to(expected)
     end
 
     it "sets default_host_parameters to simulator" do

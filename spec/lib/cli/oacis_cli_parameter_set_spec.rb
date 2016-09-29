@@ -278,7 +278,7 @@ describe OacisCli do
             OacisCli.new.invoke(:create_parameter_sets, [], option)
             }.to change { @sim.runs.count }.by(12)
 
-          expect(@sim.reload.runs.last.host_parameters).to eq run_param["host_parameters"]
+          expect(@sim.reload.runs.order_by(id: :asc).last.host_parameters).to eq run_param["host_parameters"]
         }
       end
 
@@ -392,6 +392,31 @@ describe OacisCli do
             JSON.load(File.read('parameter_set_ids.json'))
           }.not_to raise_error
         }
+      end
+    end
+  end
+
+  describe "#destroy_parameter_sets" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 3)
+    end
+
+    it "destroys all the parameter sets under the specified simulator" do
+      options = {simulator: @sim.id.to_s, yes: true}
+      expect {
+        OacisCli.new.invoke(:destroy_parameter_sets, [], options)
+      }.to change { @sim.parameter_sets.count }.from(3).to(0)
+    end
+
+    context "if user say 'no'" do
+
+      it "does not destroy parameter sets" do
+        options = {simulator: @sim.id.to_s}
+        expect(Thor::LineEditor).to receive(:readline).with("Destroy 3 parameter sets? ", :add_to_history => false).and_return("n")
+        expect {
+          OacisCli.new.invoke(:destroy_parameter_sets, [], options)
+        }.not_to change { @sim.parameter_sets.count }
       end
     end
   end

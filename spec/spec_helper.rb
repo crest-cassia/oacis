@@ -85,8 +85,8 @@ Spork.prefork do
     config.before(:all) do
       $stderr = File.new(File.join(File.dirname(__FILE__), 'stderr.txt'), 'w')
       $stdout = File.new(File.join(File.dirname(__FILE__), 'stdout.txt'), 'w')
-      if ProgressBar::Base::DEFAULT_OUTPUT_STREAM != $stdout
-        ProgressBar::Base::DEFAULT_OUTPUT_STREAM = $stdout
+      if ProgressBar::Output::DEFAULT_OUTPUT_STREAM != $stdout
+        ProgressBar::Output::DEFAULT_OUTPUT_STREAM = $stdout
       end
     end
 

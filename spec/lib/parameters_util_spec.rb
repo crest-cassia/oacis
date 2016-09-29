@@ -84,6 +84,21 @@ describe ParametersUtil do
         expect(casted["param3"]).to eq true
       end
     end
+
+    context "when unknown keys are given" do
+
+      it "returns nil" do
+        parameters = {
+          "param1" => "70",
+          "param2" => "3.0",
+          "param3" => "1",
+          "param4" => 12345,
+          "param5" => "abc"
+        }
+        casted = ParametersUtil.cast_parameter_values(parameters, @definitions)
+        expect(casted).to be_nil
+      end
+    end
   end
 
   describe ".cast_value" do

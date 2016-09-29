@@ -181,6 +181,25 @@ describe Analyzer do
     end
   end
 
+  describe "#discard" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, analyzers_count: 1)
+      @azr = sim.analyzers.first
+    end
+
+    it "updates 'to_be_destroyed' to true" do
+      expect {
+        @azr.discard
+      }.to change { @azr.to_be_destroyed }.from(false).to(true)
+    end
+
+    it "should receive 'set_lower_submittable_to_be_destroyed'" do
+      expect(@azr).to receive(:set_lower_submittable_to_be_destroyed)
+      @azr.discard
+    end
+  end
+
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do

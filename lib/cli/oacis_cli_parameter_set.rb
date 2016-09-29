@@ -98,6 +98,34 @@ class OacisCli < Thor
     write_parameter_set_ids_to_file(options[:output], parameter_set_ids)
   end
 
+  desc 'destroy_parameter_sets', "destroy parameter_sets"
+  method_option :simulator,
+    type:     :string,
+    aliases:  '-s',
+    desc:     'simulator ID or path to simulator_id.json',
+    required: true
+  def destroy_parameter_sets
+    simulator = get_simulator(options[:simulator])
+    pss = simulator.parameter_sets
+
+    if pss.empty?
+      say("No parameter sets are found.")
+      return
+    end
+
+    if options[:verbose]
+      say("Found parameter sets: #{pss.map(&:id).to_json}")
+    end
+
+    if options[:yes] or yes?("Destroy #{pss.count} parameter sets?")
+      progressbar = ProgressBar.create(total: pss.count, format: "%t %B %p%% (%c/%C)")
+      pss.no_timeout.each do |ps|
+        ps.discard
+        progressbar.increment
+      end
+    end
+  end
+
   private
   def expand_input(input)
     if input.is_a?(Array)
@@ -159,10 +187,10 @@ class OacisCli < Thor
       Hash[key_val_array]
     end
     list_created_ps = {}
-    ParameterSet.collection.aggregate(
+    ParameterSet.collection.aggregate([
       { '$match' => {'simulator_id' => simulator.id, 'v' => {'$in'=>input}} },
       { '$group' => {'_id' => '$_id', v: {'$first' => '$v'}} }
-    ).each do |psid_v|
+    ]).each do |psid_v|
       list_created_ps[psid_v['v']]=psid_v['_id']
     end
     input.map do |ps_v|

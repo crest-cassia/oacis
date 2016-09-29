@@ -47,13 +47,13 @@ class Analyzer
     #   "latest_started_at"=>2014-04-21 02:10:08 utc,
     #   "count"=> {:finished => 2, :failed => 1} }]
     query = Analysis.where(analyzer: self).exists(started_at: true).selector
-    aggregated = Analysis.collection.aggregate(
+    aggregated = Analysis.collection.aggregate([
       {'$match' => query },
       { '$group' => {'_id' => { version: '$analyzer_version', status: '$status'},
                      oldest_started_at: { '$min' => '$started_at'},
                      latest_started_at: { '$max' => '$started_at'},
                      count: {'$sum' => 1}
-                     }})
+                     }}])
 
     anl_versions = {}
     aggregated.each do |h|
@@ -72,6 +72,11 @@ class Analyzer
     end
 
     anl_versions.map {|key,val| val['version'] = key; val }.sort_by {|a| a['latest_started_at']}
+  end
+
+  def discard
+    update_attribute(:to_be_destroyed, true)
+    set_lower_submittable_to_be_destroyed
   end
 
   def destroyable?
