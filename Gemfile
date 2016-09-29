@@ -8,6 +8,9 @@ gem "net-sftp"
 gem "jbuilder", '2.4.0'
 
 # assets
+gem "sprockets", '3.6.3'
+  # fix version of sprockets to prevent deprecation warning.
+  # should be updated after less-rails fixed issue https://github.com/metaskills/less-rails/issues/122
 gem "haml-rails"
 gem "sass-rails"
 gem 'therubyracer' # necessary to compile less
