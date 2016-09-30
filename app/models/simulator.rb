@@ -137,7 +137,7 @@ class Simulator
   end
 
   # used by APIs
-  def find_ps_with_param(parameters)
+  def find_ps_with_param( parameters )
     unknown_keys = parameters.keys.map(&:to_s) - parameter_definitions.map(&:key)
     raise "Unknown keys: #{unknown_keys}" unless unknown_keys.empty?
 
@@ -147,6 +147,10 @@ class Simulator
       merged[pd.key] = (params[pd.key] or pd.default)
     end
     parameter_sets.where(v: merged).first
+  end
+
+  def find_or_create_ps_with_param( parameters )
+    find_ps_with_param( parameters ) or parameter_sets.create!(v: parameters)
   end
 
   def discard
