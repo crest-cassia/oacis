@@ -138,19 +138,27 @@ class Simulator
 
   # used by APIs
   def find_ps_with_param( parameters )
-    unknown_keys = parameters.keys.map(&:to_s) - parameter_definitions.map(&:key)
+    unknown_keys = parameters.keys.map(&:to_s) - default_parameters.keys
     raise "Unknown keys: #{unknown_keys}" unless unknown_keys.empty?
 
     merged = {}
     params = parameters.with_indifferent_access
-    parameter_definitions.each do |pd|
-      merged[pd.key] = (params[pd.key] or pd.default)
+    default_parameters.each do |key,default|
+      merged[key] = (params[key] or default)
     end
     parameter_sets.where(v: merged).first
   end
 
   def find_or_create_ps_with_param( parameters )
     find_ps_with_param( parameters ) or parameter_sets.create!(v: parameters)
+  end
+
+  def default_parameters
+    default = {}
+    parameter_definitions.each do |pd|
+      default[pd.key] = pd.default
+    end
+    default
   end
 
   def discard

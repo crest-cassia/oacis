@@ -231,6 +231,15 @@ describe Simulator do
     end
   end
 
+  describe "#default_parameters" do
+
+    it "returns default parameters" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      expected = {"L" => 50, "T" => 1.0}
+      expect( sim.default_parameters ).to eq expected
+    end
+  end
+
   describe "#discard" do
 
     before(:each) do
