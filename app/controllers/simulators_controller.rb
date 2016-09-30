@@ -3,8 +3,8 @@ class SimulatorsController < ApplicationController
   # GET /simulators.json
   def index
     @simulators = Simulator.asc(:position).all
-    stat= Sys::Filesystem.stat(ResultDirectory.root.to_s)
-    @disk_used_rate = (1.0 - stat.blocks_free.to_f/stat.blocks.to_f).round(2)
+    rate = DiskSpaceChecker.rate
+    flash[:alert] = "No enough space left on device (Used: #{rate*100}%)" if rate >= 0.9
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @simulators }
