@@ -136,6 +136,19 @@ class Simulator
     list
   end
 
+  # used by APIs
+  def find_ps_with_param(parameters)
+    unknown_keys = parameters.keys.map(&:to_s) - parameter_definitions.map(&:key)
+    raise "Unknown keys: #{unknown_keys}" unless unknown_keys.empty?
+
+    merged = {}
+    params = parameters.with_indifferent_access
+    parameter_definitions.each do |pd|
+      merged[pd.key] = (params[pd.key] or pd.default)
+    end
+    parameter_sets.where(v: merged).first
+  end
+
   def discard
     update_attribute(:to_be_destroyed, true)
     set_lower_submittable_to_be_destroyed
