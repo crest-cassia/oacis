@@ -73,6 +73,19 @@ class ParameterSet
     counts
   end
 
+  def find_or_create_runs_upto( num_runs, submitted_to: nil, host_param: {}, mpi_procs: 1, omp_threads: 1 )
+    found = runs.asc(:created_at).limit(num_runs).to_a
+    n = found.size
+    (num_runs - n).times do |i|
+      r = runs.create!(submitted_to: submitted_to,
+                       host_parameters: host_param,
+                       mpi_procs: mpi_procs,
+                       omp_threads: omp_threads)
+      found << r
+    end
+    found
+  end
+
   def discard
     update_attribute(:to_be_destroyed, true)
     set_lower_submittable_to_be_destroyed
