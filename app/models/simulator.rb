@@ -291,7 +291,7 @@ EOS
   end
 
   def delete_simulator_dir
-    FileUtils.rm_r(dir)
+    FileUtils.rm_r(dir) if Dir.exists?(dir)
   end
 
   private
