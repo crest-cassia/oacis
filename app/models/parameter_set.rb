@@ -73,6 +73,7 @@ class ParameterSet
     counts
   end
 
+  # public APIs
   def find_or_create_runs_upto( num_runs, submitted_to: nil, host_param: {}, mpi_procs: 1, omp_threads: 1 )
     found = runs.asc(:created_at).limit(num_runs).to_a
     n = found.size
