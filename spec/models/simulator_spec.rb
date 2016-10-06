@@ -137,6 +137,109 @@ describe Simulator do
     end
   end
 
+  describe "#find_ps_of_parameters" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+    end
+
+    it "returns PS with the given parameters" do
+      parameters = {"L"=>10, "T"=>2.0}
+      created = @sim.parameter_sets.create!(v: parameters)
+      found = @sim.find_ps_of_parameters( parameters )
+      expect(found).to eq created
+    end
+
+    it "returns nil if matching PS is not found" do
+      parameters = {"L"=>10, "T"=>2.0}
+      @sim.parameter_sets.create!(v: parameters)
+      found = @sim.find_ps_of_parameters( {"L"=>20, "T"=>1.0} )
+      expect(found).to be_nil
+    end
+
+    it "argument is complemented with the default value" do
+      t_default = @sim.parameter_definitions.where(key:"T").first.default
+      parameters = {"L"=>10, "T"=>t_default}
+      created = @sim.parameter_sets.create!(v: parameters)
+      found = @sim.find_ps_of_parameters( {"L"=>10} )
+      expect(found).to eq created
+
+      found2 = @sim.find_ps_of_parameters( {} )
+      expect(found2).to be_nil
+    end
+
+    it "arguments can be a hash with symbol-keys" do
+      parameters = {"L"=>10, "T"=>2.0}
+      created = @sim.parameter_sets.create!(v: parameters)
+      found = @sim.find_ps_of_parameters( L:10, T:2.0 )
+      expect(found).to eq created
+    end
+
+    it "raises an exception when unknown key is included in the argument" do
+      parameters = {"L"=>10, "T"=>2.0}
+      @sim.parameter_sets.create!(v: parameters)
+      expect {
+        @sim.find_ps_of_parameters( parameters.merge({"Q"=>1}) )
+      }.to raise_error(/^Unknown keys:/)
+    end
+  end
+
+  describe "#find_or_create_ps_of_parameters" do
+
+    before(:each) do
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+    end
+
+    it "returns PS if there exists a PS with given parameters" do
+      parameters = {"L"=>10, "T"=>2.0}
+      created = @sim.parameter_sets.create!(v: parameters)
+      found = @sim.find_or_create_ps_of_parameters( parameters )
+      expect(found).to eq created
+    end
+
+    it "creates a new PS with given parameters if no matching PS exists" do
+      parameters = {"L"=>10, "T"=>2.0}
+      expect {
+        found = @sim.find_or_create_ps_of_parameters( parameters )
+        expect(found.v).to eq parameters
+      }.to change { ParameterSet.count }.by(1)
+    end
+
+    it "argument is complemented with the default values" do
+      t_default = @sim.parameter_definitions.where(key:"T").first.default
+      parameters = {"L"=>10, "T"=>t_default}
+      created = @sim.parameter_sets.create!(v: parameters)
+      found = @sim.find_or_create_ps_of_parameters( {"L"=>10} )
+      expect(found).to eq created
+
+      expect {
+        default_ps = @sim.find_or_create_ps_of_parameters( {} )
+        expect(default_ps.v["T"]).to eq t_default
+      }.to change { ParameterSet.count }.by(1)
+    end
+
+    it "arguments can be a hash with symbol-keys" do
+      created = @sim.find_or_create_ps_of_parameters( L:10, T:2.0 )
+      expect(created.v).to eq({"L"=>10,"T"=>2.0})
+    end
+
+    it "raises an exception when unknown key is included in the argument" do
+      parameters = {"L"=>10, "T"=>2.0}
+      expect {
+        @sim.find_or_create_ps_of_parameters( parameters.merge({"Q"=>1}) )
+      }.to raise_error(/^Unknown keys:/)
+    end
+  end
+
+  describe "#default_parameters" do
+
+    it "returns default parameters" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      expected = {"L" => 50, "T" => 1.0}
+      expect( sim.default_parameters ).to eq expected
+    end
+  end
+
   describe "#discard" do
 
     before(:each) do

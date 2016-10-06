@@ -304,6 +304,90 @@ describe ParameterSet do
     end
   end
 
+  describe "#find_or_create_runs_upto" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      @ps = sim.parameter_sets.first
+    end
+
+    context "when the number of runs is smaller than the specified value" do 
+
+      it "create the specified number of runs when no run exists" do
+        expect {
+          runs = @ps.find_or_create_runs_upto(3)
+          expect( runs.count ).to eq 3
+        }.to change { @ps.runs.count }.from(0).to(3)
+      end
+
+      it "creates runs upto specified number of runs" do
+        run1 = @ps.runs.create!
+        expect {
+          runs = @ps.find_or_create_runs_upto(3)
+          expect( runs.count ).to eq 3
+          expect( runs.include?(run1) ).to be_truthy
+        }.to change { @ps.runs.count }.from(1).to(3)
+      end
+
+      it "sets submitted_to, host_param, mpi_proc, omp_threads to newly created runs" do
+        h = FactoryGirl.create(:host_with_parameters)
+        host_param = { param1: "foo", param2: "bar" }
+        mpi_procs = 1
+        omp_threads = 4
+        
+        runs = @ps.find_or_create_runs_upto(3,
+                                            submitted_to: h,
+                                            host_param: host_param,
+                                            mpi_procs: 1,
+                                            omp_threads: 4 )
+        expect( runs.count ).to eq 3
+        runs.each do |run|
+          expect( run.submitted_to ).to eq h
+          expect( run.host_parameters ).to eq({"param1"=>"foo","param2"=>"bar"})
+          expect( run.mpi_procs ).to eq 1
+          expect( run.omp_threads ).to eq 4
+        end
+      end
+
+      it "does not set host_param to existing runs" do
+        run1 = @ps.runs.create!
+
+        h = FactoryGirl.create(:host_with_parameters)
+        host_param = { param1: "foo", param2: "bar" }
+        mpi_procs = 1
+        omp_threads = 4
+        runs = @ps.find_or_create_runs_upto(3,
+                                            submitted_to: h,
+                                            host_param: host_param,
+                                            mpi_procs: 1,
+                                            omp_threads: 4 )
+        expect( run1.reload.submitted_to ).to be_nil
+        expect( run1.reload.omp_threads ).to eq 1
+      end
+    end
+
+    context "when the speciefied number is smaller than or equal to the number of runs" do
+
+      it "returns existing runs without creating" do
+        3.times do |i|
+          @ps.runs.create!
+        end
+
+        expect {
+          runs = @ps.find_or_create_runs_upto(2)
+          expect( runs.count ).to eq 2
+        }.to_not change { @ps.runs.count }
+      end
+    end
+
+    it "returned runs are soted by created_at" do
+      r1 = @ps.runs.create!
+      r2 = @ps.runs.create!
+      runs = @ps.find_or_create_runs_upto(3)
+      expect( runs[0..1] ).to eq [r1, r2]
+    end
+  end
+
   describe "#discard" do
 
     before(:each) do
