@@ -149,7 +149,7 @@ class Simulator
     parameter_sets.where(v: merged).first
   end
 
-  def find_or_create_ps_of_parameters( parameters )
+  def find_or_create_parameter_set( parameters )
     find_parameter_set( parameters ) or parameter_sets.create!(v: parameters)
   end
 
