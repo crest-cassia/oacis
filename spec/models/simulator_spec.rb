@@ -238,6 +238,12 @@ describe Simulator do
       expected = {"L" => 50, "T" => 1.0}
       expect( sim.default_parameters ).to eq expected
     end
+
+    it "returns hash which is accessible also with symbol" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      expect( sim.default_parameters[:L] ).to_not be_nil
+      expect( sim.default_parameters[:T] ).to_not be_nil
+    end
   end
 
   describe "#discard" do

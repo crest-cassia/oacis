@@ -158,7 +158,7 @@ class Simulator
     parameter_definitions.each do |pd|
       default[pd.key] = pd.default
     end
-    default
+    default.with_indifferent_access
   end
 
   def discard
