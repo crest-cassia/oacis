@@ -329,6 +329,16 @@ describe Host do
     end
   end
 
+  describe "#default_host_parameters" do
+
+    it "returns default values of host parameters" do
+      hpd1 = HostParameterDefinition.new(key: "hp1", default: "foo")
+      hpd2 = HostParameterDefinition.new(key: "hp2", default: "bar")
+      host = FactoryGirl.create(:host, host_parameter_definitions: [hpd1,hpd2] )
+      expect( host.default_host_parameters ).to eq( {"hp1"=>"foo","hp2"=>"bar"} )
+    end
+  end
+
   describe "registering host_parameter_definitions" do
 
     it "gets host parameters by invoking 'get_host_parameters' when host status is changed into :enabled" do
