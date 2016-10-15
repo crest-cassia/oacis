@@ -157,17 +157,6 @@ describe Simulator do
       expect(found).to be_nil
     end
 
-    it "argument is complemented with the default value" do
-      t_default = @sim.parameter_definitions.where(key:"T").first.default
-      parameters = {"L"=>10, "T"=>t_default}
-      created = @sim.parameter_sets.create!(v: parameters)
-      found = @sim.find_parameter_set( {"L"=>10} )
-      expect(found).to eq created
-
-      found2 = @sim.find_parameter_set( {} )
-      expect(found2).to be_nil
-    end
-
     it "arguments can be a hash with symbol-keys" do
       parameters = {"L"=>10, "T"=>2.0}
       created = @sim.parameter_sets.create!(v: parameters)
@@ -181,6 +170,12 @@ describe Simulator do
       expect {
         @sim.find_parameter_set( parameters.merge({"Q"=>1}) )
       }.to raise_error(/^Unknown keys:/)
+    end
+
+    it "raises an exception when the given parameter has a missing key" do
+      expect {
+        @sim.find_parameter_set( "L" => 10 )
+      }.to raise_error(/^Missing keys:/)
     end
   end
 
@@ -205,19 +200,6 @@ describe Simulator do
       }.to change { ParameterSet.count }.by(1)
     end
 
-    it "argument is complemented with the default values" do
-      t_default = @sim.parameter_definitions.where(key:"T").first.default
-      parameters = {"L"=>10, "T"=>t_default}
-      created = @sim.parameter_sets.create!(v: parameters)
-      found = @sim.find_or_create_parameter_set( {"L"=>10} )
-      expect(found).to eq created
-
-      expect {
-        default_ps = @sim.find_or_create_parameter_set( {} )
-        expect(default_ps.v["T"]).to eq t_default
-      }.to change { ParameterSet.count }.by(1)
-    end
-
     it "arguments can be a hash with symbol-keys" do
       created = @sim.find_or_create_parameter_set( L:10, T:2.0 )
       expect(created.v).to eq({"L"=>10,"T"=>2.0})
@@ -228,6 +210,12 @@ describe Simulator do
       expect {
         @sim.find_or_create_parameter_set( parameters.merge({"Q"=>1}) )
       }.to raise_error(/^Unknown keys:/)
+    end
+
+    it "raises an exception when the given parameter has a missing key" do
+      expect {
+      @sim.find_or_create_parameter_set( {"L"=>10} )
+      }.to raise_error(/^Missing keys:/)
     end
   end
 

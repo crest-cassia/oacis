@@ -138,15 +138,15 @@ class Simulator
 
   # used by APIs
   def find_parameter_set( parameters )
-    unknown_keys = parameters.keys.map(&:to_s) - default_parameters.keys
+    casted_parameters = parameters.map {|k,v| [k.to_s,v] }.to_h
+    expected_keys = default_parameters.keys
+    given_keys = casted_parameters.keys
+    unknown_keys = given_keys - expected_keys
     raise "Unknown keys: #{unknown_keys}" unless unknown_keys.empty?
+    missing_keys = expected_keys - given_keys
+    raise "Missing keys: #{missing_keys}" unless missing_keys.empty?
 
-    merged = {}
-    params = parameters.with_indifferent_access
-    default_parameters.each do |key,default|
-      merged[key] = (params[key] or default)
-    end
-    parameter_sets.where(v: merged).first
+    parameter_sets.where(v: casted_parameters).first
   end
 
   def find_or_create_parameter_set( parameters )
