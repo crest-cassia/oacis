@@ -137,7 +137,7 @@ class Simulator
   end
 
   # used by APIs
-  def find_ps_of_parameters( parameters )
+  def find_parameter_set( parameters )
     unknown_keys = parameters.keys.map(&:to_s) - default_parameters.keys
     raise "Unknown keys: #{unknown_keys}" unless unknown_keys.empty?
 
@@ -150,7 +150,7 @@ class Simulator
   end
 
   def find_or_create_ps_of_parameters( parameters )
-    find_ps_of_parameters( parameters ) or parameter_sets.create!(v: parameters)
+    find_parameter_set( parameters ) or parameter_sets.create!(v: parameters)
   end
 
   def default_parameters
