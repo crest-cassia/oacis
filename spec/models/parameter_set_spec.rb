@@ -388,6 +388,54 @@ describe ParameterSet do
     end
   end
 
+  describe "#average_result" do
+
+    before(:each) do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 0)
+      @ps = sim.parameter_sets.first
+    end
+
+    it "returns the average of the results" do
+      [1,2,3,4,5].each do |r|
+        @ps.runs.create!( status: :finished, result: {"r1"=>r} )
+      end
+      ave, n = @ps.average_result("r1")
+      expect(ave).to eq 3.0
+      expect(n).to eq 5
+    end
+
+    it "ignores unfinishd runs" do
+      [1,2,3,4,5].each do |r|
+        @ps.runs.create!( status: :finished, result: {"r1"=>r} )
+      end
+      @ps.runs.create!( status: :failed, result: {"r1"=>0} )
+      @ps.runs.create!( status: :created )
+      ave = @ps.average_result("r1")
+      expect( @ps.average_result("r1") ).to eq [3.0, 5]
+    end
+
+    it "returns [nil,0] when runs are not found" do
+      expect( @ps.average_result("r1") ).to eq [nil, 0]
+    end
+
+    context "when error:true option is given" do
+
+      it "returns stderr as well" do
+        [1,2,3,4,5].each do |r|
+          @ps.runs.create!( status: :finished, result: {"r1"=>r} )
+        end
+        ave,n,err = @ps.average_result("r1", error: true)
+        expect( ave ).to eq 3.0
+        expect( n ).to eq 5
+        expect( err ).to be_within(0.01).of(0.7071)
+      end
+
+      it "returns [nil,0,nil] when runs are not found" do
+        expect( @ps.average_result("r1",error: true) ).to eq [nil,0,nil]
+      end
+    end
+  end
+
   describe "#discard" do
 
     before(:each) do
