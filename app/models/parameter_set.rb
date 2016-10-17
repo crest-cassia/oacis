@@ -87,6 +87,20 @@ class ParameterSet
     found
   end
 
+  def average_result(key, error: false)
+    results = runs.where(status: :finished).only(:result).map {|r| r.result[key].to_f }.compact
+    n = results.size
+    return ( error ? [nil,0,nil] : [nil,0] ) if n==0
+    avg = results.inject(:+) / n
+    if error
+      r2_sum = results.inject(0.0) {|sum,x| sum + (x-avg)**2}
+      err = n > 1 ? Math.sqrt(r2_sum/(n*(n-1.0))) : nil
+      return [avg, n, err]
+    else
+      return [avg, n]
+    end
+  end
+
   def discard
     update_attribute(:to_be_destroyed, true)
     set_lower_submittable_to_be_destroyed

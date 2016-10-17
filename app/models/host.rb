@@ -111,6 +111,10 @@ class Host
     count
   end
 
+  def default_host_parameters
+    host_parameter_definitions.map {|d| [d.key, d.default] }.to_h
+  end
+
   def work_base_dir_is_not_editable?
     self.persisted? and (submitted_runs.any? or submitted_analyses.any?)
   end
