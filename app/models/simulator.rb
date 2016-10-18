@@ -138,15 +138,15 @@ class Simulator
 
   # used by APIs
   def find_parameter_set( parameters )
-    casted_parameters = parameters.map {|k,v| [k.to_s,v] }.to_h
+    given_keys = parameters.keys.map(&:to_s)
     expected_keys = default_parameters.keys
-    given_keys = casted_parameters.keys
     unknown_keys = given_keys - expected_keys
     raise "Unknown keys: #{unknown_keys}" unless unknown_keys.empty?
     missing_keys = expected_keys - given_keys
     raise "Missing keys: #{missing_keys}" unless missing_keys.empty?
 
-    parameter_sets.where(v: casted_parameters).first
+    query = parameters.map {|k,v| ["v.#{k}", v] }.to_h
+    parameter_sets.where( query ).first
   end
 
   def find_or_create_parameter_set( parameters )
