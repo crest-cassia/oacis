@@ -150,6 +150,12 @@ describe Simulator do
       expect(found).to eq created
     end
 
+    it "returns PS irrespective of the order of the parameters" do
+      created = @sim.parameter_sets.create!(v: {"L"=>10,"T"=>2.0} )
+      found = @sim.find_parameter_set( "T"=>2.0, "L"=>10 )
+      expect(found).to eq created
+    end
+
     it "returns nil if matching PS is not found" do
       parameters = {"L"=>10, "T"=>2.0}
       @sim.parameter_sets.create!(v: parameters)
