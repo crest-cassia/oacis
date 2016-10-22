@@ -1,0 +1,20 @@
+img {
+  display: block;
+  margin: 0 auto;
+}
+table.table {
+  border: 1px #bbb solid
+}
+table.table thead {
+  border: 1px #bbb solid
+}
+iframe.youtube {
+  display: block;
+  margin: 0 auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.dropdown-menu {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}

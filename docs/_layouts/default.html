@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+      <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
+
+      <!-- Bootstrap -->
+      <link href="{{ site.baseurl }}/stylesheets/bootstrap.min.css" rel="stylesheet">
+      <link href="{{ site.baseurl }}/stylesheets/custom.css" rel="stylesheet">
+      <link href="{{ site.baseurl }}/stylesheets/syntax.css" rel="stylesheet">
+      <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+      <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+      <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+      <![endif]-->
+  </head>
+
+
+  <body>
+
+    <div class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="{{ site.baseurl }}/">{{ site.title }}</a>
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav">
+            {% if page.lang == 'ja' %}
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/index.html">はじめに</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/overview.html">システム概要</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/install.html">インストール</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/tutorial.html">チュートリアル</a> </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">設定  <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="{{ site.baseurl }}/{{ page.lang }}/configuring_host.html">ホストの設定</a></li>
+                <li><a href="{{ site.baseurl }}/{{ page.lang }}/configuring_simulator.html">シミュレーターの設定</a></li>
+                <li><a href="{{ site.baseurl }}/{{ page.lang }}/configuring_analyzer.html">アナライザーの設定</a></li>
+              </ul>
+            </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/cli.html">CLI</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/api.html">API</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/tips.html">TIPs</a> </li>
+            {% endif %}
+            {% if page.lang == 'en' %}
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/index.html">Introduction</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/overview.html">System Overview</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/install.html">Installation</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/tutorial.html">Tutorial</a> </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Configuration<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="{{ site.baseurl }}/{{ page.lang }}/configuring_host.html">Host</a></li>
+                <li><a href="{{ site.baseurl }}/{{ page.lang }}/configuring_simulator.html">Simulator</a></li>
+                <li><a href="{{ site.baseurl }}/{{ page.lang }}/configuring_analyzer.html">Analyzer</a></li>
+              </ul>
+            </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/cli.html">CLI</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/api.html">API</a> </li>
+            <li> <a href="{{ site.baseurl }}/{{ page.lang }}/tips.html">TIPs</a> </li>
+            {% endif %}
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="https://github.com/crest-cassia/oacis" target="_blank">View on Github</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="page-header">
+      </div>
+      {{ content }}
+
+      {% if page.next_page %}
+      <div class="text-center">
+        <a href="{{ site.baseurl }}/{{ page.lang }}/{{ page.next_page }}.html" class="btn btn-info">Next »</a>
+      </div>
+      {% endif %}
+
+      <hr>
+      <footer class="site-footer">
+        <div class="text-right">
+          <a href="https://github.com/crest-cassia/oacis">OACIS</a> is developed by <a href="mailto:oacis-dev@googlegroups.com">OACIS developers team</a>.
+        </div>
+      </footer>
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{{ site.baseurl }}/js/bootstrap.min.js"></script>
+    <script src="{{ site.baseurl }}/js/custom.js"></script>
+
+  </body>
+</html>

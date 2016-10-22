@@ -1,0 +1,6 @@
+<div class="panel panel-info">
+<span class="label label-info" style="margin-left: 3px;">Tips</span>
+  <div class="panel-body">
+    {{ tips }}
+  </div>
+</div>
