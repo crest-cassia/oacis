@@ -56,7 +56,7 @@ To operate OACIS, we are going to use the methods of the following classes. Majo
 - Analysis
 
 
-These APIs are available for OACIS 2.6.0 or later. If you are using 2.5.0 or earlier, update OACIS first.
+These APIs are available for OACIS 2.7.0 or later. If you are using 2.6.0 or earlier, update OACIS first.
 
 ### [Optional] Reference materials
 
@@ -73,7 +73,7 @@ In the source code of OACIS, the code for defining the data structure is in the 
 sim = Simulator.find("...ID...")
 ```
 
-#### searching
+- Get a simulator by name
 
 ```ruby
 sim = Simulator.where(name: "my_simulator").first
@@ -88,6 +88,8 @@ sim.parameter_definitions
 [#<ParameterDefinition _id: 522d751f899e533149000003, key: "p1", type: "Integer", default: 1, description: "first parameter">,
  #<ParameterDefinition _id: 522d751f899e533149000004, key: "p2", type: "Integer", default: 1, description: "second parameter">,
  #<ParameterDefinition _id: 522d751f899e533149000005, key: "p3", type: "Float", default: 0.0, description: "third parameter">]
+sim.default_parameters
+#=> {"p1" => 1, "p2" => 1, "p3" => 0.0}
 ```
 
 ### ParameterSet
@@ -96,6 +98,15 @@ sim.parameter_definitions
 
 ```ruby
 ps = ParameterSet.find("...ID...")
+```
+
+- Find a ParameterSet by parameters
+    - `Simulator#find_parameter_set` returns nil if a matching ParameterSet is not found.
+    - If all the parameters are not specified by the argument, it raises an exception.
+
+
+```ruby
+ps = simulator.find_parameter_set( {"p1"=>1, "p2"=>2.0} )
 ```
 
 #### searching
@@ -114,20 +125,22 @@ After matching ParameterSets are found, an iteration over them is conducted by `
 
 - `v` returns the values of parameters as a Hash.
 - `dir` returns the path to the directory where the data are stored.
+- `average_result` returns the average (and the number of runs) of the specified result
 
 ```ruby
 ps.v  #=> {"p1"=>1, "p2"=>2, "p3"=>0.4}
 ps.dir  # =><Pathname:/path/to/oacis/public/Result_development/522d751f899e533149000002/522d757d899e53a01400000b>
+ps.average_result("result1")   # => [0.25, 5]   Average of "result1" is 0.25, which is averaged over 5 runs
 ```
 
 #### creating
 
 ```ruby
-created = sim.parameter_sets.create!(v: {"p1"=>19,"p2"=>20})
+sim.find_or_create_parameter_set( {"p1"=>1, "p2"=>2.0} )
 ```
 
-The above code create a ParameterSet whose "p1" and "p2" is 19 and 20, respectively. If you do not specify all the parameters ("p3" in this example), the default value is assigned.
-If you are going to create a ParameterSet whose parameters are identical to an existing ParameterSet, an exception occurs.
+If a ParameterSet of `{"p1"=>1, "p2"=>2.0}` already exists, it return that ParameterSet.
+If such ParameterSet does not exist, a new ParameterSet is created.
 
 #### removing
 
@@ -175,16 +188,14 @@ run.result           #=> {"result1"=>-0.016298, "result2"=>0.0264882}
 host = Host.find("...HOSTID...")
 host_param = {ppn:"4",walltime:"1:00:00"}
 # To get default host parameters, the following method is available.
-#  sim.get_default_host_parameter(host)
+#  host.default_host_parameters
 
-run = ps.runs.create!(submitted_to: host, host_parameters: host_param, mpi_procs: 4)
-
-# To create multiple runs, call "create!" method as many times as you want
-runs = []
-10.times do |t|
-  runs << ps.runs.create!( submitted_to: host, host_parameters: host_param, mpi_procs: 4)
-end
+runs = ps.find_or_create_runs_upto( 10, submitted_to: host, host_param: host_param, mpi_procs: 4 )
 ```
+
+`ParameterSet#find_or_create_runs_upto` method create runs until the number of Runs becomes the specified number.
+If there already exists enough number of Runs, runs are not newly created.
+The returned value is an array of Runs.
 
 #### removing
 
