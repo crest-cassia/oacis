@@ -75,6 +75,12 @@
   $(show_form_for_plots);
   $('#plot-type').change(show_form_for_plots);
 
+  function get_irrelevants() {
+    var irrelevants = $('#irrelevant-params').find("input:checkbox:checked").map(function() {
+      return $(this).data('key');
+    }).get().join(',');
+    return irrelevants;
+  }
   function add_line_plot(x, y, series, irrelevants) {
     var url = "#{_line_plot_parameter_set_path(@param_set)}" + ".json";
     var url_with_param = url + 
@@ -89,10 +95,7 @@
     var x = $('#line-plot-form #x_axis_key').val();
     var y = $('#line-plot-form #y_axis_key').val();
     var series = $('#line-plot-form #series').val();
-    var irrelevants = $('#irrelevant-params').find("input:checkbox:checked").map(function() {
-      return $(this).data('key');
-      }).get().join(',');
-
+    var irrelevants = get_irrelevants();
     if( x == "" ) {
       x = new Array();
       $('#x_axis_key').children('option').each(function() {
@@ -137,10 +140,7 @@
     var x = $('#scatter-plot-form #x_axis_key').val();
     var y = $('#scatter-plot-form #y_axis_key').val();
     var result = $('#scatter-plot-form #result').val();
-    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
-      return this.id;
-      }).get().join(',');
-
+    var irrelevants = get_irrelevants();
     add_scatter_plot(x, y, result, irrelevants);
   });
 
@@ -158,10 +158,7 @@
     var x = $('#figure-viewer-form #x_axis_key').val();
     var y = $('#figure-viewer-form #y_axis_key').val();
     var result = $('#figure-viewer-form #result').val();
-    var irrelevants = $('#irrelevant-params').children("input:checkbox:checked").map(function() {
-      return this.id;
-      }).get().join(',');
-
+    var irrelevants = get_irrelevants();
     add_figure_viewer(x, y, result, irrelevants);
   });
 
