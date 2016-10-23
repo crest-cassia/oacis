@@ -46,6 +46,14 @@ $ bundle exec ruby -r ./config/environment test.rb
 "my_simulator"
 ```
 
+他のディレクトリから実行する場合は、`BUNDLE_GEMFILE`という環境変数を指定する必要があります。
+`OACIS_ROOT`という環境変数にOACISのディレクトリのパスをセットしてから、以下のようにすると実行できます。
+
+```
+export OACIS_ROOT=~/work/oacis       # set OACIS_ROOT to the path of OACIS
+BUNDLE_GEMFILE="$OACIS_ROOT/Gemfile" ruby -r "$OACIS_ROOT/config/environment" your_script.rb
+```
+
 ## API一覧
 
 OACIS上の処理を行うために、主に以下のクラスのオブジェクトを利用します。
