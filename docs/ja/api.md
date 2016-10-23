@@ -59,7 +59,7 @@ OACIS上の処理を行うために、主に以下のクラスのオブジェク
 
 の６つ。この６つのクラスの主要なメソッドを以下に列挙します。
 
-また以下のAPIはv2.6.0以降で利用できます。
+また以下のAPIはv2.7.0以降で利用できます。
 
 ### [Optional] 参考情報
 
@@ -77,7 +77,7 @@ OACISの中でMongoidのドキュメントを定義したコードは https://gi
 sim = Simulator.find("...ID...")
 ```
 
-#### 検索
+- 名前によってSimulatorを検索
 
 ```ruby
 sim = Simulator.where(name: "my_simulator").first
@@ -92,6 +92,8 @@ sim.parameter_definitions
 [#<ParameterDefinition _id: 522d751f899e533149000003, key: "p1", type: "Integer", default: 1, description: "first parameter">,
  #<ParameterDefinition _id: 522d751f899e533149000004, key: "p2", type: "Integer", default: 1, description: "second parameter">,
  #<ParameterDefinition _id: 522d751f899e533149000005, key: "p3", type: "Float", default: 0.0, description: "third parameter">]
+sim.default_parameters
+#=> {"p1" => 1, "p2" => 1, "p3" => 0.0}
 ```
 
 ### ParameterSet
@@ -107,7 +109,7 @@ ps = ParameterSet.find("...ID...")
 #### 検索
 
 Simulatorから該当するパラメータのPSを検索。パラメータの値はParameterSetオブジェクトの"v"というフィールドに保存されている。"v"の子要素("v.p1", "v.p2"など) への検索条件を使って`where`メソッドで検索する。
-得られた結果に対してeachで回して要素を取得できる。(`count`, `exists?`などのEnumerableへのメソッドは同様に使える）
+他の様々なMongoidのクエリ (lt,gt,le,ge,in などなど）も利用できる。
 
 ```ruby
 sim.parameter_sets.where("v.p1" => 1, "v.p2" => 2).each do |ps|
@@ -115,24 +117,32 @@ sim.parameter_sets.where("v.p1" => 1, "v.p2" => 2).each do |ps|
 end
 ```
 
+- または、ある特定のパラメータのParameterSetを取得したい場合は `Simulator#find_parameter_set` メソッドを利用する
+
+```ruby
+ps = simulator.find_parameter_set( {"p1"=>1, "p2"=>2.0, "p3" => 0.0} )
+```
+
 #### 参照
 
 - `v`でパラメータの値をHashで取得できる
 - `dir`でディレクトリへのパスを取得できる
+- `average_method` は特定の結果の平均値を返す
 
 ```ruby
 ps.v  #=> {"p1"=>1, "p2"=>2, "p3"=>0.4}
 ps.dir  # =><Pathname:/path/to/oacis/public/Result_development/522d751f899e533149000002/522d757d899e53a01400000b>
+ps.average_result("result1")   #=> [0.25, 5]   Average of "result1" is 0.25, which is averaged over 5 runs
 ```
 
 #### 作成
 
 ```ruby
-created = sim.parameter_sets.create!(v: {"p1"=>19,"p2"=>20})
+created = sim.find_or_create_parameter_set("p1"=>19,"p2"=>20,"p3"=>0.0)
 ```
 
-p1=19,p2=20のPSがつくられる。指定していないパラメータはデフォルト値になる。
-既存のものと同じparameterのPSを作ろうとすると例外が発生する。
+p1=19,p2=20,p3=0.0のPSがつくられる。
+既存のものと同じparameterのPSを作ろうとした場合、そのPSが返る
 
 #### 削除
 
@@ -180,15 +190,15 @@ host = Host.find("...HOSTID...")
 host_param = {ppn:"4",walltime:"1:00:00"}
 
 # hostパラメータのデフォルト値を得るには以下のメソッドが有用
-#  sim.get_default_host_parameter(host)
+#  host.get_default_host_parameters
 run = ps.runs.create!(submitted_to: host, host_parameters: host_param, mpi_procs: 4)
 
-# To create multiple runs, call "create!" method as many times as you want
-runs = []
-10.times do |t|
-  runs << ps.runs.create!( submitted_to: host, host_parameters: host_param, mpi_procs: 4)
-end
+runs = ps.find_or_create_runs_upto( 10, submitted_to: host, host_param: host_param, mpi_procs: 4 )
 ```
+
+`ParameterSet#find_or_create_runs_upto` メソッドは指定した数になるまでRunを作成する。
+すでに十分なRunがある場合には、新規作成されない。
+返り値はRunの配列。
 
 #### 削除
 

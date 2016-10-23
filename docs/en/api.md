@@ -106,7 +106,7 @@ ps = ParameterSet.find("...ID...")
 
 
 ```ruby
-ps = simulator.find_parameter_set( {"p1"=>1, "p2"=>2.0} )
+ps = simulator.find_parameter_set( {"p1"=>1, "p2"=>2.0, "p3"=>0.0} )
 ```
 
 #### searching
