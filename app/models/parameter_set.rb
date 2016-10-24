@@ -74,9 +74,10 @@ class ParameterSet
   end
 
   # public APIs
-  def find_or_create_runs_upto( num_runs, submitted_to: nil, host_param: {}, mpi_procs: 1, omp_threads: 1 )
+  def find_or_create_runs_upto( num_runs, submitted_to: nil, host_param: nil, mpi_procs: 1, omp_threads: 1 )
     found = runs.asc(:created_at).limit(num_runs).to_a
     n = found.size
+    host_param ||= submitted_to.try(:default_host_parameters)
     (num_runs - n).times do |i|
       r = runs.create!(submitted_to: submitted_to,
                        host_parameters: host_param,

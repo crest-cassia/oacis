@@ -349,6 +349,17 @@ describe ParameterSet do
         end
       end
 
+      it "sets default host parameters if host_param option is not given" do
+        host_param_defs = [
+          HostParameterDefinition.new(key:"hp1",default:"aaa"),
+          HostParameterDefinition.new(key:"hp2"),
+        ]
+        h = FactoryGirl.create(:host, host_parameter_definitions: host_param_defs)
+
+        runs = @ps.find_or_create_runs_upto(1, submitted_to: h)
+        expect( runs.first.host_parameters ).to eq ( {"hp1"=>"aaa","hp2"=>nil} )
+      end
+
       it "does not set host_param to existing runs" do
         run1 = @ps.runs.create!
 
