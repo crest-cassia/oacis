@@ -3,6 +3,7 @@ class HostsController < ApplicationController
   # GET /hosts.json
   def index
     @hosts = Host.asc(:position).all
+    @host_groups = HostGroup.asc(:created_at).all
 
     respond_to do |format|
       format.html # index.html.erb

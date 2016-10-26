@@ -8,4 +8,8 @@ class HostGroup
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
   validates :host_ids, length: {minimum: 1}
+
+  def destroyable?
+    true  # TODO: implement me
+  end
 end

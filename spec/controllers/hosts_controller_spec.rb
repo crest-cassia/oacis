@@ -21,10 +21,12 @@ describe HostsController do
   end
 
   describe "GET index" do
-    it "assigns all hosts as @hosts" do
+    it "assigns @hosts and @host_groups" do
       host = Host.create! valid_attributes
+      hg = HostGroup.create!(name: "hg", hosts: [host])
       get :index, {}, valid_session
       expect(assigns(:hosts)).to eq([host])
+      expect(assigns(:host_groups)).to eq([hg])
     end
 
     it "@hosts are sorted by position" do
