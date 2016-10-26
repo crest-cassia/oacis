@@ -81,7 +81,7 @@ class RunsController < ApplicationController
     param_set = ParameterSet.find(params[:parameter_set_id])
     run = param_set.runs.build(permitted_run_params)
     @error_messages = run.valid? ? [] : run.errors.full_messages
-    @script = JobScriptUtil.script_for(run, nil) if run.valid?
+    @script = JobScriptUtil.script_for(run) if run.valid?
     respond_to do |format|
       format.js {
         render action: "preview"

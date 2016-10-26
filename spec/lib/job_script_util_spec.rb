@@ -4,7 +4,7 @@ shared_examples_for JobScriptUtil do
 
   def run_test_script_in_temp_dir
     Dir.chdir(@temp_dir) {
-      str = JobScriptUtil.script_for(@submittable, @host)
+      str = JobScriptUtil.script_for(@submittable)
       script_path = 'test.sh'
       File.open( script_path, 'w') {|io| io.print str }
       system("bash #{script_path}")
@@ -76,7 +76,7 @@ shared_examples_for JobScriptUtil do
 
     it "set OACIS_JOB_ID environment variable" do
       job_id = @submittable.id.to_s
-      script = JobScriptUtil.script_for(@submittable, @host)
+      script = JobScriptUtil.script_for(@submittable)
       expect(script).to match(/export OACIS_JOB_ID=#{job_id}/)
     end
 
@@ -84,7 +84,7 @@ shared_examples_for JobScriptUtil do
       @executable.support_mpi = true
       @executable.save!
       @submittable.mpi_procs = 8
-      script = JobScriptUtil.script_for(@submittable, @host)
+      script = JobScriptUtil.script_for(@submittable)
       expect(script).to match(/export OACIS_MPI_PROCS=8/)
       expect(script).to match(/export OACIS_IS_MPI_JOB=true/)
       expect(script).not_to match(/mpiexec/)
@@ -94,7 +94,7 @@ shared_examples_for JobScriptUtil do
       @executable.support_mpi = false
       @executable.save!
       @submittable.mpi_procs = 8
-      script = JobScriptUtil.script_for(@submittable, @host)
+      script = JobScriptUtil.script_for(@submittable)
       expect(script).to match(/export OACIS_IS_MPI_JOB=false/)
     end
 
@@ -102,17 +102,8 @@ shared_examples_for JobScriptUtil do
       @executable.support_omp = true
       @executable.save!
       @submittable.omp_threads = 8
-      script = JobScriptUtil.script_for(@submittable, @host)
+      script = JobScriptUtil.script_for(@submittable)
       expect(script).to match(/export OACIS_OMP_THREADS=8/)
-    end
-
-    context "when host is nil" do
-
-      it "does not cause an exception" do
-        expect {
-          JobScriptUtil.script_for(@submittable, nil)
-        }.to_not raise_error
-      end
     end
   end
 
@@ -464,10 +455,8 @@ context "for Run" do
     run = sim.parameter_sets.first.runs.first
     @executable = sim
     @submittable = run
-    @host = host
     @temp_dir = Pathname.new('__temp__')
     FileUtils.mkdir_p(@temp_dir)
-    @host.work_base_dir = @temp_dir.expand_path
   end
 
   after(:each) do
@@ -493,10 +482,8 @@ context "for Analysis" do
 
     @executable = azr
     @submittable = anl
-    @host = host
     @temp_dir = Pathname.new('__temp__')
     FileUtils.mkdir_p(@temp_dir)
-    @host.work_base_dir = @temp_dir.expand_path
   end
 
   after(:each) do

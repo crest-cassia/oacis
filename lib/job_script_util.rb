@@ -56,11 +56,10 @@ EOS
 
   EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
 
-  def self.script_for(job, host)
+  def self.script_for(job)
     variables = {
       "run_id" => job.id.to_s,
       "is_mpi_job" => job.executable.support_mpi ? "true" : "false",
-      "work_base_dir" => host ? host.work_base_dir : '.',
       "omp_threads" => job.omp_threads,
       "mpi_procs" => job.mpi_procs,
       "cmd" => job.command_with_args.sub(/;$/, ''),
