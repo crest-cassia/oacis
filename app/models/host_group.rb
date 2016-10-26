@@ -7,5 +7,5 @@ class HostGroup
   has_and_belongs_to_many :hosts
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
-  validates :hosts, length: {minimum: 1}
+  validates :host_ids, length: {minimum: 1}
 end
