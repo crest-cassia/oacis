@@ -39,3 +39,7 @@
 
 - unless OACIS_READ_ONLY
   %a.btn.btn-primary{href: new_host_path} New Host
+
+%hr
+= render partial: 'host_groups/index', locals: {host_groups: @host_groups}
+
