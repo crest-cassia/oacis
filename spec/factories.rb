@@ -196,6 +196,13 @@ FactoryGirl.define do
     end
   end
 
+  factory :host_group do
+    sequence(:name, 'A') {|n| "HostGroup_#{n}"}
+    hosts {
+      [ FactoryGirl.create(:host) ]
+    }
+  end
+
   # :localhost needs ssh connection and xsub
   factory :localhost, class: Host do
     name "localhost"
