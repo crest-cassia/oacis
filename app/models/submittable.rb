@@ -148,9 +148,7 @@ module Submittable
   end
 
   def set_job_script
-    self.update_attribute(:job_script,
-                          JobScriptUtil.script_for(self, self.submitted_to)
-                          )
+    self.update_attribute(:job_script, JobScriptUtil.script_for(self))
   end
 
   def create_job_script_for_manual_submission
