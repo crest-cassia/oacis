@@ -24,6 +24,7 @@ class Host
   has_and_belongs_to_many :executable_analyzers, class_name: "Analyzer", inverse_of: :executable_on
   embeds_many :host_parameter_definitions
   accepts_nested_attributes_for :host_parameter_definitions, allow_destroy: true
+  has_and_belongs_to_many :host_groups
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
   validates :hostname, presence: true, format: {with: /\A(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?\z/}
