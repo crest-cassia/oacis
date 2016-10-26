@@ -17,10 +17,10 @@ If you have a trouble of handling many simulation jobs, OACIS will definitely he
 
 ## Screenshots
 
-![screenshot](https://raw.githubusercontent.com/crest-cassia/oacis/gh-pages/images/screenshots/1.png)
-![screenshot](https://raw.githubusercontent.com/crest-cassia/oacis/gh-pages/images/screenshots/3.png)
-![screenshot](https://raw.githubusercontent.com/crest-cassia/oacis/gh-pages/images/screenshots/5.png)
-![screenshot](https://raw.githubusercontent.com/crest-cassia/oacis/gh-pages/images/screenshots/8.png)
+![screenshot](docs/images/screenshots/1.png)
+![screenshot](docs/images/screenshots/3.png)
+![screenshot](docs/images/screenshots/5.png)
+![screenshot](docs/images/screenshots/8.png)
 
 ## Getting Started
 
