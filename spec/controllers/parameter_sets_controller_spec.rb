@@ -114,6 +114,14 @@ describe ParameterSetsController do
         expect(Run.order_by(id: :asc).last.host_parameters).to eq host_param
       end
 
+      it "creates runs with host_group" do
+        hg = FactoryGirl.create(:host_group)
+        post :create, @valid_param.update(num_runs: 1, run: {submitted_to: hg}), valid_session
+        new_run = Run.desc(:created_at).first
+        expect( new_run.host_group ).to eq hg
+        expect( new_run.submitted_to ).to be_nil
+      end
+
       context "when duplicated parameter_set exists" do
 
         before(:each) do
