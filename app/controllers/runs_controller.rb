@@ -101,10 +101,22 @@ class RunsController < ApplicationController
 
   private
   def permitted_run_params
-    if params[:run]["submitted_to"].length > 0
-      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, host_parameters: [Host.find(params["run"]["submitted_to"]).host_parameter_definitions.map {|hpd| hpd[:key]}])
-    else
-      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, host_parameters: {})
+    if params[:run]["submitted_to"].present?
+      id = params[:run]["submitted_to"]
+      if Host.where( id: id ).exists?
+        host_param_keys = Host.find(id).host_parameter_definitions.map(&:key)
+        params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, host_parameters: host_param_keys)
+      elsif HostGroup.where( id: id ).exists?
+        modify_params_for_host_group_submission
+        params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :host_group)
+      end
+    else  # manual submission
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority)
     end
+  end
+
+  def modify_params_for_host_group_submission
+    params[:run]["host_group"] = params[:run]["submitted_to"]
+    params[:run].delete("submitted_to")
   end
 end

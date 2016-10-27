@@ -68,6 +68,15 @@ describe RunsController do
           post 'create', @req_param.update(num_runs: num_runs), valid_session
         }.to change(Run.where(parameter_set_id: @par), :count).by(num_runs)
       end
+
+      it "assigns HostGroup" do
+        hg = FactoryGirl.create(:host_group)
+        @req_param[:run] = {submitted_to: hg.id.to_s}
+        post 'create', @req_param, valid_session
+        new_run = Run.desc(:created_at).first
+        expect( new_run.submitted_to ).to be_nil
+        expect( new_run.host_group ).to eq hg
+      end
     end
 
     describe "with invalid parameters" do
