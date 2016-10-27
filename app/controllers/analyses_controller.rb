@@ -12,9 +12,7 @@ class AnalysesController < ApplicationController
   def create
     analyzable = fetch_analyzable(params)
     azr = analyzable.simulator.analyzers.find(params[:analysis][:analyzer])
-    host_id = params[:analysis]["submitted_to"]
-    host = host_id.present? ? Host.find(host_id) : nil
-    permitted_params = permitted_analysis_params(azr, host)
+    permitted_params = permitted_analysis_params(azr)
     anl = analyzable.analyses.build(permitted_params)
     respond_to do |format|
       if anl.save
@@ -74,17 +72,42 @@ class AnalysesController < ApplicationController
     end
   end
 
-  def permitted_analysis_params(azr, host)
+  def permitted_analysis_params(azr)
+    found = find_host_or_host_group
+
     analysis_param_keys = azr.parameter_definitions.map {|pd| pd.key.to_sym }
     analysis_param_keys = {} if analysis_param_keys.empty?
 
-    host_param_keys = {}
-    host_param_keys = host.host_parameter_definitions.map {|hpd| hpd[:key] } if host
+    case found
+    when Host
+      host_param_keys = {}
+      host_param_keys = found.host_parameter_definitions.map(&:key)
 
-    params.require(:analysis).permit(
-      :analyzer, :submitted_to, :mpi_procs, :omp_threads, :priority,
-      host_parameters: host_param_keys,
-      parameters: analysis_param_keys
+      params.require(:analysis).permit(
+        :analyzer, :submitted_to, :mpi_procs, :omp_threads, :priority,
+        host_parameters: host_param_keys,
+        parameters: analysis_param_keys
       )
+    when HostGroup
+      params[:analysis][:host_group] = params[:analysis][:submitted_to]
+      params.require(:analysis).permit(
+        :analyzer, :host_group, :mpi_procs, :omp_threads, :priority,
+        parameters: analysis_param_keys
+      )
+    else  # manual submission
+      params.require(:analysis).permit(
+        :analyzer, :mpi_procs, :omp_threads, :priority,
+        parameters: analysis_param_keys
+      )
+    end
+  end
+
+  def find_host_or_host_group
+    host_id = params[:analysis]["submitted_to"]
+    if host_id.present?
+      Host.where(id:host_id).exists? ? Host.find(host_id) : HostGroup.find(host_id)
+    else
+      nil
+    end
   end
 end
