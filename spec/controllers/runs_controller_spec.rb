@@ -62,14 +62,6 @@ describe RunsController do
         }.to change(Run.where(parameter_set_id: @par), :count).by(1)
       end
 
-      it "assigns seed specified by request parameter" do
-        seed_val = 12345
-        @req_param[:run].update({seed: seed_val})
-        post 'create', @req_param, valid_session
-        new_run = Run.all.to_a.find {|run| run != @run }
-        expect(new_run.seed).to eq(seed_val)
-      end
-
       it "create multiple items when params[num_runs] is given" do
         num_runs = 3
         expect {
