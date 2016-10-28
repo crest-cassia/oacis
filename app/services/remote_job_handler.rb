@@ -11,6 +11,7 @@ class RemoteJobHandler
   def submit_remote_job(job)
     @host.start_ssh do |ssh|
       begin
+        set_submitted_to_if_necessary(job)
         create_remote_work_dir(job)
         prepare_input_json(job)
         prepare_input_files(job)
@@ -60,6 +61,14 @@ class RemoteJobHandler
   end
 
   private
+  def set_submitted_to_if_necessary(job)
+    if job.submitted_to.nil?
+      job.submitted_to = @host
+      job.host_parameters = @host.default_host_parameters
+      job.save!
+    end
+  end
+
   def create_remote_work_dir(job)
     cmd = "mkdir -p #{RemoteFilePath.work_dir_path(@host,job)}"
     @host.start_ssh do |ssh|
