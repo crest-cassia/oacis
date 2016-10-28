@@ -103,7 +103,7 @@ class AnalysesController < ApplicationController
   end
 
   def find_host_or_host_group
-    host_id = params[:analysis]["submitted_to"]
+    host_id = params[:analysis][:submitted_to]
     if host_id.present?
       Host.where(id:host_id).exists? ? Host.find(host_id) : HostGroup.find(host_id)
     else
