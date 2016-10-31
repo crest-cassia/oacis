@@ -45,7 +45,7 @@ describe ParameterSet do
       invalid_attr = @valid_attr.update({v: "xxx"})
       expect {
         @sim.parameter_sets.build(invalid_attr)
-      }.to raise_error
+      }.to raise_error Mongoid::Errors::InvalidValue
     end
 
     it "should not be valid when keys of v are not consistent with its Simulator" do

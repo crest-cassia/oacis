@@ -72,7 +72,7 @@ describe OacisCli do
         options = { analyzer_id: "DO_NOT_EXIST", output: 'analyzers.json' }
         expect {
           OacisCli.new.invoke(:analyses_template, [], options)
-        }.to raise_error
+        }.to raise_error Mongoid::Errors::DocumentNotFound
       }
     end
 
@@ -235,7 +235,7 @@ describe OacisCli do
           options = { target: "some thing", first_run_only: "first_run_only"}
           expect {
             invoke_create_analyses(:on_run, options)
-          }.to raise_error
+          }.to raise_error(/can not use both first_run_only option and target option/)
         }
       end
     end
@@ -349,18 +349,18 @@ describe OacisCli do
           invoke_create_analyses(:on_run)
           options = {analyzer_id: analyzer_id, query: "DO_NOT_EXIST", yes: true}
           expect {
-            $stdout = StringIO.new # set new string stream not to write Thor#say message on test result
-            OacisCli.new.invoke(:destroy_analyses, [], options)
-            $stdout = STDOUT
-          }.to raise_error
+            capture_stdout_stderr {
+              OacisCli.new.invoke(:destroy_analyses, [], options)
+            }
+          }.to raise_error(/invalid query/)
           options = {analyzer_id: analyzer_id, query: { "status" => "DO_NOT_EXIST" }, yes: true}
           expect {
             OacisCli.new.invoke(:destroy_analyses, [], options)
-          }.to raise_error
+          }.to raise_error(/No analysis is found with query/)
           options = {analyzer_id: analyzer_id, query: { "analyzer_version" => "DO_NOT_EXIST" }, yes: true}
           expect {
             OacisCli.new.invoke(:destroy_analyses, [], options)
-          }.to raise_error
+          }.to raise_error(/No analysis is found with query/)
         }
       end
     end
@@ -432,7 +432,9 @@ describe OacisCli do
         options = {yes: true}
         anl_ids = Analysis.all.map(&:id)[0..2].map(&:to_s) + ["DO_NOT_EXIST"]
         expect {
-          OacisCli.new.invoke(:destroy_analyses_by_ids, anl_ids, options)
+          capture_stdout_stderr {
+            OacisCli.new.invoke(:destroy_analyses_by_ids, anl_ids, options)
+          }
         }.to change { Analysis.count }.by(-3)
       }
     end
@@ -545,7 +547,9 @@ describe OacisCli do
         options = {yes: true}
         anl_ids = Analysis.all.map(&:id)[0..2].map(&:to_s) + ["DO_NOT_EXIST"]
         expect {
-          OacisCli.new.invoke(:replace_analyses_by_ids, anl_ids, options)
+          capture_stdout_stderr {
+            OacisCli.new.invoke(:replace_analyses_by_ids, anl_ids, options)
+          }
         }.to_not change { Analysis.count }
 
         expect( (Analysis.all.map(&:id) - anl_ids).size ).to eq Analysis.count

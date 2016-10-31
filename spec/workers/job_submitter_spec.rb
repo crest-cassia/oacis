@@ -16,7 +16,7 @@ describe JobSubmitter do
       @sim.executable_on.push @host
       @sim.save!
 
-      @logger = Logger.new($stderr)
+      @logger = Logger.new( File.open('/dev/null','w') )
     end
 
     after(:each) do
@@ -52,7 +52,7 @@ describe JobSubmitter do
       }.to_not raise_error
     end
 
-    it "enqueus jobs to remote host in order of priorities on runs" do
+    it "enqueues jobs to remote host in order of priorities on runs" do
       run = @sim.parameter_sets.first.runs.create(priority: 0, submitted_to: @host.to_param)
       run.save!
       expect {
@@ -61,7 +61,7 @@ describe JobSubmitter do
       expect(Run.where(status: :submitted, priority: 1).count).to eq 0
     end
 
-    it "enqueus jobs to remote host in order of created_at.acs on runs" do
+    it "enqueues jobs to remote host in order of created_at.acs on runs" do
       run1 = @sim.parameter_sets.first.runs.build(priority:0, submitted_to: @host.to_param)
       run2 = @sim.parameter_sets.first.runs.build(priority:0, submitted_to: @host.to_param)
       run2.save!
@@ -82,7 +82,7 @@ describe JobSubmitter do
                                 parameter_sets_count: 1, runs_count: 3,
                                 analyzers_count: 0
                                 )
-      @logger = Logger.new($stderr)
+      @logger = Logger.new( File.open('/dev/null','w') )
     end
 
     it "destroys runs whose status is created and to_be_destroyed is true" do

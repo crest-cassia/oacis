@@ -154,8 +154,10 @@ describe OacisCli do
           }
           option = {input: 'simulator.json', output: 'simulator_id.json'}
           expect {
-            OacisCli.new.invoke(:create_simulator, [], option)
-          }.to raise_error
+            capture_stdout_stderr {
+              OacisCli.new.invoke(:create_simulator, [], option)
+            }
+          }.to raise_error(/validation of simulator failed/)
         }
       end
     end
@@ -237,7 +239,7 @@ describe OacisCli do
             option = {simulator: "INVALID", name: 'NEW_PARAM', type: "Float", default: 0.5}
             expect {
               OacisCli.new.invoke(:append_parameter_definition, [], option)
-            }.to raise_error
+            }.to raise_error(/No such file or directory/)
           }
         end
       end
@@ -248,8 +250,10 @@ describe OacisCli do
           at_temp_dir {
             option = {simulator: @sim.id.to_s, name: 'L', type: "Float", default: 0.5}
             expect {
-              OacisCli.new.invoke(:append_parameter_definition, [], option)
-            }.to raise_error
+              capture_stdout_stderr {
+                OacisCli.new.invoke(:append_parameter_definition, [], option)
+              }
+            }.to raise_error(/validation of new parameter definition failed/)
           }
         end
       end
@@ -260,8 +264,10 @@ describe OacisCli do
           at_temp_dir {
             option = {simulator: @sim.id.to_s, name: 'L', type: "Float", default: 0.5}
             expect {
-              OacisCli.new.invoke(:append_parameter_definition, [], option)
-            }.to raise_error
+              capture_stdout_stderr {
+                OacisCli.new.invoke(:append_parameter_definition, [], option)
+              }
+            }.to raise_error(/validation of new parameter definition failed/)
           }
         end
       end
@@ -272,8 +278,10 @@ describe OacisCli do
           at_temp_dir {
             option = {simulator: @sim.id.to_s, name: 'L', type: "Double", default: 0.5}
             expect {
-              OacisCli.new.invoke(:append_parameter_definition, [], option)
-            }.to raise_error
+              capture_stdout_stderr {
+                OacisCli.new.invoke(:append_parameter_definition, [], option)
+              }
+            }.to raise_error(/validation of new parameter definition failed/)
           }
         end
       end
@@ -284,8 +292,10 @@ describe OacisCli do
           at_temp_dir {
             option = {simulator: @sim.id.to_s, name: 'L', type: "Integer", default: 0.5}
             expect {
-              OacisCli.new.invoke(:append_parameter_definition, [], option)
-            }.to raise_error
+              capture_stdout_stderr {
+                OacisCli.new.invoke(:append_parameter_definition, [], option)
+              }
+            }.to raise_error(/validation of new parameter definition failed/)
           }
         end
       end

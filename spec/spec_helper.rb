@@ -11,7 +11,19 @@ module SpecHelper
       }
     }
   end
+
+  def capture_stdout_stderr
+    previous_stdout, $stdout = $stdout, StringIO.new
+    previous_stderr, $stderr = $stderr, StringIO.new
+    yield
+    [$stdout.string,$stderr.string]
+  ensure
+    $stdout = previous_stdout
+    $stderr = previous_stderr
+  end
 end
+
+
 
 Spork.prefork do
   # Loading more in this block will cause your tests to run faster. However,
@@ -32,6 +44,17 @@ Spork.prefork do
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.
   Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
+
+  # redirect stdout and stderr
+  ProgressBar::Output.class_eval {  # suppress output of progress bar
+    unless defined? org_init
+      alias :org_init :initialize
+      def initialize( options )
+        opts = {output: File.open('/dev/null','w') }.merge(options)
+        org_init(opts)
+      end
+    end
+  }
 
   RSpec.configure do |config|
     config.infer_spec_type_from_file_location! # this line is added when updating rspec3
@@ -81,18 +104,7 @@ Spork.prefork do
       DatabaseCleaner.clean
     end
 
-    # redirect stdout and stderr
-    config.before(:all) do
-      $stderr = File.new(File.join(File.dirname(__FILE__), 'stderr.txt'), 'w')
-      $stdout = File.new(File.join(File.dirname(__FILE__), 'stdout.txt'), 'w')
-      if ProgressBar::Output::DEFAULT_OUTPUT_STREAM != $stdout
-        ProgressBar::Output::DEFAULT_OUTPUT_STREAM = $stdout
-      end
-    end
-
     config.after(:all) do
-      $stderr = STDERR
-      $stdout = STDOUT
       root_dir = ResultDirectory.root
       FileUtils.rm_r(root_dir) if FileTest.directory?(root_dir)
     end
