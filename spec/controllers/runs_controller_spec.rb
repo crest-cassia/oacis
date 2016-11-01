@@ -84,7 +84,7 @@ describe RunsController do
         @req_param.update(parameter_set_id: 1234)
         expect {
           post 'create', @req_param, valid_session
-        }.to raise_error
+        }.to raise_error Mongoid::Errors::DocumentNotFound
       end
     end
 

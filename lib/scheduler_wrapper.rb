@@ -1,6 +1,7 @@
 class SchedulerWrapper
 
   def initialize(host)
+    raise "Not a host : #{host}" unless host.is_a?(Host)
     @work_base_dir = Pathname.new(host.work_base_dir)
   end
 
