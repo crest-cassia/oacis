@@ -93,5 +93,10 @@ AcmProto::Application.routes.draw do
     end
   end
 
+  host_group_actions = ["show"]
+  host_group_actions += ["new", "create", "edit", "update", "destroy"] unless OACIS_READ_ONLY
+  resources :host_groups, only: host_group_actions do
+  end
+
   root :to => "simulators#index"
 end

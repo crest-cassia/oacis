@@ -1,0 +1,21 @@
+= form_for @hg, html: {class: 'form-horizontal'} do |f|
+  - error_messages = @hg.errors.full_messages
+  = render partial: 'shared/error_messages', locals: {error_messages: error_messages}
+  .form-group
+    = f.label(:name, class: 'col-md-2 control-label')
+    .col-md-3
+      = f.text_field(:name, class: 'form-control')
+  .form-group
+    %label.col-md-2.control-label
+      Hosts
+    .col-md-10
+      = hidden_field_tag "host_group[host_ids][]", nil
+      - Host.all.each do |host|
+        .checkbox
+          %label{ for: dom_id(host) }
+            = check_box_tag "host_group[host_ids][]", host.id.to_s, @hg.host_ids.include?(host.id), id: dom_id(host)
+            = host.name
+  .form-group
+    .col-md-4.col-md-offset-2
+      = f.submit('Save', class: 'btn btn-primary')
+      = link_to('Cancel', (@hg.persisted? ? @hg : hosts_path), class: 'btn btn-default')

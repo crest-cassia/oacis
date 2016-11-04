@@ -1,0 +1,19 @@
+.page-header
+  %h1= "HostGroup: #{@hg.name}"
+
+%table.table.table-striped
+  %thead
+  %tbody
+    %tr
+      %th Name
+      %td= @hg.name
+    %tr
+      %th Hosts
+      %td
+        - links = @hg.hosts.map {|h| link_to(h.name, host_path(h)) }
+        = raw( links.join('<br />') )
+
+- unless OACIS_READ_ONLY
+  = link_to 'Edit', edit_host_group_path(@hg), class: 'btn btn-info'
+  = link_to 'Back to Index', hosts_path, class: 'btn btn-default'
+  = link_to 'Destroy', @hg, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @hg.destroyable?
