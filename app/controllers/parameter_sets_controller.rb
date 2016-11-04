@@ -35,8 +35,9 @@ class ParameterSetsController < ApplicationController
     @param_set = simulator.parameter_sets.build(permitted_params)
     # this run is not saved, but used when rendering new
     if @num_runs > 0
-      permitted_params = permitted_run_params(params)
-      @run = @param_set.runs.build(permitted_params)
+      run_params = permitted_run_params(params)
+
+      @run = @param_set.runs.build(run_params)
       unless @run.valid?
         render action: "new"
         return
@@ -55,8 +56,7 @@ class ParameterSetsController < ApplicationController
     @num_runs.times do |i|
       created.each do |ps|
         next if ps.runs.count > i
-        permitted_params = permitted_run_params(params)
-        new_runs << ps.runs.build(permitted_params)
+        new_runs << ps.runs.build(run_params)
       end
     end
     set_sequential_seeds(new_runs) if simulator.sequential_seed
@@ -96,12 +96,26 @@ class ParameterSetsController < ApplicationController
   private
   def permitted_run_params(params)
     if params[:run].present?
-      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed).tap do |whitelisted|
-        whitelisted[:host_parameters] = params[:run][:host_parameters] || {}
+      if params[:run]["submitted_to"].present?
+        id = params[:run]["submitted_to"]
+        if Host.where( id: id ).exists?
+          host_param_keys = Host.find(id).host_parameter_definitions.map(&:key)
+          params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, host_parameters: host_param_keys)
+        elsif HostGroup.where( id: id ).exists?
+          modify_params_for_host_group_submission
+          params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :host_group)
+        end
+      else
+        params.require(:run).permit(:mpi_procs, :omp_threads, :priority)
       end
     else
       {}
     end
+  end
+
+  def modify_params_for_host_group_submission
+    params[:run]["host_group"] = params[:run]["submitted_to"]
+    params[:run].delete("submitted_to")
   end
 
   public

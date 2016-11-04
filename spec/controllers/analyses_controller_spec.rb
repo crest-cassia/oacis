@@ -126,6 +126,16 @@ describe AnalysesController do
           expect(anl.priority).to eq 2
         end
 
+        it "sets HostGroup field" do
+          hg = FactoryGirl.create(:host_group)
+          @valid_param[:analysis][:submitted_to] = hg.to_param
+          post :create, @valid_param.update(format: 'json'), valid_session
+          new_anl = @run.reload.analyses.desc(:created_at).first
+          expect( new_anl.submitted_to ).to be_nil
+          expect( new_anl.host_group ).to eq hg
+          expect( new_anl.host_parameters ).to be_empty
+        end
+
         it "redirects to 'analysis' tab of Run#show page" do
           post :create, @valid_param.update(format: 'json'), valid_session
           expect(response).not_to redirect_to( run_path(@run, anchor: '!tab-analyses') )
@@ -227,6 +237,16 @@ describe AnalysesController do
           expect(anl.omp_threads).to eq 8
           expect(anl.priority).to eq 2
           expect(anl.parameters).to eq @valid_param[:analysis][:parameters]
+        end
+
+        it "sets HostGroup field" do
+          hg = FactoryGirl.create(:host_group)
+          @valid_param[:analysis][:submitted_to] = hg.to_param
+          post :create, @valid_param.update(format: 'json'), valid_session
+          new_anl = @par.reload.analyses.desc(:created_at).first
+          expect( new_anl.submitted_to ).to be_nil
+          expect( new_anl.host_group ).to eq hg
+          expect( new_anl.host_parameters ).to be_empty
         end
 
         it "redirects to 'analysis' tab of ParameterSet#show page" do

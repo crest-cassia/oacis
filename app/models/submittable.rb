@@ -9,6 +9,7 @@ module Submittable
 
     # fields which are set when created
     base.send(:belongs_to, :submitted_to, class_name: "Host")
+    base.send(:belongs_to, :host_group)
     base.send(:field, :job_script, type: String)
     base.send(:field, :host_parameters, type: Hash, default: {})
     base.send(:field, :mpi_procs, type: Integer, default: 1)
@@ -91,6 +92,10 @@ module Submittable
     cmd
   end
 
+  def manual_submission?
+    submitted_to.nil? && host_group.nil?
+  end
+
   private
   # validations
   def host_parameters_given
@@ -152,7 +157,7 @@ module Submittable
   end
 
   def create_job_script_for_manual_submission
-    return if submitted_to
+    return unless manual_submission?
 
     FileUtils.mkdir_p(ResultDirectory.manual_submission_path)
     js_path = ResultDirectory.manual_submission_job_script_path(self)
@@ -200,8 +205,9 @@ EOS
   end
 
   def update_default_host_parameter_on_its_executable
+    return if submitted_to.nil?
     unless self.host_parameters == self.executable.get_default_host_parameter(self.submitted_to)
-      host_id = self.submitted_to.present? ? self.submitted_to.id.to_s : "manual_submission"
+      host_id = self.submitted_to.id.to_s
       new_host_parameters = self.executable.default_host_parameters
       new_host_parameters[host_id] = self.host_parameters
       self.executable.timeless.update_attribute(:default_host_parameters, new_host_parameters)

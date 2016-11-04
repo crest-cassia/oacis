@@ -3,7 +3,7 @@ class RunsListDatatable
   HEADER  = ['<th>RunID</th>', '<th>status</th>', '<th>priority</th>',
              '<th>elapsed</th>',
              '<th>MPI</th>', '<th>OMP</th>', '<th>version</th>',
-             '<th>created_at</th>', '<th>updated_at</th>', '<th>host</th>', '<th>job_id</th>',
+             '<th>created_at</th>', '<th>updated_at</th>', '<th>host(group)</th>', '<th>job_id</th>',
              '<th style="min-width: 18px; width: 1%;"></th>']
   SORT_BY = ["id", "status", "priority", "real_time",
              "mpi_procs", "omp_threads", "simulator_version",
@@ -38,8 +38,8 @@ private
       tmp << run.simulator_version
       tmp << @view.distance_to_now_in_words(run.created_at)
       tmp << @view.distance_to_now_in_words(run.updated_at)
-      host = run.submitted_to
-      tmp << (host ? @view.link_to( host.name, @view.host_path(host) ) : "---")
+      host_like = run.submitted_to || run.host_group
+      tmp << (host_like ? @view.link_to( host_like.name, host_like ) : "---")
       tmp << @view.shortened_job_id(run.job_id)
       trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">')
         : @view.link_to( @view.raw('<i class="fa fa-trash-o">'), run, remote: true, method: :delete, data: {confirm: 'Are you sure?'})

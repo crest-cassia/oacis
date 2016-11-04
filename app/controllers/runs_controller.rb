@@ -49,8 +49,9 @@ class RunsController < ApplicationController
     raise 'params[:num_runs] is invalid' unless num_runs > 0
 
     @runs = []
+    run_params = permitted_run_params
     num_runs.times do |i|
-      run = @param_set.runs.build(permitted_run_params)
+      run = @param_set.runs.build(run_params)
       @runs << run if run.save
     end
 
@@ -101,10 +102,26 @@ class RunsController < ApplicationController
 
   private
   def permitted_run_params
-    if params[:run]["submitted_to"].length > 0
-      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed, host_parameters: [Host.find(params["run"]["submitted_to"]).host_parameter_definitions.map {|hpd| hpd[:key]}])
+    found = find_host_or_host_group
+
+    case found
+    when Host
+      host_param_keys = found.host_parameter_definitions.map(&:key)
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, host_parameters: host_param_keys)
+    when HostGroup
+      params[:run][:host_group] = params[:run][:submitted_to]
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :host_group)
+    else  # manual submission
+      params.require(:run).permit(:mpi_procs, :omp_threads, :priority)
+    end
+  end
+
+  def find_host_or_host_group
+    host_id = params[:run][:submitted_to]
+    if host_id.present?
+      Host.where(id:host_id).exists? ? Host.find(host_id) : HostGroup.find(host_id)
     else
-      params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, :seed, host_parameters: {})
+      nil
     end
   end
 end

@@ -252,6 +252,13 @@ describe Host do
       expect(@host.submittable_runs.size).to eq 6
     end
 
+    it "returns runs whose HostGroup includes self" do
+      hg = FactoryGirl.create(:host_group, hosts: [@host])
+      new_run = @sim.parameter_sets.first.runs.create!(host_group: hg)
+      expect( @host.submittable_runs.size ).to eq 7
+      expect( @host.submittable_runs.include?(new_run) ).to be_truthy
+    end
+
     it "does not return runs whose submitted_to is not self" do
       another_host = FactoryGirl.create(:host)
       @sim.parameter_sets.each do |ps|

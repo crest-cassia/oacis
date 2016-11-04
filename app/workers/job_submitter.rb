@@ -12,8 +12,7 @@ class JobSubmitter
         Run::PRIORITY_ORDER.keys.sort.each do |priority|
           break if $term_received
           break unless num > 0
-          analyses = host.submittable_analyses.where(priority: priority).order_by(:created_at.asc)
-.limit(num)
+          analyses = host.submittable_analyses.where(priority: priority).asc(:created_at).limit(num)
           if analyses.present?
             logger.info("submitting analyses to #{host.name}: #{analyses.map do |r| r.id.to_s end.inspect}")
             num -= analyses.length  # [warning] analyses.length ignore 'limit', so 'num' can be negative.
@@ -22,8 +21,7 @@ class JobSubmitter
 
           break if $term_received
           break unless num > 0
-          runs = host.submittable_runs.where(priority: priority).order_by(:created_at.asc)
-.limit(num)
+          runs = host.submittable_runs.where(priority: priority).asc(:created_at).limit(num)
           if runs.present?
             logger.info("submitting runs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
             num -= runs.length  # [warning] runs.length ignore 'limit', so 'num' can be negative.

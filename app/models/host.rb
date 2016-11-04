@@ -86,7 +86,7 @@ class Host
   end
 
   def submittable_runs
-    Run.where(status: :created, submitted_to: self)
+    Run.where(status: :created).any_of( {submitted_to: self}, {:host_group.in => host_groups.to_a} )
   end
 
   def submitted_runs
@@ -94,7 +94,7 @@ class Host
   end
 
   def submittable_analyses
-    Analysis.where(status: :created, submitted_to: self)
+    Analysis.where(status: :created).any_of( {submitted_to: self}, {:host_group.in => host_groups.to_a} )
   end
 
   def submitted_analyses
