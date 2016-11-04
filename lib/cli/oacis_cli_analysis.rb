@@ -117,7 +117,7 @@ class OacisCli < Thor
 
   private
   def write_analysis_ids_to_file(path, analyses)
-    return if analyses.empty?
+    return if analyses.blank?
     File.open(path, 'w') {|io|
       ids = analyses.map {|anl| "  #{{'analysis_id' => anl.id.to_s}.to_json}"}
       io.puts "[", ids.join(",\n"), "]"

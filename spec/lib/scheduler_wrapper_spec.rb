@@ -10,7 +10,7 @@ describe SchedulerWrapper do
   it "raises an exception with an invalid type" do
     expect {
       SchedulerWrapper.new("invalid")
-    }.to raise_error
+    }.to raise_error(/Not a host/)
   end
 
   describe "#submit_command" do

@@ -6,9 +6,9 @@ describe OacisCli do
   describe "#usage" do
 
     it "prints usage" do
-      expect(capture(:stdout) {
+      expect {
         OacisCli.new.invoke(:usage)
-      }).not_to be_empty
+      }.to output(/usage:/).to_stdout
     end
   end
 

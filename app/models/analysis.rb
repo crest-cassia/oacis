@@ -120,7 +120,7 @@ class Analysis
     elsif analyzable.is_a?(ParameterSet)
       self.parameter_set = analyzable
     else
-      raise "must not happen"
+      raise "no parent document"
     end
   end
 

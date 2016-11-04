@@ -43,7 +43,7 @@ describe OacisCli do
           options = { host_id: "DO_NOT_EXIST", output: 'job_parameters.json'}
           expect {
             OacisCli.new.invoke(:job_parameter_template, [], options)
-          }.to raise_error
+          }.to raise_error Mongoid::Errors::DocumentNotFound
         }
       end
     end
@@ -212,7 +212,7 @@ describe OacisCli do
           }
           expect {
             OacisCli.new.invoke(:create_runs, [], options)
-          }.to raise_error
+          }.to raise_error "failed to create a Run"
         }
       end
     end
@@ -244,7 +244,7 @@ describe OacisCli do
         at_temp_dir {
           expect {
             invoke_create_runs_with_invalid_parameter_set_ids
-          }.to raise_error
+          }.to raise_error "Invalid 1 prameter_set_ids are found"
         }
       end
 
@@ -324,9 +324,17 @@ describe OacisCli do
       at_temp_dir {
         create_run_ids_json(Run.all, 'run_ids.json')
         options = {run_ids: 'run_ids.json'}
-        expect {
+        out, err = capture_stdout_stderr {
           OacisCli.new.invoke(:run_status, [], options)
-        }.to output(puts JSON.pretty_generate({total: 6, created: 6, running: 0, failed: 0, finished: 0})).to_stdout
+        }
+        expected = {
+          "total"=> 6,
+          "created"=> 6,
+          "submitted"=> 0,
+          "running"=> 0,
+          "failed"=> 0,
+          "finished"=> 0}
+        expect( JSON.load(out) ).to eq expected
       }
     end
   end
@@ -380,7 +388,7 @@ describe OacisCli do
           $stdout = StringIO.new # set new string stream not to write Thor#say message on test result
           OacisCli.new.invoke(:destroy_runs, [], options)
           $stdout = STDOUT
-        }.to raise_error
+        }.to raise_error "invalid query"
       }
     end
 
@@ -433,7 +441,9 @@ describe OacisCli do
         options = {yes: true}
         run_ids = @sim.runs.map(&:id)[0..2].map(&:to_s) + ["DO_NOT_EXIST"]
         expect {
-          OacisCli.new.invoke(:destroy_runs_by_ids, run_ids, options)
+          capture_stdout_stderr {
+            OacisCli.new.invoke(:destroy_runs_by_ids, run_ids, options)
+          }
         }.to change { Run.count }.by(-3)
       }
     end
@@ -526,7 +536,9 @@ describe OacisCli do
         options = {yes: true}
         run_ids = Run.all.map(&:id)[0..2].map(&:to_s) + ["DO_NOT_EXIST"]
         expect {
-          OacisCli.new.invoke(:replace_runs_by_ids, run_ids, options)
+          capture_stdout_stderr {
+            OacisCli.new.invoke(:replace_runs_by_ids, run_ids, options)
+          }
         }.to_not change { Run.count }
 
         expect( (Run.all.map(&:id) - run_ids).size ).to eq Run.count

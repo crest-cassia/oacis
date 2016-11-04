@@ -43,7 +43,6 @@ group :test do
   gem "simplecov", :require => false
   gem "simplecov-rcov", :require => false
   gem "ci_reporter", '~> 1.9'
-  gem "spork"
   gem "faker"
   if RUBY_VERSION >= '2.0.0'
     gem "pry-byebug"

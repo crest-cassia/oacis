@@ -57,7 +57,7 @@ describe Analysis do
       arn = Analysis.new(@valid_attr)
       expect {
         arn.save!
-      }.to raise_error
+      }.to raise_error(/no parent document/)
     end
 
     it "is invalid when status is not an allowed value" do

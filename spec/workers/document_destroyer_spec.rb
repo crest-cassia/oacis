@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe JobSubmitter do
+describe DocumentDestroyer do
 
-  let(:logger) { Logger.new($stderr) }
+  let(:logger) { Logger.new( File.open('/dev/null','w') ) }
 
   describe "destroying Simulator" do
 

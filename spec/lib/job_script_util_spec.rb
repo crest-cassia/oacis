@@ -135,7 +135,7 @@ shared_examples_for JobScriptUtil do
         expect($?).to receive(:to_i).and_return(1)
         expect {
           JobScriptUtil.expand_result_file(@submittable)
-        }.to raise_error
+        }.to raise_error "failed to extract the archive"
       end
 
       it "update submittable.error_messages" do

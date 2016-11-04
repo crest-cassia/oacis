@@ -54,7 +54,7 @@ describe OacisCli do
           option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
           expect {
             OacisCli.new.invoke(:parameter_sets_template, [], option)
-          }.to raise_error
+          }.to raise_error Mongoid::Errors::DocumentNotFound
         }
       end
     end
@@ -313,7 +313,7 @@ describe OacisCli do
           option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
           expect {
             OacisCli.new.invoke(:create_parameter_sets, [], option)
-          }.to raise_error
+          }.to raise_error(/No such file or directory/)
         }
       end
 
@@ -331,7 +331,7 @@ describe OacisCli do
           option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json"}
           expect {
             OacisCli.new.invoke(:create_parameter_sets, [], option)
-          }.to raise_error
+          }.to raise_error Mongoid::Errors::DocumentNotFound
         }
       end
     end
@@ -361,7 +361,7 @@ describe OacisCli do
         at_temp_dir {
           expect {
             invoke_create_parameter_sets_with_invalid_parameter_sets_json
-          }.to raise_error
+          }.to raise_error(/invalid type/)
         }
       end
     end
