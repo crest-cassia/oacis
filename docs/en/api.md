@@ -205,6 +205,13 @@ runs = ps.find_or_create_runs_upto( 10, submitted_to: host, host_param: host_par
 If there already exists enough number of Runs, runs are not newly created.
 The returned value is an array of Runs.
 
+You can also specify "HostGroup" as follows.
+
+```
+host_group = HostGroup.where(name: "my_host_group").first
+runs = ps.find_or_create_runs_upto( 10, host_group: host_group, mpi_procs: 4 )
+```
+
 #### removing
 
 ```ruby
