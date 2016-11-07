@@ -320,7 +320,7 @@ describe ParameterSet do
         }.to change { @ps.runs.count }.from(0).to(3)
       end
 
-      it "creates runs upto specified number of runs" do
+      it "creates runs up to specified number of runs" do
         run1 = @ps.runs.create!
         expect {
           runs = @ps.find_or_create_runs_upto(3)
@@ -377,7 +377,7 @@ describe ParameterSet do
       end
     end
 
-    context "when the speciefied number is smaller than or equal to the number of runs" do
+    context "when the specified number is smaller than or equal to the number of runs" do
 
       it "returns existing runs without creating" do
         3.times do |i|
@@ -391,7 +391,7 @@ describe ParameterSet do
       end
     end
 
-    it "returned runs are soted by created_at" do
+    it "returned runs are sorted by created_at" do
       r1 = @ps.runs.create!
       r2 = @ps.runs.create!
       runs = @ps.find_or_create_runs_upto(3)
