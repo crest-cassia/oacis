@@ -375,6 +375,23 @@ describe ParameterSet do
         expect( run1.reload.submitted_to ).to be_nil
         expect( run1.reload.omp_threads ).to eq 1
       end
+
+      it "sets host_group when specified" do
+        hg = FactoryGirl.create(:host_group)
+        runs = @ps.find_or_create_runs_upto(1, host_group: hg)
+        run = runs.first
+        expect( run.submitted_to ).to be_nil
+        expect( run.host_parameters ).to be_empty
+        expect( run.host_group ).to eq hg
+      end
+
+      it "raises an error when both 'submitted_to' and 'host_group' is given" do
+        h = FactoryGirl.create(:host)
+        hg = FactoryGirl.create(:host_group)
+        expect {
+          @ps.find_or_create_runs_upto(1, submitted_to: h, host_group: hg)
+        }.to raise_error(/either submitted_to or host_group/)
+      end
     end
 
     context "when the specified number is smaller than or equal to the number of runs" do
