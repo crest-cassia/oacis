@@ -208,6 +208,13 @@ runs = ps.find_or_create_runs_upto( 10, submitted_to: host, host_param: host_par
 すでに十分なRunがある場合には、新規作成されない。
 返り値はRunの配列。
 
+ジョブの投入先としてHostGroupを指定することもできる。
+
+```
+host_group = HostGroup.where(name: "my_host_group").first
+runs = ps.find_or_create_runs_upto( 10, host_group: host_group, mpi_procs: 4 )
+```
+
 #### 削除
 
 ```ruby
