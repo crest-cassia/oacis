@@ -45,7 +45,7 @@ EOS
   describe "#status_command" do
 
     it "returns a command to show the status of the host" do
-      expect(@wrapper.status_command("job_id")).to eq "bash -l -c 'echo XSUB_BEGIN && xstat job_id'"
+      expect(@wrapper.status_command("job_id")).to match(/bash -l -c 'echo XSUB_BEGIN && xstat job_id/)
     end
   end
 

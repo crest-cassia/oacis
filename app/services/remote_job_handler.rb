@@ -31,6 +31,7 @@ class RemoteJobHandler
     @host.start_ssh do |ssh|
       begin
         out = SSHUtil.execute(ssh, cmd)
+        raise RemoteSchedulerError if out.empty?
         status = scheduler.parse_remote_status(out)
       rescue => ex
         error_handle(ex, job, ssh)
