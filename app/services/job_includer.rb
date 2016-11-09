@@ -95,9 +95,9 @@ module JobIncluder
     logs.each do |path|
       if SSHUtil.exist?(ssh, path)
         SSHUtil.download_recursive(ssh, path, submittable.dir.join(path.basename))
-        SSHUtil.rm_r(ssh, path)
       end
     end
+    SSHUtil.rm_r(ssh, logs)
   end
 
   def self.move_local_file(host, submittable)
@@ -130,14 +130,12 @@ module JobIncluder
     logs.each do |path|
       if SSHUtil.exist?(ssh, path)
         SSHUtil.download_recursive(ssh, path, submittable.dir.join(path.basename))
-        SSHUtil.rm_r(ssh, path)
       end
     end
+    SSHUtil.rm_r(ssh, logs)
   end
 
   def self.remove_remote_files(ssh, paths)
-    paths.each do |path|
-      SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
-    end
+    SSHUtil.rm_r(ssh,paths)
   end
 end
