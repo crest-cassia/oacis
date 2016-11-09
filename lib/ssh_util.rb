@@ -30,7 +30,7 @@ module SSHUtil
   def self.rm_r(ssh, remote_paths)
     remote_paths = [remote_paths] unless remote_paths.is_a?(Array)
     rpaths = remote_paths.to_a.map {|rpath| expand_remote_home_path(ssh,rpath) }
-    ssh.exec!("rm -r #{rpaths.join(' ')}")
+    ssh.exec!("rm -rf #{rpaths.join(' ')}")
   end
 
   def self.uname(ssh)
