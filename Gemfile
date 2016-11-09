@@ -35,6 +35,7 @@ gem "quiet_assets"
 gem "pry"
 gem "pry-rails"
 gem "rspec-rails", '~>3.5' # must be in :development group to use the rake task 'spec'
+gem "stackprof"
 
 group :test do
   gem "factory_girl_rails", '~> 4.7'
