@@ -172,7 +172,7 @@ class RemoteJobHandler
   def remove_remote_files(job)
     @host.start_ssh do |ssh|
       paths = RemoteFilePath.all_file_paths(@host, job)
-      SSHUtil.rm_r(ssh, path)
+      SSHUtil.rm_r(ssh, paths)
     end
   end
 
