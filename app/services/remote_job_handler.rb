@@ -30,12 +30,9 @@ class RemoteJobHandler
     cmd = scheduler.status_command(job.job_id)
     @host.start_ssh do |ssh|
       begin
-        out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-        if rc == 0
-          status = scheduler.parse_remote_status(out) if rc == 0
-        else
-          raise RemoteSchedulerError, "remote_status failed: rc:#{rc}, #{out}, #{err}"
-        end
+        out = SSHUtil.execute(ssh, cmd)
+        raise RemoteSchedulerError if out.empty?
+        status = scheduler.parse_remote_status(out)
       rescue => ex
         error_handle(ex, job, ssh)
       end
@@ -175,9 +172,8 @@ class RemoteJobHandler
 
   def remove_remote_files(job)
     @host.start_ssh do |ssh|
-      RemoteFilePath.all_file_paths(@host, job).each do |path|
-        SSHUtil.rm_r(ssh, path) if SSHUtil.exist?(ssh, path)
-      end
+      paths = RemoteFilePath.all_file_paths(@host, job)
+      SSHUtil.rm_r(ssh, paths)
     end
   end
 

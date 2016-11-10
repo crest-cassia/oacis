@@ -27,9 +27,10 @@ module SSHUtil
     end
   end
 
-  def self.rm_r(ssh, remote_path)
-    rpath = expand_remote_home_path(ssh, remote_path)
-    ssh.exec!("rm -r #{rpath}")
+  def self.rm_r(ssh, remote_paths)
+    remote_paths = [remote_paths] unless remote_paths.is_a?(Array)
+    rpaths = remote_paths.to_a.map {|rpath| expand_remote_home_path(ssh,rpath) }
+    ssh.exec!("rm -rf #{rpaths.join(' ')}")
   end
 
   def self.uname(ssh)
@@ -123,7 +124,11 @@ module SSHUtil
   # a relative path is recognized as a relative path from home directory
   # so replace '~' with '.' in this method
   def self.expand_remote_home_path(ssh, path)
-    home = ssh.exec!("echo $HOME").chomp
+    home = ssh.instance_variable_get(:@home_dir_cache)
+    unless home
+      home = ssh.exec!("echo $HOME").chomp
+      ssh.instance_variable_set(:@home_dir_cache, home)
+    end
     Pathname.new( path.to_s.sub(/^~/, home) )
   end
 end

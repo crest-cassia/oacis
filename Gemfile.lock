@@ -221,6 +221,7 @@ GEM
       actionpack (>= 4.0)
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
+    stackprof (0.2.10)
     sys-filesystem (1.1.7)
       ffi
     therubyracer (0.12.2)
@@ -274,6 +275,7 @@ DEPENDENCIES
   simplecov
   simplecov-rcov
   sprockets (= 3.6.3)
+  stackprof
   sys-filesystem
   therubyracer
   thin

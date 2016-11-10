@@ -230,7 +230,7 @@ shared_examples_for RemoteJobHandler do
     end
 
     it "raise RemoteSchedulerError if remote status is not obtained by SchedulerWrapper" do
-      allow(SSHUtil).to receive(:execute2).and_return([nil, nil, 1, nil])
+      allow(SSHUtil).to receive(:execute).and_return("")
       expect {
         RemoteJobHandler.new(@host).remote_status(@submittable)
       }.to raise_error(RemoteJobHandler::RemoteSchedulerError)

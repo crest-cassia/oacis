@@ -23,7 +23,7 @@ class SchedulerWrapper
   end
 
   def status_command(job_id)
-    "bash -l -c 'echo XSUB_BEGIN && xstat #{job_id}'"
+    "bash -l -c 'echo XSUB_BEGIN && xstat #{job_id} 2> /dev/null'"
   end
 
   def parse_remote_status(stdout)
