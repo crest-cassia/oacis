@@ -114,9 +114,7 @@ module JobIncluder
 
   def self.download_work_dir_if_exists(host, submittable, ssh)
     work_dir = RemoteFilePath.work_dir_path(host, submittable)
-    if SSHUtil.exist?(ssh, work_dir)
-      SSHUtil.download_recursive(ssh, work_dir, submittable.dir)
-    end
+    SSHUtil.download_recursive_if_exist(ssh, work_dir, submittable.dir)
     download_scheduler_logs(host, submittable, ssh)
   end
 
