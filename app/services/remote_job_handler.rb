@@ -47,8 +47,8 @@ class RemoteJobHandler
       cmd = scheduler.cancel_command(job.job_id)
       @host.start_ssh do |ssh|
         begin
-          out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-          raise RemoteSchedulerError, "cancel_remote_jos failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
+          out = SSHUtil.execute(ssh, cmd)
+          raise RemoteSchedulerError, "cancel_remote_job failed: #{out}" unless out.chomp[-1] == '0'
         rescue => ex
           error_handle(ex, job, ssh)
         end
@@ -67,10 +67,10 @@ class RemoteJobHandler
   end
 
   def create_remote_work_dir(job)
-    cmd = "mkdir -p #{RemoteFilePath.work_dir_path(@host,job)}"
+    cmd = "mkdir -p #{RemoteFilePath.work_dir_path(@host,job)}; echo $?"
     @host.start_ssh do |ssh|
-      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      raise RemoteOperationError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
+      out = SSHUtil.execute(ssh, cmd)
+      raise RemoteOperationError, "\"#{cmd}\" failed: #{out}" unless out.chomp[-1]=='0'
     end
   end
 
@@ -110,8 +110,7 @@ class RemoteJobHandler
   def prepare_input_files_via_ssh(job)
     remote_mkdir_p = lambda {|ssh,remote_dir|
       cmd = "mkdir -p #{remote_dir}"
-      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      raise RemoteOperationError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}, #{sig}" unless rc == 0
+      out = SSHUtil.execute(ssh, cmd)
     }
     # make remote input files directory
     remote_input_dir = RemoteFilePath.input_files_dir_path(@host,job)
@@ -133,8 +132,8 @@ class RemoteJobHandler
       path = RemoteFilePath.pre_process_script_path(@host, job)
       @host.start_ssh do |ssh|
         SSHUtil.write_remote_file(ssh, path, script)
-        out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{path}")
-        raise RemoteOperationError, "chmod failed : rc:#{rc}, #{out}, #{err}" unless rc == 0
+        out = SSHUtil.execute(ssh, "chmod +x #{path}; echo $?")
+        raise RemoteOperationError, "chmod failed : #{out}" unless out.chomp[-1]=='0'
         cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} #{job.args} 1>> _stdout.txt 2>> _stderr.txt"
         out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
         raise RemoteJobError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
@@ -146,8 +145,8 @@ class RemoteJobHandler
     jspath = RemoteFilePath.job_script_path(@host, job)
     @host.start_ssh do |ssh|
       SSHUtil.write_remote_file(ssh, jspath, job.job_script)
-      out, err, rc, sig = SSHUtil.execute2(ssh, "chmod +x #{jspath}")
-      raise RemoteOperationError, "chmod failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
+      out = SSHUtil.execute(ssh, "chmod +x #{jspath}; echo $?")
+      raise RemoteOperationError, "chmod failed: #{out}" unless out.chomp[-1] == '0'
     end
     jspath
   end

@@ -59,6 +59,50 @@ describe SSHUtil do
     end
   end
 
+  describe ".download_recursive_if_exist" do
+
+    it "downloads directory recursively" do
+      remote_path = @temp_dir.join('remote').expand_path
+      FileUtils.mkdir_p(remote_path)
+      remote_path2 = remote_path.join('file').expand_path
+      FileUtils.touch(remote_path2)
+      local_path = @temp_dir.join('local')
+      FileUtils.mkdir_p(local_path)
+      SSHUtil.download_recursive_if_exist(@ssh, remote_path, local_path)
+      expect(File.exist?(local_path.join('file'))).to be_truthy
+    end
+
+    it "creates local directory if specified directory does not exist" do
+      remote_path = @temp_dir.join('remote').expand_path
+      FileUtils.mkdir_p(remote_path)
+      remote_path2 = remote_path.join('file').expand_path
+      FileUtils.touch(remote_path2)
+      local_path = @temp_dir.join('local')
+
+      SSHUtil.download_recursive_if_exist(@ssh, remote_path, local_path)
+      expect(File.directory?(local_path)).to be_truthy
+      expect(File.exist?(local_path.join('file'))).to be_truthy
+    end
+
+    it "download file if the remote_path is not directory but file" do
+      remote_path = @temp_dir.join('file').expand_path
+      FileUtils.touch(remote_path)
+
+      local_path = @temp_dir.join('local')
+      SSHUtil.download_recursive_if_exist(@ssh, remote_path, local_path)
+      expect(File.exist?(local_path)).to be_truthy
+    end
+
+    it "does nothing even if the remote path does not exist" do
+      remote_path = @temp_dir.join('file').expand_path
+      local_path = @temp_dir.join('local')
+      expect {
+        SSHUtil.download_recursive_if_exist(@ssh, remote_path, local_path)
+      }.to_not raise_error
+      expect(File.exist?(local_path)).to be_falsey
+    end
+  end
+
   describe ".upload" do
 
     it "upload local file" do
@@ -180,6 +224,26 @@ describe SSHUtil do
       SSHUtil.write_remote_file(@ssh, output_file, "foobar")
       SSHUtil.write_remote_file(@ssh, output_file, "foobar")
       expect(File.open(output_file, 'r').read).to eq "foobar"
+    end
+  end
+
+  describe ".stat" do
+
+    it "returns :directory if the remote path is a directory" do
+      remote_path = @temp_dir.join('abc').expand_path
+      FileUtils.mkdir_p(remote_path)
+      expect(SSHUtil.stat(@ssh, remote_path)).to eq :directory
+    end
+
+    it "returns :file if the remote path is a file" do
+      remote_path = @temp_dir.join('abc').expand_path
+      FileUtils.touch(remote_path)
+      expect(SSHUtil.stat(@ssh, remote_path)).to eq :file
+    end
+
+    it "returns nil if the path does not exist" do
+      remote_path = @temp_dir.join('abc').expand_path
+      expect(SSHUtil.stat(@ssh, remote_path)).to be_nil
     end
   end
 

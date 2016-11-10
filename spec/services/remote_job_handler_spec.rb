@@ -248,6 +248,7 @@ shared_examples_for RemoteJobHandler do
 
     before(:each) do
       allow_any_instance_of(SchedulerWrapper).to receive(:cancel_command).and_return("echo")
+      allow(SSHUtil).to receive(:execute).and_return("0\n")
       @handler = RemoteJobHandler.new(@host)
     end
 

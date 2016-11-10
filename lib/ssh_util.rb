@@ -15,6 +15,16 @@ module SSHUtil
     sftp.download!(rpath, local_path.to_s, {recursive: is_dir}) # .to_s is necessary for Ruby2.1.0. See https://github.com/crest-cassia/cassia/pull/124
   end
 
+  def self.download_recursive_if_exist(ssh, remote_path, local_path)
+    rpath = expand_remote_home_path(ssh, remote_path)
+    s = stat(ssh, rpath)
+    if s
+      sftp = ssh.sftp
+      sftp.connect! if sftp.closed?
+      sftp.download!(rpath, local_path.to_s, {recursive: (s==:directory)})
+    end
+  end
+
   def self.upload(ssh, local_path, remote_path)
     rpath = expand_remote_home_path(ssh, remote_path)
     is_dir = File.directory?(local_path)
@@ -91,32 +101,29 @@ module SSHUtil
     }
   end
 
-  def self.exist?(ssh, remote_path)
+  def self.stat(ssh, remote_path)
     rpath = expand_remote_home_path(ssh, remote_path)
     begin
       sftp = ssh.sftp
       sftp.connect! if sftp.closed?
       sftp.stat!(rpath) do |response|
-        return true if response.ok?
+        if response.ok?
+          return (response[:attrs].directory? ? :directory : :file)
+        end
       end
     rescue Net::SFTP::StatusException => ex
       raise ex unless ex.code == 2  # no such file
     end
-    return false
+    return nil
+  end
+
+  def self.exist?(ssh, remote_path)
+    s = stat(ssh, remote_path)
+    s == :directory || s == :file
   end
 
   def self.directory?(ssh, remote_path)
-    rpath = expand_remote_home_path(ssh, remote_path)
-    begin
-      sftp = ssh.sftp
-      sftp.connect! if sftp.closed?
-      sftp.stat!(rpath) do |response|
-        return (response.ok? and response[:attrs].directory?)
-      end
-    rescue Net::SFTP::StatusException => ex
-      raise ex unless ex.code == 2  # no such file
-    end
-    return false
+    stat(ssh, remote_path) == :directory
   end
 
   private

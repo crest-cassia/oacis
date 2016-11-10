@@ -42,7 +42,7 @@ class SchedulerWrapper
   end
 
   def cancel_command(job_id)
-    "bash -l -c 'xdel #{job_id}'"
+    "bash -l -c 'xdel #{job_id}; echo $?'"
   end
 
   def scheduler_log_file_paths(run)

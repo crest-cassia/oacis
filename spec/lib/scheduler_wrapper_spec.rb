@@ -70,7 +70,7 @@ EOS
   describe "#cancel_command" do
 
     it "returns command to cancel a job" do
-      expect(@wrapper.cancel_command("job_id")).to eq "bash -l -c 'xdel job_id'"
+      expect(@wrapper.cancel_command("job_id")).to eq "bash -l -c 'xdel job_id; echo $?'"
     end
   end
 end

@@ -90,14 +90,7 @@ module JobIncluder
     base = File.basename(archive)
     SSHUtil.download(ssh, archive, submittable.dir.join('..', base))
 
-    #include scheduler logs
-    logs = RemoteFilePath.scheduler_log_file_paths(host, submittable)
-    logs.each do |path|
-      if SSHUtil.exist?(ssh, path)
-        SSHUtil.download_recursive(ssh, path, submittable.dir.join(path.basename))
-      end
-    end
-    SSHUtil.rm_r(ssh, logs)
+    download_scheduler_logs(host, submittable, ssh)
   end
 
   def self.move_local_file(host, submittable)
@@ -121,18 +114,16 @@ module JobIncluder
 
   def self.download_work_dir_if_exists(host, submittable, ssh)
     work_dir = RemoteFilePath.work_dir_path(host, submittable)
-    if SSHUtil.exist?(ssh, work_dir)
-      SSHUtil.download_recursive(ssh, work_dir, submittable.dir)
-    end
+    SSHUtil.download_recursive_if_exist(ssh, work_dir, submittable.dir)
+    download_scheduler_logs(host, submittable, ssh)
+  end
 
+  def self.download_scheduler_logs(host, submittable, ssh)
     #include scheduler logs
     logs = RemoteFilePath.scheduler_log_file_paths(host, submittable)
     logs.each do |path|
-      if SSHUtil.exist?(ssh, path)
-        SSHUtil.download_recursive(ssh, path, submittable.dir.join(path.basename))
-      end
+      SSHUtil.download_recursive_if_exist(ssh, path, submittable.dir.join(path.basename))
     end
-    SSHUtil.rm_r(ssh, logs)
   end
 
   def self.remove_remote_files(ssh, paths)
