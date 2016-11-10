@@ -97,7 +97,6 @@ module JobIncluder
         SSHUtil.download_recursive(ssh, path, submittable.dir.join(path.basename))
       end
     end
-    SSHUtil.rm_r(ssh, logs)
   end
 
   def self.move_local_file(host, submittable)
@@ -132,7 +131,6 @@ module JobIncluder
         SSHUtil.download_recursive(ssh, path, submittable.dir.join(path.basename))
       end
     end
-    SSHUtil.rm_r(ssh, logs)
   end
 
   def self.remove_remote_files(ssh, paths)
