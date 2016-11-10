@@ -23,19 +23,24 @@ class JobObserver
     host.start_ssh do |ssh|
       handler = RemoteJobHandler.new(host)
       # check if job is finished
-      host.submitted_runs.each do |run|
-        break if $term_received
-        observe_job(run, host, handler, logger)
-      end
-      host.submitted_analyses.each do |anl|
-        break if $term_received
-        observe_job(anl, host, handler, logger)
-      end
+      cancelled_runs = host.submitted_runs.where(to_be_destroyed: true)
+      destroy_jobs(cancelled_runs, host, handler, logger)
+
+      submitted_runs = host.submitted_runs.where(to_be_destroyed: false)
+      observe_jobs(submitted_runs, host, handler, logger)
+
+      cancelled_analyses = host.submitted_analyses.where(to_be_destroyed: true)
+      destroy_jobs(cancelled_analyses, host, handler, logger)
+
+      submitted_analyses = host.submitted_analyses.where(to_be_destroyed: false)
+      observe_jobs(submitted_analyses, host, handler, logger)
+
     end
   end
 
-  def self.observe_job(job, host, handler, logger)
-    if job.to_be_destroyed
+  def self.destroy_jobs(jobs, host, handler, logger)
+    jobs.each do |job|
+      break if $term_received
       if job.destroyable?
         logger.info("canceling remote job: #{job.class}:#{job.id} from #{host.name}")
         handler.cancel_remote_job(job)
@@ -48,6 +53,16 @@ class JobObserver
         job.set_lower_submittable_to_be_destroyed
       end
     end
+  end
+
+  def self.observe_jobs(jobs, host, handler, logger)
+    jobs.each do |job|
+      break if $term_received
+      observe_job(job, host, handler, logger)
+    end
+  end
+
+  def self.observe_job(job, host, handler, logger)
     case handler.remote_status(job)
     when :submitted
       # DO NOTHING
