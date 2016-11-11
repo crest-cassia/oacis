@@ -47,7 +47,10 @@ class JobSubmitter
       submittables.each do |job|
         break if $term_received
         begin
-          handler.submit_remote_job(job)
+          bm = Benchmark.measure {
+            handler.submit_remote_job(job)
+          }
+          logger.info("submission of #{job.id} finished in #{bm.real}")
         rescue => ex
           logger.error ex.inspect
           logger.error ex.backtrace
