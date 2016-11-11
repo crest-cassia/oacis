@@ -11,7 +11,6 @@ class Run
   has_many :analyses, as: :analyzable
 
   default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
-  index({updatd_at: -1, status: -1}, { name: "run_table_default_order_index" })
 
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html

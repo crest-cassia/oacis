@@ -5,9 +5,9 @@ class Analysis
 
   field :parameters, type: Hash
 
-  belongs_to :analyzer
-  belongs_to :analyzable, polymorphic: true, autosave: false
-  belongs_to :parameter_set
+  belongs_to :analyzer, index: true
+  belongs_to :analyzable, polymorphic: true, autosave: false, index: true
+  belongs_to :parameter_set, index: true
 
   default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 
