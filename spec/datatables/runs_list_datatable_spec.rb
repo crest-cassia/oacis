@@ -25,7 +25,7 @@ describe "RunsListDatatable" do
     end
 
     it "is initialized" do
-      expect(@rld.instance_variable_get(:@runs)).to eq Run.where(:parameter_set_id => @param_set.to_param)
+      expect( @rld.instance_variable_get(:@runs) ).to match_array @runs
     end
 
     it "return json" do
