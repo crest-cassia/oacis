@@ -11,7 +11,7 @@ class ParameterSetsListDatatable
     {
       draw: @view.params[:draw].to_i,
       recordsTotal: @param_sets.count,
-      recordsFiltered: parameter_sets_lists.count,
+      recordsFiltered: parameter_sets_list.count,
       data: data
     }
   end
@@ -35,10 +35,10 @@ private
   end
 
   def data
-    parameter_sets_lists.map do |param|
+    parameter_sets_list.map do |param|
       tmp = []
       tmp << @view.content_tag(:i, '', parameter_set_id: param.id.to_s, align: "center", class: "fa fa-search clickable")
-      counts = param.runs_status_count
+      counts = runs_status_counts(param)
       progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
       tmp << @view.raw(progress)
       tmp << @view.link_to( @view.shortened_id_monospaced(param.id), @view.parameter_set_path(param) )
@@ -83,8 +83,13 @@ private
     end
   end
 
-  def parameter_sets_lists
-    @parameter_sets_lists ||= fetch_parameter_sets_list
+  def parameter_sets_list
+    @parameter_sets_list ||= fetch_parameter_sets_list
+  end
+
+  def runs_status_counts(ps)
+    @runs_status_counts_cache ||= ParameterSet.runs_status_count_batch( parameter_sets_list )
+    @runs_status_counts_cache[ps.id]
   end
 
   def fetch_parameter_sets_list
