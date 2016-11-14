@@ -74,11 +74,11 @@ class ParameterSet
   end
 
   # public APIs
-  def find_or_create_runs_upto( num_runs, submitted_to: nil, host_param: nil, host_group: nil, mpi_procs: 1, omp_threads: 1 )
+  def find_or_create_runs_upto( num_runs, submitted_to: nil, host_param: nil, host_group: nil, mpi_procs: 1, omp_threads: 1, priority: 1)
     found = runs.asc(:created_at).limit(num_runs).to_a
     n = found.size
 
-    params = { mpi_procs: mpi_procs, omp_threads: omp_threads }
+    params = { mpi_procs: mpi_procs, omp_threads: omp_threads, priority: priority }
     if num_runs > n
       if host_group
         raise "You can set either submitted_to or host_group" if submitted_to
