@@ -187,7 +187,7 @@ Hereafter, we call the host where OACIS is running "OACIS host".
             - If you enter passphrase when you made the key, you will be required to enter the passphrase (not password) when conducting SSH. OACIS host and computational host must be setup so that neither password nor passphrase is required. To skip the passphrase, see the following.
                 - (for Mac users) Keychain access requires you to enter your passphrase for the first time. After you entered the passphrase, you will not be required to enter the passphrase thereafter.
                 - (for Linux users) Use SSH Agent to skip entering passphrase. Run the following commands to launch SSH agent. (These steps are necessary each time you login.)
-                    - `eval \`ssh-agent\` This will launch ssh-agent process.
+                    - ``eval `ssh-agent` `` This will launch ssh-agent process.
                     - `ssh-add ~/.ssh/id_rsa` Specify the path of private key. This command will ask you to enter the passphrase. After you entered passphrase, you will be no longer required to enter the passphrase.
 2. (At Computational host) Install ruby 1.8 or later.
     - Ruby is installed by default in most of the recent OS. If it is installed, please skip this step.
