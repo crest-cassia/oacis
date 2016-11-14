@@ -9,7 +9,18 @@ class HostGroup
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
   validates :host_ids, length: {minimum: 1}
 
+  before_destroy :validate_destroyable
+
   def destroyable?
-    true  # TODO: implement me
+    Run.where(status: :created, host_group: self).empty?
+  end
+
+  def validate_destroyable
+    if destroyable?
+      return true
+    else
+      errors.add(:base, "Created/Submitted Runs exist")
+      return false
+    end
   end
 end
