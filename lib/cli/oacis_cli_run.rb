@@ -13,7 +13,7 @@ class OacisCli < Thor
     required: true
   def job_parameter_template
     job_parameters = {
-      "host_id" => nil,
+      "submitted_to" => nil,
       "host_parameters" => {},
       "mpi_procs" => 1,
       "omp_threads" => 1,
@@ -26,7 +26,7 @@ class OacisCli < Thor
       host.host_parameter_definitions.each do |param_def|
         host_parameters[param_def.key] = param_def.default
       end
-      job_parameters["host_id"] = host.id.to_s
+      job_parameters["submitted_to"] = host.id.to_s
       job_parameters["host_parameters"] = host_parameters
     end
 
@@ -61,13 +61,13 @@ class OacisCli < Thor
     parameter_sets = get_parameter_sets(options[:parameter_sets])
     job_parameters = load_json_file_or_string(options[:job_parameters])
     num_runs = options[:number_of_runs]
-    submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
+    submitted_to_id = job_parameters["submitted_to"]
     host_parameters = job_parameters["host_parameters"].to_hash
     mpi_procs = job_parameters["mpi_procs"]
     omp_threads = job_parameters["omp_threads"]
     priority = job_parameters["priority"]
 
-    run_ids = create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority)
+    run_ids = create_runs_impl(parameter_sets, num_runs, submitted_to_id, host_parameters, mpi_procs, omp_threads, priority)
 
   ensure
     return unless options[:yes] or overwrite_file?(options[:output])
@@ -75,11 +75,18 @@ class OacisCli < Thor
   end
 
   private
-  def create_runs_impl(parameter_sets, num_runs, submitted_to, host_parameters, mpi_procs, omp_threads, priority)
+  def create_runs_impl(parameter_sets, num_runs, submitted_to_id, host_parameters, mpi_procs, omp_threads, priority)
     progressbar = ProgressBar.create(total: parameter_sets.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
       progressbar.log "Number of parameter_sets : #{parameter_sets.count}"
     end
+
+    if submitted_to_id
+      # either submitted_to or host_group is set
+      host_group = HostGroup.where(id: submitted_to_id).first
+      submitted_to = Host.where(id: submitted_to_id).first
+    end
+
 
     run_ids = []
     list_runs = {}
@@ -103,6 +110,7 @@ class OacisCli < Thor
       omp_threads = sim.support_omp ? omp_threads : 1
       (num_runs - existing_run_ids.count).times do |i|
         run = ps.runs.build(submitted_to: submitted_to,
+                            host_group: host_group,
                             mpi_procs: mpi_procs,
                             omp_threads: omp_threads,
                             host_parameters: host_parameters,

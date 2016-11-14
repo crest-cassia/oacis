@@ -308,6 +308,26 @@ describe OacisCli do
           expect( last_run.submitted_to ).to eq @host
         }
       end
+
+      it "creates runs when host_group is given" do
+        hg = FactoryGirl.create(:host_group)
+        at_temp_dir {
+          input = {"L" => 0, "T" => 1.0}
+          run_param = {
+            "num_runs" => 3, "submitted_to" => hg.id.to_s
+          }
+          option = {simulator: @sim.id.to_s, input: input.to_json,
+            output: "parameter_set_ids.json", run: run_param.to_json}
+
+          expect {
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+          }.to change { @sim.runs.count }.by(3)
+
+          last_run = @sim.reload.runs.order_by(created_at: :desc).first
+          expect( last_run.submitted_to ).to be_nil
+          expect( last_run.host_group ).to eq hg
+        }
+      end
     end
 
     context "when simulator.json is invalid" do

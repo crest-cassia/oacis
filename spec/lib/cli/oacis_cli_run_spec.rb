@@ -26,7 +26,7 @@ describe OacisCli do
         OacisCli.new.invoke(:job_parameter_template, [], options)
 
         expected = {
-          "host_id" => @host.id.to_s,
+          "submitted_to" => @host.id.to_s,
           "host_parameters" => {"param1" => nil, "param2" => "XXX"},
           "mpi_procs" => 1,
           "omp_threads" => 1,
@@ -98,7 +98,7 @@ describe OacisCli do
     def create_job_parameters_json(path)
       File.open(path, 'w') {|io|
         job_parameters = {
-          "host_id" => @host.id.to_s,
+          "submitted_to" => @host.id.to_s,
           "host_parameters" => {"param1" => "foo", "param2" => "bar"},
           "mpi_procs" => 2,
           "omp_threads" => 8,
@@ -189,7 +189,7 @@ describe OacisCli do
       def create_invalid_job_parameters_json(path)
         File.open(path, 'w') {|io|
           job_parameters = {
-            "host_id" => @host.id.to_s,
+            "submitted_to" => @host.id.to_s,
             "host_parameters" => {"param1" => "foo"}, # Do not set param2
             "mpi_procs" => 2,
             "omp_threads" => 8,
