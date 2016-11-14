@@ -266,7 +266,6 @@ describe OacisCli do
         at_temp_dir {
           FileUtils.touch("run_ids.json")
           expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
-          options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
           create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
           create_job_parameters_json('job_parameters.json')
           options = {
@@ -286,7 +285,6 @@ describe OacisCli do
         at_temp_dir {
           FileUtils.touch("run_ids.json")
           expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
-          options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
           create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
           create_job_parameters_json('job_parameters.json')
           options = {
