@@ -217,7 +217,7 @@ describe HostsController do
       end
     end
 
-    context "when a host_group whose unique host is self exists" do
+    context "when a host_group whose unique host is itself exists" do
 
       it "does not destroy the host" do
         host = FactoryGirl.create(:host)
