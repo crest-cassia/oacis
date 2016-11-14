@@ -216,6 +216,21 @@ describe HostsController do
         expect(response).to render_template('show')
       end
     end
+
+    context "when a host_group whose unique host is self exists" do
+
+      it "does not destroy the host" do
+        host = FactoryGirl.create(:host)
+        FactoryGirl.create(:host_group) {|hg|
+          hg.hosts = []
+          hg.hosts.push host
+        }
+
+        expect {
+          delete :destroy, {id: host.to_param}, valid_session
+        }.to_not change { Host.count }
+      end
+    end
   end
 
   describe "POST _sort" do

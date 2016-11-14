@@ -59,7 +59,7 @@ class HostGroupsController < ApplicationController
       if @hg.destroy
         format.html { redirect_to hosts_url }
       else
-        flash.now[:alert] = "Failed to destroy host. There are runs whose host group is #{@hg.name}"
+        flash.now[:alert] = "Cannot destroy the HostGroup."
         format.html {render action: "show" }
       end
     end
