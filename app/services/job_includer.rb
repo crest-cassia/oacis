@@ -67,14 +67,14 @@ module JobIncluder
   end
 
   def self.create_auto_analysis(analyzable, analyzer)
-    host = analyzer.auto_run_submitted_to
-    anl = analyzable.analyses.build(analyzer: analyzer, submitted_to: host)
-    if host
-      host_param = {}
-      host.host_parameter_definitions.each {|hpd| host_param[hpd.key] = hpd.default }
-      anl.host_parameters = host_param
+    anl = analyzable.analyses.build(analyzer: analyzer)
+    if (host = analyzer.auto_run_submitted_to)
+      anl.submitted_to = host
+      anl.host_parameters = host.default_host_parameters
       anl.mpi_procs = host.min_mpi_procs if analyzer.support_mpi
       anl.omp_threads = host.min_omp_threads if analyzer.support_omp
+    elsif (hg = analyzer.auto_run_host_group)
+      anl.host_group = hg
     end
     anl.save!
     anl

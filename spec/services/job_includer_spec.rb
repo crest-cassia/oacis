@@ -309,6 +309,16 @@ describe JobIncluder do
         expect( anl.mpi_procs ).to eq 2
         expect( anl.omp_threads ).to eq 4
       end
+
+      it "creates analysis whose host_group is auto_run_host_group" do
+        azr = Analyzer.first
+        hg = FactoryGirl.create(:host_group)
+        azr.update_attribute(:auto_run_host_group, hg)
+        azr.update_attribute(:auto_run_submitted_to, nil)
+        anl = created_analysis
+        expect( anl.host_group ).to eq hg
+        expect( anl.submitted_to ).to eq nil
+      end
     end
 
     describe "auto run of analyzers for on_run type" do
