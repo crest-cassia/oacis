@@ -6,12 +6,11 @@ class Run
 
   field :seed, type: Integer
 
-  belongs_to :parameter_set, autosave: false
-  belongs_to :simulator, autosave: false  # for caching. do not edit this field explicitly
+  belongs_to :parameter_set, autosave: false, index: true
+  belongs_to :simulator, autosave: false, index: true  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable
 
   default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
-  index({updatd_at: -1, status: -1}, { name: "run_table_default_order_index" })
 
   # do not write validations for the presence of association
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html

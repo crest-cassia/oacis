@@ -5,9 +5,9 @@ class ParameterSet
   field :runs_status_count_cache, type: Hash
   field :progress_rate_cache, type: Integer # used for sorting by progress. updated at the same time with the run_status_count_cache
   field :to_be_destroyed, type: Boolean, default: false
-  index({ updated_at: 1 })
-  index({ v: 1 })
-  belongs_to :simulator, autosave: false
+  index({ simulator_id: 1, v: 1 })
+  index({ simulator_id: 1, updated_at: -1 })
+  belongs_to :simulator, autosave: false, index: true
   has_many :runs
   has_many :analyses, as: :analyzable
 

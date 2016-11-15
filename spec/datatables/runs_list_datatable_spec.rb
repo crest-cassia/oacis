@@ -25,7 +25,7 @@ describe "RunsListDatatable" do
     end
 
     it "is initialized" do
-      expect(@rld.instance_variable_get(:@runs)).to eq Run.where(:parameter_set_id => @param_set.to_param)
+      expect( @rld.instance_variable_get(:@runs) ).to match_array @runs
     end
 
     it "return json" do
@@ -64,7 +64,6 @@ describe "RunsListDatatable" do
         expect(@rld_json["recordsTotal"]).to eq 30
         expect(@rld_json["recordsFiltered"]).to eq 30
         expect(@rld_json["data"].size).to eq 25
-        expect(@rld_json["data"][0][0].to_s).not_to eq @runs.order_by({"id"=>" desc"}).first.id.to_s
         expect(@rld_json["data"][0][0].to_s).to eq @runs.order_by({"priority"=>"asc", "id"=>" desc"}).first.id.to_s
       end
     end

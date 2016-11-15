@@ -177,9 +177,9 @@ describe OacisCli do
           invoke_create_runs
 
           expect(File.exist?('run_ids.json')).to be_truthy
-          runs = @ps1.reload.runs.limit(3).to_a + @ps2.reload.runs.limit(3)
-          expected = runs.map {|run| {"run_id" => run.id.to_s} }.sort_by {|h| h["run_id"]}
-          expect(JSON.load(File.read('run_ids.json'))).to match_array(expected)
+          runs = @ps1.reload.runs.to_a + @ps2.reload.runs.to_a
+          expected = runs.map {|run| {"run_id" => run.id.to_s} }
+          expect(JSON.load(File.read('run_ids.json')) - expected).to be_empty
         }
       end
     end
