@@ -198,7 +198,9 @@ host_param = {ppn:"4",walltime:"1:00:00"}
 # To get default host parameters, the following method is available.
 #  host.default_host_parameters
 
-runs = ps.find_or_create_runs_upto( 10, submitted_to: host, host_param: host_param, mpi_procs: 4 )
+runs = ps.find_or_create_runs_upto( 10, submitted_to: host, host_param: host_param, mpi_procs: 4, priority: 0 )
+# The paraemters "host_param", "mpi_procs", "omp_threads", "priority" are optional.
+# Priority "0" is the highest priority. You can choose from 0,1, and 2.
 ```
 
 `ParameterSet#find_or_create_runs_upto` method create runs until the number of Runs becomes the specified number.
@@ -209,7 +211,7 @@ You can also specify "HostGroup" as follows.
 
 ```
 host_group = HostGroup.where(name: "my_host_group").first
-runs = ps.find_or_create_runs_upto( 10, host_group: host_group, mpi_procs: 4 )
+runs = ps.find_or_create_runs_upto( 10, host_group: host_group)
 ```
 
 #### removing

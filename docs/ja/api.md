@@ -199,9 +199,10 @@ host_param = {ppn:"4",walltime:"1:00:00"}
 
 # hostパラメータのデフォルト値を得るには以下のメソッドが有用
 #  host.get_default_host_parameters
-run = ps.runs.create!(submitted_to: host, host_parameters: host_param, mpi_procs: 4)
 
-runs = ps.find_or_create_runs_upto( 10, submitted_to: host, host_param: host_param, mpi_procs: 4 )
+runs = ps.find_or_create_runs_upto( 10, submitted_to: host, host_param: host_param, mpi_procs: 4, priority: 0 )
+# The paraemters "host_param", "mpi_procs", "omp_threads", "priority" are optional.
+# Priority "0" is the highest priority. You can choose from 0,1, and 2.
 ```
 
 `ParameterSet#find_or_create_runs_upto` メソッドは指定した数になるまでRunを作成する。
@@ -212,7 +213,7 @@ runs = ps.find_or_create_runs_upto( 10, submitted_to: host, host_param: host_par
 
 ```
 host_group = HostGroup.where(name: "my_host_group").first
-runs = ps.find_or_create_runs_upto( 10, host_group: host_group, mpi_procs: 4 )
+runs = ps.find_or_create_runs_upto( 10, host_group: host_group)
 ```
 
 #### 削除

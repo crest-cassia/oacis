@@ -329,23 +329,24 @@ describe ParameterSet do
         }.to change { @ps.runs.count }.from(1).to(3)
       end
 
-      it "sets submitted_to, host_param, mpi_proc, omp_threads to newly created runs" do
+      it "sets submitted_to, host_param, mpi_proc, omp_threads, priority to newly created runs" do
         h = FactoryGirl.create(:host_with_parameters)
         host_param = { param1: "foo", param2: "bar" }
-        mpi_procs = 1
-        omp_threads = 4
         
         runs = @ps.find_or_create_runs_upto(3,
                                             submitted_to: h,
                                             host_param: host_param,
                                             mpi_procs: 1,
-                                            omp_threads: 4 )
+                                            omp_threads: 4,
+                                            priority: 0
+                                            )
         expect( runs.count ).to eq 3
         runs.each do |run|
           expect( run.submitted_to ).to eq h
           expect( run.host_parameters ).to eq({"param1"=>"foo","param2"=>"bar"})
           expect( run.mpi_procs ).to eq 1
           expect( run.omp_threads ).to eq 4
+          expect( run.priority ).to eq 0
         end
       end
 
