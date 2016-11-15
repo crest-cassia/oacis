@@ -268,7 +268,7 @@ describe OacisCli do
         at_temp_dir {
           input = {"L" => [0,1], "T" => [1.0,2.0]}
           run_param = {
-            "num_runs" => 3, "host_id" => @host.id.to_s,
+            "num_runs" => 3, "submitted_to" => @host.id.to_s,
             "host_parameters" => {"param1" => "XXX", "param2" => "YYY"}
           }
           option = {simulator: @sim.id.to_s, input: input.to_json,
@@ -276,9 +276,11 @@ describe OacisCli do
 
           expect {
             OacisCli.new.invoke(:create_parameter_sets, [], option)
-            }.to change { @sim.runs.count }.by(12)
+          }.to change { @sim.runs.count }.by(12)
 
-          expect(@sim.reload.runs.order_by(id: :asc).last.host_parameters).to eq run_param["host_parameters"]
+          last_run = @sim.reload.runs.order_by(created_at: :desc).first
+          expect( last_run.host_parameters ).to eq run_param["host_parameters"]
+          expect( last_run.submitted_to ).to eq @host
         }
       end
 
@@ -292,7 +294,7 @@ describe OacisCli do
         at_temp_dir {
           input = {"L" => [0,1], "T" => 1.0}
           run_param = {
-            "num_runs" => 2, "host_id" => @host.id.to_s,
+            "num_runs" => 2, "submitted_to" => @host.id.to_s,
             "host_parameters" => {"param1" => "XXX", "param2" => "YYY"}
           }
           option = {simulator: @sim.id.to_s, input: input.to_json,
@@ -301,6 +303,29 @@ describe OacisCli do
           expect {
             OacisCli.new.invoke(:create_parameter_sets, [], option)
           }.to change { @sim.runs.count }.by(3)
+          last_run = @sim.reload.runs.order_by(created_at: :desc).first
+          expect( last_run.host_parameters ).to eq run_param["host_parameters"]
+          expect( last_run.submitted_to ).to eq @host
+        }
+      end
+
+      it "creates runs when host_group is given" do
+        hg = FactoryGirl.create(:host_group)
+        at_temp_dir {
+          input = {"L" => 0, "T" => 1.0}
+          run_param = {
+            "num_runs" => 3, "submitted_to" => hg.id.to_s
+          }
+          option = {simulator: @sim.id.to_s, input: input.to_json,
+            output: "parameter_set_ids.json", run: run_param.to_json}
+
+          expect {
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+          }.to change { @sim.runs.count }.by(3)
+
+          last_run = @sim.reload.runs.order_by(created_at: :desc).first
+          expect( last_run.submitted_to ).to be_nil
+          expect( last_run.host_group ).to eq hg
         }
       end
     end

@@ -26,7 +26,7 @@ describe OacisCli do
         OacisCli.new.invoke(:job_parameter_template, [], options)
 
         expected = {
-          "host_id" => @host.id.to_s,
+          "submitted_to" => @host.id.to_s,
           "host_parameters" => {"param1" => nil, "param2" => "XXX"},
           "mpi_procs" => 1,
           "omp_threads" => 1,
@@ -98,7 +98,7 @@ describe OacisCli do
     def create_job_parameters_json(path)
       File.open(path, 'w') {|io|
         job_parameters = {
-          "host_id" => @host.id.to_s,
+          "submitted_to" => @host.id.to_s,
           "host_parameters" => {"param1" => "foo", "param2" => "bar"},
           "mpi_procs" => 2,
           "omp_threads" => 8,
@@ -189,7 +189,7 @@ describe OacisCli do
       def create_invalid_job_parameters_json(path)
         File.open(path, 'w') {|io|
           job_parameters = {
-            "host_id" => @host.id.to_s,
+            "submitted_to" => @host.id.to_s,
             "host_parameters" => {"param1" => "foo"}, # Do not set param2
             "mpi_procs" => 2,
             "omp_threads" => 8,
@@ -266,7 +266,6 @@ describe OacisCli do
         at_temp_dir {
           FileUtils.touch("run_ids.json")
           expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
-          options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
           create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
           create_job_parameters_json('job_parameters.json')
           options = {
@@ -286,7 +285,6 @@ describe OacisCli do
         at_temp_dir {
           FileUtils.touch("run_ids.json")
           expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
-          options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
           create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
           create_job_parameters_json('job_parameters.json')
           options = {
