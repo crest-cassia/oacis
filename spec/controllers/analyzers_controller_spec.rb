@@ -115,6 +115,15 @@ describe AnalyzersController do
         expect(azr.auto_run_submitted_to).to eq @host
       end
 
+      it "assigns auto_run_host_group attribute" do
+        hg = FactoryGirl.create(:host_group)
+        @valid_post_parameter[:analyzer][:auto_run_submitted_to] = hg.id.to_s
+        post :create, @valid_post_parameter, valid_session
+        azr = Analyzer.desc(:created_at).first
+        expect( azr.auto_run_submitted_to ).to be nil
+        expect( azr.auto_run_host_group ).to eq hg
+      end
+
       it "assigns a newly created analyzer as @analyzer" do
         post :create, @valid_post_parameter, valid_session
         expect(assigns(:analyzer)).to be_a(Analyzer)

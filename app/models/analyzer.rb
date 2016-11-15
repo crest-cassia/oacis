@@ -16,6 +16,7 @@ class Analyzer
 
   ## fields for auto run
   belongs_to :auto_run_submitted_to, class_name: "Host"
+  belongs_to :auto_run_host_group, class_name: "HostGroup"
 
   default_scope ->{ where(to_be_destroyed: false) }
 

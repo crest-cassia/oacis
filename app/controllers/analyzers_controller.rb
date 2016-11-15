@@ -94,7 +94,12 @@ class AnalyzersController < ApplicationController
 
   private
   def permitted_analyzer_params
-    analyzer_params = params[:analyzer].present? ? params.require(:analyzer)
+    if submitted_to_is_host_group?
+      params[:analyzer][:auto_run_host_group] = params[:analyzer][:auto_run_submitted_to]
+      params[:analyzer][:auto_run_submitted_to] = nil
+    end
+
+    params[:analyzer].present? ? params.require(:analyzer)
                                        .permit(:name,
                                                :type,
                                                :command,
@@ -108,8 +113,14 @@ class AnalyzersController < ApplicationController
                                                :support_omp,
                                                :pre_process_script,
                                                :auto_run_submitted_to,
+                                               :auto_run_host_group,
                                                parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
                                                executable_on_ids: []
                                               ) : {}
+  end
+
+  def submitted_to_is_host_group?
+    host_id = params[:analyzer][:auto_run_submitted_to]
+    host_id.present? && HostGroup.where(id: host_id).present?
   end
 end

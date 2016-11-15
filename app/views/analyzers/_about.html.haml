@@ -26,8 +26,8 @@
       %th Executable On
       %td= raw( analyzer.executable_on.map {|host| h(host.name) }.join('<br />') )
     %tr
-      %th Host for Auto-Run Analyses
-      %td= analyzer.auto_run_submitted_to.try(:name)
+      %th Host(Group) for Auto-Run
+      %td= analyzer.auto_run_submitted_to.try(:name) || analyzer.auto_run_host_group.try(:name)
 
 - if analyzer.parameter_definitions.present?
   %h3 Defined Parameters
