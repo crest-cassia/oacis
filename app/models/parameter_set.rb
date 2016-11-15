@@ -42,6 +42,47 @@ class ParameterSet
     end
   end
 
+  def self.runs_status_count_batch( parameter_sets )
+    aggregated = Run.collection.aggregate([
+      {
+        '$match' => Run.in(parameter_set: parameter_sets.map(&:id)).selector
+      },
+      {
+        '$group' => {
+          '_id' => {'psid'=>'$parameter_set_id', 'status'=>'$status'},
+          'count' => { '$sum' => 1}
+        }
+      },
+      {
+        '$group' => {
+          '_id' => '$_id.psid',
+          'counts' => {
+            '$push' =>{'status'=>'$_id.status', 'count'=> '$count' }
+          }
+        }
+      }
+    ])
+    # aggregated is
+    # [
+    #   { _id => psid, "counts" => [{status => count} .... ],
+    #   ...
+    # ]
+    count_default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0}
+    ret = {}
+    parameter_sets.each {|ps| ret[ps.id] = count_default.dup }
+
+    aggregated.each do |doc|
+      psid = doc["_id"]
+      status_hash = count_default.dup
+      doc["counts"].each do |c|
+        key = c["status"]
+        status_hash[key] = c["count"]
+      end
+      ret[ psid ] = status_hash
+    end
+    ret
+  end
+
   def runs_status_count
     # I do not know why but reload is necessary. Otherwise, _cache is always nil.
     reload

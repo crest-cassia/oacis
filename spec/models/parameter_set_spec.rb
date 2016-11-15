@@ -304,6 +304,50 @@ describe ParameterSet do
     end
   end
 
+  describe ".runs_status_count_batch" do
+
+    def prepare_runs
+      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 2, runs_count: 10)
+      @ps1 = @sim.parameter_sets.asc(:created_at).first
+      @ps2 = @sim.parameter_sets.asc(:created_at).last
+      runs = @ps1.runs.to_a
+      runs[0].update_attribute(:status, :submitted)
+      runs[1..2].each {|r| r.update_attribute(:status, :running) }
+      runs[3..5].each {|r| r.update_attribute(:status, :failed) }
+      runs[6..9].each {|r| r.update_attribute(:status, :finished) }
+    end
+
+    it "returns the runs count" do
+      prepare_runs
+      ret = ParameterSet.runs_status_count_batch( @sim.parameter_sets )
+      expected = {
+        @ps1.id => {
+          created: 0, submitted: 1, running: 2, failed: 3, finished: 4
+        },
+        @ps2.id => {
+          created: 10, submitted: 0, running: 0, failed: 0, finished: 0
+        }
+      }
+      expect( ret ).to eq expected
+    end
+
+    it "returns hash even if there is no run to count" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 2, runs_count: 0)
+      ret = ParameterSet.runs_status_count_batch( sim.parameter_sets )
+
+      ps1, ps2 = sim.parameter_sets.to_a
+      expected = {
+        ps1.id => {
+          created: 0, submitted: 0, running: 0, failed: 0, finished: 0
+        },
+        ps2.id => {
+          created: 0, submitted: 0, running: 0, failed: 0, finished: 0
+        }
+      }
+      expect( ret ).to eq expected
+    end
+  end
+
   describe "#find_or_create_runs_upto" do
 
     before(:each) do
