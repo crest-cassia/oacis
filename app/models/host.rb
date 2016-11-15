@@ -122,7 +122,8 @@ class Host
 
   def destroyable?
     submittable_runs.empty? and submitted_runs.empty? and
-    submittable_analyses.empty? and submitted_analyses.empty?
+    submittable_analyses.empty? and submitted_analyses.empty? and
+    host_groups.all? {|hg| hg.hosts.count > 1 }
   end
 
   def start_ssh
@@ -185,7 +186,7 @@ class Host
     if destroyable?
       return true
     else
-      errors.add(:base, "Created/Submitted Runs exist")
+      errors.add(:base, "Cannot destroy Host.")
       return false
     end
   end

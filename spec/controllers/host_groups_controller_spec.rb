@@ -29,7 +29,6 @@ RSpec.describe HostGroupsController do
       end
 
       it "creates a new HostGroup" do
-        pp valid_attr
         expect {
           post :create, valid_attr
         }.to change( HostGroup, :count ).by(1)
@@ -80,6 +79,28 @@ RSpec.describe HostGroupsController do
       expect {
         delete :destroy, {id: @hg.to_param}
       }.to change(HostGroup, :count).by(-1)
+    end
+
+    context "when created runs exist" do
+
+      before(:each) do
+        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+        run = sim.parameter_sets.first.runs.first
+        run.submitted_to = nil
+        run.host_group = @hg
+        run.save!
+      end
+
+      it "does not destroy the host_group" do
+        expect {
+          delete :destroy, {id: @hg.to_param}
+        }.to_not change { HostGroup.count }
+      end
+
+      it "renders 'show' template" do
+        delete :destroy, {id: @hg.to_param}
+        expect(response).to render_template('show')
+      end
     end
   end
 end
