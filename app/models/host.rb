@@ -126,11 +126,12 @@ class Host
     host_groups.all? {|hg| hg.hosts.count > 1 }
   end
 
-  def start_ssh
+  def start_ssh( ssh_logger: nil )
     if @ssh
       yield @ssh
     else
-      Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port, non_interactive: true) do |ssh|
+      ssh_logger.debug("starting SSH: " + self.inspect ) if ssh_logger
+      Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port, non_interactive: true, logger: ssh_logger) do |ssh|
         @ssh = ssh
         begin
           yield ssh
@@ -158,7 +159,12 @@ class Host
   end
 
   def get_host_parameters
-    start_ssh do |ssh|
+    if ENV['OACIS_SSH_DEBUG'] == "1"
+      ssh_logger = Logger.new( Rails.root.join('log/ssh_debug.log') )
+      ssh_logger.level = :debug
+      ssh_logger.error("printing SSH debug messages")
+    end
+    start_ssh(ssh_logger: ssh_logger) do |ssh|
       cmd = "bash -l -c 'echo XSUB_BEGIN && xsub -t'"
       ## bash -l invokes bash as a login shell.
       ##   This is necessary to load PATH properly from .bash_profile.
