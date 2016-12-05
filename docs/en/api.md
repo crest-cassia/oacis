@@ -44,12 +44,12 @@ $ bundle exec ruby -r ./config/environment test.rb
 "my_simulator"
 ```
 
-If you would like to run a script from other directory, you have to set `BUNDLE_GEMFILE` environment variable.
-Set `OACIS_ROOT` to point to the directory of OACIS, and run the script as follows.
+If you would like to run a script from other directory, you also need to set `BUNDLE_GEMFILE` environment variable.
+We provide a command `bin/oacis_ruby`, which runs Ruby with loading 'environment.rb' and the necessary environment variable.
+Run your script as follows.
 
 ```
-export OACIS_ROOT=~/work/oacis            # set OACIS_ROOT to the path of OACIS
-BUNDLE_GEMFILE="$OACIS_ROOT/Gemfile" ruby -r "$OACIS_ROOT/config/environment" your_script.rb
+$ ~/your_path/to/oacis/bin/oacis_ruby test.rb
 ```
 
 ## List of APIs
