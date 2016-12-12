@@ -190,7 +190,8 @@ class ParameterSetsController < ApplicationController
     keys = base_ps.simulator.parameter_definitions.map(&:key)
     selectors = keys.map {|key| base_ps.parameter_sets_with_different(key).selector }
     parameter_sets = ParameterSet.or(*selectors)
-    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, base_ps)
+    num_ps_total = base_ps.simulator.parameter_sets.count
+    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, num_ps_total, base_ps)
   end
 
   def _line_plot
