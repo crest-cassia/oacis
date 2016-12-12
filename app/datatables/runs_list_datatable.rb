@@ -18,7 +18,7 @@ class RunsListDatatable
     {
       draw: @view.params[:draw].to_i,
       recordsTotal: @runs.count,
-      recordsFiltered: runs_lists.count,
+      recordsFiltered: @runs.count,
       data: data
     }
   end
@@ -50,13 +50,7 @@ private
   end
 
   def runs_lists
-    @runs_lists ||= fetch_runs_list
-  end
-
-  def fetch_runs_list
-    runs_list = @runs.without(:result).order_by(sort_column_direction)
-    runs_list = runs_list.skip(page).limit(per_page)
-    runs_list
+    @runs.without(:result).order_by(sort_column_direction).skip(page).limit(per_page)
   end
 
   def page

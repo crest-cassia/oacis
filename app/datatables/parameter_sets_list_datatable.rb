@@ -36,28 +36,28 @@ private
   end
 
   def data
-    parameter_sets_list.map do |param|
+    parameter_sets_list.map do |ps|
       tmp = []
-      tmp << @view.content_tag(:i, '', parameter_set_id: param.id.to_s, align: "center", class: "fa fa-search clickable")
-      counts = runs_status_counts(param)
+      tmp << @view.content_tag(:i, '', parameter_set_id: ps.id.to_s, align: "center", class: "fa fa-search clickable")
+      counts = runs_status_counts(ps)
       progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
       tmp << @view.raw(progress)
-      tmp << @view.link_to( @view.shortened_id_monospaced(param.id), @view.parameter_set_path(param) )
-      tmp << @view.distance_to_now_in_words(param.updated_at)
+      tmp << @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps) )
+      tmp << @view.distance_to_now_in_words(ps.updated_at)
       @param_keys.each do |key|
         if @base_ps
-          tmp << colorize_param_value(param.v[key], @base_ps.v[key])
+          tmp << colorize_param_value(ps.v[key], @base_ps.v[key])
         else
-          tmp <<  ERB::Util.html_escape(param.v[key])
+          tmp <<  ERB::Util.html_escape(ps.v[key])
         end
       end
-      if param == @base_ps
+      if ps == @base_ps
         tmp << ''
       else
         if OACIS_READ_ONLY
           tmp << @view.raw('<i class="fa fa-trash-o">')
         else
-          tmp << @view.link_to( @view.raw('<i class="fa fa-trash-o">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+          tmp << @view.link_to( @view.raw('<i class="fa fa-trash-o">'), ps, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
         end
       end
       tmp
