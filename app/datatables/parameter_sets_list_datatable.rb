@@ -85,19 +85,13 @@ private
   end
 
   def parameter_sets_list
-    @parameter_sets_list ||= fetch_parameter_sets_list
+    @ps_list_cache ||= @param_sets.order_by(sort_column_direction).skip(page).limit(per_page).to_a
+    # `to_a` is necessary to fix the contents of parameter_sets_list
   end
 
   def runs_status_counts(ps)
     @runs_status_counts_cache ||= ParameterSet.runs_status_count_batch( parameter_sets_list )
     @runs_status_counts_cache[ps.id]
-  end
-
-  def fetch_parameter_sets_list
-    #"only" is removed due to ParameterSet.runs_status_count can not be called.
-    parameter_sets_list = @param_sets.order_by(sort_column_direction)
-    parameter_sets_list = parameter_sets_list.skip(page).limit(per_page)
-    parameter_sets_list
   end
 
   def page
