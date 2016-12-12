@@ -28,7 +28,8 @@ describe "ParameterSetsListDatatable" do
         allow(@context).to receive(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
         allow(@context).to receive(:shortened_id_monospaced).and_return("xxxx..yy")
         keys = @simulator.parameter_definitions.map {|x| x.key}
-        @psld = ParameterSetsListDatatable.new(@simulator.parameter_sets, keys, @context)
+        num_ps_total = @simulator.parameter_sets.count
+        @psld = ParameterSetsListDatatable.new(@simulator.parameter_sets, keys, @context, num_ps_total)
         @psld_json = JSON.parse(@psld.to_json)
       end
 
@@ -68,7 +69,8 @@ describe "ParameterSetsListDatatable" do
         allow(@context).to receive(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
         allow(@context).to receive(:shortened_id_monospaced).and_return("xxxx..yy")
         keys = @simulator.parameter_definitions.map {|x| x.key}
-        @psld = ParameterSetsListDatatable.new(@query.parameter_sets, keys, @context)
+        num_ps_total = @simulator.parameter_sets.count
+        @psld = ParameterSetsListDatatable.new(@query.parameter_sets, keys, @context, num_ps_total)
         @psld_json = JSON.parse(@psld.to_json)
       end
 
@@ -77,7 +79,7 @@ describe "ParameterSetsListDatatable" do
       end
 
       it "return json" do
-        expect(@psld_json["recordsTotal"]).to eq(25)
+        expect(@psld_json["recordsTotal"]).to eq(30)
         expect(@psld_json["recordsFiltered"]).to eq(25)
         expect(@psld_json["data"].size).to eq(5)
         expect(@psld_json["data"].first[4].to_i).to eq(@query.parameter_sets.only("v.L").max("v.L"))#["aaData"].first[4].to_i is qeual to v.L (["aaData"].first[id, updated_at, [keys]])
@@ -104,7 +106,8 @@ describe "ParameterSetsListDatatable" do
         allow(@context).to receive(:parameter_set_path).and_return("/parameter_sets/00000000ffffff0000ffffffff")
         allow(@context).to receive(:shortened_id_monospaced).and_return("xxxx..yy")
         keys = @simulator.parameter_definitions.map {|x| x.key}
-        @psld = ParameterSetsListDatatable.new(@simulator.parameter_sets, keys, @context)
+        num_ps_total = @simulator.parameter_sets.count
+        @psld = ParameterSetsListDatatable.new(@simulator.parameter_sets, keys, @context, num_ps_total)
         @psld_json = JSON.parse(@psld.to_json)
       end
 

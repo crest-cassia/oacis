@@ -46,13 +46,7 @@ private
   end
 
   def analyzers_lists
-    @analyzers_lists ||= fetch_analyzers_list
-  end
-
-  def fetch_analyzers_list
-    list = @analyzers.order_by(sort_column_direction)
-    list = list.skip(page).limit(per_page)
-    list
+    @analyzers.order_by(sort_column_direction).skip(page).limit(per_page)
   end
 
   def page

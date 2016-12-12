@@ -136,7 +136,8 @@ class SimulatorsController < ApplicationController
       parameter_sets = q.parameter_sets
     end
     keys = simulator.parameter_definitions.map {|pd| pd.key }
-    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context)
+    num_ps_total = simulator.parameter_sets.count
+    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, num_ps_total)
   end
 
   def _analyzer_list

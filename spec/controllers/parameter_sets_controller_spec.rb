@@ -448,7 +448,7 @@ describe ParameterSetsController do
 
     it "returns correct number of parameter sets" do
       parsed_body = JSON.parse(response.body)
-      expect(parsed_body['recordsTotal']).to eq 8
+      expect(parsed_body['recordsFiltered']).to eq 8
     end
   end
 

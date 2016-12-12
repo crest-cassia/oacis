@@ -1,17 +1,18 @@
 class ParameterSetsListDatatable
 
-  def initialize(parameter_sets, parameter_definition_keys, view, base_ps = nil)
+  def initialize(parameter_sets, parameter_definition_keys, view, num_ps_total, base_ps = nil)
     @view = view
     @param_sets = parameter_sets
     @param_keys = parameter_definition_keys
     @base_ps = base_ps
+    @num_ps_total = num_ps_total
   end
 
   def as_json(options = {})
     {
       draw: @view.params[:draw].to_i,
-      recordsTotal: @param_sets.count,
-      recordsFiltered: parameter_sets_list.count,
+      recordsTotal: @num_ps_total,
+      recordsFiltered: @param_sets.count,
       data: data
     }
   end
@@ -35,28 +36,28 @@ private
   end
 
   def data
-    parameter_sets_list.map do |param|
+    parameter_sets_list.map do |ps|
       tmp = []
-      tmp << @view.content_tag(:i, '', parameter_set_id: param.id.to_s, align: "center", class: "fa fa-search clickable")
-      counts = runs_status_counts(param)
+      tmp << @view.content_tag(:i, '', parameter_set_id: ps.id.to_s, align: "center", class: "fa fa-search clickable")
+      counts = runs_status_counts(ps)
       progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
       tmp << @view.raw(progress)
-      tmp << @view.link_to( @view.shortened_id_monospaced(param.id), @view.parameter_set_path(param) )
-      tmp << @view.distance_to_now_in_words(param.updated_at)
+      tmp << @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps) )
+      tmp << @view.distance_to_now_in_words(ps.updated_at)
       @param_keys.each do |key|
         if @base_ps
-          tmp << colorize_param_value(param.v[key], @base_ps.v[key])
+          tmp << colorize_param_value(ps.v[key], @base_ps.v[key])
         else
-          tmp <<  ERB::Util.html_escape(param.v[key])
+          tmp <<  ERB::Util.html_escape(ps.v[key])
         end
       end
-      if param == @base_ps
+      if ps == @base_ps
         tmp << ''
       else
         if OACIS_READ_ONLY
           tmp << @view.raw('<i class="fa fa-trash-o">')
         else
-          tmp << @view.link_to( @view.raw('<i class="fa fa-trash-o">'), param, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+          tmp << @view.link_to( @view.raw('<i class="fa fa-trash-o">'), ps, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
         end
       end
       tmp
@@ -84,19 +85,13 @@ private
   end
 
   def parameter_sets_list
-    @parameter_sets_list ||= fetch_parameter_sets_list
+    @ps_list_cache ||= @param_sets.order_by(sort_column_direction).skip(page).limit(per_page).to_a
+    # `to_a` is necessary to fix the contents of parameter_sets_list
   end
 
   def runs_status_counts(ps)
     @runs_status_counts_cache ||= ParameterSet.runs_status_count_batch( parameter_sets_list )
     @runs_status_counts_cache[ps.id]
-  end
-
-  def fetch_parameter_sets_list
-    #"only" is removed due to ParameterSet.runs_status_count can not be called.
-    parameter_sets_list = @param_sets.order_by(sort_column_direction)
-    parameter_sets_list = parameter_sets_list.skip(page).limit(per_page)
-    parameter_sets_list
   end
 
   def page

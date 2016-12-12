@@ -16,7 +16,7 @@ class AnalysesListDatatable
     {
       draw: @view.params[:draw].to_i,
       recordsTotal: @analyses.count,
-      recordsFiltered: analyses_lists.count,
+      recordsFiltered: @analyses.count,
       data: data
     }
   end
@@ -43,13 +43,7 @@ private
   end
 
   def analyses_lists
-    @analyses_lists ||= fetch_analyses_list
-  end
-
-  def fetch_analyses_list
-    list = @analyses.order_by(sort_column_direction)
-    list = list.skip(page).limit(per_page)
-    list
+    @analyses.order_by(sort_column_direction).skip(page).limit(per_page)
   end
 
   def page
