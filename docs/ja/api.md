@@ -38,7 +38,7 @@ irb(main):002:0>
 
 ### スクリプトでの実行
 
-OACISのディレクトリから`./config/environment.rb`をロードすると、OACISの環境を呼び込んだあとでスクリプトを実行できます。
+ファイル`config/environment.rb` をロードすると、OACISの環境を呼び込んだあとでスクリプトを実行できます。
 
 ```
 $ echo 'p Simulator.first.name' > test.rb   # test.rbを準備
@@ -46,12 +46,13 @@ $ bundle exec ruby -r ./config/environment test.rb
 "my_simulator"
 ```
 
-他のディレクトリから実行する場合は、`BUNDLE_GEMFILE`という環境変数を指定する必要があります。
-`OACIS_ROOT`という環境変数にOACISのディレクトリのパスをセットしてから、以下のようにすると実行できます。
+他のディレクトリから実行する場合は、`BUNDLE_GEMFILE`という環境変数も指定する必要があります。
+この環境変数の指定と`environment.rb`のロードを行うコマンドが `bin/oacis_ruby` にあります。
+以下のように利用してください。
 
 ```
-export OACIS_ROOT=~/work/oacis       # set OACIS_ROOT to the path of OACIS
-BUNDLE_GEMFILE="$OACIS_ROOT/Gemfile" ruby -r "$OACIS_ROOT/config/environment" your_script.rb
+$ echo 'p Simulator.all.map(&:name)' > test.rb   # test.rbを準備
+$ ~/your_path/to/oacis/bin/oacis_ruby test.rb
 ```
 
 ## API一覧
