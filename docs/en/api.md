@@ -49,6 +49,7 @@ We provide a command `bin/oacis_ruby`, which runs Ruby with loading 'environment
 Run your script as follows.
 
 ```
+$ echo 'p Simulator.all.map(&:name)' > test.rb   # preparing test.rb
 $ ~/your_path/to/oacis/bin/oacis_ruby test.rb
 ```
 

@@ -51,6 +51,7 @@ $ bundle exec ruby -r ./config/environment test.rb
 以下のように利用してください。
 
 ```
+$ echo 'p Simulator.all.map(&:name)' > test.rb   # test.rbを準備
 $ ~/your_path/to/oacis/bin/oacis_ruby test.rb
 ```
 
