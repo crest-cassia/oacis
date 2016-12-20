@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+script_dir=$(cd $(dirname $0); pwd)
+export BUNDLE_GEMFILE="$script_dir/../Gemfile"
+rb_call_dir="$script_dir/../rb_call"
+export PYTHONPATH="$rb_call_dir:$script_dir:$PYTHONPATH"
+python "$@"
