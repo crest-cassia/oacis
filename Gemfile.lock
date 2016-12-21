@@ -1,5 +1,5 @@
 GIT
-  remote: git://github.com/yohm/msgpack-rpc-ruby.git
+  remote: https://github.com/yohm/msgpack-rpc-ruby.git
   revision: 35d8a54d4df07e95955c822e06ce184e15687f46
   specs:
     msgpack-rpc (0.5.4)
