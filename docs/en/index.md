@@ -35,6 +35,8 @@ With a user-friendly interface, you can easily submit various jobs to appropriat
 After these jobs are finished, all the result files are automatically downloaded from the remote hosts and stored in a traceable way together with logs of the date, host, and elapsed time of the jobs.
 You can easily find the status of the jobs or results files from the browser-based UI, which lets you focus on more productive and essential parts of your research activities.
 
+It also provides Ruby and Python APIs, which helps us automate parameter sweep, optimization of parameters, and sensitivity analysis etc.
+
 ## Screenshots
 
 <div id="carousel-screen-shot" class="carousel slide" data-ride="carousel">
@@ -104,6 +106,32 @@ You can easily find the status of the jobs or results files from the browser-bas
     <span class="sr-only">Next</span>
   </a>
 </div>
+
+## A sample of APIs
+
+A small sample of parameter sweep over parameters "p1" and "p2" of your simulator.
+See http://crest-cassia.github.io/oacis/en/api.html for more details.
+OACIS has both Ruby and Python APIs.
+
+```ruby
+sim = Simulator.where(name: "my_simulator").first
+
+p1_values = [1.0,2.0,3.0,4.0,5.0]                                         # a standard way to make an array
+p2_values = [2.0,4.0,6.0,8.0,10.0]
+base_param = sim.default_parameters                                  # => {"p1"=>1.0, "p2"=>2.0, "p3"=>3.0}
+
+host = Host.where(name: "localhost").first
+host_param = host.default_host_parameters
+
+# We are going to fix the parameters other than "p1" and "p2"
+p1_values.each do |p1|                  # iterate over p1
+  p2_values.each do |p2|                # iterate over p2
+    param = base_param.merge({"p1"=>p1,"p2"=>p2})           #   => {"p1"=>p1, "p2"=>p2, "p3"=>3.0}
+    ps = sim.find_or_create_parameter_set( param )          #   => ParameterSet of the given parameters
+    runs = ps.find_or_create_runs_upto(5, submitted_to: host, host_param: host_param)  # creating runs under given parameter sets
+  end
+end
+```
 
 ## About this document
 

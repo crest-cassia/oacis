@@ -30,6 +30,9 @@ next_page: overview
 研究者が計算したいシミュレーターを登録することにより、実行時の記録（パラメータ、実行日時、ホスト、シミュレーターのバージョン）を結果とひも付けて自動的にDBに保存することができます。
 またジョブの実行や結果の閲覧をブラウザ上から効率的に行うことができ、研究者はより本質的な作業に集中できるようになります。
 
+OACISはRubyとPythonのAPIを持っており、パラメータの選択やジョブの実行を自動化することができます。
+これらを利用するとパラメータスイープや最適化、感度解析などを簡単に行うことができます。
+
 ## スクリーンショット
 
 <div id="carousel-screen-shot" class="carousel slide" data-ride="carousel">
@@ -99,6 +102,32 @@ next_page: overview
     <span class="sr-only">Next</span>
   </a>
 </div>
+
+## APIのサンプル
+
+例えば、あるシミュレーターの"p1"と"p2"というパラメータを変化させながらジョブを実行したいとします。
+OACISのAPIを使って書く場合、以下のようになります。
+より詳細は http://crest-cassia.github.io/oacis/en/api.html をみてください。
+
+```ruby
+sim = Simulator.where(name: "my_simulator").first
+
+p1_values = [1.0,2.0,3.0,4.0,5.0]                                         # a standard way to make an array
+p2_values = [2.0,4.0,6.0,8.0,10.0]
+base_param = sim.default_parameters                                  # => {"p1"=>1.0, "p2"=>2.0, "p3"=>3.0}
+
+host = Host.where(name: "localhost").first
+host_param = host.default_host_parameters
+
+# We are going to fix the parameters other than "p1" and "p2"
+p1_values.each do |p1|                  # iterate over p1
+  p2_values.each do |p2|                # iterate over p2
+    param = base_param.merge({"p1"=>p1,"p2"=>p2})           #   => {"p1"=>p1, "p2"=>p2, "p3"=>3.0}
+    ps = sim.find_or_create_parameter_set( param )          #   => ParameterSet of the given parameters
+    runs = ps.find_or_create_runs_upto(5, submitted_to: host, host_param: host_param)  # creating runs under given parameter sets
+  end
+end
+```
 
 ## このドキュメントの構成
 
