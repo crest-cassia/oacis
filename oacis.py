@@ -18,3 +18,5 @@ Run = Rb.const('Run')
 Analyzer = Rb.const('Analyzer')
 Analysis = Rb.const('Analysis')
 Host = Rb.const('Host')
+HostGroup = Rb.const('HostGroup')
+
