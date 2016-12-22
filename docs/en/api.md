@@ -1,16 +1,18 @@
 ---
 layout: default
-title: "API"
+title: "Ruby API"
 lang: en
-next_page: tips
+next_page: api_python
 ---
 
 # How to use APIs
 
 ---
 
-OACIS is implemented in Ruby, and has Ruby APIs. You can operate OACIS by writing a script that calls these APIs.
-We will give a brief instruction on how to use the APIs. 
+OACIS is implemented in Ruby, and has Ruby and Python APIs. You can operate OACIS by writing a script that calls these APIs.
+In this page, we will give a brief instruction on how to use the Ruby APIs. 
+If you write Python, please go to the [next page](/en/api_python.html).
+You can find samples at [samples page](/en/api_samples.html).
 
 ## Prerequisites
 
@@ -182,7 +184,7 @@ end
 You can get information of a Run as the following.
 
 ```ruby
-run.status           # => [:created,:submitted,:running,:failed,:finished]のいずれかが返る。
+run.status           # => one of [:created,:submitted,:running,:failed,:finished] is returned
 run.submitted_to     #=> The host to which a job is submitted to. #<Host _id: 53a3f583b93f964b7f0000fc, ...>
 run.host_parameters  #=> {"ppn"=>"1", "walltime"=>"1:00:00"}
 run.mpi_procs        #=> 1
@@ -297,7 +299,7 @@ end
 Almost same set of APIs to those of Runs are available.
 
 ```ruby
-anl.status           #=> [:created,:submitted,:running,:failed,:finished]のいずれかが返る。
+anl.status           #=> one of [:created,:submitted,:running,:failed,:finished] is returned
 anl.submitted_to     #=> #<Host _id: 53a3f583b93f964b7f0000fc, ...>
 anl.host_parameters  #=> {"ppn"=>"1","walltime"=>"1:00:00"}
 anl.result           #=> {"result1"=>-0.016298, "result2"=>0.0264882}
