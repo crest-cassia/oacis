@@ -2,7 +2,7 @@
 layout: default
 title: "Command Line Interface"
 lang: en
-next_page: tips
+next_page: api
 ---
 
 # {{ page.title }}

@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/yohm/msgpack-rpc-ruby.git
+  revision: 35d8a54d4df07e95955c822e06ce184e15687f46
+  specs:
+    msgpack-rpc (0.5.4)
+      cool.io (~> 1.4.3)
+      msgpack (~> 1.0.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -45,6 +53,7 @@ GEM
     coderay (1.1.1)
     commonjs (0.2.7)
     concurrent-ruby (1.0.2)
+    cool.io (1.4.5)
     d3-rails (3.5.17)
       railties (>= 3.1)
     daemon-spawn (0.4.2)
@@ -124,6 +133,7 @@ GEM
       mongoid (~> 5.0)
       rake
       rspec (~> 3.3)
+    msgpack (1.0.2)
     multi_json (1.12.1)
     net-sftp (2.1.2)
       net-ssh (>= 2.6.5)
@@ -261,6 +271,7 @@ DEPENDENCIES
   less-rails
   mongoid (~> 5.1.0)
   mongoid-rspec (= 3.0.0)
+  msgpack-rpc!
   net-sftp
   net-ssh
   pry

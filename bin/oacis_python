@@ -1,0 +1,5 @@
+#!/bin/bash -e
+
+script_dir=$(cd $(dirname $0); pwd)
+export PYTHONPATH="$script_dir/..:$PYTHONPATH"
+python "$@"
