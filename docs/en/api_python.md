@@ -2,7 +2,7 @@
 layout: default
 title: "Python API"
 lang: en
-next_page: api_samples
+next_page: api_watcher
 ---
 
 # How to use APIs
