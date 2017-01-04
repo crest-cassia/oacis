@@ -20,3 +20,5 @@ Analysis = Rb.const('Analysis')
 Host = Rb.const('Host')
 HostGroup = Rb.const('HostGroup')
 
+from .oacis_watcher import OacisWatcher
+
