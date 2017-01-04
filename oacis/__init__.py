@@ -1,15 +1,15 @@
 import sys
 import os
 
-rb_call_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'rb_call') )
+rb_call_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../rb_call') )
 sys.path.append( rb_call_path )
 
-os.putenv('BUNDLE_GEMFILE', os.path.abspath(os.path.join(os.path.dirname(__file__),'Gemfile')) )
+os.putenv('BUNDLE_GEMFILE', os.path.abspath(os.path.join(os.path.dirname(__file__),'../Gemfile')) )
 from rb_call import RubySession
 
 Rb = RubySession()
-Rb.require_relative('config/environment')
-Rb.require_relative('rb_call/patch/mongoid_patch')
+Rb.require_relative('../config/environment')
+Rb.require_relative('../rb_call/patch/mongoid_patch')
 
 # Defining classes of OACIS
 Simulator = Rb.const('Simulator')
