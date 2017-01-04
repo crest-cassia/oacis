@@ -87,7 +87,7 @@ sim = oacis.Simulator.find("...ID...")
 - Get a simulator by name
 
 ```python
-sim = Simulator.where(name="my_simulator").first()
+sim = oacis.Simulator.where(name="my_simulator").first()
 ```
 
 #### referring
@@ -119,7 +119,7 @@ ps = oacis.ParameterSet.find("...ID...")
     - If all the parameters are not specified by the argument, it raises an exception.
 
 ```python
-sim = Simulator.where(name: "my_simulator").first()
+sim = oacis.Simulator.where(name: "my_simulator").first()
 ps = sim.find_parameter_set( {"p1":1.0, "p2":2.0, "p3":3.0} )
 #=> RubyObject( ParameterSet, 70231167310880 )
 ```
