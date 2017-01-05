@@ -1,11 +1,14 @@
 import time
+import logging
+from functools import reduce
 
 class OacisWatcher():
 
-    def __init__(self, polling = 5):
+    def __init__(self, polling = 5, logger = None):
         self.polling = polling
         self._observed_parameter_sets = {}
         self._observed_parameter_sets_all = {}
+        self.logger = logger or self._default_logger()
 
     def watch_ps(self, ps, callback):
         psid = ps.id().to_s()
@@ -22,16 +25,27 @@ class OacisWatcher():
             self._observed_parameter_sets_all[sorted_ps_ids] = [ callback ]
 
     def loop(self):
-        print("start polling")
+        self.logger.info("start polling")
         while True:
             executed = True
             while executed:
                 executed = (self._check_completed_ps() or self._check_completed_ps_all())
             if len(self._observed_parameter_sets) == 0 and len(self._observed_parameter_sets_all) == 0:
                 break
-            print("waiting for %d sec" % self.polling)
+            self.logger.info("waiting for %d sec" % self.polling)
             time.sleep( self.polling )
-        print("stop polling")
+        self.logger.info("stop polling")
+
+    def _default_logger(self):
+        logger = logging.getLogger(__name__)
+        logger.setLevel( logging.INFO )
+        logger.propagate = False
+        ch = logging.StreamHandler()
+        ch.setLevel( logging.INFO )
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
+        return logger
 
     def _check_completed_ps(self):
         from . import ParameterSet
@@ -42,9 +56,9 @@ class OacisWatcher():
         for psid in psids:
             ps = ParameterSet.find(psid)
             if len(ps.runs()) == 0:
-                print("%s has no run" % ps.id().to_s() )
+                self.logger.info("%s has no run" % ps.id().to_s() )
             else:
-                print("calling callback for %s" % ps.id().to_s() )
+                self.logger.info("calling callback for %s" % ps.id().to_s() )
                 executed = True
                 queue = self._observed_parameter_sets[psid]
                 while len(queue) > 0:
@@ -61,7 +75,6 @@ class OacisWatcher():
 
     def _check_completed_ps_all(self):
         from . import ParameterSet
-        from functools import reduce
         executed = False
         flattened = reduce(lambda x,y: list(x)+list(y), self._observed_parameter_sets_all.keys(), [])
         watched_ps_ids = list( set(flattened) )
@@ -69,7 +82,7 @@ class OacisWatcher():
 
         for psids,callbacks in self._observed_parameter_sets_all.items():
             if all( (psid in completed) for psid in psids ):
-                print("calling callback for %s" % repr(psids) )
+                self.logger.info("calling callback for %s" % repr(psids) )
                 executed = True
                 watched_pss = [ ParameterSet.find(psid) for psid in psids ]
                 while len(callbacks) > 0:
