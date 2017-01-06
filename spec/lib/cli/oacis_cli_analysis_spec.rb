@@ -19,7 +19,7 @@ describe OacisCli do
   def create_job_parameters_json(path)
     File.open(path, 'w') {|io|
       job_parameters = {
-        "host_id" => @host.id.to_s,
+        "submitted_to" => @host.id.to_s,
         "host_parameters" => {"param1" => "foo", "param2" => "bar"},
         "mpi_procs" => 2,
         "omp_threads" => 8,
