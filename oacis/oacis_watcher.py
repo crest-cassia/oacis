@@ -51,7 +51,8 @@ class OacisWatcher():
             self.logger.info("stop polling. (interrupted=%s)" % self._signal_received)
         finally:
             signal.signal( signal.SIGINT, org_handler )
-            os.kill( os.getpid(), signal.SIGINT)
+            if self._signal_received:
+                os.kill( os.getpid(), signal.SIGINT)
 
     def _default_logger(self):
         logger = logging.getLogger(__name__)
