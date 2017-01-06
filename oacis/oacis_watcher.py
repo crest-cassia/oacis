@@ -8,10 +8,10 @@ from functools import reduce
 class OacisWatcher():
 
     def __init__(self, polling = 5, logger = None):
-        self.polling = polling
+        self._polling = polling
         self._observed_parameter_sets = {}
         self._observed_parameter_sets_all = {}
-        self.logger = logger or self._default_logger()
+        self._logger = logger or self._default_logger()
         self._signal_received = False
 
     def watch_ps(self, ps, callback):
@@ -35,7 +35,7 @@ class OacisWatcher():
         org_handler = signal.signal( signal.SIGINT, on_sigint)
 
         try:
-            self.logger.info("start polling")
+            self._logger.info("start polling")
             while True:
                 if self._signal_received:
                     break
@@ -46,9 +46,9 @@ class OacisWatcher():
                     break
                 if self._signal_received:
                     break
-                self.logger.info("waiting for %d sec" % self.polling)
-                time.sleep( self.polling )
-            self.logger.info("stop polling. (interrupted=%s)" % self._signal_received)
+                self._logger.info("waiting for %d sec" % self._polling)
+                time.sleep(self._polling)
+            self._logger.info("stop polling. (interrupted=%s)" % self._signal_received)
         finally:
             signal.signal( signal.SIGINT, org_handler )
             if self._signal_received:
@@ -76,9 +76,9 @@ class OacisWatcher():
                 break
             ps = ParameterSet.find(psid)
             if len(ps.runs()) == 0:
-                self.logger.info("%s has no run" % ps.id().to_s() )
+                self._logger.info("%s has no run" % ps.id().to_s())
             else:
-                self.logger.info("calling callback for %s" % ps.id().to_s() )
+                self._logger.info("calling callback for %s" % ps.id().to_s())
                 executed = True
                 queue = self._observed_parameter_sets[psid]
                 while len(queue) > 0:
@@ -104,7 +104,7 @@ class OacisWatcher():
             if self._signal_received:
                 break
             if all( (psid in completed) for psid in psids ):
-                self.logger.info("calling callback for %s" % repr(psids) )
+                self._logger.info("calling callback for %s" % repr(psids))
                 executed = True
                 watched_pss = [ ParameterSet.find(psid) for psid in psids ]
                 while len(callbacks) > 0:
