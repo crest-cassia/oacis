@@ -127,7 +127,7 @@ class OacisCli < Thor
 
   def set_job_parameters(analyses, job_param_json_path)
     job_parameters = load_json_file_or_string( job_param_json_path )
-    submitted_to = job_parameters["host_id"] ? Host.find(job_parameters["host_id"]) : nil
+    submitted_to = job_parameters["submitted_to"] ? Host.find(job_parameters["submitted_to"]) : nil
     host_parameters = job_parameters["host_parameters"].to_hash
     mpi_procs = job_parameters["mpi_procs"]
     omp_threads = job_parameters["omp_threads"]
