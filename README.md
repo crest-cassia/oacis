@@ -82,7 +82,7 @@ gem install bundler
 - clone the git repository and checkout the master branch
 
     ```sh:clone.sh
-git clone -b master https://github.com/crest-cassia/oacis.git
+git clone --recursive -b master https://github.com/crest-cassia/oacis.git
     ```
 
 - install dependent gems using bundle command

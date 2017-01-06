@@ -117,7 +117,7 @@ Here we show the instruction on how to setup prerequisites using apt-get.
 Prepare the source code of OACIS. If git is not installed on your system, install git first.
 
 ```shell
-git clone -b master https://github.com/crest-cassia/oacis.git
+git clone --recursive -b master https://github.com/crest-cassia/oacis.git
 ```
 
 After this command, source codes for OACIS is downloaded to `oacis/` directory.

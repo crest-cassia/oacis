@@ -122,7 +122,7 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
 まず手元にOACISのソースコード一式をgit clonします。（gitがない場合はダウンロードします。）
 
 ```shell
-git clone -b master https://github.com/crest-cassia/oacis.git
+git clone --recursive -b master https://github.com/crest-cassia/oacis.git
 ```
 
 クローンしたディレクトリに移動し、以下のコマンドを実行するとRubyのバージョン、bundlerのインストール、MongoDBのバージョン、MongoDBのデーモンが起動していることを確認する事ができます。
