@@ -11,6 +11,12 @@ class HostGroup
 
   before_destroy :validate_destroyable
 
+  def self.find_by_name( host_group_name )
+    found = self.where(name: host_group_name).first
+    raise "HostGroup #{host_group_name} is not found" unless found
+    found
+  end
+
   def destroyable?
     Run.where(status: :created, host_group: self).empty?
   end

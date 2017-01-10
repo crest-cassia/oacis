@@ -137,6 +137,21 @@ describe Simulator do
     end
   end
 
+  describe ".find_by_name" do
+
+    it "returns the simulator with the given name" do
+      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      found = Simulator.find_by_name(sim.name)
+      expect(sim).to eq found
+    end
+
+    it "raises an exception when the simulator is not found" do
+      expect {
+        Simulator.find_by_name("do_not_exist")
+      }.to raise_error("Simulator do_not_exist is not found")
+    end
+  end
+
   describe "#find_parameter_set" do
 
     before(:each) do
@@ -237,6 +252,23 @@ describe Simulator do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
       expect( sim.default_parameters[:L] ).to_not be_nil
       expect( sim.default_parameters[:T] ).to_not be_nil
+    end
+  end
+
+  describe "#find_analyzer_by_name" do
+
+    it "returns the analyzer of the given name" do
+      sim = FactoryGirl.create(:simulator, analyzers_count: 2)
+      azr = sim.analyzers.first
+      found = sim.find_analyzer_by_name( azr.name )
+      expect(found).to eq azr
+    end
+
+    it "raises an exception when the analyzer is not found" do
+      sim = FactoryGirl.create(:simulator, analyzers_count: 0)
+      expect {
+        azr = sim.find_analyzer_by_name("do_not_exist")
+      }.to raise_error("Analyzer do_not_exist is not found")
     end
   end
 

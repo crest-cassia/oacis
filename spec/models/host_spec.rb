@@ -188,6 +188,21 @@ describe Host do
     end
   end
 
+  describe ".find_by_name" do
+
+    it "returns the host with the given name" do
+      h = FactoryGirl.create(:host)
+      found = Host.find_by_name(h.name)
+      expect(h).to eq found
+    end
+
+    it "raises an exception when the host is not found" do
+      expect {
+        Host.find_by_name("do_not_exist")
+      }.to raise_error("Host do_not_exist is not found")
+    end
+  end
+
   describe "#connected?" do
 
     before(:each) do
