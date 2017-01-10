@@ -87,7 +87,9 @@ sim = Simulator.find("...ID...")
 - Get a simulator by name
 
 ```ruby
-sim = Simulator.where(name: "my_simulator").first
+sim = Simulator.find_by_name("my_simulator")
+# If you are using OACIS v2.9.0 or prior, use the following.
+#   sim = Simulator.where(name: "my_simulator").first
 ```
 
 #### referring
@@ -228,13 +230,9 @@ run.discard
 #### getting
 
 ```ruby
-host = Host.find("...HOSTID...")
-```
-
-#### searching
-
-```ruby
-host = Host.where("name"=>"localhost").first
+host = Host.find_by_name("localhost")
+# If you are using OACIS v2.9.0 or prior, use the following.
+# host = Host.where(name: "localhost").first
 ```
 
 #### referring
@@ -262,7 +260,9 @@ azr = Analyzer.find("...ID...")
 #### searching
 
 ```ruby
-azr = sim.analyzers.where(name:"my_analyzer").first
+azr = sim.find_analyzer_by_name("my_analyzer")
+# If you are using OACIS v2.9.0 or prior, use the following.
+# azr = sim.analyzers.where(name:"my_analyzer").first
 ```
 
 #### referring

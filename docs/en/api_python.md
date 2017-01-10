@@ -87,7 +87,9 @@ sim = oacis.Simulator.find("...ID...")
 - Get a simulator by name
 
 ```python
-sim = oacis.Simulator.where(name="my_simulator").first()
+sim = oacis.Simulator.find_by_name("my_simulator")
+# If you are using OACIS v2.9.0 or prior, use the following.
+# sim = oacis.Simulator.where(name="my_simulator").first()
 ```
 
 #### referring
@@ -235,13 +237,9 @@ run.discard()
 #### getting
 
 ```python
-host = oacis.Host.find("...HOSTID...")
-```
-
-#### searching
-
-```python
-host = oacis.Host.where(name="localhost").first()
+host = oacis.Host.find_by_name("localhost")
+# If you are using OACIS v2.9.0 or prior, use the following.
+# host = oacis.Host.where(name="localhost").first()
 ```
 
 #### referring
@@ -269,7 +267,9 @@ azr = oacis.Analyzer.find("...ID...")
 #### searching
 
 ```python
-azr = sim.analyzers().where(name:"my_analyzer").first()
+azr = sim.find_analyzer_by_name("my_analyzer")
+# If you are using OACIS v2.9.0 or prior, use the following.
+# azr = sim.analyzers().where(name:"my_analyzer").first()
 ```
 
 #### referring
