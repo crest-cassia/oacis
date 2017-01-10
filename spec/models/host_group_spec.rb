@@ -31,4 +31,19 @@ RSpec.describe HostGroup do
       expect( HostGroup.new( @valid_attr ) ).not_to be_valid
     end
   end
+
+  describe ".find_by_name" do
+
+    it "returns the host_group with the given name" do
+      hg = FactoryGirl.create(:host_group)
+      found = HostGroup.find_by_name(hg.name)
+      expect(hg).to eq found
+    end
+
+    it "raises an exception when the host_group is not found" do
+      expect {
+        HostGroup.find_by_name("do_not_exist")
+      }.to raise_error("HostGroup do_not_exist is not found")
+    end
+  end
 end

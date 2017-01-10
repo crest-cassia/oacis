@@ -61,6 +61,13 @@ class Host
   ]
 
   public
+  # API
+  def self.find_by_name( host_name )
+    found = self.where(name: host_name).first
+    raise "Host #{host_name} is not found" unless found
+    found
+  end
+
   # return true if connection established, return true
   # return false otherwise
   # connection exception is stored in @connection_error

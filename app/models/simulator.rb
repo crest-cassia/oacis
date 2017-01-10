@@ -137,6 +137,12 @@ class Simulator
   end
 
   # used by APIs
+  def self.find_by_name( sim_name )
+    found = self.where(name: sim_name).first
+    raise "Simulator #{sim_name} is not found" unless found
+    found
+  end
+
   def find_parameter_set( parameters )
     given_keys = parameters.keys.map(&:to_s)
     expected_keys = default_parameters.keys
@@ -159,6 +165,12 @@ class Simulator
       default[pd.key] = pd.default
     end
     default.with_indifferent_access
+  end
+
+  def find_analyzer_by_name( azr_name )
+    found = self.analyzers.where(name: azr_name).first
+    raise "Analyzer #{azr_name} is not found" unless found
+    found
   end
 
   def discard
