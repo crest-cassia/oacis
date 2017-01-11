@@ -18,8 +18,8 @@ next_page: tips
 
 ## Iterative Parameter Search using OACIS Watcher
 
-- Global Optimization using Differential Evolution
-    - [OACIS_DE_sample](https://gist.github.com/yohm/d192676f5fce8d60eb5e9b2c773df5b4)
+- Global Optimization using Differential Evolution algorithm
+    - [oacis_sample_optimize_with_de](https://github.com/yohm/oacis_sample_optimize_with_de)
 - An Iterative Trial from Candidate Parameter Values
-    - [OACIS_iterative_parameter_trial](https://gist.github.com/yohm/a186812fec6bbce04d384416f3f16147)
+    - [oacis_sample_iterative_trial_on_candidates](https://github.com/yohm/oacis_sample_iterative_trial_on_candidates)
 
