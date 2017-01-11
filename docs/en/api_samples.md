@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Python API"
+title: "Samples"
 lang: en
 next_page: tips
 ---
