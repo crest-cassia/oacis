@@ -57,7 +57,7 @@ This command uses an image in which step 2 of the tutorial in the next page has 
 
 ### Prerequisites
 
-- Ruby 2.2 or later
+- Ruby 2.2 or 2.3. (2.4 is not supported yet.)
 - MongoDB 2.4.9 or later (http://www.mongodb.org/)
 - bundler (http://bundler.io/)
 
