@@ -66,7 +66,7 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 
 ### 前提条件
 
-- Ruby 2.2 以降
+- Ruby 2.2 or 2.3 (2.4系統は未対応)
 - MongoDB 2.4.9 (http://www.mongodb.org/)
 - bundler (http://bundler.io/)
 

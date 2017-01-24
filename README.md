@@ -71,7 +71,7 @@ For the details, please refer to the document.
 ps aux | grep "mongod"
         ```
 
-- install ruby2.2.0 or later and [bundler](http://bundler.io/)
+- install ruby2.2 or 2.3 and [bundler](http://bundler.io/)
     - to install bundler gem, run the following command
         - when using Ruby installed to the system, you might need to run as `sudo`
 
