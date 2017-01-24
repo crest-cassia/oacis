@@ -202,23 +202,23 @@ Hereafter, we call the host where OACIS is running "OACIS host".
 
 ## Note on security ( for both (1.1),(1.2) )
 
-**Please skip this section if you are using docker from Mac or Windows.**
-
-Please use OACIS in intranet.
+Please do not expose OACIS to the Internet.
 Since OACIS can invoke an arbitrary command on the computational host, a serious security issue can happen if a malicious user has access to OACIS.
-We recommend to run OACIS on a personal machine, and use firewall to deny access from other host.
-The web server and MongoDB use 3000 and 27017 port, respectively. Please deny access to these ports from other host.
+We recommend you to run OACIS on a personal machine, and prevent others from using your OACIS.
 
-If you run Docker from Mac or Windows, the access from other host is prohibited by default. You do not have to do any further action.
+From OACIS 2.11.0, OACIS is bound to `127.0.0.1` by default, which means you can access OACIS only from the localhost.
+Since MongoDB is also bound to `127.0.0.1` by default, you do not have to take further actions.
+If you are using OACIS 2.10.0 or earlier, use firewall to deny access from other host.
+The web server uses port 3000 so deny access to these ports from other host.
 
-If you use Docker from Linux, we recommend to use "iptables" command to setup firewall.
-By running the following command, all access to OACIS via ethernet is denied.
+If you use Docker, we recommend to publish the port of the container only to the localhost. To do so, run `docker run` command with `-p` option as follows.
 
 ```shell
-iptables -I FORWARD -i eth+ -o docker0 -p tcp -m tcp --dport 3000 -j DROP
+docker run -p 127.0.0.1:3000:3000 -dt oacis/oacis_base
 ```
 
-Even if you setup the firewall, you can access OACIS from other host using SSH port forwarding.
+You might worry that limiting access from another host may cause some inconvenience.
+You can still use OACIS remotely using SSH port forwarding even under this constraint.
 If your OACIS is running on "server.example.com" for example, you can forward the port of OACIS to localhost:3000 by running the following command.
 
 ```shell

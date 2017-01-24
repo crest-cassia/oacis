@@ -75,6 +75,8 @@ read_only: true
 {% endhighlight %}
 
 With this setting, the worker process is not launched, and any modification from web browsers become impossible.
+Furthremore, OACIS is bound to IP address `0.0.0.0` under this setting by default, making OACIS accessible from other hosts.
+If you would like to customize the binding IP address, add a line like `binding_ip: 'localhost'`.
 
 We recommend to periodically synchronize the files of the public OACIS server with your local OACIS server where actual simulations are conducted.
 
