@@ -133,6 +133,25 @@ describe OacisWatcher do
       ret = @watcher.send(:check_completed_ps_all)
       expect( ret ).to be_falsey
     end
+
+    it "can call watch_all_ps recursively" do
+      ps1, ps2 = @sim.parameter_sets[0..1]
+      FactoryGirl.create(:finished_run, parameter_set: ps1)
+      FactoryGirl.create(:finished_run, parameter_set: ps2)
+      mock1 = double("mock")
+      expect( mock1 ).to receive(:callback)
+      @watcher.watch_all_ps( [ps1] ) {|_|
+        @watcher.watch_all_ps( [ps2] ) {|pss|
+          expect( pss.to_a ).to match_array [ps2]
+          mock1.callback
+        }
+      }
+
+      2.times do |t| # the nested callback is called after checked twice
+        ret = @watcher.send(:check_completed_ps_all)
+        expect( ret ).to be_truthy
+      end
+    end
   end
 end
 
