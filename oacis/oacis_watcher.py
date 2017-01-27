@@ -101,7 +101,8 @@ class OacisWatcher():
         watched_ps_ids = list( set(flattened) )
         completed = self._completed_ps_ids( watched_ps_ids )
 
-        for psids,callbacks in self._observed_parameter_sets_all.items():
+        for psids in list(self._observed_parameter_sets_all.keys()):
+            callbacks = self._observed_parameter_sets_all[psids]
             if self._signal_received:
                 break
             if all( (psid in completed) for psid in psids ):
