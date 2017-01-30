@@ -171,6 +171,27 @@ class TestOacisWatcher(unittest.TestCase):
         mock1.assert_not_called()
         self.assertFalse( ret )
 
+    def test_check_completed_ps__recursive_call(self):
+        sim = self.build_simulator()
+        self.build_ps(sim, 2)
+        ps1 = sim.parameter_sets().asc('id').first()
+        self.build_run( ps1, 0, 1 )
+        ps2 = sim.parameter_sets().asc('id').last()
+        self.build_run( ps2, 0, 1 )
+
+        mock1 = MagicMock()
+        w = oacis.OacisWatcher()
+        def callback(ps_list):
+            w.watch_all_ps( [ps2], mock1 )
+        w.watch_all_ps( [ps1], callback )
+        ret = w._check_completed_ps_all()
+        self.assertTrue( ret )
+        mock1.assert_not_called()
+
+        ret = w._check_completed_ps_all()
+        self.assertTrue( ret )
+        mock1.assert_called()
+
 if __name__ == '__main__':
     setupSuite()
     unittest.main()
