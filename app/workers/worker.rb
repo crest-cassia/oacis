@@ -22,7 +22,10 @@ class Worker < DaemonSpawn::Base
         task.call(@logger)
         break if $term_received
       end
-      sleep self.class::INTERVAL
+      self.class::INTERVAL.times do |t|
+        break if $term_received
+        sleep 1
+      end
       break if $term_received
     end
 

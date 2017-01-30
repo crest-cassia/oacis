@@ -102,7 +102,8 @@ class OacisWatcher
     watched_ps_ids = @observed_parameter_sets_all.keys.flatten
     completed = completed_ps_ids( watched_ps_ids )
 
-    @observed_parameter_sets_all.each do |watched_ps_ids, callbacks|
+    @observed_parameter_sets_all.keys.each do |watched_ps_ids|
+      callbacks = @observed_parameter_sets_all[watched_ps_ids]
       if watched_ps_ids.all? {|psid| completed.include?(psid) }
         @logger.info "calling callback for #{watched_ps_ids}"
         executed = true

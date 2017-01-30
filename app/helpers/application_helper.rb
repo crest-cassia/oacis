@@ -61,7 +61,7 @@ module ApplicationHelper
 
   def shortened_id(id)
     str = id.to_s
-    str[4..7] + str[-6..-5]
+    str[5..7] + str[-3..-1]
   end
 
   def shortened_job_id(job_id)

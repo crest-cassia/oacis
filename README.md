@@ -1,6 +1,6 @@
 # OACIS
 
-[![GitHub version](https://badge.fury.io/gh/crest-cassia%2Foacis.svg)](https://badge.fury.io/gh/crest-cassia%2Foacis)
+[![GitHub version](https://img.shields.io/github/release/crest-cassia/oacis.svg)](https://github.com/crest-cassia/oacis)
 [![Build Status](https://travis-ci.org/crest-cassia/oacis.svg?branch=master)](https://travis-ci.org/crest-cassia/oacis)
 
 ## What is OACIS?
@@ -49,76 +49,15 @@ p1_values.each do |p1|                  # iterate over p1
 end
 ```
 
-## Getting Started
+## Usage
 
-There are two ways to install OACIS. One is to use a virtual machine environment, and the other is to install on your system natively.
-If you are using Linux or Mac, install it on your system directly.
-If you are using Windows, please use a virtual machine environment using Docker.
-
-### Installing on your system
-
-Basic procedure to install OACIS is as follows.
-For the details, please refer to the document.
-
-- Supported OS: you need unix like system such as Linux or MacOSX.
-    - If you are using Windows, we recommend using a virtual machine.
-
-- install [MongoDB](http://www.mongodb.org/) on your system.
-    - using package management system such as yum or [homebrew](http://brew.sh/) will be easy for you.
-    - After the installation, check if MongoDB is running
-
-        ```sh:check_db_daemons.sh
-ps aux | grep "mongod"
-        ```
-
-- install ruby2.2.0 or later and [bundler](http://bundler.io/)
-    - to install bundler gem, run the following command
-        - when using Ruby installed to the system, you might need to run as `sudo`
-
-    ```sh:install_bundler.sh
-gem install bundler
-    ```
-
-- clone the git repository and checkout the master branch
-
-    ```sh:clone.sh
-git clone --recursive -b master https://github.com/crest-cassia/oacis.git
-    ```
-
-- install dependent gems using bundle command
-    - change directory to _oacis/_, and run the following command
-
-      ```sh:install_sh
-bundle install --path=vendor/bundle
-      ```
-
-- run daemons
-    - at the root directory, run the following command
-
-    ```sh:start_daemon.sh
-bundle exec rake daemon:start
-    ```
-
-    - to stop the daemons,
-
-    ```sh:stop_daemon.sh
-bundle exec rake daemon:stop
-    ```
-
-### Installing on virtual machine using Docker
-
-The easiest way to start OACIS for windows users is using Docker.
-
-- Install [docker](https://www.docker.com/) (Linux) or [docker Toolbox](https://www.docker.com/toolbox) (MacOS, Windows).
-- Then git clone [oacis_docker](https://github.com/crest-cassia/oacis_docker) repository, and follow the instruction there.
-
-You can start OACIS in a few minutes.
+Visit the [document](http://crest-cassia.github.io/oacis/) of OACIS. A docker image is also available.
 
 ## License
 
 The MIT License (MIT)
 
-Copyright (c) 2013-2016 RIKEN, AICS
+Copyright (c) 2013-2017 RIKEN, AICS
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -137,9 +76,6 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## Documents
-
-- http://crest-cassia.github.io/oacis/
 
 ## Publications
 
@@ -150,7 +86,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Contact
 
-- Just send your feedback to us!
+- Please send your feedback to us.
     - `oacis-dev _at_ googlegroups.com` (replace _at_ with @)
     - We appreciate your questions, feature requests, and bug reports. Do not hesitate to give us your feedbacks.
 - You'll have announcements of new releases if you join the following google group. Take a look at

@@ -35,22 +35,9 @@ Windowsの方は(1.1)を選択してください。Unix系OS(Linux,Mac)の場合
 Linuxだけでなく、Windows、MacOSにも導入することができます。
 手順の概要は以下の通りです。
 
-1. Dockerを導入
-  - dockerの導入方法はDockerの[ドキュメント](https://docs.docker.com/)を参照のこと
-    - (Mac,Windows) [Docker Toolbox](https://www.docker.com/toolbox)を使ってインストールします。
-        - インストール後、Docker Quickstart Terminal という端末を起動できるようになる。以下の作業はこの端末上で実行すること
-1. docker run コマンドを実行
-    - 初めてOACISを利用する方で、すぐに次ページのチュートリアルを実施したい場合は `docker run --name oacis -p 3000:3000 -dt oacis/oacis_tutorial` を実行します。
-        - このコマンドを実行すると、次ページのSTEP 2まで完了済みの状態の仮想環境イメージがダウンロードされ、仮想環境が起動します。
-        - チュートリアル用の設定は不要な場合は `docker run --name oacis -p 3000:3000 -dt oacis/oacis` を実行すると、OACIS実行に最小限の設定が行われた仮想環境を起動できます。
-1. ブラウザでアクセス
-  - (Linux) http://localhost:3000, (Mac or Windows) http://192.168.99.100:3000 でOACISのトップページにアクセスできます。
-      - 上記コマンド実行後、OACISが起動してトップページが表示できるまで数十秒かかる場合があります。ページが表示されない場合は、少し待ってブラウザのページを再読み込みしてください。
-1. 仮想マシンの停止と再起動を行いたい場合は、以下のコマンドを実行します。
-  - 仮想マシンを停止したい場合 : `docker stop oacis`
-  - 停止した仮想マシンの再起動したい場合 : `docker start oacis`
-
-詳細は[oacis_docker](https://github.com/crest-cassia/oacis_docker) のREADMEを参照してください。
+インストール手順は[oacis_docker](https://github.com/crest-cassia/oacis_docker)のREADMEを参照してください。
+**oacis_docker**はOACISのDockerイメージを作成するプロジェクトです。
+ここで作成されているイメージには、次ページのチュートリアルのStep1までが実行済みの状態で保存されています。
 
 ## (1.2) 手動でのOACISのインストール
 
@@ -66,7 +53,7 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 
 ### 前提条件
 
-- Ruby 2.2 以降
+- Ruby 2.2 or 2.3 (2.4系統は未対応)
 - MongoDB 2.4.9 (http://www.mongodb.org/)
 - bundler (http://bundler.io/)
 
@@ -205,27 +192,42 @@ OACISが停止している間も実行中のジョブは計算ホストでその
 
 ## 注意点（(1.1)の場合も(1.2)の場合も共通）
 
-**MacまたはWindowsから仮想環境を利用している場合は設定不要です。**
-
-OACISはイントラネット内で使用してください。
+OACISをインターネットに公開しないでください。
 OACISは計算ホストとして登録したサーバー内で任意のコマンドを実行できるので、悪意のあるユーザーからアクセスされるとセキュリティホールになります。
-各個人のマシン上で起動し、ファイアウォールによりOACISには外部からのアクセスを許可しないように設定しておくのが望ましいです。
-Railsは3000番、MongoDBは27017番のポートをそれぞれ使用しているので、これらのポートへのアクセスを制限してください。
+各個人のマシン上で起動し、他の人からのアクセスを受け付けないようにして置く必要があります。
 
-Mac,WindowsからDocker環境を使用している場合は、デフォルトで外部からのアクセスはできないので特に対応をする必要はありません。
+OACIS 2.11.0から、デフォルトで`127.0.0.1`のアドレスにバインドされる様になりました。他のマシンからはOACISにアクセスできません。
+MongoDBもデフォルトでは`127.0.0.1`にバインドされるので、デフォルトで使っている限りさらに対策を行う必要はありません。
+バージョン2.10以前のOACISを利用している場合は、ファイアウォールの設定を行い3000番ポートへのアクセスを制限してください。
 
-LinuxからDocker環境を使用している場合は、iptablesコマンドによるファイアウォール設定を推奨します。
-以下のコマンドを実行することにより、有線接続の外部ネットワークからOAICSへのアクセスを拒否できます。
+Docker環境を使用している場合は、公開されたポートをローカルホストにバインドすることが望ましいです。こうすることにより他のホストからアクセスできなくなります。
+`docker run`コマンドを実行する際に、`-p`オプションで`127.0.0.1`にバインドするようにしてください。
 
 ```shell
-iptables -I FORWARD -i eth+ -o docker0 -p tcp -m tcp --dport 3000 -j DROP
+docker run -p 127.0.0.1:3000:3000 -dt oacis/oacis_base
 ```
 
-OACISへのアクセスをローカルホストからに制限した場合でもsshポートフォワーディングを使用する事で、別の端末からOACISにアクセスすることが可能です。
+外部からのアクセスを制限するとOACISの利便性が失われると心配かもしれませんが、このように設定しても外部からSSHのポートフォワーディングを利用することでOACISを使うことができます。
 OACISを server.example.com で起動している場合、以下のコマンドを実行すると localhost:3000 でOACISにアクセスできるようになります。
 （"server.example.com"をOACISが起動しているサーバーに置き換えて実行してください。）
 
 ```shell
 ssh -N -f -L 3000:localhost:3000 server.example.com
 ```
+
+# 更新
+
+OACISを更新するためには、"oacis"ディレクトリで以下のコマンドを実行してください。
+
+```
+bundle exec rake daemon:stop            # tentatively stop OACIS
+git pull origin master                  # get the latest source code of OACIS
+git pull origin master --tags
+git submodule update --init --recursive
+bundle install                          # install dependent libraries
+bundle exec rake daemon:start           # restart OACIS
+```
+
+OACISのユーザーメーリングリストに登録することをお勧めします。新規リリースについての情報がメールで通知されます。
+[oacis-users mailing list](https://groups.google.com/forum/#!forum/oacis-users)
 

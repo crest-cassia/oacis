@@ -14,7 +14,10 @@ namespace :daemon do
       if is_server_running?
         $stderr.puts "server is already running: #{SERVER_PID}"
       else
-        cmd = "bundle exec rails s -d -b 0.0.0.0"
+        binding_ip = "127.0.0.1"
+        binding_ip = "0.0.0.0" if AcmProto::Application.config.user_config["read_only"]
+        binding_ip = AcmProto::Application.config.user_config["binding_ip"] || binding_ip
+        cmd = "bundle exec rails s -d -b #{binding_ip}"
         puts cmd
         system(cmd)
       end
