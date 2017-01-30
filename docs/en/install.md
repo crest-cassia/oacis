@@ -36,12 +36,8 @@ Using [Docker](https://www.docker.com/), you can easily install a virtual machin
 Docker is available not only on Linux but on Windows and MacOS X.
 
 The installation procedure is summarized in the README of [oacis_docker](https://github.com/crest-cassia/oacis_docker).
-**oacis_docker** is a project for developing a docker image for OACIS.
-
-As indicated in the README, you can launch the virtual machine by `docker run --name oacis -p 3000:3000 -dt oacis/oacis` command.
-If you would like to start the tutorial in the next page as quickly as possible, execute `docker run --name oacis -p 3000:3000 -dt oacis/oacis_tutorial`.
-This command uses an image in which step 2 of the tutorial in the next page has already been setup.
-
+**oacis_docker** is a project developing a docker image for OACIS.
+In the docker images, step 1 of the tutorial in the next page has already been setup.
 
 ## (1.2) Installing OACIS on a native machine
 
@@ -225,4 +221,19 @@ If your OACIS is running on "server.example.com" for example, you can forward th
 ssh -N -f -L 3000:localhost:3000 server.example.com
 ```
 (replace "server.example.com" with the host name of OACIS)
+
+# Updating
+
+To update OACIS, run the following commands at "oacis" directory.
+
+```
+bundle exec rake daemon:stop            # tentatively stop OACIS
+git pull origin master                  # get the latest source code of OACIS
+git pull origin master --tags
+git submodule update --init --recursive
+bundle install                          # install dependent libraries
+bundle exec rake daemon:start           # restart OACIS
+```
+
+Please consider subscribing to [oacis-users mailing list](https://groups.google.com/forum/#!forum/oacis-users). A new release will be notified via this mailing list.
 

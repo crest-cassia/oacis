@@ -35,22 +35,9 @@ Windowsの方は(1.1)を選択してください。Unix系OS(Linux,Mac)の場合
 Linuxだけでなく、Windows、MacOSにも導入することができます。
 手順の概要は以下の通りです。
 
-1. Dockerを導入
-  - dockerの導入方法はDockerの[ドキュメント](https://docs.docker.com/)を参照のこと
-    - (Mac,Windows) [Docker Toolbox](https://www.docker.com/toolbox)を使ってインストールします。
-        - インストール後、Docker Quickstart Terminal という端末を起動できるようになる。以下の作業はこの端末上で実行すること
-1. docker run コマンドを実行
-    - 初めてOACISを利用する方で、すぐに次ページのチュートリアルを実施したい場合は `docker run --name oacis -p 3000:3000 -dt oacis/oacis_tutorial` を実行します。
-        - このコマンドを実行すると、次ページのSTEP 2まで完了済みの状態の仮想環境イメージがダウンロードされ、仮想環境が起動します。
-        - チュートリアル用の設定は不要な場合は `docker run --name oacis -p 3000:3000 -dt oacis/oacis` を実行すると、OACIS実行に最小限の設定が行われた仮想環境を起動できます。
-1. ブラウザでアクセス
-  - (Linux) http://localhost:3000, (Mac or Windows) http://192.168.99.100:3000 でOACISのトップページにアクセスできます。
-      - 上記コマンド実行後、OACISが起動してトップページが表示できるまで数十秒かかる場合があります。ページが表示されない場合は、少し待ってブラウザのページを再読み込みしてください。
-1. 仮想マシンの停止と再起動を行いたい場合は、以下のコマンドを実行します。
-  - 仮想マシンを停止したい場合 : `docker stop oacis`
-  - 停止した仮想マシンの再起動したい場合 : `docker start oacis`
-
-詳細は[oacis_docker](https://github.com/crest-cassia/oacis_docker) のREADMEを参照してください。
+インストール手順は[oacis_docker](https://github.com/crest-cassia/oacis_docker)のREADMEを参照してください。
+**oacis_docker**はOACISのDockerイメージを作成するプロジェクトです。
+ここで作成されているイメージには、次ページのチュートリアルのStep1までが実行済みの状態で保存されています。
 
 ## (1.2) 手動でのOACISのインストール
 
@@ -227,4 +214,20 @@ OACISを server.example.com で起動している場合、以下のコマンド�
 ```shell
 ssh -N -f -L 3000:localhost:3000 server.example.com
 ```
+
+# 更新
+
+OACISを更新するためには、"oacis"ディレクトリで以下のコマンドを実行してください。
+
+```
+bundle exec rake daemon:stop            # tentatively stop OACIS
+git pull origin master                  # get the latest source code of OACIS
+git pull origin master --tags
+git submodule update --init --recursive
+bundle install                          # install dependent libraries
+bundle exec rake daemon:start           # restart OACIS
+```
+
+OACISのユーザーメーリングリストに登録することをお勧めします。新規リリースについての情報がメールで通知されます。
+[oacis-users mailing list](https://groups.google.com/forum/#!forum/oacis-users)
 
