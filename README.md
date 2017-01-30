@@ -1,6 +1,6 @@
 # OACIS
 
-[![GitHub version](https://badge.fury.io/gh/crest-cassia%2Foacis.svg)](https://badge.fury.io/gh/crest-cassia%2Foacis)
+[![GitHub version](https://img.shields.io/github/release/crest-cassia/oacis.svg)](https://github.com/crest-cassia/oacis)
 [![Build Status](https://travis-ci.org/crest-cassia/oacis.svg?branch=master)](https://travis-ci.org/crest-cassia/oacis)
 
 ## What is OACIS?
