@@ -135,7 +135,7 @@ To make a ParameterSet, click the [New Parameter Set] button.
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/hzVnuW2M7oc" frameborder="0" allowfullscreen class="youtube"></iframe>
 
-You will find a form as in the above video. Fill in the parameters you want to create and click [Create] to create a ParameterSet.
+You will find a form as in the above video. Fill in the parameters you want to create and set "Target # of Runs" to 0. Click [Create] to create a ParameterSet.
 (For your information, we can create runs as well as the ParameterSets by setting the number of runs to a non-zero value. However, let us keep the number of runs "0" for simplicity for now.)
 
 (Tips) You may create multiple ParameterSets at once if you fill in multiple values in a comma separated format. Since it may take some time, we limit the maximum number of runs that we can create at once to 100.
