@@ -137,8 +137,8 @@ ParameterSetを新規作成するために[New Parameter Set]のボタンをク�
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/hzVnuW2M7oc" frameborder="0" allowfullscreen class="youtube"></iframe>
 
-上の様に登録フォームが現れるので、シミュレーションを実行したいパラメータを入力して[Create]をクリックします。
-（この画面からRunも作成する事ができますが、今回は「# of Runs」のフィールドは０のままにしておきましょう。
+上の様に登録フォームが現れるので、シミュレーションを実行したいパラメータを入力し、"Target # of Runs"を0にします。最後に[Create]をクリックします。
+（この画面からRunも作成する事ができますが、今回は簡単のため「# of Runs」のフィールドは０のままにしておきましょう。）
 
 （注）ちなみにこのときにコンマで区切って複数の値を入力すると、複数のParameterSetを同時に作成する事ができます。
 ただし同時に作ることができるParameterSetの数は100以下に制限しており、それを超えるとエラーになります。

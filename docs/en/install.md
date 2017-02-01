@@ -210,7 +210,7 @@ The web server uses port 3000 so deny access to these ports from other host.
 If you use Docker, we recommend to publish the port of the container only to the localhost. To do so, run `docker run` command with `-p` option as follows.
 
 ```shell
-docker run -p 127.0.0.1:3000:3000 -dt oacis/oacis_base
+docker run -p 127.0.0.1:3000:3000 -dt oacis/oacis
 ```
 
 You might worry that limiting access from another host may cause some inconvenience.
