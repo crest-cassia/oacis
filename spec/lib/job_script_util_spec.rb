@@ -342,7 +342,7 @@ shared_examples_for JobScriptUtil do
 
         @submittable.reload
         expect(@submittable.status).to eq :failed
-        expect(@submittable.error_messages).to match /dotted field/
+        expect(@submittable.error_messages).not_to be_empty
         expect(@submittable.result).to be_nil
         # error messages: The dotted field 'a.b' in 'result.a.b' is not valid for storage.
       end

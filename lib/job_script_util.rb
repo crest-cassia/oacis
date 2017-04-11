@@ -146,7 +146,7 @@ EOS
         begin
           job.save!
         rescue => ex
-          error_message += "failed to save: #{ex.message}"
+          error_message += "failed to save: #{ex.inspect}"
           job.reload # reload must be called. Otherwise update_attribute will fail.
           job.update_attribute(:status, :failed)
         end
