@@ -126,7 +126,7 @@ EOS
           job.version = version
           is_updated = true
         rescue => ex
-          error_message+="failed to load _version.txt: #{ex.message}"
+          error_message+="failed to load _version.txt: #{ex.message}\n"
         end
       end
 
@@ -137,7 +137,7 @@ EOS
           job.result = {"result"=>job.result} unless job.result.is_a?(Hash)
           is_updated = true
         rescue => ex
-          error_message+="failed to load _output.json: #{ex.message}"
+          error_message+="failed to load _output.json: #{ex.message}\n"
         end
       end
 
