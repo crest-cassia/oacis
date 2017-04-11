@@ -147,7 +147,7 @@ class ParameterSetsController < ApplicationController
       run_option[:mpi_procs] = params[:run][:mpi_procs].to_i
       run_option[:omp_threads] = params[:run][:omp_threads].to_i
       run_option[:priority] = params[:run][:priority].to_i
-      run_option[:submitted_to] = params[:run][:submitted_to].length > 0 ? params[:run][:submitted_to] : nil # when manual submission is selected, the parameter value is empty string "".
+      run_option[:submitted_to] = params[:run][:submitted_to]
       run_option[:host_parameters] = params[:run][:host_parameters]
       run_option_escaped = run_option.to_json.gsub("'", "'\\\\''")
       cmd += " -r '#{run_option_escaped}'"
