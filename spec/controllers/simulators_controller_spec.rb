@@ -542,8 +542,8 @@ describe SimulatorsController do
       expect(response).to be_success
     end
 
-    it "returns http success if host_id is not found" do
-      param = {id: @sim.to_param, host_id: "manual"}
+    it "returns http success even if host_id is not found" do
+      param = {id: @sim.to_param, host_id: "DO_NOT_EXIST"}
       get :_host_parameters_field, param, valid_session
       expect(response).to be_success
     end
