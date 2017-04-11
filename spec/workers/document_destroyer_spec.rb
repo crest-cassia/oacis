@@ -64,7 +64,8 @@ describe DocumentDestroyer do
         run.status = :finished
         run.to_be_destroyed = true
         run.save!
-        anl = run.analyses.create(analyzer: sim.analyzers.first)
+        azr = sim.analyzers.first
+        anl = run.analyses.create(analyzer: azr, submitted_to: azr.executable_on.first)
 
         expect {
           DocumentDestroyer.perform(logger)

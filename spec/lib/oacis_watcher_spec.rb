@@ -90,7 +90,7 @@ describe OacisWatcher do
       FactoryGirl.create(:finished_run, parameter_set: ps)
       mock1 = double("mock")
       mock2 = double("mock")
-      @watcher.watch_ps(ps) {|ps| ps.runs.create; mock1.callback } # create a new run
+      @watcher.watch_ps(ps) {|ps| ps.runs.create(submitted_to: @sim.executable_on.first); mock1.callback } # create a new run
       @watcher.watch_ps(ps) {|ps| mock2.callback }  # second callback function
       expect( mock1 ).to receive(:callback)
       expect( mock2 ).to_not receive(:callback)

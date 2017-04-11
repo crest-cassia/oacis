@@ -13,12 +13,6 @@ export OACIS_OMP_THREADS=<%= omp_threads %>
 OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
 
 # PRE-PROCESS ---------------------
-if [ `basename $(pwd)` != ${OACIS_JOB_ID} ]; then  # for manual submission
-  mkdir -p ${OACIS_JOB_ID} && cd ${OACIS_JOB_ID}
-  if [ -e ../${OACIS_JOB_ID}_input.json ]; then
-    \\mv ../${OACIS_JOB_ID}_input.json ./_input.json
-  fi
-fi
 echo "{" > ../${OACIS_JOB_ID}_status.json
 echo "  \\"started_at\\": \\"`date`\\"," >> ../${OACIS_JOB_ID}_status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${OACIS_JOB_ID}_status.json

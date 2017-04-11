@@ -24,7 +24,7 @@
       - if host
         %td= link_to( host.name, host_path(host) )
       - else
-        %td= @analysis.manual_submission? ? "(manual submission)" : "-"
+        %td -
     %tr
       %th host group
       - hg = @analysis.host_group

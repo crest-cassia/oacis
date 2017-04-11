@@ -3,7 +3,6 @@
   .col-md-3
     - host_names = run.simulator.executable_on.map {|h| [h.name, h.id.to_s]}
     - host_names += HostGroup.all.map {|hg| ["HostGroup:#{hg.name}", hg.id.to_s] }
-    - host_names += [ ["(manual submission)", nil] ]
     - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
     = f.select(:submitted_to, options_for_select(host_names, selected: selected_id), {}, {class: 'form-control'})
 .form-group
@@ -27,7 +26,6 @@
   $(function() {
     $('select#run_submitted_to').change(function() {
       var host_id = $(this).val();
-      if( host_id == '' ) { host_id = 'manual'; }
       var update_mpi_omp_fields = function() {
         var mpi_field = $('#run_mpi_procs');
         var omp_field = $('#run_omp_threads');

@@ -71,7 +71,7 @@
     = f.label(:auto_run_submitted_to, "Host for Auto Run", class: ['col-md-2','control-label'])
     .col-md-3
       - selected_id = analyzer.auto_run_submitted_to.try(:id).try(:to_s) || analyzer.auto_run_host_group.try(:id).try(:to_s)
-      - opts = (Host.all.map {|h| [h.name, h.id]}) + (HostGroup.all.map {|hg| ["(HostGroup) #{hg.name}", hg.id]}) + [["(manual submission)", '']]
+      - opts = (Host.all.map {|h| [h.name, h.id]}) + (HostGroup.all.map {|hg| ["(HostGroup) #{hg.name}", hg.id]})
       - host_options = options_for_select( opts, selected: selected_id)
       = f.select(:auto_run_submitted_to, host_options, {}, {class: 'form-control'})
   .form-group

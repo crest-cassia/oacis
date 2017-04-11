@@ -3,7 +3,10 @@ require 'spec_helper'
 shared_examples_for JobScriptUtil do
 
   def run_test_script_in_temp_dir
-    Dir.chdir(@temp_dir) {
+    work_dir = @temp_dir.join( @submittable.id.to_s )
+    FileUtils.mkdir_p(work_dir)
+    Dir.chdir(work_dir) {
+      work_dir = @submittable.id.to_s
       str = JobScriptUtil.script_for(@submittable)
       script_path = 'test.sh'
       File.open( script_path, 'w') {|io| io.print str }
