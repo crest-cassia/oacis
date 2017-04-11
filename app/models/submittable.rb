@@ -57,11 +57,8 @@ module Submittable
     base.send(:after_create, :set_job_script,
                              # set_job_script must be called at after_create
                              # since seed is set at before_create callback
-                             :create_job_script_for_manual_submission,
                              :update_default_host_parameter_on_its_executable,
                              :update_default_mpi_procs_omp_threads)
-    base.send(:before_destroy,
-              :delete_files_for_manual_submission)
   end
 
   def executable
@@ -88,10 +85,6 @@ module Submittable
     cmd = executable.command
     cmd += " #{args}" if args.length > 0
     cmd
-  end
-
-  def manual_submission?
-    submitted_to.nil? && host_group.nil?
   end
 
   private
@@ -154,27 +147,6 @@ module Submittable
     self.update_attribute(:job_script, JobScriptUtil.script_for(self))
   end
 
-  def create_job_script_for_manual_submission
-    return unless manual_submission?
-
-    FileUtils.mkdir_p(ResultDirectory.manual_submission_path)
-    js_path = ResultDirectory.manual_submission_job_script_path(self)
-    File.open(js_path, 'w') {|io| io.puts job_script; io.flush }
-    if executable.support_input_json
-      input_json_path = ResultDirectory.manual_submission_input_json_path(self)
-      File.open(input_json_path, 'w') {|io| io.puts input.to_json; io.flush }
-    end
-
-    if executable.pre_process_script.present?
-      pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(self)
-      File.open(pre_process_script_path, 'w') {|io| io.puts executable.pre_process_script.gsub(/\r\n/, "\n"); io.flush } # Since a string taken from DB may contain \r\n, gsub is necessary
-      pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(self)
-      File.open(pre_process_executor_path, 'w') {|io| io.puts pre_process_executor; io.flush }
-      cmd = "cd #{pre_process_executor_path.dirname}; chmod +x #{pre_process_executor_path.basename}"
-      system(cmd)
-    end
-  end
-
   def pre_process_executor
     script = <<-EOS
 #!/bin/bash
@@ -213,7 +185,7 @@ EOS
   end
 
   def update_default_mpi_procs_omp_threads
-    host_id = submitted_to.present? ? submitted_to.id.to_s : "manual_submission"
+    host_id = submitted_to.present? ? submitted_to.id.to_s : self.host_group.id.to_s
     unless mpi_procs == executable.default_mpi_procs[host_id]
       new_default_mpi_procs = executable.default_mpi_procs
       new_default_mpi_procs[host_id] = mpi_procs
@@ -224,16 +196,5 @@ EOS
       new_default_omp_threads[host_id] = omp_threads
       executable.timeless.update_attribute(:default_omp_threads, new_default_omp_threads)
     end
-  end
-
-  def delete_files_for_manual_submission
-    sh_path = ResultDirectory.manual_submission_job_script_path(self)
-    FileUtils.rm(sh_path) if sh_path.exist?
-    json_path = ResultDirectory.manual_submission_input_json_path(self)
-    FileUtils.rm(json_path) if json_path.exist?
-    pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(self)
-    FileUtils.rm(pre_process_script_path) if pre_process_script_path.exist?
-    pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(self)
-    FileUtils.rm(pre_process_executor_path) if pre_process_executor_path.exist?
   end
 end
