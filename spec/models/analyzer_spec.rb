@@ -161,9 +161,16 @@ describe Analyzer do
 
       it "is not valid if auto_run_submitted_to is not included in executable_on" do
         another_host = FactoryGirl.create(:host)
-        invalid_fields = @valid_fields.update(auto_run_submitted_to: another_host.id)
+        invalid_fields = @valid_fields.update(auto_run_submitted_to: another_host.id, auto_run: :yes)
         azr = @sim.analyzers.build(invalid_fields)
         expect(azr).not_to be_valid
+      end
+
+      it "skips validation of auto_run_submitted_to if auto_run is 'no'" do
+        another_host = FactoryGirl.create(:host)
+        fields = @valid_fields.update(auto_run_submitted_to: another_host.id, auto_run: :no)
+        azr = @sim.analyzers.build(fields)
+        expect(azr).to be_valid
       end
     end
   end
