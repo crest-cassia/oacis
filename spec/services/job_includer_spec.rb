@@ -75,25 +75,6 @@ describe JobIncluder do
     end
   end
 
-  shared_examples_for "manual job" do
-
-    before(:each) do
-      @submittable.submitted_to = nil
-      @submittable.save!
-      expect(ResultDirectory.manual_submission_job_script_path(@submittable)).to be_exist
-      make_valid_archive_file(@submittable)
-    end
-
-    let(:include_job) { JobIncluder.include_manual_job(@archive_full_path, @submittable) }
-
-    it_behaves_like "included correctly"
-
-    it "deletes job script after inclusion" do
-      include_job
-      expect(ResultDirectory.manual_submission_job_script_path(@submittable)).not_to be_exist
-    end
-  end
-
   shared_examples_for "remote job" do
 
     before(:each) do
@@ -225,7 +206,6 @@ describe JobIncluder do
       FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
     end
 
-    it_behaves_like "manual job"
     it_behaves_like "remote job"
   end
 

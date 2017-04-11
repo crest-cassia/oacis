@@ -1,12 +1,5 @@
 module JobIncluder
 
-  def self.include_manual_job(archive_path, submittable)
-    FileUtils.mv( archive_path, submittable.dir.join('..') )
-    include_archive(submittable)
-    create_auto_run_analyses(submittable)
-    submittable.send(:delete_files_for_manual_submission)
-  end
-
   def self.include_remote_job(host, submittable)
     host.start_ssh {|ssh|
       if remote_file_is_ready_to_include(host, submittable, ssh)
