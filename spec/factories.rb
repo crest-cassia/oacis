@@ -41,6 +41,7 @@ FactoryGirl.define do
       else
         h = FactoryGirl.create(:host, executable_simulators: [simulator])
       end
+      simulator.save! # to update executable_on field
       FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
                               simulator: simulator,
                               runs_count: evaluator.runs_count,

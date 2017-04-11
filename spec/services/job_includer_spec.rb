@@ -232,7 +232,6 @@ describe JobIncluder do
       FileUtils.remove_entry_secure(@temp_dir) if File.directory?(@temp_dir)
     end
 
-    it_behaves_like "manual job"
     it_behaves_like "remote job"
   end
 
