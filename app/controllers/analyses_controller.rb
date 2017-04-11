@@ -95,7 +95,7 @@ class AnalysesController < ApplicationController
         parameters: analysis_param_keys
       )
     else
-      raise "must not happen" # manual submission wau abolished
+      raise "must not happen" # manual submission was abolished
     end
   end
 
