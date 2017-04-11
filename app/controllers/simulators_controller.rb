@@ -3,6 +3,7 @@ class SimulatorsController < ApplicationController
   # GET /simulators.json
   def index
     @simulators = Simulator.asc(:position).all
+    FileUtils.mkdir_p( ResultDirectory.root ) # to assure the existence of the result dir
     rate = DiskSpaceChecker.rate
     flash[:alert] = "No enough space is left on device (Usage: #{rate*100}%)" if rate >= 0.9
     respond_to do |format|
