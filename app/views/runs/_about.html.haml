@@ -13,7 +13,7 @@
     %tr
       %th host
       - host = @run.submitted_to
-      %td= (host ? link_to(host.name,host_path(host)) : (@run.manual_submission? ? "manual submission": "-") )
+      %td= (host ? link_to(host.name,host_path(host)) : "-")
     %tr
       %th host group
       - hg = @run.host_group
