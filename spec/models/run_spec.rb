@@ -33,7 +33,7 @@ describe Run do
     end
 
     it "assigns 'created' stauts by default" do
-      run = @param_set.runs.create
+      run = @param_set.runs.create(@valid_attribute)
       expect(run.status).to eq(:created)
     end
 
@@ -96,18 +96,18 @@ describe Run do
     end
 
     it "assigns a priority by default" do
-      run = @param_set.runs.create
+      run = @param_set.runs.create(@valid_attribute)
       expect(run.priority).to be_a(Integer)
     end
 
     it "automatically assigned priority is 1" do
-      run = @param_set.runs.create
+      run = @param_set.runs.create(@valid_attribute)
       expect(run.priority).to eq 1
     end
 
     describe "seed" do
       it "assigns a seed by default" do
-        run = @param_set.runs.create
+        run = @param_set.runs.create(@valid_attribute)
         expect(run.seed).to be_a(Integer)
       end
 
@@ -115,14 +115,14 @@ describe Run do
         seeds = []
         n = 10
         n.times do |i|
-          run = @param_set.runs.create
+          run = @param_set.runs.create(@valid_attribute)
           seeds << run.seed
         end
         expect(seeds.uniq.size).to eq(n)
       end
 
       it "seeds must be less than 2**31-1" do
-        run = @param_set.runs.create
+        run = @param_set.runs.create(@valid_attribute)
         expect( run.seed ).to be < 2**31
       end
 
@@ -135,17 +135,17 @@ describe Run do
 
         it "creates seed in sequential order starting from one" do
           3.times do |i|
-            run = @param_set.runs.create
+            run = @param_set.runs.create(@valid_attribute)
             expect(run.seed).to eq i+1
           end
         end
 
         it "does not override when seed is explicitly specified" do
-          run = @param_set.runs.create(seed: 2)
+          run = @param_set.runs.create(@valid_attribute.merge(seed:2))
           expect( run.seed ).to eq 2
           seeds = []
           3.times do |i|
-            r = @param_set.runs.create
+            r = @param_set.runs.create(@valid_attribute)
             seeds << r.seed
           end
           expect( seeds ).to eq [1,3,4]

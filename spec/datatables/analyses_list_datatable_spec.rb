@@ -15,6 +15,7 @@ describe "AnalysesListDatatable" do
         @valid_attr = {
           parameters: {"param1" => 1, "param2" => 2.0},
           analyzer: @azr,
+          submitted_to: @azr.executable_on.first,
           analyzer_version: (i%2).to_s
         }
         @run.analyses.create!(@valid_attr)

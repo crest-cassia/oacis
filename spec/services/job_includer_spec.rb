@@ -248,7 +248,7 @@ describe JobIncluder do
                                 analyzers_on_parameter_set_count: 0,
                                 command: "echo")
       @temp_dir = Pathname.new( Dir.mktmpdir )
-      @run = @sim.parameter_sets.first.runs.create
+      @run = @sim.parameter_sets.first.runs.create( submitted_to: @sim.executable_on.first )
       @run.update_attribute(:status, :finished)
     end
 

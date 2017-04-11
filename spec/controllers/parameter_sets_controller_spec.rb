@@ -132,7 +132,7 @@ describe ParameterSetsController do
 
         it "creates runs upto the specified number" do
           expect {
-            post :create, @valid_param.update(v: {"L" => 1, "T" => 1.0}, num_runs: 3)
+            post :create, @valid_param.update(v: {"L" => 1, "T" => 1.0}, num_runs: 3, run: {submitted_to: @sim.executable_on.first})
           }.to change { Run.count }.by(2)
         end
       end
@@ -197,6 +197,7 @@ describe ParameterSetsController do
             FactoryGirl.create(:parameter_set,
                                simulator: @sim, v: {"L" => 1, "T" => 1.0},
                                runs_count: 1)
+            @host_id = @sim.executable_on.first.id.to_s
           end
 
           it "skips creation of existing parameter_sets" do
@@ -207,20 +208,20 @@ describe ParameterSetsController do
           end
 
           it "creates runs also for existing parameter_sets upto the specified num_runs" do
-            @valid_param.update(v: {"L" => "1", "T" => "1.0,2.0"}, num_runs: 3)
+            @valid_param.update(v: {"L" => "1", "T" => "1.0,2.0"}, num_runs: 3, run: {submitted_to: @host_id})
             expect {
               post :create, @valid_param, valid_session
             }.to change { Run.count }.by(5)
           end
 
           it "redirects to simulator when multiple parameter sets are specified" do
-            @valid_param.update(v: {"L" => "1", "T" => "1.0,2.0"}, num_runs: 3)
+            @valid_param.update(v: {"L" => "1", "T" => "1.0,2.0"}, num_runs: 3, run: {submitted_to: @host_id})
             post :create, @valid_param, valid_session
             expect(response).to redirect_to(@sim)
           end
 
           it "shows an error when no parameter_sets or runs are created" do
-            @valid_param.update(v: {"L" => 1, "T" => 1.0}, num_runs: 1)
+            @valid_param.update(v: {"L" => 1, "T" => 1.0}, num_runs: 1, run: {submitted_to: @host_id})
             post :create, @valid_param, valid_session
             expect(response).to render_template("new")
           end
@@ -474,7 +475,7 @@ describe ParameterSetsController do
       @host = FactoryGirl.create(:host)
       @ps_array = param_values.map do |v|
         ps = @sim.parameter_sets.create(v: v)
-        run = ps.runs.create
+        run = ps.runs.create(submitted_to:@sim.executable_on.first)
         run.status = :finished
         run.submitted_to = @host
         run.result = {"ResultKey1" => 99}
@@ -777,7 +778,7 @@ describe ParameterSetsController do
       @host = FactoryGirl.create(:host)
       @ps_array = param_values.map do |v|
         ps = @sim.parameter_sets.create(v: v)
-        run = ps.runs.create
+        run = ps.runs.create(submitted_to:@sim.executable_on.first)
         run.status = :finished
         run.cpu_time = 10.0
         run.real_time = 3.0
@@ -1060,7 +1061,7 @@ describe ParameterSetsController do
       host = FactoryGirl.create(:host)
       @ps_array = param_values.map do |v|
         ps = @sim.parameter_sets.create(v: v)
-        run = ps.runs.create
+        run = ps.runs.create(submitted_to:@sim.executable_on.first)
         run.status = :finished
         run.submitted_to = host
         run.save!

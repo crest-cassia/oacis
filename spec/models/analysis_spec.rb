@@ -12,7 +12,8 @@ describe Analysis do
     @arn = @run.analyses.first
     @valid_attr = {
         parameters: {"param1" => 1, "param2" => 2.0},
-        analyzer: @azr
+        analyzer: @azr,
+        submitted_to: @azr.executable_on.first
     }
   end
 
@@ -252,7 +253,7 @@ describe Analysis do
       end
 
       it "does not include directories of other Analyses" do
-        another_arn = @run.analyses.create!(analyzer: @azr, parameters: {})
+        another_arn = @run.analyses.create!(analyzer: @azr, submitted_to: @azr.executable_on.first, parameters: {})
         paths = @arn.input_files.map(&:first)
         expect(paths).not_to include(another_arn.dir)
       end
@@ -275,7 +276,7 @@ describe Analysis do
         end
 
         it "excludes files in analysis even if it matches the pattern" do
-          another_anl = @run.analyses.create!(analyzer: @azr, parameters: {})
+          another_anl = @run.analyses.create!(analyzer: @azr, submitted_to: @azr.executable_on.first, parameters: {})
           @arn.analyzer.update_attribute(:files_to_copy, another_anl.id.to_s)
           expect( @run.dir.join(another_anl.id) ).to be_exist
           expect( @arn.input_files ).to be_empty
