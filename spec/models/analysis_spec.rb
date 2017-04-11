@@ -68,6 +68,21 @@ describe Analysis do
       expect(arn).not_to be_valid
     end
 
+    it "submitted_to or host_group must be present" do
+      anl = @run.analyses.build(@valid_attr)
+      anl.submitted_to = nil
+      anl.host_group = nil
+      expect(anl).not_to be_valid
+    end
+
+    it "is valid if host_group exists even if submitted_to is nil" do
+      hg = FactoryGirl.create(:host_group)
+      anl = @run.analyses.build(@valid_attr)
+      anl.submitted_to = nil
+      anl.host_group = hg
+      expect(anl).to be_valid
+    end
+
     it "casts the parameter values according to the definition" do
       updated_attr = @valid_attr.update(parameters: {"param1"=>"32","param2"=>"3.0"})
       arn = @run.analyses.create!(updated_attr)

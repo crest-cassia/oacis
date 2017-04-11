@@ -45,6 +45,7 @@ module Submittable
     base.send(:validates, :omp_threads, numericality: {greater_than_or_equal_to: 1, only_integer: true})
     base.send(:validates, :priority, presence: true, inclusion: {in: PRIORITY_ORDER.keys})
 
+    base.send(:validate, :submitted_to_or_host_group_given, on: :create)
     base.send(:validate, :host_parameters_given, on: :create)
     base.send(:validate, :host_parameters_format, on: :create)
     base.send(:validate, :mpi_procs_is_in_range, on: :create)
@@ -89,6 +90,12 @@ module Submittable
 
   private
   # validations
+  def submitted_to_or_host_group_given
+    if submitted_to.nil? and host_group.nil?
+      errors.add(:submitted_to, "destination must be specified")
+    end
+  end
+
   def host_parameters_given
     if submitted_to
       keys = submitted_to.host_parameter_definitions.map {|x| x.key}

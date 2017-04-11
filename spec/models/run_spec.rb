@@ -43,6 +43,21 @@ describe Run do
       expect(run).not_to be_valid
     end
 
+    it "submitted_to or host_group must be present" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.submitted_to = nil
+      run.host_group = nil
+      expect(run).not_to be_valid
+    end
+
+    it "is valid if host_group exists even if submitted_to is nil" do
+      hg = FactoryGirl.create(:host_group)
+      run = @param_set.runs.build(@valid_attribute)
+      run.submitted_to = nil
+      run.host_group = hg
+      expect(run).to be_valid
+    end
+
     it "mpi_procs must be present" do
       run = @param_set.runs.build(@valid_attribute)
       run.mpi_procs = nil
@@ -211,11 +226,6 @@ describe Run do
         @host.update_attribute(:host_parameter_definitions, @host.host_parameter_definitions + [HostParameterDefinition.new(key: "param1", default: "aaa", format: '\w+')])
         expect(run).to be_valid
       end
-    end
-
-    it "submitted_to can be nil" do
-      run = @param_set.runs.build(@valid_attribute.update({submitted_to: nil}))
-      expect(run).to be_valid
     end
   end
 
