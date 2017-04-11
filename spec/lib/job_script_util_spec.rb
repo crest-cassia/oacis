@@ -329,6 +329,25 @@ shared_examples_for JobScriptUtil do
       end
     end
 
+    context "when _output.json contains a dotted field" do
+
+      it "update the status to failed and set error_messages" do
+        File.open(@submittable.dir.join("_output.json"), "w") do |io|
+          io.puts '{"a.b": 1.0}'
+        end
+
+        expect {
+          JobScriptUtil.update_run(@submittable)
+        }.not_to raise_error
+
+        @submittable.reload
+        expect(@submittable.status).to eq :failed
+        expect(@submittable.error_messages).to match /dotted field/
+        expect(@submittable.result).to be_nil
+        # error messages: The dotted field 'a.b' in 'result.a.b' is not valid for storage.
+      end
+    end
+
     it "parse elapsed times" do
 
       time_str=<<EOS

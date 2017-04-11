@@ -141,13 +141,19 @@ EOS
         end
       end
 
-      if error_message.length > 0
-        job.update_attribute(:error_messages, error_message)
-      end
-
       if is_updated
         job.included_at = DateTime.now
-        job.save!
+        begin
+          job.save!
+        rescue => ex
+          error_message += "failed to save: #{ex.message}"
+          job.reload # reload must be called. Otherwise update_attribute will fail.
+          job.update_attribute(:status, :failed)
+        end
+      end
+
+      if error_message.length > 0
+        job.update_attribute(:error_messages, error_message)
       end
     }
   end
