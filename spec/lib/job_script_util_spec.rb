@@ -218,72 +218,75 @@ shared_examples_for JobScriptUtil do
       end
     end
 
-    it "parse _output.json which is not a Hash but a Float" do
+    context "when _output.json is not a Hash" do
 
-      Dir.chdir(@submittable.dir) {
-        result = 0.12345
-        system("echo #{result} > _output.json")
-      }
+      it "parse _output.json which is not a Hash but a Float" do
 
-      JobScriptUtil.update_run(@submittable)
+        Dir.chdir(@submittable.dir) {
+          result = 0.12345
+          system("echo #{result} > _output.json")
+        }
 
-      # expand result properly
-      expect(File.exist?(@submittable.dir.join('_output.json'))).to be_truthy
+        JobScriptUtil.update_run(@submittable)
 
-      # parse status
-      @submittable.reload
-      expect(@submittable.result).to eq Hash["result",0.12345]
-    end
+        # expand result properly
+        expect(File.exist?(@submittable.dir.join('_output.json'))).to be_truthy
 
-    it "parse _output.json which is not a Hash but a Boolean" do
+        # parse status
+        @submittable.reload
+        expect(@submittable.result).to eq Hash["result",0.12345]
+      end
 
-      Dir.chdir(@submittable.dir) {
-        result = false
-        system("echo #{result} > _output.json")
-      }
+      it "parse _output.json which is not a Hash but a Boolean" do
 
-      JobScriptUtil.update_run(@submittable)
+        Dir.chdir(@submittable.dir) {
+          result = false
+          system("echo #{result} > _output.json")
+        }
 
-      # expand result properly
-      expect(File.exist?(@submittable.dir.join('_output.json'))).to be_truthy
+        JobScriptUtil.update_run(@submittable)
 
-      # parse status
-      @submittable.reload
-      expect(@submittable.result).to eq Hash["result",false]
-    end
+        # expand result properly
+        expect(File.exist?(@submittable.dir.join('_output.json'))).to be_truthy
 
-    it "parse _output.json which is not a Hash but a String" do
+        # parse status
+        @submittable.reload
+        expect(@submittable.result).to eq Hash["result",false]
+      end
 
-      Dir.chdir(@submittable.dir) {
-        result = "12345"
-        system("echo \\\"#{result}\\\" > _output.json")
-      }
+      it "parse _output.json which is not a Hash but a String" do
 
-      JobScriptUtil.update_run(@submittable)
+        Dir.chdir(@submittable.dir) {
+          result = "12345"
+          system("echo \\\"#{result}\\\" > _output.json")
+        }
 
-      # expand result properly
-      expect(File.exist?(@submittable.dir.join('_output.json'))).to be_truthy
+        JobScriptUtil.update_run(@submittable)
 
-      # parse status
-      @submittable.reload
-      expect(@submittable.result).to eq Hash["result","12345"]
-    end
+        # expand result properly
+        expect(File.exist?(@submittable.dir.join('_output.json'))).to be_truthy
 
-    it "parse _output.json which is not a Hash but a Array" do
+        # parse status
+        @submittable.reload
+        expect(@submittable.result).to eq Hash["result","12345"]
+      end
 
-      Dir.chdir(@submittable.dir) {
-        result = [1,2,3]
-        system("echo #{result} > _output.json")
-      }
+      it "parse _output.json which is not a Hash but a Array" do
 
-      JobScriptUtil.update_run(@submittable)
+        Dir.chdir(@submittable.dir) {
+          result = [1,2,3]
+          system("echo #{result} > _output.json")
+        }
 
-      # expand result properly
-      expect(File.exist?(@submittable.dir.join('_output.json'))).to be_truthy
+        JobScriptUtil.update_run(@submittable)
 
-      # parse status
-      @submittable.reload
-      expect(@submittable.result).to eq Hash["result",[1,2,3]]
+        # expand result properly
+        expect(File.exist?(@submittable.dir.join('_output.json'))).to be_truthy
+
+        # parse status
+        @submittable.reload
+        expect(@submittable.result).to eq Hash["result",[1,2,3]]
+      end
     end
 
     context "when _output.json has invalid json format" do
