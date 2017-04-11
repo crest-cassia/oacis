@@ -94,11 +94,8 @@ class AnalysesController < ApplicationController
         :analyzer, :host_group, :mpi_procs, :omp_threads, :priority,
         parameters: analysis_param_keys
       )
-    else  # manual submission
-      params.require(:analysis).permit(
-        :analyzer, :mpi_procs, :omp_threads, :priority,
-        parameters: analysis_param_keys
-      )
+    else
+      raise "must not happen" # manual submission wau abolished
     end
   end
 

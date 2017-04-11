@@ -111,8 +111,8 @@ class RunsController < ApplicationController
     when HostGroup
       params[:run][:host_group] = params[:run][:submitted_to]
       params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :host_group)
-    else  # manual submission
-      params.require(:run).permit(:mpi_procs, :omp_threads, :priority)
+    else
+      raise "must not happen" # manual submission was abolished
     end
   end
 
