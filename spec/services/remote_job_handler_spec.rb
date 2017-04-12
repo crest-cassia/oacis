@@ -4,34 +4,35 @@ shared_examples_for RemoteJobHandler do
 
   describe ".submit_remote_job" do
 
+    describe "set_submitted_to_if_host_group_is_given" do
+
+      before(:each) do
+        hg = FactoryGirl.create(:host_group, hosts: [@host])
+        @host.update_attribute( :host_parameter_definitions, [
+            HostParameterDefinition.new(key: "param1"),
+            HostParameterDefinition.new(key: "param2", default: "XXX")
+        ])
+        @submittable.update_attributes!( submitted_to: nil, host_group: hg )
+        allow_any_instance_of(RemoteJobHandler).to receive(:submit_to_scheduler)
+      end
+
+      it "sets #submitted_to to the current host" do
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        }.to change { @submittable.submitted_to }.from(nil).to(@host)
+      end
+
+      it "sets #host_parameters to the default value of the one in Host" do
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        }.to change { @submittable.host_parameters }.from({}).to(@host.default_host_parameters)
+      end
+    end
+
     describe "prepare job" do
 
       before(:each) do
         allow_any_instance_of(RemoteJobHandler).to receive(:submit_to_scheduler)
-      end
-
-      describe "when #host_group is set" do
-
-        before(:each) do
-          hg = FactoryGirl.create(:host_group, hosts: [@host])
-          @host.update_attribute( :host_parameter_definitions, [
-            HostParameterDefinition.new(key: "param1"),
-            HostParameterDefinition.new(key: "param2", default: "XXX")
-          ])
-          @submittable.update_attributes!( submitted_to: nil, host_group: hg )
-        end
-
-        it "sets #submitted_to to the current host" do
-          expect {
-            RemoteJobHandler.new(@host).submit_remote_job(@submittable)
-          }.to change { @submittable.submitted_to }.from(nil).to(@host)
-        end
-
-        it "sets #host_parameters to the default value of the one in Host" do
-          expect {
-            RemoteJobHandler.new(@host).submit_remote_job(@submittable)
-          }.to change { @submittable.host_parameters }.from({}).to(@host.default_host_parameters)
-        end
       end
 
       it "creates a work_dir on remote host" do
