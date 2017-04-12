@@ -16,7 +16,7 @@ class RemoteJobHandler
         execute_local_pre_process(job)
         create_remote_work_dir(job)
         prepare_input_json(job)
-        prepare_input_files(job)
+        prepare_input_files_for_analysis(job) if job.is_a?(Analysis)
         execute_pre_process(job)
         job_script_path = prepare_job_script(job)
         submit_to_scheduler(job, job_script_path)
@@ -103,22 +103,24 @@ class RemoteJobHandler
     end
   end
 
-  def prepare_input_files(job)
-    return if job.is_a?(Run)
+  def prepare_input_files_for_analysis(job)
+    org_dest_list = job.input_files.map do |origin,dest|
+      [origin, Pathname('_input').join(dest)]
+    end
     if @host.mounted_work_base_dir.present?
-      prepare_input_files_via_copy(job)
+      copy_files_to_work_dir_via_copy(job, org_dest_list)
     else
-      prepare_input_files_via_ssh(job)
+      copy_files_to_work_dir_via_ssh(job, org_dest_list)
     end
   end
 
-  def prepare_input_files_via_copy(job)
-    remote_path = RemoteFilePath.input_files_dir_path(@host,job)
+  def copy_files_to_work_dir_via_copy(job, org_dest_list)
+    remote_path = RemoteFilePath.work_dir_path(@host,job)
     relative_path = remote_path.relative_path_from(Pathname.new(@host.work_base_dir))
     mounted_remote_path = Pathname.new(@host.mounted_work_base_dir).join(relative_path).expand_path
     # expand_path is necessary to copy file using FileUtils
     FileUtils.mkdir_p(mounted_remote_path)
-    job.input_files.each do |origin,dest|
+    org_dest_list.each do |origin,dest|
       unless File.dirname(dest) == "."
         d = File.dirname( mounted_remote_path.join(dest) )
         FileUtils.mkdir_p( d )
@@ -127,17 +129,17 @@ class RemoteJobHandler
     end
   end
 
-  def prepare_input_files_via_ssh(job)
+  def copy_files_to_work_dir_via_ssh(job, org_dest_list)
     remote_mkdir_p = lambda {|ssh,remote_dir|
       cmd = "mkdir -p #{remote_dir}"
       out = SSHUtil.execute(ssh, cmd)
     }
     # make remote input files directory
-    remote_input_dir = RemoteFilePath.input_files_dir_path(@host,job)
+    remote_work_dir = RemoteFilePath.work_dir_path(@host,job)
     @host.start_ssh do |ssh|
-      remote_mkdir_p.call(ssh, remote_input_dir)
-      job.input_files.each do |origin,dest|
-        remote_path = remote_input_dir.join( dest )
+      remote_mkdir_p.call(ssh, remote_work_dir)
+      org_dest_list.each do |origin,dest|
+        remote_path = remote_work_dir.join( dest )
         unless File.dirname(dest) == "."
           remote_mkdir_p.call( ssh, File.dirname(remote_path) )
         end

@@ -16,10 +16,6 @@ module RemoteFilePath
     Pathname.new(host.work_base_dir).join("#{run.id}")
   end
 
-  def self.input_files_dir_path(host, anl)
-    work_dir_path(host, anl).join('_input')
-  end
-
   def self.result_file_path(host, run)
     Pathname.new(host.work_base_dir).join("#{run.id}.tar.bz2")
   end
