@@ -32,7 +32,8 @@ shared_examples_for RemoteJobHandler do
     describe "execute_local_preprocess" do
 
       before(:each) do
-        @executable.update_attribute(:local_pre_process_script, "pwd > pwd.txt && cat _input.json > cat.txt")
+        cmd = "pwd > pwd.txt && cat _input.json > cat.txt"
+        @executable.update_attribute(:local_pre_process_script, cmd)
         allow_any_instance_of(RemoteJobHandler).to receive(:submit_to_scheduler)
       end
 
@@ -47,6 +48,21 @@ shared_examples_for RemoteJobHandler do
         RemoteJobHandler.new(@host).submit_remote_job(@submittable)
         path = @submittable.dir.join("cat.txt")
         expect( JSON.load(File.read(path)) ).to eq JSON.load(@submittable.input.to_json)
+      end
+
+      it "_input/ directory is created when executing local preprocess"
+
+      it "copies files created by local preprocess" do
+        RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        expect( @temp_dir.join(@submittable.id.to_s, "pwd.txt") ).to be_exist
+        expect( @temp_dir.join(@submittable.id.to_s, "cat.txt") ).to be_exist
+      end
+
+      it "delete files prepared for local preprocess after execution" do
+        RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        expect( @submittable.dir.join("_lpreprocess.sh") ).to_not be_exist
+        expect( @submittable.dir.join("_input.json") ).to_not be_exist
+        expect( @submittable.dir.join("_input") ).to_not be_exist
       end
 
     end

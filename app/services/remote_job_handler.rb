@@ -17,6 +17,7 @@ class RemoteJobHandler
         create_remote_work_dir(job)
         prepare_input_json(job)
         prepare_input_files_for_analysis(job) if job.is_a?(Analysis)
+        copy_results_of_local_pre_process(job)
         execute_pre_process(job)
         job_script_path = prepare_job_script(job)
         submit_to_scheduler(job, job_script_path)
@@ -83,7 +84,14 @@ class RemoteJobHandler
       cmd = "./_lpreprocess.sh #{job.args} 1>> _stdout.txt 2>> _stderr.txt"
       system(cmd)
       raise LocalPreprocessError unless $?.to_i == 0
+
+      clean_up_local_preprocess_files
     }
+  end
+
+  def clean_up_local_preprocess_files
+    entries = ['_lpreprocess.sh', '_input.json', '_input'].select {|e| File.exist?(e) }
+    FileUtils.rm_rf(entries)
   end
 
   def create_remote_work_dir(job)
@@ -114,6 +122,24 @@ class RemoteJobHandler
     end
   end
 
+  def copy_results_of_local_pre_process(job)
+    return unless job.executable.local_pre_process_script.present?
+    org_dest_list = filelist_of_local_preprocess(job)
+    if @host.mounted_work_base_dir.present?
+      copy_files_to_work_dir_via_copy(job, org_dest_list)
+    else
+      copy_files_to_work_dir_via_ssh(job, org_dest_list)
+    end
+  end
+
+  def filelist_of_local_preprocess(job)
+    org_dest_list = []
+    Dir.chdir(job.dir) {
+      org_dest_list = Dir.glob("**/*").map {|f| [ Pathname.new(f).expand_path, f ] }
+    }
+    org_dest_list
+  end
+
   def copy_files_to_work_dir_via_copy(job, org_dest_list)
     remote_path = RemoteFilePath.work_dir_path(@host,job)
     relative_path = remote_path.relative_path_from(Pathname.new(@host.work_base_dir))
@@ -131,7 +157,7 @@ class RemoteJobHandler
   def copy_files_to_work_dir_via_ssh(job, org_dest_list)
     remote_work_dir = RemoteFilePath.work_dir_path(@host,job)
 
-    relative_subdirs = org_dest_list.map {|o,d| File.dirname(dest) }.uniq.select {|d| d != "."}
+    relative_subdirs = org_dest_list.map {|o,d| File.dirname(d) }.uniq.select {|d| d != "."}
     subdirs = relative_subdirs.map {|d| remote_work_dir.join(d) }
     cmd = "mkdir -p #{subdirs.join(' ')}"
 
