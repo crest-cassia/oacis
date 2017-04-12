@@ -69,8 +69,12 @@ class RemoteJobHandler
   end
 
   def execute_local_pre_process(job)
-    script = job.executable.local_pre_process_script
     Dir.chdir( job.dir ) {
+      File.open('_input.json', 'w') {|io|
+        io.print job.input.to_json
+        io.flush
+      }
+      script = job.executable.local_pre_process_script
       File.open('_lpreprocess.sh', 'w') {|io|
         io.puts script; io.flush
       }

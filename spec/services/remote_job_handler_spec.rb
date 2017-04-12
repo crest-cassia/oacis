@@ -32,16 +32,23 @@ shared_examples_for RemoteJobHandler do
     describe "execute_local_preprocess" do
 
       before(:each) do
-        @executable.update_attribute(:local_pre_process_script, "pwd > local_preprocess.txt")
+        @executable.update_attribute(:local_pre_process_script, "pwd > pwd.txt && cat _input.json > cat.txt")
         allow_any_instance_of(RemoteJobHandler).to receive(:submit_to_scheduler)
       end
 
       it "execute local_preprocess at the directory of submittable" do
         RemoteJobHandler.new(@host).submit_remote_job(@submittable)
-        path = @submittable.dir.join("local_preprocess.txt")
+        path = @submittable.dir.join("pwd.txt")
         expect( path ).to be_exist
         expect( File.read( path ).chomp ).to eq @submittable.dir.to_s
       end
+
+      it "_input.json is prepared when executing local preprocess" do
+        RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        path = @submittable.dir.join("cat.txt")
+        expect( JSON.load(File.read(path)) ).to eq JSON.load(@submittable.input.to_json)
+      end
+
     end
 
     describe "prepare job" do
