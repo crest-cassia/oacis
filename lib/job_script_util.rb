@@ -126,7 +126,7 @@ EOS
           job.version = version
           is_updated = true
         rescue => ex
-          error_message+="failed to load _version.txt: #{ex.message}"
+          error_message+="failed to load _version.txt: #{ex.message}\n"
         end
       end
 
@@ -137,17 +137,23 @@ EOS
           job.result = {"result"=>job.result} unless job.result.is_a?(Hash)
           is_updated = true
         rescue => ex
-          error_message+="failed to load _output.json: #{ex.message}"
+          error_message+="failed to load _output.json: #{ex.message}\n"
+        end
+      end
+
+      if is_updated
+        job.included_at = DateTime.now
+        begin
+          job.save!
+        rescue => ex
+          error_message += "failed to save: #{ex.inspect}"
+          job.reload # reload must be called. Otherwise update_attribute will fail.
+          job.update_attribute(:status, :failed)
         end
       end
 
       if error_message.length > 0
         job.update_attribute(:error_messages, error_message)
-      end
-
-      if is_updated
-        job.included_at = DateTime.now
-        job.save!
       end
     }
   end
