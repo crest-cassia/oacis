@@ -72,10 +72,22 @@ class RemoteJobHandler
   def execute_local_pre_process(job)
     return unless job.executable.local_pre_process_script.present?
     Dir.chdir( job.dir ) {
-      File.open('_input.json', 'w') {|io|
-        io.print job.input.to_json
-        io.flush
-      }
+      if input = job.input
+        File.open('_input.json', 'w') {|io|
+          io.print input.to_json
+          io.flush
+        }
+      end
+      # prepare _input dir
+      if job.is_a?(Analysis)
+        FileUtils.mkdir_p('_input')
+        Dir.chdir('_input') do
+          job.input_files.each do |o,d|
+            FileUtils.ln_s(o, d)
+          end
+        end
+      end
+
       script = job.executable.local_pre_process_script
       File.open('_lpreprocess.sh', 'w') {|io|
         io.puts script; io.flush

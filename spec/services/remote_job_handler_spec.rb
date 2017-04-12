@@ -50,7 +50,20 @@ shared_examples_for RemoteJobHandler do
         expect( JSON.load(File.read(path)) ).to eq JSON.load(@submittable.input.to_json)
       end
 
-      it "_input/ directory is created when executing local preprocess"
+      it "_input/ directory is created when executing local preprocess" do
+        next unless @submittable.is_a?(Analysis)
+        # preparing input files as follows
+        # run
+        #  |- dir1/dir2/f1.txt
+        input_dir = @submittable.analyzable.dir.join('dir1/dir2')
+        FileUtils.mkdir_p( input_dir )
+        FileUtils.touch( input_dir.join('f1.txt') )
+        @executable.update_attribute(:local_pre_process_script, "ls _input/dir1/dir2 > ls.txt")
+
+        RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+
+        expect( File.read(@submittable.dir.join('ls.txt')).chomp ).to eq "f1.txt"
+      end
 
       it "copies files created by local preprocess" do
         RemoteJobHandler.new(@host).submit_remote_job(@submittable)
