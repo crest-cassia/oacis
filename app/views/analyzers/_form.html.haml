@@ -22,6 +22,10 @@
     .col-md-6
       = f.text_area(:pre_process_script, rows: 3, class: 'form-control')
   .form-group
+    = f.label(:local_pre_process_script, class: ['col-md-2','control-label'])
+    .col-md-6
+      = f.text_area(:local_pre_process_script, rows: 1, class: 'form-control')
+  .form-group
     = f.label(:command, class: 'col-md-2 control-label')
     .col-md-6
       = f.text_field(:command, class: 'form-control')
