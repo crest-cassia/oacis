@@ -117,32 +117,28 @@ class RemoteJobHandler
   def copy_files_to_work_dir_via_copy(job, org_dest_list)
     remote_path = RemoteFilePath.work_dir_path(@host,job)
     relative_path = remote_path.relative_path_from(Pathname.new(@host.work_base_dir))
-    mounted_remote_path = Pathname.new(@host.mounted_work_base_dir).join(relative_path).expand_path
+    mounted_work_dir = Pathname.new(@host.mounted_work_base_dir).join(relative_path).expand_path
     # expand_path is necessary to copy file using FileUtils
-    FileUtils.mkdir_p(mounted_remote_path)
+
+    relative_subdirs = org_dest_list.map {|o,d| File.dirname(d) }.uniq.select {|d| d != "."}
+    subdirs = relative_subdirs.map {|d| mounted_work_dir.join(d) }
+    FileUtils.mkdir_p(subdirs) unless subdirs.empty?
     org_dest_list.each do |origin,dest|
-      unless File.dirname(dest) == "."
-        d = File.dirname( mounted_remote_path.join(dest) )
-        FileUtils.mkdir_p( d )
-      end
-      FileUtils.cp_r(origin, mounted_remote_path.join(dest) )
+      FileUtils.cp_r(origin, mounted_work_dir.join(dest) )
     end
   end
 
   def copy_files_to_work_dir_via_ssh(job, org_dest_list)
-    remote_mkdir_p = lambda {|ssh,remote_dir|
-      cmd = "mkdir -p #{remote_dir}"
-      out = SSHUtil.execute(ssh, cmd)
-    }
-    # make remote input files directory
     remote_work_dir = RemoteFilePath.work_dir_path(@host,job)
+
+    relative_subdirs = org_dest_list.map {|o,d| File.dirname(dest) }.uniq.select {|d| d != "."}
+    subdirs = relative_subdirs.map {|d| remote_work_dir.join(d) }
+    cmd = "mkdir -p #{subdirs.join(' ')}"
+
     @host.start_ssh do |ssh|
-      remote_mkdir_p.call(ssh, remote_work_dir)
+      SSHUtil.execute(ssh, cmd)
       org_dest_list.each do |origin,dest|
         remote_path = remote_work_dir.join( dest )
-        unless File.dirname(dest) == "."
-          remote_mkdir_p.call( ssh, File.dirname(remote_path) )
-        end
         SSHUtil.upload(ssh, origin, remote_path)
       end
     end
