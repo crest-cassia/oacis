@@ -1,5 +1,6 @@
 class RemoteJobHandler
 
+  class LocalPreprocessError < StandardError; end
   class RemoteOperationError < StandardError; end
   class RemoteSchedulerError < StandardError; end
   class RemoteJobError < StandardError; end
@@ -12,6 +13,7 @@ class RemoteJobHandler
     @host.start_ssh do |ssh|
       begin
         set_submitted_to_if_necessary(job)
+        execute_local_pre_process(job)
         create_remote_work_dir(job)
         prepare_input_json(job)
         prepare_input_files(job)
@@ -64,6 +66,19 @@ class RemoteJobHandler
       job.host_parameters = @host.default_host_parameters
       job.save!
     end
+  end
+
+  def execute_local_pre_process(job)
+    script = job.executable.local_pre_process_script
+    Dir.chdir( job.dir ) {
+      File.open('_lpreprocess.sh', 'w') {|io|
+        io.puts script; io.flush
+      }
+      FileUtils.chmod(0755, '_lpreprocess.sh')
+      cmd = "./_lpreprocess.sh #{job.args} 1>> _stdout.txt 2>> _stderr.txt"
+      system(cmd)
+      raise LocalPreprocessError unless $?.to_i == 0
+    }
   end
 
   def create_remote_work_dir(job)
@@ -192,6 +207,10 @@ class RemoteJobHandler
       job.update_attribute(:error_messages, "Xsub is failed. \n#{exception.inspect}\n#{exception.backtrace}")
       job.update_attribute(:status, :failed)
       raise exception # this error is catched by job_observer
+    elsif exception.is_a?(LocalPreprocessError)
+      job.update_attribute(:error_messages, "failed to execute local preprocess.\n#{exception.inspect}\n#{exception.backtrace})")
+      job.update_attribute(:status, :failed)
+      raise exception
     else
       if exception.inspect.to_s =~ /#<NoMethodError: undefined method `stat' for nil:NilClass>/
         job.update_attribute(:error_messages, "failed to establish ssh connection to host(#{job.submitted_to.name})\n#{exception.inspect}\n#{exception.backtrace}")
