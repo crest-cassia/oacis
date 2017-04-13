@@ -62,7 +62,7 @@ GEM
     docile (1.1.5)
     dynatree-rails (1.2.6)
     erubis (2.7.0)
-    eventmachine (1.2.0.1)
+    eventmachine (1.2.3)
     execjs (2.7.0)
     factory_girl (4.7.0)
       activesupport (>= 3.0.0)
