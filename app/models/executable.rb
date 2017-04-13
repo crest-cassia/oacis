@@ -6,6 +6,7 @@ module Executable
     base.send(:field, :support_mpi, type: Boolean, default: false)
     base.send(:field, :support_omp, type: Boolean, default: false)
     base.send(:field, :pre_process_script, type: String)
+    base.send(:field, :local_pre_process_script, type: String)
     base.send(:field, :print_version_command, type: String)
     base.send(:field, :default_host_parameters, type: Hash, default: {}) # {Host.id => {host_param1 => foo, ...}}
     base.send(:field, :default_mpi_procs, type: Hash, default: {}) # {Host.id => 4, ...}

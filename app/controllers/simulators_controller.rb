@@ -180,6 +180,7 @@ class SimulatorsController < ApplicationController
     params[:simulator].present? ? params.require(:simulator)
                                         .permit(:name,
                                                 :pre_process_script,
+                                                :local_pre_process_script,
                                                 :command,
                                                 :description,
                                                 :executable_on_ids,

@@ -36,6 +36,8 @@ OACIS-server                                  |     computational host          
                                               |     create a work directory         |
                                               |     prepare _input.json             |
                                               |     create a job script             |
+execute local preprocess                      |                                     |
+                                              |     copy output of local preprocess |
                                               |     execute preprocess              |
                                               |     submit job script               |
                                               |                                     |   (when job script start)
@@ -50,6 +52,7 @@ OACIS-server                                  |     computational host          
 extract the results                           |                                     |
 move the output files to specified directory  |                                     |
 parse logs and save them in MongoDB           |                                     |
+
 ```
 
 First, OACIS login to the computational host and create a work directory for the job.
@@ -57,6 +60,7 @@ Then, put `_input.json` file if the simulator's input format is JSON. This file 
 
 You can define a process which is executed before submitting a job. We call it "pre-process".
 This is useful when you prepare the necessary files before conducting simulations. For example, you can use pre-process to copy some configuration files to the current directory.
+We can define two types of pre-process: "local pre-process" which is executed in OACIS server and "pre-process" which is executed on the computational host.
 Pre-processes are executed after `_input.json` was created. The details of pre-process are also shown later.
 
 Then, the job is submitted to a job scheduler. After the job is submitted to the scheduler, the scheduler handles the job queue.
@@ -212,7 +216,8 @@ The following is the list of items we set when registering a simulator.
 |:---------------------------|:--------------------------------------------------------------------|
 | Name *                     | Name of the simulator. Only alphanumeric characters and underscore ('_') are available. Must be unique.  |
 | Definition of Parameters * | Definition of input parameters. Specify name, type(Integer, Float, String, Boolean), default value, and explanation for each input parameter. |
-| Preprocess Script          | Script executed before the job. If this is empty, no pre-process is executed. |
+| Local Preprocess Script    | Script executed at OACIS server before the job. If this is empty, no pre-process is executed. |
+| Preprocess Script          | Script executed at the computational host before the job. If this is empty, no pre-process is executed. |
 | Command *                  | The command to execute the simulator. It is better to specify by the absolute path or the relative path from the home directory. (Ex. *~/path/to/simulator.out*) |
 | Pirnt version command      | The command to print the simulator version information to standard output. (Ex. *~/path/to/simulator.out --version*) |
 | Input type                 | How the input parameter is given to the simulator. Select either "Argument" or "JSON". |
@@ -228,7 +233,7 @@ Required fields are indicated by by (*).
 When you enter **Definition of Parameters** fields, make sure that the specified type and the default value are consistent with each other.
 For example, if you specify a string value as a default value of an integer field, you get an error and are required to fix the inconsistency.
 
-When you specify **Preprocess Script**, you can define a pre-process which is executed just before the job execution.
+When you specify **Local Preprocess Script** and/or **Preprocess Script**, you can define a pre-process which is executed just before the job execution.
 It is useful for preparing input files for simulators or doing some processes which is executable only on job submission nodes.
 Please refer to [Defining pre-process] (#preprocess) for details.
 
@@ -274,9 +279,20 @@ However, it is ocassionally impossible to do such a pre-process in a job script.
 For example, in some HPC environments, some scripting language such as Ruby or Python is not installed on the copmutational node. They are sometimes installed only on login nodes hence users must use the script language in the login nodes. In such cases, a pre-process must be executed on the login nodes if your pre-process is written in a scripting language.
 
 To avoid such issues, OACIS provides a way to define a pre-process for each simulator.
-This pre-process is executed on the login node before submitting the job. Therefore, you can avoid the problem described above.
+This pre-process is executed on the OACIS server (called "local pre-process") and/or the login node (called "pre-process") before submitting the job. Therefore, you can avoid the problem described above.
 
-Pre-process is executed by worker via SSH. The detailed execution sequence of pre-processes is as follows.
+The detailed execution sequence of "local pre-process" is as follows.
+
+1. Make a directory for each Run at OACIS server.
+1. If Simulator's input type is "JSON", write `_input.json` file in the work directory.
+1. Make a file `_lpreprocess.sh` in this directory. The shell script contains the commands defined in **local_pre_process_script**.
+1. Change the current directory to the directory and execute `_lpreprocess.sh`.
+    - If the simulator's input type is "Argument", input parameters are given to `_lpreprocess.sh`.
+    - Standard output and standard error are printed to _stdout.txt and _stderr.txt files, respectively.
+1. If the return code of _lpreprocess.sh is not zero, cancel the job submission and set the status of Run to failed.
+1. If the local pre-process suceeded, the files created in the current directory are copied to the work directory of the remote host.
+
+The detailed execution sequence of "pre-processes" is as follows.
 
 1. Make a work directory for each Run.
 1. If Simulator's input type is "JSON", write `_input.json` file in the work directory.
@@ -286,9 +302,10 @@ Pre-process is executed by worker via SSH. The detailed execution sequence of pr
     - Standard output and standard error are printed to _stdout.txt and _stderr.txt files, respectively.
 1. If the return code of _preprocess.sh is not zero, cancel the job submission and set the status of Run to failed.
     - When a pre-process failed, copy the contents of the work directory to OACIS server so that users can see the output files.
-1. If the pre-process suceeded, the job script for the Run is submitted to the scheduler.
 
-Note that the above sequence 3~5 is not executed when "pre_process_script" of Simulator is empty.
+After these pre-processes finished, the job script for the Run is submitted to the scheduler.
+
+Note that the above sequences are executed when "local_pre_process_script" and/or "pre_process_script" of Simulator are not empty.
 
 
 ## Displaying results in browser

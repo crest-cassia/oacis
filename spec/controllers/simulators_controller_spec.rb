@@ -142,6 +142,8 @@ describe SimulatorsController do
         ]
         simulator = {
           name: "simulatorA", command: "echo", support_input_json: "0",
+          pre_process_script: "preprocess.sh",
+          local_pre_process_script: "local_preprocess.sh",
           support_mpi: "0", support_omp: "1",
           sequential_seed: "1",
           parameter_definitions_attributes: definitions,
@@ -162,6 +164,8 @@ describe SimulatorsController do
         expect(sim.name).to eq "simulatorA"
         expect(sim.command).to eq "echo"
         expect(sim.support_input_json).to be_falsey
+        expect(sim.pre_process_script).to eq "preprocess.sh"
+        expect(sim.local_pre_process_script).to eq "local_preprocess.sh"
         expect(sim.parameter_definition_for("param1").type).to eq "Integer"
         expect(sim.parameter_definition_for("param2").type).to eq "Float"
         expect(sim.support_mpi).to be_falsey
@@ -280,6 +284,8 @@ describe SimulatorsController do
         ]
         @valid_post_parameter = {
           name: "simulatorA", command: "echo", support_input_json: "0",
+          pre_process_script: "preprocess.sh",
+          local_pre_process_script: "local_preprocess.sh",
           support_mpi: "0", support_omp: "1",
           sequential_seed: "1",
           parameter_definitions_attributes: definitions
@@ -298,6 +304,8 @@ describe SimulatorsController do
         expect(assigns(:simulator).id).to eq simulator.id
         expect(assigns(:simulator).command).to eq "echo"
         expect(assigns(:simulator).support_input_json).to be_falsey
+        expect(assigns(:simulator).pre_process_script).to eq "preprocess.sh"
+        expect(assigns(:simulator).local_pre_process_script).to eq "local_preprocess.sh"
         expect(assigns(:simulator).support_mpi).to be_falsey
         expect(assigns(:simulator).support_omp).to be_truthy
         expect(assigns(:simulator).sequential_seed).to be_truthy
