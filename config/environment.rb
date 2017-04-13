@@ -1,4 +1,6 @@
+# tentatively suppress warnings until all gems supports Ruby 2.4
 $VERBOSE=nil if RUBY_VERSION =~ /^2\.4/
+
 # Load the rails application
 require File.expand_path('../application', __FILE__)
 
