@@ -1,5 +1,6 @@
 require 'pp'
 require 'logger'
+require 'fiber'
 
 class OacisWatcher
 
@@ -17,6 +18,19 @@ class OacisWatcher
     @observed_parameter_sets_all = {}
     @logger = logger
     @polling = polling
+  end
+
+  def async(&block)
+    Fiber.new(&block).resume
+  end
+
+  def await_ps(ps)
+    f = Fiber.current
+    watch_ps(ps) {
+      ps.reload
+      f.resume ps
+    }
+    Fiber.yield
   end
 
   def watch_ps(ps, &block)
