@@ -11,7 +11,7 @@ end
 def verify_ruby_version
   print "checking ruby version ...        "
   v = `ruby --version`
-  if v =~ /2\.(\d+)\.\d+/ and $1.to_i >= 2 and $1.to_i < 4
+  if v =~ /2\.(\d+)\.\d+/ and $1.to_i >= 2 and $1.to_i <= 4
     puts_ok
     return true
   else
