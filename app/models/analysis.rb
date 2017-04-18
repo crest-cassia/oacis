@@ -64,7 +64,11 @@ class Analysis
       ""
     else
       params = analyzer.parameter_definitions.map do |pd|
-        parameters[pd.key]
+        if pd.type == "Boolean"
+          parameters[pd.key] ? 1 : 0
+        else
+          parameters[pd.key]
+        end
       end
       params.join(' ')
     end
