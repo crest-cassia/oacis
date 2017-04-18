@@ -16,7 +16,7 @@ There are two ways to set up OACIS.
 
 - (1.1) using a virtual machine image in which OACIS is already set up.
 - (1.2) using a native (non virtual machine) environment and setup prerequisites manually.
-    
+
 If your OS is Windows, you must select (1.1).
 For Unix-based OS (Linux, Mac), either (1.1) or (1.2) is fine.
 
@@ -53,7 +53,7 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 
 ### Prerequisites
 
-- Ruby 2.2 or 2.3. (2.4 is not supported yet.)
+- Ruby 2.2 or 2.3. (2.4 is supported since v2.12.0.)
 - MongoDB 2.4.9 or later (http://www.mongodb.org/)
 - bundler (http://bundler.io/)
 
@@ -76,7 +76,8 @@ Here we show the instructions on how to setup prerequisites using homebrew.
     - Run `ruby --version` and verify the output is like `ruby 2.2.4....`.
 - installing MongoDB
     - `brew install mongo` to install MongoDB.
-    - `launchctl load ~/Library/LaunchAgents/homebrew.mxcl.mongodb.plist` to launch the daemon process of MongoDB. After this, mongod process is automatically launched after login.
+    - `brew info mongo` will display the command to launch mongodb daemon.
+        - As of April 2017, the command shows `brew services start mongodb`. Once you hit this command, mongodb will be automatically launched at login.
     - Run `mongo` and find a terminal to control MongoDB is launched. Type `exit` to stop the terminal.
 - installing bundler
     - `gem install bundler`
@@ -181,10 +182,13 @@ Hereafter, we call the host where OACIS is running "OACIS host".
     - (At OACIS host) Check connection.
         - Run `ssh USER@HOST_NAME` and verify that the password is not required to login. 
             - If you enter passphrase when you made the key, you will be required to enter the passphrase (not password) when conducting SSH. OACIS host and computational host must be setup so that neither password nor passphrase is required. To skip the passphrase, see the following.
-                - (for Mac users) Keychain access requires you to enter your passphrase for the first time. After you entered the passphrase, you will not be required to enter the passphrase thereafter.
-                - (for Linux users) Use SSH Agent to skip entering passphrase. Run the following commands to launch SSH agent. (These steps are necessary each time you login.)
+                - (macOS El Capitan or earlier) Keychain access requires you to enter your passphrase for the first time. After you entered the passphrase, you will not be required to enter the passphrase thereafter.
+                - (macOS Sierra or later) Execute `ssh-add ~/.ssh/id_rsa` to register the key to the agent.
+                    - The command will ask you to enter the passphrase. After you entered the passphrase, you will not be required to enter the passphrase thereafter.
+                - (Linux) Use SSH Agent to skip entering passphrase. Run the following commands to launch SSH agent. (These steps are necessary each time you login.)
                     - ``eval `ssh-agent` `` This will launch ssh-agent process.
-                    - `ssh-add ~/.ssh/id_rsa` Specify the path of private key. This command will ask you to enter the passphrase. After you entered passphrase, you will be no longer required to enter the passphrase.
+                    - `ssh-add ~/.ssh/id_rsa` Specify the path of private key. This command will ask you to enter the passphrase. After you entered passphrase, you will be no longer required to enter the passphrase on the same shell session.
+                        - You may also use [Keychain](http://www.funtoo.org/Keychain) instead, which is a tool to reduce the number of times you need to enter you passphrase.
 2. (At Computational host) Install ruby 1.8 or later.
     - Ruby is installed by default in most of the recent OS. If it is installed, please skip this step.
     - You can verify the version of Ruby by running `ruby --version`.

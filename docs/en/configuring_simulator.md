@@ -228,7 +228,7 @@ The following is the list of items we set when registering a simulator.
 | Executable\_on *            | Specify the hosts on which the simulator can be executed. You can select one of these as the computational host when making a Run. |
 |----------------------------|---------------------------------------------------------------------|
 
-Required fields are indicated by by (*).
+Required fields are indicated by (*).
 
 When you enter **Definition of Parameters** fields, make sure that the specified type and the default value are consistent with each other.
 For example, if you specify a string value as a default value of an integer field, you get an error and are required to fix the inconsistency.
@@ -279,7 +279,7 @@ However, it is ocassionally impossible to do such a pre-process in a job script.
 For example, in some HPC environments, some scripting language such as Ruby or Python is not installed on the copmutational node. They are sometimes installed only on login nodes hence users must use the script language in the login nodes. In such cases, a pre-process must be executed on the login nodes if your pre-process is written in a scripting language.
 
 To avoid such issues, OACIS provides a way to define a pre-process for each simulator.
-This pre-process is executed on the OACIS server (called "local pre-process") and/or the login node (called "pre-process") before submitting the job. Therefore, you can avoid the problem described above.
+This pre-process is executed on the OACIS server (called "local pre-process", available since v2.12.0) and/or the login node of the remote host (called "pre-process") before submitting the job. Therefore, you can avoid the problem described above.
 
 The detailed execution sequence of "local pre-process" is as follows.
 
