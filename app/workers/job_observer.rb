@@ -78,6 +78,7 @@ class JobObserver
   end
 
   def self.is_enough_disk_space_left?(logger)
+    FileUtils.mkdir_p( ResultDirectory.root ) # to assure the existence of the result dir
     rate = DiskSpaceChecker.rate
     b = true
     if rate > 0.95

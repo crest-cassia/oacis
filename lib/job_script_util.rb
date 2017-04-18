@@ -13,12 +13,6 @@ export OACIS_OMP_THREADS=<%= omp_threads %>
 OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
 
 # PRE-PROCESS ---------------------
-if [ `basename $(pwd)` != ${OACIS_JOB_ID} ]; then  # for manual submission
-  mkdir -p ${OACIS_JOB_ID} && cd ${OACIS_JOB_ID}
-  if [ -e ../${OACIS_JOB_ID}_input.json ]; then
-    \\mv ../${OACIS_JOB_ID}_input.json ./_input.json
-  fi
-fi
 echo "{" > ../${OACIS_JOB_ID}_status.json
 echo "  \\"started_at\\": \\"`date`\\"," >> ../${OACIS_JOB_ID}_status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${OACIS_JOB_ID}_status.json
@@ -132,7 +126,7 @@ EOS
           job.version = version
           is_updated = true
         rescue => ex
-          error_message+="failed to load _version.txt: #{ex.message}"
+          error_message+="failed to load _version.txt: #{ex.message}\n"
         end
       end
 
@@ -143,17 +137,23 @@ EOS
           job.result = {"result"=>job.result} unless job.result.is_a?(Hash)
           is_updated = true
         rescue => ex
-          error_message+="failed to load _output.json: #{ex.message}"
+          error_message+="failed to load _output.json: #{ex.message}\n"
+        end
+      end
+
+      if is_updated
+        job.included_at = DateTime.now
+        begin
+          job.save!
+        rescue => ex
+          error_message += "failed to save: #{ex.inspect}"
+          job.reload # reload must be called. Otherwise update_attribute will fail.
+          job.update_attribute(:status, :failed)
         end
       end
 
       if error_message.length > 0
         job.update_attribute(:error_messages, error_message)
-      end
-
-      if is_updated
-        job.included_at = DateTime.now
-        job.save!
       end
     }
   end

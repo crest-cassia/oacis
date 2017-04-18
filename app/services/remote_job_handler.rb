@@ -1,5 +1,6 @@
 class RemoteJobHandler
 
+  class LocalPreprocessError < StandardError; end
   class RemoteOperationError < StandardError; end
   class RemoteSchedulerError < StandardError; end
   class RemoteJobError < StandardError; end
@@ -12,9 +13,11 @@ class RemoteJobHandler
     @host.start_ssh do |ssh|
       begin
         set_submitted_to_if_necessary(job)
+        execute_local_pre_process(job)
         create_remote_work_dir(job)
         prepare_input_json(job)
-        prepare_input_files(job)
+        prepare_input_files_for_analysis(job) if job.is_a?(Analysis)
+        copy_results_of_local_pre_process(job)
         execute_pre_process(job)
         job_script_path = prepare_job_script(job)
         submit_to_scheduler(job, job_script_path)
@@ -66,6 +69,43 @@ class RemoteJobHandler
     end
   end
 
+  def execute_local_pre_process(job)
+    return unless job.executable.local_pre_process_script.present?
+    Dir.chdir( job.dir ) {
+      if input = job.input
+        File.open('_input.json', 'w') {|io|
+          io.print input.to_json
+          io.flush
+        }
+      end
+      # prepare _input dir
+      if job.is_a?(Analysis)
+        FileUtils.mkdir_p('_input')
+        Dir.chdir('_input') do
+          job.input_files.each do |o,d|
+            FileUtils.ln_s(o, d)
+          end
+        end
+      end
+
+      script = job.executable.local_pre_process_script
+      File.open('_lpreprocess.sh', 'w') {|io|
+        io.puts script; io.flush
+      }
+      FileUtils.chmod(0755, '_lpreprocess.sh')
+      cmd = "./_lpreprocess.sh #{job.args} 1>> _stdout.txt 2>> _stderr.txt"
+      system(cmd)
+      raise LocalPreprocessError unless $?.to_i == 0
+
+      clean_up_local_preprocess_files
+    }
+  end
+
+  def clean_up_local_preprocess_files
+    entries = ['_lpreprocess.sh', '_input.json', '_input'].select {|e| File.exist?(e) }
+    FileUtils.rm_rf(entries)
+  end
+
   def create_remote_work_dir(job)
     cmd = "mkdir -p #{RemoteFilePath.work_dir_path(@host,job)}; echo $?"
     @host.start_ssh do |ssh|
@@ -83,44 +123,60 @@ class RemoteJobHandler
     end
   end
 
-  def prepare_input_files(job)
-    return if job.is_a?(Run)
+  def prepare_input_files_for_analysis(job)
+    org_dest_list = job.input_files.map do |origin,dest|
+      [origin, Pathname('_input').join(dest)]
+    end
     if @host.mounted_work_base_dir.present?
-      prepare_input_files_via_copy(job)
+      copy_files_to_work_dir_via_copy(job, org_dest_list)
     else
-      prepare_input_files_via_ssh(job)
+      copy_files_to_work_dir_via_ssh(job, org_dest_list)
     end
   end
 
-  def prepare_input_files_via_copy(job)
-    remote_path = RemoteFilePath.input_files_dir_path(@host,job)
-    relative_path = remote_path.relative_path_from(Pathname.new(@host.work_base_dir))
-    mounted_remote_path = Pathname.new(@host.mounted_work_base_dir).join(relative_path).expand_path
-    # expand_path is necessary to copy file using FileUtils
-    FileUtils.mkdir_p(mounted_remote_path)
-    job.input_files.each do |origin,dest|
-      unless File.dirname(dest) == "."
-        d = File.dirname( mounted_remote_path.join(dest) )
-        FileUtils.mkdir_p( d )
-      end
-      FileUtils.cp_r(origin, mounted_remote_path.join(dest) )
+  def copy_results_of_local_pre_process(job)
+    return unless job.executable.local_pre_process_script.present?
+    org_dest_list = filelist_of_local_preprocess(job)
+    if @host.mounted_work_base_dir.present?
+      copy_files_to_work_dir_via_copy(job, org_dest_list)
+    else
+      copy_files_to_work_dir_via_ssh(job, org_dest_list)
     end
   end
 
-  def prepare_input_files_via_ssh(job)
-    remote_mkdir_p = lambda {|ssh,remote_dir|
-      cmd = "mkdir -p #{remote_dir}"
-      out = SSHUtil.execute(ssh, cmd)
+  def filelist_of_local_preprocess(job)
+    org_dest_list = []
+    Dir.chdir(job.dir) {
+      org_dest_list = Dir.glob("**/*").map {|f| [ Pathname.new(f).expand_path, f ] }
     }
-    # make remote input files directory
-    remote_input_dir = RemoteFilePath.input_files_dir_path(@host,job)
+    org_dest_list
+  end
+
+  def copy_files_to_work_dir_via_copy(job, org_dest_list)
+    remote_path = RemoteFilePath.work_dir_path(@host,job)
+    relative_path = remote_path.relative_path_from(Pathname.new(@host.work_base_dir))
+    mounted_work_dir = Pathname.new(@host.mounted_work_base_dir).join(relative_path).expand_path
+    # expand_path is necessary to copy file using FileUtils
+
+    relative_subdirs = org_dest_list.map {|o,d| File.dirname(d) }.uniq.select {|d| d != "."}
+    subdirs = relative_subdirs.map {|d| mounted_work_dir.join(d) }
+    FileUtils.mkdir_p(subdirs) unless subdirs.empty?
+    org_dest_list.each do |origin,dest|
+      FileUtils.cp_r(origin, mounted_work_dir.join(dest) )
+    end
+  end
+
+  def copy_files_to_work_dir_via_ssh(job, org_dest_list)
+    remote_work_dir = RemoteFilePath.work_dir_path(@host,job)
+
+    relative_subdirs = org_dest_list.map {|o,d| File.dirname(d) }.uniq.select {|d| d != "."}
+    subdirs = relative_subdirs.map {|d| remote_work_dir.join(d) }
+    cmd = "mkdir -p #{subdirs.join(' ')}"
+
     @host.start_ssh do |ssh|
-      remote_mkdir_p.call(ssh, remote_input_dir)
-      job.input_files.each do |origin,dest|
-        remote_path = remote_input_dir.join( dest )
-        unless File.dirname(dest) == "."
-          remote_mkdir_p.call( ssh, File.dirname(remote_path) )
-        end
+      SSHUtil.execute(ssh, cmd)
+      org_dest_list.each do |origin,dest|
+        remote_path = remote_work_dir.join( dest )
         SSHUtil.upload(ssh, origin, remote_path)
       end
     end
@@ -192,6 +248,10 @@ class RemoteJobHandler
       job.update_attribute(:error_messages, "Xsub is failed. \n#{exception.inspect}\n#{exception.backtrace}")
       job.update_attribute(:status, :failed)
       raise exception # this error is catched by job_observer
+    elsif exception.is_a?(LocalPreprocessError)
+      job.update_attribute(:error_messages, "failed to execute local preprocess.\n#{exception.inspect}\n#{exception.backtrace})")
+      job.update_attribute(:status, :failed)
+      raise exception
     else
       if exception.inspect.to_s =~ /#<NoMethodError: undefined method `stat' for nil:NilClass>/
         job.update_attribute(:error_messages, "failed to establish ssh connection to host(#{job.submitted_to.name})\n#{exception.inspect}\n#{exception.backtrace}")

@@ -33,30 +33,38 @@ OACISはジョブ実行時にコマンドが埋め込まれたシェルスクリ
 
 ```text
 
-OACIS-server  |     remote host (login node)        |   computation node
---------------|-------------------------------------|---------------------------------------
-           ---|-->  SSH login                       |
-              |     create a work directory         |
-              |     prepare _input.json             |
-              |     create a job script             |
-              |     execute preprocess              |
-              |     submit job script               |
-              |                                     |   (when job script start)
-              |                                     |   execute print-version command
-              |                                     |   save execution logs to a file
-              |                                     |   execution of the simulation program
-              |                                     |   compress the work directory
-              |                                     |
-              |     (after the job finished)        |
-           ---|-->  SSH login                       |
-              |     download the compressed results |
+OACIS-server                                  |     computational host              |   computation node
+----------------------------------------------|-------------------------------------|---------------------------------------
+                                           ---|-->  SSH login                       |
+                                              |     create a work directory         |
+                                              |     prepare _input.json             |
+                                              |     create a job script             |
+execute local preprocess                      |                                     |
+                                              |     copy output of local preprocess |
+                                              |     execute preprocess              |
+                                              |     submit job script               |
+                                              |                                     |   (when job script start)
+                                              |                                     |   execute print-version command
+                                              |                                     |   save execution logs to a file
+                                              |                                     |   execution of the simulation program
+                                              |                                     |   compress the work directory
+                                              |                                     |
+                                              |     (after the job finished)        |
+                                           ---|-->  SSH login                       |
+                                              |     download the compressed results |
+extract the results                           |                                     |
+move the output files to specified directory  |                                     |
+parse logs and save them in MongoDB           |                                     |
 ```
+
 
 まずOACISはリモートホストにログインし、ワークディレクトリを作成します。その後、実行パラメータが書かれた`_input.json`を配置します。（Simulator登録時にJSON形式を指定した場合）
 
-ジョブスケジューラにジョブを投入する前に、ワークディレクトリで個別に実行する処理を定義することもできます。それをプリプロセスと呼んでいます。
+ジョブスケジューラにジョブを投入する前に、ワークディレクトリで個別に実行する処理を定義することもできます。プリプロセスと呼んでいます。
 詳細は以後説明しますが、例えばジョブの実行に必要なファイルなどをコピーしたりするのに利用します。
-`_input.json`が作成された後、ジョブ投入前にこのプリプロセスが実行されます。
+プリプロセスには２種類あり、OACISのあるサーバーで実行されるもの、計算ホストのログインノードで実行されるものを定義できます。（それぞれ"local pre-process", "pre-process"と呼びます。）
+`_input.json`が作成された後、ジョブ投入前にこれらのプリプロセスが実行されます。
+"local pre-process"についてはOACISサーバーで実行された後、出力ファイルが計算ホストのワークディレクトリに転送されます。
 
 その後、ジョブがスケジューラに投入され、ジョブが実行待ちになります。ジョブがスケジューリングされるとジョブスクリプトが実行されることになります。
 
@@ -215,7 +223,8 @@ OACISにSimulator登録する際に登録する項目の一覧を見ていきま
 |:---------------------------|:--------------------------------------------------------------------|
 | Name *                     | シミュレータの名前。Ascii文字、数字、アンダースコアのみ使用可。空白不可。他のSimulatorとの重複は不可。 |
 | Definition of Parameters * | シミュレータの入力パラメータの定義。パラメータの名前、型(Integer, Float, String, Boolean)、デフォルト値、パラメータの説明（任意）を入力する。 |
-| Preprocess Script          | ジョブの前に実行されるプリプロセスを記述するスクリプト。空の場合はプリプロセスは実行されない。|
+| Local Preprocess Script    | ジョブの前にローカルホストで実行されるプリプロセスを記述するスクリプト。空の場合はプリプロセスは実行されない。|
+| Preprocess Script          | ジョブの前に計算ホストで実行されるプリプロセスを記述するスクリプト。空の場合はプリプロセスは実行されない。|
 | Command *                  | シミュレータの実行コマンド。リモートホスト上でのパスを絶対パスかホームディレクトリからの相対パスで指定する。(例. *~/path/to/simulator.out*) |
 | Pirnt version command      | シミュレータのversionを標準出力に出力するコマンド。（例. *~/path/to/simulator.out --version* ）|
 | Input type                 | パラメータを引数形式で渡すか、JSON形式で渡すか指定する。|
@@ -231,7 +240,7 @@ OACISにSimulator登録する際に登録する項目の一覧を見ていきま
 **Definition of Parameters** の入力の際には、指定した型とデフォルト値の値が整合するように入力してください。
 例えば、型がIntegerなのにデフォルト値として文字列を指定するとエラーになります。
 
-**Preprocess Script** を指定すると、ジョブ投入前に実行されるプリプロセスを指定することができます。
+**Local Preprocess Script** または **Preprocess Script** を指定すると、ジョブ投入前に実行されるプリプロセスを指定することができます。
 シミュレーターの入力を準備したり、ジョブ投入ノードでしか実行できない処理を指定するとよいでしょう。
 詳細は[プリプロセスの定義](#preprocess)を参照してください。
 
@@ -279,22 +288,34 @@ mpiexec -n $OACIS_MPI_PROCS ~/path/to/simulator.out
 - ファイルのステージングの都合により、ジョブの実行前にファイルをすべて用意する必要があるケース
 
 そこで、OACISにはジョブの実行前にプリプロセスを個別に実行する仕組みを用意しています。
-このプリプロセスはジョブの投入前にログインノードで実行されるため上記の問題は起きません。
+このプリプロセスはジョブの投入前にローカルホストまたはログインノードで実行されるため上記の問題は起きません。
+プリプロセスの中には２種類あり、OACISの動いているサーバーで実行される"local pre-process" (v2.12.0より利用可能), リモートホストでジョブの投入前に実行される"pre-process"の２種類があります。
 
-プリプロセスはジョブの投入前にworkerによってssh経由で実行されます。
-workerの実行手順は
+プリプロセスはジョブの投入前にworkerによって実行されます。
 
-1. 各Runごとにワークディレクトリを作成する
+"local pre-process"の実行手順は以下のようになる。
+
+1. OACIS稼働中のサーバーにて各ジョブ用のディレクトリが作られる
 1. SimulatorがJSON入力の場合、_input.jsonを配置する
-1. Simulatorの **pre_process_script** フィールドに記載されたジョブスクリプトをワークディレクトリに配置し実行権限をつける。(_preprocess.sh というファイル名で配置される)
+1. Simulatorの **local_pre_process_script** フィールドに記載されたスクリプトをディレクトリに配置し実行権限をつける。(_lpreprocess.sh というファイル名で配置される)
+1. _lpreprocess.sh をワークディレクトリをカレントディレクトリとして実行する
+    - この際Simulatorが引数形式ならば、同様の引数を与えて _lpreprocess.sh を実行する。この引数から実行パラメータを取得することができる。
+    - 標準出力、標準エラー出力は _stdout.txt, _stderr.txt にそれぞれリダイレクトされる。
+1. _lpreprocess.sh のリターンコードがノンゼロの場合には、そのRunをfailedとする
+1. カレントディレクトリに作成されたファイルをリモートホスト上に転送する
+
+"pre-process"の実行手順は
+
+1. SimulatorがJSON入力の場合、_input.jsonを配置する
+1. Simulatorの **pre_process_script** フィールドに記載されたスクリプトをワークディレクトリに配置し実行権限をつける。(_preprocess.sh というファイル名で配置される)
 1. _preprocess.sh をワークディレクトリをカレントディレクトリとして実行する
     - この際Simulatorが引数形式ならば、同様の引数を与えて _preprocess.sh を実行する。この引数から実行パラメータを取得することができる。
     - 標準出力、標準エラー出力は _stdout.txt, _stderr.txt にそれぞれリダイレクトされる。
 1. _preprocess.sh のリターンコードがノンゼロの場合には、SSHのセッションを切断しRunをfailedとする
     - failedの時には、ワークディレクトリの内容をサーバーにコピーし、リモートサーバー上のファイルは削除する
-1. シミュレーションジョブをサブミットする。
 
-ただし、 Simulatorの pre_process_script のフィールドが空の場合には、上記3~5の手順は実行されません。
+これらの"local pre-process", "pre-process" が終わったらジョブを投入します。
+ただし、 Simulatorの local_pre_process_script または pre_process_script のフィールドが空の場合には、上記の手順は実行されません。
 
 
 ## 結果をOACIS上でプロットする

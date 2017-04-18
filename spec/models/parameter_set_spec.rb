@@ -109,6 +109,7 @@ describe ParameterSet do
 
     before(:each) do
       @ps = @sim.parameter_sets.first
+      @host = @sim.executable_on.first
     end
 
     it "has simulator method" do
@@ -130,7 +131,7 @@ describe ParameterSet do
                                simulator: @sim,
                                type: :on_parameter_set
                                )
-      anl = @ps.analyses.create(analyzable: @ps, analyzer: azr)
+      anl = @ps.analyses.create(analyzable: @ps, analyzer: azr, submitted_to: @host)
       expect(anl).to_not receive(:destroy)
       @ps.destroy
     end
@@ -353,21 +354,22 @@ describe ParameterSet do
     before(:each) do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       @ps = sim.parameter_sets.first
+      @host = sim.executable_on.first
     end
 
     context "when the number of runs is smaller than the specified value" do 
 
       it "create the specified number of runs when no run exists" do
         expect {
-          runs = @ps.find_or_create_runs_upto(3)
+          runs = @ps.find_or_create_runs_upto(3, submitted_to: @host)
           expect( runs.count ).to eq 3
         }.to change { @ps.runs.count }.from(0).to(3)
       end
 
       it "creates runs up to specified number of runs" do
-        run1 = @ps.runs.create!
+        run1 = FactoryGirl.create(:run, parameter_set: @ps)
         expect {
-          runs = @ps.find_or_create_runs_upto(3)
+          runs = @ps.find_or_create_runs_upto(3, submitted_to: @host)
           expect( runs.count ).to eq 3
           expect( runs.include?(run1) ).to be_truthy
         }.to change { @ps.runs.count }.from(1).to(3)
@@ -406,7 +408,7 @@ describe ParameterSet do
       end
 
       it "does not set host_param to existing runs" do
-        run1 = @ps.runs.create!
+        run1 = FactoryGirl.create(:run, parameter_set: @ps)
 
         h = FactoryGirl.create(:host_with_parameters)
         host_param = { param1: "foo", param2: "bar" }
@@ -417,7 +419,7 @@ describe ParameterSet do
                                             host_param: host_param,
                                             mpi_procs: 1,
                                             omp_threads: 4 )
-        expect( run1.reload.submitted_to ).to be_nil
+        expect( run1.reload.host_parameters ).to be_empty
         expect( run1.reload.omp_threads ).to eq 1
       end
 
@@ -443,7 +445,7 @@ describe ParameterSet do
 
       it "returns existing runs without creating" do
         3.times do |i|
-          @ps.runs.create!
+          @ps.runs.create!(submitted_to: @host)
         end
 
         expect {
@@ -454,9 +456,9 @@ describe ParameterSet do
     end
 
     it "returned runs are sorted by created_at" do
-      r1 = @ps.runs.create!
-      r2 = @ps.runs.create!
-      runs = @ps.find_or_create_runs_upto(3)
+      r1 = FactoryGirl.create(:run, parameter_set: @ps)
+      r2 = FactoryGirl.create(:run, parameter_set: @ps)
+      runs = @ps.find_or_create_runs_upto(3, submitted_to: @host)
       expect( runs[0..1] ).to eq [r1, r2]
     end
   end
@@ -466,11 +468,12 @@ describe ParameterSet do
     before(:each) do
       sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 0)
       @ps = sim.parameter_sets.first
+      @host = sim.executable_on.first
     end
 
     it "returns the average of the results" do
       [1,2,3,4,5].each do |r|
-        @ps.runs.create!( status: :finished, result: {"r1"=>r} )
+        @ps.runs.create!( status: :finished, submitted_to: @host, result: {"r1"=>r} )
       end
       ave, n = @ps.average_result("r1")
       expect(ave).to eq 3.0
@@ -479,10 +482,10 @@ describe ParameterSet do
 
     it "ignores unfinishd runs" do
       [1,2,3,4,5].each do |r|
-        @ps.runs.create!( status: :finished, result: {"r1"=>r} )
+        @ps.runs.create!( status: :finished, submitted_to: @host, result: {"r1"=>r} )
       end
-      @ps.runs.create!( status: :failed, result: {"r1"=>0} )
-      @ps.runs.create!( status: :created )
+      @ps.runs.create!( status: :failed, result: {"r1"=>0}, submitted_to: @host )
+      @ps.runs.create!( status: :created, submitted_to: @host )
       ave = @ps.average_result("r1")
       expect( @ps.average_result("r1") ).to eq [3.0, 5]
     end
@@ -495,7 +498,7 @@ describe ParameterSet do
 
       it "returns stderr as well" do
         [1,2,3,4,5].each do |r|
-          @ps.runs.create!( status: :finished, result: {"r1"=>r} )
+          @ps.runs.create!( status: :finished, submitted_to: @host, result: {"r1"=>r} )
         end
         ave,n,err = @ps.average_result("r1", error: true)
         expect( ave ).to eq 3.0

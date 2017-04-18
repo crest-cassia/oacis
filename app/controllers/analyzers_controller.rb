@@ -112,6 +112,7 @@ class AnalyzersController < ApplicationController
                                                :support_mpi,
                                                :support_omp,
                                                :pre_process_script,
+                                               :local_pre_process_script,
                                                :auto_run_submitted_to,
                                                :auto_run_host_group,
                                                parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],

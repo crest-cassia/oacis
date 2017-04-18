@@ -3,7 +3,6 @@
   .col-md-3
     - host_names = analyzer.executable_on.map {|h| [h.name, h.id.to_s]}
     - host_names += HostGroup.all.map {|hg| ["HostGroup:#{hg.name}", hg.id.to_s] }
-    - host_names += [ ["(manual submission)", nil] ]
     - selected_id = host_names.first.last
     = select(:analysis, :submitted_to, options_for_select(host_names, selected: selected_id), {}, {class: 'form-control'})
 .form-group

@@ -4,34 +4,86 @@ shared_examples_for RemoteJobHandler do
 
   describe ".submit_remote_job" do
 
+    describe "set_submitted_to_if_host_group_is_given" do
+
+      before(:each) do
+        hg = FactoryGirl.create(:host_group, hosts: [@host])
+        @host.update_attribute( :host_parameter_definitions, [
+            HostParameterDefinition.new(key: "param1"),
+            HostParameterDefinition.new(key: "param2", default: "XXX")
+        ])
+        @submittable.update_attributes!( submitted_to: nil, host_group: hg )
+        allow_any_instance_of(RemoteJobHandler).to receive(:submit_to_scheduler)
+      end
+
+      it "sets #submitted_to to the current host" do
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        }.to change { @submittable.submitted_to }.from(nil).to(@host)
+      end
+
+      it "sets #host_parameters to the default value of the one in Host" do
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        }.to change { @submittable.host_parameters }.from({}).to(@host.default_host_parameters)
+      end
+    end
+
+    describe "execute_local_preprocess" do
+
+      before(:each) do
+        cmd = "pwd > pwd.txt && cat _input.json > cat.txt"
+        @executable.update_attribute(:local_pre_process_script, cmd)
+        allow_any_instance_of(RemoteJobHandler).to receive(:submit_to_scheduler)
+      end
+
+      it "execute local_preprocess at the directory of submittable" do
+        RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        path = @submittable.dir.join("pwd.txt")
+        expect( path ).to be_exist
+        expect( File.read( path ).chomp ).to eq @submittable.dir.to_s
+      end
+
+      it "_input.json is prepared when executing local preprocess" do
+        RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        path = @submittable.dir.join("cat.txt")
+        expect( JSON.load(File.read(path)) ).to eq JSON.load(@submittable.input.to_json)
+      end
+
+      it "_input/ directory is created when executing local preprocess" do
+        next unless @submittable.is_a?(Analysis)
+        # preparing input files as follows
+        # run
+        #  |- dir1/dir2/f1.txt
+        input_dir = @submittable.analyzable.dir.join('dir1/dir2')
+        FileUtils.mkdir_p( input_dir )
+        FileUtils.touch( input_dir.join('f1.txt') )
+        @executable.update_attribute(:local_pre_process_script, "ls _input/dir1/dir2 > ls.txt")
+
+        RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+
+        expect( File.read(@submittable.dir.join('ls.txt')).chomp ).to eq "f1.txt"
+      end
+
+      it "copies files created by local preprocess" do
+        RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        expect( @temp_dir.join(@submittable.id.to_s, "pwd.txt") ).to be_exist
+        expect( @temp_dir.join(@submittable.id.to_s, "cat.txt") ).to be_exist
+      end
+
+      it "delete files prepared for local preprocess after execution" do
+        RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        expect( @submittable.dir.join("_lpreprocess.sh") ).to_not be_exist
+        expect( @submittable.dir.join("_input.json") ).to_not be_exist
+        expect( @submittable.dir.join("_input") ).to_not be_exist
+      end
+
+    end
+
     describe "prepare job" do
 
       before(:each) do
         allow_any_instance_of(RemoteJobHandler).to receive(:submit_to_scheduler)
-      end
-
-      describe "when #host_group is set" do
-
-        before(:each) do
-          hg = FactoryGirl.create(:host_group, hosts: [@host])
-          @host.update_attribute( :host_parameter_definitions, [
-            HostParameterDefinition.new(key: "param1"),
-            HostParameterDefinition.new(key: "param2", default: "XXX")
-          ])
-          @submittable.update_attributes!( submitted_to: nil, host_group: hg )
-        end
-
-        it "sets #submitted_to to the current host" do
-          expect {
-            RemoteJobHandler.new(@host).submit_remote_job(@submittable)
-          }.to change { @submittable.submitted_to }.from(nil).to(@host)
-        end
-
-        it "sets #host_parameters to the default value of the one in Host" do
-          expect {
-            RemoteJobHandler.new(@host).submit_remote_job(@submittable)
-          }.to change { @submittable.host_parameters }.from({}).to(@host.default_host_parameters)
-        end
       end
 
       it "creates a work_dir on remote host" do

@@ -90,7 +90,7 @@ class Analyzer
 
   private
   def auto_run_submitted_to_is_in_executable_on
-    return if auto_run_submitted_to.blank?
+    return if auto_run == :no
     unless executable_on.where(id: auto_run_submitted_to).first
        errors.add(:auto_run_submitted_to, "is not included in executable hosts")
     end

@@ -50,24 +50,4 @@ module ResultDirectory
     analyzable = analysis.analyzable
     analyzable_path(analyzable).join(analysis.to_param)
   end
-
-  def self.manual_submission_path
-    root.join("manual_submission")
-  end
-
-  def self.manual_submission_job_script_path(run)
-    manual_submission_path.join("#{run.id}.sh")
-  end
-
-  def self.manual_submission_input_json_path(run)
-    manual_submission_path.join("#{run.id}_input.json")
-  end
-
-  def self.manual_submission_pre_process_script_path(run)
-    manual_submission_path.join("#{run.id}_preprocess.sh")
-  end
-
-  def self.manual_submission_pre_process_executor_path(run)
-    manual_submission_path.join("#{run.id}_preprocess_executor.sh")
-  end
 end

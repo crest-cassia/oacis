@@ -94,37 +94,4 @@ Set the execution command as follows.
 By setting "command" and "pre-process" like these, we can submit jobs to the K-computer.
 All the simulation results are properly staged-out if all the output files are generated in the current directory because all the files in the current directory are staged-out.
 
-## [Advanced] Manually executing a job without using a job scheduler
-
-If you make a Run on OACIS, the run is automatically submitted to the specified computational host by default.
-However, there is an option to run it manually.
-When creating a run, set the *"Submitted to"* field to *"manual submission"*. The jobs are not submitted to the remote host, but only a shell script to run the job is created.
-You can execute the shell script manually and include the results into OACIS later on.
-
-By the manual submission, you can conduct a minute customization against the job script although the submission is not automated.
-The following use cases are possible for example.
-
-- When you submit multiple runs as one bulk job.
-    - If you have a strict limitation on the number of concurrent jobs, you can submit multiple runs as one big job.
-- When you submit a job whose elapsed time is expected to be longer than the permitted elapsed time.
-    - When the job is so long that one job execution is not enough, you need to submit jobs several times for one run.
-- When a special customization to the job script is required due to the special specification of the job scheduler.
-    - By manually editing the job script created by OACIS, you can fully customize it.
-
-After you create a run of manual submission, you will find the shell script at *${OACIS_ROOT}/public/Result_development/manual_submission*.
-If the simulator's input type is JSON, the input json file is also generated in the same path.
-
-![manual submission]({{ site.baseurl }}/images/manual_submission.png){:width="400px"}
-
-If you run the generated job script, the simulation job is executed.
-
-```shell
-bash 52cde935b93f969b07000005.sh
-```
-
-The results file (in this case 52cde935b93f969b07000005.tar.bz2) is included into OACIS by running the following command from a command-line terminal
-
-```shell
-./bin/oacis_cli job_include -i 52cde935b93f969b07000005.tar.bz2
-```
 

@@ -33,7 +33,7 @@ describe Run do
     end
 
     it "assigns 'created' stauts by default" do
-      run = @param_set.runs.create
+      run = @param_set.runs.create(@valid_attribute)
       expect(run.status).to eq(:created)
     end
 
@@ -41,6 +41,21 @@ describe Run do
       run = @param_set.runs.build(@valid_attribute)
       run.status = :unknown
       expect(run).not_to be_valid
+    end
+
+    it "submitted_to or host_group must be present" do
+      run = @param_set.runs.build(@valid_attribute)
+      run.submitted_to = nil
+      run.host_group = nil
+      expect(run).not_to be_valid
+    end
+
+    it "is valid if host_group exists even if submitted_to is nil" do
+      hg = FactoryGirl.create(:host_group)
+      run = @param_set.runs.build(@valid_attribute)
+      run.submitted_to = nil
+      run.host_group = hg
+      expect(run).to be_valid
     end
 
     it "mpi_procs must be present" do
@@ -96,18 +111,18 @@ describe Run do
     end
 
     it "assigns a priority by default" do
-      run = @param_set.runs.create
+      run = @param_set.runs.create(@valid_attribute)
       expect(run.priority).to be_a(Integer)
     end
 
     it "automatically assigned priority is 1" do
-      run = @param_set.runs.create
+      run = @param_set.runs.create(@valid_attribute)
       expect(run.priority).to eq 1
     end
 
     describe "seed" do
       it "assigns a seed by default" do
-        run = @param_set.runs.create
+        run = @param_set.runs.create(@valid_attribute)
         expect(run.seed).to be_a(Integer)
       end
 
@@ -115,14 +130,14 @@ describe Run do
         seeds = []
         n = 10
         n.times do |i|
-          run = @param_set.runs.create
+          run = @param_set.runs.create(@valid_attribute)
           seeds << run.seed
         end
         expect(seeds.uniq.size).to eq(n)
       end
 
       it "seeds must be less than 2**31-1" do
-        run = @param_set.runs.create
+        run = @param_set.runs.create(@valid_attribute)
         expect( run.seed ).to be < 2**31
       end
 
@@ -135,17 +150,17 @@ describe Run do
 
         it "creates seed in sequential order starting from one" do
           3.times do |i|
-            run = @param_set.runs.create
+            run = @param_set.runs.create(@valid_attribute)
             expect(run.seed).to eq i+1
           end
         end
 
         it "does not override when seed is explicitly specified" do
-          run = @param_set.runs.create(seed: 2)
+          run = @param_set.runs.create(@valid_attribute.merge(seed:2))
           expect( run.seed ).to eq 2
           seeds = []
           3.times do |i|
-            r = @param_set.runs.create
+            r = @param_set.runs.create(@valid_attribute)
             seeds << r.seed
           end
           expect( seeds ).to eq [1,3,4]
@@ -211,11 +226,6 @@ describe Run do
         @host.update_attribute(:host_parameter_definitions, @host.host_parameter_definitions + [HostParameterDefinition.new(key: "param1", default: "aaa", format: '\w+')])
         expect(run).to be_valid
       end
-    end
-
-    it "submitted_to can be nil" do
-      run = @param_set.runs.build(@valid_attribute.update({submitted_to: nil}))
-      expect(run).to be_valid
     end
   end
 
@@ -295,6 +305,16 @@ describe Run do
         command = run.command_with_args
         expect(command).to eq "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
         expect(run.input).to be_nil
+      end
+
+      it "returns boolean parameters in 0 or 1" do
+        pds = [ ParameterDefinition.new(key:"p1",type:"Boolean",default:true) ]
+        sim = FactoryGirl.create(:simulator,
+                                 parameter_definitions: pds, support_input_json: false,
+                                 parameter_sets_count: 0)
+        run = sim.parameter_sets.create!(v: {p1: true}).runs.create!(submitted_to: FactoryGirl.create(:host))
+        command = run.command_with_args
+        expect(command).to eq "#{sim.command} 1 #{run.seed}"
       end
     end
 
@@ -414,34 +434,6 @@ describe Run do
       expect {
         @run.destroy
       }.to change { Run.count }.by(-1)
-    end
-
-    it "deletes job script and _input.json created for manual submission" do
-      sim = @run.simulator
-      sim.update_attribute(:support_input_json, true)
-      run = sim.parameter_sets.first.runs.create(submitted_to: nil)
-      sh_path = ResultDirectory.manual_submission_job_script_path(run)
-      json_path = ResultDirectory.manual_submission_input_json_path(run)
-
-      expect(sh_path).to be_exist
-      expect(json_path).to be_exist
-      run.destroy
-      expect(sh_path).not_to be_exist
-      expect(json_path).not_to be_exist
-    end
-
-    it "deletes preprocess script and preprocess executor created for manual submission" do
-      sim = @run.simulator
-      sim.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
-      run = sim.parameter_sets.first.runs.create(submitted_to: nil)
-      pre_process_script_path = ResultDirectory.manual_submission_pre_process_script_path(run)
-      pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(run)
-
-      expect(pre_process_script_path).to be_exist
-      expect(pre_process_executor_path).to be_exist
-      run.destroy
-      expect(pre_process_script_path).not_to be_exist
-      expect(pre_process_executor_path).not_to be_exist
     end
   end
 
@@ -574,62 +566,6 @@ describe Run do
       expect {
         run.save!
       }.to change { run.simulator.default_omp_threads[h.id.to_s] }.to(4)
-    end
-
-    context "when submitted_to is nil" do
-
-      it "creates a job-script" do
-        run = @param_set.runs.create!(submitted_to: nil)
-        expect(ResultDirectory.manual_submission_job_script_path(run)).to be_exist
-      end
-
-      it "create _input.json" do
-        @simulator.update_attribute(:support_input_json, true)
-        run = @param_set.runs.create!(submitted_to: nil)
-        expect(ResultDirectory.manual_submission_input_json_path(run)).to be_exist
-      end
-
-      context "when simulator.pre_process exists" do
-
-        it "creates a preprocess script" do
-          @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
-          run = @param_set.runs.create!(submitted_to: nil)
-          expect(ResultDirectory.manual_submission_pre_process_script_path(run)).to be_exist
-        end
-
-        it "creates a preprocess executor" do
-          @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
-          run = @param_set.runs.create!(submitted_to: nil)
-          expect(ResultDirectory.manual_submission_pre_process_executor_path(run)).to be_exist
-        end
-
-        it "preprocess executor creates _preprocess.sh" do
-          @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
-          run = @param_set.runs.create!(submitted_to: nil)
-          pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(run)
-          cmd = "/bin/bash #{pre_process_executor_path.basename}"
-          Dir.chdir(pre_process_executor_path.dirname) {
-            system(cmd)
-            _preprocess_path = Pathname.new(run.id).join("_preprocess.sh")
-            expect(_preprocess_path).to be_exist
-          }
-        end
-
-        it "preprocess executor creates _input.json" do
-          @simulator.update_attribute(:support_input_json, true)
-          @simulator.update_attribute(:pre_process_script, 'echo "Hello" > preprocess_result.txt')
-          run = @param_set.runs.create!(submitted_to: nil)
-          pre_process_executor_path = ResultDirectory.manual_submission_pre_process_executor_path(run)
-          cmd = "/bin/bash #{pre_process_executor_path.basename}"
-          Dir.chdir(pre_process_executor_path.dirname) {
-            system(cmd)
-            _input_json_path = Pathname.new(run.id).join("_input.json")
-            expect(_input_json_path).to be_exist
-            _preprocess_script_result = Pathname.new(run.id).join("preprocess_result.txt")
-            expect(_preprocess_script_result).to be_exist
-          }
-        end
-      end
     end
   end
 

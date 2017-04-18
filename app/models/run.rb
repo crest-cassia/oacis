@@ -51,7 +51,11 @@ class Run
     else
       ps = parameter_set
       params = simulator.parameter_definitions.map do |pd|
-        ps.v[pd.key]
+        if pd.type == "Boolean"
+          ps.v[pd.key] ? 1 : 0
+        else
+          ps.v[pd.key]
+        end
       end
       params << seed
       params.join(' ')

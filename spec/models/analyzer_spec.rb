@@ -161,9 +161,16 @@ describe Analyzer do
 
       it "is not valid if auto_run_submitted_to is not included in executable_on" do
         another_host = FactoryGirl.create(:host)
-        invalid_fields = @valid_fields.update(auto_run_submitted_to: another_host.id)
+        invalid_fields = @valid_fields.update(auto_run_submitted_to: another_host.id, auto_run: :yes)
         azr = @sim.analyzers.build(invalid_fields)
         expect(azr).not_to be_valid
+      end
+
+      it "skips validation of auto_run_submitted_to if auto_run is 'no'" do
+        another_host = FactoryGirl.create(:host)
+        fields = @valid_fields.update(auto_run_submitted_to: another_host.id, auto_run: :no)
+        azr = @sim.analyzers.build(fields)
+        expect(azr).to be_valid
       end
     end
   end
@@ -343,10 +350,6 @@ describe Analyzer do
         key_value = @host.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
         expect(@azr.get_default_host_parameter(@host)).to eq Hash[*key_value.flatten]
       end
-
-      it "return default_host_parameter for manual submission" do
-        expect(@sim.get_default_host_parameter(nil)).to eq Hash.new
-      end
     end
 
     context "when new run is created" do
@@ -362,12 +365,6 @@ describe Analyzer do
         }.to change {
           @azr.reload.get_default_host_parameter(@host)["param2"]
         }.from("XXX").to("YYY")
-      end
-
-      it "return {} as default_host_parameter for manual submission" do
-        run = @sim.parameter_sets.first.runs.first
-        anl = run.analyses.build( analyzer: @azr, submitted_to: nil )
-        expect(@azr.get_default_host_parameter(nil)).to eq Hash.new
       end
     end
   end

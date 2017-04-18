@@ -84,6 +84,7 @@ describe AnalyzersController do
           description: "xxx yyy",
           support_input_json: "1", support_mpi: "1", support_omp: "0",
           pre_process_script: "echo preprocess",
+          local_pre_process_script: "echo local_preprocess",
           executable_on_ids: [@host.id.to_s],
           auto_run_submitted_to: @host.id.to_s
         }
@@ -111,6 +112,7 @@ describe AnalyzersController do
         expect(azr.support_mpi).to be_truthy
         expect(azr.support_omp).to be_falsey
         expect(azr.pre_process_script).to eq("echo preprocess")
+        expect(azr.local_pre_process_script).to eq("echo local_preprocess")
         expect(azr.executable_on).to eq [@host]
         expect(azr.auto_run_submitted_to).to eq @host
       end
@@ -205,6 +207,7 @@ describe AnalyzersController do
           description: "xxx yyy",
           support_input_json: "1", support_mpi: "1", support_omp: "0",
           pre_process_script: "echo preprocess",
+          local_pre_process_script: "echo local_preprocess",
           executable_on: [],
           auto_run_submitted_to: ''
         }
@@ -321,8 +324,8 @@ describe AnalyzersController do
       expect(response).to be_success
     end
 
-    it "returns http success if host_id is not found" do
-      param = {id: @azr.to_param, host_id: "manual"}
+    it "returns http success even if host_id is not found" do
+      param = {id: @azr.to_param, host_id: "DO_NOT_EXIST"}
       get :_host_parameters_field, param, valid_session
       expect(response).to be_success
     end

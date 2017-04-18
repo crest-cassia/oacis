@@ -732,10 +732,6 @@ describe Simulator do
         key_value = @sim.executable_on.first.host_parameter_definitions.map {|pd| [pd.key, pd.default]}
         expect(@sim.get_default_host_parameter(@sim.executable_on.first)).to eq Hash[*key_value.flatten]
       end
-
-      it "return default_host_parameter for manual submission" do
-        expect(@sim.get_default_host_parameter(nil)).to eq Hash.new
-      end
     end
 
     context "when new run is created" do
@@ -747,11 +743,6 @@ describe Simulator do
           run.host_parameters["param2"] = "YYY"
           run.save
         }.to change { @sim.reload.get_default_host_parameter(@sim.executable_on.first)["param2"] }.from("XXX").to("YYY")
-      end
-
-      it "return {} as default_host_parameter for manual submission" do
-        run = @sim.parameter_sets.first.runs.build({submitted_to: nil})
-        expect(@sim.get_default_host_parameter(run.submitted_to)).to eq Hash.new
       end
     end
   end
