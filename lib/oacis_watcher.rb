@@ -7,7 +7,8 @@ class OacisWatcher
 
   def self.start( logger: Logger.new($stderr), polling: 5 )
     w = self.new( logger: logger, polling: polling )
-    yield w
+    Fiber.new { yield w }.resume
+    #yield w
     w.send(:start_polling)
   end
 
@@ -29,6 +30,15 @@ class OacisWatcher
     watch_ps(ps) {
       ps.reload
       f.resume ps
+    }
+    Fiber.yield
+  end
+
+  def await_all_ps(ps_array)
+    f = Fiber.current
+    watch_all_ps(ps_array) {
+      ps_array.each {|ps| ps.reload}
+      f.resume ps_array
     }
     Fiber.yield
   end
