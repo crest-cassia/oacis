@@ -29,9 +29,11 @@ class TestOacisWatcher(unittest.TestCase):
         ParameterDefinition = oacis.Rb.const('ParameterDefinition')
         pd1 = ParameterDefinition( {'key':"p1", 'type':"Integer", 'default': 0} )
         pd2 = ParameterDefinition( {'key':"p2", 'type':"Float", 'default': 1.0} )
-        sim = oacis.Simulator.create( {'name': 'my_test_simulator', 'command': 'echo', 'parameter_definitions': [pd1,pd2]} )
+        sim = oacis.Simulator.send('create!', {'name': 'my_test_simulator', 'command': 'echo', 'parameter_definitions': [pd1,pd2]} )
         #print( repr(sim), sim.parameter_definitions() )
         assert oacis.Simulator.count() == 1
+        host = oacis.Host.send('create!', {"name":"hostA", "hostname":"localhost", "user":os.environ['USER']} )
+        sim.executable_on().push(host)
         return sim
 
     def build_ps(self, sim, num_ps):
@@ -40,10 +42,12 @@ class TestOacisWatcher(unittest.TestCase):
             sim.find_or_create_parameter_set(v)
 
     def build_run(self, ps, num_created_runs, num_finished_runs):
+        host = ps.simulator().executable_on().first()
+        assert host is not None
         for i in range(num_created_runs):
-            ps.runs().create()
+            ps.runs().send( 'create!', submitted_to=host )
         for i in range(num_finished_runs):
-            ps.runs().create( status='finished' )
+            ps.runs().send( 'create!', submitted_to=host, status='finished' )
 
     def test_watch_ps(self):
         sim = self.build_simulator()
@@ -123,7 +127,8 @@ class TestOacisWatcher(unittest.TestCase):
         mock2 = MagicMock()
         def callback1(ps):
             mock1();
-            ps.runs().create()
+            h = ps.simulator().executable_on().first()
+            ps.runs().create( submitted_to=h )
 
         w = oacis.OacisWatcher()
         w.watch_ps(ps, callback1 ); w.watch_ps(ps, mock2)
