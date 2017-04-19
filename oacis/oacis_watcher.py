@@ -4,6 +4,7 @@ import signal
 import sys
 import os
 from functools import reduce
+import fibers
 
 class OacisWatcher():
 
@@ -13,6 +14,18 @@ class OacisWatcher():
         self._observed_parameter_sets_all = {}
         self._logger = logger or self._default_logger()
         self._signal_received = False
+
+    def async(self, func):
+        f = fibers.Fiber( target=func )
+        f.switch()
+
+    def await_ps(self, ps):
+        f = fibers.Fiber.current()
+        def callback(ps):
+            ps.reload()
+            f.switch(ps)
+        self.watch_ps(ps, callback)
+        return f.parent.switch()
 
     def watch_ps(self, ps, callback):
         psid = ps.id().to_s()
