@@ -8,7 +8,6 @@ class OacisWatcher
   def self.start( logger: Logger.new($stderr), polling: 5 )
     w = self.new( logger: logger, polling: polling )
     Fiber.new { yield w }.resume
-    #yield w
     w.send(:start_polling)
   end
 
