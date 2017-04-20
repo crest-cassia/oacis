@@ -4,11 +4,19 @@ require 'fiber'
 
 class OacisWatcher
 
+  @@current = nil
+
+  def self.current
+    @@current
+  end
 
   def self.start( logger: Logger.new($stderr), polling: 5 )
+    previous_w = @@current
     w = self.new( logger: logger, polling: polling )
+    @@current ||= w
     Fiber.new { yield w }.resume
     w.send(:start_polling)
+    @@current = previous_w
   end
 
   attr_reader :logger
@@ -18,6 +26,18 @@ class OacisWatcher
     @observed_parameter_sets_all = {}
     @logger = logger
     @polling = polling
+  end
+
+  def self.async(&block)
+    @@current.async(&block)
+  end
+
+  def self.await_ps(ps)
+    @@current.await_ps(ps)
+  end
+
+  def self.await_all_ps(ps_list)
+    @@current.await_all_ps(ps_list)
   end
 
   def async(&block)
