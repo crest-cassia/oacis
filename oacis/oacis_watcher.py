@@ -8,12 +8,26 @@ import fibers
 
 class OacisWatcher():
 
+    current_instance = None
+
     def __init__(self, polling = 5, logger = None):
         self._polling = polling
         self._observed_parameter_sets = {}
         self._observed_parameter_sets_all = {}
         self._logger = logger or self._default_logger()
         self._signal_received = False
+
+    @classmethod
+    def async(cls, func):
+        cls.current_instance.async(func)
+
+    @classmethod
+    def await_ps(cls, ps):
+        cls.current_instance.await_ps(ps)
+
+    @classmethod
+    def await_all_ps(cls, ps):
+        cls.current_instance.await_all_ps(ps)
 
     def async(self, func):
         f = fibers.Fiber( target=func )
@@ -25,6 +39,15 @@ class OacisWatcher():
             ps.reload()
             f.switch(ps)
         self.watch_ps(ps, callback)
+        return f.parent.switch()
+
+    def await_all_ps(self, ps_array):
+        f = fibers.Fiber.current()
+        def callback(ps_array):
+            for ps in ps_array:
+                ps.reload()
+            f.switch(ps_array)
+        self.watch_all_ps(ps_array, callback)
         return f.parent.switch()
 
     def watch_ps(self, ps, callback):
@@ -47,6 +70,9 @@ class OacisWatcher():
             self._signal_received = True
         org_handler = signal.signal( signal.SIGINT, on_sigint)
 
+        org_instance = self.__class__.current_instance
+        self.__class__.current_instance = self
+
         try:
             self._logger.info("start polling")
             while True:
@@ -63,6 +89,7 @@ class OacisWatcher():
                 time.sleep(self._polling)
             self._logger.info("stop polling. (interrupted=%s)" % self._signal_received)
         finally:
+            self.__class__.current_instance = org_instance
             signal.signal( signal.SIGINT, org_handler )
             if self._signal_received:
                 os.kill( os.getpid(), signal.SIGINT)
