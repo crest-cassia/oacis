@@ -16,38 +16,29 @@ class OacisWatcher():
         self._observed_parameter_sets_all = {}
         self._logger = logger or self._default_logger()
         self._signal_received = False
-
-    @classmethod
-    def async(cls, func):
-        cls.current_instance.async(func)
-
-    @classmethod
-    def await_ps(cls, ps):
-        cls.current_instance.await_ps(ps)
-
-    @classmethod
-    def await_all_ps(cls, ps):
-        cls.current_instance.await_all_ps(ps)
+        self._fibers = []
 
     def async(self, func):
         f = fibers.Fiber( target=func )
-        f.switch()
+        self._fibers.append(f)
 
+    @classmethod
     def await_ps(self, ps):
         f = fibers.Fiber.current()
         def callback(ps):
             ps.reload()
             f.switch(ps)
-        self.watch_ps(ps, callback)
+        cls.current_instance.watch_ps(ps, callback)
         return f.parent.switch()
 
-    def await_all_ps(self, ps_array):
+    @classmethod
+    def await_all_ps(cls, ps_array):
         f = fibers.Fiber.current()
         def callback(ps_array):
             for ps in ps_array:
                 ps.reload()
             f.switch(ps_array)
-        self.watch_all_ps(ps_array, callback)
+        cls.current_instance.watch_all_ps(ps_array, callback)
         return f.parent.switch()
 
     def watch_ps(self, ps, callback):
@@ -74,6 +65,9 @@ class OacisWatcher():
         self.__class__.current_instance = self
 
         try:
+            self._logger.debug("resuming fibers")
+            for f in self._fibers:
+                f.switch()
             self._logger.info("start polling")
             while True:
                 if self._signal_received:
