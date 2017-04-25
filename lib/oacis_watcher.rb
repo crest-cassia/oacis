@@ -1,13 +1,22 @@
 require 'pp'
 require 'logger'
+require 'fiber'
 
 class OacisWatcher
 
+  @@current = nil
+
+  def self.current
+    @@current
+  end
 
   def self.start( logger: Logger.new($stderr), polling: 5 )
+    previous_w = @@current
     w = self.new( logger: logger, polling: polling )
-    yield w
+    @@current = w
+    Fiber.new { yield w }.resume
     w.send(:start_polling)
+    @@current = previous_w
   end
 
   attr_reader :logger
@@ -17,6 +26,32 @@ class OacisWatcher
     @observed_parameter_sets_all = {}
     @logger = logger
     @polling = polling
+  end
+
+  def async(&block)
+    Fiber.new(&block).resume
+  end
+
+  def self.async(&block)
+    @@current.async(&block)
+  end
+
+  def self.await_ps(ps)
+    f = Fiber.current
+    @@current.watch_ps(ps) {
+      ps.reload
+      f.resume ps
+    }
+    Fiber.yield
+  end
+
+  def self.await_all_ps(ps_list)
+    f = Fiber.current
+    @@current.watch_all_ps(ps_list) {
+      ps_list.each {|ps| ps.reload}
+      f.resume ps_list
+    }
+    Fiber.yield
   end
 
   def watch_ps(ps, &block)
@@ -53,10 +88,11 @@ class OacisWatcher
       end while executed
       break if @observed_parameter_sets.empty? && @observed_parameter_sets_all.empty?
       break if @sigint_received
-      @logger.info "waiting for #{@polling} sec"
+      @logger.debug "waiting for #{@polling} sec"
       sleep @polling
     end
-    @logger.info "stop polling, #{@sigint_received}"
+    @logger.info "received SIGINT"  if @sigint_received
+    @logger.info "stop polling"
   ensure
     Signal.trap("INT", default_sigaction || "DEFAULT")
     Process.kill("INT", 0) if @sigint_received  # send INT to the current process
@@ -84,7 +120,7 @@ class OacisWatcher
       if ps.runs.count == 0
         @logger.warn "#{ps} has no run"
       else
-        @logger.info "calling callback for #{psid}"
+        @logger.debug "calling callback for #{psid}"
         executed = true
         while callback = @observed_parameter_sets[psid].shift
           callback.call( ps )
@@ -105,7 +141,7 @@ class OacisWatcher
     @observed_parameter_sets_all.keys.each do |watched_ps_ids|
       callbacks = @observed_parameter_sets_all[watched_ps_ids]
       if watched_ps_ids.all? {|psid| completed.include?(psid) }
-        @logger.info "calling callback for #{watched_ps_ids}"
+        @logger.debug "calling callback for #{watched_ps_ids}"
         executed = true
         while callback = callbacks.shift
           watched_pss = watched_ps_ids.map {|psid| ParameterSet.find(psid) }
