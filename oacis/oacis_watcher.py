@@ -23,7 +23,7 @@ class OacisWatcher():
         self._fibers.append(f)
 
     @classmethod
-    def await_ps(self, ps):
+    def await_ps(cls, ps):
         f = fibers.Fiber.current()
         def callback(ps):
             ps.reload()
