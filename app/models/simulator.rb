@@ -191,6 +191,7 @@ class Simulator
     runs.update_all(to_be_destroyed: true)
     azr_ids = analyzers.unscoped.map {|azr| azr.id }
     Analysis.where(:analyzer_id.in => azr_ids).update_all(to_be_destroyed: true)
+    reload
   end
 
   private

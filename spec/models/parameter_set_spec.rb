@@ -542,7 +542,7 @@ describe ParameterSet do
     it "returns true when all the Run or Analysis is destroyed" do
       @ps.set_lower_submittable_to_be_destroyed
       expect( @ps.destroyable? ).to be_falsey
-      @ps.runs.first.analyses.unscoped.destroy
+      @ps.runs.unscoped.first.analyses.unscoped.destroy
       expect( @ps.destroyable? ).to be_falsey
       @ps.runs.unscoped.destroy
       expect( @ps.destroyable? ).to be_falsey

@@ -94,6 +94,7 @@ class Run
 
   def set_lower_submittable_to_be_destroyed
     analyses.update_all(to_be_destroyed: true)
+    reload
   end
 
   private

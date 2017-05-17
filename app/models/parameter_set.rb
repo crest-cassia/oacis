@@ -137,6 +137,7 @@ class ParameterSet
     analyses.update_all(to_be_destroyed: true)
     run_ids = runs.unscoped.map {|run| run.id }
     Analysis.where(:analyzable_id.in => run_ids).update_all(to_be_destroyed: true)
+    reload
   end
 
   private
