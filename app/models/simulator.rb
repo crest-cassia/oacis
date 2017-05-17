@@ -269,8 +269,7 @@ class Simulator
       end
     end
 
-    x_keys.uniq!.sort!
-    y_keys.uniq!.sort!
+    [x_keys, y_keys].each {|k| k.uniq!; k.sort! }
 
     num_runs = y_keys.map do |y|
       x_keys.map do |x|
