@@ -478,7 +478,7 @@ describe Run do
       run = @sim.runs.first
       expect {
         run.set_lower_submittable_to_be_destroyed
-      }.to change { run.analyses.empty? }.from(false).to(true)
+      }.to change { run.reload.analyses.empty? }.from(false).to(true)
     end
 
     it "does not destroy analyses" do
