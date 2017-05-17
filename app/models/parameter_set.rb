@@ -2,7 +2,6 @@ class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
   field :v, type: Hash
-  field :progress_rate_cache, type: Integer # used for sorting by progress.
   field :to_be_destroyed, type: Boolean, default: false
   index({ simulator_id: 1, v: 1 })
   index({ simulator_id: 1, updated_at: -1 })
@@ -180,14 +179,5 @@ class ParameterSet
     if self.simulator and File.directory?(self.dir)
       FileUtils.rm_r(self.dir)
     end
-  end
-
-  def update_progress_rate_cache
-    # make it negative in order to show all-finished-ps on top when sorted in ascending order
-    counts = Hash[ runs_status_count_cache.map {|key,val| [key.to_sym, val]} ]
-    total = counts.inject(0) {|sum, v| sum += v[1]}
-    rate = 0
-    rate = - (counts[:finished]*1000000/total).to_i - (counts[:failed]*10000/total).to_i - (counts[:running]*100/total).to_i  if total > 0
-    timeless.update_attribute(:progress_rate_cache, rate)
   end
 end
