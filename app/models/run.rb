@@ -16,10 +16,8 @@ class Run
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
   before_create :set_unique_seed, :set_simulator
-  before_save :remove_runs_status_count_cache, :if => Proc.new {|run| run.status_changed? or run.to_be_destroyed_changed? }
   after_create :create_run_dir
-  before_destroy :delete_run_dir, :delete_archived_result_file,
-                 :remove_runs_status_count_cache
+  before_destroy :delete_run_dir, :delete_archived_result_file
 
   public
   def simulator
@@ -139,12 +137,6 @@ class Run
     if parameter_set
       archive = archived_result_path
       FileUtils.rm(archive) if File.exist?(archive)
-    end
-  end
-
-  def remove_runs_status_count_cache
-    if parameter_set and parameter_set.reload.runs_status_count_cache
-      parameter_set.update_attribute(:runs_status_count_cache, nil)
     end
   end
 end

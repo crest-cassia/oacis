@@ -568,45 +568,4 @@ describe Run do
       }.to change { run.simulator.default_omp_threads[h.id.to_s] }.to(4)
     end
   end
-
-  describe "removing runs_status_count_cache" do
-
-    before(:each) do
-      @param_set.runs_status_count
-      expect(@param_set.reload.runs_status_count_cache).not_to be_nil
-    end
-
-    it "removes runs_status_count_cache when a new Run is created" do
-      @param_set.runs.create!(@valid_attribute)
-      expect(@param_set.reload.reload.runs_status_count_cache).to be_nil
-    end
-
-    it "removes runs_status_count_cache when status is changed" do
-      run = @param_set.runs.first
-      expect {
-        run.update_attribute(:status, :finished)
-      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
-    end
-
-    it "removes runs_status_count_cache when to_be_destroyed flag is set" do
-      run = @param_set.runs.first
-      expect {
-        run.update_attribute(:to_be_destroyed, true)
-      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
-    end
-
-    it "removes runs_status_count_cache when destroyed" do
-      run = @param_set.runs.first
-      expect {
-        run.destroy
-      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
-    end
-
-    it "does not change runs_status_count_cache when status is not changed" do
-      run = @param_set.runs.first
-      expect {
-        run.update_attribute(:updated_at, DateTime.now)
-      }.to_not change { @param_set.reload.runs_status_count_cache }
-    end
-  end
 end
