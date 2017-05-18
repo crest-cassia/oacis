@@ -55,7 +55,7 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 ### 前提条件
 
 - Ruby 2.2 or 2.3 (2.4はv2.12.0から対応)
-- MongoDB 2.4.9 (http://www.mongodb.org/)
+- MongoDB 3.2以降 (http://www.mongodb.org/)
 - bundler (http://bundler.io/)
 
 Rubyのインストールにはrbenvまたはrvmを使って環境を整えるのがよいです。
