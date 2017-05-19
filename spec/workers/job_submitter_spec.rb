@@ -95,8 +95,10 @@ describe JobSubmitter do
     it "does not destroy if the status is not created" do
       ps = @sim.parameter_sets.first
       ps.runs.update_all(status: :finished)
+      ps.reload
       ps.runs.first.update_attribute(:status, :created)
       ps.runs.update_all(to_be_destroyed: true)
+      ps.reload
       expect {
         JobSubmitter.destroy_jobs_to_be_destroyed(@logger)
       }.to change { Run.unscoped.count }.from(3).to(2)

@@ -2,8 +2,6 @@ class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
   field :v, type: Hash
-  field :runs_status_count_cache, type: Hash
-  field :progress_rate_cache, type: Integer # used for sorting by progress. updated at the same time with the run_status_count_cache
   field :to_be_destroyed, type: Boolean, default: false
   index({ simulator_id: 1, v: 1 })
   index({ simulator_id: 1, updated_at: -1 })
@@ -83,37 +81,6 @@ class ParameterSet
     ret
   end
 
-  def runs_status_count
-    # I do not know why but reload is necessary. Otherwise, _cache is always nil.
-    reload
-    if runs_status_count_cache
-      update_progress_rate_cache unless progress_rate_cache
-      return Hash[ runs_status_count_cache.map {|key,val| [key.to_sym, val]} ]
-    end
-
-    # use aggregate function of MongoDB.
-    # See http://blog.joshsoftware.com/2013/09/05/mongoid-and-the-mongodb-aggregation-framework/
-    aggregated = Run.collection.aggregate([
-      { '$match' => Run.where(parameter_set_id: id).selector },
-      { '$group' => {'_id' => '$status', count: { '$sum' => 1}} }
-    ])
-    # aggregated is an Array like [ {"_id" => :created, "count" => 3}, ...]
-    counts = Hash[ aggregated.map {|d| [d["_id"], d["count"]] } ]
-
-    # merge default value because some 'counts' do not have keys whose count is zero.
-    default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0}
-    counts.merge!(default) {|key, self_val, other_val| self_val }
-
-    # skip validation using update_attribute method in order to improve performance
-    # disable automatic time-stamp update when updating cache
-    # See http://mongoid.org/en/mongoid/docs/extras.html#timestamps
-    timeless.update_attribute(:runs_status_count_cache, counts)
-
-    update_progress_rate_cache
-
-    counts
-  end
-
   # public APIs
   def find_or_create_runs_upto( num_runs, submitted_to: nil, host_param: nil, host_group: nil, mpi_procs: 1, omp_threads: 1, priority: 1)
     found = runs.asc(:created_at).limit(num_runs).to_a
@@ -169,6 +136,7 @@ class ParameterSet
     analyses.update_all(to_be_destroyed: true)
     run_ids = runs.unscoped.map {|run| run.id }
     Analysis.where(:analyzable_id.in => run_ids).update_all(to_be_destroyed: true)
+    reload
   end
 
   private
@@ -211,14 +179,5 @@ class ParameterSet
     if self.simulator and File.directory?(self.dir)
       FileUtils.rm_r(self.dir)
     end
-  end
-
-  def update_progress_rate_cache
-    # make it negative in order to show all-finished-ps on top when sorted in ascending order
-    counts = Hash[ runs_status_count_cache.map {|key,val| [key.to_sym, val]} ]
-    total = counts.inject(0) {|sum, v| sum += v[1]}
-    rate = 0
-    rate = - (counts[:finished]*1000000/total).to_i - (counts[:failed]*10000/total).to_i - (counts[:running]*100/total).to_i  if total > 0
-    timeless.update_attribute(:progress_rate_cache, rate)
   end
 end

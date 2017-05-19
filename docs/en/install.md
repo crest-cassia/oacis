@@ -54,7 +54,7 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 ### Prerequisites
 
 - Ruby 2.2 or 2.3. (2.4 is supported since v2.12.0.)
-- MongoDB 2.4.9 or later (http://www.mongodb.org/)
+- MongoDB 3.2 or later (http://www.mongodb.org/)
 - bundler (http://bundler.io/)
 
 We recommend rbenv or rvm to install proper version of Ruby.

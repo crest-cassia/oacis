@@ -32,7 +32,7 @@ class ParameterSetsListDatatable
 
 private
   def sort_by
-    ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
+    ["id", "progress", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
   end
 
   def data
@@ -85,12 +85,34 @@ private
   end
 
   def parameter_sets_list
-    @ps_list_cache ||= @param_sets.order_by(sort_column_direction).skip(page).limit(per_page).to_a
+    @ps_list_cache ||= get_parameter_set_list
+  end
+
+  def get_parameter_set_list
+    pss = @param_sets.order_by(sort_column_direction).skip(page).limit(per_page).to_a
     # `to_a` is necessary to fix the contents of parameter_sets_list
+    @runs_status_counts_cache = ParameterSet.runs_status_count_batch(pss)
+
+    if sort_columns[0] == "progress"
+      pss.sort_by! do |ps|
+        r = progress_rate(ps)
+      end
+      if sort_directions[0] == "desc"
+        pss.reverse!
+      end
+    end
+    pss
+  end
+
+  def progress_rate(ps)
+    counts = runs_status_counts(ps)
+    total = counts.inject(0) {|sum, v| sum += v[1]}
+    rate = (counts[:finished]*1000000 + counts[:failed]*10000 + counts[:running]*100 + counts[:submitted]*1).to_f / total
+    rate
   end
 
   def runs_status_counts(ps)
-    @runs_status_counts_cache ||= ParameterSet.runs_status_count_batch( parameter_sets_list )
+    raise "must not happen" if @runs_status_counts_cache.nil?
     @runs_status_counts_cache[ps.id]
   end
 

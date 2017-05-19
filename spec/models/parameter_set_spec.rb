@@ -264,47 +264,6 @@ describe ParameterSet do
     end
   end
 
-  describe "#runs_status_count" do
-
-    def prepare_runs
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 10)
-      prm = sim.parameter_sets.first
-      prm.runs[0].update_attribute(:status, :submitted)
-      (prm.runs[1..2]).each {|r| r.update_attribute(:status, :running) }
-      (prm.runs[3..5]).each {|r| r.update_attribute(:status, :failed) }
-      (prm.runs[6..9]).each {|r| r.update_attribute(:status, :finished) }
-      prm
-    end
-
-    it "returns the runs count" do
-      prm = prepare_runs
-      expect(prm.runs_status_count.values.inject(:+)).to eq prm.runs.count
-      expect(prm.runs_status_count[:created].to_i).to eq prm.runs.where(status: :created).count
-      expect(prm.runs_status_count[:submitted].to_i).to eq prm.runs.where(status: :submitted).count
-      expect(prm.runs_status_count[:running]).to eq prm.runs.where(status: :running).count
-      expect(prm.runs_status_count[:finished]).to eq prm.runs.where(status: :finished).count
-      expect(prm.runs_status_count[:failed]).to eq prm.runs.where(status: :failed).count
-    end
-
-    it "save the result into runs_status_count_cache field" do
-      prm = prepare_runs
-      expect(prm.runs_status_count_cache).to be_nil
-
-      expect(Run).to receive(:collection).and_call_original
-      prm.runs_status_count
-      expect(prm.runs_status_count_cache).to be_a(Hash)
-    end
-
-    it "update progress_rate_cache field" do
-      prm = prepare_runs
-      expect(prm.runs_status_count_cache).to be_nil
-
-      expect(Run).to receive(:collection).and_call_original
-      prm.runs_status_count
-      expect(prm.progress_rate_cache).to be_a(Integer)
-    end
-  end
-
   describe ".runs_status_count_batch" do
 
     def prepare_runs
@@ -583,7 +542,7 @@ describe ParameterSet do
     it "returns true when all the Run or Analysis is destroyed" do
       @ps.set_lower_submittable_to_be_destroyed
       expect( @ps.destroyable? ).to be_falsey
-      @ps.runs.first.analyses.unscoped.destroy
+      @ps.runs.unscoped.first.analyses.unscoped.destroy
       expect( @ps.destroyable? ).to be_falsey
       @ps.runs.unscoped.destroy
       expect( @ps.destroyable? ).to be_falsey

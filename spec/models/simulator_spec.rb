@@ -594,26 +594,6 @@ describe Simulator do
         expect(num_runs).to eq expected
       end
     end
-
-    context "when some parameter_sets have runs_status_count_cache field" do
-
-      before(:each) do
-        # set cache for some of the parameter sets
-        @sim.parameter_sets[0].runs_status_count
-        @sim.parameter_sets[2].runs_status_count
-        @sim.parameter_sets[-1].runs_status_count
-      end
-
-      it "progress[:num_runs] is matrix having [finished_runs, total_runs]" do
-        num_runs = @sim.progress_overview_data("L", "T")[:num_runs]
-        expected = [
-          # L=1,   2,     3
-          [ [5,8], [3,5], [3,5] ], # T=1.0
-          [ [3,5], [8,8], [0,0] ], # T=2.0
-        ]
-        expect(num_runs).to eq expected
-      end
-    end
   end
 
   describe "#simulator_versions" do
