@@ -25,19 +25,19 @@ class OacisWatcher():
     @classmethod
     def await_ps(cls, ps):
         f = fibers.Fiber.current()
-        def callback(ps):
-            ps.reload()
-            f.switch(ps)
+        def callback(_ps):
+            ps.reload() # refresh original ps object
+            f.switch(_ps)
         cls.current_instance.watch_ps(ps, callback)
         return f.parent.switch()
 
     @classmethod
     def await_all_ps(cls, ps_array):
         f = fibers.Fiber.current()
-        def callback(ps_array):
-            for ps in ps_array:
+        def callback(_ps_array):
+            for ps in ps_array:  # refresh original ps_array object
                 ps.reload()
-            f.switch(ps_array)
+            f.switch(_ps_array)
         cls.current_instance.watch_all_ps(ps_array, callback)
         return f.parent.switch()
 
