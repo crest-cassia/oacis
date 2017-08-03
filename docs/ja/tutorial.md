@@ -25,7 +25,7 @@ READMEに書いてある通りにセットアップして、`run.sh`というス
 結果のファイルは実行したカレントディレクトリに作成されます。
 試しに手元で実行して、どのような挙動になるか確認してみるのもよいでしょう。
 
-以後、この実行スクリプトが `~/work/ns_model/run.sh` に存在するとします。
+以後、この実行スクリプトが `~/nagel_schreckenberg_model/run.sh` に存在するとします。
 
 ## 手順
 
@@ -122,7 +122,7 @@ Simulator一覧ページ(/simulators)で[New Simulator]ボタンをクリック�
     - [p\_d, Float, 0.1]
     - [t\_init, Integer, 100]
     - [t\_measure, Integer, 100]
-- Command: `~/work/ns_model/run.sh` （シミュレーターを配置したパス）
+- Command: `~/nagel_schreckenberg_model/run.sh` （シミュレーターを配置したパス）
 - Input type: Argument （パラメータは引数で渡す）
 - Executable_on: localhostにチェック
 
@@ -191,13 +191,13 @@ ParameterSetとRunを作ってジョブを実行し、結果を確認する方�
 <iframe width="420" height="315" src="https://www.youtube.com/embed/Lnta80r7vCA" frameborder="0" allowfullscreen class="youtube"></iframe>
 
 ParameterSetの新規作成ボタンをクリックしてください。値をコンマ区切りで入力すると複数のParameterSetを同時に作ることができます。
-Vmaxに「3,4,5,6,7」、densityに「0.1,0.2,0.3,0.4,0.5」をそれぞれ入力してください。
-こうすると、合計25種類のParameterSetが作成されます。
-（より正確に言うと、さきほど作成したParameterSetが一つ含まれるので新規作成されるのは24個です。）
+Vmaxに「3,4,5,6,7」、densityに「0.05,0.1,0.2,0.3,0.4,0.5」をそれぞれ入力してください。
+こうすると、合計30種類のParameterSetが作成されます。
+（より正確に言うと、さきほど作成したParameterSetが一つ含まれるので新規作成されるのは29個です。）
 
 （注）一度に作成できるParameterSetの数は100個に制限されています。それ以上、多数のParameterSetを作る場合はCommand Line Interfaceを使用します。
 
-さらに "Number of Runs"の値を1にします。すると25個のParameterSetそれぞれの配下にRunが１つになるまで作成されます。
+さらに "Target # of Runs"の値を1にします。すると30個のParameterSetそれぞれの配下にRunが１つになるまで作成されます。
 "Create"ボタンを押すと、ParameterSetとRunが作成されたことがわかると思います。
 
 ナビゲーションバーの[Runs]をクリックすると、実行中(running)、スケジューラに投入済み(submitted)、実行待ち（created）のジョブ一覧を確認できます。
@@ -215,7 +215,7 @@ Vmaxに「3,4,5,6,7」、densityに「0.1,0.2,0.3,0.4,0.5」をそれぞれ入�
 各点をダブルクリックするとそのParameterSetのページが異なるタブで開きます。詳細を確認する時に役に立つでしょう。
 
 パラメータを変えていくとスナップショットがどのように変わるかも見てみましょう。
-[Figure viewer]-[density]-[Vmax]-[flow] と選択します。
+[Figure viewer]-[density]-[Vmax]-[/traffic.png] と選択します。
 横軸に密度、縦軸に車の最高速度としてスナップショットが散布図上に表示されます。
 画像をマウスオーバーすると拡大画像も見ることができます。
 このようにして渋滞の様子がパラメータを変えていくとどのように変化していくかを直感的に確認することができるようになっています。

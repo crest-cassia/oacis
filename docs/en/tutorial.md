@@ -26,7 +26,7 @@ Follow README to set up the simulator. When you run the script `run.sh`, give si
 The output file is generated in the current directory.
 Please try running the simulator and see how the output files look.
 
-From now on, let us assume that the script is located at `~/work/ns_model/run.sh`.
+From now on, let us assume that the script is located at `~/nagel_schreckenberg_model/run.sh`.
 
 ## Procedure
 
@@ -120,7 +120,7 @@ In this tutorial, we setup the simulator as follows. Leave the unspecified field
     - [p\_d, Float, 0.1]
     - [t\_init, Integer, 100]
     - [t\_measure, Integer, 100]
-- Command: `~/work/ns_model/run.sh` (This is the path of the simulator you prepared.)
+- Command: `~/nagel_schreckenberg_model/run.sh` (This is the path of the simulator you prepared.)
 - Input type: Argument (Input parameters are given as the command line arguments.)
 - Executable_on: check on "localhost"
 
@@ -179,16 +179,16 @@ The path where the output files are stored is also shown in this page. Using the
 We have learned how to make ParameterSets and runs. We have also learned how to see the output files.
 Next let us make multiple ParameterSets at once in order to investigate the parameter dependence of the simulator.
 
-In this tutorial, we are going to change two parameters: the density and the maximum velocity. We create ParameterSets with five different values for each of these parameters. So we are going to create 25 ParameterSets in total.
+In this tutorial, we are going to change two parameters: the density and the maximum velocity. We create ParameterSets with five different values for each of these parameters. So we are going to create 30 ParameterSets in total.
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/Lnta80r7vCA" frameborder="0" allowfullscreen class="youtube"></iframe>
 
 Click the [New Parameter Set] button from the page showing the list of ParameterSets. You will find a form to create a ParameterSet as we have seen in step 3.
 If you find a multiple value in a field, multiple ParameterSets are simultaneously created.
-Let us fill in *"3,4,5,6,7"* and *"0.1,0.2,0.3,0.4,0.5"* at the "Vmax" and "density" fields, respectively.
-(More precisely speaking, 24 ParameterSets are newly created since one of them is identical to the one we have already created.)
+Let us fill in *"3,4,5,6,7"* and *"0.05,0.1,0.2,0.3,0.4,0.5"* at the "Vmax" and "density" fields, respectively.
 
-Then, set *"Number of Runs"* to 1. One run is created for each ParameterSet. Click the [Create] button, then 25 ParameterSets and 25 runs are created.
+Then, set *"Target # of Runs"* to 1. One run is created for each ParameterSet. Click the [Create] button, then 30 ParameterSets and 30 runs are created.
+(More precisely speaking, 29 ParameterSets are newly created since one of them is identical to the one we have already created.)
 
 If you click the [Runs] button in the navigation bar, you can check the list of running, submitted, and created runs.
 The status *"created*" means that a job is not submitted to the job scheduler.
@@ -209,7 +209,7 @@ If you increase the density, you will find an initial increasing behavior up to 
 If you double-click one of the data points, a page for the ParameterSet is opened in another tab, where you can check the details of the ParameterSet and its runs.
 
 Let us also see the parameter dependence of the snapshots.
-Select [Figure viewer]-[density]-[Vmax]-[flow] and click [Add figure viewer].
+Select [Figure viewer]-[density]-[Vmax]-[/traffic.png] and click [Add figure viewer].
 Snapshot figures are displayed on a scatter plot whose horizontal and vertical axes are density and Vmax, respectively.
 If you move your mouse over these snapshots, you will see a magnified figure.
 In this way, you can intuitively see how the snapshots change as these parameter values change.
