@@ -92,6 +92,7 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     - `git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build`
     - `echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc`
     - `echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bashrc`
+    - `source ~/.bashrc`
     - `eval "$(rbenv init -)"`
 - rbenvを用いてrubyをインストール
     - `rbenv install 2.2.4 && rbenv global 2.2.4`
