@@ -94,6 +94,7 @@ Here we show the instruction on how to setup prerequisites using apt-get.
     - `git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build`
     - `echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc`
     - `echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bashrc`
+    - `source ~/.bashrc`
     - `eval "$(rbenv init -)"`
 - installing ruby using rbenv
     - `rbenv install 2.2.4 && rbenv global 2.2.4`
