@@ -1,0 +1,70 @@
+#! /usr/bin/env ruby
+## -*- mode: ruby -*-
+## = oacis server controler
+## Author:: Itsuki Noda
+## Version:: 0.0 2017/12/28 I.Noda
+##
+## === History
+## * [2017/12/28]: Create This File.
+## * [YYYY/MM/DD]: add more
+## == Usage
+## * help and usage can be seen by execute
+##       $ oacis_ctl -h
+
+require 'optparse' ;
+require 'pp' ;
+
+#------------------------------------------------------------------------
+#++
+$conf = {
+  :mode => nil,
+} ;
+
+#------------------------------------------------------------------------
+#++
+$op = OptionParser.new() {|op|
+  op.banner = <<_END_
+  Usage: #{$0} [Options]* {start|stop|restart}
+_END_
+
+  op.separator("Options:") ;
+  op.set_summary_indent("") ;
+  op.set_summary_width(60) ;
+  sep = "\n\t\t" ;
+
+  op.on_tail("-h", "--help", sep + "show this message.") { |h|
+    puts(op)
+    puts("Defaults:")
+    pp $conf ;
+    exit(1)
+  }
+}
+
+$op.parse!(ARGV) ;
+$restArg = ARGV ;
+
+if($restArg.size != 1) then
+  puts($op) ;
+  exit(1) ;
+end
+
+$conf[:mode] = $restArg[0] ;
+
+#------------------------------------------------------------------------
+#------------------------------------------------------------------------
+#------------------------------------------------------------------------
+
+case($conf[:mode])
+when 'start' ;
+  system("bundle exec rake daemon:start") ;
+when 'stop' ;
+  system("bundle exec rake daemon:stop") ;
+when 'restart' ;
+  system("bundle exec rake daemon:restart") ;
+else
+  puts($op) ;
+  exit(1) ;
+end
+
+
+
