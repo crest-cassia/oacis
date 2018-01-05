@@ -140,7 +140,7 @@ GEM
     multi_json (1.12.1)
     net-sftp (2.1.2)
       net-ssh (>= 2.6.5)
-    net-ssh (3.2.0)
+    net-ssh (4.2.0)
     nokogiri (1.8.1)
       mini_portile2 (~> 2.3.0)
     origin (2.2.0)
