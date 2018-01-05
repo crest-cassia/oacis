@@ -75,6 +75,7 @@ GEM
     ffi (1.9.14)
     globalid (0.3.7)
       activesupport (>= 4.1.0)
+    grease (0.3.1)
     haml (5.0.4)
       temple (>= 0.8.0)
       tilt
@@ -108,8 +109,9 @@ GEM
     json (2.0.4)
     less (2.6.0)
       commonjs (~> 0.2.7)
-    less-rails (2.7.1)
+    less-rails (3.0.0)
       actionpack (>= 4.0)
+      grease
       less (~> 2.6.0)
       sprockets (> 2, < 4)
       tilt
