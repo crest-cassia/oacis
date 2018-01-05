@@ -88,7 +88,8 @@
         %td= sim_version['count'][:finished].to_i
         %td= sim_version['count'][:failed].to_i
         %td
-          %i.fa.fa-cog.clickable#show_cli{data: raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['version']})}
+          %i.fa.fa-cog.clickable#show_cli{data: ""+raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['version']}) }
+          / force converting the content to String to apply html_escape again
 
 #version_dialog_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
