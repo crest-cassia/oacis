@@ -1,9 +1,7 @@
-# tentatively suppress warnings until all gems supports Ruby 2.4
-$VERBOSE=nil if RUBY_VERSION =~ /^2\.4/
+# Load the Rails application.
+require_relative 'application'
 
-# Load the rails application
-require File.expand_path('../application', __FILE__)
-
+# user code ----------------
 Dir.chdir(Rails.root) {
   begin
     APP_VERSION = `git describe --always` unless defined? APP_VERSION
@@ -12,6 +10,7 @@ Dir.chdir(Rails.root) {
   end
 }
 Mime::Type.register "text/plain", :plt  # MIME type for gnuplot script file
+# user code end ------------
 
-# Initialize the rails application
-AcmProto::Application.initialize!
+# Initialize the Rails application.
+Rails.application.initialize!
