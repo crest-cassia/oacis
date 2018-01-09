@@ -40,7 +40,6 @@ gem "stackprof"
 group :test do
   gem "factory_girl_rails", '~> 4.7'
   gem "database_cleaner"
-  gem "mongoid-rspec", '3.0.0'
   gem "simplecov", :require => false
   gem "simplecov-rcov", :require => false
   gem "ci_reporter", '~> 1.9'
