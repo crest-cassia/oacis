@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Analyzer do
 
   before(:each) do
-    @sim = FactoryGirl.create(:simulator, parameter_sets_count:0, runs_count:0)
+    @sim = FactoryBot.create(:simulator, parameter_sets_count:0, runs_count:0)
   end
 
   describe "default_scope" do
@@ -56,7 +56,7 @@ describe Analyzer do
 
       it "must be unique within simulator" do
         @sim.analyzers.create(@valid_fields)
-        another_sim = FactoryGirl.create(:simulator, parameter_sets_count:0, runs_count: 0)
+        another_sim = FactoryBot.create(:simulator, parameter_sets_count:0, runs_count: 0)
         another_sim.analyzers.build(@valid_fields)
         expect(another_sim).to be_valid
       end
@@ -150,7 +150,7 @@ describe Analyzer do
     describe "'auto_run_submitted_to' field" do
 
       it "is valid when auto_run_submitted_to is included in executable_on" do
-        another_host = FactoryGirl.create(:host)
+        another_host = FactoryBot.create(:host)
         valid_fields = @valid_fields.update(
           executable_on: [another_host],
           auto_run_submitted_to: another_host
@@ -160,14 +160,14 @@ describe Analyzer do
       end
 
       it "is not valid if auto_run_submitted_to is not included in executable_on" do
-        another_host = FactoryGirl.create(:host)
+        another_host = FactoryBot.create(:host)
         invalid_fields = @valid_fields.update(auto_run_submitted_to: another_host.id, auto_run: :yes)
         azr = @sim.analyzers.build(invalid_fields)
         expect(azr).not_to be_valid
       end
 
       it "skips validation of auto_run_submitted_to if auto_run is 'no'" do
-        another_host = FactoryGirl.create(:host)
+        another_host = FactoryBot.create(:host)
         fields = @valid_fields.update(auto_run_submitted_to: another_host.id, auto_run: :no)
         azr = @sim.analyzers.build(fields)
         expect(azr).to be_valid
@@ -178,7 +178,7 @@ describe Analyzer do
   describe "relation" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 3,
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 3,
                                 analyzers_count: 1, run_analysis: true)
       @azr = @sim.analyzers.first
     end
@@ -191,7 +191,7 @@ describe Analyzer do
   describe "#discard" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, analyzers_count: 1)
+      sim = FactoryBot.create(:simulator, analyzers_count: 1)
       @azr = sim.analyzers.first
     end
 
@@ -210,7 +210,7 @@ describe Analyzer do
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 1, run_analysis: true,
@@ -230,7 +230,7 @@ describe Analyzer do
 
   describe "#destroyable?" do
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
+      sim = FactoryBot.create(:simulator,
                                parameter_sets_count: 1,
                                runs_count: 1,
                                analyzers_count: 1,
@@ -254,7 +254,7 @@ describe Analyzer do
   describe "#destroy" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                                 analyzers_count: 1, run_analysis: true)
       @azr = @sim.analyzers.first
     end
@@ -275,7 +275,7 @@ describe Analyzer do
   describe "#analyzer_versions" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 5,
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 5,
                                 analyzers_count: 1, run_analysis: true)
       @azr = @sim.analyzers.first
 
@@ -333,12 +333,12 @@ describe Analyzer do
   describe "get_default_host_parameter" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 1
                                )
-      @host = FactoryGirl.create(:host_with_parameters)
+      @host = FactoryBot.create(:host_with_parameters)
       @azr = @sim.analyzers.first
       @azr.executable_on.destroy
       @azr.executable_on << @host

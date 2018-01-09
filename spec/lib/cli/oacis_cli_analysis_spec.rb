@@ -4,8 +4,8 @@ require File.join(Rails.root, 'lib/cli/oacis_cli')
 describe OacisCli do
 
   before(:each) do
-    @host = FactoryGirl.create(:host_with_parameters)
-    @sim = FactoryGirl.create(:simulator, parameter_sets_count: 2, runs_count: 0,
+    @host = FactoryBot.create(:host_with_parameters)
+    @sim = FactoryBot.create(:simulator, parameter_sets_count: 2, runs_count: 0,
                               finished_runs_count: 2,
                               analyzers_count: 1, run_analysis: false,
                               analyzers_on_parameter_set_count: 1,
@@ -411,7 +411,7 @@ describe OacisCli do
   describe "#destroy_analyses_by_ids" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 finished_runs_count: 5,
                                 run_analysis: true)
@@ -524,7 +524,7 @@ describe OacisCli do
   describe "#replace_analyses_by_ids" do
 
     before(:each) do
-      FactoryGirl.create(:simulator,
+      FactoryBot.create(:simulator,
                                parameter_sets_count: 1,
                                finished_runs_count: 5,
                                run_analysis: true)

@@ -5,13 +5,13 @@ describe JobSubmitter do
   describe ".perform" do
 
     before(:each) do
-      @host = FactoryGirl.create(:localhost)
+      @host = FactoryBot.create(:localhost)
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
 
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                                 ssh_host: true)
       @sim.executable_on.push @host
       @sim.save!
@@ -78,7 +78,7 @@ describe JobSubmitter do
   describe ".destroy_jobs_to_be_destroyed" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 3,
                                 analyzers_count: 0
                                 )

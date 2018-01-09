@@ -51,7 +51,7 @@ describe SimulatorsController do
     end
 
     it "@simulators are sorted by the position" do
-      simulators = FactoryGirl.create_list(:simulator, 3)
+      simulators = FactoryBot.create_list(:simulator, 3)
       simulators.first.update_attribute(:position, 2)
       simulators.last.update_attribute(:position, 0)
       sorted = simulators.sort_by {|sim| sim.position }
@@ -63,7 +63,7 @@ describe SimulatorsController do
   describe "GET show" do
 
     before(:each) do
-      @simulator = FactoryGirl.create(:simulator,
+      @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 5, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
                                       parameter_set_queries_count: 5
@@ -100,7 +100,7 @@ describe SimulatorsController do
   describe "GET duplicate" do
 
     before(:each) do
-      @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 2)
+      @simulator = FactoryBot.create(:simulator, parameter_sets_count: 0, analyzers_count: 2)
     end
 
     it "assigns a new simulator as @simulator" do
@@ -135,7 +135,7 @@ describe SimulatorsController do
     describe "with valid params" do
 
       before(:each) do
-        host = FactoryGirl.create(:host)
+        host = FactoryBot.create(:host)
         definitions = [
           {key: "param1", type: "Integer"},
           {key: "param2", type: "Float"}
@@ -188,7 +188,7 @@ describe SimulatorsController do
     describe "when duplicating a simulator" do
 
       before(:each) do
-        @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 2)
+        @sim = FactoryBot.create(:simulator, parameter_sets_count: 0, analyzers_count: 2)
         definitions = @sim.parameter_definitions.map {|pd| {key: pd.key, type: pd.type} }
         simulator = {
           name: "duplicated", command: @sim.command, support_input_json: "0",
@@ -369,7 +369,7 @@ describe SimulatorsController do
   describe "DELETE destroy" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
     end
 
     it "reduces the number of simulators in default scope" do
@@ -392,7 +392,7 @@ describe SimulatorsController do
 
   describe "POST _make_query" do
     before(:each) do
-      @simulator = FactoryGirl.create(:simulator,
+      @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 1, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
                                       parameter_set_queries_count: 1
@@ -454,7 +454,7 @@ describe SimulatorsController do
 
   describe "GET _parameters_list" do
     before(:each) do
-      @simulator = FactoryGirl.create(:simulator,
+      @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 30, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
                                       parameter_set_queries_count: 5
@@ -476,15 +476,15 @@ describe SimulatorsController do
     context "when 'query_id' parameter is given" do
 
       before(:each) do
-        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+        @simulator = FactoryBot.create(:simulator, parameter_sets_count: 0)
         10.times do |i|
-          FactoryGirl.create(:parameter_set,
+          FactoryBot.create(:parameter_set,
                              simulator: @simulator,
                              runs_count: 0,
                              v: {"L" => i, "T" => i*2.0}
                              )
         end
-        @query = FactoryGirl.create(:parameter_set_query,
+        @query = FactoryBot.create(:parameter_set_query,
                                     simulator: @simulator,
                                     query: {"L" => {"gte" => 5}})
 
@@ -505,7 +505,7 @@ describe SimulatorsController do
 
   describe "GET _progress" do
     before(:each) do
-      @simulator = FactoryGirl.create(:simulator,
+      @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 30, runs_count: 3
                                       )
       get :_progress, {id: @simulator.to_param, column_parameter: 'L', row_parameter: 'T'}, :format => :json
@@ -524,7 +524,7 @@ describe SimulatorsController do
   describe "POST _sort" do
 
     before(:each) do
-      FactoryGirl.create_list(:simulator, 3)
+      FactoryBot.create_list(:simulator, 3)
     end
 
     it "updates position of the simulators" do
@@ -539,8 +539,8 @@ describe SimulatorsController do
   describe "GET _host_parameters_field" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @host = FactoryBot.create(:host_with_parameters)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
       @sim.executable_on.push(@host)
     end
 
@@ -560,8 +560,8 @@ describe SimulatorsController do
   describe "GET _default_mpi_omp" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator,
+      @host = FactoryBot.create(:host_with_parameters)
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, support_mpi: true, support_omp: true)
       @sim.executable_on.push(@host)
     end

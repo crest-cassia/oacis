@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Run do
 
   before(:each) do
-    @simulator = FactoryGirl.create(:simulator,
+    @simulator = FactoryBot.create(:simulator,
                                     parameter_sets_count: 1,
                                     runs_count: 1,
                                     analyzers_count: 2,
@@ -51,7 +51,7 @@ describe Run do
     end
 
     it "is valid if host_group exists even if submitted_to is nil" do
-      hg = FactoryGirl.create(:host_group)
+      hg = FactoryBot.create(:host_group)
       run = @param_set.runs.build(@valid_attribute)
       run.submitted_to = nil
       run.host_group = hg
@@ -172,7 +172,7 @@ describe Run do
 
       before(:each) do
         hpds = [ HostParameterDefinition.new(key: "node", default: "x", format: '\w+') ]
-        @host = FactoryGirl.create(:host, host_parameter_definitions: hpds)
+        @host = FactoryBot.create(:host, host_parameter_definitions: hpds)
       end
 
       it "is valid when host_parameters are properly given" do
@@ -269,14 +269,14 @@ describe Run do
     end
 
     it "is created when a new item is added" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       prm = sim.parameter_sets.first
       run = prm.runs.create!(@valid_attribute)
       expect(FileTest.directory?(ResultDirectory.run_path(run))).to be_truthy
     end
 
     it "is not created when validation fails" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       prm = sim.parameter_sets.first
       @valid_attribute.update(status: nil)
 
@@ -286,7 +286,7 @@ describe Run do
     end
 
     it "is removed when the item is destroyed" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       run = sim.parameter_sets.first.runs.first
       dir_path = run.dir
       run.destroy
@@ -299,7 +299,7 @@ describe Run do
     context "for simulators which receives parameters as arguments" do
 
       it "returns a shell command to run simulation" do
-        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: false)
+        sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: false)
         prm = sim.parameter_sets.first
         run = prm.runs.first
         command = run.command_with_args
@@ -309,10 +309,10 @@ describe Run do
 
       it "returns boolean parameters in 0 or 1" do
         pds = [ ParameterDefinition.new(key:"p1",type:"Boolean",default:true) ]
-        sim = FactoryGirl.create(:simulator,
+        sim = FactoryBot.create(:simulator,
                                  parameter_definitions: pds, support_input_json: false,
                                  parameter_sets_count: 0)
-        run = sim.parameter_sets.create!(v: {p1: true}).runs.create!(submitted_to: FactoryGirl.create(:host))
+        run = sim.parameter_sets.create!(v: {p1: true}).runs.create!(submitted_to: FactoryBot.create(:host))
         command = run.command_with_args
         expect(command).to eq "#{sim.command} 1 #{run.seed}"
       end
@@ -321,7 +321,7 @@ describe Run do
     context "for simulators which receives parameters as _input.json" do
 
       it "returns a shell command to run simulation" do
-        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: true)
+        sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: true)
         prm = sim.parameter_sets.first
         run = prm.runs.first
         command = run.command_with_args
@@ -338,7 +338,7 @@ describe Run do
   describe "#dir" do
 
     it "returns the result directory of the run" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       prm = sim.parameter_sets.first
       run = prm.runs.first
       expect(run.dir).to eq(ResultDirectory.run_path(run))
@@ -348,7 +348,7 @@ describe Run do
   describe "#result_paths" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                                analyzers_count: 1, run_analysis: true
                                )
       prm = sim.parameter_sets.first
@@ -405,7 +405,7 @@ describe Run do
   describe "#archived_result_path" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @run = sim.parameter_sets.first.runs.first
     end
 
@@ -426,7 +426,7 @@ describe Run do
   describe "#destroy" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @run = sim.parameter_sets.first.runs.first
     end
 
@@ -440,7 +440,7 @@ describe Run do
   describe "#discard" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @run = sim.parameter_sets.first.runs.first
     end
 
@@ -459,7 +459,7 @@ describe Run do
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 2,
@@ -492,7 +492,7 @@ describe Run do
   describe "#destroyable?" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 2,
@@ -532,7 +532,7 @@ describe Run do
     end
 
     it "sets keys of host_parameters to string even if given as a symbol" do
-      host = FactoryGirl.create(:host_with_parameters)
+      host = FactoryBot.create(:host_with_parameters)
       param = {param1: 3, param2: 1}
       expected = {"param1" => 3, "param2" => 1}
       run = @param_set.runs.build(submitted_to: host, host_parameters: param)
@@ -542,7 +542,7 @@ describe Run do
     end
 
     it "sets default_host_parameters to simulator" do
-      host = FactoryGirl.create(:host_with_parameters)
+      host = FactoryBot.create(:host_with_parameters)
       param = {"param1" => 3, "param2" => 1}
       run = @param_set.runs.build(submitted_to: host, host_parameters: param)
       expect {

@@ -10,7 +10,7 @@ describe AnalysesController do
   end
 
   before(:each) do
-    @sim = FactoryGirl.create( :simulator,
+    @sim = FactoryBot.create( :simulator,
       parameter_sets_count: 1,
       runs_count: 1,
       analyzers_count: 0,
@@ -18,7 +18,7 @@ describe AnalysesController do
     @par = @sim.parameter_sets.first
     @run = @par.runs.first
 
-    @azr = FactoryGirl.create(:analyzer,
+    @azr = FactoryBot.create(:analyzer,
                               simulator: @sim,
                               type: :on_run,
                               support_mpi: true,
@@ -27,7 +27,7 @@ describe AnalysesController do
                               )
     @arn = @run.analyses.first
 
-    @azr2 = FactoryGirl.create(:analyzer,
+    @azr2 = FactoryBot.create(:analyzer,
                                simulator: @sim,
                                type: :on_parameter_set,
                                support_mpi: true,
@@ -36,7 +36,7 @@ describe AnalysesController do
                                )
     @arn2 = @par.analyses.first
 
-    @host = FactoryGirl.create(:host_with_parameters)
+    @host = FactoryBot.create(:host_with_parameters)
     @azr.executable_on.push @host
     @azr2.executable_on.push @host
   end
@@ -127,7 +127,7 @@ describe AnalysesController do
         end
 
         it "sets HostGroup field" do
-          hg = FactoryGirl.create(:host_group)
+          hg = FactoryBot.create(:host_group)
           @valid_param[:analysis][:submitted_to] = hg.to_param
           post :create, @valid_param.update(format: 'json'), valid_session
           new_anl = @run.reload.analyses.desc(:created_at).first
@@ -240,7 +240,7 @@ describe AnalysesController do
         end
 
         it "sets HostGroup field" do
-          hg = FactoryGirl.create(:host_group)
+          hg = FactoryBot.create(:host_group)
           @valid_param[:analysis][:submitted_to] = hg.to_param
           post :create, @valid_param.update(format: 'json'), valid_session
           new_anl = @par.reload.analyses.desc(:created_at).first

@@ -4,7 +4,7 @@ RSpec.describe HostGroupsController do
 
   describe "GET show" do
     it "assigns the requested host_group as @hg" do
-      hg = FactoryGirl.create(:host_group)
+      hg = FactoryBot.create(:host_group)
       get :show, {id: hg.to_param}
       expect( response ).to have_http_status(:success)
       expect( assigns(:hg) ).to eq(hg)
@@ -23,7 +23,7 @@ RSpec.describe HostGroupsController do
 
     describe "with valid parameters" do
       let(:valid_attr) do
-        h = FactoryGirl.create(:host)
+        h = FactoryBot.create(:host)
         attributes = {name: 'HostGroupA', host_ids: [h.id] }
         {host_group: attributes}
       end
@@ -43,7 +43,7 @@ RSpec.describe HostGroupsController do
 
   describe "GET edit" do
     it "assigns the requested host_group as @hg" do
-      hg = FactoryGirl.create(:host_group)
+      hg = FactoryBot.create(:host_group)
       get :edit, {id: hg.to_param}
       expect( response ).to have_http_status(:success)
       expect( assigns(:hg) ).to eq hg
@@ -54,7 +54,7 @@ RSpec.describe HostGroupsController do
 
     describe "with valid parameters" do
       before(:each) do
-        @hg = FactoryGirl.create(:host_group)
+        @hg = FactoryBot.create(:host_group)
       end
 
       it "updates the requested host" do
@@ -72,7 +72,7 @@ RSpec.describe HostGroupsController do
   describe "DELETE destroy" do
 
     before(:each) do
-      @hg = FactoryGirl.create(:host_group)
+      @hg = FactoryBot.create(:host_group)
     end
 
     it "destroys the requested host" do
@@ -84,7 +84,7 @@ RSpec.describe HostGroupsController do
     context "when created runs exist" do
 
       before(:each) do
-        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+        sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
         run = sim.parameter_sets.first.runs.first
         run.submitted_to = nil
         run.host_group = @hg

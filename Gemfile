@@ -38,7 +38,7 @@ gem "rspec-rails", '~>3.5' # must be in :development group to use the rake task 
 gem "stackprof"
 
 group :test do
-  gem "factory_girl_rails", '~> 4.7'
+  gem "factory_bot_rails"
   gem "database_cleaner"
   gem "simplecov", :require => false
   gem "simplecov-rcov", :require => false

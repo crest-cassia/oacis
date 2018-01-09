@@ -10,7 +10,7 @@ describe RunsController do
   end
 
   before(:each) do
-    @sim = FactoryGirl.create(:simulator,
+    @sim = FactoryBot.create(:simulator,
       parameter_sets_count: 1,
       runs_count: 1,
       analyzers_count: 1,
@@ -70,7 +70,7 @@ describe RunsController do
       end
 
       it "assigns HostGroup" do
-        hg = FactoryGirl.create(:host_group)
+        hg = FactoryBot.create(:host_group)
         @req_param[:run] = {submitted_to: hg.id.to_s}
         post 'create', @req_param, valid_session
         new_run = Run.desc(:created_at).first

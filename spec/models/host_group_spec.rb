@@ -7,7 +7,7 @@ RSpec.describe HostGroup do
     before(:each) do
       @valid_attr = {
         name: "host_group1",
-        hosts: [ FactoryGirl.create(:host) ]
+        hosts: [ FactoryBot.create(:host) ]
       }
     end
 
@@ -35,7 +35,7 @@ RSpec.describe HostGroup do
   describe ".find_by_name" do
 
     it "returns the host_group with the given name" do
-      hg = FactoryGirl.create(:host_group)
+      hg = FactoryBot.create(:host_group)
       found = HostGroup.find_by_name(hg.name)
       expect(hg).to eq found
     end

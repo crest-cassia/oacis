@@ -45,7 +45,7 @@ describe OacisCli do
   describe "#create_analyzer" do
 
     before(:each) do
-      @sim=FactoryGirl.create(:simulator, analyzers_count: 0, analyzers_on_parameter_set_count: 0)
+      @sim=FactoryBot.create(:simulator, analyzers_count: 0, analyzers_on_parameter_set_count: 0)
       @host=@sim.executable_on.first
     end
 

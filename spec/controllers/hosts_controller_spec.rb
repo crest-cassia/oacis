@@ -30,7 +30,7 @@ describe HostsController do
     end
 
     it "@hosts are sorted by position" do
-      hosts = FactoryGirl.create_list(:host, 3)
+      hosts = FactoryBot.create_list(:host, 3)
       hosts.first.update_attribute(:position, 2)
       hosts.last.update_attribute(:position, 0)
       get :index, {}, valid_session
@@ -95,7 +95,7 @@ describe HostsController do
       context "with executable_simulators and executable_analyzers" do
 
         before(:each) do
-          @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, runs_count: 0, analyzers_count: 1)
+          @sim = FactoryBot.create(:simulator, parameter_sets_count: 0, runs_count: 0, analyzers_count: 1)
           @valid_attributes_with_sim = valid_attributes.update(
             executable_simulator_ids: [@sim.id.to_s],
             executable_analyzer_ids: [@sim.analyzers.first.id.to_s]
@@ -200,7 +200,7 @@ describe HostsController do
     context "when submittable or submitted runs exist" do
 
       before(:each) do
-        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+        sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
         run = sim.parameter_sets.first.runs.first
         @host = run.submitted_to
       end
@@ -220,8 +220,8 @@ describe HostsController do
     context "when a host_group whose unique host is itself exists" do
 
       it "does not destroy the host" do
-        host = FactoryGirl.create(:host)
-        FactoryGirl.create(:host_group) {|hg|
+        host = FactoryBot.create(:host)
+        FactoryBot.create(:host_group) {|hg|
           hg.hosts = []
           hg.hosts.push host
         }
@@ -236,7 +236,7 @@ describe HostsController do
   describe "POST _sort" do
 
     before(:each) do
-      FactoryGirl.create_list(:host, 3)
+      FactoryBot.create_list(:host, 3)
     end
 
     it "updates position of the simulators" do

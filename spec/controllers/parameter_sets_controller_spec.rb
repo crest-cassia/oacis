@@ -12,7 +12,7 @@ describe ParameterSetsController do
   describe "GET 'show'" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 1,
@@ -39,7 +39,7 @@ describe ParameterSetsController do
   describe "GET new" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0)
     end
 
@@ -53,7 +53,7 @@ describe ParameterSetsController do
   describe "GET duplicate" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       @ps = @sim.parameter_sets.first
     end
 
@@ -68,7 +68,7 @@ describe ParameterSetsController do
   describe "POST create" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0)
     end
 
@@ -106,7 +106,7 @@ describe ParameterSetsController do
       end
 
       it "creates runs with host_parameters" do
-        h = FactoryGirl.create(:host_with_parameters)
+        h = FactoryBot.create(:host_with_parameters)
         h.executable_simulators.push @sim
         h.save!
         host_param = {"param1" => "foo", "param2" => "bar" }
@@ -115,7 +115,7 @@ describe ParameterSetsController do
       end
 
       it "creates runs with host_group" do
-        hg = FactoryGirl.create(:host_group)
+        hg = FactoryBot.create(:host_group)
         post :create, @valid_param.update(num_runs: 1, run: {submitted_to: hg}), valid_session
         new_run = Run.desc(:created_at).first
         expect( new_run.host_group ).to eq hg
@@ -125,7 +125,7 @@ describe ParameterSetsController do
       context "when duplicated parameter_set exists" do
 
         before(:each) do
-          FactoryGirl.create(:parameter_set,
+          FactoryBot.create(:parameter_set,
                              simulator: @sim, v: {"L" => 1, "T" => 1.0},
                              runs_count: 1)
         end
@@ -194,7 +194,7 @@ describe ParameterSetsController do
         describe "when some of parameter_sets are already created" do
 
           before(:each) do
-            FactoryGirl.create(:parameter_set,
+            FactoryBot.create(:parameter_set,
                                simulator: @sim, v: {"L" => 1, "T" => 1.0},
                                runs_count: 1)
             @host_id = @sim.executable_on.first.id.to_s
@@ -306,7 +306,7 @@ describe ParameterSetsController do
         pds = [ {key: "I", type: "Integer", default: 50},
                 {key: "B", type: "Boolean", default: true}]
         pds.map! {|h| ParameterDefinition.new(h) }
-        @sim = FactoryGirl.create(:simulator,
+        @sim = FactoryBot.create(:simulator,
                                   parameter_definitions: pds,
                                   parameter_sets_count: 0,
                                   analyzers_count: 0)
@@ -323,7 +323,7 @@ describe ParameterSetsController do
   describe "GET _create_cli" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
       parameters = {"L" => 10, "T" => 2.0}
       @valid_param = {simulator_id: @sim, v: parameters}
     end
@@ -337,7 +337,7 @@ describe ParameterSetsController do
     end
 
     it "returns CLI with valid runs_option" do
-      h = FactoryGirl.create(:host_with_parameters)
+      h = FactoryBot.create(:host_with_parameters)
       h.executable_simulators.push @sim
       h.save!
       @valid_param[:run] = {mpi_procs:"4",omp_threads:"8",priority:"2", submitted_to: h.id.to_s,
@@ -355,7 +355,7 @@ describe ParameterSetsController do
   describe "DELETE destroy" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @ps = @sim.parameter_sets.first
     end
 
@@ -390,7 +390,7 @@ describe ParameterSetsController do
 
   describe "GET _runs_list" do
     before(:each) do
-      @simulator = FactoryGirl.create(:simulator,
+      @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 1, runs_count: 30,
                                       analyzers_count: 0, run_analysis: false,
                                       parameter_set_queries_count: 0
@@ -421,7 +421,7 @@ describe ParameterSetsController do
         ParameterDefinition.new(key: "B", type: "Boolean", default: false)
       ]
 
-      @simulator = FactoryGirl.create(:simulator,
+      @simulator = FactoryBot.create(:simulator,
                                       parameter_definitions: parameter_definitions,
                                       parameter_sets_count: 0
                                       )
@@ -457,7 +457,7 @@ describe ParameterSetsController do
               {key: "T", type: "Float", default: 1.0, description: "Second parameter"},
               {key: "P", type: "Float", default: 1.0, description: "Third parameter"}]
       pds.map! {|h| ParameterDefinition.new(h) }
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                parameter_definitions: pds,
                                parameter_sets_count: 0,
                                analyzers_count: 1,
@@ -469,7 +469,7 @@ describe ParameterSetsController do
                        {"L" => 2, "T" => 2.0, "P" => 1.0},
                        {"L" => 3, "T" => 2.0, "P" => 2.0}  # P is different from others
                      ]
-      @host = FactoryGirl.create(:host)
+      @host = FactoryBot.create(:host)
       @ps_array = param_values.map do |v|
         ps = @sim.parameter_sets.create(v: v)
         run = ps.runs.create(submitted_to:@sim.executable_on.first)
@@ -760,7 +760,7 @@ describe ParameterSetsController do
               {key: "T", type: "Float", default: 1.0, description: "Second parameter"},
               {key: "P", type: "Float", default: 1.0, description: "Third parameter"}]
       pds.map! {|h| ParameterDefinition.new(h) }
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                parameter_definitions: pds,
                                parameter_sets_count: 0,
                                analyzers_count: 1,
@@ -772,7 +772,7 @@ describe ParameterSetsController do
                        {"L" => 2, "T" => 2.0, "P" => 1.0},
                        {"L" => 3, "T" => 2.0, "P" => 2.0}  # P is different from others
                      ]
-      @host = FactoryGirl.create(:host)
+      @host = FactoryBot.create(:host)
       @ps_array = param_values.map do |v|
         ps = @sim.parameter_sets.create(v: v)
         run = ps.runs.create(submitted_to:@sim.executable_on.first)
@@ -1044,7 +1044,7 @@ describe ParameterSetsController do
               {key: "T", type: "Float", default: 1.0, description: "Second parameter"},
               {key: "P", type: "Float", default: 1.0, description: "Third parameter"}]
       pds.map! {|h| ParameterDefinition.new(h) }
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                parameter_definitions: pds,
                                parameter_sets_count: 0,
                                analyzers_count: 0)
@@ -1055,7 +1055,7 @@ describe ParameterSetsController do
                        {"L" => 2, "T" => 2.0, "P" => 1.0},
                        {"L" => 3, "T" => 2.0, "P" => 2.0}  # P is different from others
                      ]
-      host = FactoryGirl.create(:host)
+      host = FactoryBot.create(:host)
       @ps_array = param_values.map do |v|
         ps = @sim.parameter_sets.create(v: v)
         run = ps.runs.create(submitted_to:@sim.executable_on.first)

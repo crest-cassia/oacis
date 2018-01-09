@@ -191,7 +191,7 @@ describe JobIncluder do
   describe "for Run" do
 
     before(:each) do
-      @executable = FactoryGirl.create(:simulator,
+      @executable = FactoryBot.create(:simulator,
                                        parameter_sets_count: 1, runs_count: 0,
                                        command: "echo",
                                        ssh_host: true
@@ -212,7 +212,7 @@ describe JobIncluder do
   describe "for Analysis" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
+      sim = FactoryBot.create(:simulator,
                                parameter_sets_count: 1, runs_count: 1,
                                analyzers_count: 1, run_analysis: false,
                                ssh_host: true
@@ -242,7 +242,7 @@ describe JobIncluder do
     end
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 0,
                                 analyzers_count: 0,
                                 analyzers_on_parameter_set_count: 0,
@@ -259,7 +259,7 @@ describe JobIncluder do
     shared_examples_for "analysis with valid host parameters" do
 
       before(:each) do
-        @host = FactoryGirl.create(:host_with_parameters,
+        @host = FactoryBot.create(:host_with_parameters,
           min_mpi_procs: 2, max_mpi_procs: 8, min_omp_threads: 4, max_omp_threads: 10
           )
         analyzer = @sim.analyzers.first
@@ -291,7 +291,7 @@ describe JobIncluder do
 
       it "creates analysis whose host_group is auto_run_host_group" do
         azr = Analyzer.first
-        hg = FactoryGirl.create(:host_group)
+        hg = FactoryBot.create(:host_group)
         azr.update_attribute(:auto_run_host_group, hg)
         azr.update_attribute(:auto_run_submitted_to, nil)
         anl = created_analysis
@@ -303,7 +303,7 @@ describe JobIncluder do
     describe "auto run of analyzers for on_run type" do
 
       before(:each) do
-        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_run, run_analysis: false)
+        @azr = FactoryBot.create(:analyzer, simulator: @sim, type: :on_run, run_analysis: false)
       end
 
       context "when Analyzer#auto_run is :yes" do
@@ -341,7 +341,7 @@ describe JobIncluder do
         end
 
         it "does not create analysis if 'finished' run already exists within the paramter set" do
-          FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :finished)
+          FactoryBot.create(:run, parameter_set: @run.parameter_set, status: :finished)
           expect { invoke }.to_not change { @run.reload.analyses.count }
         end
 
@@ -352,7 +352,7 @@ describe JobIncluder do
     describe "auto run of analyzers for on_parameter_set type" do
 
       before(:each) do
-        @azr = FactoryGirl.create(:analyzer, simulator: @sim, type: :on_parameter_set,
+        @azr = FactoryBot.create(:analyzer, simulator: @sim, type: :on_parameter_set,
                                   run_analysis: false)
       end
 
@@ -361,13 +361,13 @@ describe JobIncluder do
         before(:each) { @azr.update_attribute(:auto_run, :yes) }
 
         it "creates analysis if all the other runs within the parameter set are 'finished' or 'failed'" do
-          FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :failed)
-          FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :finished)
+          FactoryBot.create(:run, parameter_set: @run.parameter_set, status: :failed)
+          FactoryBot.create(:run, parameter_set: @run.parameter_set, status: :finished)
           expect { invoke }.to change { @run.parameter_set.reload.analyses.count }.by(1)
         end
 
         it "does not create analysis if any of runs within the parameter set is not 'finished' or 'failed'" do
-          FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :submitted)
+          FactoryBot.create(:run, parameter_set: @run.parameter_set, status: :submitted)
           expect { invoke }.to_not change { @run.parameter_set.reload.analyses.count }
         end
 
@@ -379,7 +379,7 @@ describe JobIncluder do
         before(:each) { @azr.update_attribute(:auto_run, :no) }
 
         it "does not create analysis even if all the other runs are finished" do
-          FactoryGirl.create(:run, parameter_set: @run.parameter_set, status: :finished)
+          FactoryBot.create(:run, parameter_set: @run.parameter_set, status: :finished)
           expect { invoke }.to_not change { @run.parameter_set.reload.analyses.count }
         end
       end

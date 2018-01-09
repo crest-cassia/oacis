@@ -7,15 +7,15 @@ describe "ParameterSetsListDatatable" do
     context "without quey" do
 
       before(:each) do
-        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+        @simulator = FactoryBot.create(:simulator, parameter_sets_count: 0)
         30.times do |i|
-          FactoryGirl.create(:parameter_set,
+          FactoryBot.create(:parameter_set,
                              simulator: @simulator,
                              runs_count: 0,
                              v: {"L" => i, "T" => i*2.0}
                              )
         end
-        @query = FactoryGirl.create(:parameter_set_query,
+        @query = FactoryBot.create(:parameter_set_query,
                                     simulator: @simulator,
                                     query: {"L" => {"gte" => 5}})
 
@@ -48,15 +48,15 @@ describe "ParameterSetsListDatatable" do
     context "with query" do
 
       before(:each) do
-        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+        @simulator = FactoryBot.create(:simulator, parameter_sets_count: 0)
         30.times do |i|
-          FactoryGirl.create(:parameter_set,
+          FactoryBot.create(:parameter_set,
                              simulator: @simulator,
                              runs_count: 0,
                              v: {"L" => i, "T" => i*2.0}
                              )
         end
-        @query = FactoryGirl.create(:parameter_set_query,
+        @query = FactoryBot.create(:parameter_set_query,
                                     simulator: @simulator,
                                     query: {"L" => {"gte" => 5}})
 
@@ -89,9 +89,9 @@ describe "ParameterSetsListDatatable" do
     context "with multiple sort" do
 
       before(:each) do
-        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+        @simulator = FactoryBot.create(:simulator, parameter_sets_count: 0)
         30.times do |i|
-          FactoryGirl.create(:parameter_set,
+          FactoryBot.create(:parameter_set,
                              simulator: @simulator,
                              runs_count: 0,
                              v: {"L" => i%15, "T" => i*2.0}
@@ -124,7 +124,7 @@ describe "ParameterSetsListDatatable" do
   describe ".header" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0)
     end
 
     it "returns array of th tags" do

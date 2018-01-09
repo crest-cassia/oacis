@@ -12,7 +12,7 @@ describe AnalyzersController do
   describe "GET 'show'" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count:0, runs_count:0, analyzers_count:2)
       @azr = @sim.analyzers.first
     end
@@ -36,7 +36,7 @@ describe AnalyzersController do
   describe "GET new" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, runs_count: 0, analyzers_count: 0)
     end
 
@@ -49,7 +49,7 @@ describe AnalyzersController do
   describe "GET edit" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, runs_count: 0, analyzers_count: 1)
       @azr = @sim.analyzers.first
     end
@@ -64,14 +64,14 @@ describe AnalyzersController do
   describe "POST create" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, runs_count: 0, analyzers_count: 0)
     end
 
     describe "with valid params" do
 
       before(:each) do
-        @host = FactoryGirl.create(:host)
+        @host = FactoryBot.create(:host)
         definitions = {
           "0" => {key: "param1", type: "Integer"},
           "1" => {key: "param2", type: "Float"}
@@ -118,7 +118,7 @@ describe AnalyzersController do
       end
 
       it "assigns auto_run_host_group attribute" do
-        hg = FactoryGirl.create(:host_group)
+        hg = FactoryBot.create(:host_group)
         @valid_post_parameter[:analyzer][:auto_run_submitted_to] = hg.id.to_s
         post :create, @valid_post_parameter, valid_session
         azr = Analyzer.desc(:created_at).first
@@ -187,7 +187,7 @@ describe AnalyzersController do
   describe "PUT update" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, runs_count: 0, analyzers_count: 1)
       @azr = @sim.analyzers.first
     end
@@ -278,7 +278,7 @@ describe AnalyzersController do
   describe "DELETE 'destroy'" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
       @azr = @sim.analyzers.first
     end
 
@@ -298,7 +298,7 @@ describe AnalyzersController do
   describe "GET '_parameters_form'" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count:0, runs_count:0, analyzers_count:2)
       @azr = @sim.analyzers.first
     end
@@ -312,8 +312,8 @@ describe AnalyzersController do
   describe "GET _host_parameters_field" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
+      @host = FactoryBot.create(:host_with_parameters)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
       @azr = @sim.analyzers.first
       @azr.executable_on.push(@host)
     end
@@ -334,8 +334,8 @@ describe AnalyzersController do
   describe "GET _default_mpi_omp" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator,
+      @host = FactoryBot.create(:host_with_parameters)
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, analyzers_count: 1)
       @azr = @sim.analyzers.first
       @azr.executable_on.push(@host)

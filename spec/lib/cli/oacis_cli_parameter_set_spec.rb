@@ -13,7 +13,7 @@ describe OacisCli do
   describe "#parameter_sets_template" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
     end
 
     it "outputs a template of parameter_sets.json" do
@@ -97,7 +97,7 @@ describe OacisCli do
   describe "#create_parameter_sets" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
     end
 
     def create_parameter_sets_json(path)
@@ -208,7 +208,7 @@ describe OacisCli do
     context "when PS with identical v exists under a different simulator" do
 
       before(:each) do
-        s2 = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 0)
+        s2 = FactoryBot.create(:simulator, parameter_sets_count: 0, analyzers_count: 0)
         s2.parameter_sets.create(v: {"L" => 10, "T" => 0.1})
       end
 
@@ -259,7 +259,7 @@ describe OacisCli do
     context "when run option is given" do
 
       before(:each) do
-        @host = FactoryGirl.create(:host_with_parameters)
+        @host = FactoryBot.create(:host_with_parameters)
         @sim.executable_on.push @host
         @sim.save!
       end
@@ -285,7 +285,7 @@ describe OacisCli do
       end
 
       it "creates runs for existing ps" do
-        @ps = FactoryGirl.create(:parameter_set,
+        @ps = FactoryBot.create(:parameter_set,
                                  simulator: @sim,
                                  v: {"L" => 1, "T" => 1.0},
                                  runs_count: 1,
@@ -310,7 +310,7 @@ describe OacisCli do
       end
 
       it "creates runs when host_group is given" do
-        hg = FactoryGirl.create(:host_group)
+        hg = FactoryBot.create(:host_group)
         at_temp_dir {
           input = {"L" => 0, "T" => 1.0}
           run_param = {
@@ -424,7 +424,7 @@ describe OacisCli do
   describe "#destroy_parameter_sets" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 3)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 3)
     end
 
     it "destroys all the parameter sets under the specified simulator" do
