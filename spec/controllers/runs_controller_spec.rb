@@ -117,17 +117,17 @@ describe RunsController do
 
       it "calls preview method" do
         expect_any_instance_of(RunsController).to receive(:preview).and_call_original
-        xhr 'post', 'create', params: @req_param
+        post 'create', params: @req_param, xhr: true
       end
 
       it "renders preview" do
-        xhr 'post', 'create', params: @req_param
+        post 'create', params: @req_param, xhr: true
         expect(response).to render_template("preview")
       end
 
       it "does not create new Run" do
         expect {
-          xhr 'post', 'create', params: @req_param
+          post 'create', params: @req_param, xhr: true
         }.to_not change { Run.count }
       end
     end
