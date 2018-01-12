@@ -27,6 +27,7 @@ module AcmProto
     end
 
     # Custom directories with classes and modules you want to be autoloadable.
+    config.enable_dependency_loading = true
     config.autoload_paths += %W(#{config.root}/lib)
 
     # load user config
