@@ -200,7 +200,7 @@ class Host
       return true
     else
       errors.add(:base, "Cannot destroy Host.")
-      return false
+      throw(:abort)
     end
   end
 
