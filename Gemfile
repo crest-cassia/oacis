@@ -40,6 +40,7 @@ gem "stackprof"
 group :test do
   gem "factory_bot_rails"
   gem "database_cleaner"
+  gem 'rails-controller-testing'
   gem "simplecov", :require => false
   gem "simplecov-rcov", :require => false
   gem "ci_reporter", '~> 1.9'
