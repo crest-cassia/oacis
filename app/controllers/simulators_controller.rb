@@ -62,7 +62,11 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.new(permitted_simulator_params)
     if params[:duplicating_simulator]
       @duplicating_simulator = Simulator.find(params[:duplicating_simulator])
-      @copied_analyzers = params[:copied_analyzers].to_a.map {|azr_id| Analyzer.find(azr_id) }
+      if params[:copied_analyzers].present?
+        @copied_analyzers = params[:copied_analyzers].map {|azr_id| Analyzer.find(azr_id) }
+      else
+        @copied_analyzers = []
+      end
       @copied_analyzers.each do |azr|
         @simulator.analyzers.push azr.clone
       end
