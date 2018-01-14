@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'rails', '~> 5.0.0'
-gem 'thin'
+gem "puma"
 gem "mongoid", ' ~> 6.1.0'
 gem "net-ssh"
 gem "net-sftp"
