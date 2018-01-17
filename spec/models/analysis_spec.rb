@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Analysis do
 
   before(:each) do
-    @sim = FactoryGirl.create(:simulator,
+    @sim = FactoryBot.create(:simulator,
                               parameter_sets_count:1, runs_count:1,
                               analyzers_count: 1, run_analysis: true
                               )
@@ -76,7 +76,7 @@ describe Analysis do
     end
 
     it "is valid if host_group exists even if submitted_to is nil" do
-      hg = FactoryGirl.create(:host_group)
+      hg = FactoryBot.create(:host_group)
       anl = @run.analyses.build(@valid_attr)
       anl.submitted_to = nil
       anl.host_group = hg
@@ -150,7 +150,7 @@ describe Analysis do
   describe "#destroyable?" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
+      sim = FactoryBot.create(:simulator,
                                parameter_sets_count: 1, runs_count: 1,
                                analyzers_count: 1, run_analysis: true
                                )
@@ -164,7 +164,7 @@ describe Analysis do
   describe "#destroy" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
+      sim = FactoryBot.create(:simulator,
                                parameter_sets_count: 1, runs_count: 1,
                                analyzers_count: 1, run_analysis: true
                                )
@@ -187,7 +187,7 @@ describe Analysis do
   describe "#discard" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
+      sim = FactoryBot.create(:simulator,
                                parameter_sets_count: 1,
                                runs_count: 1,
                                analyzers_count: 1,
@@ -220,7 +220,7 @@ describe Analysis do
     describe "for :on_parameter_set type" do
 
       before(:each) do
-        @azr = FactoryGirl.create(:analyzer,
+        @azr = FactoryBot.create(:analyzer,
                                   simulator: @sim, type: :on_parameter_set, run_analysis: true)
         @ps = @sim.parameter_sets.first
         @arn = @ps.analyses.first
@@ -237,8 +237,8 @@ describe Analysis do
       it "returns an Array having Run ids" do
         @run.status = :finished
         @run.save!
-        run2 = FactoryGirl.create(:finished_run, parameter_set: @ps, result: {"zzz" => true})
-        run3 = FactoryGirl.create(:run, parameter_set: @ps)
+        run2 = FactoryBot.create(:finished_run, parameter_set: @ps, result: {"zzz" => true})
+        run3 = FactoryBot.create(:run, parameter_set: @ps)
         run3.status = :failed
         run3.save
         expect(@arn.input[:run_ids].size).to eq(2)
@@ -314,13 +314,13 @@ describe Analysis do
     describe "for :on_parameter_set type" do
 
       before(:each) do
-        @azr = FactoryGirl.create(:analyzer,
+        @azr = FactoryBot.create(:analyzer,
                                   simulator: @sim, type: :on_parameter_set, run_analysis: true)
         @ps = @sim.parameter_sets.first
         @arn2 = @ps.analyses.first
 
-        @run2 = FactoryGirl.create(:finished_run, parameter_set: @ps)
-        @run3 = FactoryGirl.create(:finished_run, parameter_set: @ps)
+        @run2 = FactoryBot.create(:finished_run, parameter_set: @ps)
+        @run3 = FactoryBot.create(:finished_run, parameter_set: @ps)
 
         @dummy_files = [@run2.dir.join('__dummy__'), @run3.dir.join('__dummy__')]
         @dummy_dirs = [@run2.dir.join('__dummy_dir__'), @run3.dir.join('__dummy_dir__')]

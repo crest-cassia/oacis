@@ -7,7 +7,7 @@ shared_examples_for RemoteJobHandler do
     describe "set_submitted_to_if_host_group_is_given" do
 
       before(:each) do
-        hg = FactoryGirl.create(:host_group, hosts: [@host])
+        hg = FactoryBot.create(:host_group, hosts: [@host])
         @host.update_attribute( :host_parameter_definitions, [
             HostParameterDefinition.new(key: "param1"),
             HostParameterDefinition.new(key: "param2", default: "XXX")
@@ -447,7 +447,7 @@ end
 describe "for Run" do
 
   before(:each) do
-    sim = FactoryGirl.create(:simulator,
+    sim = FactoryBot.create(:simulator,
                               command: "echo",
                               parameter_sets_count: 1, runs_count: 1,
                               ssh_host: true
@@ -477,7 +477,7 @@ end
 describe "for Analysis" do
 
   before(:each) do
-    sim = FactoryGirl.create(:simulator,
+    sim = FactoryBot.create(:simulator,
                               command: "echo",
                               parameter_sets_count: 1, runs_count: 1,
                               analyzers_count: 1, run_analysis: false,

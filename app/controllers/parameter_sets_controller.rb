@@ -155,7 +155,7 @@ class ParameterSetsController < ApplicationController
 
     cmd += " -o ps.json"
 
-    render text: cmd
+    render plain: cmd
   end
 
   def destroy

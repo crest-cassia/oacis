@@ -8,7 +8,7 @@ describe OacisCli do
   describe "#create_parameter_sets" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
     end
 
     def create_simulator_id_json(simulator, path)
@@ -42,8 +42,8 @@ describe OacisCli do
   describe "#create_runs" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator,
+      @host = FactoryBot.create(:host_with_parameters)
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 2, runs_count: 0,
                                 support_mpi: true, support_omp: true)
       @sim.executable_on.push @host
@@ -92,7 +92,7 @@ describe OacisCli do
   describe "#create_analyses" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
+      @host = FactoryBot.create(:host_with_parameters)
     end
 
     def create_job_parameters_json(path)
@@ -112,7 +112,7 @@ describe OacisCli do
     context "with type on_run" do
 
       before(:each) do
-        @sim = FactoryGirl.create(:simulator, parameter_sets_count: 2, runs_count: 0,
+        @sim = FactoryBot.create(:simulator, parameter_sets_count: 2, runs_count: 0,
                                   finished_runs_count: 1000,
                                   analyzers_count: 1, run_analysis: false,
                                   analyzers_on_parameter_set_count: 1,
@@ -140,7 +140,7 @@ describe OacisCli do
 
     context "with type on_parameter_set" do
       before(:each) do
-        @sim = FactoryGirl.create(:simulator, parameter_sets_count: 2000, runs_count: 0,
+        @sim = FactoryBot.create(:simulator, parameter_sets_count: 2000, runs_count: 0,
                                   finished_runs_count: 2,
                                   analyzers_count: 1, run_analysis: false,
                                   analyzers_on_parameter_set_count: 1,

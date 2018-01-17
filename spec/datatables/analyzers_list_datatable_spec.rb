@@ -5,7 +5,7 @@ describe "AnalyzersListDatatable" do
   describe "GET _analyzers_list" do
 
     before(:each) do
-      @simulator = FactoryGirl.create(:simulator, analyzers_count: 25)
+      @simulator = FactoryBot.create(:simulator, analyzers_count: 25)
       @context = ActionController::Base.new.view_context
       allow(@context).to receive(:params).and_return({id: @simulator.to_param, draw: 1, start: 0, length:10 , "order" => {"0" => {"column" => "0", "dir" => "desc"}}})
       allow(@context).to receive(:link_to) {|str, link_path| link_path }

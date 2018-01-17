@@ -5,7 +5,7 @@ describe "AnalysesListDatatable" do
   describe "GET _analyses_list" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count:1, runs_count:1,
                                 analyzers_count: 1, run_analysis: false
                                )

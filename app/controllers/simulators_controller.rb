@@ -62,7 +62,11 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.new(permitted_simulator_params)
     if params[:duplicating_simulator]
       @duplicating_simulator = Simulator.find(params[:duplicating_simulator])
-      @copied_analyzers = params[:copied_analyzers].to_a.map {|azr_id| Analyzer.find(azr_id) }
+      if params[:copied_analyzers].present?
+        @copied_analyzers = params[:copied_analyzers].map {|azr_id| Analyzer.find(azr_id) }
+      else
+        @copied_analyzers = []
+      end
       @copied_analyzers.each do |azr|
         @simulator.analyzers.push azr.clone
       end
@@ -85,7 +89,7 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
 
     respond_to do |format|
-      if @simulator.update_attributes(permitted_simulator_params)
+      if @simulator.update_attributes(permitted_simulator_params.to_h)
         format.html { redirect_to @simulator, notice: 'Simulator was successfully updated.' }
         format.json { head :no_content }
       else
@@ -157,7 +161,7 @@ class SimulatorsController < ApplicationController
     params[:simulator].each_with_index do |sim_id, index|
       Simulator.find(sim_id).timeless.update_attribute(:position, index)
     end
-    render nothing: true
+    head :ok
   end
 
   def _host_parameters_field

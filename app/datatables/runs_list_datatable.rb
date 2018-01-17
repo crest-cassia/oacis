@@ -50,7 +50,7 @@ private
   end
 
   def runs_lists
-    @runs.without(:result).order_by(sort_column_direction).skip(page).limit(per_page)
+    @runs.order_by(sort_column_direction).without(:result).skip(page).limit(per_page)
   end
 
   def page

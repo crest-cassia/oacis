@@ -1,21 +1,22 @@
 source 'https://rubygems.org'
 
-gem 'rails', '~> 4.2.0'
+gem 'rails', '~> 5.0.0'
 gem 'thin'
-gem "mongoid", ' ~> 5.1.0'
+gem "mongoid", ' ~> 6.1.0'
 gem "net-ssh"
 gem "net-sftp"
-gem "jbuilder", '2.4.0'
+gem "jbuilder"
 
 # assets
 gem "sprockets", '3.6.3'
+gem 'record_tag_helper', '~> 1.0'
   # fix version of sprockets to prevent deprecation warning.
   # should be updated after less-rails fixed issue https://github.com/metaskills/less-rails/issues/122
 gem "haml-rails"
 gem "sass-rails"
 gem 'therubyracer' # necessary to compile less
 gem "less-rails"   # necessary for bootstrap.
-gem 'twitter-bootstrap-rails'
+gem 'twitter-bootstrap-rails', ' ~> 3.2.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'jquery-datatables-rails', ' ~> 3.2.0'
@@ -29,7 +30,6 @@ gem "sys-filesystem"
 
 # for cli
 gem "ruby-progressbar"
-gem "quiet_assets"
 
 # utility tool
 gem "pry"
@@ -38,9 +38,9 @@ gem "rspec-rails", '~>3.5' # must be in :development group to use the rake task 
 gem "stackprof"
 
 group :test do
-  gem "factory_girl_rails", '~> 4.7'
+  gem "factory_bot_rails"
   gem "database_cleaner"
-  gem "mongoid-rspec", '3.0.0'
+  gem 'rails-controller-testing'
   gem "simplecov", :require => false
   gem "simplecov-rcov", :require => false
   gem "ci_reporter", '~> 1.9'

@@ -6,10 +6,10 @@ namespace :db do
     Rake::Task['db:mongoid:drop'].invoke
     Rake::Task['result_dir:drop'].invoke
 
-    FactoryGirl.create(:localhost, work_base_dir: "~/__work__")
+    FactoryBot.create(:localhost, work_base_dir: "~/__work__")
 
     # create simulators
-    sim = FactoryGirl.create(:simulator,
+    sim = FactoryBot.create(:simulator,
                              parameter_sets_count: 5,
                              runs_count: 2,
                              finished_runs_count: 3,
@@ -20,9 +20,9 @@ namespace :db do
                              parameter_set_queries_count: 5
                              )
 
-    FactoryGirl.create(:simulator, parameter_sets_count: 0, parameter_set_queries_count: 0)
-    # FactoryGirl.create(:simulator, parameter_sets_count: 30)
-    # FactoryGirl.create(:simulator, runs_count: 30)
+    FactoryBot.create(:simulator, parameter_sets_count: 0, parameter_set_queries_count: 0)
+    # FactoryBot.create(:simulator, parameter_sets_count: 30)
+    # FactoryBot.create(:simulator, runs_count: 30)
 
 
   end

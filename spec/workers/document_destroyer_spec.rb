@@ -7,7 +7,7 @@ describe DocumentDestroyer do
   describe "destroying Simulator" do
 
     it "destroys Simulator if it is destroyable" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0)
 
       sim.update_attribute(:to_be_destroyed, true)
       expect {
@@ -16,7 +16,7 @@ describe DocumentDestroyer do
     end
 
     it "does not destroy Simulator if it is not destroyable" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
 
       sim.update_attribute(:to_be_destroyed, true)
       expect {
@@ -28,7 +28,7 @@ describe DocumentDestroyer do
   describe "destroying Runs" do
 
     it "destroys runs if its status is finished or failed and to_be_destroyed" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                                analyzers_count: 0)
       run = sim.parameter_sets.first.runs.first
       run.status = :finished
@@ -40,7 +40,7 @@ describe DocumentDestroyer do
     end
 
     it "does not destroy if it is not finished or failed" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                                analyzers_count: 0)
       run = sim.parameter_sets.first.runs.first
       run.status = :created
@@ -58,7 +58,7 @@ describe DocumentDestroyer do
         #   |- analysis: to_be_destroyed=false
         # This can happen run#to_be_destroyed is set to true
         # while analysis is being created.
-        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+        sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                                  analyzers_count: 1, run_analysis: false)
         run = sim.parameter_sets.first.runs.first
         run.status = :finished
@@ -78,7 +78,7 @@ describe DocumentDestroyer do
   describe "destroying Analysis" do
 
     it "destroys analyses if its status is finished or failed and to_be_destroyed" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                                analyzers_count: 1, run_analysis: true)
       anl = sim.parameter_sets.first.runs.first.analyses.first
       anl.status = :finished
@@ -90,7 +90,7 @@ describe DocumentDestroyer do
     end
 
     it "does not destroy if it is not finished or failed" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                                analyzers_count: 1, run_analysis: true)
       anl = sim.parameter_sets.first.runs.first.analyses.first
       anl.status = :created

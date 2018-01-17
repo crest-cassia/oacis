@@ -2,15 +2,8 @@ require 'spec_helper'
 
 describe AnalysesController do
 
-  # This should return the minimal set of values that should be in the session
-  # in order to pass any filters (e.g. authentication) defined in
-  # AnalysesController. Be sure to keep this updated too.
-  def valid_session
-    {}
-  end
-
   before(:each) do
-    @sim = FactoryGirl.create( :simulator,
+    @sim = FactoryBot.create( :simulator,
       parameter_sets_count: 1,
       runs_count: 1,
       analyzers_count: 0,
@@ -18,7 +11,7 @@ describe AnalysesController do
     @par = @sim.parameter_sets.first
     @run = @par.runs.first
 
-    @azr = FactoryGirl.create(:analyzer,
+    @azr = FactoryBot.create(:analyzer,
                               simulator: @sim,
                               type: :on_run,
                               support_mpi: true,
@@ -27,7 +20,7 @@ describe AnalysesController do
                               )
     @arn = @run.analyses.first
 
-    @azr2 = FactoryGirl.create(:analyzer,
+    @azr2 = FactoryBot.create(:analyzer,
                                simulator: @sim,
                                type: :on_parameter_set,
                                support_mpi: true,
@@ -36,7 +29,7 @@ describe AnalysesController do
                                )
     @arn2 = @par.analyses.first
 
-    @host = FactoryGirl.create(:host_with_parameters)
+    @host = FactoryBot.create(:host_with_parameters)
     @azr.executable_on.push @host
     @azr2.executable_on.push @host
   end
@@ -46,17 +39,17 @@ describe AnalysesController do
     describe "for :on_run type" do
 
       it "returns http success" do
-        get 'show', {id: @arn}, valid_session
+        get 'show', params: {id: @arn}
         expect(response).to be_success
       end
 
       it "assigns instance variables for analysis_on_run" do
-        get 'show', {id: @arn}, valid_session
+        get 'show', params: {id: @arn}
         expect(assigns(:analysis)).to eq(@arn)
       end
 
       it "returns success for json format" do
-        get :show, {id: @arn, format: :json}, valid_session
+        get :show, params: {id: @arn, format: :json}
         expect(response).to be_success
       end
     end
@@ -64,17 +57,17 @@ describe AnalysesController do
     describe "for :on_parameter_set type" do
 
       it "returns http success" do
-        get 'show', {id: @arn2}, valid_session
+        get 'show', params: {id: @arn2}
         expect(response).to be_success
       end
 
       it "assigns instance variables" do
-        get 'show', {id: @arn2}, valid_session
+        get 'show', params: {id: @arn2}
         expect(assigns(:analysis)).to eq(@arn2)
       end
 
       it "returns success for json format" do
-        get :show, {id: @arn2, format: :json}, valid_session
+        get :show, params: {id: @arn2, format: :json}
         expect(response).to be_success
       end
     end
@@ -104,7 +97,7 @@ describe AnalysesController do
         it "creates a new Analysis" do
           analyses_ids = @run.analyses.map(&:id)
           expect {
-            post :create, @valid_param.update(format: 'json'), valid_session
+            post :create, params: @valid_param.update(format: 'json')
           }.to change{
             @run.reload.analyses.count
           }.by(1)
@@ -116,7 +109,7 @@ describe AnalysesController do
 
         it "sets fields appropriately" do
           analyses_ids = @run.analyses.map(&:id)
-          post :create, @valid_param.update(format: 'json'), valid_session
+          post :create, params: @valid_param.update(format: 'json')
           new_anl_id = @run.reload.analyses.map(&:id) - analyses_ids
           anl = Analysis.find(new_anl_id[0])
           expect(anl.submitted_to).to eq @host
@@ -127,9 +120,9 @@ describe AnalysesController do
         end
 
         it "sets HostGroup field" do
-          hg = FactoryGirl.create(:host_group)
+          hg = FactoryBot.create(:host_group)
           @valid_param[:analysis][:submitted_to] = hg.to_param
-          post :create, @valid_param.update(format: 'json'), valid_session
+          post :create, params: @valid_param.update(format: 'json')
           new_anl = @run.reload.analyses.desc(:created_at).first
           expect( new_anl.submitted_to ).to be_nil
           expect( new_anl.host_group ).to eq hg
@@ -137,7 +130,7 @@ describe AnalysesController do
         end
 
         it "redirects to 'analysis' tab of Run#show page" do
-          post :create, @valid_param.update(format: 'json'), valid_session
+          post :create, params: @valid_param.update(format: 'json')
           expect(response).not_to redirect_to( run_path(@run, anchor: '!tab-analyses') )
           expect(response).not_to render_template 'create'
         end
@@ -183,7 +176,7 @@ describe AnalysesController do
         it "create new analysis but non-permitted params are not saved" do
           old_ids = Analysis.all.map(&:id)
           expect {
-            post :create, @invalid_param.update(format: 'json'), valid_session
+            post :create, params: @invalid_param.update(format: 'json')
           }.to change{Analysis.count}.by(1)
           new_id = (Analysis.all.map(&:id) - old_ids).first
           anl = Analysis.find(new_id)
@@ -220,7 +213,7 @@ describe AnalysesController do
 
         it "creates a new Analysis" do
           expect {
-            post :create, @valid_param.update(format: 'json'), valid_session
+            post :create, params: @valid_param.update(format: 'json')
           }.to change {
             @par.reload.analyses.count
           }.by(1)
@@ -228,7 +221,7 @@ describe AnalysesController do
 
         it "sets fields appropriately" do
           old_ids = @par.analyses.map(&:id)
-          post :create, @valid_param.update(format: 'json'), valid_session
+          post :create, params: @valid_param.update(format: 'json')
           new_id = ( @par.reload.analyses.map(&:id) - old_ids ).first
           anl = Analysis.find(new_id)
           expect(anl.submitted_to).to eq @host
@@ -240,9 +233,9 @@ describe AnalysesController do
         end
 
         it "sets HostGroup field" do
-          hg = FactoryGirl.create(:host_group)
+          hg = FactoryBot.create(:host_group)
           @valid_param[:analysis][:submitted_to] = hg.to_param
-          post :create, @valid_param.update(format: 'json'), valid_session
+          post :create, params: @valid_param.update(format: 'json')
           new_anl = @par.reload.analyses.desc(:created_at).first
           expect( new_anl.submitted_to ).to be_nil
           expect( new_anl.host_group ).to eq hg
@@ -250,7 +243,7 @@ describe AnalysesController do
         end
 
         it "redirects to 'analysis' tab of ParameterSet#show page" do
-          post :create, @valid_param.update(format: 'json'), valid_session
+          post :create, params: @valid_param.update(format: 'json')
           expect(response).not_to redirect_to( parameter_set_path(@par, anchor: '!tab-analyses') )
           expect(response).not_to render_template 'create'
         end
@@ -292,7 +285,7 @@ describe AnalysesController do
         it "create new analysis but no permitted params are not saved" do
           old_analyses = Analysis.all.to_a
           expect {
-            post :create, @invalid_param.update(format: 'json'), valid_session
+            post :create, params: @invalid_param.update(format: 'json')
           }.to change{Analysis.count}.by(1)
           anl = (Analysis.all.to_a - old_analyses).first
           expect(anl.status).to eq :created
@@ -312,13 +305,13 @@ describe AnalysesController do
 
     it "destroys the number of analyses in default scope" do
       expect {
-        delete :destroy, {id: @arn.to_param, format: 'json'}, valid_session
+        delete :destroy, params: {id: @arn.to_param, format: 'json'}
       }.to change(Analysis, :count).by(-1)
     end
 
     it "does not destroy the analysis" do
       expect {
-        delete :destroy, {id: @arn.to_param, format: 'json'}, valid_session
+        delete :destroy, params: {id: @arn.to_param, format: 'json'}
       }.to_not change { Analysis.unscoped.count }
     end
   end
@@ -326,7 +319,7 @@ describe AnalysesController do
   describe "GET '_result'" do
 
     it "returns http success" do
-      get '_result', {id: @arn}, valid_session
+      get '_result', params: {id: @arn}
       expect(response).to be_success
     end
   end

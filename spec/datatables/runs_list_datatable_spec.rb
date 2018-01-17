@@ -5,7 +5,7 @@ describe "RunsListDatatable" do
   describe "GET _runs_list" do
 
     before(:each) do
-      @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 30)
+      @simulator = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 30)
       @param_set = @simulator.parameter_sets.first
       @runs = @param_set.runs
       @context = ActionController::Base.new.view_context
@@ -38,7 +38,7 @@ describe "RunsListDatatable" do
     context "with multiple sort" do
 
     before(:each) do
-      @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 30)
+      @simulator = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 30)
       @param_set = @simulator.parameter_sets.first
       @runs = @param_set.runs
       run = @runs.first

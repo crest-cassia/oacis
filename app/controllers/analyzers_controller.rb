@@ -94,34 +94,35 @@ class AnalyzersController < ApplicationController
 
   private
   def permitted_analyzer_params
-    if submitted_to_is_host_group?
-      params[:analyzer][:auto_run_host_group] = params[:analyzer][:auto_run_submitted_to]
-      params[:analyzer][:auto_run_submitted_to] = nil
+    return {} unless params[:analyzer].present?
+    azr_params = params.require(:analyzer)
+      .permit(:name,
+              :type,
+              :command,
+              :description,
+              :auto_run,
+              :files_to_copy,
+              :print_version_command,
+              :simulator,
+              :support_input_json,
+              :support_mpi,
+              :support_omp,
+              :pre_process_script,
+              :local_pre_process_script,
+              :auto_run_submitted_to,
+              :auto_run_host_group,
+              parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
+              executable_on_ids: []
+             )
+    if submitted_to_is_host_group?(azr_params)
+      azr_params[:auto_run_host_group] = azr_params[:auto_run_submitted_to]
+      azr_params[:auto_run_submitted_to] = nil
     end
-
-    params[:analyzer].present? ? params.require(:analyzer)
-                                       .permit(:name,
-                                               :type,
-                                               :command,
-                                               :description,
-                                               :auto_run,
-                                               :files_to_copy,
-                                               :print_version_command,
-                                               :simulator,
-                                               :support_input_json,
-                                               :support_mpi,
-                                               :support_omp,
-                                               :pre_process_script,
-                                               :local_pre_process_script,
-                                               :auto_run_submitted_to,
-                                               :auto_run_host_group,
-                                               parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
-                                               executable_on_ids: []
-                                              ) : {}
+    azr_params
   end
 
-  def submitted_to_is_host_group?
-    host_id = params[:analyzer][:auto_run_submitted_to]
+  def submitted_to_is_host_group?(azr_params)
+    host_id = azr_params[:auto_run_submitted_to]
     host_id.present? && HostGroup.where(id: host_id).present?
   end
 end

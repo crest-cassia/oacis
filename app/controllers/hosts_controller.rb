@@ -30,7 +30,7 @@ class HostsController < ApplicationController
     else
       status = "Failed to establish connection. Check host information."
     end
-    render text: status
+    render plain: status
   end
 
   # GET /hosts/new
@@ -102,7 +102,7 @@ class HostsController < ApplicationController
     params[:host].each_with_index do |host_id, index|
       Host.find(host_id).timeless.update_attribute(:position, index)
     end
-    render nothing: true
+    head :ok
   end
 
   private
