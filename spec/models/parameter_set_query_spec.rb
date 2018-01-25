@@ -4,7 +4,7 @@ require 'spec_helper'
 describe ParameterSetQuery do
 
   before(:each) do
-    @sim = FactoryGirl.create(:simulator, 
+    @sim = FactoryBot.create(:simulator, 
                               parameter_sets_count: 1, runs_count: 0,
                               parameter_set_queries_count: 1
                               )
@@ -72,7 +72,7 @@ describe ParameterSetQuery do
   describe "#selector" do
 
     before(:each) do
-      @query = FactoryGirl.create(:parameter_set_query,
+      @query = FactoryBot.create(:parameter_set_query,
                                   simulator: @sim,
                                   query: {"L" => {"lte" => 123}, "T" => {"gte" => 456.0}}
                                   )

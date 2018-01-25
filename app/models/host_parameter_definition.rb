@@ -12,7 +12,7 @@ class HostParameterDefinition
 
   private
   def default_value_conform_to_format
-    regexp = Regexp.new(self.format.to_s)
+    regexp = ::Regexp.new(self.format.to_s)
     unless regexp =~ self.default.to_s
       errors.add(:default, "does not match regexp #{self.format}")
     end

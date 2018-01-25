@@ -1,4 +1,4 @@
-AcmProto::Application.routes.draw do
+Rails.application.routes.draw do
 
   resources :worker_logs, only: ['index'] do
     collection do

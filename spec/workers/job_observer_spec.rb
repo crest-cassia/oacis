@@ -5,7 +5,7 @@ describe JobObserver do
   describe ".perform" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 1,
                                 ssh_host: true
                                 )
@@ -42,7 +42,7 @@ describe JobObserver do
   describe ".observe_host" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 1,
                                 analyzers_count: 1, run_analysis: false,
                                 ssh_host: true

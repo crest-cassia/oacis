@@ -6,7 +6,7 @@ describe OacisCli do
   describe "#job_parameter_template" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
+      @host = FactoryBot.create(:host_with_parameters)
     end
 
     it "outputs a template of job_parameters" do
@@ -80,8 +80,8 @@ describe OacisCli do
   describe "#create_runs" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator,
+      @host = FactoryBot.create(:host_with_parameters)
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 2, runs_count: 0,
                                 support_mpi: true, support_omp: true)
       @sim.executable_on.push @host
@@ -155,11 +155,11 @@ describe OacisCli do
 
       before(:each) do
         @ps1 = @sim.parameter_sets.first
-        FactoryGirl.create_list(:run, 5, parameter_set: @ps1, submitted_to: @host,
+        FactoryBot.create_list(:run, 5, parameter_set: @ps1, submitted_to: @host,
                                 host_parameters: {"param1" => "XXX", "param2" => "YYY"}
                                 )
         @ps2 = @sim.parameter_sets[1]
-        FactoryGirl.create_list(:run, 1, parameter_set: @ps2, submitted_to: @host,
+        FactoryBot.create_list(:run, 1, parameter_set: @ps2, submitted_to: @host,
                                 host_parameters: {"param1" => "XXX", "param2" => "YYY"}
                                 )
       end
@@ -307,7 +307,7 @@ describe OacisCli do
   describe "#run_status" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 2, runs_count: 3)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 2, runs_count: 3)
     end
 
     def create_run_ids_json(runs, path)
@@ -340,13 +340,13 @@ describe OacisCli do
   describe "#destroy_runs" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 0)
       ps = @sim.parameter_sets.first
-      FactoryGirl.create(:run, parameter_set: ps).update_attribute(:simulator_version, "1.0.0")
-      FactoryGirl.create(:run, parameter_set: ps).update_attribute(:simulator_version, "1.0.1")
-      FactoryGirl.create(:finished_run, parameter_set: ps).update_attribute(:simulator_version, nil)
-      @failed_run = FactoryGirl.create(:finished_run, parameter_set: ps)
+      FactoryBot.create(:run, parameter_set: ps).update_attribute(:simulator_version, "1.0.0")
+      FactoryBot.create(:run, parameter_set: ps).update_attribute(:simulator_version, "1.0.1")
+      FactoryBot.create(:finished_run, parameter_set: ps).update_attribute(:simulator_version, nil)
+      @failed_run = FactoryBot.create(:finished_run, parameter_set: ps)
         .tap {|r| r.update_attribute(:status, :failed) }
         .tap {|r| r.update_attribute(:simulator_version, nil) }
 
@@ -420,7 +420,7 @@ describe OacisCli do
   describe "#destroy_runs_by_ids" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 5)
     end
 
@@ -450,12 +450,12 @@ describe OacisCli do
   describe "#replace_runs" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 0)
       ps = @sim.parameter_sets.first
-      FactoryGirl.create(:finished_run, parameter_set: ps, mpi_procs: 8, priority: 0)
+      FactoryBot.create(:finished_run, parameter_set: ps, mpi_procs: 8, priority: 0)
         .update_attribute(:simulator_version, "1.0.0")
-      FactoryGirl.create(:finished_run, parameter_set: ps, mpi_procs: 4)
+      FactoryBot.create(:finished_run, parameter_set: ps, mpi_procs: 4)
         .update_attribute(:simulator_version, "1.0.1")
     end
 
@@ -510,10 +510,10 @@ describe OacisCli do
   describe "#replace_runs_by_ids" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
+      sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 0)
       ps = sim.parameter_sets.first
-      FactoryGirl.create_list(:finished_run, 5, parameter_set: ps, mpi_procs: 8)
+      FactoryBot.create_list(:finished_run, 5, parameter_set: ps, mpi_procs: 8)
     end
 
     it "replaces runs specified by ids" do

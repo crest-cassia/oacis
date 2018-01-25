@@ -2,15 +2,8 @@ require 'spec_helper'
 
 describe RunsController do
 
-  # This should return the minimal set of values that should be in the session
-  # in order to pass any filters (e.g. authentication) defined in
-  # RunsController. Be sure to keep this updated too.
-  def valid_session
-    {}
-  end
-
   before(:each) do
-    @sim = FactoryGirl.create(:simulator,
+    @sim = FactoryBot.create(:simulator,
       parameter_sets_count: 1,
       runs_count: 1,
       analyzers_count: 1,
@@ -24,7 +17,7 @@ describe RunsController do
   describe "GET 'index'" do
 
     it "returns http success" do
-      get 'index', {}, valid_session
+      get 'index', params: {}
       expect(response).to be_success
     end
   end
@@ -32,18 +25,18 @@ describe RunsController do
   describe "GET 'show'" do
 
     it "returns http success" do
-      get 'show', {id: @run}, valid_session
+      get 'show', params: {id: @run}
       expect(response).to be_success
     end
 
     it "assigns instance variables" do
-      get 'show', {id: @run}, valid_session
+      get 'show', params: {id: @run}
       expect(assigns(:run)).to eq(@run)
       expect(assigns(:param_set)).to eq(@par)
     end
 
     it "returns success for json format" do
-      get :show, {id: @run, format: :json}, valid_session
+      get :show, params: {id: @run, format: :json}
       expect(response).to be_success
     end
   end
@@ -58,21 +51,21 @@ describe RunsController do
 
       it "creates a new run" do
         expect {
-          post 'create', @req_param, valid_session
+          post 'create', params: @req_param
         }.to change(Run.where(parameter_set_id: @par), :count).by(1)
       end
 
       it "create multiple items when params[num_runs] is given" do
         num_runs = 3
         expect {
-          post 'create', @req_param.update(num_runs: num_runs), valid_session
+          post 'create', params: @req_param.update(num_runs: num_runs)
         }.to change(Run.where(parameter_set_id: @par), :count).by(num_runs)
       end
 
       it "assigns HostGroup" do
-        hg = FactoryGirl.create(:host_group)
+        hg = FactoryBot.create(:host_group)
         @req_param[:run] = {submitted_to: hg.id.to_s}
-        post 'create', @req_param, valid_session
+        post 'create', params: @req_param
         new_run = Run.desc(:created_at).first
         expect( new_run.submitted_to ).to be_nil
         expect( new_run.host_group ).to eq hg
@@ -84,7 +77,7 @@ describe RunsController do
       it "raises an error when the ParameterSet is not found" do
         @req_param.update(parameter_set_id: 1234)
         expect {
-          post 'create', @req_param, valid_session
+          post 'create', params: @req_param
         }.to raise_error Mongoid::Errors::DocumentNotFound
       end
     end
@@ -103,7 +96,7 @@ describe RunsController do
         invalid_params = @req_param
         invalid_params[:run] = invalid_run_params
         expect {
-          post :create, invalid_params, valid_session
+          post :create, params: invalid_params
         }.to change{Run.count}.by(1)
         run = Run.order_by(id: :asc).last
         expect(run.status).not_to eq :finished
@@ -124,17 +117,17 @@ describe RunsController do
 
       it "calls preview method" do
         expect_any_instance_of(RunsController).to receive(:preview).and_call_original
-        xhr 'post', 'create', @req_param, valid_session
+        post 'create', params: @req_param, xhr: true
       end
 
       it "renders preview" do
-        xhr 'post', 'create', @req_param, valid_session
+        post 'create', params: @req_param, xhr: true
         expect(response).to render_template("preview")
       end
 
       it "does not create new Run" do
         expect {
-          xhr 'post', 'create', @req_param, valid_session
+          post 'create', params: @req_param, xhr: true
         }.to_not change { Run.count }
       end
     end
@@ -144,13 +137,13 @@ describe RunsController do
 
     it "reduces the number of runs in default scope" do
       expect {
-        delete :destroy, {id: @run.to_param, format: 'json'}, valid_session
+        delete :destroy, params: {id: @run.to_param, format: 'json'}
       }.to change(Run, :count).by(-1)
     end
 
     it "does not destroy the run" do
       expect {
-        delete :destroy, {id: @run.to_param, format: 'json'}, valid_session
+        delete :destroy, params: {id: @run.to_param, format: 'json'}
       }.to_not change { Run.unscoped.count }
     end
   end

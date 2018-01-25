@@ -473,7 +473,7 @@ end
 context "for Run" do
 
   before(:each) do
-    sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+    sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                              ssh_host: true)
     host = sim.executable_on.first #Host.where(name: "localhost").first
     sim.update_attribute(:executable_on, [host])
@@ -494,7 +494,7 @@ end
 context "for Analysis" do
 
   before(:each) do
-    sim = FactoryGirl.create(:simulator,
+    sim = FactoryBot.create(:simulator,
       parameter_sets_count: 1, runs_count: 1,
       analyzers_count: 1, run_analysis: false,
       ssh_host: true

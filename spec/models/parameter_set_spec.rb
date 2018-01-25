@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ParameterSet do
 
   before(:each) do
-    @sim = FactoryGirl.create(:simulator,
+    @sim = FactoryBot.create(:simulator,
                               parameter_sets_count: 1,
                               runs_count: 1
                               )
@@ -75,7 +75,7 @@ describe ParameterSet do
     it "identical v is valid for a differnet simulator" do
       @sim.parameter_sets.create!(@valid_attr)
 
-      sim2 = FactoryGirl.create(:simulator,
+      sim2 = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0)
       built_param = sim2.parameter_sets.build(@valid_attr)
       expect(built_param).to be_valid
@@ -127,7 +127,7 @@ describe ParameterSet do
     end
 
     it "does not call destroy of dependent analyses when destroyed" do
-      azr = FactoryGirl.create(:analyzer,
+      azr = FactoryBot.create(:analyzer,
                                simulator: @sim,
                                type: :on_parameter_set
                                )
@@ -150,13 +150,13 @@ describe ParameterSet do
     end
 
     it "is created when a new item is added" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
       prm = sim.parameter_sets.create!(@valid_attr)
       expect(FileTest.directory?(ResultDirectory.parameter_set_path(prm))).to be_truthy
     end
 
     it "is not created when validation fails" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
       h = sim.parameter_definition_for("T")
       h.default = nil
       h.save!
@@ -169,7 +169,7 @@ describe ParameterSet do
   describe "#dir" do
 
     it "returns the result directory of the parameter" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       prm = sim.parameter_sets.first
       expect(prm.dir).to eq(ResultDirectory.parameter_set_path(prm))
     end
@@ -186,7 +186,7 @@ describe ParameterSet do
         ParameterDefinition.new(
           {key: "P", type: "Float", default: 1.0, description: "Third parameter"})
       ]
-      sim = FactoryGirl.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
       5.times do |n|
         val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
         sim.parameter_sets.create( v: val )
@@ -247,7 +247,7 @@ describe ParameterSet do
         ParameterDefinition.new(
           {key: "P", type: "Float", default: 1.0, description: "Third parameter"})
       ]
-      sim = FactoryGirl.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_definitions: pds, parameter_sets_count: 0)
       5.times do |n|
         val = {"L" => 1, "T" => (n+1)*1.0, "P" => 1.0}
         sim.parameter_sets.create( v: val )
@@ -267,7 +267,7 @@ describe ParameterSet do
   describe ".runs_status_count_batch" do
 
     def prepare_runs
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 2, runs_count: 10)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 2, runs_count: 10)
       @ps1 = @sim.parameter_sets.asc(:created_at).first
       @ps2 = @sim.parameter_sets.asc(:created_at).last
       runs = @ps1.runs.to_a
@@ -292,7 +292,7 @@ describe ParameterSet do
     end
 
     it "returns hash even if there is no run to count" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 2, runs_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 2, runs_count: 0)
       ret = ParameterSet.runs_status_count_batch( sim.parameter_sets )
 
       ps1, ps2 = sim.parameter_sets.to_a
@@ -311,7 +311,7 @@ describe ParameterSet do
   describe "#find_or_create_runs_upto" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       @ps = sim.parameter_sets.first
       @host = sim.executable_on.first
     end
@@ -326,7 +326,7 @@ describe ParameterSet do
       end
 
       it "creates runs up to specified number of runs" do
-        run1 = FactoryGirl.create(:run, parameter_set: @ps)
+        run1 = FactoryBot.create(:run, parameter_set: @ps)
         expect {
           runs = @ps.find_or_create_runs_upto(3, submitted_to: @host)
           expect( runs.count ).to eq 3
@@ -335,7 +335,7 @@ describe ParameterSet do
       end
 
       it "sets submitted_to, host_param, mpi_proc, omp_threads, priority to newly created runs" do
-        h = FactoryGirl.create(:host_with_parameters)
+        h = FactoryBot.create(:host_with_parameters)
         host_param = { param1: "foo", param2: "bar" }
         
         runs = @ps.find_or_create_runs_upto(3,
@@ -360,16 +360,16 @@ describe ParameterSet do
           HostParameterDefinition.new(key:"hp1",default:"aaa"),
           HostParameterDefinition.new(key:"hp2"),
         ]
-        h = FactoryGirl.create(:host, host_parameter_definitions: host_param_defs)
+        h = FactoryBot.create(:host, host_parameter_definitions: host_param_defs)
 
         runs = @ps.find_or_create_runs_upto(1, submitted_to: h)
         expect( runs.first.host_parameters ).to eq ( {"hp1"=>"aaa","hp2"=>nil} )
       end
 
       it "does not set host_param to existing runs" do
-        run1 = FactoryGirl.create(:run, parameter_set: @ps)
+        run1 = FactoryBot.create(:run, parameter_set: @ps)
 
-        h = FactoryGirl.create(:host_with_parameters)
+        h = FactoryBot.create(:host_with_parameters)
         host_param = { param1: "foo", param2: "bar" }
         mpi_procs = 1
         omp_threads = 4
@@ -383,7 +383,7 @@ describe ParameterSet do
       end
 
       it "sets host_group when specified" do
-        hg = FactoryGirl.create(:host_group)
+        hg = FactoryBot.create(:host_group)
         runs = @ps.find_or_create_runs_upto(1, host_group: hg)
         run = runs.first
         expect( run.submitted_to ).to be_nil
@@ -392,8 +392,8 @@ describe ParameterSet do
       end
 
       it "raises an error when both 'submitted_to' and 'host_group' is given" do
-        h = FactoryGirl.create(:host)
-        hg = FactoryGirl.create(:host_group)
+        h = FactoryBot.create(:host)
+        hg = FactoryBot.create(:host_group)
         expect {
           @ps.find_or_create_runs_upto(1, submitted_to: h, host_group: hg)
         }.to raise_error(/either submitted_to or host_group/)
@@ -415,8 +415,8 @@ describe ParameterSet do
     end
 
     it "returned runs are sorted by created_at" do
-      r1 = FactoryGirl.create(:run, parameter_set: @ps)
-      r2 = FactoryGirl.create(:run, parameter_set: @ps)
+      r1 = FactoryBot.create(:run, parameter_set: @ps)
+      r2 = FactoryBot.create(:run, parameter_set: @ps)
       runs = @ps.find_or_create_runs_upto(3, submitted_to: @host)
       expect( runs[0..1] ).to eq [r1, r2]
     end
@@ -425,7 +425,7 @@ describe ParameterSet do
   describe "#average_result" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 0)
       @ps = sim.parameter_sets.first
       @host = sim.executable_on.first
     end
@@ -474,7 +474,7 @@ describe ParameterSet do
   describe "#discard" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1)
       @ps = sim.parameter_sets.first
     end
 
@@ -493,7 +493,7 @@ describe ParameterSet do
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
+      sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 1, run_analysis: true,
@@ -525,7 +525,7 @@ describe ParameterSet do
 
   describe "#destroyable?" do
     before(:each) do
-      sim = FactoryGirl.create(:simulator,
+      sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 1, run_analysis: true,

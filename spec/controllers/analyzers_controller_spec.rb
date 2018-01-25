@@ -2,33 +2,26 @@ require 'spec_helper'
 
 describe AnalyzersController do
 
-  # This should return the minimal set of values that should be in the session
-  # in order to pass any filters (e.g. authentication) defined in
-  # AnalyzersController. Be sure to keep this updated too.
-  def valid_session
-    {}
-  end
-
   describe "GET 'show'" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count:0, runs_count:0, analyzers_count:2)
       @azr = @sim.analyzers.first
     end
 
     it "returns http success" do
-      get 'show', {id: @azr }
+      get 'show', params: {id: @azr }
       expect(response).to be_success
     end
 
     it "assigns the requested analyzer to @analyzer" do
-      get 'show', {id: @azr }
+      get 'show', params: {id: @azr }
       expect(assigns(:analyzer)).to eq(@azr)
     end
 
     it "returns success for json format" do
-      get :show, {id: @azr, format: :json}, valid_session
+      get :show, params: {id: @azr, format: :json}
       expect(response).to be_success
     end
   end
@@ -36,12 +29,12 @@ describe AnalyzersController do
   describe "GET new" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, runs_count: 0, analyzers_count: 0)
     end
 
     it "assigns a new simulator as @simulator" do
-      get :new, {simulator_id: @sim.to_param}, valid_session
+      get :new, params: {simulator_id: @sim.to_param}
       expect(assigns(:analyzer)).to be_a_new(Analyzer)
     end
   end
@@ -49,13 +42,13 @@ describe AnalyzersController do
   describe "GET edit" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, runs_count: 0, analyzers_count: 1)
       @azr = @sim.analyzers.first
     end
 
     it "assigns the requested analyzer as @analyzer" do
-      get :edit, {:id => @azr.to_param}, valid_session
+      get :edit, params: {:id => @azr.to_param}
       expect(assigns(:analyzer)).to eq(@azr)
     end
   end
@@ -64,14 +57,14 @@ describe AnalyzersController do
   describe "POST create" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, runs_count: 0, analyzers_count: 0)
     end
 
     describe "with valid params" do
 
       before(:each) do
-        @host = FactoryGirl.create(:host)
+        @host = FactoryBot.create(:host)
         definitions = {
           "0" => {key: "param1", type: "Integer"},
           "1" => {key: "param2", type: "Float"}
@@ -93,12 +86,12 @@ describe AnalyzersController do
 
       it "creates a new Analyzer" do
         expect {
-          post :create, @valid_post_parameter, valid_session
+          post :create, params: @valid_post_parameter
         }.to change(Analyzer, :count).by(1)
       end
 
       it "assigns attributes of newly created Analyzer" do
-        post :create, @valid_post_parameter, valid_session
+        post :create, params: @valid_post_parameter
         azr = Analyzer.order_by(id: :asc).last
         expect(azr.name).to eq "analyzerA"
         expect(azr.type).to eq :on_run
@@ -118,22 +111,22 @@ describe AnalyzersController do
       end
 
       it "assigns auto_run_host_group attribute" do
-        hg = FactoryGirl.create(:host_group)
+        hg = FactoryBot.create(:host_group)
         @valid_post_parameter[:analyzer][:auto_run_submitted_to] = hg.id.to_s
-        post :create, @valid_post_parameter, valid_session
+        post :create, params: @valid_post_parameter
         azr = Analyzer.desc(:created_at).first
         expect( azr.auto_run_submitted_to ).to be nil
         expect( azr.auto_run_host_group ).to eq hg
       end
 
       it "assigns a newly created analyzer as @analyzer" do
-        post :create, @valid_post_parameter, valid_session
+        post :create, params: @valid_post_parameter
         expect(assigns(:analyzer)).to be_a(Analyzer)
         expect(assigns(:analyzer)).to be_persisted
       end
 
       it "redirects to the created analyzer" do
-        post :create, @valid_post_parameter, valid_session
+        post :create, params: @valid_post_parameter
         expect(response).to redirect_to(Analyzer.order_by(id: :asc).last)
       end
     end
@@ -142,14 +135,14 @@ describe AnalyzersController do
 
       it "assigns a newly created but unsaved analyzer as @analyzer" do
         expect {
-          post :create, {simulator_id: @sim.id, analyzer: {}}, valid_session
+          post :create, params: {simulator_id: @sim.id, analyzer: {}}
           expect(assigns(:analyzer)).to be_a_new(Analyzer)
         }.to_not change(Analyzer, :count)
       end
 
       it "re-renders the 'new' template" do
         # Trigger the behavior that occurs when invalid params are submitted
-        post :create, {simulator_id: @sim.id, analyzer: {}}, valid_session
+        post :create, params: {simulator_id: @sim.id, analyzer: {}}
         expect(response).to render_template("new")
       end
     end
@@ -176,7 +169,7 @@ describe AnalyzersController do
         invalid_params = @valid_post_parameter
         invalid_params[:analyzer] = invalid_analyzer_params
         expect {
-          post :create, invalid_params, valid_session
+          post :create, params: invalid_params
         }.to change {Analyzer.count}.by(1)
         anz = assigns(:analyzer)
         expect(anz.try(:admin_flg)).not_to eq 1
@@ -187,7 +180,7 @@ describe AnalyzersController do
   describe "PUT update" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, runs_count: 0, analyzers_count: 1)
       @azr = @sim.analyzers.first
     end
@@ -215,18 +208,18 @@ describe AnalyzersController do
       end
 
       it "updates the requested analyzer" do
-        put :update, {:id => @azr.to_param, :analyzer => {'description' => 'yyy zzz'}}, valid_session
+        put :update, params: {:id => @azr.to_param, :analyzer => {'description' => 'yyy zzz'}}
         anz = assigns(:analyzer)
         expect(anz.description).to eq 'yyy zzz'
       end
 
       it "assigns the requested analyzer as @analyzer" do
-        put :update, {:id => @azr.to_param, :analyzer => @valid_post_parameter}, valid_session
+        put :update, params: {:id => @azr.to_param, :analyzer => @valid_post_parameter}
         expect(assigns(:analyzer)).to eq(@azr)
       end
 
       it "redirects to the analyzer" do
-        put :update, {:id => @azr.to_param, :analyzer => @valid_post_parameter}, valid_session
+        put :update, params: {:id => @azr.to_param, :analyzer => @valid_post_parameter}
         expect(response).to redirect_to(@azr)
       end
     end
@@ -235,13 +228,13 @@ describe AnalyzersController do
 
       it "assigns the analyzer as @analyzer" do
         allow_any_instance_of(Analyzer).to receive(:update_attributes).and_return(false)
-        put :update, {:id => @azr.to_param, :analyzer => {}}, valid_session
+        put :update, params: {:id => @azr.to_param, :analyzer => {}}
         expect(assigns(:analyzer)).to eq(@azr)
       end
 
       it "re-renders the 'edit' template" do
         allow_any_instance_of(Analyzer).to receive(:update_attributes).and_return(false)
-        put :update, {:id => @azr.to_param, :analyzer => {}}, valid_session
+        put :update, params: {:id => @azr.to_param, :analyzer => {}}
         expect(response).to render_template("edit")
       end
     end
@@ -267,7 +260,7 @@ describe AnalyzersController do
         invalid_analyzer_params = @valid_post_parameter[:analyzer].update(admin_flg: 1)
         invalid_params = @valid_post_parameter
         invalid_params[:analyzer] = invalid_analyzer_params
-        post :update, invalid_params, valid_session
+        post :update, params: invalid_params
         anz = assigns(:analyzer)
         expect(anz.try(:admin_flg)).not_to eq 1
       end
@@ -278,19 +271,19 @@ describe AnalyzersController do
   describe "DELETE 'destroy'" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
       @azr = @sim.analyzers.first
     end
 
     it "reduces the number of analyzers in default scope" do
       expect {
-        delete :destroy, {id: @azr.to_param, format: 'json'}, valid_session
+        delete :destroy, params: {id: @azr.to_param, format: 'json'}
       }.to change { @sim.reload.analyzers.count }.by(-1)
     end
 
     it "does not destroy the analyzer" do
       expect {
-        delete :destroy, {id: @azr.to_param, format: 'json'}, valid_session
+        delete :destroy, params: {id: @azr.to_param, format: 'json'}
       }.to_not change { @sim.reload.analyzers.unscoped.count }
     end
   end
@@ -298,13 +291,13 @@ describe AnalyzersController do
   describe "GET '_parameters_form'" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count:0, runs_count:0, analyzers_count:2)
       @azr = @sim.analyzers.first
     end
 
     it "returns http success" do
-      get '_parameters_form', {id: @azr.id}
+      get '_parameters_form', params: {id: @azr.id}
       expect(response).to be_success
     end
   end
@@ -312,21 +305,21 @@ describe AnalyzersController do
   describe "GET _host_parameters_field" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
+      @host = FactoryBot.create(:host_with_parameters)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0, analyzers_count: 1)
       @azr = @sim.analyzers.first
       @azr.executable_on.push(@host)
     end
 
     it "returns http success" do
       valid_param = {id: @azr.to_param, host_id: @host.to_param}
-      get :_host_parameters_field, valid_param, valid_session
+      get :_host_parameters_field, params: valid_param
       expect(response).to be_success
     end
 
     it "returns http success even if host_id is not found" do
       param = {id: @azr.to_param, host_id: "DO_NOT_EXIST"}
-      get :_host_parameters_field, param, valid_session
+      get :_host_parameters_field, params: param
       expect(response).to be_success
     end
   end
@@ -334,8 +327,8 @@ describe AnalyzersController do
   describe "GET _default_mpi_omp" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator,
+      @host = FactoryBot.create(:host_with_parameters)
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 0, analyzers_count: 1)
       @azr = @sim.analyzers.first
       @azr.executable_on.push(@host)
@@ -343,13 +336,13 @@ describe AnalyzersController do
 
     it "returns http success" do
       valid_param = {id: @azr.to_param, host_id: @host.to_param}
-      get :_default_mpi_omp, valid_param, valid_session
+      get :_default_mpi_omp, params: valid_param
       expect(response).to be_success
     end
 
     it "does not cause an error even when host is not found" do
       param = {id: @azr.to_param, host_id: 'DO_NOT_EXIST'}
-      get :_default_mpi_omp, param, valid_session
+      get :_default_mpi_omp, params: param
       expect(response).to be_success
     end
 
@@ -362,7 +355,7 @@ describe AnalyzersController do
 
       it "returns mpi_procs and omp_threads in json" do
         valid_param = {id: @azr.to_param, host_id: @host.to_param}
-        get :_default_mpi_omp, valid_param, valid_session
+        get :_default_mpi_omp, params: valid_param
         expect(response.header['Content-Type']).to include 'application/json'
         parsed = JSON.parse(response.body)
         expect(parsed).to eq ({'mpi_procs' => 8, 'omp_threads' => 4})
@@ -378,7 +371,7 @@ describe AnalyzersController do
 
       it "returns mpi_procs and omp_threads in json" do
         valid_param = {id: @azr.to_param, host_id: @host.to_param}
-        get :_default_mpi_omp, valid_param, valid_session
+        get :_default_mpi_omp, params: valid_param
         expect(response.header['Content-Type']).to include 'application/json'
         parsed = JSON.parse(response.body)
         expect(parsed).to eq ({'mpi_procs' => 1, 'omp_threads' => 1})

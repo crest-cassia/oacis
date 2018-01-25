@@ -16,7 +16,7 @@ describe Simulator do
   describe "default_scope" do
 
     before(:each) do
-      FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 0)
+      FactoryBot.create(:simulator, parameter_sets_count: 0, analyzers_count: 0)
     end
 
     it "ignores Simulator of to_be_destroyed=true by default" do
@@ -48,7 +48,7 @@ describe Simulator do
     end
 
     it "is editable after a parameter set is created" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       sim.name = "AnotherSimulator"
       expect(sim).to be_valid
     end
@@ -127,11 +127,11 @@ describe Simulator do
   describe "'position' field" do
 
     before(:each) do
-      FactoryGirl.create_list(:simulator, 2)
+      FactoryBot.create_list(:simulator, 2)
     end
 
     it "the largest number within existing simulators is assigned when created" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0, analyzers_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 0, analyzers_count: 0)
       expect(sim.position).to eq 2
       expect(Simulator.all.map(&:position)).to match_array([0,1,2])
     end
@@ -140,7 +140,7 @@ describe Simulator do
   describe ".find_by_name" do
 
     it "returns the simulator with the given name" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
       found = Simulator.find_by_name(sim.name)
       expect(sim).to eq found
     end
@@ -155,7 +155,7 @@ describe Simulator do
   describe "#find_parameter_set" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
     end
 
     it "returns PS with the given parameters" do
@@ -203,7 +203,7 @@ describe Simulator do
   describe "#find_or_create_parameter_set" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
     end
 
     it "returns PS if there exists a PS with given parameters" do
@@ -243,13 +243,13 @@ describe Simulator do
   describe "#default_parameters" do
 
     it "returns default parameters" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
       expected = {"L" => 50, "T" => 1.0}
       expect( sim.default_parameters ).to eq expected
     end
 
     it "returns hash which is accessible also with symbol" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
       expect( sim.default_parameters[:L] ).to_not be_nil
       expect( sim.default_parameters[:T] ).to_not be_nil
     end
@@ -258,14 +258,14 @@ describe Simulator do
   describe "#find_analyzer_by_name" do
 
     it "returns the analyzer of the given name" do
-      sim = FactoryGirl.create(:simulator, analyzers_count: 2)
+      sim = FactoryBot.create(:simulator, analyzers_count: 2)
       azr = sim.analyzers.first
       found = sim.find_analyzer_by_name( azr.name )
       expect(found).to eq azr
     end
 
     it "raises an exception when the analyzer is not found" do
-      sim = FactoryGirl.create(:simulator, analyzers_count: 0)
+      sim = FactoryBot.create(:simulator, analyzers_count: 0)
       expect {
         azr = sim.find_analyzer_by_name("do_not_exist")
       }.to raise_error("Analyzer do_not_exist is not found")
@@ -275,7 +275,7 @@ describe Simulator do
   describe "#discard" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator)
+      @sim = FactoryBot.create(:simulator)
     end
 
     it "updates 'to_be_destroyed' to true" do
@@ -293,7 +293,7 @@ describe Simulator do
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 1, run_analysis: true,
@@ -325,7 +325,7 @@ describe Simulator do
 
   describe "#destroyable?" do
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 1, run_analysis: true,
@@ -353,7 +353,7 @@ describe Simulator do
   describe "#destroy" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 1
@@ -389,7 +389,7 @@ describe Simulator do
   describe "#dir" do
 
     it "returns the result directory of the simulator" do
-      sim = FactoryGirl.create(:simulator, :parameter_sets_count => 0, :runs_count => 0, :parameter_set_queries_count => 0)
+      sim = FactoryBot.create(:simulator, :parameter_sets_count => 0, :runs_count => 0, :parameter_set_queries_count => 0)
       expect(sim.dir).to eq(ResultDirectory.simulator_path(sim))
     end
   end
@@ -397,16 +397,16 @@ describe Simulator do
   describe "#analyzers_on_run" do
 
     it "returns analyzers whose type is :on_run" do
-      sim = FactoryGirl.create(:simulator, 
+      sim = FactoryBot.create(:simulator, 
                                parameter_sets_count: 0,
                                runs_count: 0,
                                analyzers_count: 0,
                                parameter_set_queries_count:0
                                )
-      FactoryGirl.create_list(:analyzer, 5,
+      FactoryBot.create_list(:analyzer, 5,
                               type: :on_run,
                               simulator: sim)
-      FactoryGirl.create_list(:analyzer, 5,
+      FactoryBot.create_list(:analyzer, 5,
                               type: :on_parameter_set,
                               simulator: sim)
 
@@ -419,16 +419,16 @@ describe Simulator do
   describe "#analyzers_on_parameter_set" do
 
     it "returns analyzers whose type is :on_parameter_set" do
-      sim = FactoryGirl.create(:simulator,
+      sim = FactoryBot.create(:simulator,
                                parameter_sets_count: 0,
                                runs_count: 0,
                                analyzers_count: 0,
                                parameter_set_queries_count:0
                                )
-      FactoryGirl.create_list(:analyzer, 1,
+      FactoryBot.create_list(:analyzer, 1,
                               type: :on_run,
                               simulator: sim)
-      FactoryGirl.create_list(:analyzer, 2,
+      FactoryBot.create_list(:analyzer, 2,
                               type: :on_parameter_set,
                               simulator: sim)
 
@@ -441,7 +441,7 @@ describe Simulator do
   describe "#plottable" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                parameter_sets_count: 1,
                                runs_count: 1,
                                analyzers_count: 1,
@@ -470,7 +470,7 @@ describe Simulator do
   describe "#plottable_domains" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                parameter_sets_count: 1,
                                runs_count: 2,
                                analyzers_count: 1,
@@ -515,10 +515,10 @@ describe Simulator do
         ParameterDefinition.new({ key: "T", type: "Float", default: 1.0}),
         ParameterDefinition.new({ key: "S", type: "String", default: 'xxx'})
       ]
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_definitions: parameter_definitions,
                                 parameter_sets_count: 0)
-      create_ps = lambda {|h| FactoryGirl.create(:parameter_set, {simulator: @sim}.merge(h)) }
+      create_ps = lambda {|h| FactoryBot.create(:parameter_set, {simulator: @sim}.merge(h)) }
       create_ps.call(v: {"L" => 1, "T" => 1.0})
       create_ps.call(v: {"L" => 2, "T" => 1.0})
       create_ps.call(v: {"L" => 3, "T" => 1.0})
@@ -543,10 +543,10 @@ describe Simulator do
         ParameterDefinition.new({ key: "T", type: "Float", default: 1.0}),
         ParameterDefinition.new({ key: "S", type: "String", default: "xxx"})
       ]
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_definitions: parameter_definitions,
                                 parameter_sets_count: 0)
-      create_ps = lambda {|h| FactoryGirl.create(:parameter_set, {simulator: @sim}.merge(h)) }
+      create_ps = lambda {|h| FactoryBot.create(:parameter_set, {simulator: @sim}.merge(h)) }
       create_ps.call( v: {"L" => 1, "T" => 1.0}, runs_count: 2, finished_runs_count: 3)
       create_ps.call( v: {"L" => 2, "T" => 1.0}, runs_count: 2, finished_runs_count: 3)
       create_ps.call( v: {"L" => 3, "T" => 1.0}, runs_count: 2, finished_runs_count: 3)
@@ -599,7 +599,7 @@ describe Simulator do
   describe "#simulator_versions" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 1, finished_runs_count: 5)
       runs = @sim.runs.in(status: [:finished, :failed]).asc(:id)
 
@@ -655,7 +655,7 @@ describe Simulator do
   describe "#figure_files" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 1,
@@ -697,11 +697,11 @@ describe Simulator do
   describe "get_default_host_parameter" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 0
                                )
-      @host = FactoryGirl.create(:host_with_parameters)
+      @host = FactoryBot.create(:host_with_parameters)
       @sim.executable_on.destroy
       @sim.executable_on << @host
     end

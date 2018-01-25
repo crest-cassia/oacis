@@ -15,7 +15,7 @@ describe OacisCli do
   describe "#show_host" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host)
+      @host = FactoryBot.create(:host)
     end
 
     it "prints host information in json" do
