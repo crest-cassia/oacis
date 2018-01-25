@@ -2,14 +2,10 @@ class Host
   include Mongoid::Document
   include Mongoid::Timestamps
   field :name, type: String
-  field :hostname, type: String
 
   HOST_STATUS = [:enabled, :disabled]
 
   field :status, type: Symbol, default: HOST_STATUS[0]
-  field :user, type: String
-  field :port, type: Integer, default: 22
-  field :ssh_key, type: String, default: '~/.ssh/id_rsa'
   field :work_base_dir, type: String, default: '~'
   field :mounted_work_base_dir, type: String, default: ""
   field :max_num_jobs, type: Integer, default: 1
@@ -27,12 +23,6 @@ class Host
   has_and_belongs_to_many :host_groups
 
   validates :name, presence: true, uniqueness: true, length: {minimum: 1}
-  validates :hostname, presence: true, format: {with: /\A(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?\z/}
-  # See http://stackoverflow.com/questions/1418423/the-hostname-regex for the regexp of the hsotname
-
-  validates :user, presence: true, format: {with: /\A[A-Za-z0-9. _-]+\z/}
-
-  validates :port, numericality: {greater_than_or_equal_to: 1, less_than: 65536}
   validates :max_num_jobs, numericality: {greater_than_or_equal_to: 0}
   validates :polling_interval, numericality: {greater_than_or_equal_to: 5}
   validates :min_mpi_procs, numericality: {greater_than_or_equal_to: 1}
@@ -138,7 +128,7 @@ class Host
       yield @ssh
     else
       ssh_logger.debug("starting SSH: " + self.inspect ) if ssh_logger
-      Net::SSH.start(hostname, user, password: "", timeout: 1, keys: ssh_key, port: port, non_interactive: true, logger: ssh_logger) do |ssh|
+      Net::SSH.start(name, nil, password: nil, timeout: 1, non_interactive: true, logger: ssh_logger) do |ssh|
         @ssh = ssh
         begin
           yield ssh
