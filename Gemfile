@@ -8,7 +8,7 @@ gem "net-sftp"
 gem "jbuilder"
 
 # assets
-gem "sprockets", '3.6.3'
+gem "sprockets"
 gem 'record_tag_helper', '~> 1.0'
   # fix version of sprockets to prevent deprecation warning.
   # should be updated after less-rails fixed issue https://github.com/metaskills/less-rails/issues/122
