@@ -94,7 +94,7 @@ describe JobIncluder do
       it_behaves_like "included correctly"
 
       it "call SSHUtil.download" do
-        expect(SSHUtil).to receive(:download).and_call_original
+        expect(SSHUtil).to receive(:download_directory).and_call_original
         include_job
       end
 

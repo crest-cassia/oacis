@@ -81,7 +81,7 @@ module JobIncluder
   def self.download_remote_file(host, submittable, ssh)
     archive = RemoteFilePath.result_file_path(host, submittable)
     base = File.basename(archive)
-    SSHUtil.download(ssh, archive, submittable.dir.join('..', base))
+    SSHUtil.download_file(host.name, archive, submittable.dir.join('..', base))
 
     download_scheduler_logs(host, submittable, ssh)
   end
@@ -107,7 +107,7 @@ module JobIncluder
 
   def self.download_work_dir_if_exists(host, submittable, ssh)
     work_dir = RemoteFilePath.work_dir_path(host, submittable)
-    SSHUtil.download_recursive_if_exist(ssh, work_dir, submittable.dir)
+    SSHUtil.download_recursive_if_exist(ssh, host.name, work_dir, submittable.dir)
     download_scheduler_logs(host, submittable, ssh)
   end
 
@@ -115,7 +115,7 @@ module JobIncluder
     #include scheduler logs
     logs = RemoteFilePath.scheduler_log_file_paths(host, submittable)
     logs.each do |path|
-      SSHUtil.download_recursive_if_exist(ssh, path, submittable.dir.join(path.basename))
+      SSHUtil.download_recursive_if_exist(ssh, host.name, path, submittable.dir.join(path.basename))
     end
   end
 
