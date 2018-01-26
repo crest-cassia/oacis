@@ -13,8 +13,7 @@ module SSHUtil
   end
 
   def self.download_recursive_if_exist(ssh, hostname, remote_path, local_path)
-    rpath = expand_remote_home_path(ssh, remote_path)
-    s = stat(ssh, rpath)
+    s = stat(ssh, remote_path)
     if s == :directory
       download_directory(hostname, remote_path, local_path)
     elsif s == :file
@@ -34,8 +33,7 @@ module SSHUtil
 
   def self.rm_r(ssh, remote_paths)
     remote_paths = [remote_paths] unless remote_paths.is_a?(Array)
-    rpaths = remote_paths.to_a.map {|rpath| expand_remote_home_path(ssh,rpath) }
-    ssh.exec!("rm -rf #{rpaths.join(' ')}")
+    ssh.exec!("rm -rf #{remote_paths.join(' ')}")
   end
 
   def self.uname(ssh)
@@ -113,18 +111,5 @@ module SSHUtil
 
   def self.directory?(ssh, remote_path)
     stat(ssh, remote_path) == :directory
-  end
-
-  private
-  # Net::SSH and Net::SFTP can't interpret '~' as a home directory
-  # a relative path is recognized as a relative path from home directory
-  # so replace '~' with '.' in this method
-  def self.expand_remote_home_path(ssh, path)
-    home = ssh.instance_variable_get(:@home_dir_cache)
-    unless home
-      home = ssh.exec!("echo $HOME").chomp
-      ssh.instance_variable_set(:@home_dir_cache, home)
-    end
-    Pathname.new( path.to_s.sub(/^~/, home) )
   end
 end
