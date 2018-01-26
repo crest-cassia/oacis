@@ -28,13 +28,13 @@ READMEに書いてある通りにセットアップして、`run.sh`というス
 
 ## 手順
 
-. Host登録
-. Simulator登録
-. ParameterSet登録
-. ジョブ投入
-. 実行中のジョブの確認
-. 結果の確認
-. パラメータスイープ
+1. Host登録
+1. Simulator登録
+1. ParameterSet登録
+1. ジョブ投入
+1. 実行中のジョブの確認
+1. 結果の確認
+1. パラメータスイープ
 
 **Docker環境の場合はSimulator登録まで完了しています。"ParameterSet登録"から始めてください。**
 
