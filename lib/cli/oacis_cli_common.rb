@@ -36,7 +36,7 @@ EOS
     required: true
   def show_host
     hosts = Host.all.map do |host|
-      {id: host.id.to_s, name: host.name, hostname: host.hostname, user: host.user}
+      {id: host.id.to_s, name: host.name}
     end
     File.open(options[:output], 'w') {|io|
       io.puts JSON.pretty_generate(hosts)

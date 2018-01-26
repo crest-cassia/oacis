@@ -7,10 +7,6 @@ describe Host do
     before(:each) do
       @valid_attr = {
         name: "nameABC",
-        hostname: "localhost",
-        user: ENV['USER'],
-        port: 22,
-        ssh_key: '~/.ssh/id_rsa',
         work_base_dir: '~/__cm_work__',
         status: :enabled
       }
@@ -32,50 +28,6 @@ describe Host do
     it "'name' must not be an empty string" do
       @valid_attr.update(name: '')
       expect(Host.new(@valid_attr)).not_to be_valid
-    end
-
-    it "'hostname' must be present" do
-      @valid_attr.delete(:hostname)
-      expect(Host.new(@valid_attr)).not_to be_valid
-    end
-
-    it "'hostname' must conform to a format of hostname" do
-      @valid_attr.update(hostname: 'hostname;')
-      expect(Host.new(@valid_attr)).not_to be_valid
-      @valid_attr.update(hostname: 'xn--bcher-kva.ch.')
-      expect(Host.new(@valid_attr)).to be_valid
-    end
-
-    it "'user' must be present" do
-      @valid_attr.delete(:user)
-      expect(Host.new(@valid_attr)).not_to be_valid
-    end
-
-    it "format of the 'user' must be valid" do
-      @valid_attr.update(user: 'user-XYZ')
-      expect(Host.new(@valid_attr)).to be_valid
-      @valid_attr.update(user: 'user;XYZ')
-      expect(Host.new(@valid_attr)).not_to be_valid
-    end
-
-    it "'user' can include '.'" do
-      @valid_attr.update(user: 'user.XYZ')
-      expect(Host.new(@valid_attr)).to be_valid
-    end
-
-    it "default of 'port' is 22" do
-      @valid_attr.delete(:port)
-      expect(Host.new(@valid_attr).port).to eq(22)
-    end
-
-    it "'port' must be between 1..65535" do
-      @valid_attr.update(port: 'abc')  # => casted to 0
-      expect(Host.new(@valid_attr)).not_to be_valid
-    end
-
-    it "default of 'ssh_key' is '~/.ssh/id_rsa'" do
-      @valid_attr.delete(:ssh_key)
-      expect(Host.new(@valid_attr).ssh_key).to eq('~/.ssh/id_rsa')
     end
 
     it "default of 'work_base_dir' is '~'" do
@@ -213,20 +165,9 @@ describe Host do
       expect(@host.connected?).to be_truthy
     end
 
-    it "returns false when hostname is invalid" do
-      @host.hostname = "INVALID_HOSTNAME"
+    it "returns false when name is invalid" do
+      @host.name = "INVALID_NAME"
       expect(@host.connected?).to be_falsey
-    end
-
-    it "returns false when user name is not correct" do
-      @host.user = "NOT_EXISTING_USER"
-      expect(@host.connected?).to be_falsey
-    end
-
-    it "exception is stored into connection_error variable" do
-      @host.hostname = "INVALID_HOSTNAME"
-      @host.connected?
-      expect(@host.connection_error).to be_a(SocketError)
     end
   end
 
@@ -410,7 +351,7 @@ describe Host do
       allow_any_instance_of(Host).to receive(:get_host_parameters) do
         []
       end
-      expect(Host.create!(name: 'h1', hostname: 'localhost', user: 'foo').position).to eq 2
+      expect(Host.create!(name: 'h1').position).to eq 2
       expect(Host.all.map(&:position)).to match_array([0,1,2])
     end
   end

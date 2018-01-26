@@ -7,9 +7,7 @@ describe HostsController do
   # update the return value of this method accordingly.
   def valid_attributes
     {
-      name: "nameABC",
-      hostname: "localhost",
-      user: ENV['USER']
+      name: "localhost"
     }
   end
 
@@ -132,9 +130,10 @@ describe HostsController do
   describe "PUT update" do
     describe "with valid params" do
       it "updates the requested host" do
-        host = Host.create! valid_attributes
-        put :update, params: {id: host.to_param, host: {name: 'XYZ'}}
-        expect(host.reload.name).to eq('XYZ')
+        host = FactoryBot.create(:host)
+        expect(host.reload.name).to_not eq('localhost')
+        put :update, params: {id: host.to_param, host: {name: 'localhost'}}
+        expect(host.reload.name).to eq('localhost')
       end
 
       it "assigns the requested host as @host" do

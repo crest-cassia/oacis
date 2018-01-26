@@ -6,25 +6,9 @@
     .col-md-3
       = f.text_field(:name, class: 'form-control')
   .form-group
-    = f.label(:hostname, class: 'col-md-2 control-label')
-    .col-md-3
-      = f.text_field(:hostname, class: 'form-control')
-  .form-group
     = f.label(:status, 'Polling Status', class: 'col-md-2 control-label')
     .col-md-3
       = f.select(:status, Host::HOST_STATUS, {}, {class: 'form-control'})
-  .form-group
-    = f.label(:user, class: 'col-md-2 control-label')
-    .col-md-3
-      = f.text_field(:user, class: 'form-control')
-  .form-group
-    = f.label(:port, class: 'col-md-2 control-label')
-    .col-md-3
-      = f.number_field(:port, class: 'form-control')
-  .form-group
-    = f.label(:ssh_key, class: 'col-md-2 control-label')
-    .col-md-3
-      = f.text_field(:ssh_key, class: 'form-control')
   .form-group
     = f.label(:work_base_dir, class: 'col-md-2 control-label')
     .col-md-3

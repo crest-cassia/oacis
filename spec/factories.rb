@@ -182,12 +182,10 @@ FactoryBot.define do
       def host.get_host_parameters; []; end
     end
     sequence(:name, 'A') {|n| "Host_#{n}"}
-    sequence(:hostname, 'A') {|n| "hostname.#{n}"}
     min_mpi_procs 1
     max_mpi_procs 8
     min_omp_threads 1
     max_omp_threads 8
-    user "login_user"
 
     factory :host_with_parameters do
       host_parameter_definitions {
@@ -209,11 +207,9 @@ FactoryBot.define do
   # :localhost needs ssh connection and xsub
   factory :localhost, class: Host do
     name "localhost"
-    hostname { `hostname`.chomp }
     min_mpi_procs 1
     max_mpi_procs 8
     min_omp_threads 1
     max_omp_threads 8
-    user {ENV['USER']}
   end
 end

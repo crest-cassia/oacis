@@ -109,11 +109,7 @@ class HostsController < ApplicationController
   def permitted_host_params
     params[:host].present? ? params.require(:host)
                                    .permit(:name,
-                                           :hostname,
                                            :status,
-                                           :user,
-                                           :port,
-                                           :ssh_key,
                                            :work_base_dir,
                                            :mounted_work_base_dir,
                                            :max_num_jobs,
