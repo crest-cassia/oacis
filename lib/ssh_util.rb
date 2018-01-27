@@ -94,7 +94,7 @@ module SSHUtil
   end
 
   def self.stat(ssh, remote_path)
-    out = execute(ssh, "{test -d #{remote_path} && echo d} || {test -f #{remote_path} && echo f}")
+    out = execute(ssh, "{ test -d #{remote_path} && echo d; } || { test -f #{remote_path} && echo f; }")
     if out.chomp == 'd'
       :directory
     elsif out.chomp == 'f'
