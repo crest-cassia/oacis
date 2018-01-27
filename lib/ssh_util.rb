@@ -56,8 +56,6 @@ module SSHUtil
     stderr_data = ""
     exit_code = nil
     exit_signal = nil
-    # must close sftp channel, otherwise it hangs
-    ssh.sftp.close_channel unless ssh.sftp.closed?
 
     ssh.open_channel do |channel|
       channel.exec(command) do |ch, success|
