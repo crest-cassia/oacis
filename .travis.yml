@@ -5,6 +5,10 @@ rvm:
 services:
   - mongodb
 sudo: required
+addons:
+  apt:
+    packages:
+    - rsync
 install:
   - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
