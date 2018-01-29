@@ -1,13 +1,14 @@
 module SSHUtil
 
   def self.download_file(hostname, remote_path, local_path)
-    cmd = "rsync -aq #{hostname}:#{remote_path} #{local_path} 2> /dev/null"
+    cmd = "scp -Bqr '#{hostname}:#{remote_path}' #{local_path} 2> /dev/null"
     system(cmd)
     raise "'#{cmd}' failed : #{$?.to_i}" unless $?.to_i == 0
   end
 
   def self.download_directory(hostname, remote_path, local_path)
-    cmd = "rsync -aq #{hostname}:#{remote_path}/ #{local_path} 2> /dev/null"
+    FileUtils.mkdir_p(local_path)
+    cmd = "scp -Bqr '#{hostname}:#{remote_path}/*' #{local_path} 2> /dev/null"
     system(cmd)
     raise "'#{cmd}' failed : #{$?.to_i}" unless $?.to_i == 0
   end
@@ -23,9 +24,9 @@ module SSHUtil
   end
 
   def self.upload(hostname, local_path, remote_path)
-    cmd = "rsync -aq #{local_path} #{hostname}:#{remote_path}"
+    cmd = "scp -Bqr #{local_path} '#{hostname}:#{remote_path}'"
     if File.directory?(local_path)
-      cmd = "rsync -aq #{local_path}/ #{hostname}:#{remote_path}"
+      cmd = "scp -Bqr #{local_path}/ '#{hostname}:#{remote_path}'"
     end
     system(cmd)
     raise "'#{cmd}' failed : #{$?.to_i}" unless $?.to_i == 0

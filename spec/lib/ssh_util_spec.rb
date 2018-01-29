@@ -55,10 +55,11 @@ describe SSHUtil do
       FileUtils.touch(remote_path)
 
       local_path = @temp_dir.join('local')
+      FileUtils.touch(local_path)
       expect {
         SSHUtil.download_directory(@hostname, remote_path, local_path)
-      }.to raise_error(/failed/)
-      expect(File.exist?(local_path)).to be_falsey
+      }.to raise_error(/File exists/)
+      expect(File.directory?(local_path)).to be_falsey
     end
   end
 
