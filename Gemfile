@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
 
-gem 'rails', '~> 5.0.0'
+gem 'rails', '~> 5.1.0'
 gem "puma"
-gem "mongoid", ' ~> 6.1.0'
+gem "mongoid", ' ~> 6.3.0'
 gem "net-ssh"
 gem "jbuilder"
 
