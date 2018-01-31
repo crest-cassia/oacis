@@ -4,7 +4,6 @@ gem 'rails', '~> 5.1.0'
 gem "puma"
 gem "mongoid", ' ~> 6.3.0'
 gem "net-ssh"
-gem "net-sftp"
 gem "jbuilder"
 
 # assets

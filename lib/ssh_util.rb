@@ -1,46 +1,40 @@
 module SSHUtil
 
-  def self.download(ssh, remote_path, local_path)
-    rpath = expand_remote_home_path(ssh, remote_path)
-    sftp = ssh.sftp
-    sftp.connect! if sftp.closed?
-    sftp.download!(rpath, local_path.to_s) # .to_s is necessary for Ruby2.1.0. See https://github.com/crest-cassia/cassia/pull/124
+  def self.download_file(hostname, remote_path, local_path)
+    cmd = "scp -Bqr '#{hostname}:#{remote_path}' #{local_path} 2> /dev/null"
+    system(cmd)
+    raise "'#{cmd}' failed : #{$?.to_i}" unless $?.to_i == 0
   end
 
-  def self.download_recursive(ssh, remote_path, local_path)
-    rpath = expand_remote_home_path(ssh, remote_path)
-    is_dir = directory?(ssh, rpath)
-    sftp = ssh.sftp
-    sftp.connect! if sftp.closed?
-    sftp.download!(rpath, local_path.to_s, {recursive: is_dir}) # .to_s is necessary for Ruby2.1.0. See https://github.com/crest-cassia/cassia/pull/124
+  def self.download_directory(hostname, remote_path, local_path)
+    FileUtils.mkdir_p(local_path)
+    cmd = "scp -Bqr '#{hostname}:#{remote_path}/*' #{local_path} 2> /dev/null"
+    system(cmd)
+    raise "'#{cmd}' failed : #{$?.to_i}" unless $?.to_i == 0
   end
 
-  def self.download_recursive_if_exist(ssh, remote_path, local_path)
-    rpath = expand_remote_home_path(ssh, remote_path)
-    s = stat(ssh, rpath)
-    if s
-      sftp = ssh.sftp
-      sftp.connect! if sftp.closed?
-      sftp.download!(rpath, local_path.to_s, {recursive: (s==:directory)})
+  def self.download_recursive_if_exist(ssh, hostname, remote_path, local_path)
+    s = stat(ssh, remote_path)
+    if s == :directory
+      download_directory(hostname, remote_path, local_path)
+    elsif s == :file
+      download_file(hostname, remote_path, local_path)
     end
+    s
   end
 
-  def self.upload(ssh, local_path, remote_path)
-    rpath = expand_remote_home_path(ssh, remote_path)
-    is_dir = File.directory?(local_path)
-    sftp = ssh.sftp
-    sftp.connect! if sftp.closed?
-    if is_dir
-      sftp.upload!(local_path.to_s, rpath, mkdir: true)
-    else
-      sftp.upload!(local_path.to_s, rpath.to_s)
+  def self.upload(hostname, local_path, remote_path)
+    cmd = "scp -Bqr #{local_path} '#{hostname}:#{remote_path}'"
+    if File.directory?(local_path)
+      cmd = "scp -Bqr #{local_path}/ '#{hostname}:#{remote_path}'"
     end
+    system(cmd)
+    raise "'#{cmd}' failed : #{$?.to_i}" unless $?.to_i == 0
   end
 
   def self.rm_r(ssh, remote_paths)
     remote_paths = [remote_paths] unless remote_paths.is_a?(Array)
-    rpaths = remote_paths.to_a.map {|rpath| expand_remote_home_path(ssh,rpath) }
-    ssh.exec!("rm -rf #{rpaths.join(' ')}")
+    ssh.exec!("rm -rf #{remote_paths.join(' ')}")
   end
 
   def self.uname(ssh)
@@ -63,8 +57,6 @@ module SSHUtil
     stderr_data = ""
     exit_code = nil
     exit_signal = nil
-    # must close sftp channel, otherwise it hangs
-    ssh.sftp.close_channel unless ssh.sftp.closed?
 
     ssh.open_channel do |channel|
       channel.exec(command) do |ch, success|
@@ -92,29 +84,23 @@ module SSHUtil
     [stdout_data, stderr_data, exit_code, exit_signal]
   end
 
-  def self.write_remote_file(ssh, remote_path, content)
-    rpath = expand_remote_home_path(ssh, remote_path)
-    sftp = ssh.sftp
-    sftp.connect! if sftp.closed?
-    sftp.file.open(rpath, 'w') {|f|
-      f.print content.gsub(/(\r\n|\r|\n)/, "\n")
-    }
+  def self.write_remote_file(hostname, remote_path, content)
+    Tempfile.create("") do |f|
+      f.print(content)
+      f.flush
+      upload(hostname, f.path, remote_path)
+    end
   end
 
   def self.stat(ssh, remote_path)
-    rpath = expand_remote_home_path(ssh, remote_path)
-    begin
-      sftp = ssh.sftp
-      sftp.connect! if sftp.closed?
-      sftp.stat!(rpath) do |response|
-        if response.ok?
-          return (response[:attrs].directory? ? :directory : :file)
-        end
-      end
-    rescue Net::SFTP::StatusException => ex
-      raise ex unless ex.code == 2  # no such file
+    out = execute(ssh, "{ test -d #{remote_path} && echo d; } || { test -f #{remote_path} && echo f; }")
+    if out.chomp == 'd'
+      :directory
+    elsif out.chomp == 'f'
+      :file
+    else
+      nil
     end
-    return nil
   end
 
   def self.exist?(ssh, remote_path)
@@ -124,18 +110,5 @@ module SSHUtil
 
   def self.directory?(ssh, remote_path)
     stat(ssh, remote_path) == :directory
-  end
-
-  private
-  # Net::SSH and Net::SFTP can't interpret '~' as a home directory
-  # a relative path is recognized as a relative path from home directory
-  # so replace '~' with '.' in this method
-  def self.expand_remote_home_path(ssh, path)
-    home = ssh.instance_variable_get(:@home_dir_cache)
-    unless home
-      home = ssh.exec!("echo $HOME").chomp
-      ssh.instance_variable_set(:@home_dir_cache, home)
-    end
-    Pathname.new( path.to_s.sub(/^~/, home) )
   end
 end

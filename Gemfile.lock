@@ -134,8 +134,6 @@ GEM
       mongo (>= 2.5.0, < 3.0.0)
     msgpack (1.0.3)
     multi_json (1.13.1)
-    net-sftp (2.1.2)
-      net-ssh (>= 2.6.5)
     net-ssh (4.2.0)
     nio4r (2.2.0)
     nokogiri (1.8.1)
@@ -273,7 +271,6 @@ DEPENDENCIES
   less-rails
   mongoid (~> 6.3.0)
   msgpack-rpc!
-  net-sftp
   net-ssh
   pry
   pry-byebug
