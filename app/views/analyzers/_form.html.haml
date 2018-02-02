@@ -14,9 +14,9 @@
     = label_tag('', 'Definition of Parameters', class: 'col-md-2 control-label')
     .col-md-10
       = f.fields_for :parameter_definitions do |builder|
-        = render 'simulators/parameter_definition_fields', f: builder, disabled: has_child
+        = render partial: 'executable/parameter_definition_fields', locals: {f: builder, disabled: has_child}
       - unless has_child
-        = link_to_add_fields "Add Parameter", f, :parameter_definitions, 'simulators/parameter_definition_fields'
+        = link_to_add_fields "Add Parameter", f, :parameter_definitions, 'executable/parameter_definition_fields'
   .form-group
     = f.label(:pre_process_script, class: ['col-md-2','control-label'])
     .col-md-6
