@@ -102,7 +102,7 @@ development:
 
   # Configure Mongoid specific options. (optional)
   options:
-    belongs_to_required_by_default: true
+    belongs_to_required_by_default: false
     # Includes the root model name in json serialization. (default: false)
     # include_root_in_json: false
 
