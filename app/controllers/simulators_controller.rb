@@ -193,7 +193,7 @@ class SimulatorsController < ApplicationController
                                                 :support_mpi,
                                                 :sequential_seed,
                                                 :print_version_command,
-                                                parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
+                                                parameter_definitions_attributes: [[:id, :key, :type, :default, :description, :_destroy]],
                                                 executable_on_ids: []
                                                ) : {}
   end
