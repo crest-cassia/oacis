@@ -111,7 +111,7 @@ class AnalyzersController < ApplicationController
               :local_pre_process_script,
               :auto_run_submitted_to,
               :auto_run_host_group,
-              parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
+              parameter_definitions_attributes: [[:id, :key, :type, :default, :description, :_destroy]],
               executable_on_ids: []
              )
     if submitted_to_is_host_group?(azr_params)

@@ -46,7 +46,7 @@ $(document).ready(function () {
 // add/remove nested forms
 $(document).ready( function() {
   $('form').on('click', '.remove_fields', function() {
-    $(this).prev('input[type=hidden]').val('1');
+    $(this).closest('.parameter-definition-field').next('input[type=hidden]').val(true);
     $(this).closest('.parameter-definition-field').remove();
     event.preventDefault();
   });

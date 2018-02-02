@@ -265,6 +265,18 @@ describe AnalyzersController do
         expect(anz.try(:admin_flg)).not_to eq 1
       end
     end
+
+    describe "to remove parameter definitions" do
+
+      it "removes the requested parameter defs" do
+        pdef1=@azr.parameter_definitions.first
+        pdef2=@azr.parameter_definitions.second
+        put :update, params: {:id => @azr.to_param, :analyzer => {'parameter_definitions_attributes' => {0=>{"id"=>pdef1.to_param, "_destroy"=>"true"}, 1=>{"id"=>pdef2.to_param, "_destroy"=>"false", "key"=>pdef2.key, "type"=>pdef2.type, "default"=>pdef2.default, "description"=>pdef2.description}}}}
+        anz = assigns(:analyzer)
+        expect(anz.parameter_definitions.size).to eq 1
+        expect(anz.parameter_definitions.first.to_param).to eq pdef2.to_param
+      end
+    end
   end
 
 

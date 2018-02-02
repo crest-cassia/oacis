@@ -357,6 +357,19 @@ describe SimulatorsController do
         expect(assigns(:simulator).default_omp_threads).not_to include({"host_id"=>54321})
       end
     end
+
+    describe "to remove parameter definitions" do
+
+      it "removes the requested parameter defs" do
+        simulator = Simulator.create! valid_attributes
+        pdef1=simulator.parameter_definitions.first
+        pdef2=simulator.parameter_definitions.second
+        put :update, params: {:id => simulator.to_param, :simulator => {'parameter_definitions_attributes' => {0=>{"id"=>pdef1.to_param, "_destroy"=>"true"}, 1=>{"id"=>pdef2.to_param, "_destroy"=>"false", "key"=>pdef2.key, "type"=>pdef2.type, "default"=>pdef2.default, "description"=>pdef2.description}}}}
+        updated_sim = assigns(:simulator)
+        expect(updated_sim.parameter_definitions.size).to eq 1
+        expect(updated_sim.parameter_definitions.first.to_param).to eq pdef2.to_param
+      end
+    end
   end
 
   describe "DELETE destroy" do

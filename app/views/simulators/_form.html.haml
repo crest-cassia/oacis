@@ -10,7 +10,7 @@
     .col-md-10
       #parameters_form
       = f.fields_for :parameter_definitions do |builder|
-        = render 'parameter_definition_fields', f: builder, disabled: has_ps
+        = render partial: 'executable/parameter_definition_fields', locals: {f: builder, disabled: has_ps}
       #add_field_here
       .form-group.row.no-margin.no-gutter.small-margin-bottom
         .col-md-3
@@ -22,7 +22,7 @@
       .form-group.row.no-margin.no-gutter
         .col-md-8
           = text_area_tag '__dummy__', "Random number seed", rows: 3, disabled: true, class: 'form-control'
-      = link_to_add_fields "Add Parameter", f, :parameter_definitions unless has_ps
+      = link_to_add_fields "Add Parameter", f, :parameter_definitions, 'executable/parameter_definition_fields' unless has_ps
   .form-group
     = f.label(:pre_process_script, class: ['col-md-2','control-label'])
     .col-md-6
