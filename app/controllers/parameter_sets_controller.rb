@@ -1,6 +1,7 @@
 class ParameterSetsController < ApplicationController
 
   def show
+    # show action
     @param_set = ParameterSet.find(params[:id])
     respond_to do |format|
       format.html
