@@ -14,14 +14,16 @@ gem 'record_tag_helper', '~> 1.0'
 gem "haml-rails"
 gem "sass-rails"
 gem 'therubyracer' # necessary to compile less
-gem "less-rails"   # necessary for bootstrap.
-gem 'twitter-bootstrap-rails', ' ~> 3.2.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'jquery-datatables-rails', ' ~> 3.2.0'
 gem "d3-rails", '~> 3.4'
 gem "redcarpet"
 gem 'dynatree-rails'
+gem 'autoprefixer-rails'
+gem 'bootstrap-sass'
+gem 'bootswatch-rails'
+gem 'font-awesome-rails'
 
 # for workers
 gem 'daemon-spawn', :require => 'daemon_spawn'
