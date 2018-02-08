@@ -14,7 +14,6 @@ gem 'record_tag_helper', '~> 1.0'
 gem "haml-rails"
 gem "sass-rails"
 gem 'therubyracer' # necessary to compile less
-gem 'twitter-bootstrap-rails', ' ~> 3.2.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'jquery-datatables-rails', ' ~> 3.2.0'
