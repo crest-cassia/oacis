@@ -60,6 +60,7 @@ GEM
     ci_reporter (1.9.3)
       builder (>= 2.1.2)
     coderay (1.1.2)
+    commonjs (0.2.7)
     concurrent-ruby (1.0.5)
     cool.io (1.4.6)
     crass (1.0.3)
@@ -85,6 +86,7 @@ GEM
       railties (>= 3.2, < 5.2)
     globalid (0.4.1)
       activesupport (>= 4.2.0)
+    grease (0.3.1)
     haml (5.0.4)
       temple (>= 0.8.0)
       tilt
@@ -116,6 +118,14 @@ GEM
     jquery-ui-rails (6.0.1)
       railties (>= 3.2.16)
     json (2.1.0)
+    less (2.6.0)
+      commonjs (~> 0.2.7)
+    less-rails (3.0.0)
+      actionpack (>= 4.0)
+      grease
+      less (~> 2.6.0)
+      sprockets (> 2, < 4)
+      tilt
     libv8 (3.16.14.19)
     loofah (2.1.1)
       crass (~> 1.0.2)
@@ -240,6 +250,11 @@ GEM
     thor (0.20.0)
     thread_safe (0.3.6)
     tilt (2.0.8)
+    twitter-bootstrap-rails (3.2.2)
+      actionpack (>= 3.1)
+      execjs (>= 2.2.2, >= 2.2)
+      less-rails (>= 2.5.0)
+      railties (>= 3.1)
     tzinfo (1.2.4)
       thread_safe (~> 0.1)
     websocket-driver (0.6.5)
@@ -286,6 +301,7 @@ DEPENDENCIES
   stackprof
   sys-filesystem
   therubyracer
+  twitter-bootstrap-rails (~> 3.2.0)
 
 BUNDLED WITH
    1.16.1
