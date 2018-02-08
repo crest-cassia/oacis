@@ -265,7 +265,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  autoprefixer-rails
   bootstrap-sass
   bootswatch-rails
   ci_reporter (~> 1.9)
