@@ -193,7 +193,7 @@ The following is the list of items we set when registering an analyzer.
 |:---------------------------|:--------------------------------------------------------------------|
 | Name *                     | Name of the analyzer. Only alphanumeric characters and underscore (‘_’) are available. Must be unique within in each simualtor. |
 | Type *                     | Select *on_run* for a Run-Analyzer. Select *on\_parameter\_set* for a PS-Analyzer.      |
-| Definition of Parameters   | Definition of input parameters. Specify name, type(Integer, Float, String, Boolean), default value, and explanation for each input parameter. |
+| Definition of Parameters   | Definition of input parameters. Specify name, type(Integer, Float, String), default value, and explanation for each input parameter. |
 | Pre process script         | Script executed before the job. If this is empty, no pre-process is executed. |
 | Command *                  | The command to execute the analyzer. It is better to specify by the absolute path or the relative path from the home directory. (Ex. ~/path/to/analyzer.out) |
 | Print version command      | The command to print the analyzer version information to standard output. (Ex. ~/path/to/analyzer.out –version) |

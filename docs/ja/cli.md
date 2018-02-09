@@ -987,7 +987,7 @@ IDを指定してAnalysisを置換する
 
 - simulator_id はIDの文字列か、simulator_id.jsonのファイルのパスを指定する。
 - name は新規パラメータの名前を指定する。既存のパラメータと重複するとエラー。
-- type は新規パラメータの型を指定する。指定可能な値は "Integer", "Float", "String", "Boolean" の４種類。
+- type は新規パラメータの型を指定する。指定可能な値は "Integer", "Float", "String" の３種類。
 - default は新規パラメータのデフォルト値を指定する。
     - type と整合性が取れていない場合はエラー
     - 既存のパラメータセットのパラメータはこの値で保存される。
