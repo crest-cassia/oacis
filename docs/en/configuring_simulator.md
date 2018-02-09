@@ -215,7 +215,7 @@ The following is the list of items we set when registering a simulator.
 | field                      | explanation                                                                |
 |:---------------------------|:--------------------------------------------------------------------|
 | Name *                     | Name of the simulator. Only alphanumeric characters and underscore ('_') are available. Must be unique.  |
-| Definition of Parameters * | Definition of input parameters. Specify name, type(Integer, Float, String, Boolean), default value, and explanation for each input parameter. |
+| Definition of Parameters * | Definition of input parameters. Specify name, type(Integer, Float, String), default value, and explanation for each input parameter. |
 | Local Preprocess Script    | Script executed at OACIS server before the job. If this is empty, no pre-process is executed. |
 | Preprocess Script          | Script executed at the computational host before the job. If this is empty, no pre-process is executed. |
 | Command *                  | The command to execute the simulator. It is better to specify by the absolute path or the relative path from the home directory. (Ex. *~/path/to/simulator.out*) |

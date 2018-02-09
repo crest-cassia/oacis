@@ -47,14 +47,7 @@ class Run
     if simulator.support_input_json
       ""
     else
-      ps = parameter_set
-      params = simulator.parameter_definitions.map do |pd|
-        if pd.type == "Boolean"
-          ps.v[pd.key] ? 1 : 0
-        else
-          ps.v[pd.key]
-        end
-      end
+      params = simulator.parameter_definitions.map {|pd| parameter_set.v[pd.key]}
       params << seed
       params.join(' ')
     end

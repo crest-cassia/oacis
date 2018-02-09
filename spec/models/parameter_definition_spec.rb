@@ -46,7 +46,7 @@ describe ParameterDefinition do
 
     describe "type field" do
 
-      it "must be either Integer, Float, String, or Boolean" do
+      it "must be either Integer, Float, or String" do
         pd = ParameterDefinition.new( @valid_attr.update(type: "DateTime") )
         expect(pd).not_to be_valid
       end
@@ -64,13 +64,6 @@ describe ParameterDefinition do
         pd = ParameterDefinition.new( @valid_attr.update(default: "abc") )
         expect(pd).not_to be_valid
       end
-
-      it "is casted properly to the specified type(Boolean)" do
-        pd = ParameterDefinition.new( @valid_attr.update(type: "Boolean",default: false) )
-        expect(pd).to be_valid
-        pd = ParameterDefinition.new( @valid_attr.update(type: "Boolean",default: true) )
-        expect(pd).to be_valid
-      end 
     end
 
     describe "description field" do
