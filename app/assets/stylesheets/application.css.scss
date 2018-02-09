@@ -14,10 +14,14 @@
  *= require dynatree/skin
  *= require font-awesome
 */
-
+$line-height-base: 1;
+$border-radius-base: 4px;
+$border-radius-large: 6px;
+$border-radius-small: 3px;
 @import "bootswatch/yeti/variables";
 @import "bootstrap-sprockets";
 @import "bootstrap";
+@import "bootswatch/yeti/bootswatch";
 @import "custom";
 
 div.progress-tooltip {
@@ -32,20 +36,4 @@ div.progress-tooltip {
   border: 0px;
   border-radius: 8px;
   pointer-events: none;
-}
-
-@import "bootswatch/yeti/bootswatch";
-
-.table > thead > tr > th,
-.table > thead > tr > td,
-.table > tbody > tr > th,
-.table > tbody > tr > td,
-.table > tfoot > tr > th,
-.table > tfoot > tr > td {
-  line-height: 1;
-}
-
-div.progress {
-  height: 14px;
-  padding: 0;
 }
