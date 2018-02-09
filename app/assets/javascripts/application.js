@@ -13,7 +13,7 @@
 //= require jquery
 //= require jquery-ui/widgets/sortable
 //= require jquery_ujs
-//= require twitter/bootstrap
+//= require bootstrap-sprockets
 //= require analyses.js
 //= require analyzers.js
 //= require bootstrap.js

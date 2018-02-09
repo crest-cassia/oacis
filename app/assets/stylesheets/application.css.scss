@@ -8,12 +8,22 @@
  * You're free to add application-wide styles to this file and they'll appear at the top of the
  * compiled file, but it's generally better to create a new file per style scope.
  *
- *= require_self
  *= require_tree
  *= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
  *= require dataTables/extras/dataTables.colVis
  *= require dynatree/skin
+ *= require font-awesome
 */
+$line-height-base: 1;
+$border-radius-base: 4px;
+$border-radius-large: 6px;
+$border-radius-small: 3px;
+@import "bootswatch/yeti/variables";
+@import "bootstrap-sprockets";
+@import "bootstrap";
+@import "bootswatch/yeti/bootswatch";
+@import "custom";
+
 div.progress-tooltip {
   position: absolute;
   text-align: center;
