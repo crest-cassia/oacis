@@ -9,7 +9,6 @@ class ParameterSetQuery
 
   NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
   NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]
-  BooleanTypeMatchers = ["eq", "ne"]
   StringTypeMatchers = ["start_with", "end_with", "include", "match"]
 
   def validate_uniqueness_of_query
@@ -91,8 +90,6 @@ class ParameterSetQuery
     case type
     when "Integer", "Float"
       supported_matchers = NumTypeMatchers
-    when "Boolean"
-      supported_matchers = BooleanTypeMatchers
     when "String"
       supported_matchers = StringTypeMatchers
     else

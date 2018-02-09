@@ -221,15 +221,6 @@ describe OacisCli do
       }
     end
 
-    it "adds Boolean parameter correctly" do
-      at_temp_dir {
-        option = {simulator: @sim.id.to_s, name: "NEW_PARAM", type: "Boolean", default: false}
-        OacisCli.new.invoke(:append_parameter_definition, [], option)
-        new_param_def = @sim.reload.parameter_definitions.order_by(id: :asc).last
-        expect(new_param_def.default).to eq false
-      }
-    end
-
     describe "error case" do
 
       context "when invalid simulator ID is given" do
@@ -272,7 +263,7 @@ describe OacisCli do
         end
       end
 
-      context "when type is neither 'Integer', 'Float', 'String', nor 'Boolean'" do
+      context "when type is neither 'Integer', 'Float', 'String'" do
 
         it "throws an exception" do
           at_temp_dir {

@@ -63,14 +63,7 @@ class Analysis
     if analyzer.support_input_json
       ""
     else
-      params = analyzer.parameter_definitions.map do |pd|
-        if pd.type == "Boolean"
-          parameters[pd.key] ? 1 : 0
-        else
-          parameters[pd.key]
-        end
-      end
-      params.join(' ')
+      analyzer.parameter_definitions.map {|pd| parameters[pd.key] }.join(' ')
     end
   end
 

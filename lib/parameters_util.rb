@@ -1,6 +1,6 @@
 module ParametersUtil
 
-  TYPES = ["Integer","Float","String","Boolean"]
+  TYPES = ["Integer","Float","String"]
 
   def self.cast_parameter_values(parameters, definitions, errors = nil)
     casted = {}
@@ -58,22 +58,10 @@ module ParametersUtil
         return nil
       end
       return val.to_f
-    when "Boolean"
-      return boolean(val)
     when "String"
       return val.to_s
     else
       raise "Unknown type : #{type}"
-    end
-  end
-
-  def self.boolean(val)
-    compare_value = val.is_a?(String) ? val.downcase : val
-    case compare_value
-      when "yes", "true", "ok", true, "1", 1, :true, :ok, :yes
-        return true
-      else
-        return false
     end
   end
 end
