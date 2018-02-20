@@ -1,0 +1,14 @@
+{
+  "hosts": {
+    "name": "Host name<br/> [your_host_name]",
+    "status": "Polling Status. [enabled/disabled]",
+    "work_base_dir": "Work base dir [~/my_root/__work__]",
+    "mounted_work_base_dir": "mounted work base dir [~/my_root/__work__]",
+    "max_num_jobs": "Max num jobs",
+    "polling_interval": "Polling interval",
+    "min_mpi_procs": "MPI threads",
+    "min_omp_threads": "OMP threads",
+    "executable_simulators": "Executable Simulators",
+    "executable_analyzers": "Executable Executable Analyzers"
+   }
+}

@@ -119,4 +119,23 @@ module ApplicationHelper
     end
     flash_messages.join("\n").html_safe
   end
+
+  def label_with_tooltip(text, json_path_arr)
+    label_tag_line = ""
+    label_tag_line << content_tag(:label, "#{text}", class: "col-md-2 control-label")
+    if json_path_arr.blank? || !json_path_arr.is_a?(Array)
+      return label_tag_line
+    end
+
+    json = TOOLTIP_DESCS
+    json_path_arr.each do |p|
+      json = json["#{p}"] rescue nil
+      break if json.nil?
+    end
+    if json.present? && json.is_a?(String)
+      label_tag_line = ""
+      label_tag_line << content_tag(:label, "#{text}", class: 'col-md-2 control-label',  data: {html: 'true', toggle: 'tooltip'}, title: "#{json}")
+    end
+    label_tag_line
+  end
 end
