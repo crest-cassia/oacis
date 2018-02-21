@@ -5,6 +5,9 @@ gem "puma"
 gem "mongoid", ' ~> 6.3.0'
 gem "net-ssh"
 gem "jbuilder"
+# gem 'resque', :require => 'resque/server'
+  # for resque dashboard
+gem 'resque'
 
 # assets
 gem "sprockets"
@@ -23,8 +26,6 @@ gem 'dynatree-rails'
 gem 'bootstrap-sass'
 gem 'bootswatch-rails'
 gem 'font-awesome-rails'
-gem 'resque'
-gem 'resque-scheduler'
 
 # for workers
 gem 'daemon-spawn', :require => 'daemon_spawn'

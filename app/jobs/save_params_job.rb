@@ -7,9 +7,7 @@ class SaveParamsJob < ApplicationJob
     simulator = Simulator.find(simulator_id)
     run_params = ActionController::Parameters.new(run_params_j);
     logger.debug run_params.as_json.to_s
-    logger.info "run_params.permitted?: #{run_params.permitted?}"
     run_params.permit!
-    logger.info "run_params.permitted?: #{run_params.permitted?}"
     created = []
     param_sets.each do |param_ary|
       param = {}
@@ -20,6 +18,8 @@ class SaveParamsJob < ApplicationJob
       ps = simulator.parameter_sets.find_or_initialize_by(v: casted)
       if ps.persisted? or ps.save
         created << ps
+        sleep(10)
+        logger.debug "PS save"
       end
     end
 
@@ -47,17 +47,4 @@ class SaveParamsJob < ApplicationJob
 
     logger.info "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
   end
-
-  private
-  def to_o(json, klass)
-    a = klass.new
-
-    JSON.parse(json).each do |k, v|
-      if (a.respond_to?("set_"+k.to_s))
-         a.send("set_"+k.to_s, v)
-      end
-    end
-    a
-  end
-
 end
