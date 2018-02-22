@@ -1,6 +1,7 @@
 class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
+
   field :v, type: Hash
   field :to_be_destroyed, type: Boolean, default: false
   index({ simulator_id: 1, v: 1 })

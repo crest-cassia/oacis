@@ -7,7 +7,9 @@ class SaveParamsJob < ApplicationJob
     simulator = Simulator.find(simulator_id)
     run_params = ActionController::Parameters.new(run_params_j);
     logger.debug run_params.as_json.to_s
+    logger.debug "bef run_params.permitted? :" + run_params.permitted?.to_s
     run_params.permit!
+    logger.debug "aft run_params.permitted? :" + run_params.permitted?.to_s
     created = []
     param_sets.each do |param_ary|
       param = {}
@@ -18,7 +20,7 @@ class SaveParamsJob < ApplicationJob
       ps = simulator.parameter_sets.find_or_initialize_by(v: casted)
       if ps.persisted? or ps.save
         created << ps
-        sleep(10)
+#        sleep(10)
         logger.debug "PS save"
       end
     end
@@ -33,6 +35,7 @@ class SaveParamsJob < ApplicationJob
       created.each do |ps|
         next if ps.runs.count > i
         new_runs << ps.runs.build(run_params)
+        logger.debug "runs build #{i}"
       end
     end
     ParameterSetsController.set_sequential_seeds(new_runs) if simulator.sequential_seed

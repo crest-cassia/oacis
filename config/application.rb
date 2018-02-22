@@ -36,8 +36,9 @@ module AcmProto
     if File.exist? user_config_yml
       config.user_config = YAML.load(File.open(user_config_yml))
     end
-#    config.active_job.queue_adapter = :resque
-  # for use resque. default is Async.
+
+    # for use resque. default is Async.
+    config.active_job.queue_adapter = :resque
   end
 end
 
