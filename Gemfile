@@ -5,9 +5,9 @@ gem "puma"
 gem "mongoid", ' ~> 6.3.0'
 gem "net-ssh"
 gem "jbuilder"
+# gem 'resque'
 gem 'resque', :require => 'resque/server'
   # for resque dashboard
-gem 'resque'
 
 # assets
 gem "sprockets"
