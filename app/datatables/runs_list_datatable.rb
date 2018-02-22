@@ -44,6 +44,7 @@ private
       trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">')
         : @view.link_to( @view.raw('<i class="fa fa-trash-o">'), run, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
       tmp << trash
+      tmp << "run_list_#{run.id}"
       a << tmp
     end
     a

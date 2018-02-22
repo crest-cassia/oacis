@@ -145,6 +145,7 @@ EOS
         job.included_at = DateTime.now
         begin
           job.save!
+          StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessge(job));
         rescue => ex
           error_message += "failed to save: #{ex.inspect}"
           job.reload # reload must be called. Otherwise update_attribute will fail.
