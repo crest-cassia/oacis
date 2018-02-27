@@ -37,14 +37,53 @@
 
 :javascript
   $(function() {
-    var oRunsTable = datatables_for_runs_table();
-    if( window.bEnableAutoReload ) {
-      setInterval( function() {
-        if( $("#tab-list-runs").length > 0 ) { // Runs tab in ParameterSet show page
-          if( $("#tab-list-runs")[0].classList.contains("active") ) {
-            oRunsTable.ajax.reload(null, false);
+    const objTable = datatables_for_runs_table();
+    const objList = $("#tab-list-runs");
+
+    let interval = sessionStorage.getItem("AUTO_RELOAD_INTERVAL");
+    $("#runs_list_refresh_tb").val(interval);
+    let timer;
+    const tmReloadOn = (msec) => {
+      timer = setInterval(() => {
+        if(objList.length > 0) {
+          if (objList[0].classList.contains("active")) {
+            objTable.ajax.reload(null, false)
           }
         }
-      }, 5000);
+      }, msec);
+    }
+    const tmReloadOff = () => {
+      clearInterval(timer);
+    }
+    $("#runs_list_refresh_cb").change(function() {
+      if($("#runs_list_refresh_cb").prop('checked')) {
+        sessionStorage.setItem("AUTO_RELOAD_FLG", true);
+        if(chkIntervalStr($("#runs_list_refresh_tb").val())) {
+          interval = $("#runs_list_refresh_tb").val();
+          sessionStorage.setItem("AUTO_RELOAD_INTERVAL", interval);
+        }
+        else if (chkIntervalStr(sessionStorage.getItem("AUTO_RELOAD_INTERVAL"))) {
+          interval = sessionStorage.getItem("AUTO_RELOAD_INTERVAL");
+        }
+        else {
+          sessionStorage.setItem("AUTO_RELOAD_INTERVAL", "5");
+        }
+        const iSec = parseInt(interval);
+        const iMsec = iSec * 1000;
+        tmReloadOn(iMsec);
+      }
+      else {
+        sessionStorage.setItem("AUTO_RELOAD_FLG", false);
+        tmReloadOff();
+      }
+    });
+    if (sessionStorage.getItem("AUTO_RELOAD_FLG") == "true") {
+      $("#runs_list_refresh_cb").prop("checked", true);
+      const iSec = parseInt(interval);
+      const iMsec = iSec * 1000;
+      tmReloadOn(iMsec);
+    }
+    else {
+      $("#runs_list_refresh_cb").prop("checked", false);
     }
   });
