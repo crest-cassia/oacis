@@ -1,0 +1,11 @@
+- @query_list.each_with_index do |(key, val), i|
+  %tr
+    %td
+      = check_box 'filter_cb', "#{i}"
+    %td
+      = content_tag(:p, "#{key}", :id => "filter_key_#{i}")
+    %td
+      = link_to(raw('<i class="fa fa-edit">'), 'javascript:void(0);', onclick: "edit_filter(#{i})")
+    %td
+      = link_to(raw('<i class="fa fa-trash-o">'), 'javascript:void(0);', onclick: "delete_filter(#{i})", confirm: "Are you sure?")
+

@@ -1,33 +1,107 @@
-%h3 List of Parameter Sets
-
-%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
-  %thead
-    %tr
-      - ParameterSetsListDatatable.header(@simulator).each do |th_element|
-        = raw(th_element)
-  %tbody
+%h3.paramset_title_area_item List of Parameter Sets
 
 - unless OACIS_READ_ONLY
-  %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
+  %a.btn.btn-primary.paramset_title_area_item{href: new_simulator_parameter_set_path(@simulator)}
     New Parameter Set
 
-%h3 Parameter Filter
-.foo
-  = form_tag( _make_query_simulator_path(@simulator), class: 'form-horizontal' ) do |f|
-    #queries_form_original
-      .row
-        .form-group.col-md-2#select_param_form
-          - prm_def = @simulator.parameter_definitions.map {|x| [x.key, {"type" => x.type, "default" => x.default}] }
-          - prm_def = Hash[*prm_def.flatten]
-          = select_tag "query[][param]", options_for_select(prm_def), class: 'form-control'
-        .form-group.col-md-1#select_matcher_form
-          = select_tag "query[][matcher]", options_for_select({""=>""}), class: 'form-control'
-        .form-group.col-md-3#select_value_form
-          = text_field_tag "query[][value]", "", class: 'form-control'
-        .col-md-6
-    .btn#add_queries_form Add more filters
-    = hidden_field_tag "query_id", @query_id
-    = submit_tag "Save this Filter", :class => 'btn btn-primary'
+%button#parameter_filter_modal_btn.btn.paramset_title_area_item
+  Filtering
+%span#parameter_filter_selected.paramset_title_area_item
+  No filter selected.
+
+#parameter_filter_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.paramset_title_area_item Parameter Filter
+      .modal-body.large#parameter_filter_setting_body
+        %button#parameter_new_filter_btn.paramset_title_area_item.btn.btn-primary
+          New Filter
+        %table.table.table-condensed.table-striped#parameter_filter_list{style: "font-size: smaller;"}
+          %thead
+            %tr
+              %th enable/disable
+              %th query
+              %th edit
+              %th delete
+          %tbody#parameter_filter_table_body
+            = render "filters"
+        %button#parameter_save_filter_btn.paramset_title_area_item.btn.btn-primary
+          Save Filter Set
+        %button#parameter_load_filter_btn.paramset_title_area_item.btn.btn-primary
+          Load Filter Set
+      .modal-footer
+        %button#parameter_new_filter_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+          OK 
+        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+          Close
+
+#parameter_new_filter_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.paramset_title_area_item Filter
+      .modal-body.large#parameter_new_filter_create_body
+        .foo#queries_form_original
+          = form_tag( _make_query_simulator_path(@simulator), class: 'form-horizontal' ) do |f|
+            .row
+              .form-group.col-md-3#select_param_form
+                - prm_def = @simulator.parameter_definitions.map {|x| [x.key, {"type" => x.type, "default" => x.default}] }
+                - prm_def = Hash[*prm_def.flatten]
+                = select_tag "query[][param]", options_for_select(prm_def), class: 'form-control'
+              .form-group.col-md-2#select_matcher_form
+                = select_tag "query[][matcher]", options_for_select({""=>""}), class: 'form-control'
+              .form-group.col-md-3#select_value_form
+                = text_field_tag "query[][value]", "", class: 'form-control'
+              .col-md-6
+      .modal-footer
+        %button#parameter_new_filter_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+          OK 
+        %button#parameter_new_filter_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+          Close
+
+#parameter_save_filter_set_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.paramset_title_area_item Save Filter Set
+      .modal-body.large#parameter_new_filter_create_body
+        %h4.paramset_title_area_item Name
+        = text_field_tag "filter_set_name", "", class: 'form-control'
+      .modal-footer
+        %button#parameter_save_filter_set_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+          OK 
+        %button#parameter_save_filter_set_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+          Close
+
+#parameter_load_filter_set_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4.paramset_title_area_item Load Filter Set
+      .modal-body.large#parameter_new_filter_create_body
+        %table.table.table-condensed.table-striped#parameter_filter_set_list{style: "font-size: smaller;"}
+          %thead
+            %tr
+              %th select
+              %th name
+              %th query
+              %th delete
+          %tbody#parameter_filter_table_body
+            = render "filter_sets"
+      .modal-footer
+        %button#parameter_load_filter_set_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+          OK 
+        %button#parameter_load_filter_set_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+          Close
 
 - if @query_list
   %h4 Select Filter
@@ -41,6 +115,16 @@
   = form_tag( _make_query_simulator_path(@simulator) ) do |f|
     = hidden_field_tag "query_id", @query_id
     = submit_tag "Delete this Filter", :class => 'btn btn-primary', :name => :delete_query, :confirm => 'Are you sure?'
+
+
+%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
+  %thead
+    %tr
+      - ParameterSetsListDatatable.header(@simulator).each do |th_element|
+        = raw(th_element)
+  %tbody
+
+
 
 #runs_list_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered

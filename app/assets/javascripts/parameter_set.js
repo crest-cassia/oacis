@@ -35,6 +35,28 @@ function create_parameter_sets_list(selector, default_length) {
   return oPsTable;
 }
 
+function create_filter_list() {
+  var oFilterTable = $("#parameter_filter_list").DataTable();
+
+  return oFilterTable;
+}
+
+function edit_filter(idx) {
+  alert("E: " + idx);
+  const selector = "filter_key_" + idx;
+  const q = $(selector).text();
+  const sp = /\s*|\{|\}/;
+     
+  $("#parameter_new_filter_modal").modal('show');
+
+}
+
+function delete_filter(idx) {
+  alert("D: " + idx);
+
+}
+
+
 $(function() {
   $("#runs_list_modal").on('show.bs.modal', function (event) {
     var param_id = event.relatedTarget.parameter_set_id;
@@ -46,4 +68,31 @@ $(function() {
   $("#runs_list_modal").on('hidden.bs.modal', function (event) {
     $('#runs_list_modal_page').empty();
   });
+});
+
+$(function() {
+  $("#parameter_filter_modal_btn").on("click", function() {
+    $("#parameter_filter_modal").modal('show');
+  });
+
+  var oFilterTable = create_filter_list();
+
+  $("#parameter_new_filter_btn").on("click", function() {
+    $("#parameter_new_filter_modal").modal('show');
+  });
+  $("#parameter_new_filter_ok").on("click", function(event) {
+    const paray = $("#query__param").val();
+    const matcher = $("#query__matcher").val();
+    const value = $("#query__value").val();
+    if (value.length >0) {
+      oFilterTable.row.add([
+        '<input type="checkbox" id="filter_cb_add" value="true">',
+        paray + " " + matcher + " " + value,
+        '<i class="fa fa-edit">',
+        '<i class="fa fa-trash-o">'
+      ]).draw();
+    }
+  });
+
+
 });

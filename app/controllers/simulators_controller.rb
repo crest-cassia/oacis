@@ -18,6 +18,7 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
     @query_id = params[:query_id]
+    @filter_set_list = Array.new
 
     if @simulator.parameter_set_queries.present?
       @query_list = {}
