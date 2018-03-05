@@ -10,5 +10,36 @@
     "min_omp_threads": "OMP threads",
     "executable_simulators": "Executable Simulators",
     "executable_analyzers": "Executable Executable Analyzers"
+   },
+   "simulators": {
+     "name":"Simulators name",
+     "definition_of_parameters":"Definition of parameters", 
+     "pre_process_script":"Pre process script",
+     "local_pre_process_script":"Local pre process script",
+     "command":"Command",
+     "print_version_command":"Print version command",
+     "input_type":"Input type",
+     "support_mpi":"Support mpi",
+     "support_omp":"Support omp",
+     "sequential_seed":"Sequential seed",
+     "description":"Description",
+     "executable_on":"Executable_on"
+   },
+   "analyzer": {
+     "name":"Analyzer name",
+     "type":"Type",
+     "definition_of_parameters":"Definition of parameters",
+     "pre_process_script":"Pre process script",
+     "local_pre_process_script":"Local pre process script",
+     "command":"Command",
+     "print_version_command":"Print version command",
+     "input_type":"Input type",
+     "files_to_copy":"Files to copy",
+     "support_mpi":"Support mpi",
+     "support_omp":"Support omp",
+     "auto_run":"Auto run",
+     "description":"Description",
+     "executable_on":"Executable_on",
+     "host_for_auto_run":"Host for Auto run"
    }
 }
