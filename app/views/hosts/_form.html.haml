@@ -48,7 +48,7 @@
       .col-md-5
         = f.number_field(:max_omp_threads, class: 'form-control')
   .form-group
-    = label_with_tooltip('Executable Simulators', ['hosts', 'executable_simulators']).html_safe
+    = label_with_tooltip('Executable Simulators', 'hosts', 'executable_simulators').html_safe
     .col-md-10
       = hidden_field_tag "host[executable_simulator_ids][]", nil
       - Simulator.all.each do |sim|
@@ -57,7 +57,7 @@
             = check_box_tag "host[executable_simulator_ids][]", sim.id.to_s, @host.executable_simulator_ids.include?(sim.id), id: dom_id(sim)
             = sim.name
   .form-group
-    = label_with_tooltip('Executable Analyzers', ['hosts', 'executable_analyzers']).html_safe
+    = label_with_tooltip('Executable Analyzers', 'hosts', 'executable_analyzers').html_safe
     .col-md-10
       = hidden_field_tag "host[executable_analyzer_ids][]", nil
       - Simulator.all.each do |sim|
