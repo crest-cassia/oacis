@@ -1,11 +1,20 @@
-- @query_list.each_with_index do |(key, val), i|
-  %tr
-    %td
-      = check_box 'filter_cb', "#{i}"
-    %td
-      = content_tag(:p, "#{key}", :id => "filter_key_#{i}")
-    %td
-      = link_to(raw('<i class="fa fa-edit">'), 'javascript:void(0);', onclick: "edit_filter(#{i})")
-    %td
-      = link_to(raw('<i class="fa fa-trash-o">'), 'javascript:void(0);', onclick: "delete_filter(#{i})", confirm: "Are you sure?")
+%p
+= simulator_id.to_s
+= form_tag(_save_filter_set_simulator_path(simulator_id), class: 'form-horizontal') do |f|
+  .form-group
+    %label
+      Name
+    %p#filter_set_name_p
+    = link_to "change", "javascript:void(0)", onclick: "show_filter_set_name_dlg()"
+    %table.table.table-condensed.table-striped#parameter_filter_list{:'data-source' => "#{_parameter_set_filter_list_simulator_path(filter_set_id: filter_set_id.to_s, format: "json")}", style: "font-size: smaller;", remote: true}
+      %thead
+        %tr
+          -FilterListDatatable::HEADER.each do |header|
+            = raw(header)
+      %tbody#parameter_filter_table_body
+      = hidden_field_tag :filter_set_id, filter_set_id.to_s
+      = hidden_field_tag :name,""
 
+    = submit_tag "Save Filter Set",  id: "parameter_save_filter_btn", class: "paramset_title_area_item btn btn-primary"
+    %button#parameter_load_filter_btn.paramset_title_area_item.btn.btn-primary{onclick: "show_load_filter_set_dlg(this)", simulator_id: simulator_id}
+      Load Filter Set
