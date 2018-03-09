@@ -2,11 +2,11 @@
   = render partial: 'shared/error_messages', locals: {error_messages: @simulator.errors.full_messages}
   - has_ps = @simulator.parameter_sets.present?
   .form-group
-    = f.label_with_tooltip(:name, ['simulators', 'name'])
+    = f.label_with_tooltip(:name, nil, 'simulators', 'name')
     .col-md-3
       = f.text_field(:name, class: ['form-control'])
   .form-group
-    = label_with_tooltip('Definition of Parameters', 'simulators','definition_of_parameters').html_safe
+    = raw(label_with_tooltip('Definition of Parameters', 'simulators','definition_of_parameters'))
     .col-md-10
       #parameters_form
       = f.fields_for :parameter_definitions do |builder|
@@ -24,49 +24,49 @@
           = text_area_tag '__dummy__', "Random number seed", rows: 3, disabled: true, class: 'form-control'
       = link_to_add_fields "Add Parameter", f, :parameter_definitions, 'executable/parameter_definition_fields' unless has_ps
   .form-group
-    = f.label_with_tooltip(:pre_process_script, ['simulators','pre_process_script'])
+    = f.label_with_tooltip(:pre_process_script, nil, 'simulators','pre_process_script')
     .col-md-6
       = f.text_area(:pre_process_script, rows: 3, class: 'form-control')
   .form-group
-    = f.label_with_tooltip(:local_pre_process_script, ['simulators','local_pre_process_script'])
+    = f.label_with_tooltip(:local_pre_process_script, nil, 'simulators','local_pre_process_script')
     .col-md-6
       = f.text_area(:local_pre_process_script, rows: 1, class: 'form-control')
   .form-group
-    = f.label_with_tooltip(:command, ['simulators','command'])
+    = f.label_with_tooltip(:command, nil, 'simulators','command')
     .col-md-6
       = f.text_field(:command, class: 'form-control')
   .form-group
-    = f.label_with_tooltip(:print_version_command, ['simulators','print_version_command'])
+    = f.label_with_tooltip(:print_version_command, nil, 'simulators','print_version_command')
     .col-md-6
       = f.text_field(:print_version_command, class: 'form-control')
   .form-group
-    = f.label_with_tooltip(:support_input_json, "Input type", ['simulators','input_type'])
+    = f.label_with_tooltip(:support_input_json, "Input type", 'simulators','input_type')
     .col-md-3
       = f.select(:support_input_json, {"Argument" => false, "JSON" => true}, {},{class: 'form-control'})
   .form-group
-    = f.label_with_tooltip(:support_mpi, ['simulators','support_mpi'])
+    = f.label_with_tooltip(:support_mpi, nil, 'simulators','support_mpi')
     .col-md-2
       .checkbox
         %label
           = f.check_box(:support_mpi)
   .form-group
-    = f.label_with_tooltip(:support_omp, ['simulators','support_omp'])
+    = f.label_with_tooltip(:support_omp, nil, 'simulators','support_omp')
     .col-md-2
       .checkbox
         %label
           = f.check_box(:support_omp)
   .form-group
-    = f.label_with_tooltip(:sequential_seed, ['simulators','sequential_seed'])
+    = f.label_with_tooltip(:sequential_seed, nil, 'simulators','sequential_seed')
     .col-md-2
       .checkbox
         %label
           = f.check_box(:sequential_seed)
   .form-group
-    = f.label_with_tooltip(:description, ['simulators','description'])
+    = f.label_with_tooltip(:description, nil, 'simulators','description')
     .col-md-6
       = f.text_area(:description, rows: 5, class: 'form-control')
   .form-group
-    = label_with_tooltip('Executable_on', 'simulators', 'executable_on').html_safe
+    = raw(label_with_tooltip('Executable_on', 'simulators', 'executable_on'))
     .col-md-10
       = hidden_field_tag "simulator[executable_on_ids][]", nil
       - Host.all.each do |host|

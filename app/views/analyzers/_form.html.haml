@@ -3,66 +3,66 @@
   = render partial: 'shared/error_messages', locals: {error_messages: analyzer.errors.full_messages}
   - has_child = analyzer.analyses.present?
   .form-group
-    = f.label_with_tooltip(:name, ['analyzer','name'])
+    = f.label_with_tooltip(:name, nil, 'analyzer','name')
     .col-md-3
       = f.text_field(:name, class: 'text_field form-control', disabled: has_child)
   .form-group
-    = f.label_with_tooltip(:type, ['analyzer','type'])
+    = f.label_with_tooltip(:type, nil, 'analyzer','type')
     .col-md-3
       = f.select(:type, ["on_run", "on_parameter_set"], {}, class: 'form-control', disabled: has_child)
   #parameters_form.form-group
-    = label_with_tooltip('Definition of Parameters', 'analyzer','definition_of_parameters').html_safe
+    = raw(label_with_tooltip('Definition of Parameters', 'analyzer','definition_of_parameters'))
     .col-md-10
       = f.fields_for :parameter_definitions do |builder|
         = render partial: 'executable/parameter_definition_fields', locals: {f: builder, disabled: has_child}
       - unless has_child
         = link_to_add_fields "Add Parameter", f, :parameter_definitions, 'executable/parameter_definition_fields'
   .form-group
-    = f.label_with_tooltip(:pre_process_script, ['analyzer','pre_process_script'])
+    = f.label_with_tooltip(:pre_process_script, nil, 'analyzer','pre_process_script')
     .col-md-6
       = f.text_area(:pre_process_script, rows: 3, class: 'form-control')
   .form-group
-    = f.label_with_tooltip(:local_pre_process_script, ['analyzer','local_pre_process_script'])
+    = f.label_with_tooltip(:local_pre_process_script, nil, 'analyzer','local_pre_process_script')
     .col-md-6
       = f.text_area(:local_pre_process_script, rows: 1, class: 'form-control')
   .form-group
-    = f.label_with_tooltip(:command, ['analyzer','command'])
+    = f.label_with_tooltip(:command, nil, 'analyzer','command')
     .col-md-6
       = f.text_field(:command, class: 'form-control')
   .form-group
-    = f.label_with_tooltip(:print_version_command, ['analyzer','print_version_command'])
+    = f.label_with_tooltip(:print_version_command, nil, 'analyzer','print_version_command')
     .col-md-6
       = f.text_field(:print_version_command, class: 'form-control')
   .form-group
-    = f.label_with_tooltip(:support_input_json, "Input type", ['analyzer','input_type'])
+    = f.label_with_tooltip(:support_input_json, "Input type", 'analyzer','input_type')
     .col-md-3
       = f.select(:support_input_json, {"Argument" => false, "JSON" => true}, {},{class: 'form-control'})
   .form-group
-    = f.label_with_tooltip(:files_to_copy, ['analyzer','files_to_copy'])
+    = f.label_with_tooltip(:files_to_copy, nil, 'analyzer','files_to_copy')
     .col-md-6
       = f.text_area(:files_to_copy, rows:2, class: 'form-control')
   .form-group
-    = f.label_with_tooltip(:support_mpi, ['analyzer','support_mpi'])
+    = f.label_with_tooltip(:support_mpi, nil, 'analyzer','support_mpi')
     .col-md-2
       .checkbox
         %label
           = f.check_box(:support_mpi)
   .form-group
-    = f.label_with_tooltip(:support_omp, ['analyzer','support_omp'])
+    = f.label_with_tooltip(:support_omp, nil, 'analyzer','support_omp')
     .col-md-2
       .checkbox
         %label
           = f.check_box(:support_omp)
   .form-group
-    = f.label_with_tooltip(:auto_run, ['analyzer','auto_run'])
+    = f.label_with_tooltip(:auto_run, nil, 'analyzer','auto_run')
     .col-md-3
       = f.select(:auto_run, [:no,:yes,:first_run_only], {}, id: "auto_run", class: 'form-control')
   .form-group
-    = f.label_with_tooltip(:description, ['analyzer','description'])
+    = f.label_with_tooltip(:description, nil, 'analyzer','description')
     .col-md-6
       = f.text_area(:description, rows: 5, class: 'form-control')
   .form-group
-    = label_with_tooltip('Executable_on', 'analyzer', 'executable_on').html_safe
+    = raw(label_with_tooltip('Executable_on', 'analyzer', 'executable_on'))
     .col-md-10
       = hidden_field_tag "analyzer[executable_on_ids][]", nil
       - Host.all.each do |host|
@@ -71,7 +71,7 @@
             = check_box_tag "analyzer[executable_on_ids][]", host.id.to_s, analyzer.executable_on_ids.include?(host.id), id: dom_id(host)
             = host.name
   .form-group
-    = f.label_with_tooltip(:auto_run_submitted_to, "Host for Auto Run", ['analyzer','host_for_auto_run'])
+    = f.label_with_tooltip(:auto_run_submitted_to, "Host for Auto Run", 'analyzer','host_for_auto_run')
     .col-md-3
       - selected_id = analyzer.auto_run_submitted_to.try(:id).try(:to_s) || analyzer.auto_run_host_group.try(:id).try(:to_s)
       - opts = (Host.all.map {|h| [h.name, h.id]}) + (HostGroup.all.map {|hg| ["(HostGroup) #{hg.name}", hg.id]})
