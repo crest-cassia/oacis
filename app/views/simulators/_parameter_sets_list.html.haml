@@ -56,6 +56,13 @@
 
 :javascript
   $(function() {
+    var id = 'params';
+    const objTable = create_parameter_sets_list('#params_list', 100);
+    const objList = $("#tab-list-parameters");
+    $("#tab-list-parameters").setIntervalCommon(id,objTable,objList);
+  });
+
+  $(function() {
     var cloned = $('#queries_form_original').html();
     $('#add_queries_form').click(function() {
       $('#add_queries_form').before( cloned );
@@ -93,57 +100,4 @@
     var parameter_form_selector = $("#select_param_form select")
     parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
     parameter_form_selector.trigger("change");
-  });
-
-:javascript
-  $(function() {
-    const objTable = create_parameter_sets_list('#params_list', 100);
-    const objList = $("#tab-list-parameters");
-
-    let interval = sessionStorage.getItem("AUTO_RELOAD_INTERVAL");
-    $("#params_list_refresh_tb").val(interval);
-    let timer;
-    const tmReloadOn = (msec) => {
-      timer = setInterval(() => {
-        if(objList.length > 0) {
-          if (objList[0].classList.contains("active")) {
-            objTable.ajax.reload(null, false)
-          }
-        }
-      }, msec);
-    }
-    const tmReloadOff = () => {
-      clearInterval(timer);
-    }
-     $("#params_list_refresh_cb").change(function() {
-      if($("#params_list_refresh_cb").prop('checked')) {
-        sessionStorage.setItem("AUTO_RELOAD_FLG", true);
-        if(chkIntervalStr($("#params_list_refresh_tb").val())) {
-          interval = $("#params_list_refresh_tb").val();
-          sessionStorage.setItem("AUTO_RELOAD_INTERVAL", interval);
-        }
-        else if (chkIntervalStr(sessionStorage.getItem("AUTO_RELOAD_INTERVAL"))) {
-          interval = sessionStorage.getItem("AUTO_RELOAD_INTERVAL");
-        }
-        else {
-          sessionStorage.setItem("AUTO_RELOAD_INTERVAL", "5");
-        }
-        const iSec = parseInt(interval);
-        const iMsec = iSec * 1000;
-        tmReloadOn(iMsec);
-      }
-      else {
-        sessionStorage.setItem("AUTO_RELOAD_FLG", false);
-        tmReloadOff();
-      }
-    });
-    if (sessionStorage.getItem("AUTO_RELOAD_FLG") == 'true') {
-      $("#params_list_refresh_cb").prop("checked", true);
-      const iSec = parseInt(interval);
-      const iMsec = iSec * 1000;
-      tmReloadOn(iMsec);
-    }
-    else {
-      $("#params_list_refresh_tb").prop("checked", false);
-    }
   });
