@@ -137,6 +137,7 @@ class SimulatorsController < ApplicationController
     logger.debug "params= " + params.to_s
     
     simulator = Simulator.find(params[:id])
+    bExist = true
     if params[:filter_set_id].present? && params[:filter_set_id] != "undefined"
       filter_set = simulator.filter_sets.find(params[:filter_set_id])
       filter_list = ParameterSetFilter.where({"filter_set_id": params[:filter_set_id]})
@@ -146,10 +147,14 @@ class SimulatorsController < ApplicationController
         logger.debug "filter_list: " + fl.query.to_s
       end
     else
+      bExist = false
       logger.debug "filter_list not exist."
       filter_list = Mongoid::Criteria.new(ParameterSetFilter)
+      filter_list.each do |obj|
+        logger.debug "filter_list: " + obj.to_s
+      end
     end
-    render json: FilterListDatatable.new(filter_list, simulator, view_context)
+    render json: FilterListDatatable.new(filter_list, simulator, view_context, bExist)
   end
 
   # POST /simulators/:_id/_save_filter_set
@@ -160,7 +165,11 @@ class SimulatorsController < ApplicationController
     filters = params[:filter_query_array]
     logger.debug "filters: " + filters.to_s
     @simulator = Simulator.find(params[:id])
-    @new_filter_set = @simulator.filter_sets.build
+    if filter_set_id != "undefined"
+      @new_filter_set = @simulator.filter_sets.find(filter_set_id)
+    else
+      @new_filter_set = @simulator.filter_sets.build
+    end
     @new_filter_set.name = params[:name]
     logger.debug "params: " + params.to_s
     logger.debug "Filter name: " + params[:name].to_s

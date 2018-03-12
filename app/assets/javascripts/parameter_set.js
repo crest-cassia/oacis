@@ -82,6 +82,7 @@ function delete_filter(idx) {
 
 function show_filter_set_name_dlg() {
   $("#parameter_save_filter_set_modal").modal("show");
+  $("#filter_set_name").val($("#filter_set_name_p").text());
 
   $("#parameter_save_filter_set_ok").on("click", function() {
     const name = $("#filter_set_name").val();
@@ -130,13 +131,20 @@ function parameter_load_filter_set_ok_click() {
 }
 
 function submit_save_filter_set() {
+  let fName = $("#filter_set_name_p").text();
+  if (fName == null || (fName != null && fName.length < 1))
+  {
+    alert("Please set the Filter Name.");
+    return;
+  }
+
   const aoTr = $('#parameter_filter_table_body').children('TR');
   let queryArr = new Array();
 
   $.each(aoTr,
     function(index, elem) {
-      const ocb = $(elem).find('.filter_set_enable_cb');
-      const oque = $(elem).find('.filter_set_query');
+      const ocb = $(elem).find('.filter_enable_cb');
+      const oque = $(elem).find('.filter_query');
       const h = {};
       if (ocb.prop('checked')){
         h['enable'] = 'true'
@@ -146,12 +154,7 @@ function submit_save_filter_set() {
     }
   );
 
-  $("<input>", {
-    type:  'hidden',
-    id:    'filter_query_array',
-    value: queryArr
-  }).appendTo("#save_filter_set_form");
-
+  $("#filter_query_array").val(queryArr.to_s);
 
   $('#submit_save_filter_set').submit();
 }
@@ -195,7 +198,6 @@ $(function() {
 
   $("#parameter_load_filter_set_modal").on('show.bs.modal', function(event) {
     const simulator_id = event.relatedTarget.simulator_id;
-    console.log(simulator_id);
     const url = "/simulators/"+simulator_id+"/_filter_set_list"
     oFilterSetTable = create_filter_set_list(url);
   });

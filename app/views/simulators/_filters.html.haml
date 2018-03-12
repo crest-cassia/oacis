@@ -13,6 +13,7 @@
       %tbody#parameter_filter_table_body
       = hidden_field_tag :filter_set_id, filter_set_id.to_s
       = hidden_field_tag :name,""
+      = hidden_field_tag :filter_query_array,""
 
     %button#parameter_save_filter_btn.paramset_title_area_item.btn.btn-primary{onclick: "submit_save_filter_set()"}
       Save Filter Set

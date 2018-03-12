@@ -23,7 +23,7 @@ private
     a = []
     filter_set_lists.each_with_index do |filter_set, i|
       tmp = []
-      tmp << @view.radio_button( 'filter_set_rb', '', "#{filter_set.id}", {filter_set_name: "#{filter_set.name}", simulator_id: "#{@simulator.id}", class: "filter_set_enable_cb"} )
+      tmp << @view.radio_button( 'filter_set_rb', '', "#{filter_set.id}", {filter_set_name: "#{filter_set.name}", simulator_id: "#{@simulator.id}"} )
       tmp << @view.raw( "<p id=\"filter_set_#{i}\" class=\"filter_set_query\">#{filter_set.name}</p>" )
       trash = OACIS_READ_ONLY ? @view.raw("<i class=\"fa fa-trash-o\">")
         : @view.link_to( @view.raw("<i class=\"fa fa-trash-o\">"), @simulator, remote: true, method: :delete_filer_set, data: {confirm: "Are you sure?"})
