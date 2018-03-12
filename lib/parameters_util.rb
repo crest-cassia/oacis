@@ -76,4 +76,15 @@ module ParametersUtil
         return false
     end
   end
+
+  def self.get_ohperater_string(parameter, operator, definition)
+    disp_operator = operator
+    return operator unless definition
+
+    if (["Integer", "Float"].include?(definition.type))
+      idx = ParameterSetFilter.getNumTypeMatchers.index(operator)
+      disp_operator = ParameterSetFilter.getNumTypeMatcherStrings[idx]  if idx >= 0 && idx < ParameterSetFilter::NumTypeMatcherStrings.length
+    end
+    disp_operator
+  end
 end

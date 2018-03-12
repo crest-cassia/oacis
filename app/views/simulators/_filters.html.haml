@@ -1,6 +1,5 @@
 %p
-= simulator_id.to_s
-= form_tag(_save_filter_set_simulator_path(simulator_id), class: 'form-horizontal') do |f|
+= form_tag(_save_filter_set_simulator_path(simulator_id), class: 'form-horizontal', id: 'save_filter_set_form') do |f|
   .form-group
     %label
       Name
@@ -15,6 +14,7 @@
       = hidden_field_tag :filter_set_id, filter_set_id.to_s
       = hidden_field_tag :name,""
 
-    = submit_tag "Save Filter Set",  id: "parameter_save_filter_btn", class: "paramset_title_area_item btn btn-primary"
+    %button#parameter_save_filter_btn.paramset_title_area_item.btnbtn-primary{onclick: "submit_save_filter_set()"}
+      Save Filter Set
     %button#parameter_load_filter_btn.paramset_title_area_item.btn.btn-primary{onclick: "show_load_filter_set_dlg(this)", simulator_id: simulator_id}
       Load Filter Set

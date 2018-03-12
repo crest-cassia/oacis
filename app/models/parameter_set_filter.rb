@@ -169,4 +169,12 @@ class ParameterSetFilter
     self.query = h
     self.enable = para['eneble']
   end
+
+  public 
+  def self.getNumTypeMatchers
+    NumTypeMatchers
+  end
+  def self.getNumTypeMatcherStrings
+    NumTypeMatcherStrings
+  end
 end

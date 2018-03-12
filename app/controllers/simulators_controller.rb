@@ -20,8 +20,9 @@ class SimulatorsController < ApplicationController
     @query_id = params[:query_id]
 
     @filter_set_id = "5a9fb1d936eb4641c9e1150a"
+    @filter_set_id = "1"
     @filter_set_name = ""
-    if @filter_set_id.present?
+    if @filter_set_id.present? && @filter_set_id != "1"
       @filter_set = FilterSet.find(@filter_set_id)
       @filter_set_name = @filter_set.name
     end
@@ -136,27 +137,28 @@ class SimulatorsController < ApplicationController
     logger.debug "params= " + params.to_s
     
     simulator = Simulator.find(params[:id])
-    if params[:filter_set_id].present?
+    if params[:filter_set_id].present? && params[:filter_set_id] != "1"
       filter_set = simulator.filter_sets.find(params[:filter_set_id])
       filter_list = ParameterSetFilter.where({"filter_set_id": params[:filter_set_id]})
+      logger.debug "class: " + filter_list.class.to_s
       
       filter_list.each do |fl|
         logger.debug "filter_list: " + fl.query.to_s
       end
     else
       logger.debug "filter_list not exist."
+      filter_list =  Criteria.new(ParameterSetFilter)
     end
-    render json: FilterListDatatable.new(filter_list, view_context)
+    render json: FilterListDatatable.new(filter_list, simulator, view_context)
   end
 
   # POST /simulators/:_id/_save_filter_set
   def _save_filter_set
     logger.debug "save Filter"
     
-    filter_set = Hash.new
-    filter_set = params[:filter_set] if params[:filter_set].present?
-    filters = Array.new
-    filters = filter_set[:filters] if params[:filter_set].present? && filter_set[:filters].present?
+    filter_set_id = params[:filter_set_id]
+    filters = params[:filter_query_array]
+    logger.debug "filters: " + filters.to_s
     @simulator = Simulator.find(params[:id])
     @new_filter_set = @simulator.filter_sets.build
     @new_filter_set.name = params[:name]
@@ -168,17 +170,15 @@ class SimulatorsController < ApplicationController
     test = [{"eneble"=>"true", "param"=>"l", "matcher"=>"eq", "value"=>"1"}, {"enable"=>"true", "param"=>"l", "matcher"=>"eq", "value"=>"2"}]
     filters = test
 
+    new_filters = []
     filters.each do |param|
       filter = @new_filter_set.parameter_set_filters.build
       filter.simulator = @simulator
       filter.filter_set = @new_filter_set
       filter.set_one_query(param)
-      logger.debug "Filter set id: " + @new_filter_set.id
-      logger.debug "SAVE:" + param.to_s
-      filter.save
-      cnt = ParameterSetFilter.count()
-      logger.debug "CNT: " + cnt.to_s
+      new_filters << filter
     end
+    new_filters.map(&:save)
 
  #   if @new_filter_set.set_filters(filters) and @new_parameter_set_filters.save
  #     @filter_set_id = @new_filter_set.id.to_s

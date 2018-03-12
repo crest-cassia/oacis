@@ -21,7 +21,7 @@
           New Filter
         = render "filters", simulator_id: @simulator.id, filter_set_id: @filter_set_id
       .modal-footer
-        %button#parameter_new_filter_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+        %button#parameter_filter_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
           OK 
         %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
           Close
@@ -78,7 +78,7 @@
       .modal-body.large#parameter_new_filter_create_body
         = render "filter_sets", simulator: @simulator
       .modal-footer
-        %button#parameter_load_filter_set_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+        %button#parameter_load_filter_set_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal", onclick: "parameter_load_filter_set_ok_click()"}
           OK 
         %button#parameter_load_filter_set_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
           Close

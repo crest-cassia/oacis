@@ -41,6 +41,9 @@ function create_parameter_sets_list(selector, default_length) {
 function create_filter_list(url) {
   var oFilterTable = $("#parameter_filter_list").DataTable({
 /*    data: $("#parameter_filter_list").data('source')*/
+      lengthChange: false,
+      searching: false,
+      paging: false,
       ajax: {
         url: url,
         dataType: "json"
@@ -50,13 +53,16 @@ function create_filter_list(url) {
 }
 
 function create_filter_set_list(url) {
-  let oFilterSetTable = $("#parameter_filter_set_list").DataTable({
+  let loFilterSetTable = $("#parameter_filter_set_list").DataTable({
+    lengthChange: false,
+    searching: false,
+    paging: false,
     ajax: {
       url: url,
       dataType: "json"
     }
   });
-  return oFilterSetTable;
+  return loFilterSetTable;
 }
 
 function edit_filter(idx) {
@@ -86,16 +92,13 @@ function show_filter_set_name_dlg() {
 
 function show_load_filter_set_dlg(obj) {
   const simulator_id = $(obj).attr('simulator_id');
-  console.log("show_load_filter_set_dlg:" + simulator_id);
   $("#parameter_load_filter_set_modal").modal("show", {
     simulator_id: simulator_id 
   });
 }
 
 function add_new_filter() {
-  alert("OK")
   if (oFilterTable == null) {
-    alert("Null");
     return;
   }
   const paray = $("#query__param").val();
@@ -111,6 +114,47 @@ function add_new_filter() {
   }
 }
 
+function parameter_load_filter_set_ok_click() {
+  const oSelected = $('input[name="filter_set_rb[]"]:checked');
+  if (oSelected == null) {
+    return;
+  }
+  const filter_set_id = oSelected.val();
+  const filter_set_name = oSelected.attr('filter_set_name');
+  const simulator_id = oSelected.attr('simulator_id');
+  $("#filter_set_name_p").text(filter_set_name);
+  $("#name").val(filter_set_name);
+  $("#filter_set_id").val(filter_set_id);
+  const url = "/simulators/"+simulator_id+"/_parameter_set_filter_list/"+filter_set_id
+  oFilterTable.ajax.url(url).load();
+}
+
+function submit_save_filter_set() {
+  const aoTr = $('#parameter_filter_table_body').children('TR');
+  let queryArr = new Array();
+
+  $.each(aoTr,
+    function(index, elem) {
+      const ocb = elem.find('.filter_set_enable_cb');
+      const oque = elem.find('.filter_set_query');
+      const h =  new Hash();
+      if (ocb.prop('checked')){
+        h['enable'] = 'true'
+      }
+      h['query'] = oque.text();
+      queryArr.push(h);
+    }
+  );
+
+  $("<input>", {
+    type:  'hidden',
+    id:    'filter_query_array',
+    value: queryArr
+  }).appendTo("#save_filter_set_form");
+
+
+  $('#submit_save_filter_set').submit();
+}
 
 $(function() {
   $("#runs_list_modal").on('show.bs.modal', function (event) {
