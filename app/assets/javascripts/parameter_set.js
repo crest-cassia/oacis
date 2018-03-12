@@ -135,9 +135,9 @@ function submit_save_filter_set() {
 
   $.each(aoTr,
     function(index, elem) {
-      const ocb = elem.find('.filter_set_enable_cb');
-      const oque = elem.find('.filter_set_query');
-      const h =  new Hash();
+      const ocb = $(elem).find('.filter_set_enable_cb');
+      const oque = $(elem).find('.filter_set_query');
+      const h = {};
       if (ocb.prop('checked')){
         h['enable'] = 'true'
       }

@@ -20,9 +20,9 @@ class SimulatorsController < ApplicationController
     @query_id = params[:query_id]
 
     @filter_set_id = "5a9fb1d936eb4641c9e1150a"
-    @filter_set_id = "1"
+    @filter_set_id = "undefined"
     @filter_set_name = ""
-    if @filter_set_id.present? && @filter_set_id != "1"
+    if @filter_set_id.present? && @filter_set_id != "undefined"
       @filter_set = FilterSet.find(@filter_set_id)
       @filter_set_name = @filter_set.name
     end
@@ -137,7 +137,7 @@ class SimulatorsController < ApplicationController
     logger.debug "params= " + params.to_s
     
     simulator = Simulator.find(params[:id])
-    if params[:filter_set_id].present? && params[:filter_set_id] != "1"
+    if params[:filter_set_id].present? && params[:filter_set_id] != "undefined"
       filter_set = simulator.filter_sets.find(params[:filter_set_id])
       filter_list = ParameterSetFilter.where({"filter_set_id": params[:filter_set_id]})
       logger.debug "class: " + filter_list.class.to_s
@@ -147,7 +147,7 @@ class SimulatorsController < ApplicationController
       end
     else
       logger.debug "filter_list not exist."
-      filter_list =  Criteria.new(ParameterSetFilter)
+      filter_list = Mongoid::Criteria.new(ParameterSetFilter)
     end
     render json: FilterListDatatable.new(filter_list, simulator, view_context)
   end
