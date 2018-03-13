@@ -1,5 +1,23 @@
 .page-header
   %h1 Logs
+  .well
+    %h3 Filter
+    %form
+      .form-inline
+        .form-group
+          - severity_level = {"all" => -1, "FATAL" => 4, "ERROR" => 3, "WARN" => 3, "INFO" => 1, "DEBUG" => 0}
+          = select_tag 'severity', options_for_select(severity_level, selected: severity_level[0]), id:'sever_sel', class:'form-control'
+          &thinsp;
+          %label duration:
+          = text_field_tag(:'duration_start', '', size:10, class:'form-control')
+          \~
+          = text_field_tag(:'duration_end', '', size:10, class:'form-control')
+          &thinsp;
+          %label keyword match
+          = search_field_tag('match_keyword', '', class:'form-control')
+          &thinsp;
+          %a.btn.btn-primary.btn-sm{href: '.'} Apply
+    
 %table.table.table-striped.table-condensed{style: "font-size: smaller;"}
   %thead
     %tr
