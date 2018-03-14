@@ -29,6 +29,7 @@ Rails.application.routes.draw do
       get 'duplicate' unless OACIS_READ_ONLY
       post "_make_query" # for ajax
       post "_save_filter_set" # for ajax
+      post "_set_filter_set" # for ajax
       get "_parameters_list" # for ajax, datatables
 #      get "_parameter_set_filter_list" # for ajax, datatables
       match '_parameter_set_filter_list(/:filter_set_id)' => 'simulators#_parameter_set_filter_list', :via => :get, :as => '_parameter_set_filter_list'  # for ajax, datatables

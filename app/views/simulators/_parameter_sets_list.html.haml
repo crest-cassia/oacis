@@ -1,13 +1,17 @@
 %h3.paramset_title_area_item List of Parameter Sets
 
 - unless OACIS_READ_ONLY
-  %a.btn.btn-primary.paramset_title_area_item{href: new_simulator_parameter_set_path(@simulator)}
-    New Parameter Set
+  .add_padding_left
+    %a.btn.btn-primary.paramset_title_area_item{href: new_simulator_parameter_set_path(@simulator)}
+      New Parameter Set
 
-%button#parameter_filter_modal_btn.btn.paramset_title_area_item{remote: true, simulator_id: @simulator.id, filter_set_id: @filter_set_id, filter_set_name: @filter_set_name}
-  Filtering
-%span#parameter_filter_selected.paramset_title_area_item
-  No filter selected.
+.filter_set_area.paramset_title_area_item
+  %button#parameter_filter_modal_btn.btn{remote: true, simulator_id: @simulator.id, filter_set_id: @filter_set_id, filter_set_name: @filter_set_name}
+    Filtering
+  %span#parameter_filter_selected.add_padding_left
+    = @filter_set_query_string
+
+.clear-element
 
 #parameter_filter_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
@@ -21,8 +25,9 @@
           New Filter
         = render "filters", simulator_id: @simulator.id, filter_set_id: @filter_set_id
       .modal-footer
-        %button#parameter_filter_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
-          OK 
+        = form_tag(_set_filter_set_simulator_path, class: 'form-horizontal', id: 'set_filter_set_form') do 
+          = hidden_field_tag :filter_set_name_for_set, ""
+          = submit_tag("OK", {class: "btn btn-primary", name: "filter_list_ok"})
         %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
           Close
 
@@ -35,17 +40,16 @@
         %h4.paramset_title_area_item Filter
       .modal-body.large#parameter_new_filter_create_body
         .foo#queries_form_original
-          = form_tag( _make_query_simulator_path(@simulator), class: 'form-horizontal' ) do |f|
-            .row
-              .form-group.col-md-3#select_param_form
-                - prm_def = @simulator.parameter_definitions.map {|x| [x.key, {"type" => x.type, "default" => x.default}] }
-                - prm_def = Hash[*prm_def.flatten]
-                = select_tag "query[][param]", options_for_select(prm_def), class: 'form-control'
-              .form-group.col-md-2#select_matcher_form
-                = select_tag "query[][matcher]", options_for_select({""=>""}), class: 'form-control'
-              .form-group.col-md-3#select_value_form
-                = text_field_tag "query[][value]", "", class: 'form-control'
-              .col-md-6
+          .row
+            .form-group.col-md-3#select_param_form
+              - prm_def = @simulator.parameter_definitions.map {|x| [x.key, {"type" => x.type, "default" => x.default}] }
+              - prm_def = Hash[*prm_def.flatten]
+              = select_tag "query[][param]", options_for_select(prm_def), class: 'form-control'
+            .form-group.col-md-2#select_matcher_form
+              = select_tag "query[][matcher]", options_for_select({""=>""}), class: 'form-control'
+            .form-group.col-md-3#select_value_form
+              = text_field_tag "query[][value]", "", class: 'form-control'
+            .col-md-6
       .modal-footer
         %button#parameter_new_filter_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal", onclick: "add_new_filter()"}
           OK 
@@ -83,21 +87,7 @@
         %button#parameter_load_filter_set_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
           Close
 
-- if @query_list
-  %h4 Select Filter
-  = form_for(@simulator, url: {controller:"simulators", action:"show"}, html: {method: :get, class: 'form-inline'} ) do |f|
-    .form-group
-      = select_tag "query_id", options_for_select(@query_list, @query_id), prompt: "all", class: 'form-control'
-    = f.submit "Load", class: 'btn btn-primary', name: nil
-
-- unless @query_id.blank?
-  %h4 Delete Filter
-  = form_tag( _make_query_simulator_path(@simulator) ) do |f|
-    = hidden_field_tag "query_id", @query_id
-    = submit_tag "Delete this Filter", :class => 'btn btn-primary', :name => :delete_query, :confirm => 'Are you sure?'
-
-
-%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
+%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", filter_set_id: @filter_set_id)}"}
   %thead
     %tr
       - ParameterSetsListDatatable.header(@simulator).each do |th_element|

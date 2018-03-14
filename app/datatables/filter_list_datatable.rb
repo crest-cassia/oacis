@@ -36,35 +36,17 @@ private
     return a unless @b_exist
     filter_lists.each_with_index do |filter, i|
       tmp = []
-      tmp << @view.check_box( :filter_cb, id: "filter_cb_#{i}", class: "filter_enable_cb", checked: "true" )
+      tmp << @view.check_box( :filter_cb, "", {id: "filter_cb_#{i}", class: "filter_enable_cb", checked: filter.enable}, true, false )
       tmp << @view.raw( "<p id=\"filter_key_#{i}\" class=\"filter_query\">#{query_parser(filter.query)}</p>" )
-      edit = OACIS_READ_ONLY ? @view.raw("<i class=\"fa fa-edit\">")
-        : @view.link_to( @view.raw("<i class=\"fa fa-edit\">"), "javascript:void(0);", onclick:"edit_filter(#{i})")
-      tmp << edit
-      trash = OACIS_READ_ONLY ? @view.raw("<i class=\"fa fa-trash-o\">")
-        : @view.link_to( @view.raw("<i class=\"fa fa-trash-o\">"), "javascript:void(0);", onclick:"delete_filter(#{i})", data: {confirm: "Are you sure?"})
-      tmp << trash
+      tmp << @view.link_to( @view.raw("<i class=\"fa fa-edit\">"), "javascript:void(0);", onclick:"edit_filter(this)")
+      tmp <<  @view.link_to( @view.raw("<i class=\"fa fa-trash-o\">"), "javascript:void(0);", onclick:"delete_filter(this)", data: {confirm: "Are you sure?"})
       a << tmp
     end
     a
   end
 
   def query_parser(query_hash)
-    query_str = ""
-    query_hash.each do |key, criteria|
-      query_str << key
-      criteria.each do |k, v|
-        Rails.logger.debug "v= " + v.to_s
-        query_str << " " << cnv_operator(key, k) << " " << v.to_s
-      end
-    end
-    query_str
-  end
-
-  def cnv_operator(parameter, operator)
-    disp_operator = operator
-    pd = @simulator.parameter_definition_for(parameter)
-    disp_operator = ParametersUtil.get_ohperater_string(parameter, operator, pd)
+    return  ParametersUtil.parse_query_hash_to_str(query_hash, @simulator)
   end
 
   def filter_lists

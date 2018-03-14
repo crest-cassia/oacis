@@ -59,32 +59,6 @@ class ParameterSetFilter
         end
       end
     end
-
-  end
-
-  #convert format from string to selector
-  def parameter_sets
-    q = ParameterSet.where(simulator: simulator)
-    self.query.each do |key,criteria|
-      h = {}
-      type = self.simulator.parameter_definition_for(key).type
-      criteria.each do |matcher,value|
-        unless supported_matchers(type).include?(matcher)
-          raise "undefined matcher #{matcher} for #{type}"
-        end
-        if type == "String"
-          h["v.#{key}"] = string_matcher_to_regexp(matcher, value)
-        else
-          h["v.#{key}"] = (matcher == "eq" ? value : {"$#{matcher}" => value} )
-        end
-        q = q.where(h)
-      end
-    end
-    return q
-  end
-
-  def selector
-    parameter_sets.selector
   end
 
   private
@@ -167,7 +141,7 @@ class ParameterSetFilter
 
     #h includes one or more hash(s) that can be converted to selector(s)
     self.query = h
-    self.enable = para['eneble']
+    self.enable = para['enable']
   end
 
   public 
@@ -176,5 +150,11 @@ class ParameterSetFilter
   end
   def self.getNumTypeMatcherStrings
     NumTypeMatcherStrings
+  end
+  def self.getBooleanTypeMatchers
+    BooleanTypeMatchers
+  end
+  def self.getStringTypeMatchers
+    StringTypeMatchers
   end
 end

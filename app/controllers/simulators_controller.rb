@@ -19,13 +19,23 @@ class SimulatorsController < ApplicationController
     @analyzers = @simulator.analyzers
     @query_id = params[:query_id]
 
-    @filter_set_id = "5a9fb1d936eb4641c9e1150a"
-    @filter_set_id = "undefined"
+    @filter_set_id = params[:filter_set_id]
     @filter_set_name = ""
+    @filter_set_query_string = "No filter selected."
+    logger.debug "filter_set_id: " + @filter_set_id.to_s
     if @filter_set_id.present? && @filter_set_id != "undefined"
-      @filter_set = FilterSet.find(@filter_set_id)
-      @filter_set_name = @filter_set.name
+      filter_set = FilterSet.find(@filter_set_id)
+      @filter_set_name = filter_set.name
+      a = []
+      filter_set.parameter_set_filters.each do |filter|
+        logger.debug "Loop filter " + filter.enable.to_s
+        logger.debug "Loop filter " + filter.query.to_s
+        next unless filter.enable
+        a << ParametersUtil.parse_query_hash_to_str(filter.query, @simulator)
+      end
+      @filter_set_query_string = a.join(" and ")
     end
+    logger.debug "filter_set_query_string: " + @filter_set_query_string
 
     if @simulator.parameter_set_queries.present?
       @query_list = {}
@@ -128,6 +138,7 @@ class SimulatorsController < ApplicationController
     else
       logger.debug "filter_set not exist. "
     end
+    logger.debug "_filter_set_list render"
     render json: FilterSetListDatatable.new(filter_sets, simulator, view_context)
   end
 
@@ -149,10 +160,6 @@ class SimulatorsController < ApplicationController
     else
       bExist = false
       logger.debug "filter_list not exist."
-      filter_list = Mongoid::Criteria.new(ParameterSetFilter)
-      filter_list.each do |obj|
-        logger.debug "filter_list: " + obj.to_s
-      end
     end
     render json: FilterListDatatable.new(filter_list, simulator, view_context, bExist)
   end
@@ -162,32 +169,41 @@ class SimulatorsController < ApplicationController
     logger.debug "save Filter"
     
     filter_set_id = params[:filter_set_id]
-    filters = params[:filter_query_array]
+    filters_str = params[:filter_query_array]
+    logger.debug "filters_str: " + filters_str
+    filters = JSON.parse(filters_str)
     logger.debug "filters: " + filters.to_s
     @simulator = Simulator.find(params[:id])
-    if filter_set_id != "undefined"
+    @new_filter_set = nil
+    if filter_set_id != "undefined" && @simulator.filter_sets.find(filter_set_id).name == params[:name]
       @new_filter_set = @simulator.filter_sets.find(filter_set_id)
-    else
+      @new_filter_set.parameter_set_filters.destroy()
+    else 
       @new_filter_set = @simulator.filter_sets.build
+      @new_filter_set.name = params[:name]
+      unless @new_filter_set.save 
+        flash.now[:alert] = "Failed to create a filter set" + @new_filter_set.errors.full_messages.to_s
+      end
     end
-    @new_filter_set.name = params[:name]
     logger.debug "params: " + params.to_s
     logger.debug "Filter name: " + params[:name].to_s
-    @new_filter_set.save
-
-    # testdata
-    test = [{"eneble"=>"true", "param"=>"l", "matcher"=>"eq", "value"=>"1"}, {"enable"=>"true", "param"=>"l", "matcher"=>"eq", "value"=>"2"}]
-    filters = test
 
     new_filters = []
-    filters.each do |param|
-      filter = @new_filter_set.parameter_set_filters.build
-      filter.simulator = @simulator
-      filter.filter_set = @new_filter_set
-      filter.set_one_query(param)
-      new_filters << filter
+    filters.each_with_index do |param, i|
+      filter_hash = ParametersUtil.parse_query_str_to_hash(param["query"])
+      filter_hash["enable"] = param["enable"]
+      logger.debug "filter_hash: " + filter_hash.to_s
+      new_filters << @new_filter_set.parameter_set_filters.build
+      new_filters[i].simulator = @simulator
+      new_filters[i].filter_set = @new_filter_set
+      new_filters[i].set_one_query(filter_hash)
     end
-    new_filters.map(&:save)
+
+    if new_filters.map(&:save)
+      flash.now[:notice] = "A new filter set is created or over writed."
+    else
+      flash.now[:notice] = "Failed to create a filter set."
+    end
 
  #   if @new_filter_set.set_filters(filters) and @new_parameter_set_filters.save
  #     @filter_set_id = @new_filter_set.id.to_s
@@ -196,6 +212,23 @@ class SimulatorsController < ApplicationController
  #     flash[:alert] = "Failed to create a filter set"
  #   end
     
+  end
+
+  # POST /simulators/:_id/_set_filter_set redirect_to simulators#show
+  def _set_filter_set
+    logger.debug "set Filter set"
+
+    filter_set_name = params[:filter_set_name_for_set]
+    if filter_set_name.present?
+      logger.debug "Filter set name: " + filter_set_name
+      binding.pry
+      @simulator = Simulator.find(params[:id])
+      filter_set = @simulator.filter_sets.where({name: filter_set_name})
+      filter_set.each do |fs|
+        @filter_set_id = fs.id
+      end
+    end
+    redirect_to  :action => "show", :filter_set_id => @filter_set_id
   end
 
   # POST /simulators/:_id/_make_query redirect_to simulators#show
@@ -221,12 +254,11 @@ class SimulatorsController < ApplicationController
   end
 
   def _parameters_list
-    logger.debug "_parameters_list"
     simulator = Simulator.find(params[:id])
     parameter_sets = simulator.parameter_sets
-    if params[:query_id].present?
-      q = ParameterSetQuery.find(params[:query_id])
-      parameter_sets = q.parameter_sets
+    if params[:filter_set_id].present?
+      f = FilterSet.find(params[:filter_set_id])
+      parameter_sets = f.parameter_sets
     end
     keys = simulator.parameter_definitions.map {|pd| pd.key }
     num_ps_total = simulator.parameter_sets.count

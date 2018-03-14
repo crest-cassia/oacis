@@ -65,12 +65,12 @@ function create_filter_set_list(url) {
   return loFilterSetTable;
 }
 
-function edit_filter(idx) {
-  alert("E: " + idx);
-  const selector = "filter_key_" + idx;
-  const q = $(selector).text();
-  const sp = /\s*|\{|\}/;
-     
+function edit_filter(obj) {
+  const oTr = $(obj).parent().parent()
+  const oPQuery = $(oTr).find(".filter_query");
+  const query_id = $(oPQuery).attr('id');
+    
+  $("#parameter_new_filter_modal").attr('query_id', query_id); 
   $("#parameter_new_filter_modal").modal('show');
 
 }
@@ -88,6 +88,7 @@ function show_filter_set_name_dlg() {
     const name = $("#filter_set_name").val();
     $("#filter_set_name_p").text(name);
     $("#name").val(name);
+    $("#filter_set_name_for_set").val(name);
   });
 }
 
@@ -103,14 +104,15 @@ function add_new_filter() {
     return;
   }
   const paray = $("#query__param").val();
-  const matcher = $("#query__matcher").val();
+  const matcher = $("#query__matcher option:selected").text();
   const value = $("#query__value").val();
+  const rownum = oFilterTable.rows().length;
   if (value.length >0) {
     oFilterTable.row.add([
-      '<input type="checkbox" id="filter_cb_add" value="true">',
-      paray + " " + matcher + " " + value,
-      '<i class="fa fa-edit">',
-      '<i class="fa fa-trash-o">'
+      '<input type="checkbox" id="filter_cb_add" class="filter_enable_cb" value="true" checked="checked">',
+      '<p id="filter_key_' + rownum + '" class="filter_query">' + paray + " " + matcher + " " + value + '</p>',
+      '<a href="javascript:void(0);" onclick="edit_filter(this)"><i class="fa fa-edit"></a>',
+      '<a href="javascript:void(0);" onclick="delete_filter(this)"><i class="fa fa-trash-o"></a>'
     ]).draw();
   }
 }
@@ -125,6 +127,7 @@ function parameter_load_filter_set_ok_click() {
   const simulator_id = oSelected.attr('simulator_id');
   $("#filter_set_name_p").text(filter_set_name);
   $("#name").val(filter_set_name);
+  $("#filter_set_name_for_set").val(filter_set_name);
   $("#filter_set_id").val(filter_set_id);
   const url = "/simulators/"+simulator_id+"/_parameter_set_filter_list/"+filter_set_id
   oFilterTable.ajax.url(url).load();
@@ -135,7 +138,7 @@ function submit_save_filter_set() {
   if (fName == null || (fName != null && fName.length < 1))
   {
     alert("Please set the Filter Name.");
-    return;
+    return false;
   }
 
   const aoTr = $('#parameter_filter_table_body').children('TR');
@@ -146,15 +149,15 @@ function submit_save_filter_set() {
       const ocb = $(elem).find('.filter_enable_cb');
       const oque = $(elem).find('.filter_query');
       const h = {};
-      if (ocb.prop('checked')){
-        h['enable'] = 'true'
-      }
+      h['enable'] = ocb.prop('checked');
       h['query'] = oque.text();
       queryArr.push(h);
     }
   );
 
-  $("#filter_query_array").val(queryArr.to_s);
+  const str = JSON.stringify(queryArr);
+
+  $("#filter_query_array").val(str);
 
   $('#submit_save_filter_set').submit();
 }
@@ -196,9 +199,21 @@ $(function() {
     });
   });
 
+  $("#parameter_filter_modal").on('hide.bs.modal', function(event) {
+    oFilterTable.destroy();
+  });
+
   $("#parameter_load_filter_set_modal").on('show.bs.modal', function(event) {
     const simulator_id = event.relatedTarget.simulator_id;
     const url = "/simulators/"+simulator_id+"/_filter_set_list"
     oFilterSetTable = create_filter_set_list(url);
+  });
+  $("#parameter_load_filter_set_modal").on('hide.bs.modal', function(event) {
+    oFilterSetTable.destroy();
+  });
+  $("#parameter_new_filter_modal").on('show.bs.modal', function(event) {
+    if ($(this).attr('query_id') != null) {
+      alert($(this).attr('query_id'));
+    }
   });
 });
