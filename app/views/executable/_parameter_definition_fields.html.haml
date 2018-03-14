@@ -11,5 +11,5 @@
     .col-md-8
       = f.text_area :description, placeholder: "Description", rows: 3, class: 'form-control'
     - unless disabled
-      = link_to "remove", '#', class: "remove_fields"
+      = link_to raw('<i class="fa fa-trash-o">'), '#', class: "remove_fields"
 = f.hidden_field :_destroy
