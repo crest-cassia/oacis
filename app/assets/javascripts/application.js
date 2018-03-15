@@ -58,4 +58,24 @@ $(document).ready( function() {
       position_to_add.before($(this).data('fields').replace(regexp, time));
       event.preventDefault();
   });
+  $('form').on('click', '.up_fields', function() {
+    var me = $(this).closest('.parameter-definition-field')[0];
+    var p_lst =  $('.parameter-definition-field');
+    var idx, em = null;
+    for ( idx = 0; idx < p_lst.length; idx++ ) {
+      if ( p_lst[idx] === me ) {
+        em = p_lst[idx];
+        break;
+      }
+    }
+    if ( em == null || idx < 1 ) {
+      event.preventDefault();
+      return;
+    }
+    event.preventDefault();
+  });
+  $('form').on('click', '.down_fields', function() {
+    var me = $(this).closest('.parameter-definition-field')[0]
+    event.preventDefault();
+  });
 });
