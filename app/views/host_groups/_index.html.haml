@@ -1,5 +1,5 @@
 .page-header
-  %h1 Host Groups
+  %h1 Host Group(s)
 
 %table.table.table-striped
   %thead
@@ -17,5 +17,5 @@
           = link_to 'Destroy', hg, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if hg.destroyable? and (!OACIS_READ_ONLY)
 
 - unless OACIS_READ_ONLY
-  %a.btn.btn-primary{href: new_host_group_path} New Host Group
+  %a.btn.btn-primary{href: new_host_group_path} New Host Group(s)
 
