@@ -1,11 +1,12 @@
 class RunsListDatatable
 
-  HEADER  = ['<th>RunID</th>', '<th>status</th>', '<th>priority</th>',
-             '<th>elapsed</th>',
-             '<th>MPI</th>', '<th>OMP</th>', '<th>version</th>',
-             '<th>created_at</th>', '<th>updated_at</th>', '<th>host(group)</th>', '<th>job_id</th>',
+  HEADER  = ['<th style="min-width: 18px; width: 1%;"></th>',
+             '<th class="span1">RunID</th>', '<th class="span1">status</th>', '<th class="span1">priority</th>',
+             '<th class="span1">elapsed</th>',
+             '<th class="span1">MPI</th>', '<th class="span1">OMP</th>', '<th class="span1">version</th>',
+             '<th class="span1">created_at</th>', '<th class="span1">updated_at</th>', '<th class="span1">host(group)</th>', '<th class="span1">job_id</th>',
              '<th style="min-width: 18px; width: 1%;"></th>']
-  SORT_BY = ["id", "status", "priority", "real_time",
+  SORT_BY = ["id", "id", "status", "priority", "real_time",
              "mpi_procs", "omp_threads", "simulator_version",
              "created_at", "updated_at", "submitted_to", "job_id", "id"]
 
@@ -29,6 +30,7 @@ private
     a = []
     runs_lists.each do |run|
       tmp = []
+      tmp << @view.check_box_tag("checkbox[run]", run.id, false, align: "center")
       tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )
       tmp << Run::PRIORITY_ORDER[run.priority]
