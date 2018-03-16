@@ -1,6 +1,6 @@
 module OacisChannelUtil
 
-  def self.createJobStatusMessge(job, status = nil)
+  def self.createJobStatusMessage(job, status = nil)
     status ||= job.status;
     ws_mess = { :id => "#{job.id}",
                 :status => "#{status}",

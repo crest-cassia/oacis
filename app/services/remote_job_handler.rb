@@ -242,7 +242,7 @@ class RemoteJobHandler
       job.job_id = job_id
       job.submitted_at = DateTime.now
       job.save!
-      StatusChannel.broadcast_to('message', OacisChannelUtil.createStatusMessage(job));
+      StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job));
     end
   end
 
