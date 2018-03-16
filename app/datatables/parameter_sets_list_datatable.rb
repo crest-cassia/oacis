@@ -18,7 +18,7 @@ class ParameterSetsListDatatable
   end
 
   def self.header(simulator)
-    header = [ '<th style="min-width: 18px; width: 1%"></th>',
+    header = [ '<th style="min-width: 18px; width: 1%;"></th>',
                '<th class="span1" style="min-width: 150px;">Progress</th>',
                '<th class="span1" style="min-width: 50px;">ParamSetID</th>',
                '<th class="span1">Updated_at</th>'
@@ -38,7 +38,7 @@ private
   def data
     parameter_sets_list.map do |ps|
       tmp = []
-      tmp << @view.content_tag(:i, '', parameter_set_id: ps.id.to_s, align: "center", class: "fa fa-search clickable")
+      tmp << @view.check_box_tag("checkbox[ps]", ps.id, false, align: "center")
       counts = runs_status_counts(ps)
       progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
       tmp << @view.raw(progress)
