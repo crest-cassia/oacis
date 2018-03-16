@@ -2,16 +2,17 @@ class FilterSetListDatatable
 
   HEADER = ['<th>select</th>', '<th>name</th>', '<th>delete</th>']
 
-  def initialize(filter_set_list, simulator, view)
+  def initialize(filter_set_list, simulator, view, total_count)
     @view = view
     @simulator = simulator
     @filter_set_list = filter_set_list
+    @total_count = total_count
   end
 
   def as_json(options = {})
     {
       draw: @view.params[:draw].to_i,
-      recordsTotal: @filter_set_list.count,
+      recordsTotal: @total_count,
       recordsFiltered: @filter_set_list.count,
       data: data
     }

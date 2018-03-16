@@ -88,6 +88,17 @@ module ParametersUtil
     disp_operator
   end
 
+  def self.get_operator(parameter, operator, definition)
+    disp_operator = operator
+    return operator unless definition
+
+    if (["Integer", "Float"].include?(definition.type))
+      idx = ParameterSetFilter.getNumTypeMatcherStrings.index(operator)
+      disp_operator = ParameterSetFilter.getNumTypeMatchers[idx]  if idx >= 0 && idx < ParameterSetFilter::NumTypeMatchers.length
+    end
+    disp_operator
+  end
+
   def self.parse_query_str_to_hash(str)
     arr = str.split();
     h = {}

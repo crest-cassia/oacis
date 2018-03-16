@@ -48,7 +48,6 @@ class FilterSet
             h["v.#{key}"] = (matcher == "eq" ? value : {"$#{matcher}" => value} )
           end
         end
-        Rails.logger.debug "Where: " + h.to_s
         q = q.where(h)
       end
     end
@@ -59,7 +58,7 @@ class FilterSet
     parameter_sets.selector
   end
 
-  private
+private
   def supported_matchers(type)
     supported_matchers = []
     case type
@@ -75,7 +74,8 @@ class FilterSet
     return supported_matchers
   end
 
-  def string_matcher_to_regexp(matcher, value)
+public
+  def self.string_matcher_to_regexp(matcher, value)
     case matcher
     when "start_with"
       /\A#{value}/
@@ -90,4 +90,18 @@ class FilterSet
     end
   end
 
+  def self.supported_matcher_str(type)
+    supported_matchers = []
+    case type
+    when "Integer", "Float"
+      supported_matchers = ParameterSetFilter.getNumTypeMatcherStrings()
+    when "Boolean"
+      supported_matchers = ParameterSetFilter.BooleanTypeMatchers()
+    when "String"
+      supported_matchers = ParameterSetFilter.StringTypeMatchers()
+    else
+      raise "not supported type"
+    end
+    return supported_matchers
+  end
 end

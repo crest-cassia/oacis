@@ -6,24 +6,12 @@ class ParameterSetFilter
   belongs_to :simulator
   validates :simulator, presence: true
   validates :query, presence: true
-  validate :validate_uniqueness_of_query
   validate :validate_format_of_query
 
   NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
   NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]
   BooleanTypeMatchers = ["eq", "ne"]
   StringTypeMatchers = ["start_with", "end_with", "include", "match"]
-
-  def validate_uniqueness_of_query
-    if self.query.blank?
-      self.errors.add(:query, "must not be blank")
-      return
-    end
-
-    if ParameterSetQuery.where(simulator: simulator, query: query).count > 0
-      self.errors.add(:query, "must be unique")
-    end
-  end
 
   def validate_format_of_query
     unless !self.query.blank? && self.query.is_a?(Hash)
@@ -126,7 +114,7 @@ class ParameterSetFilter
     h = {}
     parameter = para['param']
     defn = simulator.parameter_definition_for(parameter)
-    type = defn.type
+    type = simulator.parameter_definition_for(parameter).type
     value = para['value']
     matcher = para['matcher']
 

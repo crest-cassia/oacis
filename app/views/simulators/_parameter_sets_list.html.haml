@@ -1,14 +1,14 @@
 %h3.paramset_title_area_item List of Parameter Sets
 
 - unless OACIS_READ_ONLY
-  .add_padding_left
-    %a.btn.btn-primary.paramset_title_area_item{href: new_simulator_parameter_set_path(@simulator)}
-      New Parameter Set
+  %a.btn.btn-primary.paramset_title_area_item.add_margin{href: new_simulator_parameter_set_path(@simulator)}
+    New Parameter Set
 
+.clear-element
 .filter_set_area.paramset_title_area_item
-  %button#parameter_filter_modal_btn.btn{remote: true, simulator_id: @simulator.id, filter_set_id: @filter_set_id, filter_set_name: @filter_set_name}
+  %button#parameter_filter_modal_btn.btn.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name}
     Filtering
-  %span#parameter_filter_selected.add_padding_left
+  %span#parameter_filter_selected.add_padding.add_margin_bottom
     = @filter_set_query_string
 
 .clear-element
@@ -23,13 +23,15 @@
       .modal-body.large#parameter_filter_setting_body
         %button#parameter_new_filter_btn.paramset_title_area_item.btn.btn-primary
           New Filter
-        = render "filters", simulator_id: @simulator.id, filter_set_id: @filter_set_id
+        = render "filters", simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name
       .modal-footer
         = form_tag(_set_filter_set_simulator_path, class: 'form-horizontal', id: 'set_filter_set_form') do 
-          = hidden_field_tag :filter_set_name_for_set, ""
-          = submit_tag("OK", {class: "btn btn-primary", name: "filter_list_ok"})
-        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
-          Close
+          = hidden_field_tag :filter_set_query_for_set, ""
+          = hidden_field_tag :filter_set_name_for_set, @filter_set_name
+          %button#parameter_filter_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal", onclick: "parameter_filter_dlg_ok()"}
+            OK
+          %button.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+            Cancel
 
 #parameter_new_filter_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
@@ -67,10 +69,13 @@
         %h4.paramset_title_area_item Name
         = text_field_tag "filter_set_name", "", class: 'form-control', id: "filter_set_name"
       .modal-footer
-        %button#parameter_save_filter_set_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
-          OK 
-        %button#parameter_save_filter_set_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
-          Close
+        = form_tag(_save_filter_set_simulator_path, class: 'form-horizontal', id: 'save_filter_set_form') do |f|
+          = hidden_field_tag :name,""
+          = hidden_field_tag :filter_query_array,""
+          %button#parameter_save_filter_set_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+            OK 
+          %button#parameter_save_filter_set_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+            Close
 
 #parameter_load_filter_set_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
@@ -87,7 +92,7 @@
         %button#parameter_load_filter_set_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
           Close
 
-%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", filter_set_id: @filter_set_id)}"}
+%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", filter_hash: @filter_hash)}"}
   %thead
     %tr
       - ParameterSetsListDatatable.header(@simulator).each do |th_element|

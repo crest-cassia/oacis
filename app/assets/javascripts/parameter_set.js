@@ -40,7 +40,6 @@ function create_parameter_sets_list(selector, default_length) {
 
 function create_filter_list(url) {
   var oFilterTable = $("#parameter_filter_list").DataTable({
-/*    data: $("#parameter_filter_list").data('source')*/
       lengthChange: false,
       searching: false,
       paging: false,
@@ -56,7 +55,8 @@ function create_filter_set_list(url) {
   let loFilterSetTable = $("#parameter_filter_set_list").DataTable({
     lengthChange: false,
     searching: false,
-    paging: false,
+    serverSide: true,
+    pageLength: 10,
     ajax: {
       url: url,
       dataType: "json"
@@ -85,11 +85,26 @@ function show_filter_set_name_dlg() {
   $("#filter_set_name").val($("#filter_set_name_p").text());
 
   $("#parameter_save_filter_set_ok").on("click", function() {
-    const name = $("#filter_set_name").val();
+    let name = $("#filter_set_name").val();
+    if (name == null || (name != null && name.length < 1))
+    {
+      alert("Please set the Filter Name.");
+      return false;
+    }
     $("#filter_set_name_p").text(name);
     $("#name").val(name);
     $("#filter_set_name_for_set").val(name);
+
+    const str = make_queries_str();
+    $("#filter_query_array").val(str);
+    $('#save_filter_set_form').submit();
   });
+}
+
+function parameter_filter_dlg_ok() {
+  const queries_str = make_queries_str();
+  $("#filter_set_query_for_set").val(queries_str);
+  $("#set_filter_set_form").submit();
 }
 
 function show_load_filter_set_dlg(obj) {
@@ -129,18 +144,11 @@ function parameter_load_filter_set_ok_click() {
   $("#name").val(filter_set_name);
   $("#filter_set_name_for_set").val(filter_set_name);
   $("#filter_set_id").val(filter_set_id);
-  const url = "/simulators/"+simulator_id+"/_parameter_set_filter_list/"+filter_set_id
+  const url = "/simulators/"+simulator_id+"/_parameter_set_filter_list?filter_set_id="+filter_set_id
   oFilterTable.ajax.url(url).load();
 }
 
-function submit_save_filter_set() {
-  let fName = $("#filter_set_name_p").text();
-  if (fName == null || (fName != null && fName.length < 1))
-  {
-    alert("Please set the Filter Name.");
-    return false;
-  }
-
+function make_queries_str() {
   const aoTr = $('#parameter_filter_table_body').children('TR');
   let queryArr = new Array();
 
@@ -156,10 +164,7 @@ function submit_save_filter_set() {
   );
 
   const str = JSON.stringify(queryArr);
-
-  $("#filter_query_array").val(str);
-
-  $('#submit_save_filter_set').submit();
+  return str;
 }
 
 $(function() {
@@ -178,19 +183,21 @@ $(function() {
 $(function() {
   $('#parameter_filter_modal_btn').on('click', function(){
     const simulator_id = $(this).attr('simulator_id');
-    const filter_set_id = $(this).attr('filter_set_id');
+    const filter_json = $(this).attr('filter_json');
     const filter_set_name = $(this).attr('filter_set_name');
     $('#parameter_filter_modal').modal('show', {
       simulator_id: simulator_id,
-      filter_set_id: filter_set_id,
-      filter_set_name: filter_set_name
+      filter_set_id: "undefined",
+      filter_set_name: filter_set_name,
+      filter_json: filter_json
     });
   });
   $("#parameter_filter_modal").on('show.bs.modal', function(event) {
     const simulator_id = event.relatedTarget.simulator_id;
     const filter_set_id = event.relatedTarget.filter_set_id;
     const filter_set_name = event.relatedTarget.filter_set_name;
-    const url = "/simulators/"+simulator_id+"/_parameter_set_filter_list/"+filter_set_id;
+    const filter_json = event.relatedTarget.filter_json
+    const url = "/simulators/"+simulator_id+"/_parameter_set_filter_list?filter_set_id="+filter_set_id+"&filter_json="+filter_json;
     oFilterTable = create_filter_list(url);
     $("#filter_set_name_p").text(filter_set_name);
     $("#name").val(filter_set_name);
