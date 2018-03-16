@@ -17,7 +17,12 @@ function create_parameter_sets_list(selector, default_length) {
       restore: "Show All Columns"
     },
     bStateSave: true,
-    ajax: $(selector).data('source')
+    ajax: $(selector).data('source'),
+      "createdRow": function(row, data, dataIndex) {
+        const objA = data[0];
+        const lnId = data[11];
+        $(row).attr('id', lnId);
+      }
   });
   $(selector+'_length').append(
     '<i class="fa fa-refresh padding-half-em clickable" id="params_list_refresh"></i>'
