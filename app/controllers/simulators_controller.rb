@@ -141,6 +141,7 @@ class SimulatorsController < ApplicationController
       filter_sets = simulator.filter_sets
       total_count = filter_sets.count
     else
+      total_count = 0
       logger.debug "filter_set not exist. "
     end
     render json: FilterSetListDatatable.new(filter_sets, simulator, view_context, total_count)

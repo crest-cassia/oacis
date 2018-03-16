@@ -13,7 +13,7 @@ class FilterSetListDatatable
     {
       draw: @view.params[:draw].to_i,
       recordsTotal: @total_count,
-      recordsFiltered: @filter_set_list.count,
+      recordsFiltered: @total_count,
       data: data
     }
   end
@@ -22,6 +22,7 @@ private
 
   def data
     a = []
+    return a if @total_count < 1
     filter_set_lists.each_with_index do |filter_set, i|
       tmp = []
       tmp << @view.radio_button( 'filter_set_rb', '', "#{filter_set.id}", {filter_set_name: "#{filter_set.name}", simulator_id: "#{@simulator.id}"} )
@@ -35,7 +36,7 @@ private
   end
 
   def filter_set_lists
-    @filter_set_list.skip(page).limit(per_page)
+      @filter_set_list.skip(page).limit(per_page)
   end
 
   def page
