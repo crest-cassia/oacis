@@ -43,7 +43,23 @@ $(document).ready(function () {
     });
 });
 
-// add/remove nested forms
+// add/remove/Up/Down nested forms
+
+function exchange_form_order(me, em) {
+  var my_name = me.children[0].children[0].children[0].value;
+  var my_type = me.children[0].children[1].children[0].value;
+  var my_dval = me.children[0].children[2].children[0].value;
+  var my_desc = me.children[1].children[0].children[0].value;
+  me.children[0].children[0].children[0].value = em.children[0].children[0].children[0].value;
+  me.children[0].children[1].children[0].value = em.children[0].children[1].children[0].value;
+  me.children[0].children[2].children[0].value = em.children[0].children[2].children[0].value;
+  me.children[1].children[0].children[0].value = em.children[1].children[0].children[0].value;
+  em.children[0].children[0].children[0].value = my_name;
+  em.children[0].children[1].children[0].value = my_type;
+  em.children[0].children[2].children[0].value = my_dval;
+  em.children[1].children[0].children[0].value = my_desc;
+}
+
 $(document).ready( function() {
   $('form').on('click', '.remove_fields', function() {
     $(this).closest('.parameter-definition-field').next('input[type=hidden]').val(true);
@@ -72,10 +88,26 @@ $(document).ready( function() {
       event.preventDefault();
       return;
     }
-    event.preventDefault();
+    em = p_lst[idx - 1];
+    exchange_form_order(me, em);
+    window.refresh();
   });
   $('form').on('click', '.down_fields', function() {
-    var me = $(this).closest('.parameter-definition-field')[0]
-    event.preventDefault();
+    var me = $(this).closest('.parameter-definition-field')[0];
+    var p_lst =  $('.parameter-definition-field');
+    var idx, em = null;
+    for ( idx = 0; idx < p_lst.length; idx++ ) {
+      if ( p_lst[idx] === me ) {
+        em = p_lst[idx];
+        break;
+      }
+    }
+    if ( em == null || idx >= p_lst.length - 1 ) {
+      event.preventDefault();
+      return;
+    }
+    em = p_lst[idx + 1];
+    exchange_form_order(me, em);
+    window.refresh();
   });
 });
