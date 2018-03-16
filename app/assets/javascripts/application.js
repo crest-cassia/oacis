@@ -62,6 +62,13 @@ function exchange_form_order(me, em) {
 
 $(document).ready( function() {
   $('form').on('click', '.remove_fields', function() {
+    var me = $(this).closest('.parameter-definition-field')[0];
+    var res = confirm("Are you sure to remove the parameter: " +
+                      me.children[0].children[0].children[0].value);
+    if ( ! res ) {
+      event.preventDefault();
+      return;
+    }
     $(this).closest('.parameter-definition-field').next('input[type=hidden]').val(true);
     $(this).closest('.parameter-definition-field').remove();
     event.preventDefault();
