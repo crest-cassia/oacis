@@ -18,7 +18,7 @@
     - @hosts.each do |host|
       = content_tag_for :tr, host do
         %td= link_to(host.name, host)
-        %td= raw(host_status_label(host.status))
+        %td= link_to(raw(host_status_label(host.status)), _toggle_host_path(host))
         %td= host.work_base_dir
         %td= host.mounted_work_base_dir
         %td= host.max_num_jobs
