@@ -32,6 +32,7 @@ class ParameterSetsController < ApplicationController
     previous_num_runs = simulator.runs.count
 
     permitted_params = params.permit(v: params[:v].keys)
+    logger.debug "permitted_params: " + permitted_params.to_s
     @param_set = simulator.parameter_sets.build(permitted_params)
     # this run is not saved, but used when rendering new
     if @num_runs > 0
