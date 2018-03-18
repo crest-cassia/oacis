@@ -93,6 +93,8 @@ Rails.application.routes.draw do
     end
   end
 
+  get '/hosts/:id/_toggle', to: 'hosts#_toggle_status', as: '_toggle_host'
+
   host_group_actions = ["show"]
   host_group_actions += ["new", "create", "edit", "update", "destroy"] unless OACIS_READ_ONLY
   resources :host_groups, only: host_group_actions do
