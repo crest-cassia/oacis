@@ -102,7 +102,15 @@
       setInterval( function() {
         if( $("#tab-list-parameters").length > 0 ) { // ParameterSet tab in Simulator show page
           if( $("#tab-list-parameters")[0].classList.contains("active") ) {
-            oPsTable.ajax.reload(null, false);
+            var id_list = $('.dataTable input:checked').map(function() {
+               return $(this).val();
+            }).get();
+            oPsTable.ajax.reload( function(){
+              for(var i=0; i<id_list.length; i++){
+                $('input[value='+ id_list[i] +']').prop('checked', true);
+                if(i == id_list.length-1) $('input[value='+ id_list[i] +']').prop('checked', true).trigger('change');
+              }
+            }, false);
           }
         }
       }, 5000);

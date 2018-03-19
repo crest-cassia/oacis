@@ -20,17 +20,22 @@ $(function() {
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="runs_list_select_all">Select/Unselect All</button>' +
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="runs_list_toggle">Toggle Selection</button>' +
     '<form name="runs_form">' +
-    '<input type="hidden" name="id">' +
+    '<input type="hidden" name="id_list">' +
     '<input type="button" class="btn btn-primary margin-half-em" value="Delete Selected" id="runs_delete_sel">' +
     '</form>' +
     '</div>'
     );
-    var id = '';
+    var id_list = '';
     var checked_cnt = 0;
     var text=document.createTextNode(checked_cnt);
     runs_count.appendChild(text);
     var refresh_icon = $(selector+'_length').children('#runs_list_refresh');
-    refresh_icon.on('click', function() { oTable.ajax.reload(null, false);});
+    refresh_icon.on('click', function() { oTable.ajax.reload( function(){
+      for(var i=0; i<id_list.length; i++){
+        $('input[value='+ id_list[i] +']').prop('checked', true);
+        if(i == id_list.length-1) $('input[value='+ id_list[i] +']').prop('checked', true).trigger('change');
+      }
+    }, false);});
     $('#runs_list_select_all').on('click', function() {
       var cb_cnt = $('input[name="checkbox[run]"]').length;
       var checked = 0;
@@ -50,22 +55,22 @@ $(function() {
       $('input[name="checkbox[run]"]').trigger('change');
     });
     $(document).on('click', '.span1', function() {
-      id = '';
+      id_list = '';
       text = runsCreateTxt("0");
       runs_count.appendChild(text);
     });
     $(document).on('change','input[name="checkbox[run]"]', function() {
       checked_cnt = 0;
-      id = $('.dataTable input:checked').map(function() {
+      id_list = $('.dataTable input:checked').map(function() {
         checked_cnt += 1;
         return $(this).val();
       }).get();
       text = runsCreateTxt(checked_cnt);
       runs_count.appendChild(text);
-      document.runs_form.id.value = id;
+      document.runs_form.id_list.value = id_list;
     });
     $('#runs_delete_sel').on('click', function() {
-      alert(id);
+      alert(id_list);
     });
     return oTable;
   };
