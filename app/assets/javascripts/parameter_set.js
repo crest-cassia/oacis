@@ -27,7 +27,7 @@ function create_parameter_sets_list(selector, default_length) {
     '<form name="ps_form">' +
     '<input type="hidden" name="id_list">' +
     '<input type="button" class="btn btn-primary margin-half-em pull-right" value="Delete Selected" id="ps_delete_sel">' +
-    '<input type="button" class="btn btn-primary margin-half-em pull-right" value="Run Selected" id="ps_run_sel">' +
+    '<input type="button" class="btn btn-primary margin-half-em pull-right" value="Run Selected" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
     '</form>' +
     '</div>'
   );
@@ -75,9 +75,6 @@ function create_parameter_sets_list(selector, default_length) {
     text = psCreateTxt(checked_cnt);
     ps_count.appendChild(text);
     document.ps_form.id_list.value = id_list;
-  });
-  $('#ps_run_sel').on('click', function() {
-    alert(id_list);
   });
   $('#ps_delete_sel').on('click', function() {
     alert(id_list);
