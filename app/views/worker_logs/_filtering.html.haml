@@ -2,13 +2,13 @@
 %form
   .form-inline
     .form-group
-      - severity_level = {"all" => -10, "FATAL" => 3, "ERROR" => 2, "WARN" => 1, "INFO" => 0, "DEBUG" => -1}
+      - severity_level = {"all"=>-10, "FATAL"=>3, "ERROR"=>2, "WARN"=>1, "INFO"=>0, "DEBUG"=>-1}
+      - duration_item = {"recently 1 day"=>1, "recently 2 days"=>2, "recently 3 days"=>3, "recently 1 week"=>7, "recently 1 month"=>30, "unlimited"=>-1}
+      %label Severity level
       = select_tag 'severity', options_for_select(severity_level, selected:@level), id:'sever_sel', class:'form-control'
       &thinsp;
-      %label duration:
-      = text_field_tag(:'duration_start', @tstart, size:10, class:'form-control')
-      \~
-      = text_field_tag(:'duration_end', @tend, size:10, class:'form-control')
+      %label Date duration
+      = select_tag 'duration', options_for_select(duration_item, selected:@dur_choice), id:'dur_sel', class:'form-control'
       &thinsp;
       %label Message includes
       = search_field_tag('match_keyword', @kwd, class:'form-control')
