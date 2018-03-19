@@ -8,12 +8,12 @@
     .col-md-3
       = f.text_field :default, placeholder: "Default value", class: 'form-control'
     - unless disabled
-      = link_to "Up ", '#', class: "up_fields"
+      = link_to sanitize('<i class="fa fa-arrow-up fa-lg"/>'), '#', class: "up_fields"
     - unless disabled
-      = link_to "Down", '#', class: "down_fields"
+      = link_to sanitize('<i class="fa fa-arrow-down fa-lg"/>'), '#', class: "down_fields"
   .form-group.row.no-margin.no-gutter
     .col-md-8
       = f.text_area :description, placeholder: "Description", rows: 3, class: 'form-control'
     - unless disabled
-      = link_to sanitize('<i class="fa fa-trash-o"/>'), '#', class: "remove_fields"
+      = link_to sanitize('<i class="fa fa-trash-o fa-lg"/>'), '#', class: "remove_fields"
 = f.hidden_field :_destroy
