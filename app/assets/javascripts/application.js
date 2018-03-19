@@ -45,6 +45,21 @@ $(document).ready(function () {
 
 // add/remove/Up/Down nested forms
 
+function find_from_parameter_definition_fields(me, offset) {
+  var p_lst =  $('.parameter-definition-field');
+  var idx, em = null;
+  for ( idx = 0; idx < p_lst.length; idx++ ) {
+    if ( p_lst[idx] === me ) {
+      em = p_lst[idx];
+      break;
+    }
+  }
+  if ( em == null ) return null;
+  var idx2 = idx + offset;
+  if ( idx2 < 0 || idx2 >= p_lst.length ) return null;
+  return p_lst[idx2];
+}
+
 function exchange_form_order(me, em) {
   var my_name = me.children[0].children[0].children[0].value;
   var my_type = me.children[0].children[1].children[0].value;
@@ -65,13 +80,9 @@ $(document).ready( function() {
     var me = $(this).closest('.parameter-definition-field')[0];
     var res = confirm("Are you sure to remove the parameter: " +
                       me.children[0].children[0].children[0].value);
-    if ( ! res ) {
-      event.preventDefault();
-      return;
-    }
+    if ( ! res ) event.preventDefault();
     $(this).closest('.parameter-definition-field').next('input[type=hidden]').val(true);
     $(this).closest('.parameter-definition-field').remove();
-    event.preventDefault();
   });
   $('form').on('click', '.add_fields', function() {
       var time = new Date().getTime();
@@ -83,38 +94,14 @@ $(document).ready( function() {
   });
   $('form').on('click', '.up_fields', function() {
     var me = $(this).closest('.parameter-definition-field')[0];
-    var p_lst =  $('.parameter-definition-field');
-    var idx, em = null;
-    for ( idx = 0; idx < p_lst.length; idx++ ) {
-      if ( p_lst[idx] === me ) {
-        em = p_lst[idx];
-        break;
-      }
-    }
-    if ( em == null || idx < 1 ) {
-      event.preventDefault();
-      return;
-    }
-    em = p_lst[idx - 1];
+    var em = find_from_parameter_definition_fields(me, -1);
+    if ( em == null ) return;
     exchange_form_order(me, em);
-    window.refresh();
   });
   $('form').on('click', '.down_fields', function() {
     var me = $(this).closest('.parameter-definition-field')[0];
-    var p_lst =  $('.parameter-definition-field');
-    var idx, em = null;
-    for ( idx = 0; idx < p_lst.length; idx++ ) {
-      if ( p_lst[idx] === me ) {
-        em = p_lst[idx];
-        break;
-      }
-    }
-    if ( em == null || idx >= p_lst.length - 1 ) {
-      event.preventDefault();
-      return;
-    }
-    em = p_lst[idx + 1];
+    var em = find_from_parameter_definition_fields(me, +1);
+    if ( em == null ) return;
     exchange_form_order(me, em);
-    window.refresh();
   });
 });
