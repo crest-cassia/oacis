@@ -25,6 +25,7 @@ class ParameterSetsController < ApplicationController
   end
 
   def create
+    logger.debug "create params: " + params.to_s
     simulator = Simulator.find(params[:simulator_id])
     @num_runs = params[:num_runs].to_i
 
@@ -600,25 +601,58 @@ class ParameterSetsController < ApplicationController
     end
 
     creation_size = mapped.inject(1) {|prod, x| prod * x.size }
-    if creation_size > MAX_CREATION_SIZE
-      flash[:alert] = "number of created parameter sets must be less than #{MAX_CREATION_SIZE}"
-      return []
-    end
+#    if creation_size > MAX_CREATION_SIZE
+#      flash[:alert] = "number of created parameter sets must be less than #{MAX_CREATION_SIZE}"
+#      return []
+#    end
 
     created = []
-    logger.debug "call active job"
-    SaveParamsJob.perform_later(simulator_id, mapped[0].product( *mapped[1..-1] ), @num_runs, run_params.as_json, previous_num_ps, previous_num_runs)
-#    mapped[0].product( *mapped[1..-1] ).each do |param_ary|
-#      param = {}
-#      simulator.parameter_definitions.each_with_index do |defn, idx|
-#        param[defn.key] = param_ary[idx]
-#      end
-#      casted = ParametersUtil.cast_parameter_values(param, simulator.parameter_definitions)
-#      ps = simulator.parameter_sets.find_or_initialize_by(v: casted)
-#      if ps.persisted? or ps.save
-#        created << ps
-#      end
-#    end
+    if creation_size >= 10
+      paramsets_now = [] # top 10 sets
+      paramsets_lator = [] # other
+
+      paramsets_all = mapped[0].product( *mapped[1..-1] ).each_with_index do |ps, i|
+        if i <= 10
+          paramsets_now << paramsets_all[i]
+        else
+          paramsets_lator << paramsets_all[i]
+        end
+      end
+      created = save_parameter_sets(simulator, paramsets_now)
+
+      logger.debug "save active job params"
+      save_task = SaveTasks.build()
+      save_task.ps_param = paramsets_lator
+      save_task.run_param = run_params.as_json
+      save_task.run_num = @num_runs
+      save_task.simulator_id = simulator_id
+      if save_rask.save
+        logger.debug "call active job"
+#        SaveParamsJob.perform_later(simulator_id, paramsets_lator, @num_runs, run_params.as_json, previous_num_ps, previous_num_runs)
+        SaveParamsJob.perform_later(save_task.id, previous_num_ps, previous_num_runs)
+      else
+        flash[:notice] "Can't create background job."
+        created = save_parameter_sets(simulator,paramsets_lator))
+      end
+    else
+      created = save_parameter_sets(simulator,mapped[0].product( *mapped[1..-1] ))
+    end
+    created
+  end
+
+  private save_parameter_sets(simulator, parameter_sets)
+    created = []
+    parameter_sets.each do |param_ary|
+      param = {}
+      simulator.parameter_definitions.each_with_index do |defn, idx|
+        param[defn.key] = param_ary[idx]
+      end
+      casted = ParametersUtil.cast_parameter_values(param, simulator.parameter_definitions)
+      ps = simulator.parameter_sets.find_or_initialize_by(v: casted)
+      if ps.persisted? or ps.save
+        created << ps
+      end
+    end
     created
   end
 end

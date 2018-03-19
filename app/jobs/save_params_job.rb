@@ -1,8 +1,15 @@
 class SaveParamsJob < ApplicationJob
   queue_as :default
 
-  def perform(simulator_id, param_sets, num_runs, run_params_j, previous_num_ps, previous_num_runs)
+
+#  def perform(simulator_id, param_sets, num_runs, run_params_j, previous_num_ps, previous_num_runs)
+  def perform(save_task_id, previous_num_ps, previous_num_runs)
     logger = Logger.new(File.join(Rails.root, 'log', 'resque.log'))
+
+    save_task = SaveTask.find(save_task_id)
+    
+
+
     logger.debug "Active job Save!"
     simulator = Simulator.find(simulator_id)
     run_params = ActionController::Parameters.new(run_params_j);
