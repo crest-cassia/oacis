@@ -1,7 +1,7 @@
 class SaveTask
   include Mongoid::Document
   field :ps_param, type: Array
-  field :run_param, type: String
+  field :run_param, type: Hash
   field :run_num, type: Integer
   field :simulator_id, type: String
   field :cancel_flag, type: Boolean, default: false

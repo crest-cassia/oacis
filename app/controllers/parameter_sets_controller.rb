@@ -47,7 +47,7 @@ class ParameterSetsController < ApplicationController
     end
 
 #    created = find_or_create_multiple(simulator, params[:v].dup)
-    created = find_or_create_multiple(params[:simulator_id], params[:v].dup, run_params, previous_num_ps, previous_num_runs)
+    created, creation_size, save_task_id = find_or_create_multiple(params[:simulator_id], params[:v].dup, run_params, previous_num_ps, previous_num_runs)
 
 #    if created.empty?
 #      @param_set.errors.add(:base, "No parameter_set was created")
@@ -78,7 +78,7 @@ class ParameterSetsController < ApplicationController
 #      @param_set = created.first
 #      redirect_to @param_set
 #    else
-      redirect_to simulator
+      redirect_to simulator, ps_creation_size: creation_size, save_task_id: save_task_id
 #    end
   end
 
@@ -584,6 +584,7 @@ class ParameterSetsController < ApplicationController
 
   private
   MAX_CREATION_SIZE = 100
+  NOW_CREATION_SIZE = 1
   # return created parameter sets
   # def find_or_create_multiple(simulator, parameters)
   def find_or_create_multiple(simulator_id, parameters, run_params, previous_num_ps, previous_num_runs)
@@ -606,41 +607,49 @@ class ParameterSetsController < ApplicationController
 #      return []
 #    end
 
+    save_task_id = ""
     created = []
-    if creation_size >= 10
+    if creation_size > NOW_CREATION_SIZE
       paramsets_now = [] # top 10 sets
       paramsets_lator = [] # other
 
-      paramsets_all = mapped[0].product( *mapped[1..-1] ).each_with_index do |ps, i|
-        if i <= 10
-          paramsets_now << paramsets_all[i]
+      logger.debug "NOW_CREATION_SIZE: #{NOW_CREATION_SIZE}"
+      mapped[0].product( *mapped[1..-1] ).each_with_index do |ps, i|
+        if i < NOW_CREATION_SIZE
+          paramsets_now << mapped[0].product( *mapped[1..-1] )[i]
+          logger.debug "paramsets_now[#{i}]: " + paramsets_now.to_s
         else
-          paramsets_lator << paramsets_all[i]
+          paramsets_lator << mapped[0].product( *mapped[1..-1] )[i]
+          logger.debug "paramsets_lator[#{i}]: " + paramsets_lator.to_s
         end
       end
-      created = save_parameter_sets(simulator, paramsets_now)
+      created = save_parameter_sets(simulator, paramsets_now, run_params)
 
       logger.debug "save active job params"
-      save_task = SaveTasks.build()
+      save_task = SaveTask.new
       save_task.ps_param = paramsets_lator
-      save_task.run_param = run_params.as_json
+      save_task.run_param = run_params.to_h
       save_task.run_num = @num_runs
       save_task.simulator_id = simulator_id
-      if save_rask.save
+      save_task_id = save_task.id.to_s
+      if save_task.save
+        logger.debug "save_task save success."
         logger.debug "call active job"
 #        SaveParamsJob.perform_later(simulator_id, paramsets_lator, @num_runs, run_params.as_json, previous_num_ps, previous_num_runs)
-        SaveParamsJob.perform_later(save_task.id, previous_num_ps, previous_num_runs)
+        SaveParamsJob.perform_later(save_task.id.to_s, previous_num_ps, previous_num_runs)
       else
-        flash[:notice] "Can't create background job."
-        created = save_parameter_sets(simulator,paramsets_lator))
+        logger.debug "save_task save false."
+        flash[:notice] = "Can't create background job."
+        created = save_parameter_sets(simulator,paramsets_lator, run_params)
       end
     else
-      created = save_parameter_sets(simulator,mapped[0].product( *mapped[1..-1] ))
+      created = save_parameter_sets(simulator,mapped[0].product( *mapped[1..-1] ), run_params)
     end
-    created
+    return created, creation_size, save_task_id
   end
 
-  private save_parameter_sets(simulator, parameter_sets)
+  private 
+  def save_parameter_sets(simulator, parameter_sets, run_params)
     created = []
     parameter_sets.each do |param_ary|
       param = {}
@@ -653,6 +662,21 @@ class ParameterSetsController < ApplicationController
         created << ps
       end
     end
+    if created.empty?
+      flash[:notice] = "No parameter_set was created!."
+      return created
+    end
+
+    new_runs = []
+    @num_runs.times do |i|
+      created.each do |ps|
+        next if ps.runs.count > i
+        new_runs << ps.runs.build(run_params)
+      end
+    end
+    set_sequential_seeds(new_runs) if simulator.sequential_seed
+    new_runs.map(&:save)
+    
     created
   end
 end

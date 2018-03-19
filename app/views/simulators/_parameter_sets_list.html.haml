@@ -1,5 +1,15 @@
 %h3 List of Parameter Sets
 
+.clear-element
+.create_ps_area
+  = @ps_creation_msg
+  - if @save_task_id.present?
+    %a.btn.btn-primary{href: "#{_cancel_create_ps_simulator_path(@simulator, save_task_id: @save_task_id)}"}
+      Cancel
+  - else
+    %button.btn.btn-default
+      Cancel
+.clear-element
 %table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr

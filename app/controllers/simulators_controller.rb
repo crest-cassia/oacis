@@ -18,12 +18,21 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
     @query_id = params[:query_id]
+    @ps_creation_msg = "No Parameter Sets creating."
+    @save_task_id = ""
 
     if @simulator.parameter_set_queries.present?
       @query_list = {}
       @simulator.parameter_set_queries.each do |psq|
         @query_list[psq.query.to_s] = psq.id
       end
+    end
+
+    if params[:ps_creation_size].present? && params[:ps_creation_size] > 0
+      @ps_creation_msg = "Creating #{arams[:ps_creation_size].to_s} Parameter Sets"
+    end
+    if params[:save_task_id].present?
+      @save_task_id = params[:save_task_id]
     end
 
     respond_to do |format|
@@ -177,6 +186,21 @@ class SimulatorsController < ApplicationController
     omp = sim.default_omp_threads[host.id.to_s] || 1
     data = {'mpi_procs' => mpi, 'omp_threads' => omp}
     render json: data
+  end
+
+  def _cancel_create_ps
+    logger.debug "_cancel_create_ps"
+    unless params[:save_task_id].present?
+      logger.debug "save_task_id is not present."
+      redirect_to :action => "show", ps_creation_size: 0, save_task_id: ""
+    end
+    if SaveTask.find(params[:save_task_id]).present?
+      logger.debug "save_task obj is present: " + params[:save_task_id].to_s
+      save_task = SaveTask.find(params[:save_task_id])
+      save_task.cancel_flag = true
+      save_task.save
+    end
+    redirect_to :action => "show", ps_creation_size: 0, save_task_id: ""
   end
 
   private
