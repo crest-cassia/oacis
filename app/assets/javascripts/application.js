@@ -97,7 +97,6 @@ $(document).ready( function() {
     }
     em = p_lst[idx - 1];
     exchange_form_order(me, em);
-    window.refresh();
   });
   $('form').on('click', '.down_fields', function() {
     var me = $(this).closest('.parameter-definition-field')[0];
@@ -115,6 +114,5 @@ $(document).ready( function() {
     }
     em = p_lst[idx + 1];
     exchange_form_order(me, em);
-    window.refresh();
   });
 });
