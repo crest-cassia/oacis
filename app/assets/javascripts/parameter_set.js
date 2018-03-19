@@ -25,18 +25,23 @@ function create_parameter_sets_list(selector, default_length) {
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="params_list_select_all">Select/Unselect All</button>' +
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="params_list_toggle">Toggle Selection</button>' +
     '<form name="ps_form">' +
-    '<input type="hidden" name="id">' +
+    '<input type="hidden" name="id_list">' +
     '<input type="button" class="btn btn-primary margin-half-em pull-right" value="Delete Selected" id="ps_delete_sel">' +
     '<input type="button" class="btn btn-primary margin-half-em pull-right" value="Run Selected" id="ps_run_sel">' +
     '</form>' +
     '</div>'
   );
-  var id = '';
+  var id_list = '';
   var checked_cnt = 0;
   var text=document.createTextNode(checked_cnt);
   ps_count.appendChild(text);
   $(selector+'_length').children('#params_list_refresh').on('click', function() {
-    oPsTable.ajax.reload(null, false);
+    oPsTable.ajax.reload( function(){
+      for(var i=0; i<id_list.length; i++){
+        $('input[value='+ id_list[i] +']').prop('checked', true);
+        if(i == id_list.length-1) $('input[value='+ id_list[i] +']').prop('checked', true).trigger('change');
+      }  
+    }, false);
   });
   $('#params_list_select_all').on('click', function() {
     var cb_cnt = $('input[name="checkbox[ps]"]').length;
@@ -57,25 +62,25 @@ function create_parameter_sets_list(selector, default_length) {
     $('input[name="checkbox[ps]"]').trigger('change');
   });
   $(document).on('click', '.span1', function() {
-    id = '';
+    id_list = '';
     text = psCreateTxt("0");
     ps_count.appendChild(text);
   });
   $(document).on('change','input[name="checkbox[ps]"]', function() {
     checked_cnt = 0;
-    id = $('.dataTable input:checked').map(function() {
+    id_list = $('.dataTable input:checked').map(function() {
       checked_cnt += 1;
       return $(this).val();
     }).get();
     text = psCreateTxt(checked_cnt);
     ps_count.appendChild(text);
-    document.ps_form.id.value = id;
+    document.ps_form.id_list.value = id_list;
   });
   $('#ps_run_sel').on('click', function() {
-    alert(id);
+    alert(id_list);
   });
   $('#ps_delete_sel').on('click', function() {
-    alert(id);
+    alert(id_list);
   });
   $(selector).on("click", "i.fa.fa-search[parameter_set_id]", function() {
     var param_id = $(this).attr("parameter_set_id");
