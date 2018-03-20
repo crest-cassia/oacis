@@ -74,12 +74,12 @@ class ParameterSetsController < ApplicationController
     end
 
     flash[:notice] = "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
-#    if created.size == 1
-#      @param_set = created.first
-#      redirect_to @param_set
-#    else
+    if created.size == 1
+      @param_set = created.first
+      redirect_to @param_set
+    else
       redirect_to simulator
-#    end
+    end
   end
 
  # private
