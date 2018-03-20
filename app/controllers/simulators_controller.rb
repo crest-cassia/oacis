@@ -19,7 +19,7 @@ class SimulatorsController < ApplicationController
     @analyzers = @simulator.analyzers
     @query_id = params[:query_id]
     @ps_creation_msg = "No Parameter Sets creating."
-    @save_task_id = ""
+    @save_task_ids = []
 
     if @simulator.parameter_set_queries.present?
       @query_list = {}
@@ -28,11 +28,14 @@ class SimulatorsController < ApplicationController
       end
     end
 
-    if params[:ps_creation_size].present? && params[:ps_creation_size] > 0
-      @ps_creation_msg = "Creating #{arams[:ps_creation_size].to_s} Parameter Sets"
+    save_tasks = SaveTask.where({cancel_flag: false})
+    ps_creation_size = 0
+    save_tasks.each do |t|
+      @save_task_ids << t.id
+      ps_creation_size = ps_creation_size + t.creation_size
     end
-    if params[:save_task_id].present?
-      @save_task_id = params[:save_task_id]
+    if ps_creation_size > 0
+      @ps_creation_msg = "Creating #{ps_creation_size.to_s} Parameter Sets"
     end
 
     respond_to do |format|
@@ -190,17 +193,13 @@ class SimulatorsController < ApplicationController
 
   def _cancel_create_ps
     logger.debug "_cancel_create_ps"
-    unless params[:save_task_id].present?
-      logger.debug "save_task_id is not present."
-      redirect_to :action => "show", ps_creation_size: 0, save_task_id: ""
+    save_tasks =  SaveTask.where({cancel_flag: false})
+    save_tasks.each do |t|
+      logger.debug "save_task obj is present: " + t.id.to_s
+      t.cancel_flag = true
+      t.save
     end
-    if SaveTask.find(params[:save_task_id]).present?
-      logger.debug "save_task obj is present: " + params[:save_task_id].to_s
-      save_task = SaveTask.find(params[:save_task_id])
-      save_task.cancel_flag = true
-      save_task.save
-    end
-    redirect_to :action => "show", ps_creation_size: 0, save_task_id: ""
+    redirect_to :action => "show"
   end
 
   private

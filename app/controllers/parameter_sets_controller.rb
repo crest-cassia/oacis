@@ -47,7 +47,7 @@ class ParameterSetsController < ApplicationController
     end
 
 #    created = find_or_create_multiple(simulator, params[:v].dup)
-    created, creation_size, save_task_id = find_or_create_multiple(params[:simulator_id], params[:v].dup, run_params, previous_num_ps, previous_num_runs)
+    created = find_or_create_multiple(params[:simulator_id], params[:v].dup, run_params, previous_num_ps, previous_num_runs)
 
 #    if created.empty?
 #      @param_set.errors.add(:base, "No parameter_set was created")
@@ -65,20 +65,20 @@ class ParameterSetsController < ApplicationController
 #    set_sequential_seeds(new_runs) if simulator.sequential_seed
 #    new_runs.map(&:save)
 
-#    num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
-#    num_created_runs = simulator.runs.count - previous_num_runs
-#    if num_created_ps == 0 and num_created_runs == 0
-#      @param_set.errors.add(:base, "No parameter_sets or runs are created")
-#      render action: "new"
-#      return
-#    end
+    num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
+    num_created_runs = simulator.runs.count - previous_num_runs
+    if num_created_ps == 0 and num_created_runs == 0
+      @param_set.errors.add(:base, "No parameter_sets or runs are created")
+      render action: "new"
+      return
+    end
 
-#    flash[:notice] = "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
+    flash[:notice] = "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
 #    if created.size == 1
 #      @param_set = created.first
 #      redirect_to @param_set
 #    else
-      redirect_to simulator, ps_creation_size: creation_size, save_task_id: save_task_id
+      redirect_to simulator
 #    end
   end
 
@@ -584,7 +584,7 @@ class ParameterSetsController < ApplicationController
 
   private
   MAX_CREATION_SIZE = 100
-  NOW_CREATION_SIZE = 1
+  NOW_CREATION_SIZE = 10
   # return created parameter sets
   # def find_or_create_multiple(simulator, parameters)
   def find_or_create_multiple(simulator_id, parameters, run_params, previous_num_ps, previous_num_runs)
@@ -631,11 +631,11 @@ class ParameterSetsController < ApplicationController
       save_task.run_param = run_params.to_h
       save_task.run_num = @num_runs
       save_task.simulator_id = simulator_id
+      save_task.creation_size = creation_size - NOW_CREATION_SIZE
       save_task_id = save_task.id.to_s
       if save_task.save
         logger.debug "save_task save success."
         logger.debug "call active job"
-#        SaveParamsJob.perform_later(simulator_id, paramsets_lator, @num_runs, run_params.as_json, previous_num_ps, previous_num_runs)
         SaveParamsJob.perform_later(save_task.id.to_s, previous_num_ps, previous_num_runs)
       else
         logger.debug "save_task save false."
@@ -645,7 +645,7 @@ class ParameterSetsController < ApplicationController
     else
       created = save_parameter_sets(simulator,mapped[0].product( *mapped[1..-1] ), run_params)
     end
-    return created, creation_size, save_task_id
+    return created
   end
 
   private 

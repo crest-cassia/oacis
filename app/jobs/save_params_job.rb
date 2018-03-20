@@ -1,15 +1,14 @@
 class SaveParamsJob < ApplicationJob
   queue_as :default
 
-#  rescue_from(StandardError) do |exeption|
-#    logger = Logger.new(File.join(Rails.root, 'log', 'resque.log'))
-#    logger.debug "Exception: #{ exeption.class}"
-#    logger.debug "Exception: #{ exeption.message}"
-#    logger.debug "Exception: #{ exeption.backtrace}"
+  rescue_from(StandardError) do |exeption|
+    logger = Logger.new(File.join(Rails.root, 'log', 'resque.log'))
+    logger.debug "Exception: #{ exeption.class}"
+    logger.debug "Exception: #{ exeption.message}"
+    logger.debug "Exception: #{ exeption.backtrace}"
 #     raise exeption
-#  end
+  end
 
-#  def perform(simulator_id, param_sets, num_runs, run_params_j, previous_num_ps, previous_num_runs)
   def perform(save_task_id, previous_num_ps, previous_num_runs)
     logger = Logger.new(File.join(Rails.root, 'log', 'resque.log'))
     logger.debug "save_task_id: " + save_task_id
@@ -32,8 +31,12 @@ class SaveParamsJob < ApplicationJob
     logger.debug "aft run_params.permitted? :" + run_params.permitted?.to_s
     created = []
     param_sets.each do |param_ary|
-      if SaveTask.find(save_task_id).cancel_flag
-#        save_task.destroy()
+      save_task.reload
+      logger.debug "Cancel Flag: " + save_task.cancel_flag.to_s
+#      sleep(10)
+      if save_task.cancel_flag
+        logger.debug "save_task.destroy() couse Canceled."
+        save_task.destroy()
         return
       end
       param = {}
@@ -44,8 +47,19 @@ class SaveParamsJob < ApplicationJob
       ps = simulator.parameter_sets.find_or_initialize_by(v: casted)
       if ps.persisted? or ps.save
         created << ps
-#        sleep(10)
         logger.debug "PS save"
+
+        new_runs = []
+        num_runs.times do |i|
+          new_runs << ps.runs.build(run_params)
+          logger.debug "runs build #{i}"
+        end
+        ParameterSetsController.set_sequential_seeds(new_runs) if simulator.sequential_seed
+        new_runs.map(&:save)
+        logger.debug "runs save"
+
+        save_task.creation_size = save_task.creation_size - 1
+        save_task.save
       end
     end
 
@@ -54,25 +68,14 @@ class SaveParamsJob < ApplicationJob
       return
     end
 
-    new_runs = []
-    num_runs.times do |i|
-      created.each do |ps|
-        next if ps.runs.count > i
-        new_runs << ps.runs.build(run_params)
-        logger.debug "runs build #{i}"
-      end
-    end
-    ParameterSetsController.set_sequential_seeds(new_runs) if simulator.sequential_seed
-    new_runs.map(&:save)
-    logger.debug "runs save"
-
     num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
     num_created_runs = simulator.runs.count - previous_num_runs
     if num_created_ps == 0 and num_created_runs == 0
       logger.error "No parameter_sets or runs are created!"
     end
 
-#    save_task.destroy()
+    logger.debug "save_task.destroy() couse finished."
+    save_task.destroy()
 
     logger.info "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
   end
