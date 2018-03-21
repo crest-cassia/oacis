@@ -81,6 +81,48 @@ class ParameterSet
     ret
   end
 
+  def self.runs_status_count_batch_one_ps( parameter_set )
+    aggregated = Run.collection.aggregate([
+      {
+#        '$match' => Run.in(parameter_set: parameter_sets.map(&:id)).selector
+        '$match' => Run.where(parameter_set: parameter_set.id).selector
+      },
+      {
+        '$group' => {
+          '_id' => {'psid'=>'$parameter_set_id', 'status'=>'$status'},
+          'count' => { '$sum' => 1}
+        }
+      },
+      {
+        '$group' => {
+          '_id' => '$_id.psid',
+          'counts' => {
+            '$push' =>{'status'=>'$_id.status', 'count'=> '$count' }
+          }
+        }
+      }
+    ])
+    # aggregated is
+    # [
+    #   { _id => psid, "counts" => [{status => count} .... ],
+    #   ...
+    # ]
+    count_default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0}
+    ret = {}
+    parameter_sets.each {|ps| ret[ps.id] = count_default.dup }
+
+    aggregated.each do |doc|
+      psid = doc["_id"]
+      status_hash = count_default.dup
+      doc["counts"].each do |c|
+        key = c["status"]
+        status_hash[key] = c["count"]
+      end
+      ret[ psid ] = status_hash
+    end
+    ret
+  end
+
   # public APIs
   def find_or_create_runs_upto( num_runs, submitted_to: nil, host_param: nil, host_group: nil, mpi_procs: 1, omp_threads: 1, priority: 1)
     found = runs.asc(:created_at).limit(num_runs).to_a
