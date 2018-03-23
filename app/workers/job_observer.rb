@@ -47,7 +47,7 @@ class JobObserver
         logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
         job.destroy
         logger.info("destroyed #{job.class} #{job.id}")
-        StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job, "destroyed"));
+        StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job, "destroyed")) if job.instance_of?(Run)
         return
       else
         logger.warn("should not happen: #{job.class}:#{job.id} is not destroyable")
@@ -70,7 +70,7 @@ class JobObserver
     when :running
       if job.status == :submitted then
         job.update_attribute(:status, :running)
-        StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job));
+        StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job)) if job.instance_of?(Run)
       end
     when :includable, :unknown
       logger.info("including #{job.class}:#{job.id} from #{host.name}")

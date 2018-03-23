@@ -19,7 +19,6 @@ function create_parameter_sets_list(selector, default_length) {
     bStateSave: true,
     ajax: $(selector).data('source'),
       "createdRow": function(row, data, dataIndex) {
-        const objA = data[0];
         const lnId = data[11];
         $(row).attr('id', lnId);
       }

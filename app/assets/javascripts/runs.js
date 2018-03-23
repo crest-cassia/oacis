@@ -14,7 +14,6 @@ $(function() {
       }],
       ajax: $(selector).data('source'),
       "createdRow": function(row, data, dataIndex) {
-        const objA = data[0];
         const lnId = data[12];
         $(row).attr('id', lnId);
       }
