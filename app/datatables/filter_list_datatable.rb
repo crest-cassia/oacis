@@ -37,7 +37,7 @@ private
       tmp << @view.check_box( :filter_cb, "", {id: "filter_cb_#{i}", class: "filter_enable_cb", checked: filter[:enable]}, true, false )
       tmp << @view.raw( "<p id=\"filter_key_#{i}\" class=\"filter_query\">#{filter[:query]}</p>" )
       tmp << @view.link_to( @view.raw("<i class=\"fa fa-edit\">"), "javascript:void(0);", onclick:"edit_filter(this)")
-      tmp <<  @view.link_to( @view.raw("<i class=\"fa fa-trash-o\">"), "javascript:void(0);", onclick:"delete_filter(this)", data: {confirm: "Are you sure?"})
+      tmp <<  @view.link_to( @view.raw("<i class=\"fa fa-trash-o\">"), "javascript:void(0);", onclick:"delete_filter(filter_key_#{i}, #{i})")
       a << tmp
     end
     a

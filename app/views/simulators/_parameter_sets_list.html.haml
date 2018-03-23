@@ -28,6 +28,7 @@
         = form_tag(_set_filter_set_simulator_path, class: 'form-horizontal', id: 'set_filter_set_form') do 
           = hidden_field_tag :filter_set_query_for_set, ""
           = hidden_field_tag :filter_set_name_for_set, @filter_set_name
+          = hidden_field_tag :isLoaded,@isLoaded
           %button#parameter_filter_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal", onclick: "parameter_filter_dlg_ok()"}
             OK
           %button.btn.btn-primary{type: "button", "data-dismiss" => "modal"}

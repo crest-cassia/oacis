@@ -1,5 +1,8 @@
 let oFilterTable = null;
 let oFilterSetTable = null;
+let query_id = '';
+let isEdit = false;
+let isLoaded = false;
 
 function create_parameter_sets_list(selector, default_length) {
   var oPsTable = $(selector).DataTable({
@@ -37,9 +40,8 @@ function create_parameter_sets_list(selector, default_length) {
   });
   return oPsTable;
 }
-
 function create_filter_list(url) {
-  var oFilterTable = $("#parameter_filter_list").DataTable({
+      oFilterTable = $("#parameter_filter_list").DataTable({
       lengthChange: false,
       searching: false,
       paging: false,
@@ -66,18 +68,72 @@ function create_filter_set_list(url) {
 }
 
 function edit_filter(obj) {
+  isEdit = true;
   const oTr = $(obj).parent().parent()
   const oPQuery = $(oTr).find(".filter_query");
-  const query_id = $(oPQuery).attr('id');
-    
+  const query_id = $(oPQuery).attr('id');   
   $("#parameter_new_filter_modal").attr('query_id', query_id); 
   $("#parameter_new_filter_modal").modal('show');
-
+  const setVal = $("#"+query_id).text().split(" ");
+  $("#query__param").val(setVal[0]);
+  if("==" == setVal[1]){
+    $("#query__matcher").val("eq");
+  }else if("!=" == setVal[1] ){
+    $("#query__matcher").val("ne");
+  }else if(">" == setVal[1] ){
+    $("#query__matcher").val("gt");
+  }else if(">=" == setVal[1] ){
+    $("#query__matcher").val("gte");
+  }else if("<" == setVal[1] ){
+    $("#query__matcher").val("lt");
+  }else if("<=" == setVal[1] ){
+    $("#query__matcher").val("lte");
+  }
+  $("#query__value").val(setVal[2]);
 }
 
-function delete_filter(idx) {
-  alert("D: " + idx);
-
+function delete_filter(filter_key, rownum) {
+  let rows = $('#parameter_filter_list tr').length;
+      if(window.confirm($(filter_key).text() + '\nAre you sure?')){
+        oFilterTable.row(rownum).remove().draw();
+      }else{
+        return;
+      }
+  if(!isLoaded && $('#parameter_filter_list tr .dataTables_empty').length > 0){
+    $("#filter_set_name_p").text("None");
+    return;
+  }
+  rows = $('#parameter_filter_list tr').length;
+  for(let i=0; i<rows-1; i++){
+    let data = oFilterTable.row(i).data();
+    if(data[1].match("filter_key_" + i)){
+      continue;
+    }else{
+      const now_rows = i + 1;
+      const query_txt = $('#filter_key_' + now_rows).text();
+      element = document.getElementById('filter_key_' + now_rows);
+      element.id = "filter_key_" + i;
+      let check_status = '';
+      if($("#filter_cb_" + now_rows +":checked").val() || $("#filter_cb_add:checked").val()) {
+        check_status = 'checked="checked"'
+      }
+      oFilterTable.row(i).data([
+        '<input type="checkbox" id="filter_cb_' + i + '" class="filter_enable_cb" value="true"' + check_status + '>',
+        '<p id="filter_key_' + i + '" class="filter_query">' + query_txt + '</p>',
+        '<a href="javascript:void(0);" onclick="edit_filter(this)"><i class="fa fa-edit"></a>',
+        '<a href="javascript:void(0);" onclick="delete_filter(filter_key_' + rownum +',' + rownum + ')"><i class="fa fa-trash-o"></a>'
+      ]).draw();
+    }
+  }
+  if(!isLoaded){
+    rows = $('#parameter_filter_list tr').length;
+    let filter_set_name = '';
+    for(let i=0; i<rows-1; i++){
+      filter_set_name += $("#filter_key_" + i).text() + ',';
+    }
+    filter_set_name = filter_set_name.slice(0,-1);
+    $("#filter_set_name_p").text(filter_set_name);
+  }
 }
 
 function show_filter_set_name_dlg() {
@@ -104,6 +160,7 @@ function show_filter_set_name_dlg() {
 function parameter_filter_dlg_ok() {
   const queries_str = make_queries_str();
   $("#filter_set_query_for_set").val(queries_str);
+  $("#isLoaded").val(isLoaded);
   $("#set_filter_set_form").submit();
 }
 
@@ -121,14 +178,51 @@ function add_new_filter() {
   const paray = $("#query__param").val();
   const matcher = $("#query__matcher option:selected").text();
   const value = $("#query__value").val();
-  const rownum = oFilterTable.rows().length;
-  if (value.length >0) {
-    oFilterTable.row.add([
-      '<input type="checkbox" id="filter_cb_add" class="filter_enable_cb" value="true" checked="checked">',
-      '<p id="filter_key_' + rownum + '" class="filter_query">' + paray + " " + matcher + " " + value + '</p>',
-      '<a href="javascript:void(0);" onclick="edit_filter(this)"><i class="fa fa-edit"></a>',
-      '<a href="javascript:void(0);" onclick="delete_filter(this)"><i class="fa fa-trash-o"></a>'
-    ]).draw();
+
+  if(!isEdit){
+    let rownum = 0;      
+    if($('#parameter_filter_list tr .dataTables_empty').length){
+      rownum = 0; 
+    }else{
+      rownum = $('#parameter_filter_list tr').length - 1; 
+    }
+    if (value.length >0) {
+      oFilterTable.row.add([
+        '<input type="checkbox" id="filter_cb_add" class="filter_enable_cb" value="true" checked="checked">',
+        '<p id="filter_key_' + rownum + '" class="filter_query">' + paray + " " + matcher + " " + value + '</p>',
+        '<a href="javascript:void(0);" onclick="edit_filter(this)"><i class="fa fa-edit"></a>',
+        '<a href="javascript:void(0);" onclick="delete_filter(filter_key_' + rownum +',' + rownum + ')"><i class="fa fa-trash-o"></a>'
+      ]).draw();
+    }
+  }else{
+    let rows = $('#parameter_filter_list tr').length;
+    for(let i=0; i<rows-1; i++){
+      const data = oFilterTable.row(i).data();
+      if(data[1].match(query_id)){
+        let check_status = '';
+        if($("#filter_cb_" + i +":checked").val() || $("#filter_cb_add:checked").val()) {
+          check_status = 'checked="checked"'
+        }
+        oFilterTable.row(i).data([
+          '<input type="checkbox" id="filter_cb_' + i + '" class="filter_enable_cb" value="true"' + check_status + '>',
+          '<p id="filter_key_' + i + '" class="filter_query">' + paray + " " + matcher + " " + value + '</p>',
+          '<a href="javascript:void(0);" onclick="edit_filter(this)"><i class="fa fa-edit"></a>',
+          '<a href="javascript:void(0);" onclick="delete_filter(filter_key_' + i +',' + i + ')"><i class="fa fa-trash-o"></a>'
+        ]).draw();
+      }else{
+        continue;
+      }
+    }
+    isEdit = false;
+  }
+  if(!isLoaded){
+    let rows = $('#parameter_filter_list tr').length;
+    let filter_set_name = ''; 
+    for(let i=0; i<rows-1; i++){
+      filter_set_name += $("#filter_key_" + i).text() + ',';
+    }
+    filter_set_name = filter_set_name.slice(0,-1);
+    $("#filter_set_name_p").text(filter_set_name);
   }
 }
 
@@ -137,6 +231,7 @@ function parameter_load_filter_set_ok_click() {
   if (oSelected == null) {
     return;
   }
+  isLoaded = true;
   const filter_set_id = oSelected.val();
   const filter_set_name = oSelected.attr('filter_set_name');
   const simulator_id = oSelected.attr('simulator_id');
@@ -167,6 +262,16 @@ function make_queries_str() {
   return str;
 }
 
+function getParam(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
 $(function() {
   $("#runs_list_modal").on('show.bs.modal', function (event) {
     var param_id = event.relatedTarget.parameter_set_id;
@@ -185,6 +290,12 @@ $(function() {
     const simulator_id = $(this).attr('simulator_id');
     const filter_json = $(this).attr('filter_json');
     const filter_set_name = $(this).attr('filter_set_name');
+    const load_status = getParam('isLoaded');
+    if(load_status == 'true') {
+      isLoaded = true;
+    }else{
+      isLoaded = false;
+    }
     $('#parameter_filter_modal').modal('show', {
       simulator_id: simulator_id,
       filter_set_id: "undefined",
@@ -195,14 +306,24 @@ $(function() {
   $("#parameter_filter_modal").on('show.bs.modal', function(event) {
     const simulator_id = event.relatedTarget.simulator_id;
     const filter_set_id = event.relatedTarget.filter_set_id;
-    const filter_set_name = event.relatedTarget.filter_set_name;
+    let filter_set_name = event.relatedTarget.filter_set_name;
     const filter_json = event.relatedTarget.filter_json
     const url = "/simulators/"+simulator_id+"/_parameter_set_filter_list?filter_set_id="+filter_set_id+"&filter_json="+filter_json;
     oFilterTable = create_filter_list(url);
+    if(!isLoaded){
+      filter_set_name = '';
+      let queries = $.parseJSON(filter_json);
+      for(let i=0;i<queries.length; i++){
+        filter_set_name += queries[i].query + ',';
+      }
+      filter_set_name = filter_set_name.slice(0,-1);
+      if(filter_set_name.length == 0) filter_set_name = event.relatedTarget.filter_set_name;
+    }
     $("#filter_set_name_p").text(filter_set_name);
     $("#name").val(filter_set_name);
     $("#parameter_new_filter_btn").on("click", function() {
       $("#parameter_new_filter_modal").modal('show');
+      isEdit = false;
     });
   });
 
@@ -220,7 +341,10 @@ $(function() {
   });
   $("#parameter_new_filter_modal").on('show.bs.modal', function(event) {
     if ($(this).attr('query_id') != null) {
-      alert($(this).attr('query_id'));
+      query_id = $(this).attr('query_id');
     }
+  });
+  $(document).on("ajax:complete", '.delete_link', function() {
+    $('#parameter_filter_set_list').DataTable().draw();
   });
 });
