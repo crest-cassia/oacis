@@ -6,6 +6,7 @@
     %tr
       %th Name
       %th Status
+      %th 
       %th Work base dir
       %th Mounted work base dir
       %th Max # of jobs
@@ -19,6 +20,7 @@
       = content_tag_for :tr, host do
         %td= link_to(host.name, host)
         %td= link_to(raw(host_status_label(host.status)), _toggle_status_host_path(host))
+        %td= link_to sanitize('<i class="fa fa-power-off"/>'), _toggle_status_host_path(host)
         %td= host.work_base_dir
         %td= host.mounted_work_base_dir
         %td= host.max_num_jobs
