@@ -38,11 +38,10 @@ class HostsController < ApplicationController
     xhost = Host.find(params[:id])
     if (xhost.status == :enabled)
       xhost.status = :disabled
+      xhost.update_attribute(:status, :disabled)
     else
-      xhost.status = :enabled
+      xhost.update_attribute(:status, :enabled)
     end
-    xhost.save
-    @host = xhost
 
     @hosts = Host.asc(:position).all
     @host_groups = HostGroup.asc(:created_at).all

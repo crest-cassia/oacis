@@ -87,13 +87,12 @@ Rails.application.routes.draw do
   resources :hosts, only: host_actions do
     member do
       get '_check_scheduler_status'
+      get '_toggle_status'
     end
     collection do
       post "_sort" # for ajax, update order of the table
     end
   end
-
-  get '/hosts/:id/_toggle', to: 'hosts#_toggle_status', as: '_toggle_host'
 
   host_group_actions = ["show"]
   host_group_actions += ["new", "create", "edit", "update", "destroy"] unless OACIS_READ_ONLY
