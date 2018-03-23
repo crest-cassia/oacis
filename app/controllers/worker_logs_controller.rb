@@ -13,25 +13,25 @@ class WorkerLogsController < ApplicationController
     query_level = nil
     query_duration = nil
     query_kwd = nil
-    if params['severity'] != nil && params['severity'] != ''
+    if params['severity'].present?
       @level = params['severity']
       query_level = {l: {'$gt': params['severity'].to_i}}
     end
-    if params['duration'] != nil && params['duration'] != ''
+    if params['duration'].present?
       @dur_choice = params['duration']
       bd = params['duration'].to_i
       if bd > 0
         query_duration = {created_at: {'$gt': Time.current - bd.days}}
       end
     end
-    if params['match_keyword'] != nil && params['match_keyword'] != ''
+    if params['match_keyword'].present?
       ctx_kwd = params['match_keyword']
       @kwd = params['match_keyword']
       query_kwd = {m: /#{ctx_kwd}/}
     end
 
     query_set = [query_level, query_duration, query_kwd]
-    @logs = WorkerLog.all.desc('$natural').all_of(query_set)
+    @logs = WorkerLog.all.desc('$natural').all_of(query_set).limit(500)
   end
 
   def _contents
