@@ -5,7 +5,6 @@ class JobObserver
     Host.where(status: :enabled).each do |host|
       break if $term_received
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
-      logger.debug("observing #{host.name}")
       begin
         observe_host(host, logger)
       rescue => ex
@@ -47,7 +46,7 @@ class JobObserver
         logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
         job.destroy
         logger.info("destroyed #{job.class} #{job.id}")
-        StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job, "destroyed")) if job.instance_of?(Run)
+        StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job, "destroyed"))
         return
       else
         logger.warn("should not happen: #{job.class}:#{job.id} is not destroyable")
@@ -70,7 +69,7 @@ class JobObserver
     when :running
       if job.status == :submitted then
         job.update_attribute(:status, :running)
-        StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job)) if job.instance_of?(Run)
+        StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job))
       end
     when :includable, :unknown
       logger.info("including #{job.class}:#{job.id} from #{host.name}")
