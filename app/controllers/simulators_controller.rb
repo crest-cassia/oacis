@@ -157,9 +157,13 @@ class SimulatorsController < ApplicationController
       filter_list.each_with_index do |fl, i|
         h = {}
         h[:enable] = fl["enable"]
-        h[:query] = fl["query"]
-        a << h
-        count = i
+        if fl["query"] == ''
+          bExist = false
+        else
+          h[:query] = fl["query"]
+          a << h
+          count = i
+        end
       end
       filter_list = a
     elsif params[:filter_set_id].present? && params[:filter_set_id] != "undefined"
@@ -188,19 +192,13 @@ class SimulatorsController < ApplicationController
     filters_str = params[:filter_query_array]
     filters = JSON.parse(filters_str)
     @simulator = Simulator.find(params[:id])
-    binding.pry
     fs = @simulator.filter_sets.where(name: params[:name])
     if fs.exists?
       fs.destroy()
     end
     @new_filter_set = @simulator.filter_sets.build
     @new_filter_set.name = params[:name]
-
-    if @new_filter_set.save
-      logger.debug "filter set save succses."
-    else
-      logger.debug "filter set save failed."
-    end
+    @new_filter_set.save
 
     new_filters = []
     filters.each_with_index do |param, i|
@@ -224,6 +222,14 @@ class SimulatorsController < ApplicationController
 
   end
 
+  def _delete_filter_set
+    @simulator = Simulator.find(params[:id])
+    fs = @simulator.filter_sets.where(name: params[:name])
+    if fs.exists?
+      fs.destroy()
+    end
+  end
+
   # POST /simulators/:_id/_set_filter_set redirect_to simulators#show
   def _set_filter_set
     filter_set_query = params[:filter_set_query_for_set]
@@ -232,7 +238,7 @@ class SimulatorsController < ApplicationController
       filter_hash = JSON.parse(filter_set_query)
     end
     @filter_hash = filter_hash
-    redirect_to  :action => "show", :filter_json => filter_hash.to_json, :filter_set_name => params[:filter_set_name_for_set]
+    redirect_to  :action => "show", :filter_json => filter_hash.to_json, :filter_set_name => params[:filter_set_name_for_set], :isLoaded => params[:isLoaded]
   end
 
   # POST /simulators/:_id/_make_query redirect_to simulators#show

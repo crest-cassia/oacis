@@ -30,6 +30,7 @@ Rails.application.routes.draw do
       post "_make_query" # for ajax
       post "_save_filter_set" # for ajax
       post "_set_filter_set" # for ajax
+      get "_delete_filter_set" # for ajax
       get "_parameters_list" # for ajax, datatables
       get "_parameter_set_filter_list" # for ajax, datatables
       get "_filter_set_list" # for ajax, datatables
