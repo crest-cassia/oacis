@@ -29,14 +29,15 @@ private
       trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">')
         : @view.link_to( @view.raw('<i class="fa fa-trash-o">'), arn, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
       [
-        @view.content_tag(:i, '', analysis_id: arn.id.to_s, align: "center", class: "fa fa-search clickable"),
+        @view.content_tag(:i, '', analyses_id: arn.id.to_s, align: "center", class: "fa fa-search clickable"),
         @view.link_to( @view.shortened_id_monospaced(arn.id), @view.analysis_path(arn) ),
         analyzer.name,
         arn.parameters.to_s,
-        @view.status_label(arn.status),
-        arn.analyzer_version.to_s,
+        '<span class=arn_status>'+@view.status_label(arn.status)+'</sapn>',
+        '<span class=arn_version>'+arn.analyzer_version.to_s+'</sapn>',
         @view.distance_to_now_in_words(arn.created_at),
-        trash
+        trash,
+        arn.id
       ]
     end
     a
