@@ -20,7 +20,7 @@ $(function() {
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="runs_list_select_all">Select/Unselect All</button>' +
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="runs_list_toggle">Toggle Selection</button>' +
     '<form name="runs_form">' +
-    '<input type="hidden" name="id_list">' +
+    '<input type="hidden" name="id_list" id="run_selected_id_list">' +
     '<input type="button" class="btn btn-primary margin-half-em" value="Delete Selected" id="runs_delete_sel">' +
     '</form>' +
     '</div>'

@@ -25,7 +25,7 @@ function create_parameter_sets_list(selector, default_length) {
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="params_list_select_all">Select/Unselect All</button>' +
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="params_list_toggle">Toggle Selection</button>' +
     '<form name="ps_form">' +
-    '<input type="hidden" name="id_list">' +
+    '<input type="hidden" name="id_list" id="ps_selected_id_list">' +
     '<input type="button" class="btn btn-primary margin-half-em pull-right" value="Delete Selected" id="ps_delete_sel">' +
     '<input type="button" class="btn btn-primary margin-half-em pull-right" value="Run Selected" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
     '</form>' +
