@@ -42,19 +42,29 @@
     = hidden_field_tag "query_id", @query_id
     = submit_tag "Delete this Filter", :class => 'btn btn-primary', :name => :delete_query, :confirm => 'Are you sure?'
 
-/ run selected modal dialog
 #run_selected_modal.modal.fade
+  - parameter_set = @simulator.parameter_sets.first()
+  - run = parameter_set.runs.build(submitted_to: parameter_set.simulator.executable_on.first)
   .modal-dialog.modal-vertical-centered
     .modal-content
       .modal-header
         %button.close{type: "button", "data-dismiss" => "modal"}
           &times;
         %h4.modal-title
+          Create New Runs for selected Parameter Sets
       .modal-body
-        %h3 Create New Runs for selected Parameter Sets
-      .modal-footer
-        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
-          Close
+        = form_for(@simulator, :url => _create_selected_run_simulator_path) do |f|
+          .form-group
+          = label_tag('num_runs', '# of Runs', class: 'col-md-2 control-label')
+          .col-md-3
+            = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]), {class: 'form-control'})
+          = render 'runs/fields', run: run, f: f
+          = f.hidden_field_tag "ps_ids", ps_ids
+          = f.hidden_field_tag "simulator_id", simulator_id
+          .modal-footer
+            = f.submit(class: 'btn btn-primary', "data-dismiss" => "modal")
+            %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+              Close
 
 :javascript
   $(function() {
