@@ -18,7 +18,7 @@ class ParameterSetsListDatatable
   end
 
   def self.header(simulator)
-    header = [ '<th style="min-width: 18px; width: 1%;">Sel</th>',
+    header = [ '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="ps_check_all" value="true" /></th>',
                '<th class="span1" style="min-width: 150px;">Progress</th>',
                '<th class="span1" style="min-width: 50px;">ParamSetID</th>',
                '<th class="span1">Updated_at</th>'

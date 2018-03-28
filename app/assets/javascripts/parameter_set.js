@@ -19,37 +19,30 @@ function create_parameter_sets_list(selector, default_length) {
     bStateSave: true,
     ajax: $(selector).data('source')
   });
+  const aPagePath = $(location).attr('pathname').split('/');
+  const actionUrl = '/' + aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_parameter_sets'
   $(selector+'_length').append(
-    '<i class="fa fa-refresh padding-half-em clickable add-margin-bottom" id="params_list_refresh"></i>' +
-    '<div class="dataTables_length"><span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
+    '<i class="fa fa-refresh padding-half-em clickable add-margin-bottom" id="params_list_refresh"></i>'
+  );
+  $(selector+'_length').after(
+    '<div class="dataTables_length" id="selected_pss_ctl_div" style="width: 100%;">' +
+    '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="params_list_select_all">Select/Unselect All</button>' +
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="params_list_toggle">Toggle Selection</button>' +
-    '<form name="ps_form">' +
+    '<form name="ps_form" id="ps_select_form" action="' + actionUrl + '" method="post">' +
     '<input type="hidden" name="id_list" id="ps_selected_id_list">' +
-    '<input type="button" class="btn btn-primary margin-half-em pull-right" value="Delete Selected" id="ps_delete_sel">' +
-    '<input type="button" class="btn btn-primary margin-half-em pull-right" value="Run Selected" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
+    '<input type="button" class="btn btn-primary margin-half-em" style="float: right;" value="Delete Selected" id="ps_delete_sel">' +
+    '<input type="button" class="btn btn-primary margin-half-em" style="float: right;" value="Run Selected" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
     '</form>' +
     '</div>'
   );
-  var id_list = '';
-  var checked_cnt = 0;
-  var text=document.createTextNode(checked_cnt);
-  ps_count.appendChild(text);
+  $('#ps_count').text('0');
   $(selector+'_length').children('#params_list_refresh').on('click', function() {
-    oPsTable.ajax.reload( function(){
-      for(var i=0; i<id_list.length; i++){
-        $('input[value='+ id_list[i] +']').prop('checked', true);
-        if(i == id_list.length-1) $('input[value='+ id_list[i] +']').prop('checked', true).trigger('change');
-      }  
-    }, false);
+    oPsTable.ajax.reload(null, false);
   });
-  $('#params_list_select_all').on('click', function() {
-    var cb_cnt = $('input[name="checkbox[ps]"]').length;
-    var checked = 0;
-    $('.dataTable input:checked').map(function() {
-      checked += 1; 
-    });
-    if(cb_cnt != checked) {
+  $('#ps_check_all').on('change', function() {
+    const checkAll = $('#ps_check_all').prop('checked');
+    if(checkAll) {
       $('input[name="checkbox[ps]"]').prop('checked', true).trigger('change');
     } else {
       $('input[name="checkbox[ps]"]').prop('checked', false).trigger('change');
@@ -62,22 +55,25 @@ function create_parameter_sets_list(selector, default_length) {
     $('input[name="checkbox[ps]"]').trigger('change');
   });
   $(document).on('click', '.span1', function() {
-    id_list = '';
-    text = psCreateTxt("0");
-    ps_count.appendChild(text);
+    $('#ps_selected_id_list').val('');
+    $('#ps_count').text('0');
+    $('#ps_check_all').prop('checked', false).trigger('change');
   });
   $(document).on('change','input[name="checkbox[ps]"]', function() {
-    checked_cnt = 0;
-    id_list = $('.dataTable input:checked').map(function() {
+    let checked_cnt = 0;
+    const id_list = $('.dataTable tbody input:checked').map(function() {
       checked_cnt += 1;
       return $(this).val();
     }).get();
-    text = psCreateTxt(checked_cnt);
-    ps_count.appendChild(text);
-    document.ps_form.id_list.value = id_list;
+    $('#ps_count').text(checked_cnt);
+    $('#ps_selected_id_list').val(id_list);
+    setSelectPSCtlDivDisp(checked_cnt > 0);
   });
   $('#ps_delete_sel').on('click', function() {
-    alert(id_list);
+    const res = confirm('Delete selected Parameter Sets. Are you sure?');
+    if (res) {
+      $('#ps_select_form').submit();
+    }
   });
   $(selector).on("click", "i.fa.fa-search[parameter_set_id]", function() {
     var param_id = $(this).attr("parameter_set_id");
@@ -85,14 +81,20 @@ function create_parameter_sets_list(selector, default_length) {
       parameter_set_id: param_id
     });
   });
+  let setSelectPSCtlDivDisp = (dispFlag) => {
+    if (dispFlag) {
+      $('#selected_pss_ctl_div').show();
+      $('#params_list_length').hide();
+      $('div.ColVis').hide();
+    }
+    else {
+      $('#selected_pss_ctl_div').hide();
+      $('#params_list_length').show();
+      $('div.ColVis').show();
+    }
+  }
+  setSelectPSCtlDivDisp(false);
   return oPsTable;
-}
-
-function psCreateTxt(checked_cnt) {
-  var removeObj = document.getElementById("ps_count");
-  removeObj.removeChild(removeObj.childNodes.item(0));
-  var text=document.createTextNode(checked_cnt);
-  return text;
 }
 
 $(function() {

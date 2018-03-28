@@ -191,27 +191,50 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
 
     @runs = []
-    @param_sets = []
     run_params = permitted_run_params(params)
     param_set_ids.each do |ps_id|
       param_set = ParameterSet.find(ps_id)
       next unless param_set.present?
-      cnt = 0
       num_runs.times do |i|
         run = param_set.runs.build(run_params)
-        if run.save
-          @runs << run
-          cnt = i + 1
-        end
-     end
-      @param_sets << param_set
+        @runs << run if run.save
+      end
     end
-    num_created_runs = @runs.count
-    if num_created_runs > 0
-      flash[:notice] = "#{num_created_runs} runs were created"
+
+    if @runs.present?
+      flash[:notice] = "#{@runs.size} run#{@runs.size > 1 ? 's ware' : ' was'} successfully created"
     else
-      flash[:alert] = "No runs were created"
+      flash[:alert] = "No runs ware created"
     end
+    redirect_to @simulator
+  end
+
+  def _delete_selected_parameter_sets
+    logger.debug "_delete_selected_parameter_sets"
+    logger.debug "params:" + params.to_s
+    selected_ps_ids = []
+    selected_ps_ids_str = params[:id_list]
+    selected_ps_ids = selected_ps_ids_str.split(",") if selected_ps_ids_str.present?
+    @simulator = Simulator.find(params[:id])
+    
+    cnt = 0;
+    selected_ps_ids.each do |ps_id|
+      ps = @simulator.parameter_sets.find(ps_id)
+      if ps.present?
+        ps.discard
+        cnt = cnt + 1
+      end
+    end
+
+    
+    if cnt == selected_ps_ids.size
+      flash[:notice] = "#{cnt} parameter set#{cnt > 1 ? 's ware' : ' was'} successfully deleted"
+    elsif cnt == 0
+      flash[:alert] = "No parameter sets ware deleted"
+    else
+      flash[:alert] = "#{cnt} parameter set#{cnt > 1 ? 's ware' : ' was'} deleted (your request was #{selected_ps_ids.size} deletion)"
+    end
+    redirect_to @simulator
   end
 
   private

@@ -1,6 +1,6 @@
 class RunsListDatatable
 
-  HEADER  = ['<th style="min-width: 18px; width: 1%;"></th>',
+  HEADER  = ['<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="run_check_all" value="true" /></th>',
              '<th class="span1">RunID</th>', '<th class="span1">status</th>', '<th class="span1">priority</th>',
              '<th class="span1">elapsed</th>',
              '<th class="span1">MPI</th>', '<th class="span1">OMP</th>', '<th class="span1">version</th>',

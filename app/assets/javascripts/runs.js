@@ -14,35 +14,28 @@ $(function() {
       }],
       ajax: $(selector).data('source')
     });
+    const aPagePath = $(location).attr('pathname').split('/');
+    const actionUrl = '/' +  aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_runs'
     $(selector+'_length').append(
-      '<i class="fa fa-refresh padding-half-em clickable add-margin-bottom" id="runs_list_refresh"></i>' +
-    '<div class="dataTables_length"><span class="add-margin-top pull-left add-padding-right">Selected <span id="runs_count"></span> Runs</span>' +
+      '<i class="fa fa-refresh padding-half-em clickable add-margin-bottom" id="runs_list_refresh"></i>'
+    );
+    $(selector+'_length').parent().after(
+    '<div class="dataTables_length" id="selected_runs_ctl_div" style="width: 100%; float: left;">' +
+    '<span class="add-margin-top pull-left add-padding-right">Selected <span id="runs_count"></span> Runs</span>' +
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="runs_list_select_all">Select/Unselect All</button>' +
     '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="runs_list_toggle">Toggle Selection</button>' +
-    '<form name="runs_form">' +
+    '<form name="runs_form" id="runs_select_form" action="' + actionUrl + '" method="post">' +
     '<input type="hidden" name="id_list" id="run_selected_id_list">' +
-    '<input type="button" class="btn btn-primary margin-half-em" value="Delete Selected" id="runs_delete_sel">' +
+    '<input type="button" class="btn btn-primary margin-half-em" style="float: right;" value="Delete Selected" id="runs_delete_sel">' +
     '</form>' +
     '</div>'
     );
-    var id_list = '';
-    var checked_cnt = 0;
-    var text=document.createTextNode(checked_cnt);
-    runs_count.appendChild(text);
+    $('#runs_count').text('0');
     var refresh_icon = $(selector+'_length').children('#runs_list_refresh');
-    refresh_icon.on('click', function() { oTable.ajax.reload( function(){
-      for(var i=0; i<id_list.length; i++){
-        $('input[value='+ id_list[i] +']').prop('checked', true);
-        if(i == id_list.length-1) $('input[value='+ id_list[i] +']').prop('checked', true).trigger('change');
-      }
-    }, false);});
-    $('#runs_list_select_all').on('click', function() {
-      var cb_cnt = $('input[name="checkbox[run]"]').length;
-      var checked = 0;
-      $('.dataTable input:checked').map(function() {
-        checked += 1;
-      });
-      if(cb_cnt != checked) {
+    refresh_icon.on('click', function() { oTable.ajax.reload(null, false);});
+    $('#run_check_all').on('change', function() {
+      const checkAll = $('#run_check_all').prop('checked');
+      if(checkAll) {
         $('input[name="checkbox[run]"]').prop('checked', true).trigger('change');
       } else {
         $('input[name="checkbox[run]"]').prop('checked', false).trigger('change');
@@ -55,34 +48,41 @@ $(function() {
       $('input[name="checkbox[run]"]').trigger('change');
     });
     $(document).on('click', '.span1', function() {
-      id_list = '';
-      text = runsCreateTxt("0");
-      runs_count.appendChild(text);
+      $('#run_selected_id_list').val('');
+      $('#runs_count').text('0');
+      $('#run_check_all').prop('checked', false).trigger('change');
     });
     $(document).on('change','input[name="checkbox[run]"]', function() {
-      checked_cnt = 0;
-      id_list = $('.dataTable input:checked').map(function() {
-        checked_cnt += 1;
+      let checkedCnt = 0;
+      const idList = $('.dataTable tbody input:checked').map(function() {
+        checkedCnt += 1;
         return $(this).val();
       }).get();
-      text = runsCreateTxt(checked_cnt);
-      runs_count.appendChild(text);
-      document.runs_form.id_list.value = id_list;
+      $('#runs_count').text(checkedCnt);
+      $('#run_selected_id_list').val(idList);
+      setSelectRunsCtlDivDisp(checkedCnt > 0);
     });
     $('#runs_delete_sel').on('click', function() {
-      alert(id_list);
+      const ret = confirm('Delete selected Runs. Are you sure?');
+      if (ret) {
+        $('#runs_select_form').submit();
+      }
     });
+    let setSelectRunsCtlDivDisp = (dispFlag) => {
+      if (dispFlag) {
+        $('#selected_runs_ctl_div').show();
+        $('#runs_list_length').hide();
+      }
+      else {
+        $('#selected_runs_ctl_div').hide();
+        $('#runs_list_length').show();
+      }
+    }
+    setSelectRunsCtlDivDisp(false);
     return oTable;
   };
   window.datatables_for_runs_table = datatables_for_runs_table;
 });
-
-function runsCreateTxt(checked_cnt) {
-  var removeObj = document.getElementById("runs_count");
-  removeObj.removeChild(removeObj.childNodes.item(0));
-  var text=document.createTextNode(checked_cnt);
-  return text;
-}
 
 // This function is used to adjust the size of iframe
 function resizeIframe(obj) {
