@@ -37,7 +37,7 @@ private
         '<span class=arn_version>'+arn.analyzer_version.to_s+'</sapn>',
         @view.distance_to_now_in_words(arn.created_at),
         trash,
-        arn.id
+        "arn_list_#{arn.id}"
       ]
     end
     a
