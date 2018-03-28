@@ -10,7 +10,7 @@ $(function() {
       "columnDefs": [{
         "searchable": false,
         "orderable": false,
-        "targets": [0,-1]
+        "targets": [0,1]
       }],
       ajax: $(selector).data('source')
     });
@@ -20,13 +20,11 @@ $(function() {
       '<i class="fa fa-refresh padding-half-em clickable add-margin-bottom" id="runs_list_refresh"></i>'
     );
     $(selector+'_length').parent().after(
-    '<div class="dataTables_length" id="selected_runs_ctl_div" style="width: 100%; float: left;">' +
-    '<span class="add-margin-top pull-left add-padding-right">Selected <span id="runs_count"></span> Runs</span>' +
-    '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="runs_list_select_all">Select/Unselect All</button>' +
-    '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="runs_list_toggle">Toggle Selection</button>' +
+    '<div class="dataTables_length" id="selected_runs_ctl_div" style="float: right;">' +
     '<form name="runs_form" id="runs_select_form" action="' + actionUrl + '" method="post">' +
+    '<span class="add-margin-top pull-left add-padding-right">Selected <span id="runs_count"></span> Runs</span>' +
     '<input type="hidden" name="id_list" id="run_selected_id_list">' +
-    '<input type="button" class="btn btn-primary margin-half-em" style="float: right;" value="Delete Selected" id="runs_delete_sel">' +
+    '<input type="button" class="btn btn-primary margin-half-em" value="Delete Selected" id="runs_delete_sel">' +
     '</form>' +
     '</div>'
     );
@@ -41,12 +39,6 @@ $(function() {
         $('input[name="checkbox[run]"]').prop('checked', false).trigger('change');
       }
     });
-    $('#runs_list_toggle').on('click', function() {
-      $('input[name="checkbox[run]"]').prop('checked', function( index, prop ){
-        return !prop;
-      });
-      $('input[name="checkbox[run]"]').trigger('change');
-    });
     $(document).on('click', '.span1', function() {
       $('#run_selected_id_list').val('');
       $('#runs_count').text('0');
@@ -54,6 +46,7 @@ $(function() {
     });
     $(document).on('change','input[name="checkbox[run]"]', function() {
       let checkedCnt = 0;
+      const numCheckBoxes = $('input[name="checkbox[run]"]').length;
       const idList = $('.dataTable tbody input:checked').map(function() {
         checkedCnt += 1;
         return $(this).val();
@@ -61,6 +54,7 @@ $(function() {
       $('#runs_count').text(checkedCnt);
       $('#run_selected_id_list').val(idList);
       setSelectRunsCtlDivDisp(checkedCnt > 0);
+      $('#run_check_all').prop('checked', checkedCnt == numCheckBoxes);
     });
     $('#runs_delete_sel').on('click', function() {
       const ret = confirm('Delete selected Runs. Are you sure?');

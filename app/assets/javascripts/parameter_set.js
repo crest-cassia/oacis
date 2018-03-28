@@ -9,7 +9,7 @@ function create_parameter_sets_list(selector, default_length) {
     "columnDefs": [{
       "searchable": false,
       "orderable": false,
-      "targets": [0, -1]
+      "targets": [0, 1]
     }],
     dom: 'C<"clear">lrtip',
     colVis: {
@@ -25,14 +25,12 @@ function create_parameter_sets_list(selector, default_length) {
     '<i class="fa fa-refresh padding-half-em clickable add-margin-bottom" id="params_list_refresh"></i>'
   );
   $(selector+'_length').after(
-    '<div class="dataTables_length" id="selected_pss_ctl_div" style="width: 100%;">' +
-    '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
-    '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="params_list_select_all">Select/Unselect All</button>' +
-    '<button class="ColVis_Button ColVis_MasterButton margin-half-em" id="params_list_toggle">Toggle Selection</button>' +
+    '<div class="dataTables_length" id="selected_pss_ctl_div" style="float: right;">' +
     '<form name="ps_form" id="ps_select_form" action="' + actionUrl + '" method="post">' +
+    '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
     '<input type="hidden" name="id_list" id="ps_selected_id_list">' +
-    '<input type="button" class="btn btn-primary margin-half-em" style="float: right;" value="Delete Selected" id="ps_delete_sel">' +
-    '<input type="button" class="btn btn-primary margin-half-em" style="float: right;" value="Run Selected" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
+    '<input type="button" class="btn btn-primary margin-half-em" value="Delete Selected" id="ps_delete_sel">' +
+    '<input type="button" class="btn btn-primary margin-half-em" value="Run Selected" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
     '</form>' +
     '</div>'
   );
@@ -48,12 +46,6 @@ function create_parameter_sets_list(selector, default_length) {
       $('input[name="checkbox[ps]"]').prop('checked', false).trigger('change');
     }
   });
-  $('#params_list_toggle').on('click', function() {
-    $('input[name="checkbox[ps]"]').prop('checked', function( index, prop ){
-      return !prop;
-    });
-    $('input[name="checkbox[ps]"]').trigger('change');
-  });
   $(document).on('click', '.span1', function() {
     $('#ps_selected_id_list').val('');
     $('#ps_count').text('0');
@@ -61,6 +53,7 @@ function create_parameter_sets_list(selector, default_length) {
   });
   $(document).on('change','input[name="checkbox[ps]"]', function() {
     let checked_cnt = 0;
+    const num_checkboxes = $('input[name="checkbox[ps]"]').length;
     const id_list = $('.dataTable tbody input:checked').map(function() {
       checked_cnt += 1;
       return $(this).val();
@@ -68,6 +61,7 @@ function create_parameter_sets_list(selector, default_length) {
     $('#ps_count').text(checked_cnt);
     $('#ps_selected_id_list').val(id_list);
     setSelectPSCtlDivDisp(checked_cnt > 0);
+    $('#ps_check_all').prop('checked', checked_cnt == num_checkboxes);
   });
   $('#ps_delete_sel').on('click', function() {
     const res = confirm('Delete selected Parameter Sets. Are you sure?');

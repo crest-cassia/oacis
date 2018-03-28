@@ -26,7 +26,6 @@ class ParameterSetsListDatatable
     header += simulator.parameter_definitions.map do |pd|
       '<th class="span1">' + ERB::Util.html_escape(pd.key) + '</th>'
     end
-    header << '<th style="min-width: 18px; width: 1%;"></th>'
     header
   end
 
@@ -49,15 +48,6 @@ private
           tmp << colorize_param_value(ps.v[key], @base_ps.v[key])
         else
           tmp <<  ERB::Util.html_escape(ps.v[key])
-        end
-      end
-      if ps == @base_ps
-        tmp << ''
-      else
-        if OACIS_READ_ONLY
-          tmp << @view.raw('<i class="fa fa-trash-o">')
-        else
-          tmp << @view.link_to( @view.raw('<i class="fa fa-trash-o">'), ps, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
         end
       end
       tmp
