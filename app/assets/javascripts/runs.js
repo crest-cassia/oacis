@@ -24,7 +24,7 @@ $(function() {
     '<form name="runs_form" id="runs_select_form" action="' + actionUrl + '" method="post">' +
     '<span class="add-margin-top pull-left add-padding-right">Selected <span id="runs_count"></span> Runs</span>' +
     '<input type="hidden" name="id_list" id="run_selected_id_list">' +
-    '<input type="button" class="btn btn-primary margin-half-em" value="Delete Selected" id="runs_delete_sel">' +
+    '<input type="button" class="btn btn-primary margin-half-em" value="Delete" id="runs_delete_sel">' +
     '</form>' +
     '</div>'
     );

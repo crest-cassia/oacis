@@ -29,8 +29,8 @@ function create_parameter_sets_list(selector, default_length) {
     '<form name="ps_form" id="ps_select_form" action="' + actionUrl + '" method="post">' +
     '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
     '<input type="hidden" name="id_list" id="ps_selected_id_list">' +
-    '<input type="button" class="btn btn-primary margin-half-em" value="Delete Selected" id="ps_delete_sel">' +
-    '<input type="button" class="btn btn-primary margin-half-em" value="Run Selected" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
+    '<input type="button" class="btn btn-primary margin-half-em" value="Delete" id="ps_delete_sel">' +
+    '<input type="button" class="btn btn-primary margin-half-em" value="Create Runs" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
     '</form>' +
     '</div>'
   );
