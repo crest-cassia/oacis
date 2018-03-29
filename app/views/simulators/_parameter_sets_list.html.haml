@@ -4,8 +4,8 @@
 .create_ps_area
   - if @save_task_ids.present?
     = @ps_creation_msg
-    %a.btn.btn-primary{href: "#{_cancel_create_ps_simulator_path(@simulator)}"}
-      Cancel
+    %a{"data-toggle" => "tooltip", "data-original-title" => "cancel creation", href: "#{_cancel_create_ps_simulator_path(@simulator)}"}
+      %i.fa.fa-times
 .clear-element
 %table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
@@ -101,6 +101,10 @@
     parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
     parameter_form_selector.trigger("change");
   });
+
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  })
 
 :javascript
   $(function() {
