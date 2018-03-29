@@ -14,8 +14,8 @@
 
 :javascript
   $(function() {
-    var dont_reload = #{@filtering}
-    if ( dont_reload ) return
+    const dont_reload = #{"true" ? @filtering : "false"};
+    if ( dont_reload ) return;
     function reload_table() {
       $.get("/worker_logs/_contents", function(data) {
         $('#log_table_body').html(data);
