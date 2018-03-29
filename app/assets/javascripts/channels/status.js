@@ -14,7 +14,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
     let class_tobe = "label-default";
     const run_list_id = "#run_list_" + oid;
     const params_list_id = "#params_list_" + ps_id;
-    const analyses_list_id = "#analyses_id_" + oid;
+    const analysis_list_id = "#analysis_list_" + oid;
 
     if ($(run_list_id) != null && $(run_list_id).is(":visible")) { /* run list is active */
       switch (status) {
@@ -77,7 +77,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         psStatusDiv.find(".progress-bar-info").text(String(percentSubmitted) + "%");
       }
     }
-    if ($(analyses_list_id) != null && $(analyses_list_id).is(":visible")) { /* analyses list is active */
+    if ($(analysis_list_id) != null && $(analysis_list_id).is(":visible")) { /* analyses list is active */
       switch (status) {
         case 'submitted':
           class_tobe = "label-info";
@@ -90,7 +90,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
           break;
       }
 
-      const statusDiv = $(analyses_list_id).find(".arn_status");
+      const statusDiv = $(analysis_list_id).find(".status-label");
       $(statusDiv).removeClass(function(index, className) {
         return (className.match(/\blabel-\S+/g) || []).join(' ');
       });
@@ -98,7 +98,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
       $(statusDiv).text(status);
 
       if (status === 'finished') {
-        const versionTd = $(analyses_list_id).find(".arn_version");
+        const versionTd = $(analysis_list_id).find(".arn_version");
         $(versionTd).text(data["version"]);
       }
     }

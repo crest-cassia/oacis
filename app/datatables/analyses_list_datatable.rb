@@ -33,11 +33,11 @@ private
         @view.link_to( @view.shortened_id_monospaced(arn.id), @view.analysis_path(arn) ),
         analyzer.name,
         arn.parameters.to_s,
-        '<span class=arn_status>'+@view.status_label(arn.status)+'</sapn>',
-        '<span class=arn_version>'+arn.analyzer_version.to_s+'</sapn>',
+        @view.status_label(arn.status),
+        @view.raw('<span class="arn_version">'+arn.analyzer_version.to_s+'</sapn>'),
         @view.distance_to_now_in_words(arn.created_at),
         trash,
-        "arn_list_#{arn.id}"
+        "analysis_list_#{arn.id}"
       ]
     end
     a

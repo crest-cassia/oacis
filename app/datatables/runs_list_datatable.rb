@@ -32,15 +32,15 @@ private
       tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )
       tmp << Run::PRIORITY_ORDER[run.priority]
-      tmp << '<span class=run_elapsed>'+@view.formatted_elapsed_time(run.real_time)+'</span>'
+      tmp << @view.raw('<span class="run_elapsed">'+@view.formatted_elapsed_time(run.real_time)+'</span>')
       tmp << run.mpi_procs
       tmp << run.omp_threads
-      tmp << '<span class=run_version>'+run.simulator_version.to_s+'</span>'
+      tmp << @view.raw('<span class="run_version">'+run.simulator_version.to_s+'</span>')
       tmp << @view.distance_to_now_in_words(run.created_at)
       tmp << @view.distance_to_now_in_words(run.updated_at)
       host_like = run.submitted_to || run.host_group
       tmp << (host_like ? @view.link_to( host_like.name, host_like ) : "---")
-      tmp << '<span class=run_job_id>'+@view.shortened_job_id(run.job_id)+'</span>'
+      tmp << @view.raw('<span class="run_job_id">'+@view.shortened_job_id(run.job_id)+'</span>')
       trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">')
         : @view.link_to( @view.raw('<i class="fa fa-trash-o">'), run, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
       tmp << trash
