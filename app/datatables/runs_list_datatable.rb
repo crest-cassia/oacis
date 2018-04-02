@@ -1,17 +1,13 @@
 class RunsListDatatable
 
-  HEADER  = ['<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="run_check_all" value="true" /></th>',
-             '<th class="span1">RunID</th>', '<th class="span1">status</th>', '<th class="span1">priority</th>',
-             '<th class="span1">elapsed</th>',
-             '<th class="span1">MPI</th>', '<th class="span1">OMP</th>', '<th class="span1">version</th>',
-             '<th class="span1">created_at</th>', '<th class="span1">updated_at</th>', '<th class="span1">host(group)</th>', '<th class="span1">job_id</th>']
   SORT_BY = ["id", "id", "status", "priority", "real_time",
              "mpi_procs", "omp_threads", "simulator_version",
              "created_at", "updated_at", "submitted_to", "job_id", "id"]
 
-  def initialize(runs, view)
+  def initialize(runs, view, isJobs=false)
     @view = view
     @runs = runs
+    @isJobs = isJobs
   end
 
   def as_json(options = {})
@@ -23,13 +19,25 @@ class RunsListDatatable
     }
   end
 
+  def self.header(isJobs=false)
+    col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="run_check_all" value="true" /></th>'
+    header  = [
+             '<th class="span1">RunID</th>', '<th class="span1">status</th>', '<th class="span1">priority</th>',
+             '<th class="span1">elapsed</th>',
+             '<th class="span1">MPI</th>', '<th class="span1">OMP</th>', '<th class="span1">version</th>',
+             '<th class="span1">created_at</th>', '<th class="span1">updated_at</th>', '<th class="span1">host(group)</th>', '<th class="span1">job_id</th>']
+    header.unshift(col0) unless isJobs
+    header
+  end
+
 private
 
   def data
     a = []
     runs_lists.each do |run|
       tmp = []
-      tmp << @view.check_box_tag("checkbox[run]", run.id, false, align: "center")
+      col0 = @view.check_box_tag("checkbox[run]", run.id, false, align: "center")
+      tmp << col0 unless @isJobs
       tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )
       tmp << Run::PRIORITY_ORDER[run.priority]

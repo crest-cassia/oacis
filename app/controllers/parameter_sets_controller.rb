@@ -80,7 +80,6 @@ class ParameterSetsController < ApplicationController
   end
 
   def _delete_selected_runs
-    logger.debug "_delete_selected_runs"
     selected_run_ids_str = ""
     selected_run_ids = []
     selected_run_ids_str = params[:id_list] if params[:id_list].present?
