@@ -119,9 +119,6 @@
       if($(":selected",this).attr('type') == "Integer" || $(":selected",this).attr('type') == "Float") {
         matcher_val = #{raw ParameterSetQuery::NumTypeMatchers.to_json};
         matcher_text = #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
-      } else if($(":selected",this).attr('type') == "Boolean") {
-        matcher_val = #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
       } else if($(":selected",this).attr('type') == "String") {
         matcher_val = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
         matcher_text = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
