@@ -96,6 +96,13 @@
 
 :javascript
   $(function() {
+    var id = 'params';
+    const objTable = create_parameter_sets_list('#params_list', 100);
+    const objList = $("#tab-list-parameters");
+    $("#tab-list-parameters").setIntervalCommon(id,objTable,objList);
+  });
+
+  $(function() {
     var cloned = $('#queries_form_original').html();
     $('#add_queries_form').click(function() {
       $('#add_queries_form').before( cloned );
@@ -133,26 +140,4 @@
     var parameter_form_selector = $("#select_param_form select")
     parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
     parameter_form_selector.trigger("change");
-  });
-
-:javascript
-  $(function() {
-    var oPsTable = create_parameter_sets_list('#params_list', 100);
-    if( window.bEnableAutoReload ) {
-      setInterval( function() {
-        if( $("#tab-list-parameters").length > 0 ) { // ParameterSet tab in Simulator show page
-          if( $("#tab-list-parameters")[0].classList.contains("active") ) {
-            var id_list = $('.dataTable input:checked').map(function() {
-               return $(this).val();
-            }).get();
-            oPsTable.ajax.reload( function(){
-              for(var i=0; i<id_list.length; i++){
-                $('input[value='+ id_list[i] +']').prop('checked', true);
-                if(i == id_list.length-1) $('input[value='+ id_list[i] +']').prop('checked', true).trigger('change');
-              }
-            }, false);
-          }
-        }
-      }, 5000);
-    }
   });

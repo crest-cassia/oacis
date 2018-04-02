@@ -17,7 +17,11 @@ $(function() {
     const aPagePath = $(location).attr('pathname').split('/');
     const actionUrl = '/' +  aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_runs'
     $(selector+'_length').append(
-      '<i class="fa fa-refresh padding-half-em clickable add-margin-bottom" id="runs_list_refresh"></i>'
+      '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="runs_list_refresh"></i>' +
+      '<div class="auto_reload_setting">' +
+      '<label class="form-check-label clickable" for="runs_list_refresh_cb">auto reload<input type="checkbox" class="form-check-input" id="runs_list_refresh_cb" /></label>' +
+      '<label for="runs_list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id="runs_list_refresh_tb" size="10">sec</label>' +
+      '</div>'
     );
     $(selector+'_length').parent().after(
     '<div class="dataTables_length" id="selected_runs_ctl_div" style="float: right;">' +

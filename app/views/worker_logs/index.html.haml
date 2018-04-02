@@ -1,5 +1,7 @@
 .page-header
   %h1 Logs
+  .well
+    = render "filtering"
 %table.table.table-striped.table-condensed{style: "font-size: smaller;"}
   %thead
     %tr
@@ -12,6 +14,8 @@
 
 :javascript
   $(function() {
+    const dont_reload = #{"true" ? @filtering : "false"};
+    if ( dont_reload ) return;
     function reload_table() {
       $.get("/worker_logs/_contents", function(data) {
         $('#log_table_body').html(data);
@@ -19,5 +23,5 @@
     };
     setInterval( function() {
       reload_table();
-    }, 5000 );
+    }, 10000 );
   });

@@ -36,23 +36,9 @@
             Close
 
 :javascript
-  $(function() {
-    var oRunsTable = datatables_for_runs_table();
-    if( window.bEnableAutoReload ) {
-      setInterval( function() {
-        if( $("#tab-list-runs").length > 0 ) { // Runs tab in ParameterSet show page
-          if( $("#tab-list-runs")[0].classList.contains("active") ) {
-            var id_list = $('.dataTable input:checked').map(function() {
-               return $(this).val();
-            }).get();
-            oRunsTable.ajax.reload( function(){
-              for(var i=0; i<id_list.length; i++){
-                $('input[value='+ id_list[i] +']').prop('checked', true);
-                if(i == id_list.length-1) $('input[value='+ id_list[i] +']').prop('checked', true).trigger('change');
-              }
-            }, false);
-          }
-        }
-      }, 5000);
-    }
-  });
+   $(function() {
+     var id = "runs";
+     const objTable = datatables_for_runs_table();
+     const objList = $("#tab-list-runs");
+     $("#tab-list-runs").setIntervalCommon(id,objTable,objList); 
+   });

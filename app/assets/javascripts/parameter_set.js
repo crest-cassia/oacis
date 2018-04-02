@@ -22,7 +22,11 @@ function create_parameter_sets_list(selector, default_length) {
   const aPagePath = $(location).attr('pathname').split('/');
   const actionUrl = '/' + aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_parameter_sets'
   $(selector+'_length').append(
-    '<i class="fa fa-refresh padding-half-em clickable add-margin-bottom" id="params_list_refresh"></i>'
+    '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="params_list_refresh"></i>' +
+    '<div class="auto_reload_setting">' +
+    '<label class="form-check-label clickable" for="params_list_refresh_cb">auto reload<input type="checkbox" class="form-check-input" id="params_list_refresh_cb" /></label>' +
+    '<label for="params_list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id="params_list_refresh_tb" size="10"/>sec</label>' +
+    '</div>'
   );
   $(selector+'_length').after(
     '<div class="dataTables_length" id="selected_pss_ctl_div" style="float: right;">' +
