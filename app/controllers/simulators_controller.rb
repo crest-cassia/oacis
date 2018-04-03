@@ -18,24 +18,15 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
     @query_id = params[:query_id]
-    @ps_creation_msg = "No Parameter Sets creating."
-    @save_task_ids = []
+
+    save_tasks = SaveTask.where({cancel_flag: false})
+    @ps_creation_size = save_tasks.inject(0) {|sum,t| sum + t.creation_size }
 
     if @simulator.parameter_set_queries.present?
       @query_list = {}
       @simulator.parameter_set_queries.each do |psq|
         @query_list[psq.query.to_s] = psq.id
       end
-    end
-
-    save_tasks = SaveTask.where({cancel_flag: false})
-    ps_creation_size = 0
-    save_tasks.each do |t|
-      @save_task_ids << t.id
-      ps_creation_size = ps_creation_size + t.creation_size
-    end
-    if ps_creation_size > 0
-      @ps_creation_msg = "Creating #{ps_creation_size.to_s} Parameter Sets"
     end
 
     respond_to do |format|
@@ -48,7 +39,6 @@ class SimulatorsController < ApplicationController
   # GET /simulators/new.json
   def new
     @simulator = Simulator.new
-
     respond_to do |format|
       format.html
       format.json { render json: @simulator }

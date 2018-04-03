@@ -25,7 +25,6 @@ class ParameterSetsController < ApplicationController
   end
 
   def create
-    logger.debug "create params: " + params.to_s
     simulator = Simulator.find(params[:simulator_id])
     @num_runs = params[:num_runs].to_i
 
@@ -33,7 +32,6 @@ class ParameterSetsController < ApplicationController
     previous_num_runs = simulator.runs.count
 
     permitted_params = params.permit(v: params[:v].keys)
-    logger.debug "permitted_params: " + permitted_params.to_s
     @param_set = simulator.parameter_sets.build(permitted_params)
     # this run is not saved, but used when rendering new
     if @num_runs > 0
@@ -613,32 +611,20 @@ class ParameterSetsController < ApplicationController
       paramsets_now = [] # top 10 sets
       paramsets_lator = [] # other
 
-      logger.debug "NOW_CREATION_SIZE: #{NOW_CREATION_SIZE}"
       mapped[0].product( *mapped[1..-1] ).each_with_index do |ps, i|
         if i < NOW_CREATION_SIZE
           paramsets_now << mapped[0].product( *mapped[1..-1] )[i]
-          logger.debug "paramsets_now[#{i}]: " + paramsets_now.to_s
         else
           paramsets_lator << mapped[0].product( *mapped[1..-1] )[i]
-          logger.debug "paramsets_lator[#{i}]: " + paramsets_lator.to_s
         end
       end
       created = save_parameter_sets(simulator, paramsets_now, run_params)
 
-      logger.debug "save active job params"
-      save_task = SaveTask.new
-      save_task.ps_param = paramsets_lator
-      save_task.run_param = run_params.to_h
-      save_task.run_num = @num_runs
-      save_task.simulator_id = simulator_id
-      save_task.creation_size = creation_size - NOW_CREATION_SIZE
+      save_task = SaveTask.new(ps_params: paramsets_lator, run_param: run_params.to_h, num_runs: @num_runs, simulator_id: simulator_id, creation_size: creation_size - NOW_CREATION_SIZE)
       save_task_id = save_task.id.to_s
       if save_task.save
-        logger.debug "save_task save success."
-        logger.debug "call active job"
         SaveParamsJob.perform_later(save_task.id.to_s, previous_num_ps, previous_num_runs)
       else
-        logger.debug "save_task save false."
         flash[:notice] = "Can't create background job."
         created = save_parameter_sets(simulator,paramsets_lator, run_params)
       end
