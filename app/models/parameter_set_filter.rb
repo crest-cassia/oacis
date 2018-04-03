@@ -1,6 +1,6 @@
 class ParameterSetFilter
   include Mongoid::Document
-  field :enable, type: Boolean
+  field :enable, type: Boolean, default: true
   field :query, type: Hash
   belongs_to :filter_set
   belongs_to :simulator

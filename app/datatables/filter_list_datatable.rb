@@ -1,6 +1,6 @@
 class FilterListDatatable
 
-  HEADER  = ['<th>enable</th>', '<th>query</th>', '<th>edit</th>', '<th>delete</th>']
+  HEADER  = ['<th>query</th>', '<th>edit</th>', '<th>delete</th>']
 
   def initialize(filter_list, count, view, b_exist)
     @b_exist = b_exist
@@ -34,7 +34,6 @@ private
     return a unless @b_exist
     @filter_list.each_with_index do |filter, i|
       tmp = []
-      tmp << @view.check_box( :filter_cb, "", {id: "filter_cb_#{i}", class: "filter_enable_cb", checked: filter[:enable]}, true, false )
       tmp << @view.raw( "<p id=\"filter_key_#{i}\" class=\"filter_query\">#{filter[:query]}</p>" )
       tmp << @view.link_to( @view.raw("<i class=\"fa fa-edit\">"), "javascript:void(0);", onclick:"edit_filter(this)")
       tmp <<  @view.link_to( @view.raw("<i class=\"fa fa-trash-o\">"), "javascript:void(0);", onclick:"delete_filter(filter_key_#{i}, #{i})")

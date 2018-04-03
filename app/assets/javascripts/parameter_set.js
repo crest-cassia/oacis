@@ -106,19 +106,14 @@ function delete_filter(filter_key, rownum) {
   rows = $('#parameter_filter_list tr').length;
   for(let i=0; i<rows-1; i++){
     let data = oFilterTable.row(i).data();
-    if(data[1].match("filter_key_" + i)){
+    if(data[0].match("filter_key_" + i)){
       continue;
     }else{
       const now_rows = i + 1;
       const query_txt = $('#filter_key_' + now_rows).text();
-      element = document.getElementById('filter_key_' + now_rows);
+      element = $('#filter_key_' + now_rows).get(0);
       element.id = "filter_key_" + i;
-      let check_status = '';
-      if($("#filter_cb_" + now_rows +":checked").val() || $("#filter_cb_add:checked").val()) {
-        check_status = 'checked="checked"'
-      }
       oFilterTable.row(i).data([
-        '<input type="checkbox" id="filter_cb_' + i + '" class="filter_enable_cb" value="true"' + check_status + '>',
         '<p id="filter_key_' + i + '" class="filter_query">' + query_txt + '</p>',
         '<a href="javascript:void(0);" onclick="edit_filter(this)"><i class="fa fa-edit"></a>',
         '<a href="javascript:void(0);" onclick="delete_filter(filter_key_' + rownum +',' + rownum + ')"><i class="fa fa-trash-o"></a>'
@@ -126,13 +121,7 @@ function delete_filter(filter_key, rownum) {
     }
   }
   if(!isLoaded){
-    rows = $('#parameter_filter_list tr').length;
-    let filter_set_name = '';
-    for(let i=0; i<rows-1; i++){
-      filter_set_name += $("#filter_key_" + i).text() + ',';
-    }
-    filter_set_name = filter_set_name.slice(0,-1);
-    $("#filter_set_name_p").text(filter_set_name);
+    create_filter_set_name();
   }
 }
 
@@ -151,14 +140,19 @@ function show_filter_set_name_dlg() {
     $("#name").val(name);
     $("#filter_set_name_for_set").val(name);
 
-    const str = make_queries_str();
-    $("#filter_query_array").val(str);
-    $('#save_filter_set_form').submit();
+    const str = getParam('filter_json');
+    if(str == null || (str != null && str.length < 1)){
+      return false;
+    }else{
+      $("#filter_query_array").val(str);
+      $('#save_filter_set_form').submit();
+    }
   });
 }
 
 function parameter_filter_dlg_ok() {
   const queries_str = make_queries_str();
+  $('#filter_set_name_for_set').val($("#filter_set_name_p").text());
   $("#filter_set_query_for_set").val(queries_str);
   $("#isLoaded").val(isLoaded);
   $("#set_filter_set_form").submit();
@@ -188,7 +182,6 @@ function add_new_filter() {
     }
     if (value.length >0) {
       oFilterTable.row.add([
-        '<input type="checkbox" id="filter_cb_add" class="filter_enable_cb" value="true" checked="checked">',
         '<p id="filter_key_' + rownum + '" class="filter_query">' + paray + " " + matcher + " " + value + '</p>',
         '<a href="javascript:void(0);" onclick="edit_filter(this)"><i class="fa fa-edit"></a>',
         '<a href="javascript:void(0);" onclick="delete_filter(filter_key_' + rownum +',' + rownum + ')"><i class="fa fa-trash-o"></a>'
@@ -198,13 +191,8 @@ function add_new_filter() {
     let rows = $('#parameter_filter_list tr').length;
     for(let i=0; i<rows-1; i++){
       const data = oFilterTable.row(i).data();
-      if(data[1].match(query_id)){
-        let check_status = '';
-        if($("#filter_cb_" + i +":checked").val() || $("#filter_cb_add:checked").val()) {
-          check_status = 'checked="checked"'
-        }
+      if(data[0].match(query_id)){
         oFilterTable.row(i).data([
-          '<input type="checkbox" id="filter_cb_' + i + '" class="filter_enable_cb" value="true"' + check_status + '>',
           '<p id="filter_key_' + i + '" class="filter_query">' + paray + " " + matcher + " " + value + '</p>',
           '<a href="javascript:void(0);" onclick="edit_filter(this)"><i class="fa fa-edit"></a>',
           '<a href="javascript:void(0);" onclick="delete_filter(filter_key_' + i +',' + i + ')"><i class="fa fa-trash-o"></a>'
@@ -216,13 +204,7 @@ function add_new_filter() {
     isEdit = false;
   }
   if(!isLoaded){
-    let rows = $('#parameter_filter_list tr').length;
-    let filter_set_name = ''; 
-    for(let i=0; i<rows-1; i++){
-      filter_set_name += $("#filter_key_" + i).text() + ',';
-    }
-    filter_set_name = filter_set_name.slice(0,-1);
-    $("#filter_set_name_p").text(filter_set_name);
+    create_filter_set_name();
   }
 }
 
@@ -252,7 +234,7 @@ function make_queries_str() {
       const ocb = $(elem).find('.filter_enable_cb');
       const oque = $(elem).find('.filter_query');
       const h = {};
-      h['enable'] = ocb.prop('checked');
+      h['enable'] = true;
       h['query'] = oque.text();
       queryArr.push(h);
     }
@@ -260,6 +242,16 @@ function make_queries_str() {
 
   const str = JSON.stringify(queryArr);
   return str;
+}
+
+function create_filter_set_name() {
+  const rows = $('#parameter_filter_list tr').length;
+  let filter_set_name = '';
+  for(let i=0; i<rows-1; i++){
+    filter_set_name += $("#filter_key_" + i).text() + ',';
+  }
+  filter_set_name = filter_set_name.slice(0,-1);
+  $("#filter_set_name_p").text(filter_set_name); 
 }
 
 function getParam(name, url) {
