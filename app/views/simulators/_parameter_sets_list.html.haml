@@ -6,11 +6,12 @@
 
 .clear-element
 .filter_set_area.paramset_title_area_item
-  %button#parameter_filter_modal_btn.btn.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name}
-    Filtering
+  %i#parameter_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name}
   %span#parameter_filter_selected.add_padding.add_margin_bottom
     = @filter_set_query_string
-
+  -if @filter_set_query_string != "Not filtering."
+    %button#parameter_save_filter_btn.btn.btn-primary{onclick: "return show_filter_set_name_dlg();"}
+      Save
 .clear-element
 
 #parameter_filter_modal.modal.large.fade
@@ -22,7 +23,7 @@
         %h4.paramset_title_area_item Parameter Filter
       .modal-body.large#parameter_filter_setting_body
         %button#parameter_new_filter_btn.paramset_title_area_item.btn.btn-primary
-          New Filter
+          New Query
         = render "filters", simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name
       .modal-footer
         = form_tag(_set_filter_set_simulator_path, class: 'form-horizontal', id: 'set_filter_set_form') do 
@@ -40,7 +41,7 @@
       .modal-header
         %button.close{type: "button", "data-dismiss" => "modal"}
           &times;
-        %h4.paramset_title_area_item Filter
+        %h4.paramset_title_area_item Query
       .modal-body.large#parameter_new_filter_create_body
         .foo#queries_form_original
           .row

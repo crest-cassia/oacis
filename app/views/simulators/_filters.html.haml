@@ -1,11 +1,10 @@
 .clear-element
-.filter_set_name_area
-  %label.add_float_left
-    Filter set name:
-  %p#filter_set_name_p.add_float_left.add_padding_left
-    = filter_set_name
+  .filter_set_name_area
+    %label.add_float_left
+      Filter set name:
+    %p#filter_set_name_p.add_float_left.add_padding_left
+      = filter_set_name
 
-.clear-element
   %table.table.table-condensed.table-striped#parameter_filter_list{:'data-source' => "#{_parameter_set_filter_list_simulator_path(format: "json")}", style: "font-size: smaller;", remote: true, filter_json: filter_json}
     %thead
       %tr
@@ -13,7 +12,5 @@
           = raw(header)
     %tbody#parameter_filter_table_body
 
-%button#parameter_save_filter_btn.paramset_title_area_item.btn.btn-primary{onclick: "return show_filter_set_name_dlg();"}
-  Save Filter Set
-%button#parameter_load_filter_btn.paramset_title_area_item.btn.btn-primary{onclick: "show_load_filter_set_dlg(this)", simulator_id: simulator_id}
-  Load Filter Set
+  %button#parameter_load_filter_btn.btn.btn-primary.add-margin-top{onclick: "show_load_filter_set_dlg(this)", simulator_id: simulator_id}
+    Load Filter Set

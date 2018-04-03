@@ -142,7 +142,6 @@ class SimulatorsController < ApplicationController
       total_count = filter_sets.count
     else
       total_count = 0
-      logger.debug "filter_set not exist. "
     end
     render json: FilterSetListDatatable.new(filter_sets, simulator, view_context, total_count)
   end
@@ -182,7 +181,6 @@ class SimulatorsController < ApplicationController
       filter_list = a
     else
       bExist = false
-      logger.debug "filter_list not exist."
     end
     render json: FilterListDatatable.new(filter_list, count, view_context, bExist)
   end
@@ -202,10 +200,8 @@ class SimulatorsController < ApplicationController
 
     new_filters = []
     filters.each_with_index do |param, i|
-      logger.debug "param: " + param.to_s
       filter_hash = ParametersUtil.parse_query_str_to_hash(param["query"])
       filter_hash['enable'] = param["enable"]
-      logger.debug "filter_hash: " + filter_hash.to_s
       new_filters << @new_filter_set.parameter_set_filters.build
       new_filters[i].simulator = @simulator
       new_filters[i].filter_set = @new_filter_set
@@ -213,10 +209,8 @@ class SimulatorsController < ApplicationController
     end
 
     if new_filters.map(&:save)
-      logger.debug "save succses."
       flash.now[:notice] = "A new filter set is created or over writed."
     else
-      logger.debug "save failed."
       flash.now[:notice] = "Failed to create a filter set."
     end
 
