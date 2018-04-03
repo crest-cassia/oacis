@@ -46,7 +46,6 @@ class JobObserver
         logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
         job.destroy
         logger.info("destroyed #{job.class} #{job.id}")
-        StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job, "destroyed"))
         return
       else
         logger.warn("should not happen: #{job.class}:#{job.id} is not destroyable")

@@ -4,6 +4,7 @@ module OacisChannelUtil
     status ||= job.status;
 
     ps = ParameterSet.where({id: job.parameter_set_id}) 
+    return if ps.nil?
     status_counts = ParameterSet.runs_status_count_batch(ps)
     
     ws_mess = { :id => "#{job.id}",

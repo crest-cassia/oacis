@@ -50,17 +50,17 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
       const psStatusTr = $(params_list_id);
       const psStatusDiv = $(params_list_id).find(".progress");
       if (psStatusDiv != null) {
-        tooltip_h = {};
+        const tooltip_h = {};
         tooltip_h["finished"] = ps_counts["finished"];
         tooltip_h["failed"] = ps_counts["failed"];
         tooltip_h["running"] = ps_counts["running"];
         tooltip_h["submitted"] = ps_counts["submitted"];
         psStatusDiv.attr("data-original-title", JSON.stringify(tooltip_h));
-        percentSuccess = 0.0;
-        percentDanger = 0.0;
-        percentWarning = 0.0;
-        percentSubmitted = 0.0;
-        psTotal = parseFloat(ps_counts["finished"]) + parseFloat(ps_counts["failed"]) + parseFloat(ps_counts["running"]) + parseFloat(ps_counts["submitted"]) + parseFloat(ps_counts["created"]);
+        let percentSuccess = 0.0;
+        let percentDanger = 0.0;
+        let percentWarning = 0.0;
+        let percentSubmitted = 0.0;
+        const psTotal = parseFloat(ps_counts["finished"]) + parseFloat(ps_counts["failed"]) + parseFloat(ps_counts["running"]) + parseFloat(ps_counts["submitted"]) + parseFloat(ps_counts["created"]);
         if (psTotal > 0){
           percentSuccess = Math.round(parseFloat(ps_counts["finished"]) / parseFloat(psTotal) *100);
           percentDanger = Math.round(parseFloat(ps_counts["failed"]) / parseFloat(psTotal) *100);
