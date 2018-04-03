@@ -21,6 +21,7 @@ function create_parameter_sets_list(selector, default_length) {
   });
   const aPagePath = $(location).attr('pathname').split('/');
   const actionUrl = '/' + aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_parameter_sets'
+  $(selector+'_length').css('height', '45px');
   $(selector+'_length').append(
     '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="params_list_refresh"></i>' +
     '<div class="auto_reload_setting">' +
@@ -29,7 +30,7 @@ function create_parameter_sets_list(selector, default_length) {
     '</div>'
   );
   $(selector+'_length').after(
-    '<div class="dataTables_length" id="selected_pss_ctl_div" style="float: right;">' +
+    '<div class="dataTables_length" id="selected_pss_ctl_div" style="height: 45px;">' +
     '<form name="ps_form" id="ps_select_form" action="' + actionUrl + '" method="post">' +
     '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
     '<input type="hidden" name="id_list" id="ps_selected_id_list">' +

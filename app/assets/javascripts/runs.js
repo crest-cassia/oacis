@@ -16,6 +16,7 @@ $(function() {
     });
     const aPagePath = $(location).attr('pathname').split('/');
     const actionUrl = '/' +  aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_runs'
+    $(selector+'_length').css('height', '45px');
     $(selector+'_length').append(
       '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="runs_list_refresh"></i>' +
       '<div class="auto_reload_setting">' +
@@ -24,7 +25,7 @@ $(function() {
       '</div>'
     );
     $(selector+'_length').parent().after(
-    '<div class="dataTables_length" id="selected_runs_ctl_div" style="float: right;">' +
+    '<div class="dataTables_length" id="selected_runs_ctl_div" style="height: 45px; clear: both; padding-left: 15px;">' +
     '<form name="runs_form" id="runs_select_form" action="' + actionUrl + '" method="post">' +
     '<span class="add-margin-top pull-left add-padding-right">Selected <span id="runs_count"></span> Runs</span>' +
     '<input type="hidden" name="id_list" id="run_selected_id_list">' +
