@@ -117,6 +117,13 @@
 
 :javascript
   $(function() {
+    var id = 'params';
+    const objTable = create_parameter_sets_list('#params_list', 100);
+    const objList = $("#tab-list-parameters");
+    $("#tab-list-parameters").setIntervalCommon(id,objTable,objList);
+  });
+
+  $(function() {
     var cloned = $('#queries_form_original').html();
     $('#add_queries_form').click(function() {
       $('#add_queries_form').before( cloned );
@@ -133,9 +140,6 @@
       if($(":selected",this).attr('type') == "Integer" || $(":selected",this).attr('type') == "Float") {
         matcher_val = #{raw ParameterSetQuery::NumTypeMatchers.to_json};
         matcher_text = #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
-      } else if($(":selected",this).attr('type') == "Boolean") {
-        matcher_val = #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
       } else if($(":selected",this).attr('type') == "String") {
         matcher_val = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
         matcher_text = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
@@ -154,18 +158,4 @@
     var parameter_form_selector = $("#select_param_form select")
     parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
     parameter_form_selector.trigger("change");
-  });
-
-:javascript
-  $(function() {
-    var oPsTable = create_parameter_sets_list('#params_list', 100);
-    if( window.bEnableAutoReload ) {
-      setInterval( function() {
-        if( $("#tab-list-parameters").length > 0 ) { // ParameterSet tab in Simulator show page
-          if( $("#tab-list-parameters")[0].classList.contains("active") ) {
-            oPsTable.ajax.reload(null, false);
-          }
-        }
-      }, 5000);
-    }
   });

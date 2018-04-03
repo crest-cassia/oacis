@@ -1,6 +1,6 @@
 module ParametersUtil
 
-  TYPES = ["Integer","Float","String","Boolean"]
+  TYPES = ["Integer","Float","String"]
 
   def self.cast_parameter_values(parameters, definitions, errors = nil)
     casted = {}
@@ -58,8 +58,6 @@ module ParametersUtil
         return nil
       end
       return val.to_f
-    when "Boolean"
-      return boolean(val)
     when "String"
       return val.to_s
     else

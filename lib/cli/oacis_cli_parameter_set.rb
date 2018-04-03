@@ -179,8 +179,6 @@ class OacisCli < Thor
           val = val.to_f
         elsif pd.type == "String"
           raise "invalid type: #{pd.key}, #{val}" unless val.is_a?(String)
-        elsif pd.type == "Boolean"
-          raise "invalid type: #{pd.key}, #{val}" unless val.is_a?(Boolean)
         end
         [pd.key, val]
       end
