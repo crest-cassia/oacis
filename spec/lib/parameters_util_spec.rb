@@ -8,7 +8,7 @@ describe ParametersUtil do
       @definitions = [
         ParameterDefinition.new(key: "param1", type: "Integer", description: "System size"),
         ParameterDefinition.new(key: "param2", type: "Float", default: 1.0, description: "temperature"),
-        ParameterDefinition.new(key: "param3", type: "Boolean", default: false, description: "sequential update?"),
+        ParameterDefinition.new(key: "param3", type: "Integer", default: 0, description: "sequential update?"),
         ParameterDefinition.new(key: "param4", type: "String", default: "abc", description: "a string parameter")
       ]
     end
@@ -26,7 +26,8 @@ describe ParametersUtil do
       expect(casted["param1"]).to eq(70)
       expect(casted["param2"]).to be_a(Float)
       expect(casted["param2"]).to eq(3.0)
-      expect(casted["param3"]).to be_truthy
+      expect(casted["param3"]).to be_a(Integer)
+      expect(casted["param3"]).to eq(1)
       expect(casted["param4"]).to be_a(String)
       expect(casted["param4"]).to eq("12345")
     end
@@ -44,7 +45,8 @@ describe ParametersUtil do
       expect(casted["param1"]).to eq(70)
       expect(casted["param2"]).to be_a(Float)
       expect(casted["param2"]).to eq(3.0)
-      expect(casted["param3"]).to be_truthy
+      expect(casted["param3"]).to be_a(Integer)
+      expect(casted["param3"]).to eq(1)
       expect(casted["param4"]).to be_a(String)
       expect(casted["param4"]).to eq("12345")
     end
@@ -56,7 +58,7 @@ describe ParametersUtil do
       casted = ParametersUtil.cast_parameter_values(parameters, @definitions)
       expect(casted["param1"]).to eq(70)
       expect(casted["param2"]).to eq(1.0)
-      expect(casted["param3"]).to be_falsey
+      expect(casted["param3"]).to eq(0)
       expect(casted["param4"]).to eq("abc")
     end
 
@@ -70,19 +72,6 @@ describe ParametersUtil do
 
     it "accept nil as the first argument" do
       casted = ParametersUtil.cast_parameter_values(nil, @definitions)
-    end
-
-    context "when the default value of a boolean parameter is true" do
-
-      it "correctly casts false" do
-        @definitions[2].default = true
-
-        casted = ParametersUtil.cast_parameter_values({"param1" => 0, "param3" => false}, @definitions)
-        expect(casted["param3"]).to be_falsey
-
-        casted = ParametersUtil.cast_parameter_values({"param1" => 0}, @definitions)
-        expect(casted["param3"]).to eq true
-      end
     end
 
     context "when unknown keys are given" do
@@ -106,7 +95,6 @@ describe ParametersUtil do
     it "returns casted value" do
       expect(ParametersUtil.cast_value("-1", "Integer")).to eq(-1)
       expect(ParametersUtil.cast_value("+0.234e5", "Float")).to eq(0.234e5)
-      expect(ParametersUtil.cast_value("false", "Boolean")).to be_falsey
       expect(ParametersUtil.cast_value(123, "String")).to eq("123")
     end
 

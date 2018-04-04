@@ -31,6 +31,13 @@ module AcmProto
     config.enable_dependency_loading = true
     config.autoload_paths += %W(#{config.root}/lib)
 
+    # get local timezone name
+    jan_offset = Time.now.beginning_of_year.utc_offset
+    jul_offset = Time.now.beginning_of_year.change(month: 7).utc_offset
+    offset = jan_offset < jul_offset ? jan_offset : jul_offset
+    zone = ActiveSupport::TimeZone.all.find {|z| z.utc_offset==offset}.name
+    config.time_zone = zone
+
     # load user config
     config.user_config = {}
     user_config_yml = Rails.root.join("config/user_config.yml")

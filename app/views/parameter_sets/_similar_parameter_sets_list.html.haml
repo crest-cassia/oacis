@@ -20,14 +20,8 @@
 
 :javascript
   $(function() {
-    var oPsTable = create_parameter_sets_list('#similar_params_list', 10);
-    if( window.bEnableAutoReload ) {
-      setInterval( function() {
-        if( $("#tab-about").length > 0 ) { // About tab in ParameterSet show page
-          if( $("#tab-about")[0].classList.contains("active") ) {
-            oPsTable.ajax.reload(null, false);
-          }
-        }
-      }, 5000);
-    }
+    var id = 'params';
+    const oPsTable = create_parameter_sets_list('#similar_params_list', 10);
+    const objList = $("#tab-about");
+    $("#tab-about").setIntervalCommon(id,oPsTable,objList);
   });

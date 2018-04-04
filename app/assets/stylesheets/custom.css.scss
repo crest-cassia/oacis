@@ -140,3 +140,14 @@ div.progress {
 .progress-bar {
   line-height: 14px;
 }
+
+.auto_reload_setting {
+  float: left;
+}
+div.auto_reload_setting input {
+  margin: 0 5px;
+}
+div.auto_reload_setting * {
+  line-height: 33px;
+}
+

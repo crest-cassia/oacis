@@ -292,25 +292,6 @@ describe ParameterSetsController do
         expect(ps['invalid']).to be_nil
       end
     end
-
-    describe "when Boolean parameters are included" do
-
-      before(:each) do
-        pds = [ {key: "I", type: "Integer", default: 50},
-                {key: "B", type: "Boolean", default: true}]
-        pds.map! {|h| ParameterDefinition.new(h) }
-        @sim = FactoryBot.create(:simulator,
-                                  parameter_definitions: pds,
-                                  parameter_sets_count: 0,
-                                  analyzers_count: 0)
-      end
-
-      it "creates a parameter_sets correctly when the boolean parameter is false" do
-        valid_param = {simulator_id: @sim, v: {"B" => "false"}}
-        post :create, params: valid_param
-        expect(@sim.parameter_sets.first.v["B"]).to eq false
-      end
-    end
   end
 
   describe "GET _create_cli" do
@@ -411,7 +392,7 @@ describe ParameterSetsController do
         ParameterDefinition.new(key: "I", type: "Integer", default: 0),
         ParameterDefinition.new(key: "F", type: "Float", default: 1.0),
         ParameterDefinition.new(key: "S", type: "String", default: 'abc'),
-        ParameterDefinition.new(key: "B", type: "Boolean", default: false)
+        ParameterDefinition.new(key: "B", type: "Integer", default: 0)
       ]
 
       @simulator = FactoryBot.create(:simulator,
@@ -421,13 +402,13 @@ describe ParameterSetsController do
       [0,1,2].each do |i|
         [0.0, 1.0, 2.0].each do |f|
           ['a', 'b', 'c'].each do |s|
-            [true, false].each do |b|
+            [1, 0].each do |b|
               @simulator.parameter_sets.create!(v: {'I'=>i,'F'=>f,'S'=>s,'B'=>b})
             end
           end
         end
       end
-      @param_set = @simulator.parameter_sets.where('v.I'=>1,'v.F'=>1.0,'v.S'=>'b','v.B'=>true).first
+      @param_set = @simulator.parameter_sets.where('v.I'=>1,'v.F'=>1.0,'v.S'=>'b','v.B'=>1).first
       get :_similar_parameter_sets_list, params: {id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
