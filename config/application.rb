@@ -39,6 +39,7 @@ module AcmProto
 
     # for use resque. default is Async.
     config.active_job.queue_adapter = :resque
+    config.active_job.queue_name_prefix = Rails.env
   end
 end
 

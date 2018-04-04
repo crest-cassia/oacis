@@ -2,8 +2,8 @@
 
 .clear-element
 .create_ps_area
-  - if @save_task_ids.present?
-    = @ps_creation_msg
+  - if @ps_creation_size > 0
+    = "Creating #{@ps_creation_size} Parameter Sets"
     %a{"data-toggle" => "tooltip", "data-original-title" => "cancel creation", href: "#{_cancel_create_ps_simulator_path(@simulator)}"}
       %i.fa.fa-times
 .clear-element
