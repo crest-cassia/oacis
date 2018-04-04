@@ -229,7 +229,7 @@ class ParameterSetsController < ApplicationController
           script = GnuplotUtil.script_for_multi_line_plot(data, x_axis_key, ylabel, true,
                                                           series, series_values)
         end
-        render text: script
+        render plain: script
       }
     end
   end

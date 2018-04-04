@@ -306,16 +306,6 @@ describe Run do
         expect(command).to eq "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
         expect(run.input).to be_nil
       end
-
-      it "returns boolean parameters in 0 or 1" do
-        pds = [ ParameterDefinition.new(key:"p1",type:"Boolean",default:true) ]
-        sim = FactoryBot.create(:simulator,
-                                 parameter_definitions: pds, support_input_json: false,
-                                 parameter_sets_count: 0)
-        run = sim.parameter_sets.create!(v: {p1: true}).runs.create!(submitted_to: FactoryBot.create(:host))
-        command = run.command_with_args
-        expect(command).to eq "#{sim.command} 1 #{run.seed}"
-      end
     end
 
     context "for simulators which receives parameters as _input.json" do
