@@ -182,10 +182,8 @@ class SimulatorsController < ApplicationController
   end
 
   def _cancel_create_ps
-    logger.debug "_cancel_create_ps"
     save_tasks =  SaveTask.where({cancel_flag: false})
     save_tasks.each do |t|
-      logger.debug "save_task obj is present: " + t.id.to_s
       t.cancel_flag = true
       t.save
     end

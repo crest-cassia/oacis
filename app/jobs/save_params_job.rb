@@ -1,9 +1,10 @@
 class SaveParamsJob < ApplicationJob
   queue_as :default
   rescue_from(StandardError) do |exeption|
+    Resque.logger.error exeption
   end
 
-  def perform(save_task_id, previous_num_ps, previous_num_runs)
+  def perform(save_task_id)
     save_task = SaveTask.find(save_task_id)
     simulator_id = save_task.simulator_id
     param_sets = save_task.ps_params
@@ -15,7 +16,6 @@ class SaveParamsJob < ApplicationJob
     created = []
     param_sets.each do |param_ary|
       save_task.reload
-#      sleep(10)
       if save_task.cancel_flag
         save_task.destroy()
         return
@@ -33,9 +33,7 @@ class SaveParamsJob < ApplicationJob
           new_runs << ps.runs.build(run_params)
         end
         ParameterSetsController.set_sequential_seeds(new_runs) if simulator.sequential_seed
-        new_runs.each do |run|
-          run.save
-        end
+        new_runs.each {|run| run.save}
 
         save_task.creation_size = save_task.creation_size - 1
         save_task.save
@@ -43,18 +41,10 @@ class SaveParamsJob < ApplicationJob
     end
 
     if created.empty?
-      logger.error "No parameter_set was created!."
+      Resque.logger.error "No parameter_set was created!."
+      save_task.destroy()
       return
     end
-
-    num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
-    num_created_runs = simulator.runs.count - previous_num_runs
-    if num_created_ps == 0 and num_created_runs == 0
-      logger.error "No parameter_sets or runs are created!"
-    end
-
     save_task.destroy()
-
-    logger.info "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
   end
 end

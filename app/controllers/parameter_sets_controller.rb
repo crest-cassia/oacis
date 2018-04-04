@@ -44,24 +44,7 @@ class ParameterSetsController < ApplicationController
       end
     end
 
-#    created = find_or_create_multiple(simulator, params[:v].dup)
-    created = find_or_create_multiple(params[:simulator_id], params[:v].dup, run_params, previous_num_ps, previous_num_runs)
-
-#    if created.empty?
-#      @param_set.errors.add(:base, "No parameter_set was created")
-#      render action: "new"
-#      return
-#    end
-
-#    new_runs = []
-#    @num_runs.times do |i|
-#      created.each do |ps|
-#        next if ps.runs.count > i
-#        new_runs << ps.runs.build(run_params)
-#      end
-#    end
-#    set_sequential_seeds(new_runs) if simulator.sequential_seed
-#    new_runs.map(&:save)
+    created = find_or_create_multiple(params[:simulator_id], params[:v].dup, run_params)
 
     num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
     num_created_runs = simulator.runs.count - previous_num_runs
@@ -581,11 +564,9 @@ class ParameterSetsController < ApplicationController
   end
 
   private
-  MAX_CREATION_SIZE = 100
   NOW_CREATION_SIZE = 10
   # return created parameter sets
-  # def find_or_create_multiple(simulator, parameters)
-  def find_or_create_multiple(simulator_id, parameters, run_params, previous_num_ps, previous_num_runs)
+  def find_or_create_multiple(simulator_id, parameters, run_params)
     simulator = Simulator.find(simulator_id)
     mapped = simulator.parameter_definitions.map do |defn|
       key = defn.key
@@ -600,10 +581,6 @@ class ParameterSetsController < ApplicationController
     end
 
     creation_size = mapped.inject(1) {|prod, x| prod * x.size }
-#    if creation_size > MAX_CREATION_SIZE
-#      flash[:alert] = "number of created parameter sets must be less than #{MAX_CREATION_SIZE}"
-#      return []
-#    end
 
     save_task_id = ""
     created = []
@@ -623,7 +600,7 @@ class ParameterSetsController < ApplicationController
       save_task = SaveTask.new(ps_params: paramsets_lator, run_param: run_params.to_h, num_runs: @num_runs, simulator_id: simulator_id, creation_size: creation_size - NOW_CREATION_SIZE)
       save_task_id = save_task.id.to_s
       if save_task.save
-        SaveParamsJob.perform_later(save_task.id.to_s, previous_num_ps, previous_num_runs)
+        SaveParamsJob.perform_later(save_task.id.to_s)
       else
         flash[:notice] = "Can't create background job."
         created = save_parameter_sets(simulator,paramsets_lator, run_params)
