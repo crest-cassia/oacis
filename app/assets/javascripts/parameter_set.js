@@ -3,6 +3,7 @@ let oFilterSetTable = null;
 let query_id = '';
 let isEdit = false;
 let isLoaded = false;
+const notFilterLabel = 'Not filtering.';
 
 function create_parameter_sets_list(selector, default_length) {
   var oPsTable = $(selector).DataTable({
@@ -44,6 +45,7 @@ function create_filter_list(url) {
       oFilterTable = $("#parameter_filter_list").DataTable({
       lengthChange: false,
       searching: false,
+      ordering: false,
       paging: false,
       ajax: {
         url: url,
@@ -59,9 +61,16 @@ function create_filter_set_list(url) {
     searching: false,
     serverSide: true,
     pageLength: 10,
+    ordering: false,
     ajax: {
       url: url,
       dataType: "json"
+    },
+    drawCallback: function() {
+      const name = $('#filter_set_name_p').text();
+      if(isLoaded && name != notFilterLabel) {
+        $('input:radio[filter_set_name = "' + name + '"]').prop('checked', true);
+      }      
     }
   });
   return loFilterSetTable;
@@ -100,7 +109,7 @@ function delete_filter(filter_key, rownum) {
         return;
       }
   if(!isLoaded && $('#parameter_filter_list tr .dataTables_empty').length > 0){
-    $("#filter_set_name_p").text("None");
+    $("#filter_set_name_p").text(notFilterLabel);
     return;
   }
   rows = $('#parameter_filter_list tr').length;
@@ -140,7 +149,7 @@ function show_filter_set_name_dlg() {
     $("#name").val(name);
     $("#filter_set_name_for_set").val(name);
 
-    const str = getParam('filter_json');
+    const str = $('#parameter_filter_modal_btn').attr('filter_json');
     if(str == null || (str != null && str.length < 1)){
       return false;
     }else{
@@ -161,7 +170,7 @@ function parameter_filter_dlg_ok() {
 function show_load_filter_set_dlg(obj) {
   const simulator_id = $(obj).attr('simulator_id');
   $("#parameter_load_filter_set_modal").modal("show", {
-    simulator_id: simulator_id 
+    simulator_id: simulator_id
   });
 }
 
@@ -254,16 +263,6 @@ function create_filter_set_name() {
   $("#filter_set_name_p").text(filter_set_name); 
 }
 
-function getParam(name, url) {
-    if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
-}
-
 $(function() {
   $("#runs_list_modal").on('show.bs.modal', function (event) {
     var param_id = event.relatedTarget.parameter_set_id;
@@ -282,7 +281,7 @@ $(function() {
     const simulator_id = $(this).attr('simulator_id');
     const filter_json = $(this).attr('filter_json');
     const filter_set_name = $(this).attr('filter_set_name');
-    const load_status = getParam('isLoaded');
+    const load_status = $(this).attr('isLoaded');
     if(load_status == 'true') {
       isLoaded = true;
     }else{
@@ -328,6 +327,12 @@ $(function() {
     const url = "/simulators/"+simulator_id+"/_filter_set_list"
     oFilterSetTable = create_filter_set_list(url);
   });
+  $("#parameter_load_filter_set_modal").on('shown.bs.modal', function(event) {
+    const name = $('#filter_set_name_p').text();
+    if(isLoaded && name != notFilterLabel) {
+      $('input:radio[filter_set_name = "' + name + '"]').prop('checked', true);
+    }
+  });
   $("#parameter_load_filter_set_modal").on('hide.bs.modal', function(event) {
     oFilterSetTable.destroy();
   });
@@ -338,5 +343,13 @@ $(function() {
   });
   $(document).on("ajax:complete", '.delete_link', function() {
     $('#parameter_filter_set_list').DataTable().draw();
+  });
+  $(document).on('confirm:complete', '#delete_filter_set', function(e, answer) {
+    if(answer) {
+      const str = e.currentTarget.attributes[4].nodeValue;
+      if($('#filter_set_name_p').text() == str) {
+        $(location).attr('search', '');
+      }
+    }
   });
 });

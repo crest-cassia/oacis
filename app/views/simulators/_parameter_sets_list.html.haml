@@ -6,7 +6,7 @@
 
 .clear-element
 .filter_set_area.paramset_title_area_item
-  %i#parameter_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name}
+  %i#parameter_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name, isLoaded: @isLoaded, data: {toggle: 'tooltip', original: {title: 'filter'}}}
   %span#parameter_filter_selected.add_padding.add_margin_bottom
     = @filter_set_query_string
   -if @filter_set_query_string != "Not filtering."
@@ -154,6 +154,10 @@
     var parameter_form_selector = $("#select_param_form select")
     parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
     parameter_form_selector.trigger("change");
+  });
+
+  $(function() {
+    $('[data-toggle="tooltip"]').tooltip();
   });
 
 :javascript

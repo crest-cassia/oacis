@@ -28,7 +28,7 @@ private
       tmp << @view.radio_button( 'filter_set_rb', '', "#{filter_set.id}", {filter_set_name: "#{filter_set.name}", simulator_id: "#{@simulator.id}"} )
       tmp << @view.raw( "<p id=\"filter_set_#{i}\" class=\"filter_set_query\">#{filter_set.name}</p>" )
       trash = OACIS_READ_ONLY ? @view.raw("<i class=\"fa fa-trash-o\">")
-        : @view.link_to( @view.raw("<i class=\"fa fa-trash-o\">"), @simulator, href: "/simulators/#{@simulator.id}/_delete_filter_set?name=#{filter_set.name}", remote: true, method: :get, data: {confirm: "#{filter_set.name}\nAre you sure?"}, :class => 'delete_link')
+        : @view.link_to( @view.raw("<i class=\"fa fa-trash-o\">"), @simulator, href: "/simulators/#{@simulator.id}/_delete_filter_set?name=#{filter_set.name}", remote: true, method: :get, data: {confirm: "#{filter_set.name}\nAre you sure?"}, :class => 'delete_link', id: 'delete_filter_set', filter_set_name: "#{filter_set.name}")
       tmp << trash
       a << tmp
     end
