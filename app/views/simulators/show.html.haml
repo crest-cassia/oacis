@@ -18,6 +18,6 @@
       = render partial: "about", locals: {simulator: @simulator}
       = render "analyzers_list"
     %div.tab-pane.active#tab-list-parameters
-      = render "parameter_sets_list", simulator_id: @simulator.id
+      = render "parameter_sets_list", oacis_read_only: OACIS_READ_ONLY
     %div.tab-pane#tab-progress
       = render "progress"

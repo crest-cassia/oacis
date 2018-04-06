@@ -21,6 +21,7 @@ function create_parameter_sets_list(selector, default_length) {
   });
   const aPagePath = $(location).attr('pathname').split('/');
   const actionUrl = '/' + aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_parameter_sets'
+  const bOacisReadOnly = $('#params_list').attr('oacis_read_only');
   $(selector+'_length').css('height', '45px');
   $(selector+'_length').append(
     '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="params_list_refresh"></i>' +
@@ -29,16 +30,18 @@ function create_parameter_sets_list(selector, default_length) {
     '<label for="params_list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id="params_list_refresh_tb" size="10"/>sec</label>' +
     '</div>'
   );
-  $(selector+'_length').after(
-    '<div class="dataTables_length" id="selected_pss_ctl_div" style="height: 45px;">' +
-    '<form name="ps_form" id="ps_select_form" action="' + actionUrl + '" method="post">' +
-    '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
-    '<input type="hidden" name="id_list" id="ps_selected_id_list">' +
-    '<input type="button" class="btn btn-primary margin-half-em" value="Delete" id="ps_delete_sel">' +
-    '<input type="button" class="btn btn-primary margin-half-em" value="Create Runs" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
-    '</form>' +
-    '</div>'
-  );
+  if (!bOacisReadOnly){
+    $(selector+'_length').after(
+      '<div class="dataTables_length" id="selected_pss_ctl_div" style="height: 45px;">' +
+      '<form name="ps_form" id="ps_select_form" action="' + actionUrl + '" method="post">' +
+      '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
+      '<input type="hidden" name="id_list" id="ps_selected_id_list">' +
+      '<input type="button" class="btn btn-primary margin-half-em" value="Delete" id="ps_delete_sel">' +
+      '<input type="button" class="btn btn-primary margin-half-em" value="Create Runs" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
+      '</form>' +
+      '</div>'
+    );
+  }
   $('#ps_count').text('0');
   $(selector+'_length').children('#params_list_refresh').on('click', function() {
     oPsTable.ajax.reload(null, false);
