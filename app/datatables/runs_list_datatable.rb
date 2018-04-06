@@ -36,7 +36,7 @@ private
     a = []
     runs_lists.each do |run|
       tmp = []
-      col0 = @view.check_box_tag("checkbox[run]", run.id, false, align: "center", disabled: "#{OACIS_READ_ONLY}")
+      col0 = @view.check_box_tag("checkbox[run]", run.id, false, {align: "center", disabled: OACIS_READ_ONLY})
       tmp << col0 unless @isJobs
       tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )

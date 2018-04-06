@@ -37,7 +37,7 @@ private
   def data
     parameter_sets_list.map do |ps|
       tmp = []
-      tmp << @view.check_box_tag("checkbox[ps]", ps.id, false, align: "center", disabled: "#{OACIS_READ_ONLY}")
+      tmp << @view.check_box_tag("checkbox[ps]", ps.id, false, {align: "center", disabled: OACIS_READ_ONLY})
       counts = runs_status_counts(ps)
       progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
       tmp << @view.raw(progress)
