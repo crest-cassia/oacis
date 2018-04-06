@@ -220,7 +220,6 @@ class SimulatorsController < ApplicationController
         cnt = cnt + 1
       end
     end
-
     
     if cnt == selected_ps_ids.size
       flash[:notice] = "#{cnt} parameter set#{cnt > 1 ? 's were' : ' was'} successfully deleted"

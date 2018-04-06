@@ -1,15 +1,18 @@
 function create_parameter_sets_list(selector, default_length) {
+  const bOacisReadOnly = $('#tab-list-parameters').attr('oacis_read_only') == "true"
+  const orderColumn = bOacisReadOnly ? 2 : 3
+  const orderFalseTargets = bOacisReadOnly ? [0] : [0, 1]
   var oPsTable = $(selector).DataTable({
     processing: true,
     serverSide: true,
     searching: false,
-    order: [[ 3, "desc" ]],
+    order: [[ orderColumn, "desc" ]],
     autoWidth: false,
     pageLength: default_length,
     "columnDefs": [{
       "searchable": false,
       "orderable": false,
-      "targets": [0, 1]
+      "targets": orderFalseTargets
     }],
     dom: 'C<"clear">lrtip',
     colVis: {
@@ -21,7 +24,6 @@ function create_parameter_sets_list(selector, default_length) {
   });
   const aPagePath = $(location).attr('pathname').split('/');
   const actionUrl = '/' + aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_parameter_sets'
-  const bOacisReadOnly = $('#params_list').attr('oacis_read_only');
   $(selector+'_length').css('height', '45px');
   $(selector+'_length').append(
     '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="params_list_refresh"></i>' +
@@ -34,6 +36,7 @@ function create_parameter_sets_list(selector, default_length) {
     $(selector+'_length').after(
       '<div class="dataTables_length" id="selected_pss_ctl_div" style="height: 45px;">' +
       '<form name="ps_form" id="ps_select_form" action="' + actionUrl + '" method="post">' +
+      '<input type="hidden" name="authenticity_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
       '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
       '<input type="hidden" name="id_list" id="ps_selected_id_list">' +
       '<input type="button" class="btn btn-primary margin-half-em" value="Delete" id="ps_delete_sel">' +

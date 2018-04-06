@@ -1,22 +1,24 @@
 $(function() {
+  const bOacisReadOnly = $('#tab-list-runs').attr('oacis_read_only') == "true"
+  const orderColumuns = bOacisReadOnly ? [[ 7, "desc" ], [ 0, "desc"]] : [[ 8, "desc" ], [ 1, "desc"]];
+  const orderFalseTargets = bOacisReadOnly ? -1 : 0;
   var datatables_for_runs_table = function() {
     var selector='#runs_list';
     var oTable = $(selector).DataTable({
       processing: true,
       serverSide: true,
       searching: false,
-      order: [[ 8, "desc" ], [ 1, "desc"]],
+      order: orderColumuns,
       destroy: true,
       "columnDefs": [{
         "searchable": false,
         "orderable": false,
-        "targets": [0,1]
+        "targets": orderFalseTargets
       }],
       ajax: $(selector).data('source')
     });
     const aPagePath = $(location).attr('pathname').split('/');
     const actionUrl = '/' +  aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_runs'
-    const bOacisReadOnly = $('#runs_list').attr('oacis_read_only');
     $(selector+'_length').css('height', '45px');
     $(selector+'_length').append(
       '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="runs_list_refresh"></i>' +

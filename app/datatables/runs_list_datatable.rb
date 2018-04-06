@@ -20,13 +20,13 @@ class RunsListDatatable
   end
 
   def self.header(isJobs=false)
-    col0 = "<th style=\"min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;\"><input type=\"checkbox\" id=\"run_check_all\" value=\"true\" #{OACIS_READ_ONLY ? "disabled=\"disabled\"" : ""}/></th>"
+    col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="run_check_all" value="true" /></th>'
     header  = [
              '<th class="span1">RunID</th>', '<th class="span1">status</th>', '<th class="span1">priority</th>',
              '<th class="span1">elapsed</th>',
              '<th class="span1">MPI</th>', '<th class="span1">OMP</th>', '<th class="span1">version</th>',
              '<th class="span1">created_at</th>', '<th class="span1">updated_at</th>', '<th class="span1">host(group)</th>', '<th class="span1">job_id</th>']
-    header.unshift(col0) unless isJobs
+    header.unshift(col0) unless isJobs || OACIS_READ_ONLY
     header
   end
 
@@ -37,7 +37,7 @@ private
     runs_lists.each do |run|
       tmp = []
       col0 = @view.check_box_tag("checkbox[run]", run.id, false, {align: "center", disabled: OACIS_READ_ONLY})
-      tmp << col0 unless @isJobs
+      tmp << col0 unless @isJobs || OACIS_READ_ONLY
       tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )
       tmp << Run::PRIORITY_ORDER[run.priority]

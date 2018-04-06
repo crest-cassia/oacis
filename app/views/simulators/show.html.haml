@@ -17,7 +17,7 @@
     %div.tab-pane#tab-about
       = render partial: "about", locals: {simulator: @simulator}
       = render "analyzers_list"
-    %div.tab-pane.active#tab-list-parameters
-      = render "parameter_sets_list", oacis_read_only: OACIS_READ_ONLY
+    %div.tab-pane.active#tab-list-parameters{oacis_read_only: "#{OACIS_READ_ONLY}"}
+      = render "parameter_sets_list"
     %div.tab-pane#tab-progress
       = render "progress"
