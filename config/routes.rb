@@ -33,6 +33,8 @@ Rails.application.routes.draw do
       get "_progress" # for progress table
       get "_host_parameters_field" # for ajax, get the fields for host_parameters
       get "_default_mpi_omp" # for ajax, get the default mpi_procs and omp_threads
+      post "_create_selected_runs"
+      post "_delete_selected_parameter_sets"
     end
 
     parameter_set_actions = ["show"]
@@ -51,6 +53,7 @@ Rails.application.routes.draw do
         get "_scatter_plot" # for scatter plot
         get "_figure_viewer" # for figure viewer
         get "_neighbor"
+        post "_delete_selected_runs"
       end
 
       run_actions = ["show"]
