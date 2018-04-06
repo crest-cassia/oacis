@@ -12,7 +12,11 @@ $(function() {
         "orderable": false,
         "targets": -1
       }],
-      ajax: $(selector).data('source')
+      ajax: $(selector).data('source'),
+      "createdRow": function(row, data, dataIndex) {
+        const lnId = data[12];
+        $(row).attr('id', lnId);
+      }
     });
     $(selector+'_length').append(
       '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="runs_list_refresh"></i>' +
