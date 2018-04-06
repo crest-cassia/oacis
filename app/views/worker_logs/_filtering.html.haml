@@ -1,0 +1,17 @@
+%h3 Filter
+%form
+  .form-inline
+    .form-group
+      - severity_level = {"all"=>-10, "FATAL"=>3, "ERROR"=>2, "WARN"=>1, "INFO"=>0, "DEBUG"=>-1}
+      - duration_item = {"last day"=>1, "last 2 days"=>2, "last 3 days"=>3, "last week"=>7, "last month"=>30, " "=>-1}
+      %label Severity level
+      = select_tag 'severity', options_for_select(severity_level, selected:@level), id:'sever_sel', class:'form-control'
+      &thinsp;
+      %label Period
+      = select_tag 'duration', options_for_select(duration_item, selected:@dur_choice), id:'dur_sel', class:'form-control'
+      &thinsp;
+      %label Message includes
+      = search_field_tag('match_keyword', @kwd, class:'form-control')
+      &thinsp;
+      = submit_tag "Apply", :class => 'btn btn-primary'
+
