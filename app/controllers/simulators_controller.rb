@@ -18,7 +18,7 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
    
-    @filter_set_name = "None" 
+    @filter_set_name = "Not filtering." 
     if params[:filter_set_name].present?
       @filter_set_name = params[:filter_set_name]
     end
@@ -46,7 +46,13 @@ class SimulatorsController < ApplicationController
         @filter_set_query_string = "[" + a.join("][") + "]"
         @filter_set_query_string << " ..." if continue_flg
       end
-      
+      if @filter_set_query_string == "[]"
+        @filter_set_query_string = "Not filtering."
+      end
+    end
+
+    if params[:isLoaded].present?
+      @isLoaded = params[:isLoaded]
     end
 
     respond_to do |format|
