@@ -5,7 +5,7 @@
 %table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "running")}"}
   %thead
     %tr
-      - RunsListDatatable::HEADER.each do |header|
+      - RunsListDatatable.header(true).each do |header|
         = raw(header)
   %tbody
 
@@ -14,7 +14,7 @@
 %table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "submitted")}"}
   %thead
     %tr
-      - RunsListDatatable::HEADER.each do |header|
+      - RunsListDatatable.header(true).each do |header|
         = raw(header)
   %tbody
 
@@ -23,7 +23,7 @@
 %table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "created")}"}
   %thead
     %tr
-      - RunsListDatatable::HEADER.each do |header|
+      - RunsListDatatable.header(true).each do |header|
         = raw(header)
   %tbody
 
