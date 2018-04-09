@@ -44,7 +44,7 @@
 
 - unless OACIS_READ_ONLY
   #run_selected_modal.modal.fade
-    - parameter_set = @simulator.parameter_sets.first()
+    - parameter_set = @simulator.parameter_sets.build()
     - run = parameter_set.runs.build(submitted_to: parameter_set.simulator.executable_on.first)
     .modal-dialog.modal-vertical-centered.ps_selected_dlg
       .modal-content
