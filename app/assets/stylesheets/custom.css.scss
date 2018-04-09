@@ -52,6 +52,20 @@ i.padding-half-em {
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
+.add-padding-right {
+  padding-right: 8px;
+}
+.navbar-brand {  
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.add-margin-bottom{
+  margin-bottom: 16px;
+}
+.margin-half-em {
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
 .add-margin-top {
   margin-top: 8px;
 }
@@ -140,7 +154,6 @@ div.progress {
 .progress-bar {
   line-height: 14px;
 }
-
 .auto_reload_setting {
   float: left;
 }
