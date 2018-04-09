@@ -350,9 +350,11 @@ $(function() {
   });
   $(document).on('confirm:complete', '#delete_filter_set', function(e, answer) {
     if(answer) {
-      const str = e.currentTarget.attributes[4].nodeValue;
-      if($('#filter_set_name_p').text() == str) {
-        $(location).attr('search', '');
+      if("filter_set_name" in  e.currentTarget.attributes){
+        const str = e.currentTarget.attributes["filter_set_name"].nodeValue;
+        if($('#filter_set_name_p').text() == str) {
+          $(location).attr('search', '');
+        }
       }
     }
   });
