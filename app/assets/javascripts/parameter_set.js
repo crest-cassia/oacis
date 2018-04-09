@@ -17,7 +17,11 @@ function create_parameter_sets_list(selector, default_length) {
       restore: "Show All Columns"
     },
     bStateSave: true,
-    ajax: $(selector).data('source')
+    ajax: $(selector).data('source'),
+      "createdRow": function(row, data, dataIndex) {
+        const lnId = data[11];
+        $(row).attr('id', lnId);
+      }
   });
   const aPagePath = $(location).attr('pathname').split('/');
   const actionUrl = '/' + aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_parameter_sets'
