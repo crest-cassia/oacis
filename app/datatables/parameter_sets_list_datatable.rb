@@ -51,6 +51,16 @@ private
           tmp <<  ERB::Util.html_escape(ps.v[key])
         end
       end
+      if ps == @base_ps
+        tmp << ''
+      else
+        if OACIS_READ_ONLY
+          tmp << @view.raw('<i class="fa fa-trash-o">')
+        else
+          tmp << @view.link_to( @view.raw('<i class="fa fa-trash-o">'), ps, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+        end
+      end
+      tmp << "params_list_#{ps.id}"
       tmp
     end
   end

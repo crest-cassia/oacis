@@ -15,7 +15,11 @@ $(function() {
         "orderable": false,
         "targets": orderFalseTargets
       }],
-      ajax: $(selector).data('source')
+      ajax: $(selector).data('source'),
+      "createdRow": function(row, data, dataIndex) {
+        const lnId = data[12];
+        $(row).attr('id', lnId);
+      }
     });
     const aPagePath = $(location).attr('pathname').split('/');
     const actionUrl = '/' +  aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_runs'
