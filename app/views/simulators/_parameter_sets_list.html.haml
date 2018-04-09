@@ -103,6 +103,47 @@
 
 
 
+- unless OACIS_READ_ONLY
+  #run_selected_modal.modal.fade
+    - parameter_set = @simulator.parameter_sets.build()
+    - run = parameter_set.runs.build(submitted_to: parameter_set.simulator.executable_on.first)
+    .modal-dialog.modal-vertical-centered.ps_selected_dlg
+      .modal-content
+        .modal-header
+          %button.close{type: "button", "data-dismiss" => "modal"}
+            &times;
+          %h4.modal-title
+            Create New Runs for selected Parameter Sets
+        .modal-body
+          = form_for([@simulator, parameter_set], :html => {class: 'form-horizontal ps_selected_create_form', method: 'post'}, :url => _create_selected_runs_simulator_path(@simulator), ) do |f|
+            .form-group
+              = label_tag('num_runs', '# of Runs', class: 'col-md-2 control-label')
+              .col-md-3
+                = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]), {class: 'form-control'})
+            = fields_for run do |builder|
+              = render 'runs/fields', run: run, f: builder
+            = hidden_field_tag "ps_ids","" 
+        .modal-footer
+          %button#ps_selected_create_dlg_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal", onclick: "psSelectedCreateOk()"}
+            Create
+          %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
+            Close
+
+:javascript
+  $(function() {
+    $('#run_selected_modal').on('show.bs.modal', function (event) {
+      var modal = $(this);
+      modal.find('.modal-title').text('Create Runs for selected');
+      const id_list = $("#ps_selected_id_list").val();
+      $("#ps_ids").val(id_list);
+      
+    });
+    $('#ps_selected_create_dlg_ok').on('click', function() {
+      $('.ps_selected_create_form').submit();
+    });
+  });
+
+/ runs list modal dialog for loupe
 #runs_list_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
     .modal-content
