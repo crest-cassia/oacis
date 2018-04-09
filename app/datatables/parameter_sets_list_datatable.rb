@@ -60,6 +60,7 @@ private
           tmp << @view.link_to( @view.raw('<i class="fa fa-trash-o">'), ps, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
         end
       end
+      tmp << "params_list_#{ps.id}"
       tmp
     end
   end

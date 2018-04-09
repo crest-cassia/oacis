@@ -25,6 +25,8 @@
 //= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
 //= require dataTables/extras/dataTables.colVis
 //= require dynatree/jquery.dynatree
+//= require cable.js
+//= require channels/status.js
 //= require set_interval_common.js
 
 // Handle back button issues with Twitter Bootstrap's tab component.
