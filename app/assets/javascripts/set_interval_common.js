@@ -4,15 +4,18 @@
     $("[id="+id+"_list_refresh_tb]").val(interval);
     const tmReloadOn = (msec) => {
       timer = setInterval(() => {
+        if (!$('#' + id + "_list_length").is(':visible')) {
+          return;
+        }
         if(objList.length > 0) {
           for(var i=0; i<objList.length; i++){
-          if(objList[i].classList.contains("tab-pane")){ 
-            if (objList[i].classList.contains("active")) {
+            if(objList[i].classList.contains("tab-pane")){ 
+              if (objList[i].classList.contains("active")) {
+                objTable.ajax.reload(null, false)
+              }
+            }else{
               objTable.ajax.reload(null, false)
             }
-          }else{
-            objTable.ajax.reload(null, false)
-          }
           }
         }
       }, msec);

@@ -4,7 +4,7 @@
 %table.table.table-condensed.table-hover.table-striped#runs_list{:'data-source' => "#{_runs_list_parameter_set_path(parameter_set.to_param, format: "json")}"}
   %thead
     %tr
-      - RunsListDatatable::HEADER.each do |header|
+      - RunsListDatatable.header.each do |header|
         = raw(header)
   %tbody
 
