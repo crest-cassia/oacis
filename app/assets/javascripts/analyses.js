@@ -30,7 +30,11 @@ $(function() {
         "orderable": false,
         "targets": [0, -1]
       }],
-      ajax: $('#analyses_list').data('source')
+      ajax: $('#analyses_list').data('source'),
+      "createdRow": function(row, data, dataIndex) {
+        const lnId = data[8];
+        $(row).attr('id', lnId);
+      }
     });
     $('#analyses_list_length').append(
       '<i class="fa fa-refresh clickable padding-half-em auto_reload_setting" id="analyses_list_refresh"></i>' +

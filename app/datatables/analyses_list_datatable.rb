@@ -34,9 +34,10 @@ private
         analyzer.name,
         arn.parameters.to_s,
         @view.status_label(arn.status),
-        arn.analyzer_version.to_s,
+        @view.raw('<span class="arn_version">'+arn.analyzer_version.to_s+'</sapn>'),
         @view.distance_to_now_in_words(arn.created_at),
-        trash
+        trash,
+        "analysis_list_#{arn.id}"
       ]
     end
     a

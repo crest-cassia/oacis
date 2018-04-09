@@ -187,7 +187,7 @@ GEM
     record_tag_helper (1.0.0)
       actionview (~> 5.x)
     redcarpet (3.4.0)
-    redis (4.0.1)
+    redis (3.3.5)
     redis-namespace (1.6.0)
       redis (>= 3.0.4)
     ref (2.0.0)
@@ -296,6 +296,7 @@ DEPENDENCIES
   rails-controller-testing
   record_tag_helper (~> 1.0)
   redcarpet
+  redis (~> 3.0)
   resque
   rspec-rails (~> 3.5)
   ruby-progressbar
