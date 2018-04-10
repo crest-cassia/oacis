@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   resources :runs, only: ["index"] do
     collection do
       get "_jobs_table" # for ajax, datatables
+      post "_delete_selected" unless OACIS_READ_ONLY
     end
   end
 
@@ -54,7 +55,6 @@ Rails.application.routes.draw do
         get "_scatter_plot" # for scatter plot
         get "_figure_viewer" # for figure viewer
         get "_neighbor"
-        post "_delete_selected_runs" unless OACIS_READ_ONLY
       end
 
       run_actions = ["show"]

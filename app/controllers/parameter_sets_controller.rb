@@ -104,30 +104,6 @@ class ParameterSetsController < ApplicationController
     redirect_to(sim || root_path)
   end
 
-  def _delete_selected_runs
-    selected_run_ids_str = params[:id_list] || ""
-    selected_run_ids = selected_run_ids_str.split(',')
-    @parameter_set = ParameterSet.find(params[:id])
-
-    cnt = 0
-    selected_run_ids.each do |run_id|
-      break unless @parameter_set.present?
-      run = @parameter_set.runs.find(run_id)
-      break unless run.present?
-      run.discard
-      cnt = cnt + 1
-    end
-
-    if cnt == selected_run_ids.size
-      flash[:notice] = "#{cnt} run#{cnt > 1 ? 's were' : ' was'} successfully deleted"
-    elsif cnt == 0
-      flash[:alert] = "No runs were deleted"
-    else
-      flash[:alert] = "#{cnt} run#{cnt > 1 ? 's were' : ' was'} deleted (your request was #{selected_run_ids.size} deletion)"
-    end
-    redirect_to @parameter_set
-  end
-
   private
   def set_sequential_seeds(runs)
     ps_runs = runs.group_by {|run| run.parameter_set }
