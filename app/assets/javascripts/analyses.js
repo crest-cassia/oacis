@@ -32,7 +32,7 @@ $(function() {
       }],
       ajax: $('#analyses_list').data('source'),
       "createdRow": function(row, data, dataIndex) {
-        const lnId = data[8];
+        const lnId = data[data.length-1];
         $(row).attr('id', lnId);
       }
     });
