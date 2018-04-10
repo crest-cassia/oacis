@@ -104,6 +104,32 @@ class ParameterSetsController < ApplicationController
     redirect_to(sim || root_path)
   end
 
+  def _create_runs_on_selected
+    param_set_ids = params[:ps_ids].to_s.split(",")
+    num_runs = params[:num_runs].to_i
+    raise 'params[:num_runs] is invalid' unless num_runs > 0
+
+    num_created = 0
+    run_params = permitted_run_params(params)
+    param_set_ids.each do |ps_id|
+      param_set = ParameterSet.where(id: ps_id).first
+      next unless param_set.present?
+      num_runs.times do |i|
+        run = param_set.runs.build(run_params)
+        num_created += 1 if run.save
+      end
+    end
+
+    if num_created > 0
+      flash[:notice] = "#{num_created} run#{num_created > 1 ? 's were' : ' was'} successfully created"
+    else
+      flash[:alert] = "No runs were created"
+    end
+
+    redirect_back(fallback_location: runs_path)
+  end
+
+
   private
   def set_sequential_seeds(runs)
     ps_runs = runs.group_by {|run| run.parameter_set }

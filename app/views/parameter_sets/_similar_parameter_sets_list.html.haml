@@ -18,6 +18,9 @@
         %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
           Close
 
+- unless OACIS_READ_ONLY
+  = render partial: 'simulators/create_runs_on_selected_modal', locals: {simulator: @param_set.simulator}
+
 :javascript
   $(function() {
     var id = 'params';
