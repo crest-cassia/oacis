@@ -21,7 +21,7 @@ describe "AnalysesListDatatable" do
         @run.analyses.create!(@valid_attr)
       end
       @context = ActionController::Base.new.view_context
-      allow(@context).to receive(:params).and_return({draw: 1, start: 0, length:10 , "order" => {"0" => {"column" => "0", "dir" => "desc"}}})
+      allow(@context).to receive(:params).and_return({draw: 1, start: 0, length:10 , "order" => {"0" => {"column" => "1", "dir" => "desc"}}})
       allow(@context).to receive(:link_to) {|str, link_path| link_path }
       allow(@context).to receive(:image_tag) {|str, link_path| link_path }
       allow(@context).to receive(:analysis_path) {|arn| arn.id.to_s }
@@ -49,7 +49,7 @@ describe "AnalysesListDatatable" do
 
       before(:each) do
         @context = ActionController::Base.new.view_context
-        allow(@context).to receive(:params).and_return({draw: 1, start: 0, length:10, "order" => {"0" => {"column" => "5", "dir" => "asc"}, "1" => {"column" => "0", "dir" => "desc"}}})
+        allow(@context).to receive(:params).and_return({draw: 1, start: 0, length:10, "order" => {"0" => {"column" => "5", "dir" => "asc"}, "1" => {"column" => "1", "dir" => "desc"}}})
         allow(@context).to receive(:link_to) {|str, link_path| link_path }
         allow(@context).to receive(:image_tag) {|str, link_path| link_path }
         allow(@context).to receive(:analysis_path) {|arn| arn.id.to_s }
