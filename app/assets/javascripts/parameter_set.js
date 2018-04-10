@@ -22,7 +22,7 @@ function create_parameter_sets_list(selector, default_length) {
     bStateSave: true,
     ajax: $(selector).data('source'),
       "createdRow": function(row, data, dataIndex) {
-        const lnId = data[11];
+        const lnId = data[data.length-1];
         $(row).attr('id', lnId);
       }
   });

@@ -50,9 +50,6 @@ private
       host_like = run.submitted_to || run.host_group
       tmp << (host_like ? @view.link_to( host_like.name, host_like ) : "---")
       tmp << @view.raw('<span class="run_job_id">'+@view.shortened_job_id(run.job_id)+'</span>')
-      trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">')
-        : @view.link_to( @view.raw('<i class="fa fa-trash-o">'), run, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
-      tmp << trash
       tmp << "run_list_#{run.id}"
       a << tmp
     end

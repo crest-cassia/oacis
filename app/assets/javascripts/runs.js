@@ -17,7 +17,7 @@ $(function() {
       }],
       ajax: $(selector).data('source'),
       "createdRow": function(row, data, dataIndex) {
-        const lnId = data[12];
+        const lnId = data[data.length-1];
         $(row).attr('id', lnId);
       }
     });
