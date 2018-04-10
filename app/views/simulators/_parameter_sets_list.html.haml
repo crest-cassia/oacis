@@ -1,17 +1,15 @@
-%h3.paramset_title_area_item List of Parameter Sets
+%h3 List of Parameter Sets
 
-- unless OACIS_READ_ONLY
-  %a.btn.btn-primary.paramset_title_area_item.add_margin{href: new_simulator_parameter_set_path(@simulator)}
-    New Parameter Set
-
-.clear-element
 .filter_set_area.paramset_title_area_item
   %i#parameter_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name, isLoaded: @isLoaded, data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
   %span#parameter_filter_selected.add_padding.add_margin_bottom
-    = @filter_set_query_string
-  -if @filter_set_query_string != "Not filtering."
-    %button#parameter_save_filter_btn.btn.btn-primary{onclick: "return show_filter_set_name_dlg();"}
+    = raw(query_badge(@filter_set_query_array))
+  -unless @filter_set_query_array.blank?
+    %a#parameter_save_filter_btn{href: "#", onclick: "return show_filter_set_name_dlg();return false;"}
       Save
+  - unless OACIS_READ_ONLY
+    %a.btn.btn-primary.add_margin.add_float_right{href: new_simulator_parameter_set_path(@simulator)}
+      New Parameter Set
 .clear-element
 
 #parameter_filter_modal.modal.large.fade
@@ -20,7 +18,7 @@
       .modal-header
         %button.close{type: "button", "data-dismiss" => "modal"}
           &times;
-        %h4.paramset_title_area_item Parameter Filter
+        %h4 Parameter Filter
       .modal-body.large#parameter_filter_setting_body
         %button#parameter_new_filter_btn.paramset_title_area_item.btn.btn-primary
           New Query
@@ -41,7 +39,7 @@
       .modal-header
         %button.close{type: "button", "data-dismiss" => "modal"}
           &times;
-        %h4.paramset_title_area_item Query
+        %h4 Query
       .modal-body.large#parameter_new_filter_create_body
         .foo#queries_form_original
           .row
@@ -66,7 +64,7 @@
       .modal-header
         %button.close{type: "button", "data-dismiss" => "modal"}
           &times;
-        %h4.paramset_title_area_item Save Filter Set
+        %h4 Save Filter Set
       .modal-body.large#parameter_new_filter_create_body
         %h4.paramset_title_area_item Name
         = text_field_tag "filter_set_name", "", class: 'form-control', id: "filter_set_name"
@@ -85,7 +83,7 @@
       .modal-header
         %button.close{type: "button", "data-dismiss" => "modal"}
           &times;
-        %h4.paramset_title_area_item Load Filter Set
+        %h4 Load Filter Set
       .modal-body.large#parameter_new_filter_create_body
         = render "filter_sets", simulator: @simulator
       .modal-footer

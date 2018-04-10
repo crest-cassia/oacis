@@ -28,7 +28,7 @@ class SimulatorsController < ApplicationController
       @filter_hash = JSON.parse(params[:filter_json].to_s)
     end
 
-    @filter_set_query_string = "Not filtering."
+    @filter_set_query_array = []
     if @filter_hash.present?
       a = []
       len = 0
@@ -39,15 +39,11 @@ class SimulatorsController < ApplicationController
           break
         end
         next unless filter["enable"]
-        a << filter["query"]
+        @filter_set_query_array << filter["query"]
         len = len + filter["query"].length + 2
       end
-      if a.length > 0
-        @filter_set_query_string = "[" + a.join("][") + "]"
-        @filter_set_query_string << " ..." if continue_flg
-      end
-      if @filter_set_query_string == "[]"
-        @filter_set_query_string = "Not filtering."
+      if @filter_set_query_array.length > 0
+        @filter_set_query_array << " ..." if continue_flg
       end
     end
 

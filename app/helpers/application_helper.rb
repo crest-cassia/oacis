@@ -128,6 +128,14 @@ module ApplicationHelper
       content_tag(:label, "#{text}", class: "col-md-2 control-label")
     end
   end
+  def query_badge(queries)
+    return "Not filtering." if queries.blank?
+    query_tag = ""
+    queries.each do |q|
+      query_tag << content_tag(:span, q, class: 'badge badge-pill badge-info margin-half-em')
+    end
+    query_tag
+  end
 end
 
 
