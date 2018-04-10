@@ -79,5 +79,42 @@ namespace :db do
       azr.unset(:h)
       progressbar.increment
     end
+
+    # replace boolean parameters with integers
+    def bool_to_int(x)
+      if x==true;1;elsif x==false;0;else; x;end
+    end
+    def update_parameter_definition(sim_azr)
+      sim_azr.parameter_definitions.each do |pdef|
+        if pdef.type == 'Boolean'
+          pdef.update_attribute(:type, 'Integer')
+          pdef.update_attribute(:default, bool_to_int(pdef.default))
+        end
+      end
+    end
+    sims_with_boolean_param = Simulator.all.each.select do |sim|
+      sim.parameter_definitions.each.find {|pdef| pdef.type == 'Boolean'}
+    end
+    sims_with_boolean_param.each do |sim|
+      progressbar = ProgressBar.create(total: sim.parameter_sets.count, format: "%t %B %p%% (%c/%C)")
+      sim.parameter_sets.each do |ps|
+        mapped = ps.v.map {|k,v| [k,bool_to_int(v)]}
+        ps.update_attribute(:v, Hash[mapped])
+        progressbar.increment
+      end
+      update_parameter_definition(sim)
+    end
+    azrs_with_boolean_param = Analyzer.all.each.select do |azr|
+      azr.parameter_definitions.each.find {|pdef| pdef.type == 'Boolean'}
+    end
+    azrs_with_boolean_param.each do |azr|
+      progressbar = ProgressBar.create(total: azr.analyses.count, format: "%t %B %p%% (%c/%C)")
+      azr.analyses.each do |anl|
+        mapped = anl.parameters.map {|k,v| [k,bool_to_int(v)]}
+        anl.update_attribute(:parameters, Hash[mapped])
+        progressbar.increment
+      end
+      update_parameter_definition(azr)
+    end
   end
 end

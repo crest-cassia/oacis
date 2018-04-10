@@ -34,4 +34,16 @@
             = mail_to "oacis-dev@googlegroups.com"
 
 :javascript
+  const storageInterval = sessionStorage.getItem("AUTO_RELOAD_INTERVAL");
+  if(!chkIntervalStr(storageInterval)){
+    sessionStorage.setItem("AUTO_RELOAD_INTERVAL", "5");
+  }
+
+  function chkIntervalStr(str) {
+    if (str != null && !isNaN(str) && parseInt(str) > 0) {
+      return true;
+    }
+    return false;
+  }
+
   window.bEnableAutoReload = #{AUTO_RELOAD_TABLES};

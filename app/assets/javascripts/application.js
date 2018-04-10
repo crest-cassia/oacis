@@ -25,6 +25,9 @@
 //= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
 //= require dataTables/extras/dataTables.colVis
 //= require dynatree/jquery.dynatree
+//= require cable.js
+//= require channels/status.js
+//= require set_interval_common.js
 
 // Handle back button issues with Twitter Bootstrap's tab component.
 // Based on: http://stackoverflow.com/a/10120221/81769
@@ -43,12 +46,46 @@ $(document).ready(function () {
     });
 });
 
-// add/remove nested forms
+// add/remove/Up/Down nested forms
+
+function find_from_parameter_definition_fields(me, offset) {
+  var p_lst =  $('.parameter-definition-field');
+  var idx, em = null;
+  for ( idx = 0; idx < p_lst.length; idx++ ) {
+    if ( p_lst[idx] === me ) {
+      em = p_lst[idx];
+      break;
+    }
+  }
+  if ( em == null ) return null;
+  var idx2 = idx + offset;
+  if ( idx2 < 0 || idx2 >= p_lst.length ) return null;
+  return p_lst[idx2];
+}
+
+function exchange_form_order(me, em) {
+  var my_name = me.children[0].children[0].children[0].value;
+  var my_type = me.children[0].children[1].children[0].value;
+  var my_dval = me.children[0].children[2].children[0].value;
+  var my_desc = me.children[1].children[0].children[0].value;
+  me.children[0].children[0].children[0].value = em.children[0].children[0].children[0].value;
+  me.children[0].children[1].children[0].value = em.children[0].children[1].children[0].value;
+  me.children[0].children[2].children[0].value = em.children[0].children[2].children[0].value;
+  me.children[1].children[0].children[0].value = em.children[1].children[0].children[0].value;
+  em.children[0].children[0].children[0].value = my_name;
+  em.children[0].children[1].children[0].value = my_type;
+  em.children[0].children[2].children[0].value = my_dval;
+  em.children[1].children[0].children[0].value = my_desc;
+}
+
 $(document).ready( function() {
   $('form').on('click', '.remove_fields', function() {
+    var me = $(this).closest('.parameter-definition-field')[0];
+    var res = confirm("Are you sure to remove the parameter: " +
+                      me.children[0].children[0].children[0].value);
+    if ( ! res ) event.preventDefault();
     $(this).closest('.parameter-definition-field').next('input[type=hidden]').val(true);
     $(this).closest('.parameter-definition-field').remove();
-    event.preventDefault();
   });
   $('form').on('click', '.add_fields', function() {
       var time = new Date().getTime();
@@ -57,5 +94,17 @@ $(document).ready( function() {
       if( $('#add_field_here').size() > 0 ) { position_to_add = $('#add_field_here'); }
       position_to_add.before($(this).data('fields').replace(regexp, time));
       event.preventDefault();
+  });
+  $('form').on('click', '.up_fields', function() {
+    var me = $(this).closest('.parameter-definition-field')[0];
+    var em = find_from_parameter_definition_fields(me, -1);
+    if ( em == null ) return;
+    exchange_form_order(me, em);
+  });
+  $('form').on('click', '.down_fields', function() {
+    var me = $(this).closest('.parameter-definition-field')[0];
+    var em = find_from_parameter_definition_fields(me, +1);
+    if ( em == null ) return;
+    exchange_form_order(me, em);
   });
 });

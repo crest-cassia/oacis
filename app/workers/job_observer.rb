@@ -5,7 +5,6 @@ class JobObserver
     Host.where(status: :enabled).each do |host|
       break if $term_received
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
-      logger.debug("observing #{host.name}")
       begin
         observe_host(host, logger)
       rescue => ex
@@ -67,7 +66,10 @@ class JobObserver
     when :submitted
       # DO NOTHING
     when :running
-      job.update_attribute(:status, :running) if job.status == :submitted
+      if job.status == :submitted then
+        job.update_attribute(:status, :running)
+        StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job))
+      end
     when :includable, :unknown
       logger.info("including #{job.class}:#{job.id} from #{host.name}")
       JobIncluder.include_remote_job(host, job)

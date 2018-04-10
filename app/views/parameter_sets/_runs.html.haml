@@ -4,7 +4,7 @@
 %table.table.table-condensed.table-hover.table-striped#runs_list{:'data-source' => "#{_runs_list_parameter_set_path(parameter_set.to_param, format: "json")}"}
   %thead
     %tr
-      - RunsListDatatable::HEADER.each do |header|
+      - RunsListDatatable.header.each do |header|
         = raw(header)
   %tbody
 
@@ -36,15 +36,9 @@
             Close
 
 :javascript
-  $(function() {
-    var oRunsTable = datatables_for_runs_table();
-    if( window.bEnableAutoReload ) {
-      setInterval( function() {
-        if( $("#tab-list-runs").length > 0 ) { // Runs tab in ParameterSet show page
-          if( $("#tab-list-runs")[0].classList.contains("active") ) {
-            oRunsTable.ajax.reload(null, false);
-          }
-        }
-      }, 5000);
-    }
-  });
+   $(function() {
+     var id = "runs";
+     const objTable = datatables_for_runs_table();
+     const objList = $("#tab-list-runs");
+     $("#tab-list-runs").setIntervalCommon(id,objTable,objList); 
+   });

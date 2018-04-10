@@ -5,7 +5,7 @@
 %table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "running")}"}
   %thead
     %tr
-      - RunsListDatatable::HEADER.each do |header|
+      - RunsListDatatable.header(true).each do |header|
         = raw(header)
   %tbody
 
@@ -14,7 +14,7 @@
 %table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "submitted")}"}
   %thead
     %tr
-      - RunsListDatatable::HEADER.each do |header|
+      - RunsListDatatable.header(true).each do |header|
         = raw(header)
   %tbody
 
@@ -23,7 +23,7 @@
 %table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "created")}"}
   %thead
     %tr
-      - RunsListDatatable::HEADER.each do |header|
+      - RunsListDatatable.header(true).each do |header|
         = raw(header)
   %tbody
 
@@ -45,15 +45,66 @@
         oTable.ajax.reload(null, false);
       });
     }
-    setInterval( function() {
-      if(window.bEnableAutoReload) {
-        reload_runs_table();
-      }
-    }, 5000 );
+
+    var setNum = 0;
     $('.dataTables_length').each( function() {
       $(this).append(
-        '<i class="fa fa-refresh padding-half-em clickable" id="runs_list_refresh"></i>'
+        '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="runs_list_refresh"></i>' +
+        '<div class="auto_reload_setting">' +
+        '<label class="form-check-label">auto reload<input type="checkbox" class="form-check-input" name="check" id= "'+setNum+'_runs_list_refresh_cb" /></label>' +
+        '<label for="analyses_list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id= "'+setNum+'_runs_list_refresh_tb" size="10"/>sec</label>' +
+        '</div>'
       );
       $(this).children('#runs_list_refresh').on('click', reload_runs_table);
+      setNum++;
+    });
+
+    var id_0  = "0_runs";
+    var id_1  = "1_runs";
+    var id_2  = "2_runs";
+    const objList = $('.jobs_datatable');
+    $('#DataTables_Table_0').setIntervalCommon(id_0,aoRunsTables[0],objList);
+    $('#DataTables_Table_1').setIntervalCommon(id_1,aoRunsTables[1],objList);
+    $('#DataTables_Table_2').setIntervalCommon(id_2,aoRunsTables[2],objList);
+
+    $('[id=' + id_0 + '_list_refresh_cb]').on('change', function() {
+        if($('[id=' + id_0 + '_list_refresh_cb]').is(':checked')){
+          $('input[name=check]').prop('checked', this.checked);
+        }else{
+          $('input[name=check]').prop('checked', this.checked);
+          $('[id=' + id_1 + '_list_refresh_cb]').trigger('reload_off');
+          $('[id=' + id_2 + '_list_refresh_cb]').trigger('reload_off');
+        }
+    });
+    $('[id=' + id_1 + '_list_refresh_cb]').on('change', function() {
+       if($('[id=' + id_1 + '_list_refresh_cb]').is(':checked')){
+       $('input[name=check]').prop('checked', this.checked);
+       }else{
+          $('input[name=check]').prop('checked', this.checked);
+          $('[id=' + id_0 + '_list_refresh_cb]').trigger('reload_off');
+          $('[id=' + id_2 + '_list_refresh_cb]').trigger('reload_off');
+       }
+    });
+    $('[id=' + id_2 + '_list_refresh_cb]').on('change', function() {
+       if($('[id=' + id_2 + '_list_refresh_cb]').is(':checked')){
+       $('input[name=check]').prop('checked', this.checked);
+       }else{
+          $('input[name=check]').prop('checked', this.checked);
+          $('[id=' + id_0 + '_list_refresh_cb]').trigger('reload_off');
+          $('[id=' + id_1 + '_list_refresh_cb]').trigger('reload_off');
+       }
+    });
+
+    $('[id=' + id_0 + '_list_refresh_tb]').on('blur', function() {
+          $('[id=' + id_1 + '_list_refresh_cb]').trigger('reload_off');
+          $('[id=' + id_2 + '_list_refresh_cb]').trigger('reload_off');
+    });
+    $('[id=' + id_1 + '_list_refresh_tb]').on('blur', function() {
+          $('[id=' + id_0 + '_list_refresh_cb]').trigger('reload_off');
+          $('[id=' + id_2 + '_list_refresh_cb]').trigger('reload_off');
+    });
+    $('[id=' + id_2 + '_list_refresh_tb]').on('blur', function() {
+          $('[id=' + id_0 + '_list_refresh_cb]').trigger('reload_off');
+          $('[id=' + id_1 + '_list_refresh_cb]').trigger('reload_off');
     });
   });
