@@ -1,23 +1,19 @@
 $(function() {
-  const bOacisReadOnly = $('#tab-list-runs').attr('oacis_read_only') == "true"
-  const orderColumuns = bOacisReadOnly ? [[ 7, "desc" ], [ 0, "desc"]] : [[ 8, "desc" ], [ 1, "desc"]];
-  const orderFalseTargets = bOacisReadOnly ? -1 : 0;
   var datatables_for_runs_table = function() {
     var selector='#runs_list';
     var oTable = $(selector).DataTable({
       processing: true,
       serverSide: true,
       searching: false,
-      order: orderColumuns,
+      order: [[ 8, "desc" ], [ 1, "desc"]],
       destroy: true,
       "columnDefs": [{
-        "searchable": false,
         "orderable": false,
-        "targets": orderFalseTargets
+        "targets": 0
       }],
       ajax: $(selector).data('source'),
       "createdRow": function(row, data, dataIndex) {
-        const lnId = data[12];
+        const lnId = data[data.length-1];
         $(row).attr('id', lnId);
       }
     });
@@ -31,8 +27,7 @@ $(function() {
       '<label for="runs_list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id="runs_list_refresh_tb" size="10">sec</label>' +
       '</div>'
     );
-    if (!bOacisReadOnly) {
-      $(selector+'_length').parent().after(
+    $(selector+'_length').parent().after(
       '<div class="dataTables_length" id="selected_runs_ctl_div" style="height: 45px; clear: both; padding-left: 15px;">' +
       '<form name="runs_form" id="runs_select_form" action="' + actionUrl + '" method="post">' +
       '<input type="hidden" name="authenticity_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
@@ -41,8 +36,7 @@ $(function() {
       '<input type="button" class="btn btn-primary margin-half-em" value="Delete" id="runs_delete_sel">' +
       '</form>' +
       '</div>'
-      );
-    }
+    );
     $('#runs_count').text('0');
     var refresh_icon = $(selector+'_length').children('#runs_list_refresh');
     refresh_icon.on('click', function() { oTable.ajax.reload(null, false);});
