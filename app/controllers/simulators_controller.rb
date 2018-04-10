@@ -207,30 +207,6 @@ class SimulatorsController < ApplicationController
     redirect_to @simulator
   end
 
-  def _delete_selected_parameter_sets
-    selected_ps_ids_str = params[:id_list] || ""
-    selected_ps_ids = selected_ps_ids_str.split(",")
-    @simulator = Simulator.find(params[:id])
-    
-    cnt = 0
-    selected_ps_ids.each do |ps_id|
-      ps = @simulator.parameter_sets.where(id: ps_id).first
-      if ps.present?
-        ps.discard
-        cnt = cnt + 1
-      end
-    end
-    
-    if cnt == selected_ps_ids.size
-      flash[:notice] = "#{cnt} parameter set#{cnt > 1 ? 's were' : ' was'} successfully deleted"
-    elsif cnt == 0
-      flash[:alert] = "No parameter sets were deleted"
-    else
-      flash[:alert] = "#{cnt} parameter set#{cnt > 1 ? 's were' : ' was'} deleted (your request was #{selected_ps_ids.size} deletion)"
-    end
-    redirect_to @simulator
-  end
-
   private
   def permitted_simulator_params
     params[:simulator].present? ? params.require(:simulator)

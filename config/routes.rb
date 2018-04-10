@@ -6,6 +6,8 @@ Rails.application.routes.draw do
     end
   end
 
+  post '/parameter_sets/_delete_selected', to: 'parameter_sets#_delete_selected' unless OACIS_READ_ONLY
+
   resources :runs, only: ["index"] do
     collection do
       get "_jobs_table" # for ajax, datatables
@@ -34,7 +36,6 @@ Rails.application.routes.draw do
       get "_host_parameters_field" # for ajax, get the fields for host_parameters
       get "_default_mpi_omp" # for ajax, get the default mpi_procs and omp_threads
       post "_create_selected_runs" unless OACIS_READ_ONLY
-      post "_delete_selected_parameter_sets" unless OACIS_READ_ONLY
     end
 
     parameter_set_actions = ["show"]

@@ -79,6 +79,31 @@ class ParameterSetsController < ApplicationController
     end
   end
 
+  def _delete_selected
+    selected_ps_ids = params[:id_list].to_s.split(",")
+
+    cnt = 0
+    sim = nil
+    selected_ps_ids.each do |ps_id|
+      ps = ParameterSet.where(id: ps_id).first
+      if ps.present?
+        sim ||= ps.simulator
+        ps.discard
+        cnt += 1
+      end
+    end
+
+    if cnt == selected_ps_ids.size
+      flash[:notice] = "#{cnt} parameter set#{cnt > 1 ? 's were' : ' was'} successfully deleted"
+    elsif cnt == 0
+      flash[:alert] = "No parameter sets were deleted"
+    else
+      flash[:alert] = "#{cnt} parameter set#{cnt > 1 ? 's were' : ' was'} deleted (your request was #{selected_ps_ids.size} deletion)"
+    end
+
+    redirect_to(sim || root_path)
+  end
+
   def _delete_selected_runs
     selected_run_ids_str = params[:id_list] || ""
     selected_run_ids = selected_run_ids_str.split(',')

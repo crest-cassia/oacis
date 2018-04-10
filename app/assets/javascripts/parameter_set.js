@@ -23,8 +23,7 @@ function create_parameter_sets_list(selector, default_length) {
         $(row).attr('id', lnId);
       }
   });
-  const aPagePath = $(location).attr('pathname').split('/');
-  const actionUrl = '/' + aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_parameter_sets'
+  const actionUrl = '/parameter_sets/_delete_selected';
   $(selector+'_length').css('height', '45px');
   $(selector+'_length').append(
     '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="params_list_refresh"></i>' +
