@@ -6,17 +6,6 @@
       - ParameterSetsListDatatable.header(parameter_set.simulator).each do |th_element|
         = raw(th_element)
   %tbody
-#runs_list_modal.modal.large.fade
-  .modal-dialog.modal-vertical-centered
-    .modal-content
-      .modal-header
-        %button.close{type: "button", "data-dismiss" => "modal"}
-          &times;
-        %h4.modal-title
-      .modal-body.large#runs_list_modal_page
-      .modal-footer
-        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
-          Close
 
 - unless OACIS_READ_ONLY
   = render partial: 'simulators/create_runs_on_selected_modal', locals: {simulator: @param_set.simulator}
