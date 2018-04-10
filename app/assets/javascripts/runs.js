@@ -8,7 +8,6 @@ $(function() {
       order: [[ 8, "desc" ], [ 1, "desc"]],
       destroy: true,
       "columnDefs": [{
-        "searchable": false,
         "orderable": false,
         "targets": 0
       }],
