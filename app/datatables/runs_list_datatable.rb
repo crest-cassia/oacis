@@ -1,6 +1,6 @@
 class RunsListDatatable
 
-  SORT_BY = ["id", "id", "status", "priority", "real_time",
+  SORT_BY = [nil, "id", "status", "priority", "real_time",
              "mpi_procs", "omp_threads", "simulator_version",
              "created_at", "updated_at", "submitted_to", "job_id"]
 

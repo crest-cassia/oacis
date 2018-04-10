@@ -47,7 +47,12 @@
         processing: true,
         serverSide: true,
         searching: false,
-        ajax: source
+        ajax: source,
+        order: [[ 6, "desc" ], [ 1, "desc"]],
+        "columnDefs": [{
+           "orderable": false,
+           "targets": [0,7]
+           }]
       });
       aoAnalysesTables.push(oTable);
     });
