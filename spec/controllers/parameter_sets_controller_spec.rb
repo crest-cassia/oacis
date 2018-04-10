@@ -370,7 +370,7 @@ describe ParameterSetsController do
                                       parameter_set_queries_count: 0
                                       )
       @param_set = @simulator.parameter_sets.first
-      get :_runs_list, params: {id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
+      get :_runs_list, params: {id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "1", "dir" => "asc"}}}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
 

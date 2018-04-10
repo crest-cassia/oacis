@@ -6,20 +6,17 @@ let isLoaded = false;
 const notFilterLabel = 'Not filtering.';
 
 function create_parameter_sets_list(selector, default_length) {
-  const bOacisReadOnly = $('#tab-list-parameters').attr('oacis_read_only') == "true"
-  const orderColumn = bOacisReadOnly ? 2 : 3
-  const orderFalseTargets = bOacisReadOnly ? [0] : [0, 1]
   var oPsTable = $(selector).DataTable({
     processing: true,
     serverSide: true,
     searching: false,
-    order: [[ orderColumn, "desc" ]],
+    order: [[3, "desc"]],
     autoWidth: false,
     pageLength: default_length,
     "columnDefs": [{
       "searchable": false,
       "orderable": false,
-      "targets": orderFalseTargets
+      "targets": [0,1]
     }],
     dom: 'C<"clear">lrtip',
     colVis: {
@@ -29,7 +26,7 @@ function create_parameter_sets_list(selector, default_length) {
     bStateSave: true,
     ajax: $(selector).data('source'),
       "createdRow": function(row, data, dataIndex) {
-        const lnId = data[11];
+        const lnId = data[data.length-1];
         $(row).attr('id', lnId);
       }
   });
@@ -43,19 +40,17 @@ function create_parameter_sets_list(selector, default_length) {
     '<label for="params_list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id="params_list_refresh_tb" size="10"/>sec</label>' +
     '</div>'
   );
-  if (!bOacisReadOnly){
-    $(selector+'_length').after(
-      '<div class="dataTables_length" id="selected_pss_ctl_div" style="height: 45px;">' +
-      '<form name="ps_form" id="ps_select_form" action="' + actionUrl + '" method="post">' +
-      '<input type="hidden" name="authenticity_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
-      '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
-      '<input type="hidden" name="id_list" id="ps_selected_id_list">' +
-      '<input type="button" class="btn btn-primary margin-half-em" value="Delete" id="ps_delete_sel">' +
-      '<input type="button" class="btn btn-primary margin-half-em" value="Create Runs" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
-      '</form>' +
-      '</div>'
-    );
-  }
+  $(selector+'_length').after(
+    '<div class="dataTables_length" id="selected_pss_ctl_div" style="height: 45px;">' +
+    '<form name="ps_form" id="ps_select_form" action="' + actionUrl + '" method="post">' +
+    '<input type="hidden" name="authenticity_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
+    '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
+    '<input type="hidden" name="id_list" id="ps_selected_id_list">' +
+    '<input type="button" class="btn btn-primary margin-half-em" value="Delete" id="ps_delete_sel">' +
+    '<input type="button" class="btn btn-primary margin-half-em" value="Create Runs" id="ps_run_sel" data-toggle="modal" data-target="#run_selected_modal">' +
+    '</form>' +
+    '</div>'
+  );
   $('#ps_count').text('0');
   $(selector+'_length').children('#params_list_refresh').on('click', function() {
     oPsTable.ajax.reload(null, false);
