@@ -24,7 +24,7 @@ class RunsController < ApplicationController
 
   def _jobs_table
     stat = params["run_status"].to_sym
-    render json: RunsListDatatable.new(Run.where(status: stat), view_context)
+    render json: RunsListDatatable.new(Run.where(status: stat), view_context, true)
   end
 
   def show

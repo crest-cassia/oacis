@@ -5,7 +5,7 @@ class AnalysesListDatatable
              '<th>status</th>',
              '<th>version</th>', '<th>updated_at</th>',
              '<th style="min-width: 18px; width: 1%;"></th>']
-  SORT_BY = ["id", "id", "analyzer_id", "parameters", "status", "analyzer_version", "updated_at", "id"]
+  SORT_BY = [nil, "id", "analyzer_id", "parameters", "status", "analyzer_version", "updated_at", nil]
 
   def initialize(analyses, view_context)
     @analyses = analyses
