@@ -200,3 +200,20 @@ div.auto_reload_setting * {
 .filter_set_area {
   width: 100%;
 }
+.badge-pill {
+    padding-right: 0.6em;
+    padding-left: 0.6em;
+    border-radius: 10rem;
+}
+.badge-secondary {
+    color: #222;
+    background-color: #eee;
+}
+.badge-info {
+    color: #fff;
+    background-color: #5bc0de;
+}
+.badge-light {
+    color: #222;
+    background-color: #eee;
+}

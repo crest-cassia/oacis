@@ -132,7 +132,8 @@ module ApplicationHelper
     return "Not filtering." if queries.blank?
     query_tag = ""
     queries.each do |q|
-      query_tag << content_tag(:span, q, class: 'badge badge-pill badge-info margin-half-em')
+       query_tag << '<span class="badge badge-pill badge-info margin-half-em">' + q + '<i class="fas fa-times margin-half-em"></i></span>'
+#      query_tag << content_tag(:span, q + raw('<i class="fas fa-times margin-half-em"></i>'), class: 'badge badge-pill badge-light margin-half-em')
     end
     query_tag
   end
