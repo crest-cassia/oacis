@@ -5,7 +5,7 @@ module HostsHelper
     when :enabled
       '<span class="label label-success">enabled</span>'
     when :disabled
-      '<span class="label label-important">disabled</span>'
+      '<span class="label label-default">disabled</span>'
     else
       "<span class=\"label\">#{status}</span>"
     end

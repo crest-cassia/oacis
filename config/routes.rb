@@ -92,6 +92,7 @@ Rails.application.routes.draw do
   resources :hosts, only: host_actions do
     member do
       get '_check_scheduler_status'
+      get '_toggle_status'
     end
     collection do
       post "_sort" # for ajax, update order of the table
