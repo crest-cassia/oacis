@@ -130,7 +130,7 @@ describe "ParameterSetsListDatatable" do
     it "returns array of th tags" do
       arr = ParameterSetsListDatatable.header(@sim)
       expect(arr).to be_an(Array)
-      expect(arr.size).to eq (5 + @sim.parameter_definitions.size)
+      expect(arr.size).to eq (4 + @sim.parameter_definitions.size)
     end
   end
 end
