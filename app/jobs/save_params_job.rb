@@ -41,7 +41,6 @@ class SaveParamsJob < ApplicationJob
         save_task.creation_size = save_task.creation_size - 1
         save_task.save
       end
-      sleep(2)
     end
 
     if created.empty?
