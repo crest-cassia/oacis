@@ -6,6 +6,8 @@ gem "mongoid", ' ~> 6.3.0'
 gem "net-ssh"
 gem "jbuilder"
 gem "redis", '~> 3.0'
+gem 'resque', :require => 'resque/server'
+  # for resque dashboard
 
 # assets
 gem "sprockets"
