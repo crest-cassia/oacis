@@ -81,12 +81,12 @@ function create_parameter_sets_list(selector, default_length) {
   let setSelectPSCtlDivDisp = (dispFlag) => {
     if (dispFlag) {
       $('#selected_pss_ctl_div').show();
-      $('#params_list_length').hide();
+      $(selector+'_length').hide();
       $('div.ColVis').hide();
     }
     else {
       $('#selected_pss_ctl_div').hide();
-      $('#params_list_length').show();
+      $(selector+'_length').show();
       $('div.ColVis').show();
     }
   }
