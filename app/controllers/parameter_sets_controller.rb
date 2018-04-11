@@ -637,29 +637,28 @@ class ParameterSetsController < ApplicationController
     created = []
     if creation_size > NOW_CREATION_SIZE
       paramsets_now = [] # top 10 sets
-      paramsets_lator = [] # other
+      paramsets_later = [] # other
 
       mapped[0].product( *mapped[1..-1] ).each_with_index do |ps, i|
         if i < NOW_CREATION_SIZE
           paramsets_now << mapped[0].product( *mapped[1..-1] )[i]
         else
-          paramsets_lator << mapped[0].product( *mapped[1..-1] )[i]
+          paramsets_later << mapped[0].product( *mapped[1..-1] )[i]
         end
       end
       created = save_parameter_sets(simulator, paramsets_now, run_params)
 
-      save_task = SaveTask.new(ps_params: paramsets_lator, run_param: run_params.to_h, num_runs: @num_runs, simulator_id: simulator_id, creation_size: creation_size - NOW_CREATION_SIZE)
+      save_task = SaveTask.new(ps_params: paramsets_later, run_param: run_params.to_h, num_runs: @num_runs, simulator_id: simulator_id, creation_size: creation_size - NOW_CREATION_SIZE)
       save_task_id = save_task.id.to_s
-      if save_task.save
+      if save_task.save!
         SaveParamsJob.perform_later(save_task.id.to_s)
       else
-        flash[:notice] = "Can't create background job."
-        created = save_parameter_sets(simulator,paramsets_lator, run_params)
+        created = created + save_parameter_sets(simulator,paramsets_later, run_params)
       end
     else
       created = save_parameter_sets(simulator,mapped[0].product( *mapped[1..-1] ), run_params)
     end
-    return created
+    created
   end
 
   private 

@@ -9,10 +9,13 @@ class SaveParamsJob < ApplicationJob
     simulator_id = save_task.simulator_id
     param_sets = save_task.ps_params
     num_runs = save_task.num_runs
-    run_params_h = save_task.run_param    
+    run_params_h = save_task.run_param? ? save_task.run_param : {}
     simulator = Simulator.find(simulator_id)
-    run_params = ActionController::Parameters.new(run_params_h);
-    run_params.permit!
+    run_params = ActionController::Parameters.new();
+    if num_runs > 0
+      run_params = ActionController::Parameters.new(run_params_h);
+      run_params.permit!
+    end
     created = []
     param_sets.each do |param_ary|
       save_task.reload
@@ -38,6 +41,7 @@ class SaveParamsJob < ApplicationJob
         save_task.creation_size = save_task.creation_size - 1
         save_task.save
       end
+      sleep(2)
     end
 
     if created.empty?

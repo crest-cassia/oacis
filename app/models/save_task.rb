@@ -8,7 +8,6 @@ class SaveTask
   field :creation_size, type: Integer
 
   validates :ps_params, presence: true
-  validates :run_param, presence: true
   validates :num_runs, presence: true
   validates :simulator_id, presence: true
   validates :creation_size, presence: true
