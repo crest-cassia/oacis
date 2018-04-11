@@ -33,6 +33,21 @@ class HostsController < ApplicationController
     render plain: status
   end
 
+  # toggle remote scheduler status
+  def _toggle_status
+    xhost = Host.find(params[:id])
+    if (xhost.status == :enabled)
+      xhost.status = :disabled
+      xhost.update_attribute(:status, :disabled)
+    else
+      xhost.update_attribute(:status, :enabled)
+    end
+
+    @hosts = Host.asc(:position).all
+    @host_groups = HostGroup.asc(:created_at).all
+    redirect_to action: 'index'
+  end
+
   # GET /hosts/new
   # GET /hosts/new.json
   def new
