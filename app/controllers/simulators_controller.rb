@@ -30,7 +30,6 @@ class SimulatorsController < ApplicationController
 
     @filter_set_query_array = []
     if @filter_hash.present?
-      a = []
       len = 0
       continue_flg = false
       @filter_hash.each do |filter|
@@ -40,11 +39,12 @@ class SimulatorsController < ApplicationController
         end
         next unless filter["enable"]
         @filter_set_query_array << filter["query"]
-        len = len + filter["query"].length + 2
+        len = len + filter["query"].length
       end
       if @filter_set_query_array.length > 0
-        @filter_set_query_array << " ..." if continue_flg
+        @filter_set_query_array << "..." if continue_flg
       end
+      @filter_set_query_array = [] if @filter_set_query_array.first == ""
     end
 
     if params[:isLoaded].present?
