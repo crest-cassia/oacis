@@ -16,7 +16,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
     const params_list_id = "#params_list_" + ps_id;
     const analysis_list_id = "#analysis_list_" + oid;
 
-    if ($(run_list_id) != null && $(run_list_id).is(":visible")) { /* run list is active */
+    if ($(run_list_id) != null) { /* run list exists */
       switch (status) {
         case 'submitted':
           class_tobe = "label-info";
@@ -46,7 +46,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         $(versionTd).text(data["version"]);
       }
     }
-    if ($(params_list_id) != null && $(params_list_id).is(":visible")){ /* parameter set list is active */
+    if ($(params_list_id) != null){ /* parameter set list exists */
       const psStatusTr = $(params_list_id);
       const psStatusDiv = $(params_list_id).find(".progress");
       if (psStatusDiv != null) {
@@ -77,7 +77,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         psStatusDiv.find(".progress-bar-info").text(String(percentSubmitted) + "%");
       }
     }
-    if ($(analysis_list_id) != null && $(analysis_list_id).is(":visible")) { /* analyses list is active */
+    if ($(analysis_list_id) != null) { /* analyses list exists */
       switch (status) {
         case 'submitted':
           class_tobe = "label-info";

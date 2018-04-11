@@ -52,8 +52,22 @@ i.padding-half-em {
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
+i.padding-left-half-em {
+  padding-left: 0.5em;
+}
 .add-padding-right {
   padding-right: 8px;
+}
+.navbar-nav li a {
+  padding-top: 23px;
+  padding-bottom: 22px;
+}
+#navbar-collapse {
+  font-size: 21px;
+}
+.navbar-brand {  
+  padding-top: 8px;
+  padding-bottom: 6px;
 }
 .add-margin-bottom{
   margin-bottom: 16px;
@@ -106,12 +120,6 @@ pre {
   transform: translate(0, 55px) !important;
   -ms-transform: translate(0, 55px) !important; /* IE 9 */
   -webkit-transform: translate(0, 55px) !important; /* Safari and Chrome */
-}
-#runs_list_modal .modal-vertical-centered {
-  width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
-  max-height: 100%;
-  max-width: 100%;
-  overflow: auto;
 }
 #analyses_list_modal .modal-vertical-centered {
   width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
