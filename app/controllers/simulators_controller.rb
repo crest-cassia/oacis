@@ -189,57 +189,6 @@ class SimulatorsController < ApplicationController
     end
     redirect_to :action => "show"
   end
-  def _create_selected_runs
-    param_set_ids_str = params[:ps_ids] || ""
-    raise 'No parameter sets ware selected.' unless param_set_ids_str.present?
-    param_set_ids = param_set_ids_str.split(",")
-    num_runs = 1
-    num_runs = params[:num_runs].to_i if params[:num_runs]
-    raise 'params[:num_runs] is invalid' unless num_runs > 0
-    @simulator = Simulator.find(params[:id])
-
-    @runs = []
-    run_params = permitted_run_params(params)
-    param_set_ids.each do |ps_id|
-      param_set = ParameterSet.where(id: ps_id).first
-      next unless param_set.present?
-      num_runs.times do |i|
-        run = param_set.runs.build(run_params)
-        @runs << run if run.save
-      end
-    end
-
-    if @runs.present?
-      flash[:notice] = "#{@runs.size} run#{@runs.size > 1 ? 's were' : ' was'} successfully created"
-    else
-      flash[:alert] = "No runs were created"
-    end
-    redirect_to @simulator
-  end
-
-  def _delete_selected_parameter_sets
-    selected_ps_ids_str = params[:id_list] || ""
-    selected_ps_ids = selected_ps_ids_str.split(",")
-    @simulator = Simulator.find(params[:id])
-    
-    cnt = 0
-    selected_ps_ids.each do |ps_id|
-      ps = @simulator.parameter_sets.where(id: ps_id).first
-      if ps.present?
-        ps.discard
-        cnt = cnt + 1
-      end
-    end
-    
-    if cnt == selected_ps_ids.size
-      flash[:notice] = "#{cnt} parameter set#{cnt > 1 ? 's were' : ' was'} successfully deleted"
-    elsif cnt == 0
-      flash[:alert] = "No parameter sets were deleted"
-    else
-      flash[:alert] = "#{cnt} parameter set#{cnt > 1 ? 's were' : ' was'} deleted (your request was #{selected_ps_ids.size} deletion)"
-    end
-    redirect_to @simulator
-  end
 
   private
   def permitted_simulator_params
@@ -258,24 +207,5 @@ class SimulatorsController < ApplicationController
                                                 parameter_definitions_attributes: [[:id, :key, :type, :default, :description, :_destroy]],
                                                 executable_on_ids: []
                                                ) : {}
-  end
-
-  def permitted_run_params(params)
-    if params[:run].present?
-      if params[:run]["submitted_to"].present?
-        id = params[:run]["submitted_to"]
-        if Host.where(id: id).exists?
-          host_param_keys = Host.find(id).host_parameter_definitions.map(&:key)
-          params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :submitted_to, host_parameters: host_param_keys)
-        elsif HostGroup.where(id: id).exists?
-          modify_params_for_host_group_submission
-          params.require(:run).permit(:mpi_procs, :omp_threads, :priority, :host_group)
-        end
-      else
-        raise "submitted_to is a required parameter"
-      end
-    else
-      raise "'run' is a required parameter"
-    end
   end
 end

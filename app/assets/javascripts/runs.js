@@ -17,8 +17,7 @@ $(function() {
         $(row).attr('id', lnId);
       }
     });
-    const aPagePath = $(location).attr('pathname').split('/');
-    const actionUrl = '/' +  aPagePath[1] + '/' + aPagePath[2] + '/_delete_selected_runs'
+    const actionUrl = '/runs/_delete_selected';
     $(selector+'_length').css('height', '45px');
     $(selector+'_length').append(
       '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="runs_list_refresh"></i>' +
