@@ -100,6 +100,28 @@ class RunsController < ApplicationController
     end
   end
 
+  def _delete_selected
+    selected_run_ids = params[:id_list].to_s.split(',')
+
+    cnt = 0
+    selected_run_ids.each do |run_id|
+      run = Run.where(id: run_id).first
+      next if run.nil?
+      run.discard
+      cnt += 1
+    end
+
+    if cnt == selected_run_ids.size
+      flash[:notice] = "#{cnt} run#{cnt > 1 ? 's were' : ' was'} successfully deleted"
+    elsif cnt == 0
+      flash[:alert] = "No runs were deleted"
+    else
+      flash[:alert] = "#{cnt} run#{cnt > 1 ? 's were' : ' was'} deleted (your request was #{selected_run_ids.size} deletion)"
+    end
+
+    redirect_back(fallback_location: runs_path)
+  end
+
   private
   def permitted_run_params
     found = find_host_or_host_group
