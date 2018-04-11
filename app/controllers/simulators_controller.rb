@@ -37,14 +37,13 @@ class SimulatorsController < ApplicationController
           continue_flg = true
           break
         end
-        next unless filter["enable"]
+        next unless filter["enable"] && filter["query"].present? && filter["query"].to_s.length > 0
         @filter_set_query_array << filter["query"]
         len = len + filter["query"].length
       end
       if @filter_set_query_array.length > 0
         @filter_set_query_array << "..." if continue_flg
       end
-      @filter_set_query_array = [] if @filter_set_query_array.first == ""
     end
 
     if params[:isLoaded].present?
