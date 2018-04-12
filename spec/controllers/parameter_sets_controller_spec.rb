@@ -243,19 +243,20 @@ describe ParameterSetsController do
 
       describe "creation of multiple parameter sets" do
 
-        it "does not create a ParameterSet if too much parameter sets are going to be created" do
+        it "creates 10 ParameterSet imeediately and creates the other PSs asynchronously" do
           @invalid_param.update(v: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
                                     "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
           expect {
             post :create, params: @invalid_param
-          }.to_not change { ParameterSet.count }
+          }.to change { ParameterSet.count }.by(10)
         end
 
-        it "re-renders 'new' template" do
+        it "creates a task" do
           @invalid_param.update(v: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
                                     "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
-          post :create, params: @invalid_param
-          expect(response).to render_template("new")
+          expect {
+            post :create, params: @invalid_param
+          }.to change { SaveTask.count }.by(1)
         end
       end
 

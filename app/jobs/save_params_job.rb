@@ -9,18 +9,18 @@ class SaveParamsJob < ApplicationJob
     simulator_id = save_task.simulator_id
     param_sets = save_task.ps_params
     num_runs = save_task.num_runs
-    run_params_h = save_task.run_param? ? save_task.run_param : {}
+    run_params_h = save_task.run_param || {}
     simulator = Simulator.find(simulator_id)
-    run_params = ActionController::Parameters.new();
+    run_params = ActionController::Parameters.new
     if num_runs > 0
-      run_params = ActionController::Parameters.new(run_params_h);
+      run_params = ActionController::Parameters.new(run_params_h)
       run_params.permit!
     end
     created = []
     param_sets.each do |param_ary|
       save_task.reload
       if save_task.cancel_flag
-        save_task.destroy()
+        save_task.destroy
         return
       end
       param = {}
@@ -45,9 +45,9 @@ class SaveParamsJob < ApplicationJob
 
     if created.empty?
       Resque.logger.error "No parameter_set was created!."
-      save_task.destroy()
+      save_task.destroy
       return
     end
-    save_task.destroy()
+    save_task.destroy
   end
 end
