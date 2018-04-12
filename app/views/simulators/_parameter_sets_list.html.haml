@@ -1,5 +1,12 @@
 %h3 List of Parameter Sets
 
+.clear-element
+.create_ps_area
+  - if @ps_creation_size > 0
+    = "Creating #{@ps_creation_size} Parameter Sets"
+    %a{"data-toggle" => "tooltip", "data-original-title" => "cancel creation", href: "#{_cancel_create_ps_simulator_path(@simulator)}"}
+      %i.fa.fa-times
+.clear-element
 %table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
   %thead
     %tr
@@ -90,3 +97,7 @@
     parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
     parameter_form_selector.trigger("change");
   });
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  })
+

@@ -19,6 +19,9 @@ class SimulatorsController < ApplicationController
     @analyzers = @simulator.analyzers
     @query_id = params[:query_id]
 
+    save_tasks = SaveTask.where({cancel_flag: false})
+    @ps_creation_size = save_tasks.inject(0) {|sum,t| sum + t.creation_size }
+
     if @simulator.parameter_set_queries.present?
       @query_list = {}
       @simulator.parameter_set_queries.each do |psq|
@@ -36,7 +39,6 @@ class SimulatorsController < ApplicationController
   # GET /simulators/new.json
   def new
     @simulator = Simulator.new
-
     respond_to do |format|
       format.html
       format.json { render json: @simulator }
@@ -177,6 +179,15 @@ class SimulatorsController < ApplicationController
     omp = sim.default_omp_threads[host.id.to_s] || 1
     data = {'mpi_procs' => mpi, 'omp_threads' => omp}
     render json: data
+  end
+
+  def _cancel_create_ps
+    save_tasks =  SaveTask.where({cancel_flag: false})
+    save_tasks.each do |t|
+      t.cancel_flag = true
+      t.save
+    end
+    redirect_to :action => "show"
   end
 
   private
