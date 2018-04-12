@@ -33,16 +33,8 @@ class SimulatorsController < ApplicationController
       len = 0
       continue_flg = false
       @filter_hash.each do |filter|
-        if len > 100
-          continue_flg = true
-          break
-        end
         next unless filter["enable"] && filter["query"].present? && filter["query"].to_s.length > 0
         @filter_set_query_array << filter["query"]
-        len = len + filter["query"].length
-      end
-      if @filter_set_query_array.length > 0
-        @filter_set_query_array << "..." if continue_flg
       end
     end
 
@@ -210,9 +202,9 @@ class SimulatorsController < ApplicationController
     end
 
     if new_filters.map(&:save)
-      flash.now[:notice] = "A new filter set is created or over writed."
+      flash[:notice] = "A new filter set is created or over writed."
     else
-      flash.now[:notice] = "Failed to create a filter set."
+      flash[:notice] = "Failed to create a filter set."
     end
 
   end
