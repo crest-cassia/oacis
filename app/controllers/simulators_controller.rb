@@ -283,21 +283,21 @@ class SimulatorsController < ApplicationController
           end
           h["v.#{a[0]}"] = (matcher == "eq" ? val : {"$#{matcher}" => val} )
         end
-          parameter_sets = parameter_sets.where(h)
         begin
+          parameter_sets = parameter_sets.where(h)
           cnt = parameter_sets.count
         rescue => e
-          logger.debug "where exception: #{e.message}"
-          redirect_to :action => "show#index", :flash => {:error => "#{e.message}"}
+          message = "Error: #{e.message}"
+          keys = simulator.parameter_definitions.map {|pd| pd.key }
+          num_ps_total = simulator.parameter_sets.count
+          render json: ParameterSetsListDatatable.new(simulator.parameter_sets, keys, view_context, num_ps_total, message) and return
         end
       end
     end
 
-    logger.debug "parameter_sets: " + parameter_sets.to_s
-
     keys = simulator.parameter_definitions.map {|pd| pd.key }
     num_ps_total = simulator.parameter_sets.count
-    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, num_ps_total)
+    render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, num_ps_total, "")
   end
 
   def _analyzer_list

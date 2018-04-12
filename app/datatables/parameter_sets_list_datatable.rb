@@ -1,11 +1,12 @@
 class ParameterSetsListDatatable
 
-  def initialize(parameter_sets, parameter_definition_keys, view, num_ps_total, base_ps = nil)
+  def initialize(parameter_sets, parameter_definition_keys, view, num_ps_total, message, base_ps = nil)
     @view = view
     @param_sets = parameter_sets
     @param_keys = parameter_definition_keys
     @base_ps = base_ps
     @num_ps_total = num_ps_total
+    @message = message
   end
 
   def as_json(options = {})
@@ -13,6 +14,7 @@ class ParameterSetsListDatatable
       draw: @view.params[:draw].to_i,
       recordsTotal: @num_ps_total,
       recordsFiltered: @param_sets.count,
+      message: @message,
       data: data
     }
   end

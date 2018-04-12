@@ -28,6 +28,12 @@ function create_parameter_sets_list(selector, default_length) {
       "createdRow": function(row, data, dataIndex) {
         const lnId = data[data.length-1];
         $(row).attr('id', lnId);
+      },
+      "drawCallback": function(settings) {
+        const mess = settings["json"]["message"];
+        if (mess.length > 1) {
+          $('#datatable_messages').append('<span class="text-danger">'+mess+'</span>');
+        }
       }
   });
   const actionUrl = '/parameter_sets/_delete_selected';
