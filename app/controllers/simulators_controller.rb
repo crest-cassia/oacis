@@ -17,6 +17,8 @@ class SimulatorsController < ApplicationController
   def show
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
+    save_tasks = SaveTask.where({cancel_flag: false})
+    @ps_creation_size = save_tasks.inject(0) {|sum,t| sum + t.creation_size }
    
     @filter_set_name = "Not filtering." 
     if params[:filter_set_name].present?
@@ -52,7 +54,6 @@ class SimulatorsController < ApplicationController
   # GET /simulators/new.json
   def new
     @simulator = Simulator.new
-
     respond_to do |format|
       format.html
       format.json { render json: @simulator }
@@ -332,6 +333,15 @@ class SimulatorsController < ApplicationController
     omp = sim.default_omp_threads[host.id.to_s] || 1
     data = {'mpi_procs' => mpi, 'omp_threads' => omp}
     render json: data
+  end
+
+  def _cancel_create_ps
+    save_tasks =  SaveTask.where({cancel_flag: false})
+    save_tasks.each do |t|
+      t.cancel_flag = true
+      t.save
+    end
+    redirect_to :action => "show"
   end
 
   private

@@ -42,6 +42,7 @@ Rails.application.routes.draw do
       get "_progress" # for progress table
       get "_host_parameters_field" # for ajax, get the fields for host_parameters
       get "_default_mpi_omp" # for ajax, get the default mpi_procs and omp_threads
+      get "_cancel_create_ps"
     end
 
     parameter_set_actions = ["show"]
@@ -109,4 +110,7 @@ Rails.application.routes.draw do
   end
 
   root :to => "simulators#index"
+
+  # for resque dashboard
+  mount Resque::Server, :at => "/resque"
 end

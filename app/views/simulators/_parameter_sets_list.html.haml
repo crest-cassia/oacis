@@ -93,6 +93,13 @@
         %button#parameter_load_filter_set_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
           Close
 
+.clear-element
+.create_ps_area
+  - if @ps_creation_size > 0
+    = "Creating #{@ps_creation_size} Parameter Sets"
+    %a{"data-toggle" => "tooltip", "data-original-title" => "cancel creation", href: "#{_cancel_create_ps_simulator_path(@simulator)}"}
+      %i.fa.fa-times
+.clear-element
 %table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", filter_hash: @filter_hash)}"}
   %thead
     %tr
