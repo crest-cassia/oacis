@@ -35,9 +35,19 @@ RSpec.describe SaveTask, type: :model do
         task = @sim.save_tasks.create(param_values: {"L"=>[1,2,3,4,5], "T"=>[4.0,5.0,6.0]}, run_params: {submitted_to: @host_id}, num_runs: 3)
         task.make_ps_in_batches(true)
 
-        task.make_ps_in_batches()
+        task.make_ps_in_batches
         expect(ParameterSet.count).to eq 15
         expect(Run.count).to eq 45
+      end
+
+      it "stops creation when cancel_flag is set to true" do
+        task = @sim.save_tasks.create(param_values: {"L"=>[1,2,3,4,5], "T"=>[4.0,5.0,6.0]}, run_params: {submitted_to: @host_id}, num_runs: 3)
+        task.make_ps_in_batches(true)
+
+        task.update_attribute(:cancel_flag, true)
+        task.make_ps_in_batches
+        expect(ParameterSet.count).to eq 10
+        expect(Run.count).to eq 0
       end
     end
 

@@ -32,6 +32,7 @@ class SaveTask
     mapped = definitions.map {|defn| param_values[defn.key] }
     created = []
     mapped[0].product( *mapped[1..-1] ).each_with_index do |param_values, i|
+      return created if i%10 == 0 and self.reload.cancel_flag == true
       if now
         if i < NOW_CREATION_SIZE
           v = Hash[definitions.zip(param_values).map {|defn, v| [defn.key, v]}]
@@ -50,6 +51,7 @@ class SaveTask
     if (now && creation_size <= NOW_CREATION_SIZE) or (now == false)
       new_runs = []
       num_runs.times do |i|
+        return created if self.reload.cancel_flag == true
         created.each do |ps|
           next if ps.runs.count > i
           new_runs << ps.runs.build(run_params_p)
