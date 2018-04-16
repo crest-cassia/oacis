@@ -227,18 +227,13 @@ describe ParameterSetsController do
                                     "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
           end
 
-          it "creates 10 parameters now" do
+          it "creates 10 parameters now and the remaining later" do
             ActiveJob::Base.queue_adapter = :test
             expect {
-              post :create, params: @valid_param
-            }.to change { ParameterSet.count }.by(10)
-          end
-
-          it "creates a SaveTask" do
-            ActiveJob::Base.queue_adapter = :test
-            expect {
-              post :create, params: @valid_param
-            }.to change { SaveTask.count }.by(1)
+              expect {
+                post :create, params: @valid_param
+              }.to change { ParameterSet.count }.by(10)
+            }.to have_enqueued_job(SaveParameterSetsJob)
 
             st = SaveTask.first
             expect(st.param_values).to eq({"L"=>[1,2,3,4,5,6,7,8,9,10,11,12], "T"=>[1,2,3,4,5,6,7,8,9,10,11,12]})
@@ -246,13 +241,6 @@ describe ParameterSetsController do
             expect(st.num_runs).to eq 0
             expect(st.simulator).to eq @sim
             expect(st.creation_size).to eq 144
-          end
-
-          it "creates a SaveParameterSetsJob" do
-            ActiveJob::Base.queue_adapter = :test
-            expect {
-              post :create, params: @valid_param
-            }.to have_enqueued_job(SaveParameterSetsJob)
           end
         end
 
