@@ -27,6 +27,7 @@
 //= require dynatree/jquery.dynatree
 //= require cable.js
 //= require channels/status.js
+//= require channels/worker_log.js
 //= require set_interval_common.js
 
 // Handle back button issues with Twitter Bootstrap's tab component.
