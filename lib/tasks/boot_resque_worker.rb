@@ -4,7 +4,7 @@ class ResqueWorker < DaemonSpawn::Base
   WORKER_STDOUT_FILE = Rails.root.join('log', "resque_worker_out.log")
 
   def start(args)
-    @worker = Resque::Worker.new("#{Rails.env}_default")
+    @worker = Resque::Worker.new("#{AcmProto::Application.config.active_job.queue_name_prefix}_default")
     @worker.verbose = true
     @worker.work
   end
