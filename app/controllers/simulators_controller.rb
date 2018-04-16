@@ -24,9 +24,11 @@ class SimulatorsController < ApplicationController
     if params[:filter_set_name].present?
       @filter_set_name = params[:filter_set_name]
     end
-    
+
+    @filter_json = ""
     @filter_hash = {}
     if params[:filter_json].present?
+      @filter_json = params[:filter_json]
       @filter_hash = JSON.parse(params[:filter_json].to_s)
     end
 
@@ -207,7 +209,7 @@ class SimulatorsController < ApplicationController
     else
       flash[:notice] = "Failed to create a filter set."
     end
-
+    redirect_to  :action => "show", :filter_json => @filter_json, :filter_set_name => params[:name], :isLoaded => @isLoaded
   end
 
   def _delete_filter_set
