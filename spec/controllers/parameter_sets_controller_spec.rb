@@ -228,12 +228,14 @@ describe ParameterSetsController do
           end
 
           it "creates 10 parameters now" do
+            ActiveJob::Base.queue_adapter = :test
             expect {
               post :create, params: @valid_param
             }.to change { ParameterSet.count }.by(10)
           end
 
           it "creates a SaveTask" do
+            ActiveJob::Base.queue_adapter = :test
             expect {
               post :create, params: @valid_param
             }.to change { SaveTask.count }.by(1)
