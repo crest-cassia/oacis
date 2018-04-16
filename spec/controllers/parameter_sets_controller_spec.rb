@@ -255,6 +255,23 @@ describe ParameterSetsController do
             }.to have_enqueued_job(SaveParameterSetsJob)
           end
         end
+
+        context "when # of created PS is more than 10000" do
+
+          it "renders 'new' with error messages" do
+            @valid_param.update(v: {"L" => (0..100).to_a.join(','),
+                                    "T" => (0..100).to_a.join(',') })
+            ActiveJob::Base.queue_adapter = :test
+            expect {
+              expect {
+                post :create, params: @valid_param
+              }.to_not have_enqueued_job(SaveParameterSetsJob)
+            }.to_not change { ParameterSet.count }
+            expect(SaveTask.count).to eq 0
+
+            expect(response).to render_template('new')
+          end
+        end
       end
     end
 
