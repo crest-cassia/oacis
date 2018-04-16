@@ -24,6 +24,7 @@ class ParameterSetsController < ApplicationController
     render :new
   end
 
+  MAX_CREATION_SIZE = 10000
   def create
     simulator = Simulator.find(params[:simulator_id])
     @num_runs = params[:num_runs].to_i
@@ -58,8 +59,12 @@ class ParameterSetsController < ApplicationController
         casted[key] = [parameters.has_key?(key) ? ParametersUtil.cast_value(parameters[key], defn.type) : defn.default]
       end
     end
+    if MAX_CREATION_SIZE < casted.values.map(&:size).inject(1, :*)
+      flash[:alert] = "You cannot create more than #{MAX_CREATION_SIZE} ParameterSets at once."
+      render action: "new"
+      return
+    end
     task = simulator.save_tasks.create(param_values: casted, run_params: run_params.to_h, num_runs: @num_runs)
-    # [TODO] check MAX_CREATION_SIZE
 
     created = task.make_ps_in_batches(true)
 

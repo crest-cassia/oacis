@@ -227,18 +227,13 @@ describe ParameterSetsController do
                                     "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
           end
 
-          it "creates 10 parameters now" do
+          it "creates 10 parameters now and the remaining later" do
             ActiveJob::Base.queue_adapter = :test
             expect {
-              post :create, params: @valid_param
-            }.to change { ParameterSet.count }.by(10)
-          end
-
-          it "creates a SaveTask" do
-            ActiveJob::Base.queue_adapter = :test
-            expect {
-              post :create, params: @valid_param
-            }.to change { SaveTask.count }.by(1)
+              expect {
+                post :create, params: @valid_param
+              }.to change { ParameterSet.count }.by(10)
+            }.to have_enqueued_job(SaveParameterSetsJob)
 
             st = SaveTask.first
             expect(st.param_values).to eq({"L"=>[1,2,3,4,5,6,7,8,9,10,11,12], "T"=>[1,2,3,4,5,6,7,8,9,10,11,12]})
@@ -247,12 +242,22 @@ describe ParameterSetsController do
             expect(st.simulator).to eq @sim
             expect(st.creation_size).to eq 144
           end
+        end
 
-          it "creates a SaveParameterSetsJob" do
+        context "when # of created PS is more than 10000" do
+
+          it "renders 'new' with error messages" do
+            @valid_param.update(v: {"L" => (0..100).to_a.join(','),
+                                    "T" => (0..100).to_a.join(',') })
             ActiveJob::Base.queue_adapter = :test
             expect {
-              post :create, params: @valid_param
-            }.to have_enqueued_job(SaveParameterSetsJob)
+              expect {
+                post :create, params: @valid_param
+              }.to_not have_enqueued_job(SaveParameterSetsJob)
+            }.to_not change { ParameterSet.count }
+            expect(SaveTask.count).to eq 0
+
+            expect(response).to render_template('new')
           end
         end
       end
