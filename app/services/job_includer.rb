@@ -1,6 +1,6 @@
 module JobIncluder
 
-  def self.include_remote_job(host, submittable, logger = Logger.new)
+  def self.include_remote_job(host, submittable, logger = Logger.new($stderr, level: :fatal))
     host.start_ssh {|ssh|
       if remote_file_is_ready_to_include(host, submittable, ssh)
         if host.mounted_work_base_dir.present?
@@ -39,7 +39,7 @@ module JobIncluder
     JobScriptUtil.update_run(submittable)
   end
 
-  def self.create_auto_run_analyses(submittable, logger)
+  def self.create_auto_run_analyses(submittable, logger = Logger.new($stderr, level: :fatal))
     return if submittable.is_a?(Analysis)
     run = submittable
     runs = run.parameter_set.runs
