@@ -8,7 +8,6 @@ App.worker_log = App.cable.subscriptions.create("WorkerLogChannel", {
   },
 
   received: function(data) {
-    console.log(data);
     if(data['submitter']) {
       $('#worker_activity_submitter').text(data['submitter']);
     }
