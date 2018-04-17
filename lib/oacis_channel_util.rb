@@ -1,7 +1,7 @@
 module OacisChannelUtil
 
-  def self.progressSaveTaskMessage(simulator, offset_num_ps=0)
-    msg = ApplicationController.renderer.render(partial: 'simulators/save_ps_task_status', locals: {simulator: simulator, offset_num_ps: offset_num_ps})
+  def self.progressSaveTaskMessage(simulator, offset_num_ps=0, offset_num_runs=0)
+    msg = ApplicationController.renderer.render(partial: 'simulators/save_ps_task_status', locals: {simulator: simulator, offset_num_ps: offset_num_ps, offset_num_runs: offset_num_runs})
     {save_task_progress: true, simulator_id: simulator.id.to_s, message: msg}
   end
 

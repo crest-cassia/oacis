@@ -45,7 +45,7 @@ class SaveTask
         v = Hash[definitions.zip(param_values).map {|defn, v| [defn.key, v]}]
         ps = simulator.parameter_sets.find_or_initialize_by(v: v)
         created << ps if ps.persisted? or ps.save
-        StatusChannel.broadcast_to('message', OacisChannelUtil.progressSaveTaskMessage(simulator, -(i+1))) if i%100==0
+        StatusChannel.broadcast_to('message', OacisChannelUtil.progressSaveTaskMessage(simulator, -i-1)) if i%100==0
       end
     end
 
@@ -59,7 +59,12 @@ class SaveTask
         end
       end
       set_sequential_seeds(new_runs) if simulator.sequential_seed
-      new_runs.each {|r| r.save }
+      new_runs.each_with_index do |r,idx|
+        r.save
+        if now == false && idx % 100 == 0
+          StatusChannel.broadcast_to('message', OacisChannelUtil.progressSaveTaskMessage(simulator, -created.size, -idx-1))
+        end
+      end
     end
     created
   end
