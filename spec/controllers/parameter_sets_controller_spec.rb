@@ -282,25 +282,6 @@ describe ParameterSetsController do
         expect(response).to render_template("new")
       end
 
-      describe "creation of multiple parameter sets" do
-
-        it "creates 10 ParameterSet imeediately and creates the other PSs asynchronously" do
-          @invalid_param.update(v: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
-                                    "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
-          expect {
-            post :create, params: @invalid_param
-          }.to change { ParameterSet.count }.by(10)
-        end
-
-        it "creates a task" do
-          @invalid_param.update(v: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
-                                    "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
-          expect {
-            post :create, params: @invalid_param
-          }.to change { SaveTask.count }.by(1)
-        end
-      end
-
       describe "invalid host_parameters" do
 
         before(:each) do
