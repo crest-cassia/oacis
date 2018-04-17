@@ -6,6 +6,11 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
   },
 
   received: function(data) {
+    console.log(data);
+    if(data['save_task_progress']) {
+      $('#ps_being_created_'+data['simulator_id']).html(data['message']);
+      return;
+    }
     const oid = data["id"];
     const status = data["status"];
     const job_id = data["job_id"];

@@ -19,9 +19,6 @@ class SimulatorsController < ApplicationController
     @analyzers = @simulator.analyzers
     @query_id = params[:query_id]
 
-    save_tasks = SaveTask.where({cancel_flag: false})
-    @ps_creation_size = save_tasks.inject(0) {|sum,t| sum + t.creation_size }
-
     if @simulator.parameter_set_queries.present?
       @query_list = {}
       @simulator.parameter_set_queries.each do |psq|
@@ -182,10 +179,9 @@ class SimulatorsController < ApplicationController
   end
 
   def _cancel_create_ps
-    save_tasks =  SaveTask.where({cancel_flag: false})
-    save_tasks.each do |t|
-      t.cancel_flag = true
-      t.save
+    sim = Simulator.find(params[:id])
+    sim.save_tasks.where(cancel_flag: false).each do |t|
+      t.update_attribute(:cancel_flag, true)
     end
     redirect_to :action => "show"
   end

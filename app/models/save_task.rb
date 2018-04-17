@@ -45,6 +45,7 @@ class SaveTask
         v = Hash[definitions.zip(param_values).map {|defn, v| [defn.key, v]}]
         ps = simulator.parameter_sets.find_or_initialize_by(v: v)
         created << ps if ps.persisted? or ps.save
+        StatusChannel.broadcast_to('message', OacisChannelUtil.progressSaveTaskMessage(simulator, -(i+1))) if i%100==0
       end
     end
 

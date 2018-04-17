@@ -286,6 +286,10 @@ class Simulator
     }
   end
 
+  def num_ps_being_created
+    save_tasks.where(cancel_flag: false).inject(0) {|sum,t| sum + t.creation_size }
+  end
+
   private
   def plottable_keys(result)
     ret = []
