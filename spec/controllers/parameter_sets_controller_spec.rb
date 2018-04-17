@@ -232,7 +232,7 @@ describe ParameterSetsController do
             expect {
               expect {
                 post :create, params: @valid_param
-              }.to change { ParameterSet.count }.by(10)
+              }.to change { ParameterSet.count }.by_at_least(10)
             }.to have_enqueued_job(SaveParameterSetsJob)
 
             st = SaveTask.first
