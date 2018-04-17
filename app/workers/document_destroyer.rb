@@ -3,17 +3,12 @@ class DocumentDestroyer
   def self.perform(logger)
     @logger = logger
 
-    @logger.debug "looking for Simulator to be destroyed"
     destroy_documents( Simulator.where(to_be_destroyed: true) )
-    @logger.debug "looking for ParameterSet to be destroyed"
     destroy_documents( ParameterSet.where(to_be_destroyed: true) )
-    @logger.debug "looking for Analyzer to be destroyed"
     destroy_documents( Analyzer.where(to_be_destroyed: true) )
-    @logger.debug "looking for Run to be destroyed"
     destroy_documents(
       Run.where(:to_be_destroyed => true, :status.in => [:finished, :failed])
     )
-    @logger.debug "looking for Analysis to be destroyed"
     destroy_documents(
       Analysis.where(:to_be_destroyed => true, :status.in => [:finished, :failed])
     )
@@ -23,6 +18,9 @@ class DocumentDestroyer
   end
 
   def self.destroy_documents(query)
+    if query.empty?
+      @logger.debug "No document to be deleted is found"
+    end
     query.each do |obj|
       if obj.destroyable?
         @logger.info "destroying #{obj.class} #{obj.id}"

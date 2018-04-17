@@ -46,10 +46,11 @@ module AcmProto
     end
 
     # for use resque. default is Async.
-    config.active_job.queue_adapter = :resque
-    config.active_job.queue_name_prefix = Rails.env
-    if Rails.env == "production"
+    if Rails.env == "production" or Rails.env == "development"
+      config.active_job.queue_adapter = :resque
       config.active_job.queue_name_prefix = "development" # share common queue between development and production
+    elsif Rails.env == "test"
+      config.active_job.queue_adapter = :async
     end
   end
 end

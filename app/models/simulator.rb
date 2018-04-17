@@ -13,6 +13,7 @@ class Simulator
   has_many :runs
   has_many :parameter_set_queries, dependent: :destroy
   has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
+  has_many :save_tasks, dependent: :destroy
 
   default_scope ->{ where(to_be_destroyed: false) }
 
@@ -283,6 +284,13 @@ class Simulator
       parameter_values: [x_keys, y_keys],
       num_runs: num_runs
     }
+  end
+
+  def num_ps_and_runs_being_created
+    tasks = save_tasks.where(cancel_flag: false)
+    num_ps = tasks.inject(0) {|sum,t| sum + t.creation_size }
+    num_runs = tasks.inject(0) {|sum,t| sum + t.creation_size * t.num_runs}
+    [num_ps,num_runs]
   end
 
   private
