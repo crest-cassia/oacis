@@ -12,6 +12,9 @@
     margin: 0 0 18px 0;
   }
 }
+.ul-style-none {
+  list-style: none;
+}
 .field_with_errors {
   @extend .control-group !optional;
   @extend .error !optional;
@@ -76,8 +79,17 @@ i.padding-left-half-em {
   margin-left: 0.2em;
   margin-right: 0.2em;
 }
+.margin-half-em-top-bottom {
+  margin: 0.2em;
+}
 .add-margin-top {
   margin-top: 8px;
+}
+.add-margin-left {
+  margin-left: 0.5em;
+}
+.add_margin_new_ps {
+  margin-right: 3px;
 }
 table.dataTable th {
   text-align: right;
@@ -158,6 +170,34 @@ div.progress {
 .progress-bar {
   line-height: 14px;
 }
+.paramset_title_area_item {
+  float: left;
+}
+
+.filter_set_name_area {
+  padding-left: 8px;
+  padding-top: 8px;
+}
+
+.add_padding_left {
+  padding-left: 8px;
+}
+
+.add_padding {
+  padding: 8px 12px;
+}
+
+.add_margin {
+  margin: 8px 12px;
+}
+
+.add_margin_bottom {
+  margin-bottom: 8px;
+}
+
+.add_float_left {
+  float: left;
+}
 .create_ps_area {
   float: right;
   margin-bottom: 8px;
@@ -176,4 +216,34 @@ div.auto_reload_setting * {
 }
 .breadcrumb {
   text-transform: none;
+}
+.add_float_right {
+  float: right;
+}
+.filter_set_area {
+  width: 100%;
+}
+.badge-pill {
+    padding-right: 0.6em;
+    padding-left: 0.6em;
+    border-radius: 10rem;
+}
+.badge-secondary {
+    color: #222;
+    background-color: #eee;
+}
+.badge-info {
+    color: #fff;
+    background-color: #5bc0de;
+}
+.badge-light {
+    color: #222;
+    background-color: #eee;
+}
+.load-fs-margin-delete {
+  margin:0px; 
+  padding:0px;
+}
+.load-fs-left {
+  float: left;
 }

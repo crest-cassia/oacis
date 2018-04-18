@@ -64,4 +64,64 @@ module ParametersUtil
       raise "Unknown type : #{type}"
     end
   end
+
+  def self.boolean(val)
+    compare_value = val.is_a?(String) ? val.downcase : val
+    case compare_value
+      when "yes", "true", "ok", true, "1", 1, :true, :ok, :yes
+        return true
+      else
+        return false
+    end
+  end
+
+  def self.get_operator_string(parameter, operator, definition)
+    disp_operator = operator
+    return operator unless definition
+
+    if (["Integer", "Float"].include?(definition.type))
+      idx = ParameterSetFilter.getNumTypeMatchers.index(operator)
+      disp_operator = ParameterSetFilter.getNumTypeMatcherStrings[idx]  if idx >= 0 && idx < ParameterSetFilter::NumTypeMatcherStrings.length
+    end
+    disp_operator
+  end
+
+  def self.get_operator(parameter, operator, definition)
+    disp_operator = operator
+    return operator unless definition
+
+    if (["Integer", "Float"].include?(definition.type))
+      idx = ParameterSetFilter.getNumTypeMatcherStrings.index(operator)
+      disp_operator = ParameterSetFilter.getNumTypeMatchers[idx]  if idx >= 0 && idx < ParameterSetFilter::NumTypeMatchers.length
+    end
+    disp_operator
+  end
+
+  def self.parse_query_str_to_hash(str)
+    arr = str.split();
+    h = {}
+    return h if arr.length != 3
+    ope = arr[1]
+    if ParameterSetFilter.getNumTypeMatcherStrings.include?(arr[1])
+      idx = ParameterSetFilter.getNumTypeMatcherStrings.index(ope)
+      ope = ParameterSetFilter.getNumTypeMatchers[idx]
+    end
+    h["param"] = "#{arr[0]}"
+    h["matcher"] = ope
+    h["value"] = "#{arr[2]}"
+    h
+  end
+
+  def self.parse_query_hash_to_str(hash, simulator)
+    str = ""
+    return str unless hash.present?
+
+    hash.each do |key, criteria|
+      pd = simulator.parameter_definition_for(key)
+      criteria.each do |matcher, value|
+        str = "#{key} " + self.get_operator_string(key, matcher, pd) + " #{value}"
+      end
+    end
+    str
+  end
 end

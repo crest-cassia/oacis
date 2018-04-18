@@ -17,13 +17,29 @@ class SimulatorsController < ApplicationController
   def show
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
-    @query_id = params[:query_id]
+   
+    @filter_set_name = "Not filtering." 
+    if params[:filter_set_name].present?
+      @filter_set_name = params[:filter_set_name]
+    end
+    
+    @filter_hash = {}
+    if params[:filter_json].present?
+      @filter_hash = JSON.parse(params[:filter_json].to_s)
+    end
 
-    if @simulator.parameter_set_queries.present?
-      @query_list = {}
-      @simulator.parameter_set_queries.each do |psq|
-        @query_list[psq.query.to_s] = psq.id
+    @filter_set_query_array = []
+    if @filter_hash.present?
+      len = 0
+      continue_flg = false
+      @filter_hash.each do |filter|
+        next unless filter["enable"] && filter["query"].present? && filter["query"].to_s.length > 0
+        @filter_set_query_array << filter["query"]
       end
+    end
+
+    if params[:isLoaded].present?
+      @isLoaded = params[:isLoaded]
     end
 
     respond_to do |format|
@@ -110,6 +126,107 @@ class SimulatorsController < ApplicationController
     end
   end
 
+  # /simulator/:id/_filter_set_list
+  def _filter_set_list
+    simulator = Simulator.find(params[:id])
+    if simulator.filter_sets.present?
+      filter_sets = simulator.filter_sets
+      total_count = filter_sets.count
+    else
+      total_count = 0
+    end
+    render json: FilterSetListDatatable.new(filter_sets, simulator, view_context, total_count)
+  end
+
+  # /simulator/:id/_parameter_set_filter_list
+  def _parameter_set_filter_list
+    count = 0
+    bExist = true
+    if params[:filter_json].present? && params[:filter_json] != "undefined"
+      filter_list = JSON.parse(params[:filter_json])
+      a = []
+      filter_list.each_with_index do |fl, i|
+        h = {}
+        h[:enable] = fl["enable"]
+        if fl["query"] == ''
+          bExist = false
+        else
+          h[:query] = fl["query"]
+          a << h
+          count = i
+        end
+      end
+      filter_list = a
+    elsif params[:filter_set_id].present? && params[:filter_set_id] != "undefined"
+      simulator = Simulator.find(params[:id])
+      fs = simulator.filter_sets.find(params[:filter_set_id])
+      fl = ParameterSetFilter.where({"filter_set_id": params[:filter_set_id]})
+
+      a = []
+      fl.each_with_index do |f, i|
+        h = {}
+        h[:enable] = f.enable
+        h[:query] = ParametersUtil.parse_query_hash_to_str(f.query, simulator)
+        a << h
+        count = i
+      end
+      filter_list = a
+    else
+      bExist = false
+    end
+    render json: FilterListDatatable.new(filter_list, count, view_context, bExist)
+  end
+
+  # POST /simulators/:_id/_save_filter_set
+  def _save_filter_set
+    filters_str = params[:filter_query_array]
+    filters = JSON.parse(filters_str)
+    @simulator = Simulator.find(params[:id])
+    fs = @simulator.filter_sets.where(name: params[:name])
+    if fs.exists?
+      fs.destroy()
+    end
+    @new_filter_set = @simulator.filter_sets.build
+    @new_filter_set.name = params[:name]
+    @new_filter_set.save
+
+    new_filters = []
+    filters.each_with_index do |param, i|
+      filter_hash = ParametersUtil.parse_query_str_to_hash(param["query"])
+      filter_hash['enable'] = param["enable"]
+      new_filters << @new_filter_set.parameter_set_filters.build
+      new_filters[i].simulator = @simulator
+      new_filters[i].filter_set = @new_filter_set
+      new_filters[i].set_one_query(filter_hash)
+    end
+
+    if new_filters.map(&:save)
+      flash[:notice] = "A new filter set is created or over writed."
+    else
+      flash[:notice] = "Failed to create a filter set."
+    end
+
+  end
+
+  def _delete_filter_set
+    @simulator = Simulator.find(params[:id])
+    fs = @simulator.filter_sets.where(name: params[:name])
+    if fs.exists?
+      fs.destroy()
+    end
+  end
+
+  # POST /simulators/:_id/_set_filter_set redirect_to simulators#show
+  def _set_filter_set
+    filter_set_query = params[:filter_set_query_for_set]
+    filter_hash = {}
+    if filter_set_query.present?
+      filter_hash = JSON.parse(filter_set_query)
+    end
+    @filter_hash = filter_hash
+    redirect_to  :action => "show", :filter_json => filter_hash.to_json, :filter_set_name => params[:filter_set_name_for_set], :isLoaded => params[:isLoaded]
+  end
+
   # POST /simulators/:_id/_make_query redirect_to simulators#show
   def _make_query
     @query_id = params[:query_id]
@@ -135,10 +252,40 @@ class SimulatorsController < ApplicationController
   def _parameters_list
     simulator = Simulator.find(params[:id])
     parameter_sets = simulator.parameter_sets
-    if params[:query_id].present?
-      q = ParameterSetQuery.find(params[:query_id])
-      parameter_sets = q.parameter_sets
+
+    if params[:filter_hash].present?
+      filter_hash = params[:filter_hash]
+      filter_hash.each do |filter|
+        next unless filter[:enable] == "true"
+        a = filter[:query].split(' ');
+        next if a.length != 3
+        h = {}
+        pd = simulator.parameter_definition_for(a[0])
+        unless FilterSet.supported_matcher_str(pd.type).include?(a[1])
+          rise "undefined matcher #{matcher} for #{type}"
+        end
+        matcher = ParametersUtil.get_operator(a[0], a[1], pd)
+        if pd.type == "String"
+          h["v.#{a[0]}"] = FilterSet.string_matcher_to_regexp(matcher, a[2])
+        else
+          val = 0
+
+          if pd.type == "Integer" then
+            val = a[2].to_i
+          elsif pd.type == "Float" then
+            val = a[2].to_f
+          else
+            val = false
+            if a[2] == "true"
+              val = true
+            end
+          end
+          h["v.#{a[0]}"] = (matcher == "eq" ? val : {"$#{matcher}" => val} )
+        end
+         parameter_sets = parameter_sets.where(h)
+      end
     end
+
     keys = simulator.parameter_definitions.map {|pd| pd.key }
     num_ps_total = simulator.parameter_sets.count
     render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, num_ps_total)

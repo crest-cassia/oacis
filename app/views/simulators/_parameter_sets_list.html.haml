@@ -1,50 +1,104 @@
 %h3 List of Parameter Sets
 
+.filter_set_area.paramset_title_area_item
+  %i#parameter_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name, isLoaded: @isLoaded, data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
+  %span#parameter_filter_selected.add_padding.add_margin_bottom
+    = raw(query_badge(@filter_set_query_array, true))
+  -unless @filter_set_query_array.blank?
+    %a#parameter_save_filter_btn{href: "#", onclick: "return show_filter_set_name_dlg();return false;"}
+      Save
+  - unless OACIS_READ_ONLY
+    %a.btn.btn-primary.add_float_right.add_margin_new_ps{href: new_simulator_parameter_set_path(@simulator)}
+      New Parameter Set
+.clear-element
+
+#parameter_filter_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4 Parameter Filter
+      .modal-body.large#parameter_filter_setting_body
+        %button#parameter_new_filter_btn.paramset_title_area_item.btn.btn-primary
+          New Query
+        = render "filters", simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name
+      .modal-footer
+        = form_tag(_set_filter_set_simulator_path, class: 'form-horizontal', id: 'set_filter_set_form') do 
+          = hidden_field_tag :filter_set_query_for_set, ""
+          = hidden_field_tag :filter_set_name_for_set, @filter_set_name
+          = hidden_field_tag :isLoaded,@isLoaded
+          %button#parameter_filter_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal", onclick: "parameter_filter_dlg_ok()"}
+            OK
+          %button.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+            Cancel
+
+#parameter_new_filter_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4 Query
+      .modal-body.large#parameter_new_filter_create_body
+        .foo#queries_form_original
+          .row
+            .form-group.col-md-3#select_param_form
+              - prm_def = @simulator.parameter_definitions.map {|x| [x.key, {"type" => x.type, "default" => x.default}] }
+              - prm_def = Hash[*prm_def.flatten]
+              = select_tag "query[][param]", options_for_select(prm_def), class: 'form-control'
+            .form-group.col-md-2#select_matcher_form
+              = select_tag "query[][matcher]", options_for_select({""=>""}), class: 'form-control'
+            .form-group.col-md-3#select_value_form
+              = text_field_tag "query[][value]", "", class: 'form-control'
+            .col-md-6
+      .modal-footer
+        %button#parameter_new_filter_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal", onclick: "add_new_filter()"}
+          OK 
+        %button#parameter_new_filter_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+          Close
+
+#parameter_save_filter_set_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4 Save Filter Set
+      .modal-body.large#parameter_new_filter_create_body
+        %h4.paramset_title_area_item Name
+        = text_field_tag "filter_set_name", "", class: 'form-control', id: "filter_set_name"
+      .modal-footer
+        = form_tag(_save_filter_set_simulator_path, class: 'form-horizontal', id: 'save_filter_set_form') do |f|
+          = hidden_field_tag :name,""
+          = hidden_field_tag :filter_query_array,""
+          %button#parameter_save_filter_set_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+            OK 
+          %button#parameter_save_filter_set_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
+            Close
+
+#parameter_load_filter_set_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4 Load Filter Set
+      .modal-body.large#parameter_new_filter_create_body
+        = render "filter_sets", simulator: @simulator
+
 .clear-element
 .create_ps_area{id: "ps_being_created_#{@simulator.id}"}
   = render partial: 'save_ps_task_status', locals: {simulator: @simulator, offset_num_ps: 0, offset_num_runs: 0}
-.clear-element
-%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
+
+%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", filter_hash: @filter_hash)}"}
   %thead
     %tr
       - ParameterSetsListDatatable.header(@simulator).each do |th_element|
         = raw(th_element)
   %tbody
 
-- unless OACIS_READ_ONLY
-  %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
-    New Parameter Set
 
-%h3 Parameter Filter
-.foo
-  = form_tag( _make_query_simulator_path(@simulator), class: 'form-horizontal' ) do |f|
-    #queries_form_original
-      .row
-        .form-group.col-md-2#select_param_form
-          - prm_def = @simulator.parameter_definitions.map {|x| [x.key, {"type" => x.type, "default" => x.default}] }
-          - prm_def = Hash[*prm_def.flatten]
-          = select_tag "query[][param]", options_for_select(prm_def), class: 'form-control'
-        .form-group.col-md-1#select_matcher_form
-          = select_tag "query[][matcher]", options_for_select({""=>""}), class: 'form-control'
-        .form-group.col-md-3#select_value_form
-          = text_field_tag "query[][value]", "", class: 'form-control'
-        .col-md-6
-    .btn#add_queries_form Add more filters
-    = hidden_field_tag "query_id", @query_id
-    = submit_tag "Save this Filter", :class => 'btn btn-primary'
-
-- if @query_list
-  %h4 Select Filter
-  = form_for(@simulator, url: {controller:"simulators", action:"show"}, html: {method: :get, class: 'form-inline'} ) do |f|
-    .form-group
-      = select_tag "query_id", options_for_select(@query_list, @query_id), prompt: "all", class: 'form-control'
-    = f.submit "Load", class: 'btn btn-primary', name: nil
-
-- unless @query_id.blank?
-  %h4 Delete Filter
-  = form_tag( _make_query_simulator_path(@simulator) ) do |f|
-    = hidden_field_tag "query_id", @query_id
-    = submit_tag "Delete this Filter", :class => 'btn btn-primary', :name => :delete_query, :confirm => 'Are you sure?'
 
 - unless OACIS_READ_ONLY
   = render partial: 'create_runs_on_selected_modal', locals: {simulator: @simulator}
@@ -100,4 +154,3 @@
   $(function () {
     $('#ps_check_all').prop('checked', false);
   });
-
