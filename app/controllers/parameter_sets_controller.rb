@@ -24,6 +24,7 @@ class ParameterSetsController < ApplicationController
     render :new
   end
 
+  MAX_CREATION_SIZE = 10000
   def create
     simulator = Simulator.find(params[:simulator_id])
     @num_runs = params[:num_runs].to_i
@@ -44,38 +45,48 @@ class ParameterSetsController < ApplicationController
       end
     end
 
-    created = find_or_create_multiple(simulator, params[:v].dup)
-
-    if created.empty?
-      @param_set.errors.add(:base, "No parameter_set was created")
-      render action: "new"
-      return
-    end
-
-    new_runs = []
-    @num_runs.times do |i|
-      created.each do |ps|
-        next if ps.runs.count > i
-        new_runs << ps.runs.build(run_params)
+    # create SaveTask
+    casted = {}
+    simulator.parameter_definitions.each do |defn|
+      key = defn.key
+      parameters = params[:v].dup
+      if parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
+        values = parameters[key].split(',').map {|x|
+          ParametersUtil.cast_value(x.strip, defn.type)
+        }
+        casted[key] = values.compact.uniq.sort
+      else
+        casted[key] = [parameters.has_key?(key) ? ParametersUtil.cast_value(parameters[key], defn.type) : defn.default]
       end
     end
-    set_sequential_seeds(new_runs) if simulator.sequential_seed
-    new_runs.map(&:save)
-
-    num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
-    num_created_runs = simulator.runs.count - previous_num_runs
-    if num_created_ps == 0 and num_created_runs == 0
-      @param_set.errors.add(:base, "No parameter_sets or runs are created")
+    if MAX_CREATION_SIZE < casted.values.map(&:size).inject(1, :*)
+      flash[:alert] = "You cannot create more than #{MAX_CREATION_SIZE} ParameterSets at once."
       render action: "new"
       return
     end
+    task = simulator.save_tasks.create(param_values: casted, run_params: run_params.to_h, num_runs: @num_runs)
 
-    flash[:notice] = "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
-    if created.size == 1
-      @param_set = created.first
-      redirect_to @param_set
-    else
+    created = task.make_ps_in_batches(true)
+
+    if task.remaining?
+      SaveParameterSetsJob.perform_later(task.id.to_s)
+      flash[:notice] = "#{task.creation_size} ParameterSets and #{task.creation_size*@num_runs} runs are being created"
       redirect_to simulator
+    else
+      task.destroy
+      num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
+      num_created_runs = simulator.runs.count - previous_num_runs
+      if num_created_ps == 0 and num_created_runs == 0
+        @param_set.errors.add(:base, "No parameter set is created")
+        render action: "new"
+      else
+        flash[:notice] = "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
+        if created.size == 1
+          redirect_to created.first
+        else
+          redirect_to simulator
+        end
+      end
     end
   end
 
@@ -127,21 +138,6 @@ class ParameterSetsController < ApplicationController
     end
 
     redirect_back(fallback_location: runs_path)
-  end
-
-
-  private
-  def set_sequential_seeds(runs)
-    ps_runs = runs.group_by {|run| run.parameter_set }
-    ps_runs.each_pair do |ps, runs_in_ps|
-      seeds = ps.reload.runs.asc(:seed).only(:seed).map {|r| r.seed }
-      runs_in_ps.each do |run_in_ps|
-        found = seeds.each_with_index.find {|seed,idx| seed != idx + 1 }
-        next_seed_idx = found ? found[1] : seeds.size
-        run_in_ps.seed = next_seed_idx + 1
-        seeds.insert(next_seed_idx, next_seed_idx + 1 )
-      end
-    end
   end
 
   private
@@ -628,42 +624,5 @@ class ParameterSetsController < ApplicationController
     respond_to do |format|
       format.json { render json: @param_set }
     end
-  end
-
-  private
-  MAX_CREATION_SIZE = 100
-  # return created parameter sets
-  def find_or_create_multiple(simulator, parameters)
-    mapped = simulator.parameter_definitions.map do |defn|
-      key = defn.key
-      if parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
-        casted = parameters[key].split(',').map {|x|
-          ParametersUtil.cast_value( x.strip, defn["type"] )
-        }
-        casted.compact.uniq.sort
-      else
-        [ parameters.has_key?(key) ? parameters[key] : defn["default"] ]
-      end
-    end
-
-    creation_size = mapped.inject(1) {|prod, x| prod * x.size }
-    if creation_size > MAX_CREATION_SIZE
-      flash[:alert] = "number of created parameter sets must be less than #{MAX_CREATION_SIZE}"
-      return []
-    end
-
-    created = []
-    mapped[0].product( *mapped[1..-1] ).each do |param_ary|
-      param = {}
-      simulator.parameter_definitions.each_with_index do |defn, idx|
-        param[defn.key] = param_ary[idx]
-      end
-      casted = ParametersUtil.cast_parameter_values(param, simulator.parameter_definitions)
-      ps = simulator.parameter_sets.find_or_initialize_by(v: casted)
-      if ps.persisted? or ps.save
-        created << ps
-      end
-    end
-    created
   end
 end

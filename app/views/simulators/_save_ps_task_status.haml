@@ -1,0 +1,7 @@
+- num_ps, num_runs = simulator.num_ps_and_runs_being_created
+- num_ps += offset_num_ps
+- num_runs += offset_num_runs
+- if num_ps > 0 || num_runs > 0
+  = "Creating #{num_ps} Parameter Sets and #{num_runs} Runs"
+  %a{"data-toggle" => "tooltip", "data-original-title" => "cancel creation", href: "#{_cancel_create_ps_simulator_path(simulator)}"}
+    %i.fa.fa-times

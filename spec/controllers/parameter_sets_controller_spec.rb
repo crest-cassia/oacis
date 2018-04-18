@@ -213,10 +213,51 @@ describe ParameterSetsController do
             expect(response).to redirect_to(@sim)
           end
 
-          it "shows an error when no parameter_sets or runs are created" do
+          it "shows an error when no PS or runs are created" do
             @valid_param.update(v: {"L" => 1, "T" => 1.0}, num_runs: 1, run: {submitted_to: @host_id})
             post :create, params: @valid_param
             expect(response).to render_template("new")
+          end
+        end
+
+        context "when # of created PS is more than 10" do
+
+          before(:each) do
+            @valid_param.update(v: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
+                                    "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
+          end
+
+          it "creates 10 parameters now and the remaining later" do
+            ActiveJob::Base.queue_adapter = :test
+            expect {
+              expect {
+                post :create, params: @valid_param
+              }.to change { ParameterSet.count }.by_at_least(10)
+            }.to have_enqueued_job(SaveParameterSetsJob)
+
+            st = SaveTask.first
+            expect(st.param_values).to eq({"L"=>[1,2,3,4,5,6,7,8,9,10,11,12], "T"=>[1,2,3,4,5,6,7,8,9,10,11,12]})
+            expect(st.run_params).to eq({})
+            expect(st.num_runs).to eq 0
+            expect(st.simulator).to eq @sim
+            expect(st.creation_size).to eq 144
+          end
+        end
+
+        context "when # of created PS is more than 10000" do
+
+          it "renders 'new' with error messages" do
+            @valid_param.update(v: {"L" => (0..100).to_a.join(','),
+                                    "T" => (0..100).to_a.join(',') })
+            ActiveJob::Base.queue_adapter = :test
+            expect {
+              expect {
+                post :create, params: @valid_param
+              }.to_not have_enqueued_job(SaveParameterSetsJob)
+            }.to_not change { ParameterSet.count }
+            expect(SaveTask.count).to eq 0
+
+            expect(response).to render_template('new')
           end
         end
       end
@@ -239,24 +280,6 @@ describe ParameterSetsController do
       it "re-renders the 'new' template" do
         post :create, params: @invalid_param
         expect(response).to render_template("new")
-      end
-
-      describe "creation of multiple parameter sets" do
-
-        it "does not create a ParameterSet if too much parameter sets are going to be created" do
-          @invalid_param.update(v: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
-                                    "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
-          expect {
-            post :create, params: @invalid_param
-          }.to_not change { ParameterSet.count }
-        end
-
-        it "re-renders 'new' template" do
-          @invalid_param.update(v: {"L" => "1,2,3,4,5,6,7,8,9,10,11,12",
-                                    "T" => "1,2,3,4,5,6,7,8,9,10,11,12" })
-          post :create, params: @invalid_param
-          expect(response).to render_template("new")
-        end
       end
 
       describe "invalid host_parameters" do

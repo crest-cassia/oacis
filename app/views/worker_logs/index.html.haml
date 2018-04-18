@@ -1,5 +1,7 @@
 .page-header
-  %h1 Logs
+  %h2 Worker Activity
+  = render "current_activity"
+  %h2 Logs
   .well
     = render "filtering"
 %table.table.table-striped.table-condensed{style: "font-size: smaller;"}

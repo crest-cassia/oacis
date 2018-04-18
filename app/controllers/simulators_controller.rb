@@ -52,7 +52,6 @@ class SimulatorsController < ApplicationController
   # GET /simulators/new.json
   def new
     @simulator = Simulator.new
-
     respond_to do |format|
       format.html
       format.json { render json: @simulator }
@@ -324,6 +323,14 @@ class SimulatorsController < ApplicationController
     omp = sim.default_omp_threads[host.id.to_s] || 1
     data = {'mpi_procs' => mpi, 'omp_threads' => omp}
     render json: data
+  end
+
+  def _cancel_create_ps
+    sim = Simulator.find(params[:id])
+    sim.save_tasks.where(cancel_flag: false).each do |t|
+      t.update_attribute(:cancel_flag, true)
+    end
+    redirect_to :action => "show"
   end
 
   private

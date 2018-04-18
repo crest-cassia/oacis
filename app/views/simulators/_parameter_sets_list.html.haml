@@ -87,6 +87,10 @@
       .modal-body.large#parameter_new_filter_create_body
         = render "filter_sets", simulator: @simulator
 
+.clear-element
+.create_ps_area{id: "ps_being_created_#{@simulator.id}"}
+  = render partial: 'save_ps_task_status', locals: {simulator: @simulator, offset_num_ps: 0, offset_num_runs: 0}
+
 %table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", filter_hash: @filter_hash)}"}
   %thead
     %tr
@@ -144,7 +148,9 @@
     parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
     parameter_form_selector.trigger("change");
   });
-
-  $(function() {
+  $(function () {
     $('[data-toggle="tooltip"]').tooltip();
+  });
+  $(function () {
+    $('#ps_check_all').prop('checked', false);
   });

@@ -4,6 +4,7 @@ rvm:
   - "2.4.1"
 services:
   - mongodb
+  - redis-server
 sudo: required
 install:
   - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa

@@ -25,9 +25,9 @@ private
     a = []
     return a if @total_count < 1
     filter_set_lists.each_with_index do |filter_set, i|
-      fl = ParameterSetFilter.where({"filter_set_id": "#{filter_set.id}"})
+      fls = ParameterSetFilter.where({"filter_set_id": "#{filter_set.id}"})
       b = []
-      fl.each_with_index do |f, j|
+      fls.each_with_index do |f, j|
         b << ParametersUtil.parse_query_hash_to_str(f.query, @simulator)
       end
       filter_list = b
@@ -39,7 +39,7 @@ private
              <li class=\"load-fs-left\"><a id=\"filter_set_#{i}\" class=\"filter_set_query\" data-dismiss=\"modal\" filter_set_id=\"#{filter_set.id}\" filter_set_name=\"#{filter_set.name}\" simulator_id=\"#{@simulator.id}\" onclick=\"parameter_load_filter_set_ok_click(\'filter_set_#{i}\')\" href=\"javascript:void(0);\">#{filter_set.name}</a></li>
              <li>#{trash}</li>
              <ul class=\"ul-style-none load-fs-margin-delete\">
-               <li class=\"load-fs-left\">#{query_badge(filter_list, false)}</li>
+               <li style=\"text-align: left\">#{query_badge(filter_list, false)}</li>
              </ul>
            </ul>" )
       a << tmp
@@ -56,7 +56,7 @@ private
   end
 
   def per_page
-    @view.params[:length].to_i > 0 ? @view.params[:length].to_i : 10
+    @view.params[:length].to_i > 0 ? @view.params[:length].to_i : 10 
   end
 
 end

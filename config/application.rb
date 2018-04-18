@@ -44,6 +44,14 @@ module AcmProto
     if File.exist? user_config_yml
       config.user_config = YAML.load(File.open(user_config_yml))
     end
+
+    # for use resque. default is Async.
+    if Rails.env == "production" or Rails.env == "development"
+      config.active_job.queue_adapter = :resque
+      config.active_job.queue_name_prefix = "development" # share common queue between development and production
+    elsif Rails.env == "test"
+      config.active_job.queue_adapter = :async
+    end
   end
 end
 

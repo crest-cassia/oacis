@@ -8,6 +8,7 @@ class JobSubmitter
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
       begin
         num = host.max_num_jobs - host.submitted_runs.count - host.submitted_analyses.count
+        logger.debug "checking jobs going to be submitted to #{host.name}."
         prev_num = num
         Run::PRIORITY_ORDER.keys.sort.each do |priority|
           break if $term_received
@@ -17,6 +18,8 @@ class JobSubmitter
             logger.info("submitting analyses to #{host.name}: #{analyses.map do |r| r.id.to_s end.inspect}")
             num -= analyses.length  # [warning] analyses.length ignore 'limit', so 'num' can be negative.
             submit(analyses, host, logger)
+          else
+            logger.debug("no submittable analyses of priority #{priority} found for #{host.name}")
           end
 
           break if $term_received
@@ -26,6 +29,8 @@ class JobSubmitter
             logger.info("submitting runs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
             num -= runs.length  # [warning] runs.length ignore 'limit', so 'num' can be negative.
             submit(runs, host, logger)
+          else
+            logger.debug("no submittable runs of priority #{priority} found for #{host.name}")
           end
         end
         if num == prev_num
@@ -47,6 +52,7 @@ class JobSubmitter
       submittables.each do |job|
         break if $term_received
         begin
+          logger.debug("submitting #{job.id} to #{host.name}")
           bm = Benchmark.measure {
             handler.submit_remote_job(job)
           }
@@ -62,8 +68,9 @@ class JobSubmitter
   def self.destroy_jobs_to_be_destroyed(logger)
     Run.where(status: :created, to_be_destroyed: true).each do |run|
       if run.destroyable?
-        logger.info "Destroying Run #{run.id}"
+        logger.debug "Deleting Run #{run.id}"
         run.destroy
+        logger.info "Deleted Run #{run.id}"
       else
         logger.warn("should not happen: #{job.class}:#{job.id} is not destroyable")
         run.set_lower_submittable_to_be_destroyed
@@ -71,10 +78,11 @@ class JobSubmitter
     end
     Analysis.where(status: :created, to_be_destroyed: true).each do |anl|
       if anl.destroyable?
-        logger.info "Destroying Analysis #{anl.id}"
+        logger.debug "Deleting Analysis #{anl.id}"
         anl.destroy
+        logger.info "Deleted Analysis #{anl.id}"
       else
-        logger.info "Analysis #{anl.id} is not destroyable yet"
+        logger.debug "Analysis #{anl.id} is not destroyable yet"
       end
     end
   end
