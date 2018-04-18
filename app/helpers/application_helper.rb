@@ -128,15 +128,21 @@ module ApplicationHelper
       content_tag(:label, "#{text}", class: "col-md-2 control-label")
     end
   end
-  def query_badge(queries)
+  def query_badge(queries, deletable)
     return "Not filtering." if queries.blank?
     query_tag = ""
-    queries.each do |q|
-       if q == '...'
-         query_tag << '<span class="badge badge-pill badge-info margin-half-em">' + q + '</i></span>'
-       else
-         query_tag << '<span class="badge badge-pill badge-info margin-half-em">' + q + '<i class="fa fa-times add-margin-left"></i></span>'
-       end
+    if deletable
+      queries.each do |q|
+         if q == '...'
+           query_tag << '<span class="badge badge-pill badge-info margin-half-em">' + q + '</i></span>'
+         else
+           query_tag << '<span class="badge badge-pill badge-info margin-half-em">' + q + '<i class="fa fa-times add-margin-left"></i></span>'
+         end
+      end
+    else
+      queries.each do |q|
+        query_tag << '<span class="badge badge-pill badge-info margin-half-em-top-bottom">' + q + '</i></span>'
+      end
     end
     query_tag
   end

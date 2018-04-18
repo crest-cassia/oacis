@@ -276,13 +276,13 @@ function add_new_filter() {
   }
 }
 
-function parameter_load_filter_set_ok_click() {
-  const oSelected = $('input[name="filter_set_rb[]"]:checked');
+function parameter_load_filter_set_ok_click(select) {
+  const oSelected = $('#'+select);
   if (oSelected == null) {
     return;
   }
   isLoaded = true;
-  const filter_set_id = oSelected.val();
+  const filter_set_id = oSelected.attr('filter_set_id');
   const filter_set_name = oSelected.attr('filter_set_name');
   const simulator_id = oSelected.attr('simulator_id');
   $("#filter_set_name_p").text(filter_set_name);

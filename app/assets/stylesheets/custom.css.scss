@@ -12,6 +12,9 @@
     margin: 0 0 18px 0;
   }
 }
+.ul-style-none {
+  list-style: none;
+}
 .field_with_errors {
   @extend .control-group !optional;
   @extend .error !optional;
@@ -75,6 +78,9 @@ i.padding-left-half-em {
 .margin-half-em {
   margin-left: 0.2em;
   margin-right: 0.2em;
+}
+.margin-half-em-top-bottom {
+  margin: 0.2em;
 }
 .add-margin-top {
   margin-top: 8px;
@@ -230,4 +236,11 @@ div.auto_reload_setting * {
 .badge-light {
     color: #222;
     background-color: #eee;
+}
+.load-fs-margin-delete {
+  margin:0px; 
+  padding:0px;
+}
+.load-fs-left {
+  float: left;
 }
