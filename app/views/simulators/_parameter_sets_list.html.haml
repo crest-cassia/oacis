@@ -3,7 +3,7 @@
 .filter_set_area.paramset_title_area_item
   %i#parameter_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name, isLoaded: @isLoaded, data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
   %span#parameter_filter_selected.add_padding.add_margin_bottom
-    = raw(query_badge(@filter_set_query_array))
+    = raw(query_badge(@filter_set_query_array, true))
   -unless @filter_set_query_array.blank?
     %a#parameter_save_filter_btn{href: "#", onclick: "return show_filter_set_name_dlg();return false;"}
       Save
@@ -86,11 +86,6 @@
         %h4 Load Filter Set
       .modal-body.large#parameter_new_filter_create_body
         = render "filter_sets", simulator: @simulator
-      .modal-footer
-        %button#parameter_load_filter_set_ok.btn.btn-primary{type: "button", "data-dismiss" => "modal", onclick: "parameter_load_filter_set_ok_click()"}
-          OK 
-        %button#parameter_load_filter_set_cancel.btn.btn-primary{type: "button", "data-dismiss" => "modal"}
-          Close
 
 %table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", filter_hash: @filter_hash)}"}
   %thead
