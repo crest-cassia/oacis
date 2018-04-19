@@ -266,25 +266,25 @@ class SimulatorsController < ApplicationController
         unless FilterSet.supported_matcher_str(pd.type).include?(a[1])
           rise "undefined matcher #{matcher} for #{type}"
         end
-        matcher = ParametersUtil.get_operator(a[0], a[1], pd)
-        if pd.type == "String"
-          h["v.#{a[0]}"] = FilterSet.string_matcher_to_regexp(matcher, a[2])
-        else
-          val = 0
-
-          if pd.type == "Integer" then
-            val = a[2].to_i
-          elsif pd.type == "Float" then
-            val = a[2].to_f
-          else
-            val = false
-            if a[2] == "true"
-              val = true
-            end
-          end
-          h["v.#{a[0]}"] = (matcher == "eq" ? val : {"$#{matcher}" => val} )
-        end
         begin
+          matcher = ParametersUtil.get_operator(a[0], a[1], pd)
+          if pd.type == "String"
+            h["v.#{a[0]}"] = FilterSet.string_matcher_to_regexp(matcher, a[2])
+          else
+            val = 0
+
+            if pd.type == "Integer" then
+              val = Integer(a[2])
+            elsif pd.type == "Float" then
+              val = Float(a[2])
+            else
+              val = false
+              if a[2] == "true"
+                val = true
+              end
+            end
+            h["v.#{a[0]}"] = (matcher == "eq" ? val : {"$#{matcher}" => val} )
+          end
           parameter_sets = parameter_sets.where(h)
           cnt = parameter_sets.count
         rescue => e
