@@ -25,10 +25,8 @@ class SimulatorsController < ApplicationController
       @filter_set_name = params[:filter_set_name]
     end
 
-    @filter_json = ""
     @filter_hash = {}
     if params[:filter_json].present?
-      @filter_json = params[:filter_json]
       @filter_hash = JSON.parse(params[:filter_json].to_s)
     end
 
@@ -209,7 +207,7 @@ class SimulatorsController < ApplicationController
     else
       flash[:notice] = "Failed to create a filter set."
     end
-    redirect_to  :action => "show", :filter_json => @filter_json, :filter_set_name => params[:name], :isLoaded => @isLoaded
+    redirect_to  :action => "show", :filter_json => params[:filter_query_array], :filter_set_name => params[:name], :isLoaded => @isLoaded
   end
 
   def _delete_filter_set
@@ -338,10 +336,9 @@ class SimulatorsController < ApplicationController
   end
 
   def _cancel_create_ps
-    save_tasks =  SaveTask.where({cancel_flag: false})
-    save_tasks.each do |t|
-      t.cancel_flag = true
-      t.save
+    sim = Simulator.find(params[:id])
+    sim.save_tasks.where(cancel_flag: false).each do |t|
+      t.update_attribute(:cancel_flag, true)
     end
     redirect_to :action => "show"
   end

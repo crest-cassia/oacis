@@ -31,8 +31,8 @@ function create_parameter_sets_list(selector, default_length) {
       },
       "drawCallback": function(settings) {
         const mess = settings["json"]["message"];
-        if (mess.length > 1) {
-          $('#datatable_messages').append('<span class="text-danger">'+mess+'</span>');
+        if (mess.length > 1 && $(selector+'_messages') != null) {
+          $(selector+'_messages').append('<span class="text-danger">'+mess+'</span>');
         }
       }
   });

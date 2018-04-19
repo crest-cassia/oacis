@@ -1,5 +1,5 @@
 %h3 List of Parameter Sets
-#datatable_messages
+#params_list_messages
 
 .filter_set_area.paramset_title_area_item
   %i#parameter_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, filter_json: @filter_hash.to_json, filter_set_name: @filter_set_name, isLoaded: @isLoaded, data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
@@ -94,11 +94,8 @@
           Close
 
 .clear-element
-.create_ps_area
-  - if @ps_creation_size > 0
-    = "Creating #{@ps_creation_size} Parameter Sets"
-    %a{"data-toggle" => "tooltip", "data-original-title" => "cancel creation", href: "#{_cancel_create_ps_simulator_path(@simulator)}"}
-      %i.fa.fa-times
+.create_ps_area{id: "ps_being_created_#{@simulator.id}"}
+  = render partial: 'save_ps_task_status', locals: {simulator: @simulator, offset_num_ps: 0, offset_num_runs: 0}
 .clear-element
 %table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", filter_hash: @filter_hash)}"}
   %thead
@@ -157,7 +154,9 @@
     parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
     parameter_form_selector.trigger("change");
   });
-
-  $(function() {
+  $(function () {
     $('[data-toggle="tooltip"]').tooltip();
+  });
+  $(function () {
+    $('#ps_check_all').prop('checked', false);
   });

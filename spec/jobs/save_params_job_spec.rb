@@ -1,5 +1,6 @@
 require 'spec_helper'
 
-RSpec.describe SaveParamsJob, type: :job do
+RSpec.describe SaveParameterSetsJob, type: :job do
+
   pending "add some examples to (or delete) #{__FILE__}"
 end
