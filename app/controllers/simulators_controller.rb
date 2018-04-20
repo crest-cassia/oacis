@@ -112,24 +112,24 @@ class SimulatorsController < ApplicationController
 
   # POST /simulators/:_id/_make_query redirect_to simulators#show
   def _make_query
-    @query_id = params[:query_id]
-
+    @simulator = Simulator.find(params[:id])
     if params[:delete_query]
-      @q = ParameterSetQuery.find(@query_id)
-      @q.destroy
-      @query_id = nil
+      query_id = params[:query_id]
+      q = ParameterSetQuery.find(query_id)
+      q.destroy
+      flash[:notice] = "A query #{query_id} is deleted"
+      redirect_to  action: "show"
     else
-      @simulator = Simulator.find(params[:id])
-      @new_query = @simulator.parameter_set_queries.build
+      @new_query = @simulator.parameter_set_queries.build(name: params[:name])
       if @new_query.set_query(params["query"]) and @new_query.save
-        @query_id = @new_query.id.to_s
         flash[:notice] = "A new query is created"
+        redirect_to simulator_path(@simulator, query_id: @new_query.id.to_s)
       else
         flash[:alert] = "Failed to create a query"
+        redirect_to  action: "show"
       end
     end
 
-    redirect_to  :action => "show", :query_id => @query_id
   end
 
   def _parameters_list

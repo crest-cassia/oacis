@@ -411,7 +411,7 @@ describe SimulatorsController do
         params = [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
                   {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}
                  ]
-        @valid_post_parameter = {:id => @simulator.to_param, "query" => params, query_id: @simulator.parameter_set_queries.first.id.to_s}
+        @valid_post_parameter = {id: @simulator.to_param, query: params, name: 'new_filter'}
       end
 
       it "creates a new ParameterSetQuery" do
@@ -420,17 +420,9 @@ describe SimulatorsController do
         }.to change(ParameterSetQuery, :count).by(1)
       end
 
-      it "assigns a newly created parameter_set_query of @simulator" do
-        post :_make_query, params: @valid_post_parameter
-        expect(assigns(:new_query)).to be_a(ParameterSetQuery)
-        expect(assigns(:new_query).query).to eq({"T" =>{"gte"=>4.0}, "L" =>{"eq"=>2}})
-        expect(assigns(:new_query)).to be_persisted
-      end
-
       it "redirects to show with the created parameter_set_query" do
         post :_make_query, params: @valid_post_parameter
         expect(response).to redirect_to( simulator_path(@simulator, query_id: ParameterSetQuery.order_by(id: :asc).last.to_param) )
-        expect(assigns(:query_id)).to eq(ParameterSetQuery.order_by(id: :asc).last.id.to_s)
       end
 
       context "and with delete option" do
@@ -453,7 +445,7 @@ describe SimulatorsController do
 
       it "redirect to show with nonmodified query_id" do
         post :_make_query, params: {:id => @simulator.to_param, params: {}, query_id: ""}
-        expect(response).to redirect_to( simulator_path(@simulator, query_id: "") )
+        expect(response).to redirect_to( simulator_path(@simulator) )
       end
     end
   end
