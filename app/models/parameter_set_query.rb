@@ -1,9 +1,12 @@
 class ParameterSetQuery
   include Mongoid::Document
+  field :name, type: String
   field :query, type: Hash
   belongs_to :simulator
   validates :simulator, presence: true
   validates :query, presence: true
+  validates :name, presence: true
+  validates :name, uniqueness: { scope: [:simulator_id] }
   validate :validate_uniqueness_of_query
   validate :validate_format_of_query
 
@@ -77,7 +80,7 @@ class ParameterSetQuery
         q = q.where(h)
       end
     end
-    return q
+    q
   end
 
   def selector
@@ -86,16 +89,14 @@ class ParameterSetQuery
 
   private
   def supported_matchers(type)
-    supported_matchers = []
     case type
     when "Integer", "Float"
-      supported_matchers = NumTypeMatchers
+      NumTypeMatchers
     when "String"
-      supported_matchers = StringTypeMatchers
+      StringTypeMatchers
     else
       raise "not supported type"
     end
-    return supported_matchers
   end
 
   def string_matcher_to_regexp(matcher, value)
@@ -114,7 +115,7 @@ class ParameterSetQuery
   end
 
   public
-  #ser a query which is a hash expressed with string in key and val
+  #set a query which is a hash expressed with string in key and val
   def set_query(settings)
     return false if settings.blank?
 

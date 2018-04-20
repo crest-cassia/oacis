@@ -14,7 +14,8 @@ describe ParameterSetQuery do
 
     subject {
       ParameterSetQuery.new(simulator: @sim,
-                            query: {"T" => {"gte" => 4.0}}
+                            query: {"T" => {"gte" => 4.0}},
+                            name: "filter1"
                             )
     }
 
@@ -25,7 +26,8 @@ describe ParameterSetQuery do
 
     subject {
       ParameterSetQuery.new(simulator: @sim,
-                            query: {"T" => {"gte" => "4.0"}}
+                            query: {"T" => {"gte" => "4.0"}},
+                            name: "filter1"
                             )
     }
 
@@ -36,23 +38,24 @@ describe ParameterSetQuery do
 
     subject {
       ParameterSetQuery.new(simulator: @sim,
-                            query: {"T" => {"match" => "4.0"}}
+                            query: {"T" => {"match" => "4.0"}},
+                            name: "filter1"
                             )
     }
 
     it {is_expected.not_to be_valid}
   end
 
-  describe "validation for presence" do
+  describe "validation for presence of query" do
 
     subject {
-      ParameterSetQuery.new(simulator: @sim, query: {})
+      ParameterSetQuery.new(simulator: @sim, query: {}, name: "filter1")
     }
 
     it {is_expected.not_to be_valid}
   end
 
-  describe "validation for uniqueness" do
+  describe "validation for uniqueness of query" do
 
     context "with same simulator and query" do
       before(:each) do
@@ -69,12 +72,19 @@ describe ParameterSetQuery do
     end
   end
 
+  it "validate uniqueness of name" do
+    psq1 = @sim.parameter_set_queries.create(query: {"T" => {"gte" => 4.0}}, name: "filter1")
+    psq2 = @sim.parameter_set_queries.build(query: {"T" => {"gte" => 5.0}}, name: "filter1")
+    expect(psq2).to_not be_valid
+  end
+
   describe "#selector" do
 
     before(:each) do
       @query = FactoryBot.create(:parameter_set_query,
                                   simulator: @sim,
-                                  query: {"L" => {"lte" => 123}, "T" => {"gte" => 456.0}}
+                                  query: {"L" => {"lte" => 123}, "T" => {"gte" => 456.0}},
+                                  name: "filter1"
                                   )
     end
 
@@ -96,7 +106,7 @@ describe ParameterSetQuery do
       expect(@psq.query).to eq({"T" => {"gte" => 4.0}, "L" => {"eq" => 2}})
     end
 
-    it "returns a Hash when it successfuly updates query field" do
+    it "returns a Hash when it successfully updates query field" do
       expect(@psq.set_query(@arg)).to be_a(Hash)
     end
 
