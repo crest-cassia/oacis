@@ -172,9 +172,9 @@ FactoryBot.define do
   end
 
   factory :parameter_set_query do
-    sequence(:name) {|n| "filter#{n}" }
+    sequence(:name) {|n| "f_#{n}" }
     sequence(:query) do |n|
-      {"T" => {"gte" => n*2.0}, "L"=> {"lte" => n}}
+      [["T","gte",n*2.0], ["L","lte",n]]
     end
   end
 

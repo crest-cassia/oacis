@@ -12,116 +12,77 @@ describe ParameterSetQuery do
   
   describe "validation for a Float format" do
 
-    subject {
-      ParameterSetQuery.new(simulator: @sim,
-                            query: {"T" => {"gte" => 4.0}},
-                            name: "filter1"
-                            )
-    }
-
-    it {is_expected.to be_valid}
+    it "should be valid" do
+      q = @sim.parameter_set_queries.build(query: [["T","gte",4.0]], name: "filter1")
+      expect(q).to be_valid
+    end
   end
 
   describe "validation for a invalid type" do
 
-    subject {
-      ParameterSetQuery.new(simulator: @sim,
-                            query: {"T" => {"gte" => "4.0"}},
-                            name: "filter1"
-                            )
-    }
-
-    it {is_expected.not_to be_valid}
+    it "should not be valid" do
+      q = @sim.parameter_set_queries.build(query: [["T","match","foobar"]], name: "filter1")
+      expect(q).to_not be_valid
+    end
   end
 
   describe "validation for a invalid matcher" do
 
-    subject {
-      ParameterSetQuery.new(simulator: @sim,
-                            query: {"T" => {"match" => "4.0"}},
-                            name: "filter1"
-                            )
-    }
-
-    it {is_expected.not_to be_valid}
+    it "should not be valid" do
+      q = @sim.parameter_set_queries.build(query: [["T","match",3.2]], name: "filter1")
+      expect(q).to_not be_valid
+    end
   end
 
   describe "validation for presence of query" do
 
-    subject {
-      ParameterSetQuery.new(simulator: @sim, query: {}, name: "filter1")
-    }
-
-    it {is_expected.not_to be_valid}
+    it "should not be valid" do
+      q = @sim.parameter_set_queries.build(query: [], name: "filter1")
+      expect(q).to_not be_valid
+    end
   end
 
   describe "validation for uniqueness of query" do
 
-    context "with same simulator and query" do
-      before(:each) do
-        psq = @sim.parameter_set_queries.first
-        @test_query = @sim.parameter_set_queries.build
-        @test_query.query = psq.query
-      end
-
-      subject {
-        @test_query
-      }
-
-      it {is_expected.not_to be_valid}
+    it "must be invalid when identical query already exists" do
+      psq = @sim.parameter_set_queries.first
+      test_query = @sim.parameter_set_queries.build(name: 'new_filter', query: psq.query)
+      expect(test_query).to be_invalid
     end
   end
 
   it "validate uniqueness of name" do
-    psq1 = @sim.parameter_set_queries.create(query: {"T" => {"gte" => 4.0}}, name: "filter1")
-    psq2 = @sim.parameter_set_queries.build(query: {"T" => {"gte" => 5.0}}, name: "filter1")
+    psq1 = @sim.parameter_set_queries.create(query: [["T","gte",4.0]], name: "filter1")
+    psq2 = @sim.parameter_set_queries.build(query: [["T","gte",5.0]], name: "filter1")
     expect(psq2).to_not be_valid
   end
 
   describe "#selector" do
 
-    before(:each) do
-      @query = FactoryBot.create(:parameter_set_query,
-                                  simulator: @sim,
-                                  query: {"L" => {"lte" => 123}, "T" => {"gte" => 456.0}},
-                                  name: "filter1"
-                                  )
+    it "has valid selector" do
+      query = @sim.parameter_set_queries.build(name: 'filter1', query: [["L","lte",123],["T","gte",456.0]])
+      expect(query.selector).to eq @sim.parameter_sets.where("v.L" => {"$lte" => 123}, "v.T" => {"$gte" => 456.0}).selector
     end
 
     it "has valid selector" do
-      expect(@query.selector).to eq @sim.parameter_sets.where("v.L" => {"$lte" => 123}, "v.T" => {"$gte" => 456.0}).selector
+      query = @sim.parameter_set_queries.build(name: 'filter2', query: [["L","lte",123],["L","gte",10],["T","lt",2.8]])
+      expect(query.selector).to eq @sim.parameter_sets.where("v.L" => {"$lte" => 123, "$gte" => 10}, "v.T" => {'$lt'=> 2.8}).selector
     end
   end
 
-  describe "#from_hash" do
+  describe "when values are given by string" do
 
-    before(:each) do
-      @psq = @sim.parameter_set_queries.build
-      @arg = [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
-              {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}]
-    end
-
-    it "updates 'query' field" do
-      @psq.from_hash(@arg)
-      expect(@psq.query).to eq({"T" => {"gte" => 4.0}, "L" => {"eq" => 2}})
-    end
-
-    it "returns a Hash when it successfully updates query field" do
-      expect(@psq.from_hash(@arg)).to be_a(Hash)
+    it "values are casted according to its types before validation" do
+      q = [["T","gte","3.5"],["L","eq","2"]]
+      psq = @sim.parameter_set_queries.build(name: 'f', query: q)
+      expect(psq).to be_valid
+      expect(psq.query).to eq([["T","gte",3.5],["L","eq",2]])
     end
 
     it "returns false when argument is invalid" do
-      expect(@psq.from_hash(nil)).to be_falsey
-    end
-  end
-
-  describe "#serialize" do
-
-    it "serialize query into JSON" do
-      q = @sim.parameter_set_queries.build(name: "filter", query: {'T'=> {'gte'=>4.0},'L'=>{'lt'=>0}})
-      j = q.serialize
-      parsed = JSON.load(j)
-      expect(parsed).to eq [['T','gte',4.0],['L','lt',0]]
+      q = [["T","gte","foo"],["L","eq","2"]]
+      psq = @sim.parameter_set_queries.build(name: 'f', query: q)
+      expect(psq).to_not be_valid
     end
   end
 end

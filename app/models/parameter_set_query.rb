@@ -1,7 +1,7 @@
 class ParameterSetQuery
   include Mongoid::Document
   field :name, type: String
-  field :query, type: Hash
+  field :query, type: Array
   belongs_to :simulator
   validates :simulator, presence: true
   validates :query, presence: true
@@ -9,6 +9,7 @@ class ParameterSetQuery
   validates :name, uniqueness: { scope: [:simulator_id] }
   validate :validate_uniqueness_of_query
   validate :validate_format_of_query
+  before_validation :cast_values
 
   NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
   NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]
@@ -26,59 +27,43 @@ class ParameterSetQuery
   end
 
   def validate_format_of_query
-    unless !self.query.blank? && self.query.is_a?(Hash)
-      self.errors.add(:query, "must be a Hash")
-      return
+    unless !self.query.blank? && self.query.is_a?(Array)
+      self.errors.add(:query, "must be a Array")
+      return false
     end
 
-    self.query.each do |key,criteria|
+    self.query.each do |key,matcher,val|
       pd = simulator.parameter_definition_for(key)
       unless pd
-        self.errors.add(:query, "does not have keys defined in parametr_set_definitions")
-        return
+        self.errors.add(:query, "#{key} is not a parameter")
+        return false
       end
-
-      unless criteria.is_a?(Hash)
-        self.errors.add(:query, "criteria must be a Hash")
-        return
+      type = pd.type
+      unless supported_matchers(type).include?(matcher)
+        self.errors.add(:query, "has unknown matcher : #{matcher}")
+        return false
       end
-
-      # validate format of a matcher
-      criteria.each do |matcher, value|
-        type = pd.type
-        unless supported_matchers(type).include?(matcher)
-          self.errors.add(:query, "has unknown matcher : #{matcher}")
-          return false
-        end
-
-        # validate type of a value
-        klass = Kernel.const_get(type)
-        unless value.is_a?(klass)
-          self.errors.add(:query, "#{value.inspect} must be a #{type}")
-          return false
-        end
+      # validate type of a val
+      if type == 'String'
+        self.errors.add(:query, "#{key}: #{val.inspect} must be a #{type}") unless val.is_a?(String)
+      elsif type == 'Integer' or type == 'Float'
+        self.errors.add(:query, "#{key}: #{val.inspect} must be a #{type}") unless val.is_a?(Numeric)
       end
     end
-
   end
 
   #convert format from string to selector
   def parameter_sets
     q = ParameterSet.where(simulator: simulator)
-    self.query.each do |key,criteria|
+    self.query.each do |key,matcher,val|
       h = {}
       type = self.simulator.parameter_definition_for(key).type
-      criteria.each do |matcher,value|
-        unless supported_matchers(type).include?(matcher)
-          raise "undefined matcher #{matcher} for #{type}"
-        end
-        if type == "String"
-          h["v.#{key}"] = string_matcher_to_regexp(matcher, value)
-        else
-          h["v.#{key}"] = (matcher == "eq" ? value : {"$#{matcher}" => value} )
-        end
-        q = q.where(h)
+      if type == "String"
+        h["v.#{key}"] = string_matcher_to_regexp(matcher, val)
+      else
+        h["v.#{key}"] = (matcher == "eq" ? val : {"$#{matcher}" => val} )
       end
+      q = q.where(h)
     end
     q
   end
@@ -114,39 +99,15 @@ class ParameterSetQuery
     end
   end
 
-  public
-  # build from a hash like the following
-  # {p1: {value: 1, matcher: 'gt'},
-  #  p2: {value: 5, matcher: 'leq'}
-  # }
-  # values are casted according to its type
-  def from_hash(settings)
-    return false if settings.blank?
-
-    h = {}
-    settings.each do |para|
-      parameter = para['param']
-      defn = simulator.parameter_definition_for(parameter)
+  def cast_values
+    self.query.each do |a|
+      key,matcher,val = a
+      defn = simulator.parameter_definition_for(key)
       type = defn.type
-      value = para['value']
-      matcher = para['matcher']
-
       # cast value to the specified type
-      casted_value = ParametersUtil.cast_value(value, type)
-      if casted_value.nil?
-        self.errors.add(parameter, "'#{value}' is not valid as a #{type}")
-        return false
-      end
-
-      h[parameter] = { matcher => casted_value }
+      casted_val = ParametersUtil.cast_value(val, type)
+      self.errors.add(key, "'#{val}' is not valid as a #{type}") if casted_val.nil?
+      a[2] = casted_val
     end
-
-    #h includes one or more hash(s) that can be converted to selector(s)
-    self.query = h
-  end
-
-  # format query to JSON
-  def serialize
-    self.query.map {|key, c| [key,c.keys.first,c.values.first] }.to_json
   end
 end
