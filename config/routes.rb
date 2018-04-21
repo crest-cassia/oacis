@@ -32,7 +32,7 @@ Rails.application.routes.draw do
     member do
       get 'duplicate' unless OACIS_READ_ONLY
       post "_make_query" # for ajax
-      get "_parameters_list" # for ajax, datatables
+      get "_parameter_sets_list" # for ajax, datatables
       get "_analyzer_list" # for ajax, datatables
       get "_progress" # for progress table
       get "_host_parameters_field" # for ajax, get the fields for host_parameters

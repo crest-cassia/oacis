@@ -132,7 +132,7 @@ class SimulatorsController < ApplicationController
 
   end
 
-  def _parameters_list
+  def _parameter_sets_list
     simulator = Simulator.find(params[:id])
     parameter_sets = simulator.parameter_sets
     if params[:query_id].present?

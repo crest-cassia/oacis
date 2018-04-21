@@ -450,14 +450,14 @@ describe SimulatorsController do
     end
   end
 
-  describe "GET _parameters_list" do
+  describe "GET _parameter_sets_list" do
     before(:each) do
       @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 30, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
                                       parameter_set_queries_count: 5
                                       )
-      get :_parameters_list, params: {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
+      get :_parameter_sets_list, params: {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
 
@@ -487,7 +487,7 @@ describe SimulatorsController do
                                     query: {"L" => {"gte" => 5}})
 
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
-        get :_parameters_list, params: {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "4", "dir" => "desc"}}, query_id: @query.id.to_s}, :format => :json
+        get :_parameter_sets_list, params: {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "4", "dir" => "desc"}}, query_id: @query.id.to_s}, :format => :json
         @parsed_body = JSON.parse(response.body)
       end
 
