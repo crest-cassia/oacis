@@ -114,4 +114,14 @@ describe ParameterSetQuery do
       expect(@psq.from_hash(nil)).to be_falsey
     end
   end
+
+  describe "#serialize" do
+
+    it "serialize query into JSON" do
+      q = @sim.parameter_set_queries.build(name: "filter", query: {'T'=> {'gte'=>4.0},'L'=>{'lt'=>0}})
+      j = q.serialize
+      parsed = JSON.load(j)
+      expect(parsed).to eq [['T','gte',4.0],['L','lt',0]]
+    end
+  end
 end

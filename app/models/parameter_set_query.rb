@@ -144,4 +144,9 @@ class ParameterSetQuery
     #h includes one or more hash(s) that can be converted to selector(s)
     self.query = h
   end
+
+  # format query to JSON
+  def serialize
+    self.query.map {|key, c| [key,c.keys.first,c.values.first] }.to_json
+  end
 end
