@@ -125,7 +125,7 @@ class SimulatorsController < ApplicationController
         flash[:notice] = "A new query is created"
         redirect_to simulator_path(@simulator, query_id: @new_query.id.to_s)
       else
-        flash[:alert] = "Failed to create a query"
+        flash[:alert] = "Failed to create a query: #{@new_query.errors.messages}"
         redirect_to  action: "show"
       end
     end

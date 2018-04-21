@@ -130,7 +130,7 @@ class ParameterSetQuery
       # cast value to the specified type
       casted_value = ParametersUtil.cast_value(value, type)
       if casted_value.nil?
-        self.errors.add(:set_query, "value (#{value}) is not valid as a #{type}")
+        self.errors.add(parameter, "'#{value}' is not valid as a #{type}")
         return false
       end
 
