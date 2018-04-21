@@ -93,7 +93,7 @@ describe ParameterSetQuery do
     end
   end
 
-  describe "#set_query" do
+  describe "#from_hash" do
 
     before(:each) do
       @psq = @sim.parameter_set_queries.build
@@ -102,16 +102,16 @@ describe ParameterSetQuery do
     end
 
     it "updates 'query' field" do
-      @psq.set_query(@arg)
+      @psq.from_hash(@arg)
       expect(@psq.query).to eq({"T" => {"gte" => 4.0}, "L" => {"eq" => 2}})
     end
 
     it "returns a Hash when it successfully updates query field" do
-      expect(@psq.set_query(@arg)).to be_a(Hash)
+      expect(@psq.from_hash(@arg)).to be_a(Hash)
     end
 
     it "returns false when argument is invalid" do
-      expect(@psq.set_query(nil)).to be_falsey
+      expect(@psq.from_hash(nil)).to be_falsey
     end
   end
 end

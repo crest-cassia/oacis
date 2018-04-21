@@ -121,7 +121,7 @@ class SimulatorsController < ApplicationController
       redirect_to  action: "show"
     else
       @new_query = @simulator.parameter_set_queries.build(name: params[:name])
-      if @new_query.set_query(params["query"]) and @new_query.save
+      if @new_query.from_hash(params["query"]) and @new_query.save
         flash[:notice] = "A new query is created"
         redirect_to simulator_path(@simulator, query_id: @new_query.id.to_s)
       else

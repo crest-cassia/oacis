@@ -115,8 +115,12 @@ class ParameterSetQuery
   end
 
   public
-  #set a query which is a hash expressed with string in key and val
-  def set_query(settings)
+  # build from a hash like the following
+  # {p1: {value: 1, matcher: 'gt'},
+  #  p2: {value: 5, matcher: 'leq'}
+  # }
+  # values are casted according to its type
+  def from_hash(settings)
     return false if settings.blank?
 
     h = {}
