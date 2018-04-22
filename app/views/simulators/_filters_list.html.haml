@@ -1,0 +1,6 @@
+%table.table.table-condensed.table-striped#parameter_set_filters_list{:'data-source' => "#{_parameter_set_filters_list_simulator_path(simulator: simulator.to_param, format: "json")}", style: "font-size: smaller;"}
+  %thead
+    %tr
+      - ParameterSetFiltersListDatatable::HEADER.each do |header|
+        = raw(header)
+  %tbody#parameter_set_filters_table_body

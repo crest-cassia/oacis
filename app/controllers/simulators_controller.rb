@@ -149,10 +149,10 @@ class SimulatorsController < ApplicationController
     render json: AnalyzersListDatatable.new(view_context)
   end
 
-  def _filter_set_list
+  def _parameter_set_filters_list
     simulator = Simulator.find(params[:id])
     filters = simulator.parameter_set_filters
-    render json: FilterSetListDatatable.new(filters, simulator, view_context, filters.count)
+    render json: ParameterSetFiltersListDatatable.new(filters, simulator, view_context, filters.count)
   end
 
   def _progress

@@ -1,7 +1,7 @@
 %h3 List of Parameter Sets
 
 .filter_set_area.paramset_title_area_item
-  %i#parameter_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, q: @q&.conditions.to_json, data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
+  %i#parameter_set_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{onclick: "$('#parameter_set_filter_modal').modal('show');", data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
   %span#parameter_filter_selected.add_padding.add_margin_bottom
     = @q ? raw(query_badge(@q)) : "Not filtering"
   -if @q
@@ -25,6 +25,33 @@
 - unless OACIS_READ_ONLY
   = render partial: 'create_runs_on_selected_modal', locals: {simulator: @simulator}
 
+#parameter_set_filter_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss": "modal"}
+          &times;
+        %h4 Filter
+      .modal-body.large#parameter_filter_setting_body
+        %button#parameter_new_filter_btn.paramset_title_area_item.btn.btn-primary
+          New Filter
+          / [TODO] form for making a filter
+        %button#parameter_set_filters_list_btn.btn.btn-primary.add-margin-top{onclick: "$('#parameter_set_filters_list_modal').modal('show');"}
+          Load Filter
+      .modal-footer
+        %button#parameter_filter_ok.btn.btn-primary
+          OK
+          / [TODO] implement me
+
+#parameter_set_filters_list_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss" => "modal"}
+          &times;
+        %h4 Filters
+      .modal-body.large#parameter_new_filter_create_body
+        = render "filters_list", simulator: @simulator
 
 :javascript
   $(function() {
@@ -64,7 +91,6 @@
       var value_form_selector = $("#select_value_form",$(this).parent().parent())
     });
   });
-
   $(function() {
     var parameter_form_selector = $("#select_param_form select")
     parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
@@ -75,5 +101,9 @@
   });
   $(function () {
     $('#ps_check_all').prop('checked', false);
+  });
+  $("#parameter_set_filters_list_modal").on('show.bs.modal', function(event) {
+    const url = "#{_parameter_set_filters_list_simulator_path(@simulator)}";
+    oFilterSetTable = create_parameter_set_filters_list('#parameter_set_filters_list', url);
   });
 
