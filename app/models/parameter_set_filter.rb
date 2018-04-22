@@ -1,39 +1,39 @@
-class ParameterSetQuery
+class ParameterSetFilter
   include Mongoid::Document
   field :name, type: String
-  field :query, type: Array
+  field :conditions, type: Array
   belongs_to :simulator
   validates :simulator, presence: true
-  validates :query, presence: true
-  validate :validate_format_of_query
+  validates :conditions, presence: true
+  validate :validate_format_of_conditions
   before_validation :cast_values
 
   NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
   NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]
   StringTypeMatchers = ["start_with", "end_with", "include", "match"]
 
-  def validate_format_of_query
-    unless !self.query.blank? && self.query.is_a?(Array)
-      self.errors.add(:query, "must be a Array")
+  def validate_format_of_conditions
+    unless !self.conditions.blank? && self.conditions.is_a?(Array)
+      self.errors.add(:conditions, "must be a Array")
       return false
     end
 
-    self.query.each do |key,matcher,val|
+    self.conditions.each do |key,matcher,val|
       pd = simulator.parameter_definition_for(key)
       unless pd
-        self.errors.add(:query, "#{key} is not a parameter")
+        self.errors.add(:conditions, "#{key} is not a parameter")
         return false
       end
       type = pd.type
       unless supported_matchers(type).include?(matcher)
-        self.errors.add(:query, "has unknown matcher : #{matcher}")
+        self.errors.add(:conditions, "has unknown matcher : #{matcher}")
         return false
       end
       # validate type of a val
       if type == 'String'
-        self.errors.add(:query, "#{key}: #{val.inspect} must be a #{type}") unless val.is_a?(String)
+        self.errors.add(:conditions, "#{key}: #{val.inspect} must be a #{type}") unless val.is_a?(String)
       elsif type == 'Integer' or type == 'Float'
-        self.errors.add(:query, "#{key}: #{val.inspect} must be a #{type}") unless val.is_a?(Numeric)
+        self.errors.add(:conditions, "#{key}: #{val.inspect} must be a #{type}") unless val.is_a?(Numeric)
       end
     end
   end
@@ -41,7 +41,7 @@ class ParameterSetQuery
   #convert format from string to selector
   def parameter_sets
     q = ParameterSet.where(simulator: simulator)
-    self.query.each do |key,matcher,val|
+    self.conditions.each do |key,matcher,val|
       h = {}
       type = self.simulator.parameter_definition_for(key).type
       if type == "String"
@@ -86,7 +86,7 @@ class ParameterSetQuery
   end
 
   def cast_values
-    self.query.each do |a|
+    self.conditions.each do |a|
       key,matcher,val = a
       defn = simulator.parameter_definition_for(key)
       type = defn.type

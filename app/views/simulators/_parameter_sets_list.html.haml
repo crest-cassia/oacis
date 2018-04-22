@@ -42,11 +42,11 @@
       var matcher_val;
       var matcher_text;
       if($(":selected",this).attr('type') == "Integer" || $(":selected",this).attr('type') == "Float") {
-        matcher_val = #{raw ParameterSetQuery::NumTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
+        matcher_val = #{raw ParameterSetFilter::NumTypeMatchers.to_json};
+        matcher_text = #{raw ParameterSetFilter::NumTypeMatcherStrings.to_json};
       } else if($(":selected",this).attr('type') == "String") {
-        matcher_val = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
+        matcher_val = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
+        matcher_text = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
       }
 
       for(i in matcher_val){

@@ -59,7 +59,7 @@ describe SimulatorsController do
       @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 5, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
-                                      parameter_set_queries_count: 5
+                                      parameter_set_filters_count: 5
                                       )
     end
 
@@ -68,8 +68,6 @@ describe SimulatorsController do
       expect(response).to be_success
       expect(assigns(:simulator)).to eq(@simulator)
       expect(assigns(:analyzers)).to match_array(@simulator.analyzers)
-      expect(assigns(:query_id)).to be_nil
-      expect(assigns(:query_list).size).to eq 5
     end
 
     it "returns success for json format" do
@@ -401,7 +399,7 @@ describe SimulatorsController do
       @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 1, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
-                                      parameter_set_queries_count: 1
+                                      parameter_set_filters_count: 1
                                       )
     end
 
@@ -411,25 +409,25 @@ describe SimulatorsController do
         params = [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
                   {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}
                  ]
-        @valid_post_parameter = {id: @simulator.to_param, query: params, name: 'new_filter'}
+        @valid_post_parameter = {id: @simulator.to_param, conditions: params, name: 'new_filter'}
       end
 
       it "creates a new ParameterSetQuery" do
         expect {
           post :_make_query, params: @valid_post_parameter
-        }.to change(ParameterSetQuery, :count).by(1)
+        }.to change(ParameterSetFilter, :count).by(1)
       end
 
       it "redirects to show with the created parameter_set_query" do
         post :_make_query, params: @valid_post_parameter
-        expect(response).to redirect_to( simulator_path(@simulator, query_id: ParameterSetQuery.order_by(id: :asc).last.to_param) )
+        expect(response).to redirect_to( simulator_path(@simulator, query_id: ParameterSetFilter.order_by(id: :asc).last.to_param) )
       end
 
       context "and with delete option" do
         it "delete the last parameter_set_query of @simulator" do
           expect {
             post :_make_query, params: {:id => @simulator.to_param, delete_query: "xxx", query_id: @simulator.parameter_set_queries.first.id.to_s}
-          }.to change(ParameterSetQuery, :count).by(-1)
+          }.to change(ParameterSetFilter, :count).by(-1)
         end
       end
     end
@@ -439,8 +437,8 @@ describe SimulatorsController do
       it "assigns a newly created but unsaved paramater_set_query of @simulator" do
         expect {
           post :_make_query, params: {:id => @simulator.to_param, params: {}}
-          expect(assigns(:new_query)).to be_a_new(ParameterSetQuery)
-        }.to_not change(ParameterSetQuery, :count)
+          expect(assigns(:new_query)).to be_a_new(ParameterSetFilter)
+        }.to_not change(ParameterSetFilter, :count)
       end
 
       it "redirect to show with nonmodified query_id" do
@@ -455,7 +453,7 @@ describe SimulatorsController do
       @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 30, runs_count: 0,
                                       analyzers_count: 3, run_analysis: false,
-                                      parameter_set_queries_count: 5
+                                      parameter_set_filters_count: 5
                                       )
       get :_parameter_sets_list, params: {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "0", "dir" => "asc"}}}, :format => :json
       @parsed_body = JSON.parse(response.body)
@@ -471,7 +469,7 @@ describe SimulatorsController do
       expect(@parsed_body["data"].size).to eq 25
     end
 
-    context "when 'query_id' parameter is given" do
+    context "when 'q' parameter is given" do
 
       before(:each) do
         @simulator = FactoryBot.create(:simulator, parameter_sets_count: 0)
@@ -482,21 +480,18 @@ describe SimulatorsController do
                              v: {"L" => i, "T" => i*2.0}
                              )
         end
-        @query = FactoryBot.create(:parameter_set_query,
-                                    simulator: @simulator,
-                                    query: {"L" => {"gte" => 5}})
+        f = @simulator.parameter_set_filters.build(conditions: [["L","gte",5]])
 
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
-        get :_parameter_sets_list, params: {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "4", "dir" => "desc"}}, query_id: @query.id.to_s}, :format => :json
+        get :_parameter_sets_list, params: {id: @simulator.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "4", "dir" => "desc"}}, q: f.conditions.to_json}, :format => :json
         @parsed_body = JSON.parse(response.body)
       end
 
       it "show the list of filtered ParameterSets" do
         expect(@parsed_body["data"].size).to eq 5
         @parsed_body["data"].each do |ps|
-          expect(ps[4].to_i).to be >= 5 #ps[3].to_i is qeual to v.L(ps[img, id, id, updated_at, [keys]])
+          expect(ps[4].to_i).to be >= 5 #ps[4].to_i is qeual to v.L(ps[checkbox, progress, id, updated_at, [keys]])
         end
-        expect(@parsed_body["data"].first[4].to_i).to eq @query.parameter_sets.max("v.L")
       end
     end
   end

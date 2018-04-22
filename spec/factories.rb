@@ -25,7 +25,7 @@ FactoryBot.define do
       run_analysis true
       analyzers_on_parameter_set_count 0
       run_analysis_on_parameter_set true
-      parameter_set_queries_count 0
+      parameter_set_filters_count 0
       ssh_host false
     end
 
@@ -58,8 +58,8 @@ FactoryBot.define do
                               run_analysis: evaluator.run_analysis_on_parameter_set,
                               ssh_host: evaluator.ssh_host
                               )
-      FactoryBot.create_list(:parameter_set_query, evaluator.parameter_set_queries_count,
-                              simulator: simulator
+      FactoryBot.create_list(:parameter_set_filter, evaluator.parameter_set_filters_count,
+                             simulator: simulator
                               )
     end
   end
@@ -171,9 +171,9 @@ FactoryBot.define do
     end
   end
 
-  factory :parameter_set_query do
+  factory :parameter_set_filter do
     sequence(:name) {|n| "f_#{n}" }
-    sequence(:query) do |n|
+    sequence(:conditions) do |n|
       [["T","gte",n*2.0], ["L","lte",n]]
     end
   end
