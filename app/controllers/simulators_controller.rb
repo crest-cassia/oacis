@@ -17,12 +17,13 @@ class SimulatorsController < ApplicationController
   def show
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
-    @q = ParameterSetQuery.where(id: params[:query_id]).first
-
-    if @simulator.parameter_set_queries.present?
-      @query_list = {}
-      @simulator.parameter_set_queries.each do |psq|
-        @query_list[psq.query.to_s] = psq.id
+    @q = nil
+    if params[:q]
+      q = JSON.load(params[:q])
+      @q = @simulator.parameter_set_queries.build(query: q)
+      unless @q.valid?
+        flash[:alert] = "invalid query parameter: #{q.inspect}"
+        @q = nil
       end
     end
 
@@ -112,7 +113,7 @@ class SimulatorsController < ApplicationController
 
   # POST /simulators/:_id/_make_query redirect_to simulators#show
   def _make_query
-    @simulator = Simulator.find(params[:id])
+    simulator = Simulator.find(params[:id])
     if params[:delete_query]
       query_id = params[:query_id]
       q = ParameterSetQuery.find(query_id)
@@ -120,10 +121,10 @@ class SimulatorsController < ApplicationController
       flash[:notice] = "A query #{query_id} is deleted"
       redirect_to  action: "show"
     else
-      @new_query = @simulator.parameter_set_queries.build(name: params[:name])
-      if @new_query.from_hash(params["query"]) and @new_query.save
+      new_query = simulator.parameter_set_queries.build(name: params[:name], q: JSON.load(params[:q]))
+      if new_query.save
         flash[:notice] = "A new query is created"
-        redirect_to simulator_path(@simulator, query_id: @new_query.id.to_s)
+        redirect_to simulator_path(simulator, q: new_query.query.to_json)
       else
         flash[:alert] = "Failed to create a query: #{@new_query.errors.messages}"
         redirect_to  action: "show"
@@ -135,8 +136,8 @@ class SimulatorsController < ApplicationController
   def _parameter_sets_list
     simulator = Simulator.find(params[:id])
     parameter_sets = simulator.parameter_sets
-    if params[:query_id].present?
-      q = ParameterSetQuery.find(params[:query_id])
+    if params[:q]
+      q = simulator.parameter_set_queries.build(query: JSON.load(params[:q]))
       parameter_sets = q.parameter_sets
     end
     keys = simulator.parameter_definitions.map {|pd| pd.key }
