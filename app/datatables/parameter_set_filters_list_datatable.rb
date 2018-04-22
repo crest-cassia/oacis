@@ -29,7 +29,7 @@ class ParameterSetFiltersListDatatable
                   : @view.link_to(@view.raw(@view.fa_icon("trash-o")), '/') #[TODO]: set a correct link
       tmp << @view.raw(
           "<ul>
-             <li><a id=\"filter_#{i}\" filter_id=\"#{filter.id}\">#{filter.name}</a></li>
+             <li><a href=\"#{filter_path(filter)}\">#{filter.name}</a></li>
              <li>#{trash}</li>
              <ul>
                <li style=\"text-align: left\">#{query_badge(filter)}</li>
@@ -38,6 +38,10 @@ class ParameterSetFiltersListDatatable
       a << tmp
     end
     a
+  end
+
+  def filter_path(f)
+    Rails.application.routes.url_helpers.simulator_path(f.simulator, q: f.conditions.to_json)
   end
 
   def filter_set_lists
