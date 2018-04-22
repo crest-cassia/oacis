@@ -33,10 +33,8 @@
           &times;
         %h4 Filter
       .modal-body.large#parameter_filter_setting_body
-        %button#parameter_new_filter_btn.paramset_title_area_item.btn.btn-primary
-          New Filter
-          / [TODO] form for making a filter
-        %button#parameter_set_filters_list_btn.btn.btn-primary.add-margin-top{onclick: "$('#parameter_set_filters_list_modal').modal('show');"}
+        = render 'filter_form', simulator: @simulator
+        %button#parameter_set_filters_list_btn.btn{onclick: "$('#parameter_set_filters_list_modal').modal('show');"}
           Load Filter
       .modal-footer
         %button#parameter_filter_ok.btn.btn-primary
@@ -61,41 +59,6 @@
     $("#tab-list-parameters").setIntervalCommon(id,objTable,objList);
   });
 
-  $(function() {
-    var cloned = $('#queries_form_original').html();
-    $('#add_queries_form').click(function() {
-      $('#add_queries_form').before( cloned );
-      $('.row:last select', $(this).parent() ).trigger('change');
-    });
-  });
-
-  $(function() {
-    $("body").on("change", "#select_param_form select", function(){
-      $("#select_matcher_form option",$(this).parent().parent()).remove()
-      var matcher_form_selector = $("#select_matcher_form",$(this).parent().parent())
-      var matcher_val;
-      var matcher_text;
-      if($(":selected",this).attr('type') == "Integer" || $(":selected",this).attr('type') == "Float") {
-        matcher_val = #{raw ParameterSetFilter::NumTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetFilter::NumTypeMatcherStrings.to_json};
-      } else if($(":selected",this).attr('type') == "String") {
-        matcher_val = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
-      }
-
-      for(i in matcher_val){
-        $("select",matcher_form_selector).append("<option value=\"\"></option>");
-        $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val[i]).text(matcher_text[i]);
-      }
-
-      var value_form_selector = $("#select_value_form",$(this).parent().parent())
-    });
-  });
-  $(function() {
-    var parameter_form_selector = $("#select_param_form select")
-    parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
-    parameter_form_selector.trigger("change");
-  });
   $(function () {
     $('[data-toggle="tooltip"]').tooltip();
   });
