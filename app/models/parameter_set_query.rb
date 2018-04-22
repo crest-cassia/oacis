@@ -5,26 +5,12 @@ class ParameterSetQuery
   belongs_to :simulator
   validates :simulator, presence: true
   validates :query, presence: true
-  validates :name, presence: true
-  validates :name, uniqueness: { scope: [:simulator_id] }
-  validate :validate_uniqueness_of_query
   validate :validate_format_of_query
   before_validation :cast_values
 
   NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
   NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]
   StringTypeMatchers = ["start_with", "end_with", "include", "match"]
-
-  def validate_uniqueness_of_query
-    if self.query.blank?
-      self.errors.add(:query, "must not be blank")
-      return
-    end
-
-    if ParameterSetQuery.where(simulator: simulator, query: query).count > 0
-      self.errors.add(:query, "must be unique")
-    end
-  end
 
   def validate_format_of_query
     unless !self.query.blank? && self.query.is_a?(Array)

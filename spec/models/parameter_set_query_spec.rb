@@ -42,21 +42,6 @@ describe ParameterSetQuery do
     end
   end
 
-  describe "validation for uniqueness of query" do
-
-    it "must be invalid when identical query already exists" do
-      psq = @sim.parameter_set_queries.first
-      test_query = @sim.parameter_set_queries.build(name: 'new_filter', query: psq.query)
-      expect(test_query).to be_invalid
-    end
-  end
-
-  it "validate uniqueness of name" do
-    psq1 = @sim.parameter_set_queries.create(query: [["T","gte",4.0]], name: "filter1")
-    psq2 = @sim.parameter_set_queries.build(query: [["T","gte",5.0]], name: "filter1")
-    expect(psq2).to_not be_valid
-  end
-
   describe "#selector" do
 
     it "has valid selector" do
