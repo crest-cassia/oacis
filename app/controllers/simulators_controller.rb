@@ -17,7 +17,7 @@ class SimulatorsController < ApplicationController
   def show
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
-    @query_id = params[:query_id]
+    @q = ParameterSetQuery.where(id: params[:query_id]).first
 
     if @simulator.parameter_set_queries.present?
       @query_list = {}
