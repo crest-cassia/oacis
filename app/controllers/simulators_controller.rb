@@ -136,8 +136,8 @@ class SimulatorsController < ApplicationController
   def _parameter_sets_list
     simulator = Simulator.find(params[:id])
     parameter_sets = simulator.parameter_sets
-    if params[:q]
-      q = simulator.parameter_set_filters.build(conditions: JSON.load(params[:q]))
+    if params[:q] && c = JSON.load(params[:q])
+      q = simulator.parameter_set_filters.build(conditions: c)
       parameter_sets = q.parameter_sets
     end
     keys = simulator.parameter_definitions.map {|pd| pd.key }
@@ -147,6 +147,12 @@ class SimulatorsController < ApplicationController
 
   def _analyzer_list
     render json: AnalyzersListDatatable.new(view_context)
+  end
+
+  def _filter_set_list
+    simulator = Simulator.find(params[:id])
+    filters = simulator.parameter_set_filters
+    render json: FilterSetListDatatable.new(filters, simulator, view_context, filters.count)
   end
 
   def _progress

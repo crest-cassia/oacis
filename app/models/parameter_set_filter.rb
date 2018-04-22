@@ -96,4 +96,17 @@ class ParameterSetFilter
       a[2] = casted_val
     end
   end
+
+  # format a condition into a readable string
+  def self.format(condition)
+    key,matcher,val = condition
+    if idx = self::NumTypeMatchers.index(matcher)
+      s = self::NumTypeMatcherStrings[idx]
+      return "#{key} #{s} #{val}"
+    elsif self::StringTypeMatchers.index(matcher)
+      return "#{key} #{s} #{val}"
+    else
+      raise "unknown matcher: #{matcher}"
+    end
+  end
 end

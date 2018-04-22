@@ -1,19 +1,26 @@
 %h3 List of Parameter Sets
 
+.filter_set_area.paramset_title_area_item
+  %i#parameter_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{remote: true, simulator_id: @simulator.id, q: @q&.conditions.to_json, data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
+  %span#parameter_filter_selected.add_padding.add_margin_bottom
+    = @q ? raw(query_badge(@q)) : "Not filtering"
+  -if @q
+    %a#parameter_save_filter_btn{href: "#", onclick: "return show_filter_set_name_dlg();return false;"}
+      Save
+  - unless OACIS_READ_ONLY
+    %a.btn.btn-primary.add_float_right.add_margin_new_ps{href: new_simulator_parameter_set_path(@simulator)}
+      New Parameter Set
+
 .clear-element
 .create_ps_area{id: "ps_being_created_#{@simulator.id}"}
   = render partial: 'save_ps_task_status', locals: {simulator: @simulator, offset_num_ps: 0, offset_num_runs: 0}
 .clear-element
-%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameter_sets_list_simulator_path(@simulator.to_param, format: "json", q: @q&.query.to_json)}"}
+%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameter_sets_list_simulator_path(@simulator.to_param, format: "json", q: @q&.conditions.to_json)}"}
   %thead
     %tr
       - ParameterSetsListDatatable.header(@simulator).each do |th_element|
         = raw(th_element)
   %tbody
-
-- unless OACIS_READ_ONLY
-  %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
-    New Parameter Set
 
 - unless OACIS_READ_ONLY
   = render partial: 'create_runs_on_selected_modal', locals: {simulator: @simulator}
