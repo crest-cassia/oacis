@@ -29,7 +29,7 @@
 #parameter_set_filter_form_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
     .modal-content
-      = render 'filter_form', simulator: @simulator
+      = render 'filter_form', simulator: @simulator, q: (@filter&.conditions or [[]])
 
 #parameter_set_filters_list_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered

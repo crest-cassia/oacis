@@ -3,7 +3,7 @@
     &times;
   %h4 Filter
   .modal-body.large#parameter_filter_setting_body
-    %form.form_inline#filter_form
+    %form.form_inline#filter_form{'data-current-q': q.to_json}
       .row
         .form-group.col-md-3#select_param_form
           - options = simulator.parameter_definitions.map {|x| [x.key, x.key, {'data-param-type': x.type}] }
@@ -22,8 +22,9 @@
       OK
 
 :javascript
-  function update_filter_form_row(row_selector) {
-    const type = $(row_selector+' select#param option:selected').data('param-type');
+  function update_matcher_select(row) {
+    const type = row.find('select#param option:selected').data('param-type');
+    let matcher_val, matcher_text;
     if(type == "Integer" || type == "Float") {
       matcher_val = #{raw ParameterSetFilter::NumTypeMatchers.to_json};
       matcher_text = #{raw ParameterSetFilter::NumTypeMatcherStrings.to_json};
@@ -31,42 +32,35 @@
       matcher_val = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
       matcher_text = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
     }
-    const sel_matcher = $(row_selector+' select#matcher');
+    const sel_matcher = row.find('select#matcher');
     sel_matcher.empty();
-    for(i in matcher_val){
+    for(const i in matcher_val){
       sel_matcher.append('<option value="'+matcher_val[i]+'">'+matcher_text[i]+'</option>');
     }
   }
   $(function() {
-    const cloned = $('#filter_form').html();
+    let field = $('#filter_form').html();
     $('#add_filter_form').click(function() {
-      $('#filter_form').append(cloned);
-      update_filter_form_row('#filter_form .row:last');
+      const appended = $(field).appendTo('#filter_form');
+      update_matcher_select(appended);
     });
-
-    update_filter_form_row('#filter_form .row:last');
-  });
-
-  $(function() {
-    $("#filter_form").on("change", "#select_param_form select", function(){
-      $("#select_matcher_form option",$(this).parent().parent()).remove();
-      var matcher_form_selector = $("#select_matcher_form",$(this).parent().parent());
-      var matcher_val;
-      var matcher_text;
-      if($(":selected",this).attr('type') == "Integer" || $(":selected",this).attr('type') == "Float") {
-        matcher_val = #{raw ParameterSetFilter::NumTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetFilter::NumTypeMatcherStrings.to_json};
-      } else if($(":selected",this).attr('type') == "String") {
-        matcher_val = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
-      }
-
-      for(i in matcher_val){
-        $("select",matcher_form_selector).append("<option value=\"\"></option>");
-        $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val[i]).text(matcher_text[i]);
+    $("#filter_form").on("change", "#select_param_form select", function() {
+      const row = $(this).closest('.row');
+      update_matcher_select(row);
+    });
+    $("#parameter_set_filter_form_modal").on('show.bs.modal', function() {
+      $('#filter_form').empty();
+      const q = $('#filter_form').data('current-q');
+      for(const condition of q) {
+        const key = condition[0];
+        const matcher = condition[1];
+        const val = condition[2];
+        const appended = $(field).appendTo('#filter_form');
+        appended.find('select#param').val(key);
+        appended.find('input#value').val(val);
+        update_matcher_select(appended);
+        appended.find('select#matcher').val(matcher);
       }
     });
-    var parameter_form_selector = $("#select_param_form select");
-    parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
-    parameter_form_selector.trigger("change");
   });
+

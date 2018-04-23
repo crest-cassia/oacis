@@ -10,7 +10,7 @@ class ParameterSetFilter
 
   NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
   NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]
-  StringTypeMatchers = ["start_with", "end_with", "include", "match"]
+  StringTypeMatchers = ["match", "start_with", "end_with", "include"]
 
   def validate_format_of_conditions
     unless !self.conditions.blank? && self.conditions.is_a?(Array)
