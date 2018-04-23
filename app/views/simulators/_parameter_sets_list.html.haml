@@ -8,9 +8,6 @@
     = raw(query_badge(@filter))
     %a#parameter_save_filter_btn{href: "#", onclick: "$('#filter_name_form_modal').modal('show');", data: {q: @filter}}
       Save this filter
-  - if @simulator.parameter_set_filters.size > 0
-    %button#parameter_set_filters_list_btn.btn.btn-default{onclick: "$('#parameter_set_filters_list_modal').modal('show');"}
-      Load Filter
   - unless OACIS_READ_ONLY
     %a.btn.btn-primary.add_float_right.add_margin_new_ps{href: new_simulator_parameter_set_path(@simulator)}
       New Parameter Set
@@ -32,16 +29,7 @@
 #parameter_set_filter_form_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
     .modal-content
-      .modal-header
-        %button.close{type: "button", "data-dismiss": "modal"}
-          &times;
-        %h4 Filter
-      .modal-body.large#parameter_filter_setting_body
-        = render 'filter_form', simulator: @simulator
-      .modal-footer
-        %button#parameter_filter_ok.btn.btn-primary
-          OK
-          / [TODO] implement me
+      = render 'filter_form', simulator: @simulator
 
 #parameter_set_filters_list_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
