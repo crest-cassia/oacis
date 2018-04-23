@@ -38,7 +38,8 @@ Rails.application.routes.draw do
       get "_host_parameters_field" # for ajax, get the fields for host_parameters
       get "_default_mpi_omp" # for ajax, get the default mpi_procs and omp_threads
       get "_cancel_create_ps"
-      post "save_filter" unless OACIS_READ_ONLY # for ajax
+      post "save_filter" unless OACIS_READ_ONLY
+      post "_delete_filter" unless OACIS_READ_ONLY
     end
 
     parameter_set_actions = ["show"]

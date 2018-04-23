@@ -127,6 +127,12 @@ class SimulatorsController < ApplicationController
     end
   end
 
+  def _delete_filter
+    simulator = Simulator.find(params[:id])
+    simulator.parameter_set_filters.where(id: params[:filter]).first&.destroy
+    head :ok
+  end
+
   def _parameter_sets_list
     simulator = Simulator.find(params[:id])
     parameter_sets = simulator.parameter_sets

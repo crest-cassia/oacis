@@ -25,8 +25,9 @@ class ParameterSetFiltersListDatatable
     return a if @total_count < 1
     @filters.each_with_index do |filter, i|
       tmp = []
-      trash = OACIS_READ_ONLY ? @view.raw(@view.fa_icon("trash-o")) # [TODO] disable link
-                  : @view.link_to(@view.raw(@view.fa_icon("trash-o")), '/') #[TODO]: set a correct link
+      delete_url = Rails.application.routes.url_helpers._delete_filter_simulator_path(@simulator)
+      trash = OACIS_READ_ONLY ? @view.raw(@view.fa_icon('trash-o'))
+                  : "<a href='#' data-delete-url='#{delete_url}' data-filter-id='#{filter.id}'>#{@view.raw(@view.fa_icon('trash-o'))}</a>"
       tmp << @view.raw(
           "<ul>
              <li><a href=\"#{filter_path(filter)}\">#{filter.name}</a></li>
