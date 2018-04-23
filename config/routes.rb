@@ -31,7 +31,6 @@ Rails.application.routes.draw do
     end
     member do
       get 'duplicate' unless OACIS_READ_ONLY
-      post "_make_query" # for ajax
       get "_parameter_sets_list" # for ajax, datatables
       get "_analyzer_list" # for ajax, datatables
       get "_parameter_set_filters_list" # for ajax, datatables
@@ -39,6 +38,7 @@ Rails.application.routes.draw do
       get "_host_parameters_field" # for ajax, get the fields for host_parameters
       get "_default_mpi_omp" # for ajax, get the default mpi_procs and omp_threads
       get "_cancel_create_ps"
+      post "save_filter" unless OACIS_READ_ONLY # for ajax
     end
 
     parameter_set_actions = ["show"]

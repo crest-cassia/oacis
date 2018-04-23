@@ -17,13 +17,13 @@ class SimulatorsController < ApplicationController
   def show
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
-    @q = nil
+    @filter = nil
     if params[:q]
       q = JSON.load(params[:q])
-      @q = @simulator.parameter_set_filters.build(conditions: q)
-      unless @q.valid?
+      @filter = @simulator.parameter_set_filters.build(conditions: q)
+      unless @filter.valid?
         flash[:alert] = "invalid filter parameter: #{q.inspect}"
-        @q = nil
+        @filter = nil
       end
     end
 
@@ -111,26 +111,15 @@ class SimulatorsController < ApplicationController
     end
   end
 
-  # POST /simulators/:_id/_make_query redirect_to simulators#show
-  def _make_query
+  # POST /simulators/:_id/save_filter redirect_to simulators#show
+  def save_filter
     simulator = Simulator.find(params[:id])
-    if params[:delete_query]
-      query_id = params[:query_id]
-      q = ParameterSetFilter.find(query_id)
-      q.destroy
-      flash[:notice] = "A query #{query_id} is deleted"
-      redirect_to  action: "show"
+    filter = simulator.parameter_set_filters.build(name: params[:filter_name], conditions: JSON.load(params[:q]))
+    if filter.save
+      redirect_to simulator_path(simulator, q: filter.conditions.to_json)
     else
-      filter = simulator.parameter_set_filters.build(name: params[:name], q: JSON.load(params[:q]))
-      if filter.save
-        flash[:notice] = "A new filter is created"
-        redirect_to simulator_path(simulator, q: filter.conditions.to_json)
-      else
-        flash[:alert] = "Failed to create a filter: #{filter.errors.messages}"
-        redirect_to  action: "show"
-      end
+      redirect_back(fallback_location: simulator)
     end
-
   end
 
   def _parameter_sets_list

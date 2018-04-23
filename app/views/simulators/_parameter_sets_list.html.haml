@@ -1,11 +1,11 @@
 %h3 List of Parameter Sets
 
 .filter_set_area.paramset_title_area_item
-  %i#parameter_set_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{onclick: "$('#parameter_set_filter_modal').modal('show');", data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
+  %i#parameter_set_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{onclick: "$('#parameter_set_filter_form_modal').modal('show');", data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
   %span#parameter_filter_selected.add_padding.add_margin_bottom
-    = @q ? raw(query_badge(@q)) : "Not filtering"
-  - if @q
-    %a#parameter_save_filter_btn{href: "#", onclick: "return show_filter_set_name_dlg();return false;"}
+    = @filter ? raw(query_badge(@filter)) : "Not filtering"
+  - if @filter
+    %a#parameter_save_filter_btn{href: "#", onclick: "$('#filter_name_form_modal').modal('show');", data: {q: @filter}}
       Save this filter
   - if @simulator.parameter_set_filters.size > 0
     %button#parameter_set_filters_list_btn.btn.btn-default{onclick: "$('#parameter_set_filters_list_modal').modal('show');"}
@@ -18,7 +18,7 @@
 .create_ps_area{id: "ps_being_created_#{@simulator.id}"}
   = render partial: 'save_ps_task_status', locals: {simulator: @simulator, offset_num_ps: 0, offset_num_runs: 0}
 .clear-element
-%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameter_sets_list_simulator_path(@simulator.to_param, format: "json", q: @q&.conditions.to_json)}"}
+%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameter_sets_list_simulator_path(@simulator.to_param, format: "json", q: @filter&.conditions.to_json)}"}
   %thead
     %tr
       - ParameterSetsListDatatable.header(@simulator).each do |th_element|
@@ -28,7 +28,7 @@
 - unless OACIS_READ_ONLY
   = render partial: 'create_runs_on_selected_modal', locals: {simulator: @simulator}
 
-#parameter_set_filter_modal.modal.large.fade
+#parameter_set_filter_form_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
     .modal-content
       .modal-header
@@ -46,11 +46,26 @@
   .modal-dialog.modal-vertical-centered
     .modal-content
       .modal-header
-        %button.close{type: "button", "data-dismiss" => "modal"}
+        %button.close{type: "button", "data-dismiss": "modal"}
           &times;
         %h4 Filters
-      .modal-body.large#parameter_new_filter_create_body
+      .modal-body.large
         = render "filters_list", simulator: @simulator
+
+#filter_name_form_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss": "modal"}
+          &times;
+        %h4 Save this filter as
+      = form_tag(save_filter_simulator_path(@simulator), class: 'form-horizontal', id: 'save_filter_form') do
+        .modal-body.large
+          %h4 Name
+          = text_field_tag "filter_name", "", class: 'form-control', id: 'filter_name_field'
+          = hidden_field_tag :q, @filter&.conditions.to_json
+        .modal-footer
+          %input#parameter_save_filter_set_ok.btn.btn-primary{type: "submit", value: "Save", "data-dismiss": "modal"}
 
 :javascript
   $(function() {
@@ -69,5 +84,13 @@
   $("#parameter_set_filters_list_modal").on('show.bs.modal', function(event) {
     const url = "#{_parameter_set_filters_list_simulator_path(@simulator)}";
     oFilterSetTable = create_parameter_set_filters_list('#parameter_set_filters_list', url);
+  });
+  $("#parameter_save_filter_set_ok").on("click", function() {
+    let name = $("#filter_name_field").val();
+    if (name == null || (name != null && name.length < 1)) {
+      alert("Please set the Filter Name.");
+      return false;
+    }
+    $('#save_filter_form').submit();
   });
 
