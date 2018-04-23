@@ -9,7 +9,7 @@
     %a#parameter_save_filter_btn{href: "#", onclick: "$('#filter_name_form_modal').modal('show');", data: {q: @filter}}
       Save this filter
   - unless OACIS_READ_ONLY
-    %a.btn.btn-primary.add_float_right.add_margin_new_ps{href: new_simulator_parameter_set_path(@simulator)}
+    %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator), style: "float: right; margin-right: 3px;"}
       New Parameter Set
 
 .clear-element

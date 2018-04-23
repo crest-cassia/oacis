@@ -29,10 +29,10 @@ class ParameterSetFiltersListDatatable
       trash = OACIS_READ_ONLY ? @view.raw(@view.fa_icon('trash-o'))
                   : "<a href='#' data-delete-url='#{delete_url}' data-filter-id='#{filter.id}'>#{@view.raw(@view.fa_icon('trash-o'))}</a>"
       tmp << @view.raw(
-          "<ul class=\"ul-style-none load-fs-margin-delete\">
+          "<ul style=\"list-style: none; margin: 0px; padding: 0px;\">
              <li style=\"float: left;\"><a href=\"#{filter_path(filter)}\">#{filter.name}</a></li>
              <li>#{trash}</li>
-             <ul class=\"ul-style-none load-fs-margin-delete\">
+             <ul style=\"list-style: none; margin: 0px; padding: 0px;\">
                <li style=\"text-align: left\">#{query_badge(filter)}</li>
              </ul>
            </ul>" )
