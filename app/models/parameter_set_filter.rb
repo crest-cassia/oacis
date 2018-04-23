@@ -104,7 +104,7 @@ class ParameterSetFilter
       s = self::NumTypeMatcherStrings[idx]
       return "#{key} #{s} #{val}"
     elsif self::StringTypeMatchers.index(matcher)
-      return "#{key} #{s} #{val}"
+      return "#{key} #{matcher} #{val}"
     else
       raise "unknown matcher: #{matcher}"
     end
