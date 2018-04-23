@@ -11,6 +11,9 @@
     const url = "#{_parameter_set_filters_list_simulator_path(@simulator)}";
     oFilterSetTable = create_parameter_set_filters_list('#parameter_set_filters_list', url);
   });
+  $("#parameter_set_filters_list_modal").on('hide.bs.modal', function(event) {
+    oFilterSetTable.destroy();
+  });
   $('#parameter_set_filters_table_body').on('click', "a[data-delete-url]", function() {
     const url = $(this).data('delete-url');
     const fid = $(this).data('filter-id');
