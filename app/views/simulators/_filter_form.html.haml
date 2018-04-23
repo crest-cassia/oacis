@@ -62,5 +62,17 @@
         appended.find('select#matcher').val(matcher);
       }
     });
+    $('#parameter_filter_ok').on('click', function() {
+      const q = [];
+      $('#filter_form .row').each(function(i,o) {
+        const param = $(o).find('select#param').val();
+        const matcher = $(o).find('select#matcher').val();
+        const val = $(o).find('input#value').val();
+        q.push([param,matcher,val]);
+      });
+      const sim_path = "#{raw simulator_path(simulator)}";
+      var path = sim_path + '?q=' + encodeURIComponent(JSON.stringify(q));
+      location.href = path;
+    });
   });
 
