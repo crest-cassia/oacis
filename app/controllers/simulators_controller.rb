@@ -18,7 +18,12 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
     @filter = nil
-    if params[:q]
+    if params[:filter]
+      @filter = @simulator.parameter_set_filters.where(id: params[:filter]).first
+      if @filter.nil?
+        flash[:alert] = "Filter #{params[:filter]} is not found"
+      end
+    elsif params[:q]
       q = JSON.load(params[:q])
       @filter = @simulator.parameter_set_filters.build(conditions: q)
       unless @filter.valid?
@@ -116,7 +121,7 @@ class SimulatorsController < ApplicationController
     simulator = Simulator.find(params[:id])
     filter = simulator.parameter_set_filters.build(name: params[:filter_name], conditions: JSON.load(params[:q]))
     if filter.save
-      redirect_to simulator_path(simulator, q: filter.conditions.to_json)
+      redirect_to simulator_path(simulator, filter: filter.id)
     else
       redirect_back(fallback_location: simulator)
     end

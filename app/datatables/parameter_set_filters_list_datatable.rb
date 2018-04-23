@@ -41,7 +41,7 @@ class ParameterSetFiltersListDatatable
   end
 
   def filter_path(f)
-    Rails.application.routes.url_helpers.simulator_path(f.simulator, q: f.conditions.to_json)
+    Rails.application.routes.url_helpers.simulator_path(f.simulator, filter: f.id)
   end
 
   def filter_set_lists
