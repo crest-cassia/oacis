@@ -7,7 +7,9 @@
     = @filter.name if @filter.name
     = raw(query_badge(@filter))
     %a#parameter_save_filter_btn{href: "#", onclick: "$('#filter_name_form_modal').modal('show');", data: {q: @filter}}
-      Save this filter
+      Save
+    %a#parameter_save_filter_btn{href: simulator_path(@simulator)}
+      Clear
   - unless OACIS_READ_ONLY
     %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator), style: "float: right; margin-right: 3px;"}
       New Parameter Set

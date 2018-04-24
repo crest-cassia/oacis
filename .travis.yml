@@ -5,6 +5,8 @@ services:
   - mongodb
   - redis-server
 sudo: required
+before_install:
+  - gem update --system
 install:
   - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
