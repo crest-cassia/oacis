@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 require 'spec_helper'
 
 describe ParameterSetFilter do
@@ -68,6 +67,16 @@ describe ParameterSetFilter do
       q = [["T","gte","foo"],["L","eq","2"]]
       psq = @sim.parameter_set_filters.build(name: 'f', conditions: q)
       expect(psq).to_not be_valid
+    end
+  end
+
+  describe ".format" do
+
+    it "formats a readable string from a condition" do
+      str1 = ParameterSetFilter.format(["T","gte",3.5],)
+      expect(str1).to eq "T >= 3.5"
+      str2 = ParameterSetFilter.format(["S","match","foobar"],)
+      expect(str2).to eq "S match foobar"
     end
   end
 end

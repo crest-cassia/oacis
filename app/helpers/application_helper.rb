@@ -130,7 +130,6 @@ module ApplicationHelper
   end
 
   def query_badge(filter)
-    return "Not filtering." if filter.conditions.blank?
     query_tag = ""
     filter.conditions.each_with_index do |c,idx|
       if idx > 10

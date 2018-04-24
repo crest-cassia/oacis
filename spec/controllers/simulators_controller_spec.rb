@@ -74,6 +74,20 @@ describe SimulatorsController do
       get :show, params: {id: @simulator, format: :json}
       expect(response).to be_success
     end
+
+    it "assigns filter when param[:filter] is given" do
+      f = @simulator.parameter_set_filters.first
+      get :show, params: {id: @simulator.to_param, filter: f}
+      expect(response).to be_success
+      expect(assigns(:filter)).to eq f
+    end
+
+    it "assigns filter when param[:q] is given" do
+      get :show, params: {id: @simulator.to_param, q: [["T","gte",3.5]].to_json}
+      expect(response).to be_success
+      f = assigns(:filter)
+      expect(f.conditions).to eq [["T","gte",3.5]]
+    end
   end
 
   describe "GET new" do
@@ -524,6 +538,21 @@ describe SimulatorsController do
           expect(ps[4].to_i).to be >= 5 #ps[4].to_i is qeual to v.L(ps[checkbox, progress, id, updated_at, [keys]])
         end
       end
+    end
+  end
+
+  describe "GET _parameter_set_filters_list" do
+    before(:each) do
+      @simulator = FactoryBot.create(:simulator,
+                                     parameter_set_filters_count: 5)
+      get :_parameter_sets_list, params: {id: @simulator.to_param, draw: 1, start: 0, length:25}, format: :json
+      @parsed_body = JSON.parse(response.body)
+    end
+
+    it "return json format" do
+      expect(response.header['Content-Type']).to include 'application/json'
+      expect(@parsed_body["recordsTotal"]).to eq 5
+      expect(@parsed_body["recordsFiltered"]).to eq 5
     end
   end
 

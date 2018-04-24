@@ -89,7 +89,7 @@
         }
         q.push([param,matcher,val]);
       });
-      if(has_error) { return; }
+      if(has_error || q.length == 0) { return; }
       const sim_path = "#{raw simulator_path(simulator)}";
       var path = sim_path + '?q=' + encodeURIComponent(JSON.stringify(q));
       location.href = path;

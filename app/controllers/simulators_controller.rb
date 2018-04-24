@@ -25,10 +25,12 @@ class SimulatorsController < ApplicationController
       end
     elsif params[:q]
       q = JSON.load(params[:q])
-      @filter = @simulator.parameter_set_filters.build(conditions: q)
-      unless @filter.valid?
-        flash[:alert] = "invalid filter parameter: #{q.inspect}"
-        @filter = nil
+      if q.present?
+        @filter = @simulator.parameter_set_filters.build(conditions: q)
+        unless @filter.valid?
+          flash[:alert] = "invalid filter parameter: #{q.inspect}"
+          @filter = nil
+        end
       end
     end
 
