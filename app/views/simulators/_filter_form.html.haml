@@ -13,10 +13,10 @@
         .form-group.col-md-3.filter_form_field#select_value_form
           = text_field_tag "value", "", class: 'form-control'
         .col-md-4.filter_form_field
-          %a{href:'#'}
-            %i.fa.fa-times#delete_field_icon{style: "padding-top: 10px;"}
+          %a#delete_field_btn{href:'#'}
+            %i.fa.fa-times{style: "padding-top: 10px;"}
           #error_message{style: "display: inline;"}
-    %a#add_filter_form{href:'#'}
+    %a#add_field_btn{href:'#'}
       %i.fa.fa-plus
   .modal-footer
     - if @simulator.parameter_set_filters.size > 0
@@ -44,14 +44,7 @@
   }
   $(function() {
     let field = $('#filter_form').html();
-    $('#add_filter_form').click(function() {
-      const appended = $(field).appendTo('#filter_form');
-      update_matcher_select(appended);
-    });
-    $("#filter_form").on("change", "#select_param_form select", function() {
-      const row = $(this).closest('.row');
-      update_matcher_select(row);
-    });
+    // create initial form
     $("#parameter_set_filter_form_modal").on('show.bs.modal', function() {
       $('#filter_form').empty();
       const q = $('#filter_form').data('current-q');
@@ -66,6 +59,21 @@
         appended.find('select#matcher').val(matcher);
       }
     });
+    // when '+' icon is clicked
+    $('#add_field_btn').click(function() {
+      const appended = $(field).appendTo('#filter_form');
+      update_matcher_select(appended);
+    });
+    // when 'x' icon is clicked
+    $('#filter_form').on("click", "#delete_field_btn", function() {
+      $(this).closest('.row').remove();
+    })
+    // when key is changed
+    $("#filter_form").on("change", "#select_param_form select", function() {
+      const row = $(this).closest('.row');
+      update_matcher_select(row);
+    });
+    // when ok is clicked
     $('#parameter_filter_ok').on('click', function() {
       const q = [];
       $('#filter_form .row').each(function(i,o) {
