@@ -6,7 +6,7 @@ services:
   - redis-server
 sudo: required
 before_install:
-  - gem update --system
+  - gem install bundler
 install:
   - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
