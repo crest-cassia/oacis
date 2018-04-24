@@ -65,12 +65,8 @@
     const objList = $("#tab-list-parameters");
     $("#tab-list-parameters").setIntervalCommon(id,objTable,objList);
   });
-
   $(function () {
-    $('[data-toggle="tooltip"]').tooltip();
-  });
-  $(function () {
-    $('#ps_check_all').prop('checked', false);
+    $('#ps_check_all').prop('checked', false); // workaround for a bug of Chrome
   });
   $("#parameter_save_filter_set_ok").on("click", function() {
     let name = $("#filter_name_field").val();

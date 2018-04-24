@@ -71,7 +71,3 @@
       = f.submit('Save', class: 'btn btn-primary')
       = link_to('Cancel', (@host.persisted? ? @host : hosts_path), class: 'btn btn-default')
 
-:javascript
-  $(function() {
-    $('[data-toggle="tooltip"]').tooltip();
-  });
