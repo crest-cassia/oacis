@@ -1,0 +1,30 @@
+%table.table.table-striped#parameter_set_filters_list{:'data-source' => "#{_parameter_set_filters_list_simulator_path(simulator: simulator.to_param, format: "json")}"}
+  %thead
+    %tr
+      - ParameterSetFiltersListDatatable::HEADER.each do |header|
+        = raw(header)
+  %tbody#parameter_set_filters_table_body
+
+:javascript
+  var oFilterSetTable = null;
+  $("#parameter_set_filters_list_modal").on('show.bs.modal', function(event) {
+    const url = "#{_parameter_set_filters_list_simulator_path(@simulator)}";
+    oFilterSetTable = create_parameter_set_filters_list('#parameter_set_filters_list', url);
+  });
+  $("#parameter_set_filters_list_modal").on('hide.bs.modal', function(event) {
+    oFilterSetTable.destroy();
+  });
+  $('#parameter_set_filters_table_body').on('click', "a[data-delete-url]", function() {
+    const url = $(this).data('delete-url');
+    const fid = $(this).data('filter-id');
+    if(window.confirm('Are you sure?')) {
+      $.ajax({
+        url: url,
+        type:'POST',
+        data:{'filter': fid}
+      })
+      .done( (data)=> {
+        oFilterSetTable.ajax.reload(null, false);
+      })
+    }
+  });

@@ -15,9 +15,9 @@ describe "ParameterSetsListDatatable" do
                              v: {"L" => i, "T" => i*2.0}
                              )
         end
-        @query = FactoryBot.create(:parameter_set_query,
-                                    simulator: @simulator,
-                                    query: {"L" => {"gte" => 5}})
+        @query = FactoryBot.create(:parameter_set_filter,
+                                   simulator: @simulator,
+                                   conditions: [["L","gte",5]])
 
         @context = ActionController::Base.new.view_context
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
@@ -45,7 +45,7 @@ describe "ParameterSetsListDatatable" do
       end
     end
 
-    context "with query" do
+    context "with filter" do
 
       before(:each) do
         @simulator = FactoryBot.create(:simulator, parameter_sets_count: 0)
@@ -56,9 +56,9 @@ describe "ParameterSetsListDatatable" do
                              v: {"L" => i, "T" => i*2.0}
                              )
         end
-        @query = FactoryBot.create(:parameter_set_query,
-                                    simulator: @simulator,
-                                    query: {"L" => {"gte" => 5}})
+        @query = FactoryBot.create(:parameter_set_filter,
+                                   simulator: @simulator,
+                                   conditions: [["L","gte",5]])
 
         @context = ActionController::Base.new.view_context
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]

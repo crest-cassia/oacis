@@ -11,7 +11,7 @@ class Simulator
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :runs
-  has_many :parameter_set_queries, dependent: :destroy
+  has_many :parameter_set_filters, dependent: :destroy
   has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
   has_many :save_tasks, dependent: :destroy
 

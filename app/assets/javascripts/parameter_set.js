@@ -94,4 +94,17 @@ function create_parameter_sets_list(selector, default_length) {
   return oPsTable;
 }
 
-
+function create_parameter_set_filters_list(selector, url) {
+  const loFilterSetTable = $(selector).DataTable({
+    lengthChange: false,
+    searching: false,
+    serverSide: true,
+    pageLength: 10,
+    ordering: false,
+    ajax: {
+      url: url,
+      dataType: "json"
+    }
+  });
+  return loFilterSetTable;
+}

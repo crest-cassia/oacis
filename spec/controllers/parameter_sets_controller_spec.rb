@@ -390,7 +390,7 @@ describe ParameterSetsController do
       @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 1, runs_count: 30,
                                       analyzers_count: 0, run_analysis: false,
-                                      parameter_set_queries_count: 0
+                                      parameter_set_filters_count: 0
                                       )
       @param_set = @simulator.parameter_sets.first
       get :_runs_list, params: {id: @param_set.to_param, draw: 1, start: 0, length:25 , "order" => {"0" => {"column" => "1", "dir" => "asc"}}}, :format => :json

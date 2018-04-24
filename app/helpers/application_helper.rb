@@ -128,6 +128,18 @@ module ApplicationHelper
       content_tag(:label, "#{text}", class: "col-md-2 control-label")
     end
   end
+
+  def query_badge(filter)
+    query_tag = ""
+    filter.conditions.each_with_index do |c,idx|
+      if idx > 10
+        query_tag << '<span class="badge badge-pill badge-info margin-half-em">...</span>'
+      else
+        query_tag << '<span class="badge badge-pill badge-info margin-half-em">' + ParameterSetFilter.format(c) + '</span>'
+      end
+    end
+    query_tag
+  end
 end
 
 

@@ -1,11 +1,12 @@
 language: ruby
 rvm:
-  - "2.2.2"
-  - "2.4.1"
+  - "2.5.1"
 services:
   - mongodb
   - redis-server
 sudo: required
+before_install:
+  - gem install bundler
 install:
   - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
