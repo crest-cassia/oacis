@@ -394,57 +394,88 @@ describe SimulatorsController do
     end
   end
 
-  describe "POST _make_query" do
+  describe "POST save_filter" do
     before(:each) do
-      @simulator = FactoryBot.create(:simulator,
-                                      parameter_sets_count: 1, runs_count: 0,
-                                      analyzers_count: 3, run_analysis: false,
-                                      parameter_set_filters_count: 1
-                                      )
+      @sim = FactoryBot.create(:simulator,
+                               parameter_sets_count: 1, runs_count: 0)
     end
 
     context "with valid params" do
 
       before(:each) do
-        params = [{"param"=>"T", "matcher"=>"gte", "value"=>"4.0", "logic"=>"and"},
-                  {"param"=>"L", "matcher"=>"eq", "value"=>"2", "logic"=>"and"}
-                 ]
-        @valid_post_parameter = {id: @simulator.to_param, conditions: params, name: 'new_filter'}
+        @valid_param = {id: @sim.to_param, filter_name: "filter1", q: [['T','gte',4.0], ['L','eq',2]].to_json }
       end
 
-      it "creates a new ParameterSetQuery" do
+      it "creates a new ParameterSetFilter" do
         expect {
-          post :_make_query, params: @valid_post_parameter
+          post :save_filter, params: @valid_param
         }.to change(ParameterSetFilter, :count).by(1)
+        f = @sim.reload.parameter_set_filters.first
+        expect(f.name).to eq 'filter1'
+        expect(f.conditions).to eq [['T','gte',4.0], ['L','eq',2]]
       end
 
-      it "redirects to show with the created parameter_set_query" do
-        post :_make_query, params: @valid_post_parameter
-        expect(response).to redirect_to( simulator_path(@simulator, query_id: ParameterSetFilter.order_by(id: :asc).last.to_param) )
+      it "redirects to show with the created parameter_set_filter" do
+        post :save_filter, params: @valid_param
+        f = @sim.reload.parameter_set_filters.first
+        expect(response).to redirect_to(simulator_path(@sim, filter: f.to_param))
       end
 
-      context "and with delete option" do
-        it "delete the last parameter_set_query of @simulator" do
-          expect {
-            post :_make_query, params: {:id => @simulator.to_param, delete_query: "xxx", query_id: @simulator.parameter_set_queries.first.id.to_s}
-          }.to change(ParameterSetFilter, :count).by(-1)
-        end
+      it "overwrites filter when a filter of identical name already exists" do
+        f = @sim.parameter_set_filters.create!(name: 'filter1', conditions: [['L','eq',2]])
+        expect {
+          post :save_filter, params: @valid_param
+        }.to_not change(ParameterSetFilter, :count)
+        expect(f.reload.conditions).to eq [['T','gte',4.0], ['L','eq',2]]
+        expect(response).to redirect_to(simulator_path(@sim, filter: f.to_param))
       end
     end
+  end
 
-    context "with invalid params" do
+  describe "GET _find_filter" do
 
-      it "assigns a newly created but unsaved paramater_set_query of @simulator" do
-        expect {
-          post :_make_query, params: {:id => @simulator.to_param, params: {}}
-          expect(assigns(:new_query)).to be_a_new(ParameterSetFilter)
-        }.to_not change(ParameterSetFilter, :count)
-      end
+    before(:each) do
+      @sim = FactoryBot.create(:simulator)
+      @valid_param = {id: @sim.to_param, filter_name: "filter1"}
+    end
 
-      it "redirect to show with nonmodified query_id" do
-        post :_make_query, params: {:id => @simulator.to_param, params: {}, query_id: ""}
-        expect(response).to redirect_to( simulator_path(@simulator) )
-      end
+    it "returns the found filter in JSON" do
+      f = @sim.parameter_set_filters.create!(name: 'filter1', conditions: [['L','eq',2]])
+      get :_find_filter, params: @valid_param, format: :json
+      expect(response.header['Content-Type']).to include 'application/json'
+      ret = JSON.parse(response.body)
+      expect(ret['name']).to eq 'filter1'
+      expect(ret['conditions']).to eq [['L','eq',2]]
+    end
+
+    it "returns null in JSON when a matched filter is not found" do
+      @sim.parameter_set_filters.create!(name: 'filter2', conditions: [['L','eq',2]])
+      get :_find_filter, params: @valid_param, format: :json
+      expect(response.header['Content-Type']).to include 'application/json'
+      expect(JSON.parse(response.body)).to be_nil
+    end
+  end
+
+  describe "POST _delete_filter" do
+
+    before(:each) do
+      @sim = FactoryBot.create(:simulator)
+      f = @sim.parameter_set_filters.create!(name: 'filter1', conditions: [['L','eq',2]])
+      @valid_param = {id: @sim.to_param, filter: f.to_param}
+    end
+
+    it "deletes a Filter" do
+      expect {
+        post :_delete_filter, params: @valid_param
+      }.to change(ParameterSetFilter, :count).by(-1)
+      expect(response).to be_success
+    end
+
+    it "does nothing when the specified Filter is not found" do
+      expect {
+        post :_delete_filter, params: @valid_param.update(filter: "INVALID_ID")
+      }.to_not change(ParameterSetFilter, :count)
+      expect(response).to be_success
     end
   end
 

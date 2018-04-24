@@ -125,7 +125,7 @@ class SimulatorsController < ApplicationController
       filter.conditions = JSON.load(params[:q])
       msg = "Filter '#{name}' was updated."
     else
-      filter = simulator.parameter_set_filters.build(name: params[:filter_name], conditions: JSON.load(params[:q]))
+      filter = simulator.parameter_set_filters.build(name: name, conditions: JSON.load(params[:q]))
       msg = "Filter was saved as '#{name}'."
     end
     if filter.save

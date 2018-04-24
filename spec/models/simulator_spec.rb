@@ -389,7 +389,9 @@ describe Simulator do
   describe "#dir" do
 
     it "returns the result directory of the simulator" do
-      sim = FactoryBot.create(:simulator, :parameter_sets_count => 0, :runs_count => 0, :parameter_set_queries_count => 0)
+      sim = FactoryBot.create(:simulator,
+                              parameter_sets_count: 0,
+                              runs_count: 0)
       expect(sim.dir).to eq(ResultDirectory.simulator_path(sim))
     end
   end
@@ -401,7 +403,7 @@ describe Simulator do
                                parameter_sets_count: 0,
                                runs_count: 0,
                                analyzers_count: 0,
-                               parameter_set_queries_count:0
+                               parameter_set_filters_count:0
                                )
       FactoryBot.create_list(:analyzer, 5,
                               type: :on_run,
@@ -423,7 +425,7 @@ describe Simulator do
                                parameter_sets_count: 0,
                                runs_count: 0,
                                analyzers_count: 0,
-                               parameter_set_queries_count:0
+                               parameter_set_filters_count:0
                                )
       FactoryBot.create_list(:analyzer, 1,
                               type: :on_run,
