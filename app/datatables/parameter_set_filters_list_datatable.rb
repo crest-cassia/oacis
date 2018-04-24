@@ -1,7 +1,7 @@
 class ParameterSetFiltersListDatatable
   include ApplicationHelper
 
-  HEADER = ['<th style="text-align: left;">name</th>']
+  HEADER = ['<th style="text-align: left;"></th>']
 
   def initialize(filters, simulator, view, total_count)
     @view = view
@@ -33,7 +33,7 @@ class ParameterSetFiltersListDatatable
              <li style=\"float: left;\"><a href=\"#{filter_path(filter)}\">#{filter.name}</a></li>
              <li>#{trash}</li>
              <ul style=\"list-style: none; margin: 0px; padding: 0px;\">
-               <li style=\"text-align: left\">#{query_badge(filter)}</li>
+               <li style=\"text-align: left; margin-top: 5px;\">#{query_badge(filter)}</li>
              </ul>
            </ul>" )
       a << tmp

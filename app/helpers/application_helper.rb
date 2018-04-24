@@ -136,7 +136,7 @@ module ApplicationHelper
       if idx > 10
         query_tag << '<span class="badge badge-pill badge-info margin-half-em">...</span>'
       else
-        query_tag << '<span class="badge badge-pill badge-info margin-half-em">' + ParameterSetFilter.format(c) + '<i class="fa fa-times add-margin-left"></i></span>'
+        query_tag << '<span class="badge badge-pill badge-info margin-half-em">' + ParameterSetFilter.format(c) + '</span>'
       end
     end
     query_tag
