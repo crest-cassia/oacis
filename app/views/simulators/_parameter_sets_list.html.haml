@@ -51,7 +51,7 @@
       = form_tag(save_filter_simulator_path(@simulator), class: 'form-horizontal', id: 'save_filter_form') do
         .modal-body.large
           %h4 Name
-          = text_field_tag "filter_name", "", class: 'form-control', id: 'filter_name_field'
+          = text_field_tag "filter_name", "filter1", class: 'form-control', id: 'filter_name_field'
           = hidden_field_tag :q, @filter&.conditions.to_json
         .modal-footer
           %input#parameter_save_filter_set_ok.btn.btn-primary{type: "submit", value: "Save", "data-dismiss": "modal", 'data-find-field-path': _find_filter_simulator_path(@simulator)}
@@ -73,7 +73,7 @@
   $("#parameter_save_filter_set_ok").on("click", function() {
     let name = $("#filter_name_field").val();
     if (name == null || (name != null && name.length < 1)) {
-      alert("Please set the Filter Name.");
+      alert("Name cannot be blank.");
       return false;
     }
     let url = $(this).data('find-field-path');
