@@ -5,15 +5,19 @@
   .modal-body.large#parameter_filter_setting_body
     %form.form_inline#filter_form{'data-current-q': q.to_json}
       .row
-        .form-group.col-md-3#select_param_form
+        .form-group.col-md-3.filter_form_field#select_param_form
           - options = simulator.parameter_definitions.map {|x| [x.key, x.key, {'data-param-type': x.type}] }
           = select_tag "param", options_for_select(options), class: 'form-control'
-        .form-group.col-md-2#select_matcher_form
+        .form-group.col-md-2.filter_form_field#select_matcher_form
           = select_tag "matcher", options_for_select(["",""]), class: 'form-control'
-        .form-group.col-md-3#select_value_form
+        .form-group.col-md-3.filter_form_field#select_value_form
           = text_field_tag "value", "", class: 'form-control'
-        .col-md-6
-    .btn#add_filter_form Add more filter
+        .col-md-4.filter_form_field
+          %a{href:'#'}
+            %i.fa.fa-times#delete_field_icon{style: "padding-top: 10px;"}
+          #error_message{style: "display: inline;"}
+    %a#add_filter_form{href:'#'}
+      %i.fa.fa-plus
   .modal-footer
     - if @simulator.parameter_set_filters.size > 0
       %button#parameter_set_filters_list_btn.btn.btn-default{onclick: "$('#parameter_set_filters_list_modal').modal('show');"}
