@@ -20,8 +20,8 @@
       %i.fa.fa-plus
   .modal-footer
     - if @simulator.parameter_set_filters.size > 0
-      %button#parameter_set_filters_list_btn.btn.btn-default{onclick: "$('#parameter_set_filters_list_modal').modal('show');"}
-        Load Filter
+      %button#parameter_set_filters_list_btn.btn.btn-default{onclick: "$('#parameter_set_filter_form_modal').modal('hide');$('#parameter_set_filters_list_modal').modal('show');"}
+        Filters List
     %button#parameter_filter_ok.btn.btn-primary
       OK
 

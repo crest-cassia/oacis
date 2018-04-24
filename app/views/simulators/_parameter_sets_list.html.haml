@@ -54,7 +54,7 @@
           = text_field_tag "filter_name", "", class: 'form-control', id: 'filter_name_field'
           = hidden_field_tag :q, @filter&.conditions.to_json
         .modal-footer
-          %input#parameter_save_filter_set_ok.btn.btn-primary{type: "submit", value: "Save", "data-dismiss": "modal"}
+          %input#parameter_save_filter_set_ok.btn.btn-primary{type: "submit", value: "Save", "data-dismiss": "modal", 'data-find-field-path': _find_filter_simulator_path(@simulator)}
 
 :javascript
   $(function() {
@@ -76,6 +76,24 @@
       alert("Please set the Filter Name.");
       return false;
     }
-    $('#save_filter_form').submit();
+    let url = $(this).data('find-field-path');
+    jQuery.ajax(url, {
+      type: 'get',
+      data: { filter_name: name },
+      dataType: 'json'
+    })
+    .done(function(data) {
+      if(data) {
+        const n = data["name"];
+        if (confirm("Filter '"+n+"' already exists. Overwrite?")) {
+          $('#save_filter_form').submit();
+        } else {
+          return false;
+        }
+      }
+      else {
+        $('#save_filter_form').submit();
+      }
+    });
   });
 

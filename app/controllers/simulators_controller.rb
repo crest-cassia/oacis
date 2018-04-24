@@ -119,12 +119,29 @@ class SimulatorsController < ApplicationController
   # POST /simulators/:_id/save_filter redirect_to simulators#show
   def save_filter
     simulator = Simulator.find(params[:id])
-    filter = simulator.parameter_set_filters.build(name: params[:filter_name], conditions: JSON.load(params[:q]))
+    name = params[:filter_name]
+    filter = simulator.parameter_set_filters.where(name: name).first
+    if filter
+      filter.conditions = JSON.load(params[:q])
+      msg = "Filter '#{name}' was updated."
+    else
+      filter = simulator.parameter_set_filters.build(name: params[:filter_name], conditions: JSON.load(params[:q]))
+      msg = "Filter was saved as '#{name}'."
+    end
     if filter.save
+      flash[:notice] = msg
       redirect_to simulator_path(simulator, filter: filter.id)
     else
+      flash[:alert] = "Failed to save Filter: #{filter.errors.messages}"
       redirect_back(fallback_location: simulator)
     end
+  end
+
+  def _find_filter
+    simulator = Simulator.find(params[:id])
+    name = params[:filter_name]
+    filter = simulator.parameter_set_filters.where(name: name).first
+    render json: filter
   end
 
   def _delete_filter

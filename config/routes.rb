@@ -40,6 +40,7 @@ Rails.application.routes.draw do
       get "_cancel_create_ps"
       post "save_filter" unless OACIS_READ_ONLY
       post "_delete_filter" unless OACIS_READ_ONLY
+      get "_find_filter"
     end
 
     parameter_set_actions = ["show"]
