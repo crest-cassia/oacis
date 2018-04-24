@@ -15,7 +15,7 @@
         .col-md-4.filter_form_field
           %a#delete_field_btn{href:'#'}
             %i.fa.fa-times{style: "padding-top: 10px;"}
-          #error_message{style: "display: inline;"}
+          #error_message{style: "display: inline; color: red;"}
     %a#add_field_btn{href:'#'}
       %i.fa.fa-plus
   .modal-footer
@@ -76,15 +76,33 @@
     // when ok is clicked
     $('#parameter_filter_ok').on('click', function() {
       const q = [];
+      let has_error = false;
       $('#filter_form .row').each(function(i,o) {
         const param = $(o).find('select#param').val();
+        const type = $(o).find('select#param option:selected').data('param-type');
         const matcher = $(o).find('select#matcher').val();
         const val = $(o).find('input#value').val();
+        const err = validate_value(type, val);
+        if(err) {
+          $(o).find('#error_message').text(err);
+          has_error = true;
+        }
         q.push([param,matcher,val]);
       });
+      if(has_error) { return; }
       const sim_path = "#{raw simulator_path(simulator)}";
       var path = sim_path + '?q=' + encodeURIComponent(JSON.stringify(q));
       location.href = path;
     });
+    function validate_value(type, val) {
+      if(!val) { return "must not be empty"; }
+      else if(type=="Integer") {
+        if( val.search(/^[-]?[0-9]+$/) != 0 ) { return "must be an Integer"; }
+      }
+      else if(type=="Float") {
+        if( val.search(/^[+-]?\d+(\.\d+)?$/) != 0 ) { return "must be a Float"; }
+      }
+      return false;
+    }
   });
 
