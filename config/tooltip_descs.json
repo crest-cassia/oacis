@@ -1,5 +1,5 @@
 {
-  "hosts": {
+  "host": {
     "name": "Hostname of the remote server. Set up your `~/.ssh/config` such that you can connect to the remote host by the name specified in this field.<br />e.g. `localhost` or `my_host1`",
     "status": "A switch controlling if you are going to use this host. When you would like to stop the submission temporarily, maybe due to maintenance of the server, set this field to `disabled`",
     "work_base_dir": "The path to the work directory. The work directory is the place where jobs are executed. Please specify the directory dedicated to OACIS jobs.<br />e.g. `~/work`",
@@ -11,9 +11,9 @@
     "executable_simulators": "List of executable simulators on that host.",
     "executable_analyzers": "List of executable analyzers on that host."
    },
-   "simulators": {
+   "simulator": {
      "name":"Name of the simulator. Only alphanumeric characters and underscore (‘_’) are available. Must be unique.<br />e.g. `my_great_simulator`",
-     "definition_of_parameters":"Definition of input parameters. Specify name, type(Integer, Float, String), default value, and short explanation for each input parameter.", 
+     "definition_of_parameters":"Input parameter name.<br/>e.g. `param1`", 
      "pre_process_script":"Script executed at the computational host before the job. When no pre-process is necessary, leave it empty.",
      "local_pre_process_script":"Script executed at OACIS server before the job. When no local-pre-preprocess is necessary leave it empty.",
      "command":"The command to execute the simulator. It is recommended to specify it by the absolute path or the relative path from the home directory.<br/>e.g. `~/path/to/my_simulator.out`",
@@ -28,7 +28,7 @@
    "analyzer": {
      "name":"Name of the analyzer. Only alphanumeric characters and underscore (‘_’) are available. Must be unique within in each simualtor.",
      "type":"Select `on_run` for a Run-Analyzer. Select `on_parameter_set` for a PS-Analyzer.",
-     "definition_of_parameters":"Definition of input parameters. Specify name, type(Integer, Float, String, Boolean), default value, and explanation for each input parameter. If the analyzer does not have parameters, leave it blank.",
+     "definition_of_parameters":"Input parameter name.<br/>e.g. `param1`", 
      "pre_process_script":"Script executed at the computational host before the job. When no pre-process is necessary, leave it empty.",
      "local_pre_process_script":"Script executed at OACIS server before the job. When no local-pre-preprocess is necessary leave it empty.",
      "command":"The command to execute the analyzer. It is recommended to specify it by the absolute path or the relative path from the home directory.<br/>e.g. `~/path/to/my_simulator.out`",
