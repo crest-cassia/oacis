@@ -2,7 +2,7 @@
 .parameter-definition-field
   .form-group.row.no-margin.no-gutter.small-margin-bottom
     .col-md-3
-      = f.text_field :key, placeholder: "Name", disabled: disabled, class: 'form-control'
+      = f.text_field :key, placeholder: "Name", disabled: disabled, class: 'form-control', data: tooltip_data(:simulator,:definition_of_parameters)
     .col-md-2
       = f.select :type, ParametersUtil::TYPES, {}, disabled: disabled, class: 'form-control'
     .col-md-3

@@ -3,5 +3,8 @@ jQuery(function() {
   $("a[rel~=tooltip], .has-tooltip").tooltip();
 });
 jQuery(function() {
-  $('[data-toggle="tooltip"]').tooltip()
+  $("body").tooltip({
+    selector: '[data-toggle="tooltip"]',
+    trigger: 'hover'
+  });
 });
