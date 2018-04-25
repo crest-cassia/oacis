@@ -6,10 +6,6 @@
     .col-md-3
       = f.text_field(:name, class: ['form-control'], data: tooltip_data(:host,:name))
   .form-group
-    = f.label_c(:status)
-    .col-md-3
-      = f.select(:status, Host::HOST_STATUS, {}, class: 'form-control', data: tooltip_data(:host,:status))
-  .form-group
     = f.label_c(:work_base_dir)
     .col-md-3
       - if @host.work_base_dir_is_not_editable?
