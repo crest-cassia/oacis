@@ -1,15 +1,18 @@
 %h3 List of Parameter Sets
 
 .filter_set_area.paramset_title_area_item
-  %i#parameter_set_filter_modal_btn.fa.fa-search.fa-lg.clickable.add_padding.add_margin_bottom{onclick: "$('#parameter_set_filter_form_modal').modal('show');", data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
-  %span#parameter_filter_selected.add_padding.add_margin_bottom
-  - if @filter
-    = @filter.name if @filter.name
-    = raw(query_badge(@filter))
-    %a#parameter_save_filter_btn{href: "#", onclick: "$('#filter_name_form_modal').modal('show');", data: {q: @filter}}
-      Save
-    %a#parameter_save_filter_btn{href: simulator_path(@simulator)}
-      Clear
+  %div{style: "float:left; margin-top: 7px; width: 80%"}
+    %i#parameter_set_filter_modal_btn.fa.fa-search.fa-lg.clickable{onclick: "$('#parameter_set_filter_form_modal').modal('show');", style: "padding: 5px;", data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
+    %span#parameter_filter_selected
+    - if @filter
+      = @filter.name if @filter.name
+      = raw(query_badge(@filter))
+      %a#parameter_save_filter_btn{href: "#", onclick: "$('#filter_name_form_modal').modal('show');", data: {q: @filter}}
+        Save
+      %a#parameter_save_filter_btn{href: simulator_path(@simulator)}
+        Clear
+    - else
+      not filtering
   - unless OACIS_READ_ONLY
     %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator), style: "float: right; margin-right: 3px;"}
       New Parameter Set

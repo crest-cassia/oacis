@@ -1,4 +1,4 @@
-%table.table.table-striped
+%table.table.table-striped.table-condensed
   %thead
   %tbody
     %tr
@@ -57,4 +57,4 @@
 - unless OACIS_READ_ONLY
   = link_to 'Edit', edit_host_path(@host), class: 'btn btn-info'
   = link_to 'Back to Index', hosts_path, class: 'btn btn-default'
-  = link_to 'Destroy', @host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @host.destroyable?
+  = link_to 'Delete', @host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @host.destroyable?

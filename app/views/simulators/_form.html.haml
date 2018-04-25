@@ -69,22 +69,24 @@
     = raw(label_c('Executable_on'))
     .col-md-10
       = hidden_field_tag "simulator[executable_on_ids][]", nil
-      - Host.all.each do |host|
-        .checkbox
-          %label{ for: dom_id(host) }
-            = check_box_tag "simulator[executable_on_ids][]", host.id.to_s, @simulator.executable_on_ids.include?(host.id), id: dom_id(host)
-            = host.name
+      .checkbox
+        - Host.all.each do |host|
+          %div
+            %label{ for: dom_id(host) }
+              = check_box_tag "simulator[executable_on_ids][]", host.id.to_s, @simulator.executable_on_ids.include?(host.id), id: dom_id(host)
+              = host.name
   - if @duplicating_simulator
     .form-group
       %label.col-md-2.control-label
         Analyzers to copy
       .col-md-10
         = hidden_field_tag "duplicating_simulator", @duplicating_simulator.id
-        - @duplicating_simulator.analyzers.each do |azr|
-          .checkbox
-            %label{ for: dom_id(azr) }
-              = check_box_tag "copied_analyzers[]", azr.id.to_s, @copied_analyzers.include?(azr), id: dom_id(azr)
-              = "#{azr.simulator.name} / #{azr.name}"
+        .checkbox
+          - @duplicating_simulator.analyzers.each do |azr|
+            %div
+              %label{ for: dom_id(azr) }
+                = check_box_tag "copied_analyzers[]", azr.id.to_s, @copied_analyzers.include?(azr), id: dom_id(azr)
+                = "#{azr.simulator.name} / #{azr.name}"
   .form-group
     .col-md-4.col-md-offset-2
       = f.submit(class: 'btn btn-primary')

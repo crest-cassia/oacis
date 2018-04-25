@@ -6,6 +6,7 @@ function create_parameter_sets_list(selector, default_length) {
     order: [[3, "desc"]],
     autoWidth: false,
     pageLength: default_length,
+    lengthMenu: [[10, 25, 50, 100, 200],[10, 25, 50, 100, 200]],
     "columnDefs": [{
       "searchable": false,
       "orderable": false,
@@ -14,7 +15,8 @@ function create_parameter_sets_list(selector, default_length) {
     dom: 'C<"clear">lrtip',
     colVis: {
       exclude: [0, ($("th", selector).size()-1)],
-      restore: "Show All Columns"
+      restore: "show all",
+      buttonText: "show/hide columns"
     },
     bStateSave: true,
     ajax: $(selector).data('source'),
@@ -26,7 +28,7 @@ function create_parameter_sets_list(selector, default_length) {
   const actionUrl = '/parameter_sets/_delete_selected';
   $(selector+'_length').css('height', '45px');
   $(selector+'_length').append(
-    '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="params_list_refresh"></i>' +
+    '<i class="fa fa-refresh padding-half-em reload_icon clickable" id="params_list_refresh"></i>' +
     '<div class="auto_reload_setting">' +
     '<label class="form-check-label clickable" for="params_list_refresh_cb">auto reload<input type="checkbox" class="form-check-input" id="params_list_refresh_cb" /></label>' +
     '<label for="params_list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id="params_list_refresh_tb" size="10"/>sec</label>' +
@@ -38,7 +40,7 @@ function create_parameter_sets_list(selector, default_length) {
     '<input type="hidden" name="authenticity_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
     '<span class="add-margin-top pull-left">Selected <span id="ps_count"></span>  Parameters Sets</span>' +
     '<input type="hidden" name="id_list" id="ps_selected_id_list">' +
-    '<input type="button" class="btn btn-primary margin-half-em" value="Delete" id="ps_delete_sel">' +
+    '<input type="button" class="btn btn-warning margin-half-em" value="Delete" id="ps_delete_sel">' +
     '<input type="button" class="btn btn-primary margin-half-em" value="Create Runs" id="ps_run_sel" data-toggle="modal" data-target="#create_runs_on_selected_modal">' +
     '</form>' +
     '</div>'

@@ -3,11 +3,11 @@ module HostsHelper
   def host_status_label(status)
     case status
     when :enabled
-      '<span class="label label-success" style="width: 70px; display: inline-block;">enabled</span>'
+      '<span class="label label-success status-label">started</span>'
     when :disabled
-      '<span class="label label-default" style="width: 70px; display: inline-block;">suspended</span>'
+      '<span class="label label-default status-label"">suspended</span>'
     else
-      "<span class=\"label\" style=\"width: 70px; display: inline-block;\">#{status}</span>"
+      "<span class=\"label status-label\" >#{status}</span>"
     end
   end
 end
