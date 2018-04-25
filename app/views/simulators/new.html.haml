@@ -1,3 +1,5 @@
 .page-header
-  %h1= @duplicating_simulator ? "Duplicating #{@duplicating_simulator.name}" : "New Simulator"
+  %h1
+    = @duplicating_simulator ? "Duplicating #{@duplicating_simulator.name}" : "New Simulator"
+    = render partial: 'link_to_doc'
 = render partial: "form"

@@ -1,3 +1,5 @@
 .page-header
-  %h1 New Analyzer
+  %h1
+    New Analyzer
+    = render partial: 'link_to_doc'
 = render "form", simulator: @analyzer.simulator, analyzer: @analyzer
