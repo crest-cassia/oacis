@@ -136,7 +136,10 @@ pre {
 .tooltip-inner {
   max-width: unset;
 }
-.wide-tooltip .tooltip {width: 250px;}
+.wide-tooltip .tooltip {width: 280px; line-height: 1.4}
+.wide-tooltip .tooltip dl {margin-top: 3px; margin-bottom: 3px;}
+.wide-tooltip .tooltip dt {float: left;}
+.wide-tooltip .tooltip dd {margin-left: 70px; text-align: left;}
 // See http://stackoverflow.com/questions/19982651
 //     http://stackoverflow.com/questions/24448991
 //     https://github.com/crest-cassia/oacis/issues/455
