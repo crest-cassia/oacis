@@ -16,7 +16,7 @@
   .form-group
     = label_tag('num_runs', 'Target # of Runs', class: 'col-md-2 control-label')
     .col-md-3
-      = select_tag('num_runs', options_for_select([0,1,2,3,4,5,10,20], selected: (@num_runs || 0)), class: 'form-control')
+      = select_tag('num_runs', options_for_select([0,1,2,3,4,5,10,20], selected: (@num_runs || 1)), class: 'form-control')
   #runs_fields
     = fields_for run do |builder|
       = render 'runs/fields', run: builder.object, f: builder
