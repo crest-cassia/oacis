@@ -83,11 +83,7 @@ module ApplicationHelper
   def progress_bar_tooltip(counts)
     tag = ""
     [:finished,:failed,:running,:submitted,:created].each do |stat|
-      tag += <<-EOS
-        <div class="progress-bar-tooltip" id="#{stat}_count">
-          #{status_label(stat)} #{counts[stat]}
-        </div>
-      EOS
+      tag += "<div>#{status_label(stat)}<span id=\"#{stat}_count\">#{counts[stat]}</span></div>"
     end
     tag
   end

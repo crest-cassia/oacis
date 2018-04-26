@@ -51,15 +51,15 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
       }
     }
     if ($(params_list_id) != null){ /* parameter set list exists */
-      const psStatusTr = $(params_list_id);
       const psStatusDiv = $(params_list_id).find(".progress");
       if (psStatusDiv != null) {
-        const tooltip_h = {};
-        tooltip_h["finished"] = ps_counts["finished"];
-        tooltip_h["failed"] = ps_counts["failed"];
-        tooltip_h["running"] = ps_counts["running"];
-        tooltip_h["submitted"] = ps_counts["submitted"];
-        psStatusDiv.attr("data-original-title", JSON.stringify(tooltip_h));
+        let tooltip_h = psStatusDiv.attr("data-original-title")
+          .replace(/<span id=\"finished_count">\d+<\/span>/, '<span id="finished_count">'+ps_counts["finished"]+'</span>')
+          .replace(/<span id=\"failed_count">\d+<\/span>/, '<span id="failed_count">'+ps_counts["failed"]+'</span>')
+          .replace(/<span id=\"running_count">\d+<\/span>/, '<span id="running_count">'+ps_counts["running"]+'</span>')
+          .replace(/<span id=\"submitted_count">\d+<\/span>/, '<span id="submitted_count">'+ps_counts["submitted"]+'</span>')
+          .replace(/<span id=\"created_count">\d+<\/span>/, '<span id="created_count">'+ps_counts["created"]+'</span>');
+        psStatusDiv.attr("data-original-title", tooltip_h);
         let percentSuccess = 0.0;
         let percentDanger = 0.0;
         let percentWarning = 0.0;
