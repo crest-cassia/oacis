@@ -20,7 +20,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
     const params_list_id = "#params_list_" + ps_id;
     const analysis_list_id = "#analysis_list_" + oid;
 
-    if ($(run_list_id) != null) { /* run list exists */
+    if ($(run_list_id).length) { /* run list exists */
       switch (status) {
         case 'submitted':
           class_tobe = "label-info";
@@ -50,16 +50,16 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         $(versionTd).text(data["version"]);
       }
     }
-    if ($(params_list_id) != null){ /* parameter set list exists */
-      const psStatusTr = $(params_list_id);
+    if ($(params_list_id).length){ /* parameter set list exists */
       const psStatusDiv = $(params_list_id).find(".progress");
-      if (psStatusDiv != null) {
-        const tooltip_h = {};
-        tooltip_h["finished"] = ps_counts["finished"];
-        tooltip_h["failed"] = ps_counts["failed"];
-        tooltip_h["running"] = ps_counts["running"];
-        tooltip_h["submitted"] = ps_counts["submitted"];
-        psStatusDiv.attr("data-original-title", JSON.stringify(tooltip_h));
+      if (psStatusDiv.length) {
+        let tooltip_h = psStatusDiv.attr("data-original-title")
+          .replace(/<span id=\"finished_count">\d+<\/span>/, '<span id="finished_count">'+ps_counts["finished"]+'</span>')
+          .replace(/<span id=\"failed_count">\d+<\/span>/, '<span id="failed_count">'+ps_counts["failed"]+'</span>')
+          .replace(/<span id=\"running_count">\d+<\/span>/, '<span id="running_count">'+ps_counts["running"]+'</span>')
+          .replace(/<span id=\"submitted_count">\d+<\/span>/, '<span id="submitted_count">'+ps_counts["submitted"]+'</span>')
+          .replace(/<span id=\"created_count">\d+<\/span>/, '<span id="created_count">'+ps_counts["created"]+'</span>');
+        psStatusDiv.attr("data-original-title", tooltip_h);
         let percentSuccess = 0.0;
         let percentDanger = 0.0;
         let percentWarning = 0.0;
@@ -81,7 +81,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         psStatusDiv.find(".progress-bar-info").text(String(percentSubmitted) + "%");
       }
     }
-    if ($(analysis_list_id) != null) { /* analyses list exists */
+    if ($(analysis_list_id).length) { /* analyses list exists */
       switch (status) {
         case 'submitted':
           class_tobe = "label-info";

@@ -1,8 +1,13 @@
 = render partial: "shared/breadcrumb", locals: {links: breadcrumb_links_for(@param_set)}
 
 .page-header
-  %h1 Parameter Set
-  %h4= @param_set.dir
+  - param_string = @param_set.v.map {|key,val| "#{key}=#{val}" }.join(', ')
+  %h1
+    Parameter Set
+    %small= "(#{param_string})"
+  = "ID : #{@param_set.id}"
+  %br
+  = "data directory: #{@param_set.dir}"
 
 %div.tabbable
   %ul.nav.nav-tabs
@@ -17,12 +22,13 @@
 
   .tab-content
     .tab-pane#tab-about
+      %div{style:"margin-top: 20px;"}
+        - unless OACIS_READ_ONLY
+          = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
+          = link_to 'Delete', @param_set, method: :delete, data: { confirm: 'Are you sure?'}, class: 'btn btn-warning'
+        = link_to 'Show in JSON', parameter_set_path(@param_set, format: :json), class: 'btn btn-default'
       = render partial: "shared/parameters_table", locals: {parameters_hash: @param_set.v}
       = render "similar_parameter_sets_list", parameter_set: @param_set
-      - unless OACIS_READ_ONLY
-        = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
-        = link_to 'Destroy', @param_set, method: :delete, data: { confirm: 'Are you sure?'}, class: 'btn btn-warning'
-      = link_to 'Show in JSON', parameter_set_path(@param_set, format: :json), class: 'btn btn-default'
 
     .tab-pane.active#tab-list-runs
       = render "runs", parameter_set: @param_set

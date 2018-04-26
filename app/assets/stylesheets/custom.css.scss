@@ -59,15 +59,26 @@ i.padding-left-half-em {
   padding-right: 8px;
 }
 .navbar-nav li a {
-  padding-top: 26px;
-  padding-bottom: 19px;
+  padding-top: 22px;
+  padding-bottom: 8px;
 }
 #navbar-collapse {
-  font-size: 21px;
+  font-size: 18px;
 }
 .navbar-brand {  
   padding-top: 6px;
   padding-bottom: 3px;
+}
+.navbar {
+  background-color: #3a5269;
+  border-color: #3a5269;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  background-color: transparent;
+}
+.well {
+  padding: 14px;
 }
 .add-margin-bottom{
   margin-bottom: 16px;
@@ -88,9 +99,15 @@ table.dataTable td {
 .clickable {
   cursor: pointer;
 }
+.label {
+  border-radius: 1em;
+}
 .status-label {
   display: inline-block;
   width: 70px;
+  border-radius: 0.5em;
+  position: relative;
+  bottom: 1px;
 }
 tt.short-id {
   font-family:Consolas,Monaco,Lucida Console,monospace;
@@ -151,13 +168,11 @@ pre {
 textarea.form-control {
   padding: 8px 12px;
 }
-table.dataTable {
-  font-size: 14px;
-}
 div.progress {
   height: 13px;
   padding: 0;
   border: 0;
+  margin-top: 4px;
 }
 .progress-bar {
   line-height: 14px;
@@ -178,10 +193,30 @@ div.auto_reload_setting input {
 div.auto_reload_setting * {
   line-height: 33px;
 }
+i.reload_icon {
+  float: left;
+  margin: 4px;
+}
 .breadcrumb {
   text-transform: none;
+  font-size: 14px;
 }
 .filter_form_field {
   padding-left: 5px;
   padding-right: 5px;
+}
+span.dynatree-node a {
+  font-size: 14px;
+}
+pre {
+  padding: 5px;
+  margin-bottom: 8px;
+}
+input[type="radio"],
+input[type="checkbox"] {
+  margin-top: 5px;
+  min-height: 10px;
+}
+.alert {
+  padding: 10px;
 }

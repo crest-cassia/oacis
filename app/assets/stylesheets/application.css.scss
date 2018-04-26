@@ -13,10 +13,13 @@
  *= require dynatree/skin
  *= require font-awesome
 */
-$line-height-base: 1;
+// $line-height-base: 1.4;
+$table-condensed-cell-padding:  3px;
+$font-size-small: 14px;
 $border-radius-base: 4px;
 $border-radius-large: 6px;
 $border-radius-small: 3px;
+// $brand-primary: red;
 @import "bootswatch/yeti/variables";
 @import "bootstrap-sprockets";
 @import "bootstrap";

@@ -20,7 +20,7 @@ $(function() {
     const actionUrl = '/runs/_delete_selected';
     $(selector+'_length').css('height', '45px');
     $(selector+'_length').append(
-      '<i class="fa fa-refresh padding-half-em auto_reload_setting clickable" id="runs_list_refresh"></i>' +
+      '<i class="fa fa-refresh padding-half-em reload_icon clickable" id="runs_list_refresh"></i>' +
       '<div class="auto_reload_setting">' +
       '<label class="form-check-label clickable" for="runs_list_refresh_cb">auto reload<input type="checkbox" class="form-check-input" id="runs_list_refresh_cb" /></label>' +
       '<label for="runs_list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id="runs_list_refresh_tb" size="10">sec</label>' +
@@ -32,7 +32,7 @@ $(function() {
       '<input type="hidden" name="authenticity_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
       '<span class="add-margin-top pull-left add-padding-right">Selected <span id="runs_count"></span> Runs</span>' +
       '<input type="hidden" name="id_list" id="run_selected_id_list">' +
-      '<input type="button" class="btn btn-primary margin-half-em" value="Delete" id="runs_delete_sel">' +
+      '<input type="button" class="btn btn-warning margin-half-em" value="Delete" id="runs_delete_sel">' +
       '</form>' +
       '</div>'
     );

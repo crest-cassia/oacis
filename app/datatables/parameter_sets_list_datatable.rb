@@ -19,9 +19,9 @@ class ParameterSetsListDatatable
 
   def self.header(simulator)
     if OACIS_READ_ONLY
-      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="ps_check_all" value="true" disabled="disabled" /></th>'
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" disabled="disabled" /></th>'
     else
-      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="ps_check_all" value="true" /></th>'
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" /></th>'
     end
     header = [ col0,
                '<th class="span1" style="min-width: 150px;">Progress</th>',
@@ -44,8 +44,7 @@ private
       tmp = []
       attr = OACIS_READ_ONLY ? {align: "center", disabled: "disabled"} : {align: "center"}
       tmp << @view.check_box_tag("checkbox[ps]", ps.id, false, attr)
-      counts = runs_status_counts(ps)
-      progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
+      progress = @view.progress_bar(runs_status_counts(ps))
       tmp << @view.raw(progress)
       tmp << @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps) )
       tmp << @view.distance_to_now_in_words(ps.updated_at)

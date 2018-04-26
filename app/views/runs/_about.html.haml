@@ -77,6 +77,6 @@
 
 - if @run.submitted_to
   %h3 Script
-  %pre~ @run.job_script
+  %pre.pre-scrollable~ @run.job_script
 
 = link_to 'Show in JSON', run_path(@run, format: :json), class: 'btn btn-default'

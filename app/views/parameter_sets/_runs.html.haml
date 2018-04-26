@@ -1,6 +1,4 @@
-- param_string = parameter_set.v.map {|key,val| "#{key}=#{val}" }.join(', ')
-%h3= "Runs on (#{param_string})"
-
+%div{style: "margin-top: 20px;"}
 %table.table.table-condensed.table-hover.table-striped#runs_list{:'data-source' => "#{_runs_list_parameter_set_path(parameter_set.to_param, format: "json")}"}
   %thead
     %tr

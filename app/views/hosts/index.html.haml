@@ -1,11 +1,11 @@
 .page-header
   %h1 Hosts
 
-%table.table.table-striped
+%table.table.table-striped.table-condensed
   %thead
     %tr
       %th Name
-      %th Status
+      %th Polling
       %th Work base dir
       %th Mounted work base dir
       %th Max # of jobs
@@ -18,7 +18,11 @@
     - @hosts.each do |host|
       = content_tag_for :tr, host do
         %td= link_to(host.name, host)
-        %td= link_to(raw(host_status_label(host.status) + raw('<i class="fa fa-power-off padding-left-half-em" data-html="true" data-original-title="toggle<br> status" data-toggle="tooltip"/>')), _toggle_status_host_path(host))
+        %td
+          = raw(host_status_label(host.status))
+          %a{href: _toggle_status_host_path(host)}
+            %i.fa.fa-power-off.padding-left-half-em{data: {toggle: 'tooltip', 'original-title': 'suspend/restart polling', placement: 'bottom'}}
+          / = link_to(raw('<i class="fa fa-power-off padding-left-half-em" data-html="true" data-original-title="toggle<br> status" data-toggle="tooltip"/>')), _toggle_status_host_path(host))
         %td= host.work_base_dir
         %td= host.mounted_work_base_dir
         %td= host.max_num_jobs
@@ -27,7 +31,7 @@
           = " / "
           = Run.where(submitted_to: host).in(status: [:created, :submitted, :running]).count
         %td
-          = link_to 'Destroy', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if host.destroyable? and (!OACIS_READ_ONLY)
+          = link_to 'Delete', host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if host.destroyable? and (!OACIS_READ_ONLY)
 
 - unless OACIS_READ_ONLY
   %a.btn.btn-primary{href: new_host_path} New Host

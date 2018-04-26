@@ -16,4 +16,4 @@
 - unless OACIS_READ_ONLY
   = link_to 'Edit', edit_host_group_path(@hg), class: 'btn btn-info'
   = link_to 'Back to Index', hosts_path, class: 'btn btn-default'
-  = link_to 'Destroy', @hg, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @hg.destroyable?
+  = link_to 'Delete', @hg, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @hg.destroyable?
