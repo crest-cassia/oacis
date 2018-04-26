@@ -18,10 +18,10 @@ class ParameterSetsListDatatable
   end
 
   def self.header(simulator)
-    if OACIS_READ_ONLY
-      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" disabled="disabled" /></th>'
-    else
+    if OACIS_ACCESS_LEVEL >= 1
       col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" /></th>'
+    else
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" disabled="disabled" /></th>'
     end
     header = [ col0,
                '<th class="span1" style="min-width: 150px;">Progress</th>',
@@ -42,7 +42,7 @@ private
   def data
     parameter_sets_list.map do |ps|
       tmp = []
-      attr = OACIS_READ_ONLY ? {align: "center", disabled: "disabled"} : {align: "center"}
+      attr = (OACIS_ACCESS_LEVEL==0) ? {align: "center", disabled: "disabled"} : {align: "center"}
       tmp << @view.check_box_tag("checkbox[ps]", ps.id, false, attr)
       progress = @view.progress_bar(runs_status_counts(ps))
       tmp << @view.raw(progress)

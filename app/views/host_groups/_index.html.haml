@@ -14,8 +14,8 @@
         %td
           = raw( hg.hosts.map(&:name).join('<br/>') )
         %td
-          = link_to 'Delete', hg, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if hg.destroyable? and (!OACIS_READ_ONLY)
+          = link_to 'Delete', hg, method: :delete, data: { confirm: 'Are you sure?' }, class: 'label label-warning' if hg.destroyable? and (OACIS_ACCESS_LEVEL == 2)
 
-- unless OACIS_READ_ONLY
+- if OACIS_ACCESS_LEVEL == 2
   %a.btn.btn-primary{href: new_host_group_path} New Host Group
 

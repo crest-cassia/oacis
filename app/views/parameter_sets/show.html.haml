@@ -23,7 +23,7 @@
   .tab-content
     .tab-pane#tab-about
       %div{style:"margin-top: 20px;"}
-        - unless OACIS_READ_ONLY
+        - if OACIS_ACCESS_LEVEL >= 1
           = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
           = link_to 'Delete', @param_set, method: :delete, data: { confirm: 'Are you sure?'}, class: 'btn btn-warning'
         = link_to 'Show in JSON', parameter_set_path(@param_set, format: :json), class: 'btn btn-default'

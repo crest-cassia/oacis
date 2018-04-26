@@ -1,6 +1,6 @@
 ---
-read_only: true
+access_level: # 2: full access, 1: collaboration, 0: read only
+  2
 authentication: {username: password}
-auto_reload_tables: true
 binding_ip: 'localhost'
 

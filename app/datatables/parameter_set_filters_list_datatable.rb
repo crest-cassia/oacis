@@ -26,8 +26,9 @@ class ParameterSetFiltersListDatatable
     @filters.each_with_index do |filter, i|
       tmp = []
       delete_url = Rails.application.routes.url_helpers._delete_filter_simulator_path(@simulator)
-      trash = OACIS_READ_ONLY ? @view.raw(@view.fa_icon('trash-o'))
-                  : "<a href='#' data-delete-url='#{delete_url}' data-filter-id='#{filter.id}'>#{@view.raw(@view.fa_icon('trash-o'))}</a>"
+      trash = (OACIS_ACCESS_LEVEL >= 1) ?
+                  "<a href='#' data-delete-url='#{delete_url}' data-filter-id='#{filter.id}'>#{@view.raw(@view.fa_icon('trash-o'))}</a>" :
+                  @view.raw(@view.fa_icon('trash-o'))
       tmp << @view.raw(
           "<ul style=\"list-style: none; margin: 0px; padding: 0px;\">
              <li style=\"float: left;\"><a href=\"#{filter_path(filter)}\">#{filter.name}</a></li>

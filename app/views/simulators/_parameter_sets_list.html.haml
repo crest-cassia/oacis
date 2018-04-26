@@ -7,13 +7,14 @@
     - if @filter
       = @filter.name if @filter.name
       = raw(query_badge(@filter))
-      %a#parameter_save_filter_btn{href: "#", onclick: "$('#filter_name_form_modal').modal('show');", data: {q: @filter}}
-        Save
+      - if OACIS_ACCESS_LEVEL >= 1
+        %a#parameter_save_filter_btn{href: "#", onclick: "$('#filter_name_form_modal').modal('show');", data: {q: @filter}}
+          Save
       %a#parameter_save_filter_btn{href: simulator_path(@simulator)}
         Clear
     - else
       not filtering
-  - unless OACIS_READ_ONLY
+  - if OACIS_ACCESS_LEVEL >= 1
     %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator), style: "float: right; margin-right: 3px;"}
       New Parameter Set
 
@@ -28,7 +29,7 @@
         = raw(th_element)
   %tbody
 
-- unless OACIS_READ_ONLY
+- if OACIS_ACCESS_LEVEL >= 1
   = render partial: 'create_runs_on_selected_modal', locals: {simulator: @simulator}
 
 #parameter_set_filter_form_modal.modal.large.fade
@@ -46,20 +47,21 @@
       .modal-body.large
         = render "filters_list", simulator: @simulator
 
-#filter_name_form_modal.modal.large.fade
-  .modal-dialog.modal-vertical-centered
-    .modal-content
-      .modal-header
-        %button.close{type: "button", "data-dismiss": "modal"}
-          &times;
-        %h4 Save this filter as
-      = form_tag(save_filter_simulator_path(@simulator), class: 'form-horizontal', id: 'save_filter_form') do
-        .modal-body.large
-          %h4 Name
-          = text_field_tag "filter_name", "filter1", class: 'form-control', id: 'filter_name_field'
-          = hidden_field_tag :q, @filter&.conditions.to_json
-        .modal-footer
-          %input#parameter_save_filter_set_ok.btn.btn-primary{type: "submit", value: "Save", "data-dismiss": "modal", 'data-find-field-path': _find_filter_simulator_path(@simulator)}
+- if OACIS_ACCESS_LEVEL >= 1
+  #filter_name_form_modal.modal.large.fade
+    .modal-dialog.modal-vertical-centered
+      .modal-content
+        .modal-header
+          %button.close{type: "button", "data-dismiss": "modal"}
+            &times;
+          %h4 Save this filter as
+        = form_tag(save_filter_simulator_path(@simulator), class: 'form-horizontal', id: 'save_filter_form') do
+          .modal-body.large
+            %h4 Name
+            = text_field_tag "filter_name", "filter1", class: 'form-control', id: 'filter_name_field'
+            = hidden_field_tag :q, @filter&.conditions.to_json
+          .modal-footer
+            %input#parameter_save_filter_set_ok.btn.btn-primary{type: "submit", value: "Save", "data-dismiss": "modal", 'data-find-field-path': _find_filter_simulator_path(@simulator)}
 
 :javascript
   $(function() {

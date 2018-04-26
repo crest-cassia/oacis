@@ -7,7 +7,7 @@
         = raw(th_element)
   %tbody
 
-- unless OACIS_READ_ONLY
+- if OACIS_ACCESS_LEVEL >= 1
   = render partial: 'simulators/create_runs_on_selected_modal', locals: {simulator: @param_set.simulator}
 
 :javascript
