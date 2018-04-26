@@ -58,6 +58,8 @@
           .form-group
             .col-md-9.col-md-offset-3
               %a.btn.btn-primary#show_progress_button Show
+              %input#progress_auto_reload_check{type: "checkbox",style:"margin-left: 10px;"}
+              %label{for: "progress_auto_reload_check"}auto reload
           %svg#spin_arc{width: 300, height: 100}
 :javascript
   var url = "#{_progress_simulator_path}" + ".json";
@@ -65,19 +67,15 @@
     var url_with_param = url + "?row_parameter=" + rp + "&column_parameter=" + cp;
     draw_progress_overview(url_with_param);
   }
-  var refreshIntervalId;
   $('#show_progress_button').on('click', function() {
     var cp = $('#column_parameter option:selected').val();
     var rp = $('#row_parameter option:selected').val();
     show_progress(rp, cp);
-    if( window.bEnableAutoReload ) {
-      if(refreshIntervalId) { clearInterval(refreshIntervalId); }
-      refreshIntervalId = setInterval( function() {
-        if( $("#tab-progress").length > 0 && $("#tab-progress")[0].classList.contains("active") ) {
-          show_progress(rp, cp);
-        }
-      }, 10000);
-    }
+    setInterval( function() {
+      if( $("#tab-progress").length > 0 && $("#tab-progress")[0].classList.contains("active") && $('#progress_auto_reload_check').prop('checked') ) {
+        show_progress(rp, cp);
+      }
+    }, 10000);
   });
   $(function() {
     // in order to avoid 'position: relative' style of '.col-lg-12' tag, we put 'tooltip' before '.col-lg-12' tag
