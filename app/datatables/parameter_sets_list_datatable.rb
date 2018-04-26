@@ -19,9 +19,9 @@ class ParameterSetsListDatatable
 
   def self.header(simulator)
     if OACIS_READ_ONLY
-      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="ps_check_all" value="true" disabled="disabled" /></th>'
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" disabled="disabled" /></th>'
     else
-      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="ps_check_all" value="true" /></th>'
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" /></th>'
     end
     header = [ col0,
                '<th class="span1" style="min-width: 150px;">Progress</th>',

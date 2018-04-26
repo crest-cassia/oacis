@@ -20,7 +20,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
     const params_list_id = "#params_list_" + ps_id;
     const analysis_list_id = "#analysis_list_" + oid;
 
-    if ($(run_list_id) != null) { /* run list exists */
+    if ($(run_list_id).length) { /* run list exists */
       switch (status) {
         case 'submitted':
           class_tobe = "label-info";
@@ -50,9 +50,9 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         $(versionTd).text(data["version"]);
       }
     }
-    if ($(params_list_id) != null){ /* parameter set list exists */
+    if ($(params_list_id).length){ /* parameter set list exists */
       const psStatusDiv = $(params_list_id).find(".progress");
-      if (psStatusDiv != null) {
+      if (psStatusDiv.length) {
         let tooltip_h = psStatusDiv.attr("data-original-title")
           .replace(/<span id=\"finished_count">\d+<\/span>/, '<span id="finished_count">'+ps_counts["finished"]+'</span>')
           .replace(/<span id=\"failed_count">\d+<\/span>/, '<span id="failed_count">'+ps_counts["failed"]+'</span>')
@@ -81,7 +81,7 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         psStatusDiv.find(".progress-bar-info").text(String(percentSubmitted) + "%");
       }
     }
-    if ($(analysis_list_id) != null) { /* analyses list exists */
+    if ($(analysis_list_id).length) { /* analyses list exists */
       switch (status) {
         case 'submitted':
           class_tobe = "label-info";

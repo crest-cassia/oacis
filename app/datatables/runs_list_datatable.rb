@@ -21,9 +21,9 @@ class RunsListDatatable
 
   def self.header(isJobs=false)
     if isJobs || OACIS_READ_ONLY
-      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="run_check_all" value="true" disabled="disabled" /></th>'
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="run_check_all" value="true" disabled="disabled" /></th>'
     else
-      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 5px;"><input type="checkbox" id="run_check_all" value="true" /></th>'
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="run_check_all" value="true" /></th>'
     end
     header  = [col0,
              '<th class="span1">RunID</th>', '<th class="span1">status</th>', '<th class="span1">priority</th>',
