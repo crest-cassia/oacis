@@ -63,7 +63,7 @@ class Analysis
     if analyzer.support_input_json
       ""
     else
-      analyzer.parameter_definitions.map {|pd| parameters[pd.key] }.join(' ')
+      Shellwords.shelljoin(analyzer.parameter_definitions.map {|pd| parameters[pd.key] })
     end
   end
 

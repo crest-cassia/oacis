@@ -49,7 +49,7 @@ class Run
     else
       params = simulator.parameter_definitions.map {|pd| parameter_set.v[pd.key]}
       params << seed
-      params.join(' ')
+      Shellwords.shelljoin(params)
     end
   end
 

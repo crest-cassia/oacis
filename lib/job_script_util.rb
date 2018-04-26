@@ -51,12 +51,14 @@ EOS
   EXPANDED_VARIABLES = ["run_id", "is_mpi_job", "omp_threads", "mpi_procs", "cmd", "print_version_command"]
 
   def self.script_for(job)
+    cmd = job.command_with_args
+    cmd.sub!(/;$/, '') if job.args.empty?
     variables = {
       "run_id" => job.id.to_s,
       "is_mpi_job" => job.executable.support_mpi ? "true" : "false",
       "omp_threads" => job.omp_threads,
       "mpi_procs" => job.mpi_procs,
-      "cmd" => job.command_with_args.sub(/;$/, ''),
+      "cmd" => cmd,
       "print_version_command" => job.executable.print_version_command.to_s.gsub(/\"/, '\\"')
     }
     # semi-colon in the last of the command causes bash syntax error
