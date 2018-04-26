@@ -12,8 +12,7 @@
       = content_tag_for :tr, simulator do
         %td= link_to h(simulator.name), simulator_path(simulator)
         %td= distance_to_now_in_words(simulator.updated_at)
-        - counts = simulator.runs_status_count
-        %td#progress= progress_bar(counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted])
+        %td#progress= progress_bar(simulator.runs_status_count)
 
 - unless OACIS_READ_ONLY
   .well

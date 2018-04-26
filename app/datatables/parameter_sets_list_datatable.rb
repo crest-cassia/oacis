@@ -44,8 +44,7 @@ private
       tmp = []
       attr = OACIS_READ_ONLY ? {align: "center", disabled: "disabled"} : {align: "center"}
       tmp << @view.check_box_tag("checkbox[ps]", ps.id, false, attr)
-      counts = runs_status_counts(ps)
-      progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
+      progress = @view.progress_bar(runs_status_counts(ps))
       tmp << @view.raw(progress)
       tmp << @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps) )
       tmp << @view.distance_to_now_in_words(ps.updated_at)

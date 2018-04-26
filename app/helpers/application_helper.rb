@@ -32,23 +32,24 @@ module ApplicationHelper
     return links
   end
 
-  def progress_bar( total, num_success, num_danger, num_warning, num_submitted)
-    percent_success = 0.0
-    percent_danger = 0.0
-    percent_warning = 0.0
+  def progress_bar(counts)
+    percent_finished = 0.0
+    percent_failed = 0.0
+    percent_running = 0.0
     percent_submitted = 0.0
-    if total.to_f > 0
-      percent_success = ( num_success.to_f / total.to_f * 100 ).round
-      percent_danger = ( num_danger.to_f / total.to_f * 100 ).round
-      percent_warning = ( num_warning.to_f / total.to_f * 100 ).round
-      percent_submitted = ( num_submitted.to_f / total.to_f * 100 ).round
+    total = counts.values.inject(:+)
+    if total > 0
+      percent_finished = ( counts[:finished].to_f / total.to_f * 100 ).round
+      percent_failed = ( counts[:failed].to_f / total.to_f * 100 ).round
+      percent_running = ( counts[:running].to_f / total.to_f * 100 ).round
+      percent_submitted = ( counts[:submitted].to_f / total.to_f * 100 ).round
     end
 
     tags = <<-EOS
-      <div class="progress" data-toggle="tooltip" title=#{{finished: num_success, failed: num_danger, running: num_warning, submitted: num_submitted}.to_json}>
-        #{progress_bar_tag_for('success', percent_success)}
-        #{progress_bar_tag_for('danger', percent_danger)}
-        #{progress_bar_tag_for('warning', percent_warning)}
+      <div class="progress" data-toggle="tooltip" data-html="true" data-placement="bottom" data-original-title='#{progress_bar_tooltip(counts)}'>
+        #{progress_bar_tag_for('success', percent_finished)}
+        #{progress_bar_tag_for('danger', percent_failed)}
+        #{progress_bar_tag_for('warning', percent_running)}
         #{progress_bar_tag_for('info', percent_submitted)}
       </div>
     EOS
@@ -77,6 +78,18 @@ module ApplicationHelper
     tag = <<-EOS
       <div class="progress-bar progress-bar-#{status}" style="width: #{percent}%">#{content}</div>
     EOS
+  end
+
+  def progress_bar_tooltip(counts)
+    tag = ""
+    [:finished,:failed,:running,:submitted,:created].each do |stat|
+      tag += <<-EOS
+        <div class="progress-bar-tooltip" id="#{stat}_count">
+          #{status_label(stat)} #{counts[stat]}
+        </div>
+      EOS
+    end
+    tag
   end
 
   # to prevent UTF-8 parameter from being added in the URL for GET requests
