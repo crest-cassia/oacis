@@ -16,7 +16,6 @@ gem 'record_tag_helper', '~> 1.0'
   # should be updated after less-rails fixed issue https://github.com/metaskills/less-rails/issues/122
 gem "haml-rails"
 gem "sass-rails"
-gem 'therubyracer' # necessary to compile less
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'jquery-datatables-rails', ' ~> 3.2.0'
@@ -44,9 +43,6 @@ group :test do
   gem "factory_bot_rails"
   gem "database_cleaner"
   gem 'rails-controller-testing'
-  gem "simplecov", :require => false
-  gem "simplecov-rcov", :require => false
-  gem "ci_reporter", '~> 1.9'
   gem "faker"
   if RUBY_VERSION >= '2.0.0'
     gem "pry-byebug"

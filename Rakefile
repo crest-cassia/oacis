@@ -6,5 +6,4 @@
 $VERBOSE=nil if RUBY_VERSION =~ /^2\.4/
 
 require File.expand_path('../config/application', __FILE__)
-require 'ci/reporter/rake/rspec'
 AcmProto::Application.load_tasks
