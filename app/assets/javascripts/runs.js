@@ -27,7 +27,7 @@ $(function() {
       '</div>'
     );
     $(selector+'_length').parent().after(
-      '<div class="dataTables_length" id="selected_runs_ctl_div" style="height: 45px; clear: both; padding-left: 15px;">' +
+      '<div class="dataTables_length" id="selected_runs_ctl_div" style="height: 43px; clear: both; padding-left: 15px;">' +
       '<form name="runs_form" id="runs_select_form" action="' + actionUrl + '" method="post">' +
       '<input type="hidden" name="authenticity_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
       '<span class="add-margin-top pull-left add-padding-right">Selected <span id="runs_count"></span> Runs</span>' +
