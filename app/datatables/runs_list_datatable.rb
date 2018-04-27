@@ -20,7 +20,7 @@ class RunsListDatatable
   end
 
   def self.header(isJobs=false)
-    if isJobs || OACIS_READ_ONLY
+    if isJobs || OACIS_ACCESS_LEVEL == 0
       col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="run_check_all" value="true" disabled="disabled" /></th>'
     else
       col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="run_check_all" value="true" /></th>'
@@ -39,7 +39,7 @@ private
     a = []
     runs_lists.each do |run|
       tmp = []
-      attr = (@isJobs or OACIS_READ_ONLY) ? {align: "center", disabled: "disabled"} : {align: "center"}
+      attr = (@isJobs or OACIS_ACCESS_LEVEL==0) ? {align: "center", disabled: "disabled"} : {align: "center"}
       tmp << @view.check_box_tag("checkbox[run]", run.id, false, attr)
       tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )

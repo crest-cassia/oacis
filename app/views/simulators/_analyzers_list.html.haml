@@ -5,7 +5,7 @@
       - AnalyzersListDatatable.header(@simulator).each do |th_element|
         = raw(th_element)
   %tbody
-- unless OACIS_READ_ONLY
+- if OACIS_ACCESS_LEVEL == 2
   = link_to 'New Analyzer', new_simulator_analyzer_path(@simulator), class: 'btn btn-primary'
 #analyzers_list_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered

@@ -2,7 +2,7 @@
 
 - sim = parameter_set.simulator
 - azrs = sim.analyzers_on_parameter_set
-- unless OACIS_READ_ONLY or azrs.empty?
+- if (OACIS_ACCESS_LEVEL >= 1) and azrs.exists?
   %h3 Create Analysis
   - anl = parameter_set.analyses.build
   = form_for( anl, :url => parameter_set_analyses_path(parameter_set), html: {class: 'form-horizontal'}, remote: true ) do |f|

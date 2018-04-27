@@ -1,5 +1,5 @@
 %div{style:"margin-top: 20px;"}
-  - unless OACIS_READ_ONLY
+  - if OACIS_ACCESS_LEVEL == 2
     = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
     = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
     = link_to 'Delete', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'

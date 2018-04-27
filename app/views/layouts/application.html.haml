@@ -28,9 +28,9 @@
             = yield
         %footer
           .pull-right
-            = "OACIS: Version #{APP_VERSION}"
+            = "Version: #{APP_VERSION}, Access Level: #{OACIS_ACCESS_LEVEL}"
             %br
-            Send your feedback to 
+            Send your feedback to
             = mail_to "oacis-dev@googlegroups.com"
 
 :javascript
@@ -46,4 +46,3 @@
     return false;
   }
 
-  window.bEnableAutoReload = #{AUTO_RELOAD_TABLES};

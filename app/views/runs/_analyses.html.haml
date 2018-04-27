@@ -2,7 +2,7 @@
 
 - if @run.status == :finished or @run.status == :failed
   - @sim = @param_set.simulator
-  - unless @sim.analyzers_on_run.empty? or OACIS_READ_ONLY
+  - if OACIS_ACCESS_LEVEL >= 1 and @sim.analyzers_on_run.exists?
     %h3 Create Analysis
     = form_for( @run.analyses.build, :url => run_analyses_path(@run), html: {class: 'form-horizontal'}, remote: true ) do |f|
       .form-group

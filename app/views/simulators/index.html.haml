@@ -15,6 +15,6 @@
         %td= distance_to_now_in_words(simulator.updated_at)
         %td#progress= progress_bar(simulator.runs_status_count)
 
-- unless OACIS_READ_ONLY
+- if OACIS_ACCESS_LEVEL == 2
   .well
     %a.btn.btn-primary.btn-sm{href: new_simulator_path} New Simulator
