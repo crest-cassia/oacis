@@ -31,6 +31,9 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         case 'finished':
           class_tobe = "label-success";
           break;
+        case 'failed':
+          class_tobe = "label-danger";
+          break;
       }
     
       const statusDiv = $(run_list_id).find(".status-label");
@@ -43,11 +46,11 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
       const jobIdTd = $(run_list_id).find(".run_job_id");
       $(jobIdTd).text(job_id);
 
-      if (status === 'finished') {
+      if (status === 'finished' || status === 'failed') {
         const elapsedTd = $(run_list_id).find(".run_elapsed");
         const versionTd = $(run_list_id).find(".run_version");
-        $(elapsedTd).text(data["real_time"]);
-        $(versionTd).text(data["version"]);
+        if(data["real_time"]) { $(elapsedTd).text(data["real_time"]); }
+        if(data["version"]) { $(versionTd).text(data["version"]); }
       }
     }
     if ($(params_list_id).length){ /* parameter set list exists */
@@ -92,6 +95,9 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         case 'finished':
           class_tobe = "label-success";
           break;
+        case 'failed':
+          class_tobe = "label-danger";
+          break;
       }
 
       const statusDiv = $(analysis_list_id).find(".status-label");
@@ -101,9 +107,9 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
       $(statusDiv).addClass(class_tobe);
       $(statusDiv).text(status);
 
-      if (status === 'finished') {
+      if (status === 'finished' || status === 'failed') {
         const versionTd = $(analysis_list_id).find(".arn_version");
-        $(versionTd).text(data["version"]);
+        if(data["version"]) { $(versionTd).text(data["version"]); }
       }
     }
   },
