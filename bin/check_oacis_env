@@ -37,12 +37,12 @@ end
 def verify_mongodb_version
   print "checking mongodb version ...     "
   v = `mongo --version`
-  if v =~ /3\.(\d)+\.\d+/ and $1.to_i >= 2
+  if v =~ /3\.(\d)+\.\d+/ and $1.to_i >= 4
     puts_ok
     return true
   else
     puts_error
-    puts "\tmongoDB version must be 3.2 or later, but is #{v}"
+    puts "\tmongoDB version must be 3.4 or later, but is #{v}"
     return false
   end
 end
@@ -60,10 +60,38 @@ def verify_mongod_process_is_running
   end
 end
 
+def verify_redis_version
+  print "checking redis version ...       "
+  v = `redis-cli --version`
+  if v =~ /^redis-cli (\d+)(\.\d+\.\d+)/ and $1.to_i == 4
+    puts_ok
+    return true
+  else
+    puts_error
+    puts "\tRedis version must be 4.x, but is #{$1}#{$2}"
+    return false
+  end
+end
+
+def verify_redis_server_is_running
+  print "checking redis server ...        "
+  v = `redis-cli PING`.chomp
+  if v == "PONG"
+    puts_ok
+    return true
+  else
+    puts_error
+    puts "\tredis-server is not running"
+    return false
+  end
+end
+
 if verify_ruby_version and
    verify_bundler_installation and
    verify_mongodb_version and
-   verify_mongod_process_is_running
+   verify_mongod_process_is_running and
+   verify_redis_version and
+   verify_redis_server_is_running
   puts "\e[32mAll the environment checks have passed!\e[0m"
 else
   exit 1
