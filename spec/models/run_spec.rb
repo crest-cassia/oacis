@@ -306,6 +306,15 @@ describe Run do
         expect(command).to eq "#{sim.command} #{prm.v["L"]} #{prm.v["T"]} #{run.seed}"
         expect(run.input).to be_nil
       end
+
+      it "args are shell escaped" do
+        pdef = ParameterDefinition.new(key:"S",type: "String",default:"a")
+        sim = Simulator.create!(name: 'abc', parameter_definitions: [pdef], command: "echo", support_input_json: false)
+        ps = sim.find_or_create_parameter_set({"S"=>"a ; } "})
+        run = ps.runs.build(seed: 1234)
+        s = run.command_with_args
+        expect(s).to eq (sim.command+' a\ \;\ \}\  1234')
+      end
     end
 
     context "for simulators which receives parameters as _input.json" do
