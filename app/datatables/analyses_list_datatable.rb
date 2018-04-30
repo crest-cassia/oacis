@@ -21,6 +21,10 @@ class AnalysesListDatatable
     }
   end
 
+  def self.header
+    self::HEADER
+  end
+
 private
 
   def data
