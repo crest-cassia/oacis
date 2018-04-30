@@ -13,9 +13,8 @@
 
 :javascript
   $(function() {
-    var id = 'analyses';
-    const oTable = datatables_for_analyses_table();
-    const objList = $("#tab-list-analyses");
-    $("#tab-list-analyses").setIntervalCommon(id,oTable,objList);
+    const oTable = datatables_for_analyses_table('#analyses_list');
+    const oDom = $("#analyses_list_wrapper");
+    setIntervalCommon(oTable, oDom);
   });
 
