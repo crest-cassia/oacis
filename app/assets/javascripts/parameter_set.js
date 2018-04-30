@@ -26,15 +26,11 @@ function create_parameter_sets_list(selector, default_length) {
       }
   });
   const actionUrl = '/parameter_sets/_delete_selected';
-  $(selector+'_length').css('height', '45px');
-  $(selector+'_length').append(
-    '<i class="fa fa-refresh padding-half-em reload_icon clickable" id="list_refresh"></i>' +
-    '<div class="auto_reload_setting">' +
-    '<label class="form-check-label clickable" for="list_refresh_cb">auto reload<input type="checkbox" class="form-check-input" id="list_refresh_cb" /></label>' +
-    '<label for="list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id="list_refresh_tb" size="10"/>sec</label>' +
-    '</div>'
-  );
-  $(selector+'_length').after(
+  const lengthDiv = $(selector+'_length');
+  lengthDiv.css('height', '45px');
+  setupRefreshTools(oPsTable, lengthDiv);
+
+  lengthDiv.after(
     '<div class="dataTables_length" id="selected_pss_ctl_div" style="height: 45px;">' +
     '<form name="ps_form" id="ps_select_form" action="' + actionUrl + '" method="post">' +
     '<input type="hidden" name="authenticity_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
