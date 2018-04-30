@@ -3,7 +3,7 @@ function datatables_for_runs_table(selector) {
     processing: true,
     serverSide: true,
     searching: false,
-    order: [[ 8, "desc" ], [ 1, "desc"]],
+    order: [[ 9, "desc" ], [ 1, "desc"]],
     destroy: true,
     "columnDefs": [{
       "orderable": false,
