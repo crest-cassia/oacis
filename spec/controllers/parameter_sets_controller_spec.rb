@@ -233,7 +233,7 @@ describe ParameterSetsController do
               expect {
                 post :create, params: @valid_param
               }.to change { ParameterSet.count }.by_at_least(10)
-            }.to have_enqueued_job(SaveParameterSetsJob)
+            }.to change {SaveTask.count}.by(1)
 
             st = SaveTask.first
             expect(st.param_values).to eq({"L"=>[1,2,3,4,5,6,7,8,9,10,11,12], "T"=>[1,2,3,4,5,6,7,8,9,10,11,12]})
@@ -253,9 +253,8 @@ describe ParameterSetsController do
             expect {
               expect {
                 post :create, params: @valid_param
-              }.to_not have_enqueued_job(SaveParameterSetsJob)
-            }.to_not change { ParameterSet.count }
-            expect(SaveTask.count).to eq 0
+              }.to_not change { ParameterSet.count }
+            }.to_not change { SaveTask.count }
 
             expect(response).to render_template('new')
           end
