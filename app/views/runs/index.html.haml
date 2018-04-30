@@ -4,11 +4,21 @@
 %div.tabbable
   %ul.nav.nav-tabs
     %li.active
-      %a{"href": "#tab-runs", "data-toggle": "tab"} Runs
+      %a{"href": "#tab-runs-unfinished", "data-toggle": "tab"} Unfinished Runs
+    %li
+      %a{"href": "#tab-runs-finished", "data-toggle": "tab"} Finished Runs
   %div.tab-content
-    %div.tab-pane.active#tab-runs
-      %h3 Jobs for Runs
+    %div.tab-pane.active#tab-runs-unfinished
+      %h3 Unfinished Runs
       %table.table.table-condensed.table-hover.table-striped#unfinished_runs_list{'data-source': _jobs_table_runs_path(format: 'json', run_status: ['created','submitted','running'])}
+        %thead
+          %tr
+            - RunsListDatatable.header.each do |header|
+              = raw(header)
+        %tbody
+    %div.tab-pane#tab-runs-finished
+      %h3 Finished Runs
+      %table.table.table-condensed.table-hover.table-striped#finished_runs_list{'data-source': _jobs_table_runs_path(format: 'json', run_status: ['finished','failed'])}
         %thead
           %tr
             - RunsListDatatable.header.each do |header|
@@ -17,8 +27,13 @@
 
 :javascript
   $(function() {
-    const objTable = datatables_for_runs_table('#unfinished_runs_list');
-    const objList = $("#tab-runs");
-    $("#tab-runs").setIntervalCommon('runs',objTable,objList);
+    // unfinished runs
+    const oUnfinishedRuns = datatables_for_runs_table('#unfinished_runs_list');
+    const oUnfinishedRunsTab = $("#tab-runs-unfinished");
+    $("#tab-runs-unfinished").setIntervalCommon('runs',oUnfinishedRuns,oUnfinishedRunsTab);
+    // finished runs
+    const oFinishedRuns = datatables_for_runs_table('#finished_runs_list');
+    const oFinishedRunsTab = $("#tab-runs-finished");
+    $("#tab-runs-unfinished").setIntervalCommon('runs',oFinishedRuns,oFinishedRunsTab);
   });
 
