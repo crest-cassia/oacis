@@ -13,7 +13,8 @@ function datatables_for_runs_table(selector) {
     "createdRow": function(row, data, dataIndex) {
       const lnId = data[data.length-1];
       $(row).attr('id', lnId);
-    }
+    },
+    pageLength: 100
   });
 
   // reload settings

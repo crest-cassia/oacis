@@ -34,7 +34,8 @@ $(function() {
       "createdRow": function(row, data, dataIndex) {
         const lnId = data[data.length-1];
         $(row).attr('id', lnId);
-      }
+      },
+      pageLength: 100
     });
     const wrapperDiv = $(selector).closest(selector+'_wrapper');
     const lengthDiv = wrapperDiv.find(selector+'_length');
