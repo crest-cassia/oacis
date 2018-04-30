@@ -9,7 +9,7 @@
         }
         if(objList.length > 0) {
           for(var i=0; i<objList.length; i++){
-            if(objList[i].classList.contains("tab-pane")){ 
+            if(objList[i].classList.contains("tab-pane")){
               if (objList[i].classList.contains("active")) {
                 objTable.ajax.reload(null, false)
               }

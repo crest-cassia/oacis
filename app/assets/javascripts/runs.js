@@ -71,11 +71,11 @@ function datatables_for_runs_table(selector) {
   let setSelectRunsCtlDivDisp = (dispFlag) => {
     if (dispFlag) {
       $('#selected_runs_ctl_div').show();
-      $('#runs_list_length').hide();
+      $(selector+'_length').hide();
     }
     else {
       $('#selected_runs_ctl_div').hide();
-      $('#runs_list_length').show();
+      $(selector+'_length').show();
     }
   }
   setSelectRunsCtlDivDisp(false);
