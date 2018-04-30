@@ -64,16 +64,15 @@ class ParameterSetsController < ApplicationController
       render action: "new"
       return
     end
-    task = simulator.save_tasks.create(param_values: casted, run_params: run_params.to_h, num_runs: @num_runs)
+    task = simulator.save_tasks.build(param_values: casted, run_params: run_params.to_h, num_runs: @num_runs)
 
     created = task.make_ps_in_batches(true)
 
     if task.remaining?
-      SaveParameterSetsJob.perform_later(task.id.to_s)
+      task.save!
       flash[:notice] = "#{task.creation_size} ParameterSets and #{task.creation_size*@num_runs} runs are being created"
       redirect_to simulator
     else
-      task.destroy
       num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
       num_created_runs = simulator.runs.count - previous_num_runs
       if num_created_ps == 0 and num_created_runs == 0

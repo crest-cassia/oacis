@@ -1,7 +1,6 @@
 namespace :daemon do
 
   SERVER_PID = "tmp/pids/server.pid"
-  RESQUE_WORKER_PID = "tmp/pids/resque_worker.pid"
 
   desc "start daemons"
   task :start do
@@ -12,19 +11,6 @@ namespace :daemon do
 
     threads = []
     level = AcmProto::Application.config.user_config["access_level"] || 2
-    if level == 0
-      $stderr.puts "READ_ONLY mode is enabled"
-    else
-      threads << Thread.new do
-        if is_resque_worker_running?
-          $stderr.puts "resque worker is already running: #{RESQUE_WORKER_PID}"
-        else
-          here = File.dirname(__FILE__)
-          cmd = "bundle exec ruby -r '#{Rails.root.join('config','environment.rb')}' '#{File.join(here, 'boot_resque_worker.rb')}' start"
-          system(cmd)
-        end
-      end
-    end
     threads << Thread.new do
       if is_server_running?
         $stderr.puts "server is already running: #{SERVER_PID}"
@@ -91,12 +77,6 @@ namespace :daemon do
       cmd = "bundle exec ruby -r '#{Rails.root.join('config','environment.rb')}' '#{File.join(here, 'boot_service_worker.rb')}' stop"
       system(cmd)
     end
-
-    threads << Thread.new do
-      cmd = "bundle exec ruby -r '#{Rails.root.join('config','environment.rb')}' '#{File.join(here, 'boot_resque_worker.rb')}' stop"
-      system(cmd)
-    end
-
     threads.each {|t| t.join }
   end
 
@@ -125,16 +105,6 @@ namespace :daemon do
 
     pid=File.open(SERVER_PID).gets.chomp
     pname="rails s -d"
-    is_process_running?(pid, pname)
-  end
-
-  def is_resque_worker_running?
-    return false unless File.exist?(RESQUE_WORKER_PID)
-
-    return false unless File.open(RESQUE_WORKER_PID).gets.present?
-
-    pid=File.open(RESQUE_WORKER_PID).gets.chomp
-    pname="resque"
     is_process_running?(pid, pname)
   end
 end
