@@ -108,7 +108,4 @@ Rails.application.routes.draw do
   end
 
   root :to => "simulators#index"
-
-  # for resque dashboard
-  mount Resque::Server, :at => "/resque"
 end
