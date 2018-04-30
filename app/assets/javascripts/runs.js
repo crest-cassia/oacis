@@ -45,11 +45,6 @@ function datatables_for_runs_table(selector) {
       $('input[name="checkbox[run]"]').prop('checked', false).trigger('change');
     }
   });
-  $(document).on('click', '.span1', function() {
-    $('#run_selected_id_list').val('');
-    $('#runs_count').text('0');
-    $('#run_check_all').prop('checked', false).trigger('change');
-  });
   $(document).on('change','input[name="checkbox[run]"]', function() {
     let checkedCnt = 0;
     const numCheckBoxes = $('input[name="checkbox[run]"]').length;
