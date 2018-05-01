@@ -29,7 +29,6 @@
         = link_to 'Show in JSON', parameter_set_path(@param_set, format: :json), class: 'btn btn-default'
       = render partial: "shared/parameters_table", locals: {parameters_hash: @param_set.v}
       = render "similar_parameter_sets_list", parameter_set: @param_set
-
     .tab-pane.active#tab-list-runs
       = render "runs", parameter_set: @param_set
     .tab-pane#tab-list-analyses
