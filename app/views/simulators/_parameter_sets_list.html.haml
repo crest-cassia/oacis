@@ -65,10 +65,7 @@
 
 :javascript
   $(function() {
-    var id = 'params';
-    const objTable = create_parameter_sets_list('#params_list', 100);
-    const objList = $("#tab-list-parameters");
-    $("#tab-list-parameters").setIntervalCommon(id,objTable,objList);
+    const objPSTable = create_parameter_sets_list('#params_list', 100);
   });
   $(function () {
     $('#ps_check_all').prop('checked', false); // workaround for a bug of Chrome

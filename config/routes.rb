@@ -16,7 +16,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :analyses, only: ["index"] do
+  resources :analyses, only: [] do
     collection do
       get "_analyses_table" # for ajax, datatables
     end

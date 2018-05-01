@@ -34,12 +34,9 @@
             Close
 
 :javascript
-   $(function() {
-     var id = "runs";
-     const objTable = datatables_for_runs_table();
-     const objList = $("#tab-list-runs");
-     $("#tab-list-runs").setIntervalCommon(id,objTable,objList); 
-   });
-   $(function() {
+  $(function() {
+    const oRunsTable = datatables_for_runs_table('#runs_list');
+  });
+  $(function() {
      $('#run_check_all').prop('checked', false);
-   });
+  });

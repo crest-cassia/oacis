@@ -20,11 +20,6 @@
           Close
 
 :javascript
-  var oAzrTable;
-  function reload_analyzers_table() {
-    oAzrTable.ajax.reload(null, false);
-  }
-
   $(function() {
     oAzrTable = $('#analyzers_list').DataTable({
       processing: true,
@@ -33,17 +28,6 @@
       pageLength: 10,
       ajax: $('#analyzers_list').data('source')
     });
-    $('#analyzers_list_length').append(
-      '<i class="fa fa-refresh padding-half-em reload_icon clickable" id="analyzers_list_refresh"></i>'  +
-      '<div class="auto_reload_setting">' +
-      '<label class="form-check-label clickable" for="analyzers_list_refresh_cb">auto reload<input type="checkbox" class="form-check-input" id="analyzers_list_refresh_cb" /></label>' +
-      '<label for="analyzers_list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id="analyzers_list_refresh_tb" size="10"/>sec</label>' +
-      '</div>'
-    );
-    var refresh_icon = $('#analyzers_list_length').children('#analyzers_list_refresh');
-    refresh_icon.on('click', reload_analyzers_table);
-
-    var id = "analyzers";
-    objList = $('#tab-about');
-    $('#tab-about').setIntervalCommon(id,oAzrTable,objList);
-  })
+    const lengthDiv = $('#analyzers_list_length');
+    setupRefreshTools(oAzrTable, lengthDiv);
+  });
