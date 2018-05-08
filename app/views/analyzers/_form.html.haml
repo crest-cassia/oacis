@@ -86,7 +86,7 @@
   $(function() {
     $('select#analyzer_type').change(function() {
       var selected = $(this).val();
-      var auto_run = $('select#analyzer_auto_run');
+      var auto_run = $('select#auto_run');
       if(selected == "on_run") {
         if( auto_run.children('[value=first_run_only]').size() == 0 ) {
           auto_run.append( $('<option>').val('first_run_only').text('first_run_only') );
