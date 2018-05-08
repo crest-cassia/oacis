@@ -1,34 +1,35 @@
-.form-group
-  = f.label(:submitted_to, class: 'col-md-2 control-label')
-  .col-md-3
-    - host_names = run.simulator.executable_on.map {|h| [h.name, h.id.to_s]}
-    - host_names += HostGroup.all.map {|hg| ["HostGroup:#{hg.name}", hg.id.to_s] }
-    - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
-    = f.select(:submitted_to, options_for_select(host_names, selected: selected_id), {}, {class: 'form-control'})
-.form-group
-  = f.label(:priority, 'Priorities of Runs', class: 'col-md-2 control-label')
-  .col-md-3
-    = f.select(:priority, options_for_select(Run::PRIORITY_ORDER.sort_by {|a| a[0]}.map {|a| [a[1], a[0]]}, selected: 1), {}, {class: 'form-control'})
-- if run.parameter_set.simulator.support_mpi
+#run_fields
   .form-group
-    = f.label(:mpi_procs, "MPI procs", class: 'col-md-2 control-label')
+    = f.label(:submitted_to, class: 'col-md-2 control-label')
     .col-md-3
-      = f.text_field(:mpi_procs, class: 'form-control')
-- if run.parameter_set.simulator.support_omp
+      - host_names = run.simulator.executable_on.map {|h| [h.name, h.id.to_s]}
+      - host_names += HostGroup.all.map {|hg| ["HostGroup:#{hg.name}", hg.id.to_s] }
+      - selected_id = run.submitted_to ? run.submitted_to.id.to_s : nil
+      = f.select(:submitted_to, options_for_select(host_names, selected: selected_id), {}, {class: 'form-control'})
   .form-group
-    = f.label(:omp_threads, "OMP threads", class: 'col-md-2 control-label')
+    = f.label(:priority, 'Priorities of Runs', class: 'col-md-2 control-label')
     .col-md-3
-      = f.text_field(:omp_threads, class: 'form-control')
-
-#host_parameters
+      = f.select(:priority, options_for_select(Run::PRIORITY_ORDER.sort_by {|a| a[0]}.map {|a| [a[1], a[0]]}, selected: 1), {}, {class: 'form-control'})
+  - if run.parameter_set.simulator.support_mpi
+    .form-group
+      = f.label(:mpi_procs, "MPI procs", class: 'col-md-2 control-label')
+      .col-md-3
+        = f.text_field(:mpi_procs, class: 'form-control')
+  - if run.parameter_set.simulator.support_omp
+    .form-group
+      = f.label(:omp_threads, "OMP threads", class: 'col-md-2 control-label')
+      .col-md-3
+        = f.text_field(:omp_threads, class: 'form-control')
+  #host_parameters
 
 :javascript
   $(function() {
-    $('select#run_submitted_to').change(function() {
+    $('#run_fields select#run_submitted_to').change(function() {
       var host_id = $(this).val();
+      var fields = $(this).closest('#run_fields');
       var update_mpi_omp_fields = function() {
-        var mpi_field = $('#run_mpi_procs');
-        var omp_field = $('#run_omp_threads');
+        var mpi_field = fields.find('#run_mpi_procs');
+        var omp_field = fields.find('#run_omp_threads');
         if( mpi_field.size() + omp_field.size() == 0 ) return;
         var url = "#{_default_mpi_omp_simulator_url(run.simulator)}.json" + "?host_id=" + host_id;
         $.get(url, function(data) {
@@ -40,7 +41,7 @@
       var update_host_parameters = function() {
         var url = "#{_host_parameters_field_simulator_url(run.simulator)}" + "?host_id=" + host_id;
         $.get(url, function(data) {
-          $('#host_parameters').html(data);
+          fields.find('#host_parameters').html(data);
           if( $('#new_parameter_set').length > 0 ) {
             $('#new_parameter_set').trigger('change'); // necessary to update CLI command
           }
