@@ -7,8 +7,15 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
 
   received: function(data) {
     if(data['save_task_progress']) {
-      $('#ps_being_created_'+data['simulator_id']).html(data['message']);
-      return;
+      let target = $('#ps_being_created_'+data['simulator_id']);
+      if(target.length) {
+        target.html(data['message']);
+        let refresh_icon = $('#params_list_length #list_refresh');
+        if(refresh_icon.is(':visible')) {
+          refresh_icon.trigger('click');
+        }
+        return;
+      }
     }
     const oid = data["id"];
     const status = data["status"];
