@@ -132,19 +132,4 @@ describe RunsController do
       end
     end
   end
-
-  describe "DELETE destroy" do
-
-    it "reduces the number of runs in default scope" do
-      expect {
-        delete :destroy, params: {id: @run.to_param, format: 'json'}
-      }.to change(Run, :count).by(-1)
-    end
-
-    it "does not destroy the run" do
-      expect {
-        delete :destroy, params: {id: @run.to_param, format: 'json'}
-      }.to_not change { Run.unscoped.count }
-    end
-  end
 end

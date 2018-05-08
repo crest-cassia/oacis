@@ -62,7 +62,7 @@ Rails.application.routes.draw do
       end
 
       run_actions = ["show"]
-      run_actions += ["create", "destroy"] if OACIS_ACCESS_LEVEL >= 1
+      run_actions += ["create"] if OACIS_ACCESS_LEVEL >= 1
       analysis_actions = ["show"]
       analysis_actions += ["create", "destroy"] if OACIS_ACCESS_LEVEL >= 1
       resources :runs, only: run_actions do

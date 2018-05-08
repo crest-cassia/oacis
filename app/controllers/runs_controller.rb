@@ -90,16 +90,6 @@ class RunsController < ApplicationController
     end
   end
 
-  def destroy
-    @run = Run.find(params[:id])
-    @run.discard
-
-    respond_to do |format|
-      format.json { head :no_content }
-      format.js
-    end
-  end
-
   def _delete_selected
     selected_run_ids = params[:id_list].to_s.split(',')
 
