@@ -61,7 +61,7 @@ class SaveTask
       set_sequential_seeds(new_runs) if simulator.sequential_seed
       new_runs.each_with_index do |r,idx|
         r.save
-        if now == false && idx % 100 == 0
+        if now == false && idx % 20 == 0
           StatusChannel.broadcast_to('message', OacisChannelUtil.progressSaveTaskMessage(simulator, -created.size, -idx-1))
         end
       end
