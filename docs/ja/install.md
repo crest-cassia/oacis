@@ -54,10 +54,9 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 
 ### 前提条件
 
-- Ruby 2.5.1 (https://www.ruby-lang.org/)
-- MongoDB 3.6 (http://www.mongodb.org/)
+- Ruby 2.2 or 2.3 (2.4はv2.12.0から対応)
+- MongoDB 3.2以降 (http://www.mongodb.org/)
 - bundler (http://bundler.io/)
-- redis (https://redis.io/)
 
 Rubyのインストールにはrbenvまたはrvmを使って環境を整えるのがよいです。
 
@@ -69,99 +68,48 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
 ここではhomebrewを用いてセットアップしていきます。
 
 - rbenvのインストール
-    ``` sh
-    brew install rbenv ruby-build
-    echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bashrc
-    ```
-- rbenvを用いてruby 2.5.1をインストール
-    ``` sh
-    rbenv install 2.5.1 && rbenv global 2.5.1
-    ruby --version
-    ```
-    を実行して、`ruby 2.5.1....`と出力されれば成功
+    - `brew install rbenv ruby-build`
+    - `echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bashrc`
+- rbenvを用いてrubyをインストール
+    - `rbenv install 2.2.4 && rbenv global 2.2.4`
+    - `ruby --version` を実行して、`ruby 2.2.4....`と出力されれば成功
 - mongoDBをインストール
-    ``` sh
-    brew install mongo #インストール
-    brew services start mongodb #起動
-    ```
-    - `brew info mongo`コマンドを実行するとmongodを起動するコマンドが表示される。
-    - コマンドを実行すると、以後ログイン時にmongodも自動的に起動する。
+    - `brew install mongo` でインストール
+    - `brew info mongo`コマンドを実行するとmongodを起動するコマンドが表示される。(2017年4月現在 `brew services start mongodb`が起動のためのコマンド。)
+        - コマンドを実行すると、以後ログイン時にmongodも自動的に起動する。
     - `mongo` コマンドを実行し端末が表示されれば成功。`exit`で端末から抜ける
 - bundlerのインストール
-    ``` sh
-    gem install bundler
-    which bundle
-    ```
-    でコマンドへのパスが表示されればインストールに成功
-- redisのインストール
-    ``` sh
-    brew install redis
-    brew services start redis
-    ```
+    - `gem install bundler`
+    - `which bundle` でコマンドへのパスが表示されればインストールに成功
 
+#### Ubuntu14.04での前提条件の整え方
 
-#### Linuxでの前提条件の整え方
-ここではUbuntu 14.04を例に取り、apt-getを用いてセットアップしていきます。
+ここではapt-getを用いてセットアップしていきます。
 
-従来よりOACISをご利用の方は末尾の「更新」を御覧ください。
-- 前提環境(必要コマンド)の構築
-    ``` sh
-    sudo apt-get update
-    sudo apt-get install -y git build-essential wget libssl-dev libreadline-dev zlib1g-dev
-    ```
 - rbenvのインストール
-    ``` sh
-    git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-    git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
-    echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-    echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bashrc
-    eval "$(rbenv init -)"
-    ```
-- rbenvを用いてruby 2.5.1をインストール
-    ``` sh
-    rbenv install 2.5.1 && rbenv global 2.5.1
-    ruby --version
-    ```
-    を実行して、`ruby 2.5.1....`と出力されれば成功
-- mongoDB v3.6をインストール
-
-  Ubuntu以外のLinuxをお使いの場合は[Install MongoDB Community Edition on Linux
-    ](https://docs.mongodb.com/manual/administration/install-on-linux/)をご参照ください。
-    ``` sh
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5`
-    echo "deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.6 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list`
-    sudo apt-get update && sudo apt-get install mongodb-org
-    ```
-    - ここで`Geographic area`を聞かれた場合は`6. Asia`、`time zone`は`78. Tokyo`を指定。
-    - `mongo` コマンドを実行し端末が表示されれば成功。`exit`で端末から抜ける。
-
-    ``` sh
-    sudo service mongod start
-    ```
-    によってmongodを起動。以後、システムの再起動時にmongodも自動的に起動する。
-{% comment %}
+    - `sudo apt-get update; sudo apt-get install -y git build-essential wget libssl-dev libreadline-dev zlib1g-dev`
+    - `git clone https://github.com/rbenv/rbenv.git ~/.rbenv`
+    - `git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build`
+    - `echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc`
+    - `echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bashrc`
+    - `source ~/.bashrc`
+    - `eval "$(rbenv init -)"`
+- rbenvを用いてrubyをインストール
+    - `rbenv install 2.2.4 && rbenv global 2.2.4`
+    - `ruby --version` を実行して、`ruby 2.2.4....`と出力されれば成功
 - mongoDB v2.6をインストール
     - `sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10`
     - `echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list`
     - `sudo apt-get update && sudo apt-get install mongodb-org`
     - `sudo service mongod start`によってmongodを起動することができる。以後、システムの再起動時にmongodも自動的に起動する。
     - `mongo` コマンドを実行し端末が表示されれば成功。`exit`で端末から抜ける
-{% endcomment %}
 - bundlerのインストール
-    ``` sh
-    gem install bundler
-    which bundle
-    ```
-    でコマンドへのパスが表示されればインストールに成功
-- redisのインストール
-    ``` sh
-    apt-get install redis
-    service redis-server start
-    ```
+    - `gem install bundler`
+    - `which bundle` でコマンドへのパスが表示されればインストールに成功
 
-### インストール・railsの起動チェック
+### インストール
 
-まず手元にOACISのソースコード一式をgit cloneします。（gitがない場合はダウンロードします。）
+まず手元にOACISのソースコード一式をgit clonします。（gitがない場合はダウンロードします。）
 
 ```shell
 git clone --recursive -b master https://github.com/crest-cassia/oacis.git
@@ -213,7 +161,6 @@ bundle exec rake daemon:stop
 OACISが停止している間も実行中のジョブは計算ホストでそのまま動き続けます。次にOACISが起動したタイミングで完了したジョブがデータベースに取り込まれます。
 {% endcapture %}{% include tips %}
 
-
 ## (2) 計算ホストのセットアップ
 
 **チュートリアル実行用の仮想環境を利用する場合はこのステップは不要です。仮想環境をジョブ実行用のリモートホストとしても利用します。**
@@ -227,22 +174,9 @@ OACISが停止している間も実行中のジョブは計算ホストでその
     - (OACISホストにて) 公開鍵をリモートホストに転送する。
         - 公開鍵をリモートホストに転送します。 `scp ~/.ssh/id_rsa.pub user@remotehost:~`
             - 上記コマンドの "user", "remotehost" は各自の環境に合わせて書き換えてください。
-    - (OACISホストにて)`~/.ssh/config`ファイルを以下の形式で作成する。
-      ```config
-      Host connection_name
-        HostName remotehost
-        User user
-        IdentityFile ~/.ssh/id_rsa
-        port 22
-      ```
-      - `connection_name`には好きな名前を指定可能
-      - `User`にはログインユーザ名を指定
-      - `HostName`にリモートホストのアドレス(IP, localhostなど)を指定
-      - `IdentityFile`には生成した秘密鍵を指定
-      - OACIS v3より、IP・port・ユーザ名の指定はwebインターフェースを用いず、`~/.ssh/config`を参照する仕組みになりました。
     - (リモートホストにて) `cat ~/id_rsa.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys` を実行する。
     - (OACISホストにて) 接続確認を行う。
-        - `ssh connection_name` でパスワードを使わずにログインできたら成功です。
+        - `ssh user@remotehost` でパスワードを使わずにログインできたら成功です。
             - 鍵作成時にパスフレーズを入力した場合は、ログイン時にパスフレーズの入力が要求されます。OACISの実行時にはパスワードもパスフレーズも入力せずにログインできるようにセットアップする必要があります。パスフレーズの入力を省略するには
                 - (macOS El Capitan以前の場合) 初回ログインの際にはパスフレーズが要求されますが、以降はキーチェーンアクセスの機能によって入力を省略できます。
                 - (macOS Sierraの場合) `ssh-add ~/.ssh/id_rsa`を実行します。この際パスフレーズの入力を要求されますが、以降はパスフレーズの入力を省略できます。
@@ -288,67 +222,13 @@ ssh -N -f -L 3000:localhost:3000 server.example.com
 
 # 更新
 
-## OACISの更新
-"oacis"ディレクトリで以下のコマンドを実行してください。
+OACISを更新するためには、"oacis"ディレクトリで以下のコマンドを実行してください。
 
 ```
 bundle exec rake daemon:stop            # tentatively stop OACIS
 git pull origin master                  # get the latest source code of OACIS
 git pull origin master --tags
 git submodule update --init --recursive
-```
-
-
-## 環境の更新
-OACIS v3ではMongoDBをv3.6に、Rubyをv2.5.1にアップデート、および新規にredisをインストールする必要があります。
-
-### MongoDBの更新
-
-そのままアップデートすると、2.6 -> 3.0 -> 3.2 -> 3.4といった段階的アップデートが必要となるため、一旦アンインストールします。
-- データのバックアップ
-``` sh
-mongodump --db oacis_development #データをエクスポート
-mv /usr/local/var/mongodb ~/mongodb.backup #古いデータを移動・バックアップ
-```
-- 再インストール
-    - MacOSXの場合
-
-      詳細は「(1.2)手動でのOAICSのインストール」の「MacOSXでの前提条件の整え方」にある「mongoDB v3.6をインストール」を参照
-      ``` sh
-      brew uninstall mongo #アンインストール
-      brew update
-      brew install mongo
-      brew services start mongodb #起動
-      ```
-    - Ubuntu or Linuxの場合
-
-      詳細は「(1.2)手動でのOAICSのインストール」の「Ubuntu14.04での前提条件の整え方」にある「mongoDB v3.6をインストール」を参照
-      ``` sh
-      sudo apt-get autoremove mongodb-org #アンインストール
-      sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
-      echo "deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.6 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list
-      sudo apt-get update && sudo apt-get install mongodb-org
-      sudo service mongod start #起動
-      ```
-- データの書き戻し
-``` sh
-mkdir /usr/local/var/mongodb #データ保存先を新たに作る
-mongorestore --db oacis_development ~/dump/oacis_development #データベースをインポート
-```
-
-### Ruby・redisのセットアップ
-- Rubyの更新
-  ``` sh
-  rbenv install 2.5.1 && rbenv global 2.5.1
-  ```
-- redisのインストールと起動
-  ``` sh
-  apt-get install redis
-  service redis-server start
-  ```
-
-## OACISの再起動
-``` sh
 bundle install                          # install dependent libraries
 bundle exec rake daemon:start           # restart OACIS
 ```
