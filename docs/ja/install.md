@@ -159,6 +159,7 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     service redis-server start
     ```
 
+
 ### インストール・railsの起動チェック
 
 まず手元にOACISのソースコード一式をgit cloneします。（gitがない場合はダウンロードします。）
