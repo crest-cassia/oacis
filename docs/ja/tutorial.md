@@ -59,15 +59,13 @@ xsub の設定方法については、https://github.com/crest-cassia/xsub を�
 本チュートリアルでは以下の通りに設定してください。指定されていない項目はデフォルトのままにしてください。
 
 - Name: localhost
-    - OACIS内で使う名前。OACISホストの`~/ssh.config`で指定した`Host`フィールドの文字列。
-{% comment %}
+    - OACIS内で使う名前。任意のわかりやすい文字列でよい。
 - Hostname: localhost
     - SSHの時に利用する接続先ホストの端末名。
 - User: [自分の端末のユーザー名]
     - SSH接続時に利用する
 - SSH key: [自分の端末にログインする時に使用するSSH鍵のパス]
     - SSH接続時に利用する
-{% endcomment %}
 - Work base dir: `~/oacis_work`
     - ジョブがこのディレクトリ内で実行される
 - Mounted work base dir: `~/oacis_work`
