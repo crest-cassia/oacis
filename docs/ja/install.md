@@ -107,7 +107,7 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     - `gem install bundler`
     - `which bundle` でコマンドへのパスが表示されればインストールに成功
 
-### インストール
+### インストール・railsの起動チェック
 
 まず手元にOACISのソースコード一式をgit clonします。（gitがない場合はダウンロードします。）
 
