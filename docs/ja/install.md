@@ -155,7 +155,7 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     でコマンドへのパスが表示されればインストールに成功
 - redisのインストール
     ``` sh
-    apt-get install redis
+    sudo apt-get install redis
     service redis-server start
     ```
 
@@ -299,17 +299,19 @@ git submodule update --init --recursive
 ```
 
 
-## 環境の更新
+## v3への更新
 OACIS v3ではMongoDBをv3.6に、Rubyをv2.5.1にアップデート、および新規にredisをインストールする必要があります。
 
 ### MongoDBの更新
 
-そのままアップデートすると、2.6 -> 3.0 -> 3.2 -> 3.4といった段階的アップデートが必要となるため、一旦アンインストールします。
+そのままアップデートすると、2.6 -> 3.0 -> 3.2 -> 3.4といった段階的アップデートが必要となるため、一旦アンインストールします。MongoDBを一度に最新版に更新するとデータの互換性がないので、「OACISのデータのバックアップ」-> 「MongoDBを最新版に更新」-> 「OACISのデータのレストア」という手順で行うことを推奨します。ここではその手順を示します。
+
 - データのバックアップ
 ``` sh
 mongodump --db oacis_development #データをエクスポート
-mv /usr/local/var/mongodb ~/mongodb.backup #古いデータを移動・バックアップ
 ```
+実行後、`dump/oacis_development`に結果が出力されていることを確認
+
 - 再インストール
     - MacOSXの場合
 
@@ -332,8 +334,7 @@ mv /usr/local/var/mongodb ~/mongodb.backup #古いデータを移動・バック
       ```
 - データの書き戻し
 ``` sh
-mkdir /usr/local/var/mongodb #データ保存先を新たに作る
-mongorestore --db oacis_development ~/dump/oacis_development #データベースをインポート
+mongorestore --db oacis_development dump/oacis_development #データベースをインポート
 ```
 
 ### Ruby・redisのセットアップ
