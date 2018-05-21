@@ -60,11 +60,13 @@ OACIS submits jobs to the computational host based on this information.
 For this tutorial, fill in the form as follows. (For the fields not shown in this list, leave them with default values.)
 
 - Name: *localhost*
-    - The name used in OACIS. An arbitrary name which is easier for users to identify is fine.
+    - The name used in OACIS which you specified in `HOST` field of `~/.ssh/config` in OACIS host.
+{% comment %}
 - Hostname: *localhost*
     - Hostname used when making SSH connection. Either hostname or IP address is okay.
 - User: *[user name]*
     - This user name is used when making SSH connection.
+{% endcomment %}
 - Work base dir: *~/oacis_work*
     - The directories for job executions are created under this directory.
 - Mounted work base dir: *~/oacis_work*
