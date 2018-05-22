@@ -301,25 +301,27 @@ OACIS v3 requires MongoDB v3.6, Ruby v2.5.1 and redis, which are installed by fo
 
 
 ### Updating MongoDB
-To avoid step-by-step update such as 2.6 -> 3.0 -> 3.2 -> 3.6, uninstall first and re-install it. MongoDB database has no compatibility with different versions, following step as follows is recommended: backing up OACIS database -> update MongDB -> restore database.
+To upgrade MongoDB, it is required to upgrade MongoDB incrementally, like 2.6->3.0->3.2...->3.6.
+Here, to avoid such an incremental upgrade, we first dump the data of OACIS, upgrade the MongoDB, and restore the data to new MongoDB.
 
-- Backup database
+- dump the database
 ``` sh
 mongodump --db oacis_development #dump database
 ```
   - verify the data is exported in `dump/oacis_development`.
 
-- Re-install of MongoDB
+- upgrading MongoDB
     - For MacOSX
 
       refer "(1.2)Installing OACIS on a native machine"--"Setting up prerequisites in MacOS X"--"installing MongoDB" of this document for details.
       ``` sh
-      brew uninstall mongo #uninstall
+      brew uninstall mongo                         # uninstall old MongoDB
+      mv /usr/local/var/mongodb ~/mongodb.backup   # make a backup of the data file just in case
       brew update
-      brew install mongo
-      brew services start mongodb #restart
+      brew install mongo                           # install MongoDB3.6
+      brew services start mongodb                  # start service
       ```
-    - For Ubuntu or Linux
+    - For Ubuntu
 
       refer "(1.2)Installing OACIS on a native machine"--"Setting up prerequisites in Linux"--"install MongoDB v3.6" of this document for details.
       ``` sh
@@ -340,10 +342,20 @@ mongorestore --db oacis_development dump/oacis_development #import database into
   rbenv install 2.5.1 && rbenv global 2.5.1
   ```
 - install & restart redis
-  ``` sh
-  apt-get install redis
-  service redis-server start
-  ```
+    - For MacOSX
+      ```sh
+      brew install redis
+      brew services start redis
+      ```
+    - For Ubuntu
+      ``` sh
+      sudo apt-get install redis
+      sudo service redis-server start
+      ```
+
+### Editing SSH-config
+
+From version 3, OACIS refers to "~/.ssh/config" file to retrieve the SSH information. Fields "Hostname", "User", "Port", "IdentityFile" are removed from the Host setting.
 
 ## reboot OACIS
 ``` sh

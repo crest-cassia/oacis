@@ -44,12 +44,7 @@ We will explain the list of information which you need to specify when registeri
 |----------------------------|---------------------------------------------------------------------|
 | field                      | explanation                                                         |
 |:---------------------------|:--------------------------------------------------------------------|
-| Name                       | The name used in OACIS. You can specify an arbitrary string. Must be unique. |
-| Hostname                   | hostname or IP address used as the destination of the SSH connection |
-| Polling Status             | A switch controlling if you are going to use this host. When you would like to stop the submission temporarily, maybe due to maintenance of the server, set this field to "disabled". |
-| User                       | User name used for ssh connection. |
-| Port                       | Port used for SSH connection. Default value is 22. |
-| SSH key                    | SSH authentication key used for SSH connection. Default is *~/.ssh/id_rsa* |
+| Name                       | The name used in "~/.ssh/config" file. |
 | Work base dir              | The path to the work directory. The work directory is the place where jobs are executed. Please specify the directory dedicated to OACIS jobs. |
 | Mounted work base dir      | If the work base dir is directly accessible from OACIS, specify the path which is accessible from OACIS. See the notes below this table.|
 | Max num jobs               | The maximum number of concurrent jobs. Jobs are queued until the number of running jobs becomes this number. |
@@ -60,12 +55,26 @@ We will explain the list of information which you need to specify when registeri
 | Executable analyzers       | List of executable analyzers on that host. |
 |----------------------------|---------------------------------------------------------------------|
 
+The SSH setting must be written in "~/.ssh/config" file. For instance, setting of "MyHost" may be written as the following.
+
+```
+Host MyHost
+  HostName example.com
+  User user_ABC
+  IdentityFile ~/.ssh/id_rsa
+  port 22
+```
+
 {% capture tips %}
 If you specify *"Mounted work base dir"*, OACIS uses copy instead of SFTP to download the results from the computational host.
 This may significantly improve the performance of the file transfer.
 For "localhost", always specify the same value as "Work base dir". The performance will be much improved.
 If the "Work base dir" on the computational host is mounted by NFS, specify the mounted path.
 If the directory is not accessible from OACIS, leave it blank. 
+{% endcapture %}{% include tips %}
+
+{% capture tips %}
+From OACIS version 3, "Hostname, "User", "Port" fields are removed. Instead, OACIS refers to "~/.ssh/config" file.
 {% endcapture %}{% include tips %}
 
 If you find an error like *"no such command: xsub"* when registering a host, please check if XSUB is properly installed.
