@@ -1,4 +1,5 @@
-- model_class = Simulator
 .page-header
-  %h1=t '.title', default: t('helpers.titles.edit', model: model_class.model_name.human, default: "Edit #{model_class.model_name.human}")
+  %h1
+    Edit Simulator
+    = render partial: 'link_to_doc'
 = render partial: "form"

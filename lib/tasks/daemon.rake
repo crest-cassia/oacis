@@ -10,12 +10,13 @@ namespace :daemon do
     Rake::Task['db:mongoid:remove_undefined_indexes'].invoke
 
     threads = []
+    level = AcmProto::Application.config.user_config["access_level"] || 2
     threads << Thread.new do
       if is_server_running?
         $stderr.puts "server is already running: #{SERVER_PID}"
       else
         binding_ip = "127.0.0.1"
-        binding_ip = "0.0.0.0" if AcmProto::Application.config.user_config["read_only"]
+        binding_ip = "0.0.0.0" if level <= 1
         binding_ip = AcmProto::Application.config.user_config["binding_ip"] || binding_ip
         cmd = "bundle exec rails s -d -b #{binding_ip}"
         puts cmd
@@ -23,8 +24,8 @@ namespace :daemon do
       end
     end
 
-    if AcmProto::Application.config.user_config["read_only"]
-      $stderr.puts "OACIS_READ_ONLY mode is enabled"
+    if level == 0
+      $stderr.puts "READ_ONLY mode is enabled"
     else
       here = File.dirname(__FILE__)
       threads << Thread.new do
@@ -76,7 +77,6 @@ namespace :daemon do
       cmd = "bundle exec ruby -r '#{Rails.root.join('config','environment.rb')}' '#{File.join(here, 'boot_service_worker.rb')}' stop"
       system(cmd)
     end
-
     threads.each {|t| t.join }
   end
 

@@ -1,7 +1,7 @@
 = javascript_include_tag "plot/application"
 
 - param_string = @param_set.v.map {|key,val| "#{key}=#{val}" }.join(', ')
-%h3= "Plot on (#{param_string})"
+%h3= "parameters: (#{param_string})"
 
 %form
   .form-inline

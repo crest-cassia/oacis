@@ -17,12 +17,20 @@ class SimulatorsController < ApplicationController
   def show
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
-    @query_id = params[:query_id]
-
-    if @simulator.parameter_set_queries.present?
-      @query_list = {}
-      @simulator.parameter_set_queries.each do |psq|
-        @query_list[psq.query.to_s] = psq.id
+    @filter = nil
+    if params[:filter]
+      @filter = @simulator.parameter_set_filters.where(id: params[:filter]).first
+      if @filter.nil?
+        flash[:alert] = "Filter #{params[:filter]} is not found"
+      end
+    elsif params[:q]
+      q = JSON.load(params[:q])
+      if q.present?
+        @filter = @simulator.parameter_set_filters.build(conditions: q)
+        unless @filter.valid?
+          flash[:alert] = "invalid filter parameter: #{q.inspect}"
+          @filter = nil
+        end
       end
     end
 
@@ -36,7 +44,6 @@ class SimulatorsController < ApplicationController
   # GET /simulators/new.json
   def new
     @simulator = Simulator.new
-
     respond_to do |format|
       format.html
       format.json { render json: @simulator }
@@ -62,7 +69,11 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.new(permitted_simulator_params)
     if params[:duplicating_simulator]
       @duplicating_simulator = Simulator.find(params[:duplicating_simulator])
-      @copied_analyzers = params[:copied_analyzers].to_a.map {|azr_id| Analyzer.find(azr_id) }
+      if params[:copied_analyzers].present?
+        @copied_analyzers = params[:copied_analyzers].map {|azr_id| Analyzer.find(azr_id) }
+      else
+        @copied_analyzers = []
+      end
       @copied_analyzers.each do |azr|
         @simulator.analyzers.push azr.clone
       end
@@ -85,7 +96,7 @@ class SimulatorsController < ApplicationController
     @simulator = Simulator.find(params[:id])
 
     respond_to do |format|
-      if @simulator.update_attributes(permitted_simulator_params)
+      if @simulator.update_attributes(permitted_simulator_params.to_h)
         format.html { redirect_to @simulator, notice: 'Simulator was successfully updated.' }
         format.json { head :no_content }
       else
@@ -107,33 +118,45 @@ class SimulatorsController < ApplicationController
     end
   end
 
-  # POST /simulators/:_id/_make_query redirect_to simulators#show
-  def _make_query
-    @query_id = params[:query_id]
-
-    if params[:delete_query]
-      @q = ParameterSetQuery.find(@query_id)
-      @q.destroy
-      @query_id = nil
+  # POST /simulators/:_id/save_filter redirect_to simulators#show
+  def save_filter
+    simulator = Simulator.find(params[:id])
+    name = params[:filter_name]
+    filter = simulator.parameter_set_filters.where(name: name).first
+    if filter
+      filter.conditions = JSON.load(params[:q])
+      msg = "Filter '#{name}' was updated."
     else
-      @simulator = Simulator.find(params[:id])
-      @new_query = @simulator.parameter_set_queries.build
-      if @new_query.set_query(params["query"]) and @new_query.save
-        @query_id = @new_query.id.to_s
-        flash[:notice] = "A new query is created"
-      else
-        flash[:alert] = "Failed to create a query"
-      end
+      filter = simulator.parameter_set_filters.build(name: name, conditions: JSON.load(params[:q]))
+      msg = "Filter was saved as '#{name}'."
     end
-
-    redirect_to  :action => "show", :query_id => @query_id
+    if filter.save
+      flash[:notice] = msg
+      redirect_to simulator_path(simulator, filter: filter.id)
+    else
+      flash[:alert] = "Failed to save Filter: #{filter.errors.messages}"
+      redirect_back(fallback_location: simulator)
+    end
   end
 
-  def _parameters_list
+  def _find_filter
+    simulator = Simulator.find(params[:id])
+    name = params[:filter_name]
+    filter = simulator.parameter_set_filters.where(name: name).first
+    render json: filter
+  end
+
+  def _delete_filter
+    simulator = Simulator.find(params[:id])
+    simulator.parameter_set_filters.where(id: params[:filter]).first&.destroy
+    head :ok
+  end
+
+  def _parameter_sets_list
     simulator = Simulator.find(params[:id])
     parameter_sets = simulator.parameter_sets
-    if params[:query_id].present?
-      q = ParameterSetQuery.find(params[:query_id])
+    if params[:q] && c = JSON.load(params[:q])
+      q = simulator.parameter_set_filters.build(conditions: c)
       parameter_sets = q.parameter_sets
     end
     keys = simulator.parameter_definitions.map {|pd| pd.key }
@@ -143,6 +166,12 @@ class SimulatorsController < ApplicationController
 
   def _analyzer_list
     render json: AnalyzersListDatatable.new(view_context)
+  end
+
+  def _parameter_set_filters_list
+    simulator = Simulator.find(params[:id])
+    filters = simulator.parameter_set_filters
+    render json: ParameterSetFiltersListDatatable.new(filters, simulator, view_context, filters.count)
   end
 
   def _progress
@@ -157,7 +186,7 @@ class SimulatorsController < ApplicationController
     params[:simulator].each_with_index do |sim_id, index|
       Simulator.find(sim_id).timeless.update_attribute(:position, index)
     end
-    render nothing: true
+    head :ok
   end
 
   def _host_parameters_field
@@ -175,6 +204,14 @@ class SimulatorsController < ApplicationController
     render json: data
   end
 
+  def _cancel_create_ps
+    sim = Simulator.find(params[:id])
+    sim.save_tasks.where(cancel_flag: false).each do |t|
+      t.update_attribute(:cancel_flag, true)
+    end
+    redirect_to :action => "show"
+  end
+
   private
   def permitted_simulator_params
     params[:simulator].present? ? params.require(:simulator)
@@ -189,7 +226,7 @@ class SimulatorsController < ApplicationController
                                                 :support_mpi,
                                                 :sequential_seed,
                                                 :print_version_command,
-                                                parameter_definitions_attributes: [[:id, :key, :type, :default, :description]],
+                                                parameter_definitions_attributes: [[:id, :key, :type, :default, :description, :_destroy]],
                                                 executable_on_ids: []
                                                ) : {}
   end

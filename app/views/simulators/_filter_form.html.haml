@@ -1,0 +1,108 @@
+.modal-header
+  %button.close{type: "button", "data-dismiss": "modal"}
+    &times;
+  %h4 Filter
+  .modal-body.large#parameter_filter_setting_body
+    %form.form_inline#filter_form{'data-current-q': q.to_json}
+      .row
+        .form-group.col-md-3.filter_form_field#select_param_form
+          - options = simulator.parameter_definitions.map {|x| [x.key, x.key, {'data-param-type': x.type}] }
+          = select_tag "param", options_for_select(options), class: 'form-control'
+        .form-group.col-md-2.filter_form_field#select_matcher_form
+          = select_tag "matcher", options_for_select(["",""]), class: 'form-control'
+        .form-group.col-md-3.filter_form_field#select_value_form
+          = text_field_tag "value", "", class: 'form-control'
+        .col-md-4.filter_form_field
+          %a#delete_field_btn{href:'#'}
+            %i.fa.fa-times{style: "padding-top: 10px;"}
+          #error_message{style: "display: inline; color: red;"}
+    %a#add_field_btn{href:'#'}
+      %i.fa.fa-plus
+  .modal-footer
+    - if @simulator.parameter_set_filters.size > 0
+      %button#parameter_set_filters_list_btn.btn.btn-default{onclick: "$('#parameter_set_filter_form_modal').modal('hide');$('#parameter_set_filters_list_modal').modal('show');"}
+        Filters List
+    %button#parameter_filter_ok.btn.btn-primary
+      OK
+
+:javascript
+  function update_matcher_select(row) {
+    const type = row.find('select#param option:selected').data('param-type');
+    let matcher_val, matcher_text;
+    if(type == "Integer" || type == "Float") {
+      matcher_val = #{raw ParameterSetFilter::NumTypeMatchers.to_json};
+      matcher_text = #{raw ParameterSetFilter::NumTypeMatcherStrings.to_json};
+    } else if(type == "String") {
+      matcher_val = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
+      matcher_text = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
+    }
+    const sel_matcher = row.find('select#matcher');
+    sel_matcher.empty();
+    for(const i in matcher_val){
+      sel_matcher.append('<option value="'+matcher_val[i]+'">'+matcher_text[i]+'</option>');
+    }
+  }
+  $(function() {
+    let field = $('#filter_form').html();
+    // create initial form
+    $("#parameter_set_filter_form_modal").on('show.bs.modal', function() {
+      $('#filter_form').empty();
+      const q = $('#filter_form').data('current-q');
+      for(const condition of q) {
+        const key = condition[0];
+        const matcher = condition[1];
+        const val = condition[2];
+        const appended = $(field).appendTo('#filter_form');
+        appended.find('select#param').val(key);
+        appended.find('input#value').val(val);
+        update_matcher_select(appended);
+        appended.find('select#matcher').val(matcher);
+      }
+    });
+    // when '+' icon is clicked
+    $('#add_field_btn').click(function() {
+      const appended = $(field).appendTo('#filter_form');
+      update_matcher_select(appended);
+    });
+    // when 'x' icon is clicked
+    $('#filter_form').on("click", "#delete_field_btn", function() {
+      $(this).closest('.row').remove();
+    })
+    // when key is changed
+    $("#filter_form").on("change", "#select_param_form select", function() {
+      const row = $(this).closest('.row');
+      update_matcher_select(row);
+    });
+    // when ok is clicked
+    $('#parameter_filter_ok').on('click', function() {
+      const q = [];
+      let has_error = false;
+      $('#filter_form .row').each(function(i,o) {
+        const param = $(o).find('select#param').val();
+        const type = $(o).find('select#param option:selected').data('param-type');
+        const matcher = $(o).find('select#matcher').val();
+        const val = $(o).find('input#value').val();
+        const err = validate_value(type, val);
+        if(err) {
+          $(o).find('#error_message').text(err);
+          has_error = true;
+        }
+        q.push([param,matcher,val]);
+      });
+      if(has_error || q.length == 0) { return; }
+      const sim_path = "#{raw simulator_path(simulator)}";
+      var path = sim_path + '?q=' + encodeURIComponent(JSON.stringify(q));
+      location.href = path;
+    });
+    function validate_value(type, val) {
+      if(!val) { return "must not be empty"; }
+      else if(type=="Integer") {
+        if( val.search(/^[-]?[0-9]+$/) != 0 ) { return "must be an Integer"; }
+      }
+      else if(type=="Float") {
+        if( val.search(/^[+-]?\d+(\.\d+)?$/) != 0 ) { return "must be a Float"; }
+      }
+      return false;
+    }
+  });
+

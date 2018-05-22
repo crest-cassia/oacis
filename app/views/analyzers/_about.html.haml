@@ -1,9 +1,13 @@
-%h3 About
-= analyzer.description
+- if analyzer.description.present?
+  %div.well
+    = markdown(analyzer.description)
 
-%table.table.table-striped
+%table.table.table-striped.table-condensed
   %thead
   %tbody
+    %tr
+      %th ID
+      %td= analyzer.id
     %tr
       %th Type
       %td= analyzer.type
@@ -31,7 +35,7 @@
 
 - if analyzer.parameter_definitions.present?
   %h3 Defined Parameters
-  %table.table.table-striped
+  %table.table.table-striped.table-condensed
     %thead
       %tr
         %th.col-md-2
@@ -70,7 +74,7 @@
       = analyzer.print_version_command
 
 %h3 List of Analyzer Versions
-%table.table.table-striped#analyzer_version_table
+%table.table.table-striped.table-condensed#analyzer_version_table
   %thead
     %tr
       %th Version
@@ -90,7 +94,7 @@
         %td= anl_version['count'][:finished].to_i
         %td= anl_version['count'][:failed].to_i
         %td
-          %i.fa.fa-cog.clickable#show_cli{data: raw(render partial: "version_dialog", locals: {azr: analyzer, version: anl_version['version']})}
+          %i.fa.fa-cog.clickable#show_cli{data: ""+raw(render partial: "version_dialog", locals: {azr: analyzer, version: anl_version['version']})}
 
 :css
   .modal-vertical-centered {
@@ -123,8 +127,8 @@
     $('#version_dialog').empty();
   });
 
-- unless OACIS_READ_ONLY
+- if OACIS_ACCESS_LEVEL == 2
   = link_to 'Edit', edit_analyzer_path(analyzer), class: 'btn btn-info'
-  = link_to 'Destroy', analyzer, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
+  = link_to 'Delete', analyzer, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
 = link_to 'Show in JSON', analyzer_path(analyzer, format: :json), class: 'btn btn-default'
 

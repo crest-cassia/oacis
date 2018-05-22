@@ -52,6 +52,41 @@ i.padding-half-em {
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
+i.padding-left-half-em {
+  padding-left: 0.5em;
+}
+.add-padding-right {
+  padding-right: 8px;
+}
+.navbar-nav li a {
+  padding-top: 22px;
+  padding-bottom: 8px;
+}
+#navbar-collapse {
+  font-size: 18px;
+}
+.navbar-brand {  
+  padding-top: 6px;
+  padding-bottom: 3px;
+}
+.navbar {
+  background-color: #3a5269;
+  border-color: #3a5269;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  background-color: transparent;
+}
+.well {
+  padding: 14px;
+}
+.add-margin-bottom{
+  margin-bottom: 16px;
+}
+.margin-half-em {
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
 .add-margin-top {
   margin-top: 8px;
 }
@@ -64,9 +99,15 @@ table.dataTable td {
 .clickable {
   cursor: pointer;
 }
+.label {
+  border-radius: 1em;
+}
 .status-label {
   display: inline-block;
   width: 70px;
+  border-radius: 0.5em;
+  position: relative;
+  bottom: 1px;
 }
 tt.short-id {
   font-family:Consolas,Monaco,Lucida Console,monospace;
@@ -91,12 +132,6 @@ pre {
   -ms-transform: translate(0, 55px) !important; /* IE 9 */
   -webkit-transform: translate(0, 55px) !important; /* Safari and Chrome */
 }
-#runs_list_modal .modal-vertical-centered {
-  width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
-  max-height: 100%;
-  max-width: 100%;
-  overflow: auto;
-}
 #analyses_list_modal .modal-vertical-centered {
   width: 1170px; /* this value is same as class: container width defined in bootstrap_and_overridies.css */
   max-height: 100%;
@@ -118,6 +153,10 @@ pre {
 .tooltip-inner {
   max-width: unset;
 }
+.wide-tooltip .tooltip {width: 280px; line-height: 1.4}
+.wide-tooltip .tooltip dl {margin-top: 3px; margin-bottom: 3px;}
+.wide-tooltip .tooltip dt {float: left;}
+.wide-tooltip .tooltip dd {margin-left: 70px; text-align: left;}
 // See http://stackoverflow.com/questions/19982651
 //     http://stackoverflow.com/questions/24448991
 //     https://github.com/crest-cassia/oacis/issues/455
@@ -128,4 +167,56 @@ pre {
 }
 textarea.form-control {
   padding: 8px 12px;
+}
+div.progress {
+  height: 13px;
+  padding: 0;
+  border: 0;
+  margin-top: 4px;
+}
+.progress-bar {
+  line-height: 14px;
+}
+.create_ps_area {
+  float: right;
+  margin-bottom: 8px;
+}
+.clear-element {
+  clear: both;
+}
+.auto_reload_setting {
+  float: left;
+}
+div.auto_reload_setting input {
+  margin: 0 5px;
+}
+div.auto_reload_setting * {
+  line-height: 33px;
+}
+i.reload_icon {
+  float: left;
+  margin: 4px;
+}
+.breadcrumb {
+  text-transform: none;
+  font-size: 14px;
+}
+.filter_form_field {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+span.dynatree-node a {
+  font-size: 14px;
+}
+pre {
+  padding: 5px;
+  margin-bottom: 8px;
+}
+input[type="radio"],
+input[type="checkbox"] {
+  margin-top: 5px;
+  min-height: 10px;
+}
+.alert {
+  padding: 10px;
 }

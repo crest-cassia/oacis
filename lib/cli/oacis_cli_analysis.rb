@@ -77,7 +77,8 @@ class OacisCli < Thor
     elsif anz.type == :on_parameter_set
       parameter_sets = sim.parameter_sets
       parameter_sets = parameter_sets.in(id: get_parameter_sets(options[:target]).map(&:id) ) if options[:target]
-      parameter_sets = parameter_sets.select {|ps| ps.runs_status_count[:finished] > 0}
+      psids_with_finished_runs = ParameterSet.runs_status_count_batch(parameter_sets).select {|psid,counts| counts[:finished] > 0 }.map {|psid,_| psid}
+      parameter_sets = parameter_sets.in(id: psids_with_finished_runs)
       input.each do |parameters|
         parameter_sets.each do |ps|
           anl = ps.analyses.where(analyzer: anz, parameters: parameters).first

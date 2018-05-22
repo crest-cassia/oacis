@@ -1,10 +1,16 @@
 = render partial: "shared/breadcrumb", locals: {links: breadcrumb_links_for(@run)}
 
 .page-header
-  %h1 Run
   - param_string = @run.parameter_set.v.map {|key,val| "#{key}=#{val}" }.join(', ')
-  %h4= "(#{param_string})"
-  %h4= @run.dir
+  %h1
+    Run
+    %small= "(#{param_string})"
+
+  = "ID: #{@run.id}"
+  %br
+    data directory:
+  %div{style: "margin-left: 20px;"}
+    = @run.dir
 
 %div.tabbable
   %ul.nav.nav-tabs

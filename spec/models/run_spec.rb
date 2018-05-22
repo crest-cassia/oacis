@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Run do
 
   before(:each) do
-    @simulator = FactoryGirl.create(:simulator,
+    @simulator = FactoryBot.create(:simulator,
                                     parameter_sets_count: 1,
                                     runs_count: 1,
                                     analyzers_count: 2,
@@ -51,7 +51,7 @@ describe Run do
     end
 
     it "is valid if host_group exists even if submitted_to is nil" do
-      hg = FactoryGirl.create(:host_group)
+      hg = FactoryBot.create(:host_group)
       run = @param_set.runs.build(@valid_attribute)
       run.submitted_to = nil
       run.host_group = hg
@@ -172,7 +172,7 @@ describe Run do
 
       before(:each) do
         hpds = [ HostParameterDefinition.new(key: "node", default: "x", format: '\w+') ]
-        @host = FactoryGirl.create(:host, host_parameter_definitions: hpds)
+        @host = FactoryBot.create(:host, host_parameter_definitions: hpds)
       end
 
       it "is valid when host_parameters are properly given" do
@@ -269,14 +269,14 @@ describe Run do
     end
 
     it "is created when a new item is added" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       prm = sim.parameter_sets.first
       run = prm.runs.create!(@valid_attribute)
       expect(FileTest.directory?(ResultDirectory.run_path(run))).to be_truthy
     end
 
     it "is not created when validation fails" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       prm = sim.parameter_sets.first
       @valid_attribute.update(status: nil)
 
@@ -286,7 +286,7 @@ describe Run do
     end
 
     it "is removed when the item is destroyed" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       run = sim.parameter_sets.first.runs.first
       dir_path = run.dir
       run.destroy
@@ -299,7 +299,7 @@ describe Run do
     context "for simulators which receives parameters as arguments" do
 
       it "returns a shell command to run simulation" do
-        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: false)
+        sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: false)
         prm = sim.parameter_sets.first
         run = prm.runs.first
         command = run.command_with_args
@@ -307,21 +307,20 @@ describe Run do
         expect(run.input).to be_nil
       end
 
-      it "returns boolean parameters in 0 or 1" do
-        pds = [ ParameterDefinition.new(key:"p1",type:"Boolean",default:true) ]
-        sim = FactoryGirl.create(:simulator,
-                                 parameter_definitions: pds, support_input_json: false,
-                                 parameter_sets_count: 0)
-        run = sim.parameter_sets.create!(v: {p1: true}).runs.create!(submitted_to: FactoryGirl.create(:host))
-        command = run.command_with_args
-        expect(command).to eq "#{sim.command} 1 #{run.seed}"
+      it "args are shell escaped" do
+        pdef = ParameterDefinition.new(key:"S",type: "String",default:"a")
+        sim = Simulator.create!(name: 'abc', parameter_definitions: [pdef], command: "echo", support_input_json: false)
+        ps = sim.find_or_create_parameter_set({"S"=>"a ; } "})
+        run = ps.runs.build(seed: 1234)
+        s = run.command_with_args
+        expect(s).to eq (sim.command+' a\ \;\ \}\  1234')
       end
     end
 
     context "for simulators which receives parameters as _input.json" do
 
       it "returns a shell command to run simulation" do
-        sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: true)
+        sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1, support_input_json: true)
         prm = sim.parameter_sets.first
         run = prm.runs.first
         command = run.command_with_args
@@ -338,7 +337,7 @@ describe Run do
   describe "#dir" do
 
     it "returns the result directory of the run" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       prm = sim.parameter_sets.first
       run = prm.runs.first
       expect(run.dir).to eq(ResultDirectory.run_path(run))
@@ -348,7 +347,7 @@ describe Run do
   describe "#result_paths" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                                analyzers_count: 1, run_analysis: true
                                )
       prm = sim.parameter_sets.first
@@ -405,7 +404,7 @@ describe Run do
   describe "#archived_result_path" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @run = sim.parameter_sets.first.runs.first
     end
 
@@ -426,7 +425,7 @@ describe Run do
   describe "#destroy" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @run = sim.parameter_sets.first.runs.first
     end
 
@@ -440,7 +439,7 @@ describe Run do
   describe "#discard" do
 
     before(:each) do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       @run = sim.parameter_sets.first.runs.first
     end
 
@@ -459,7 +458,7 @@ describe Run do
   describe "#set_lower_submittable_to_be_destroyed" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 2,
@@ -478,7 +477,7 @@ describe Run do
       run = @sim.runs.first
       expect {
         run.set_lower_submittable_to_be_destroyed
-      }.to change { run.analyses.empty? }.from(false).to(true)
+      }.to change { run.reload.analyses.empty? }.from(false).to(true)
     end
 
     it "does not destroy analyses" do
@@ -492,7 +491,7 @@ describe Run do
   describe "#destroyable?" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1,
                                 runs_count: 1,
                                 analyzers_count: 2,
@@ -532,7 +531,7 @@ describe Run do
     end
 
     it "sets keys of host_parameters to string even if given as a symbol" do
-      host = FactoryGirl.create(:host_with_parameters)
+      host = FactoryBot.create(:host_with_parameters)
       param = {param1: 3, param2: 1}
       expected = {"param1" => 3, "param2" => 1}
       run = @param_set.runs.build(submitted_to: host, host_parameters: param)
@@ -542,7 +541,7 @@ describe Run do
     end
 
     it "sets default_host_parameters to simulator" do
-      host = FactoryGirl.create(:host_with_parameters)
+      host = FactoryBot.create(:host_with_parameters)
       param = {"param1" => 3, "param2" => 1}
       run = @param_set.runs.build(submitted_to: host, host_parameters: param)
       expect {
@@ -566,47 +565,6 @@ describe Run do
       expect {
         run.save!
       }.to change { run.simulator.default_omp_threads[h.id.to_s] }.to(4)
-    end
-  end
-
-  describe "removing runs_status_count_cache" do
-
-    before(:each) do
-      @param_set.runs_status_count
-      expect(@param_set.reload.runs_status_count_cache).not_to be_nil
-    end
-
-    it "removes runs_status_count_cache when a new Run is created" do
-      @param_set.runs.create!(@valid_attribute)
-      expect(@param_set.reload.reload.runs_status_count_cache).to be_nil
-    end
-
-    it "removes runs_status_count_cache when status is changed" do
-      run = @param_set.runs.first
-      expect {
-        run.update_attribute(:status, :finished)
-      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
-    end
-
-    it "removes runs_status_count_cache when to_be_destroyed flag is set" do
-      run = @param_set.runs.first
-      expect {
-        run.update_attribute(:to_be_destroyed, true)
-      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
-    end
-
-    it "removes runs_status_count_cache when destroyed" do
-      run = @param_set.runs.first
-      expect {
-        run.destroy
-      }.to change { @param_set.reload.runs_status_count_cache }.to(nil)
-    end
-
-    it "does not change runs_status_count_cache when status is not changed" do
-      run = @param_set.runs.first
-      expect {
-        run.update_attribute(:updated_at, DateTime.now)
-      }.to_not change { @param_set.reload.runs_status_count_cache }
     end
   end
 end

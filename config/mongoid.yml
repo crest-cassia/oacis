@@ -9,7 +9,7 @@ development:
       # Provides the hosts the default client can connect to. Must be an array
       # of host:port pairs. (required)
       hosts:
-        - localhost:27017
+        - 127.0.0.1:27017
       options:
         # Change the default write concern. (default = { w: 1 })
         write:
@@ -102,6 +102,7 @@ development:
 
   # Configure Mongoid specific options. (optional)
   options:
+    belongs_to_required_by_default: false
     # Includes the root model name in json serialization. (default: false)
     # include_root_in_json: false
 
@@ -135,13 +136,15 @@ test:
     default:
       database: oacis_test
       hosts:
-        - localhost:27017
+        - 127.0.0.1:27017
       options:
         write:
           w: 1
         read:
           mode: :primary
         max_pool_size: 1
+  options:
+    belongs_to_required_by_default: false
 production:
   # Configure available database clients. (required)
   clients:
@@ -153,9 +156,10 @@ production:
       # Provides the hosts the default client can connect to. Must be an array
       # of host:port pairs. (required)
       hosts:
-        - localhost:27017
+        - 127.0.0.1:27017
       options:
         # Change the default write concern. (default = { w: 1 })
         write:
           w: 1
   options:
+    belongs_to_required_by_default: false

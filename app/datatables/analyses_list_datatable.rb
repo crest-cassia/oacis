@@ -5,7 +5,7 @@ class AnalysesListDatatable
              '<th>status</th>',
              '<th>version</th>', '<th>updated_at</th>',
              '<th style="min-width: 18px; width: 1%;"></th>']
-  SORT_BY = ["id", "id", "analyzer_id", "parameters", "status", "analyzer_version", "updated_at", "id"]
+  SORT_BY = [nil, "id", "analyzer_id", "parameters", "status", "analyzer_version", "updated_at", nil]
 
   def initialize(analyses, view_context)
     @analyses = analyses
@@ -21,22 +21,28 @@ class AnalysesListDatatable
     }
   end
 
+  def self.header
+    self::HEADER
+  end
+
 private
 
   def data
     a = analyses_lists.map do |arn|
       analyzer = arn.analyzer
-      trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">')
-        : @view.link_to( @view.raw('<i class="fa fa-trash-o">'), arn, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
+      trash = (OACIS_ACCESS_LEVEL >= 1) ?
+                  @view.link_to( @view.raw('<i class="fa fa-trash-o">'), arn, remote: true, method: :delete, data: {confirm: 'Are you sure?'}) :
+                  @view.raw('<i class="fa fa-trash-o">')
       [
         @view.content_tag(:i, '', analysis_id: arn.id.to_s, align: "center", class: "fa fa-search clickable"),
         @view.link_to( @view.shortened_id_monospaced(arn.id), @view.analysis_path(arn) ),
         analyzer.name,
         arn.parameters.to_s,
         @view.status_label(arn.status),
-        arn.analyzer_version.to_s,
+        @view.raw('<span class="arn_version">'+arn.analyzer_version.to_s+'</sapn>'),
         @view.distance_to_now_in_words(arn.created_at),
-        trash
+        trash,
+        "analysis_list_#{arn.id}"
       ]
     end
     a

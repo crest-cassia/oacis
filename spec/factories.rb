@@ -1,7 +1,7 @@
-# Read about factories at https://github.com/thoughtbot/factory_girl
+# Read about factories at https://github.com/thoughtbot/factory_bot
 require 'faker'
 
-FactoryGirl.define do
+FactoryBot.define do
 
   factory :simulator do
     sequence(:name, 'A') {|n| "simulator#{n}"}
@@ -25,7 +25,7 @@ FactoryGirl.define do
       run_analysis true
       analyzers_on_parameter_set_count 0
       run_analysis_on_parameter_set true
-      parameter_set_queries_count 0
+      parameter_set_filters_count 0
       ssh_host false
     end
 
@@ -36,30 +36,30 @@ FactoryGirl.define do
           h.executable_simulators.push simulator
           h.save!
         else
-          h = FactoryGirl.create(:localhost, executable_simulators: [simulator])
+          h = FactoryBot.create(:localhost, executable_simulators: [simulator])
         end
       else
-        h = FactoryGirl.create(:host, executable_simulators: [simulator])
+        h = FactoryBot.create(:host, executable_simulators: [simulator])
       end
       simulator.save! # to update executable_on field
-      FactoryGirl.create_list(:parameter_set, evaluator.parameter_sets_count,
+      FactoryBot.create_list(:parameter_set, evaluator.parameter_sets_count,
                               simulator: simulator,
                               runs_count: evaluator.runs_count,
                               finished_runs_count: evaluator.finished_runs_count
                               )
-      FactoryGirl.create_list(:analyzer, evaluator.analyzers_count,
+      FactoryBot.create_list(:analyzer, evaluator.analyzers_count,
                               simulator: simulator,
                               run_analysis: evaluator.run_analysis,
                               ssh_host: evaluator.ssh_host
                               )
-      FactoryGirl.create_list(:analyzer, evaluator.analyzers_on_parameter_set_count,
+      FactoryBot.create_list(:analyzer, evaluator.analyzers_on_parameter_set_count,
                               simulator: simulator,
                               type: :on_parameter_set,
                               run_analysis: evaluator.run_analysis_on_parameter_set,
                               ssh_host: evaluator.ssh_host
                               )
-      FactoryGirl.create_list(:parameter_set_query, evaluator.parameter_set_queries_count,
-                              simulator: simulator
+      FactoryBot.create_list(:parameter_set_filter, evaluator.parameter_set_filters_count,
+                             simulator: simulator
                               )
     end
   end
@@ -75,8 +75,8 @@ FactoryGirl.define do
     end
 
     after(:create) do |param_set, evaluator|
-      FactoryGirl.create_list(:run, evaluator.runs_count, parameter_set: param_set)
-      FactoryGirl.create_list(:finished_run, evaluator.finished_runs_count, parameter_set: param_set)
+      FactoryBot.create_list(:run, evaluator.runs_count, parameter_set: param_set)
+      FactoryBot.create_list(:finished_run, evaluator.finished_runs_count, parameter_set: param_set)
     end
   end
 
@@ -132,10 +132,10 @@ FactoryGirl.define do
           h.executable_analyzers.push analyzer
           h.save!
         else
-          h = FactoryGirl.create(:localhost, executable_analzyers: [analyzer])
+          h = FactoryBot.create(:localhost, executable_analzyers: [analyzer])
         end
       else
-        h = FactoryGirl.create(:host, executable_analyzers: [analyzer])
+        h = FactoryBot.create(:host, executable_analyzers: [analyzer])
       end
       analyzer.auto_run_submitted_to = analyzer.executable_on.first
       analyzer.save!
@@ -144,12 +144,12 @@ FactoryGirl.define do
         when :on_run
           analyzer.simulator.parameter_sets.each do |ps|
             ps.runs.each do |run|
-              FactoryGirl.create(:analysis, analyzable: run, analyzer: analyzer, parameters: {})
+              FactoryBot.create(:analysis, analyzable: run, analyzer: analyzer, parameters: {})
             end
           end
         when :on_parameter_set
           analyzer.simulator.parameter_sets.each do |ps|
-            FactoryGirl.create(:analysis, analyzable: ps, analyzer: analyzer, parameters: {})
+            FactoryBot.create(:analysis, analyzable: ps, analyzer: analyzer, parameters: {})
           end
         else
           raise "not supported type"
@@ -171,9 +171,10 @@ FactoryGirl.define do
     end
   end
 
-  factory :parameter_set_query do
-    sequence(:query) do |n|
-      {"T" => {"gte" => n*2.0}, "L"=> {"lte" => n}}
+  factory :parameter_set_filter do
+    sequence(:name) {|n| "f_#{n}" }
+    sequence(:conditions) do |n|
+      [["T","gte",n*2.0], ["L","lte",n]]
     end
   end
 
@@ -182,12 +183,10 @@ FactoryGirl.define do
       def host.get_host_parameters; []; end
     end
     sequence(:name, 'A') {|n| "Host_#{n}"}
-    sequence(:hostname, 'A') {|n| "hostname.#{n}"}
     min_mpi_procs 1
     max_mpi_procs 8
     min_omp_threads 1
     max_omp_threads 8
-    user "login_user"
 
     factory :host_with_parameters do
       host_parameter_definitions {
@@ -202,18 +201,16 @@ FactoryGirl.define do
   factory :host_group do
     sequence(:name, 'A') {|n| "HostGroup_#{n}"}
     hosts {
-      [ FactoryGirl.create(:host) ]
+      [ FactoryBot.create(:host) ]
     }
   end
 
   # :localhost needs ssh connection and xsub
   factory :localhost, class: Host do
     name "localhost"
-    hostname { `hostname`.chomp }
     min_mpi_procs 1
     max_mpi_procs 8
     min_omp_threads 1
     max_omp_threads 8
-    user {ENV['USER']}
   end
 end

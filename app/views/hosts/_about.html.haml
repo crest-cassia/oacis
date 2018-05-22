@@ -1,24 +1,12 @@
-%table.table.table-striped
+%table.table.table-striped.table-condensed
   %thead
   %tbody
     %tr
       %th Name
       %td= @host.name
     %tr
-      %th Hostname
-      %td= @host.hostname
-    %tr
-      %th Status
+      %th Polling
       %td= raw(host_status_label(@host.status))
-    %tr
-      %th User
-      %td= @host.user
-    %tr
-      %th Port
-      %td= @host.port
-    %tr
-      %th SSH key
-      %td= @host.ssh_key
     %tr
       %th Work base directory
       %td= @host.work_base_dir
@@ -66,7 +54,7 @@
       %th Executable analyzers
       %td= raw( @host.executable_analyzers.map {|azr| h("#{azr.simulator.name} / #{azr.name}") }.join('<br />') )
 
-- unless OACIS_READ_ONLY
+- if OACIS_ACCESS_LEVEL == 2
   = link_to 'Edit', edit_host_path(@host), class: 'btn btn-info'
   = link_to 'Back to Index', hosts_path, class: 'btn btn-default'
-  = link_to 'Destroy', @host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @host.destroyable?
+  = link_to 'Delete', @host, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning' if @host.destroyable?

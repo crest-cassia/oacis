@@ -114,11 +114,23 @@ class RemoteJobHandler
     end
   end
 
+  def remote_path_to_mounted_local_path(path)
+    relative_path = path.relative_path_from(Pathname.new(@host.work_base_dir))
+    Pathname.new(@host.mounted_work_base_dir).join(relative_path).expand_path
+  end
+
   def prepare_input_json(job)
     input = job.input
     if input
-      @host.start_ssh do |ssh|
-        SSHUtil.write_remote_file(ssh, RemoteFilePath.input_json_path(@host,job), input.to_json)
+      rpath = RemoteFilePath.input_json_path(@host,job)
+      if @host.mounted_work_base_dir.present?
+        mounted_path = remote_path_to_mounted_local_path(rpath)
+        File.open(mounted_path, 'w') do |f|
+          f.print(input.to_json)
+          f.flush
+        end
+      else
+        SSHUtil.write_remote_file(@host.name, rpath, input.to_json)
       end
     end
   end
@@ -154,9 +166,7 @@ class RemoteJobHandler
 
   def copy_files_to_work_dir_via_copy(job, org_dest_list)
     remote_path = RemoteFilePath.work_dir_path(@host,job)
-    relative_path = remote_path.relative_path_from(Pathname.new(@host.work_base_dir))
-    mounted_work_dir = Pathname.new(@host.mounted_work_base_dir).join(relative_path).expand_path
-    # expand_path is necessary to copy file using FileUtils
+    mounted_work_dir = remote_path_to_mounted_local_path(remote_path)
 
     relative_subdirs = org_dest_list.map {|o,d| File.dirname(d) }.uniq.select {|d| d != "."}
     subdirs = relative_subdirs.map {|d| mounted_work_dir.join(d) }
@@ -177,7 +187,7 @@ class RemoteJobHandler
       SSHUtil.execute(ssh, cmd)
       org_dest_list.each do |origin,dest|
         remote_path = remote_work_dir.join( dest )
-        SSHUtil.upload(ssh, origin, remote_path)
+        SSHUtil.upload(@host.name, origin, remote_path)
       end
     end
   end
@@ -187,7 +197,7 @@ class RemoteJobHandler
     if script.present?
       path = RemoteFilePath.pre_process_script_path(@host, job)
       @host.start_ssh do |ssh|
-        SSHUtil.write_remote_file(ssh, path, script)
+        SSHUtil.write_remote_file(@host.name, path, script)
         out = SSHUtil.execute(ssh, "chmod +x #{path}; echo $?")
         raise RemoteOperationError, "chmod failed : #{out}" unless out.chomp[-1]=='0'
         cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} #{job.args} 1>> _stdout.txt 2>> _stderr.txt"
@@ -199,8 +209,18 @@ class RemoteJobHandler
 
   def prepare_job_script(job)
     jspath = RemoteFilePath.job_script_path(@host, job)
+
+    if @host.mounted_work_base_dir.present?
+      mounted_path = remote_path_to_mounted_local_path(jspath)
+      File.open(mounted_path, 'w') do |f|
+        f.print(job.job_script)
+        f.flush
+      end
+    else
+      SSHUtil.write_remote_file(@host.name, jspath, job.job_script)
+    end
+
     @host.start_ssh do |ssh|
-      SSHUtil.write_remote_file(ssh, jspath, job.job_script)
       out = SSHUtil.execute(ssh, "chmod +x #{jspath}; echo $?")
       raise RemoteOperationError, "chmod failed: #{out}" unless out.chomp[-1] == '0'
     end
@@ -222,6 +242,7 @@ class RemoteJobHandler
       job.job_id = job_id
       job.submitted_at = DateTime.now
       job.save!
+      StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job))
     end
   end
 
@@ -240,7 +261,7 @@ class RemoteJobHandler
       raise exception
     elsif exception.is_a?(RemoteJobError)
       work_dir = RemoteFilePath.work_dir_path(@host, job)
-      SSHUtil.download_recursive(ssh, work_dir, job.dir) if SSHUtil.exist?(ssh, work_dir)
+      SSHUtil.download_directory(@host.name, work_dir, job.dir) if SSHUtil.exist?(ssh, work_dir)
       remove_remote_files(job) # try it once even when remove operation is failed.
       job.update_attribute(:status, :failed)
       job.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")

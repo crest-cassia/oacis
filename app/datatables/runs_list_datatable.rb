@@ -1,13 +1,8 @@
 class RunsListDatatable
 
-  HEADER  = ['<th>RunID</th>', '<th>status</th>', '<th>priority</th>',
-             '<th>elapsed</th>',
-             '<th>MPI</th>', '<th>OMP</th>', '<th>version</th>',
-             '<th>created_at</th>', '<th>updated_at</th>', '<th>host(group)</th>', '<th>job_id</th>',
-             '<th style="min-width: 18px; width: 1%;"></th>']
-  SORT_BY = ["id", "status", "priority", "real_time",
+  SORT_BY = [nil, "id", "status", "priority", "real_time",
              "mpi_procs", "omp_threads", "simulator_version",
-             "created_at", "updated_at", "submitted_to", "job_id", "id"]
+             "created_at", "updated_at", "submitted_to", "job_id"]
 
   def initialize(runs, view)
     @view = view
@@ -23,34 +18,48 @@ class RunsListDatatable
     }
   end
 
+  def self.header
+    if OACIS_ACCESS_LEVEL == 0
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="run_check_all" value="true" disabled="disabled" /></th>'
+    else
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="run_check_all" value="true" /></th>'
+    end
+    header  = [col0,
+             '<th class="span1">RunID</th>', '<th class="span1">status</th>', '<th class="span1">priority</th>',
+             '<th class="span1">elapsed</th>',
+             '<th class="span1">MPI</th>', '<th class="span1">OMP</th>', '<th class="span1">version</th>',
+             '<th class="span1">created_at</th>', '<th class="span1">updated_at</th>', '<th class="span1">host(group)</th>', '<th class="span1">job_id</th>']
+    header
+  end
+
 private
 
   def data
     a = []
     runs_lists.each do |run|
       tmp = []
+      attr = OACIS_ACCESS_LEVEL==0 ? {align: "center", disabled: "disabled"} : {align: "center"}
+      tmp << @view.check_box_tag("checkbox[run]", run.id, false, attr)
       tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run) )
       tmp << @view.raw( @view.status_label(run.status) )
       tmp << Run::PRIORITY_ORDER[run.priority]
-      tmp << @view.formatted_elapsed_time(run.real_time)
+      tmp << @view.raw('<span class="run_elapsed">'+@view.formatted_elapsed_time(run.real_time)+'</span>')
       tmp << run.mpi_procs
       tmp << run.omp_threads
-      tmp << run.simulator_version
+      tmp << @view.raw('<span class="run_version">'+run.simulator_version.to_s+'</span>')
       tmp << @view.distance_to_now_in_words(run.created_at)
       tmp << @view.distance_to_now_in_words(run.updated_at)
       host_like = run.submitted_to || run.host_group
       tmp << (host_like ? @view.link_to( host_like.name, host_like ) : "---")
-      tmp << @view.shortened_job_id(run.job_id)
-      trash = OACIS_READ_ONLY ? @view.raw('<i class="fa fa-trash-o">')
-        : @view.link_to( @view.raw('<i class="fa fa-trash-o">'), run, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
-      tmp << trash
+      tmp << @view.raw('<span class="run_job_id">'+@view.shortened_job_id(run.job_id)+'</span>')
+      tmp << "run_list_#{run.id}"
       a << tmp
     end
     a
   end
 
   def runs_lists
-    @runs.without(:result).order_by(sort_column_direction).skip(page).limit(per_page)
+    @runs.order_by(sort_column_direction).without(:result).skip(page).limit(per_page)
   end
 
   def page

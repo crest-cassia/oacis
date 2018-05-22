@@ -26,7 +26,7 @@ class HostGroup
       return true
     else
       errors.add(:base, "Created/Submitted Runs exist")
-      return false
+      throw(:abort)
     end
   end
 end

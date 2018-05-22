@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ResultDirectory do
 
   before(:each) do
-    @simulator = FactoryGirl.create(:simulator,
+    @simulator = FactoryBot.create(:simulator,
                                     parameter_sets_count: 1,
                                     runs_count: 1,
                                     analyzers_count: 1,

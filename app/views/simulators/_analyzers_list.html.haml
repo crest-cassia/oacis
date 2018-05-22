@@ -5,7 +5,7 @@
       - AnalyzersListDatatable.header(@simulator).each do |th_element|
         = raw(th_element)
   %tbody
-- unless OACIS_READ_ONLY
+- if OACIS_ACCESS_LEVEL == 2
   = link_to 'New Analyzer', new_simulator_analyzer_path(@simulator), class: 'btn btn-primary'
 #analyzers_list_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
@@ -20,11 +20,6 @@
           Close
 
 :javascript
-  var oAzrTable;
-  function reload_analyzers_table() {
-    oAzrTable.ajax.reload(null, false);
-  }
-
   $(function() {
     oAzrTable = $('#analyzers_list').DataTable({
       processing: true,
@@ -33,9 +28,6 @@
       pageLength: 10,
       ajax: $('#analyzers_list').data('source')
     });
-    $('#analyzers_list_length').append(
-      '<i class="fa fa-refresh padding-half-em clickable" id="analyzers_list_refresh"></i>'
-    );
-    var refresh_icon = $('#analyzers_list_length').children('#analyzers_list_refresh');
-    refresh_icon.on('click', reload_analyzers_table);
-  })
+    const lengthDiv = $('#analyzers_list_length');
+    setupRefreshTools(oAzrTable, lengthDiv);
+  });

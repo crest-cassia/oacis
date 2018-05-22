@@ -3,6 +3,8 @@
 [![GitHub version](https://img.shields.io/github/release/crest-cassia/oacis.svg)](https://github.com/crest-cassia/oacis)
 [![Build Status](https://travis-ci.org/crest-cassia/oacis.svg?branch=master)](https://travis-ci.org/crest-cassia/oacis)
 
+<img src="docs/OACIS_logo.png" alt="OACIS logo" title="OACIS" height="180"></img>
+
 ## What is OACIS?
 
 *OACIS* (''Organizing Assistant for Comprehensive and Interactive Simulations'') is a **job management software** for large scale simulations.
@@ -57,7 +59,7 @@ Visit the [document](http://crest-cassia.github.io/oacis/) of OACIS. A docker im
 
 The MIT License (MIT)
 
-Copyright (c) 2013-2017 RIKEN, AICS
+Copyright (c) 2013-2018 RIKEN, R-CCS
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -79,10 +81,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Publications
 
-- We would greatly appreciate if you cite the following article when you publish your research using OACIS.
+- We would greatly appreciate if you cite one of the following article when you publish your research using OACIS.
+    - Y. Murase, T. Uchitane, and N. Ito, "An open-source job management framework for parameter-space exploration: OACIS"
+      - http://iopscience.iop.org/article/10.1088/1742-6596/921/1/012001
     - Y. Murase, T. Uchitane, and N. Ito, "A tool for parameter-space explorations", Physics Procedia, 57, p73-76 (2014)
       - http://www.sciencedirect.com/science/article/pii/S187538921400279X
-    - You can cite it as **"The systematic simulations in this study were assisted by OACIS."**, for example, in appendix or method section.
+    - You can cite it as **"The systematic simulations in this study were assisted by OACIS."**, for example, in the acknowledgement or method section.
 
 ## Contact
 

@@ -32,23 +32,24 @@ module ApplicationHelper
     return links
   end
 
-  def progress_bar( total, num_success, num_danger, num_warning, num_submitted)
-    percent_success = 0.0
-    percent_danger = 0.0
-    percent_warning = 0.0
+  def progress_bar(counts)
+    percent_finished = 0.0
+    percent_failed = 0.0
+    percent_running = 0.0
     percent_submitted = 0.0
-    if total.to_f > 0
-      percent_success = ( num_success.to_f / total.to_f * 100 ).round
-      percent_danger = ( num_danger.to_f / total.to_f * 100 ).round
-      percent_warning = ( num_warning.to_f / total.to_f * 100 ).round
-      percent_submitted = ( num_submitted.to_f / total.to_f * 100 ).round
+    total = counts.values.inject(:+)
+    if total > 0
+      percent_finished = ( counts[:finished].to_f / total.to_f * 100 ).round
+      percent_failed = ( counts[:failed].to_f / total.to_f * 100 ).round
+      percent_running = ( counts[:running].to_f / total.to_f * 100 ).round
+      percent_submitted = ( counts[:submitted].to_f / total.to_f * 100 ).round
     end
 
     tags = <<-EOS
-      <div class="progress" data-toggle="tooltip" title=#{{finished: num_success, failed: num_danger, running: num_warning, submitted: num_submitted}.to_json}>
-        #{progress_bar_tag_for('success', percent_success)}
-        #{progress_bar_tag_for('danger', percent_danger)}
-        #{progress_bar_tag_for('warning', percent_warning)}
+      <div class="progress" data-toggle="tooltip" data-html="true" data-placement="bottom" data-original-title='#{progress_bar_tooltip(counts)}'>
+        #{progress_bar_tag_for('success', percent_finished)}
+        #{progress_bar_tag_for('danger', percent_failed)}
+        #{progress_bar_tag_for('warning', percent_running)}
         #{progress_bar_tag_for('info', percent_submitted)}
       </div>
     EOS
@@ -79,6 +80,14 @@ module ApplicationHelper
     EOS
   end
 
+  def progress_bar_tooltip(counts)
+    tag = ""
+    [:finished,:failed,:running,:submitted,:created].each do |stat|
+      tag += "<div>#{status_label(stat)}<span id=\"#{stat}_count\">#{counts[stat]}</span></div>"
+    end
+    tag
+  end
+
   # to prevent UTF-8 parameter from being added in the URL for GET requests
   # See http://stackoverflow.com/questions/4104474/rails-3-utf-8-query-string-showing-up-in-url
   def utf8_enforcer_tag
@@ -94,4 +103,53 @@ module ApplicationHelper
     end
     link_to(name, '#', class: "add_fields", data: {id: id, fields: fields.gsub("\n", "")})
   end
+
+  def bootstrap_flash
+    flash_messages = []
+    flash.each do |type, message|
+      next if message.blank?
+
+      type = type.to_sym
+      type = :success if type == :notice
+      type = :danger  if type == :alert
+      type = :danger  if type == :error
+      next unless [:success, :info, :warning, :danger].include?(type)
+
+      tag_options = {
+          class: "alert fade in alert-#{type}"
+      }
+
+      close_button = content_tag(:button, raw("&times;"), type: "button", class: "close", "data-dismiss" => "alert")
+
+      Array(message).each do |msg|
+        text = content_tag(:div, close_button + msg, tag_options)
+        flash_messages << text if msg
+      end
+    end
+    flash_messages.join("\n").html_safe
+  end
+
+  def tooltip_data(*json_path)
+    json = TOOLTIP_DESCS
+    title = json.dig(*json_path.map(&:to_s))
+    {html: 'true', toggle: 'tooltip', placement: 'right', 'original-title': title}
+  end
+
+  def label_c(text)
+    content_tag(:label, text, class: "col-md-2 control-label")
+  end
+
+  def query_badge(filter)
+    query_tag = ""
+    filter.conditions.each_with_index do |c,idx|
+      if idx > 10
+        query_tag << '<span class="badge badge-pill badge-info margin-half-em">...</span>'
+      else
+        query_tag << '<span class="badge badge-pill badge-info margin-half-em">' + ParameterSetFilter.format(c) + '</span>'
+      end
+    end
+    query_tag
+  end
 end
+
+

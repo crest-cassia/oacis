@@ -3,7 +3,7 @@ require 'spec_helper'
 describe OacisWatcher do
 
   before(:each) do
-    @sim = FactoryGirl.create(:simulator,
+    @sim = FactoryBot.create(:simulator,
                               parameter_sets_count: 2,
                               runs_count: 0
                              )
@@ -45,15 +45,15 @@ describe OacisWatcher do
 
     it "returns true if all runs are finished or failed" do
       ps = @sim.parameter_sets.first
-      runs = FactoryGirl.create_list(:finished_run, 3, parameter_set: ps)
+      runs = FactoryBot.create_list(:finished_run, 3, parameter_set: ps)
       runs.first.update_attribute(:status, :failed)
       expect( @watcher.send(:completed?, ps) ).to be_truthy
     end
 
     it "returns false if not all runs are finished or failed" do
       ps = @sim.parameter_sets.first
-      finished = FactoryGirl.create_list(:finished_run, 2, parameter_set: ps)
-      not_finished = FactoryGirl.create(:run, parameter_set: ps)
+      finished = FactoryBot.create_list(:finished_run, 2, parameter_set: ps)
+      not_finished = FactoryBot.create(:run, parameter_set: ps)
       expect( @watcher.send(:completed?, ps) ).to be_falsey
     end
   end
@@ -63,8 +63,8 @@ describe OacisWatcher do
     it "returns an array of completed ParameterSet from the given set of ParameterSet" do
       ps1 = @sim.parameter_sets.asc(:id).first
       ps2 = @sim.parameter_sets.asc(:id).last
-      FactoryGirl.create_list(:finished_run, 3, parameter_set: ps1)
-      FactoryGirl.create_list(:run, 3, parameter_set: ps2)
+      FactoryBot.create_list(:finished_run, 3, parameter_set: ps1)
+      FactoryBot.create_list(:run, 3, parameter_set: ps2)
       expect( @watcher.send(:completed_ps_ids, @sim.parameter_sets.map(&:id)) ).to eq [ps1.id]
     end
   end
@@ -77,8 +77,8 @@ describe OacisWatcher do
       mock2 = double("callback mock")
       @watcher.watch_ps(ps1) {|ps| mock1.callback }
       @watcher.watch_ps(ps2) {|ps| mock2.callback }
-      FactoryGirl.create(:finished_run, parameter_set: ps1)
-      FactoryGirl.create(:run, parameter_set: ps2)
+      FactoryBot.create(:finished_run, parameter_set: ps1)
+      FactoryBot.create(:run, parameter_set: ps2)
       expect( mock1 ).to receive(:callback)
       expect( mock2 ).to_not receive(:callback)
       ret = @watcher.send(:check_completed_ps)
@@ -87,7 +87,7 @@ describe OacisWatcher do
 
     it "stops when a new run is created during a callback function" do
       ps = @sim.parameter_sets.first
-      FactoryGirl.create(:finished_run, parameter_set: ps)
+      FactoryBot.create(:finished_run, parameter_set: ps)
       mock1 = double("mock")
       mock2 = double("mock")
       @watcher.watch_ps(ps) {|ps| ps.runs.create(submitted_to: @sim.executable_on.first); mock1.callback } # create a new run
@@ -100,7 +100,7 @@ describe OacisWatcher do
 
     it "returns false if no callback is called" do
       ps = @sim.parameter_sets.first
-      FactoryGirl.create(:run, parameter_set: ps)
+      FactoryBot.create(:run, parameter_set: ps)
       @watcher.watch_ps(ps) {}
       ret = @watcher.send(:check_completed_ps)
       expect( ret ).to be_falsey
@@ -111,8 +111,8 @@ describe OacisWatcher do
 
     it "calls registered callback functions when all PS is completed" do
       ps1, ps2 = @sim.parameter_sets[0..1]
-      FactoryGirl.create(:finished_run, parameter_set: ps1)
-      FactoryGirl.create(:finished_run, parameter_set: ps2)
+      FactoryBot.create(:finished_run, parameter_set: ps1)
+      FactoryBot.create(:finished_run, parameter_set: ps2)
       mock1 = double("mock")
       expect( mock1 ).to receive(:callback)
       @watcher.watch_all_ps( [ps1,ps2] ) {|pss|
@@ -125,8 +125,8 @@ describe OacisWatcher do
 
     it "does not call callback when all PS is not completed" do
       ps1,ps2 = @sim.parameter_sets[0..1]
-      FactoryGirl.create(:finished_run, parameter_set: ps1)
-      FactoryGirl.create(:run, parameter_set: ps2)
+      FactoryBot.create(:finished_run, parameter_set: ps1)
+      FactoryBot.create(:run, parameter_set: ps2)
       mock1 = double("mock")
       expect( mock1 ).to_not receive(:callback)
       @watcher.watch_all_ps( [ps1,ps2] ) { mock1.callback }
@@ -136,8 +136,8 @@ describe OacisWatcher do
 
     it "can call watch_all_ps recursively" do
       ps1, ps2 = @sim.parameter_sets[0..1]
-      FactoryGirl.create(:finished_run, parameter_set: ps1)
-      FactoryGirl.create(:finished_run, parameter_set: ps2)
+      FactoryBot.create(:finished_run, parameter_set: ps1)
+      FactoryBot.create(:finished_run, parameter_set: ps2)
       mock1 = double("mock")
       expect( mock1 ).to receive(:callback)
       @watcher.watch_all_ps( [ps1] ) {|_|

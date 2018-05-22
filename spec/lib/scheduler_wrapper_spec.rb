@@ -3,7 +3,7 @@ require 'spec_helper'
 describe SchedulerWrapper do
 
   before(:each) do
-    @host = FactoryGirl.create(:localhost)
+    @host = FactoryBot.create(:localhost)
     @wrapper = SchedulerWrapper.new(@host)
   end
 

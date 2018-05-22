@@ -5,13 +5,13 @@ describe JobSubmitter do
   describe ".perform" do
 
     before(:each) do
-      @host = FactoryGirl.create(:localhost)
+      @host = FactoryBot.create(:localhost)
       @temp_dir = Pathname.new('__temp__')
       FileUtils.mkdir_p(@temp_dir)
       @host.work_base_dir = @temp_dir.expand_path
       @host.save!
 
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1,
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1,
                                 ssh_host: true)
       @sim.executable_on.push @host
       @sim.save!
@@ -78,7 +78,7 @@ describe JobSubmitter do
   describe ".destroy_jobs_to_be_destroyed" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 3,
                                 analyzers_count: 0
                                 )
@@ -95,8 +95,10 @@ describe JobSubmitter do
     it "does not destroy if the status is not created" do
       ps = @sim.parameter_sets.first
       ps.runs.update_all(status: :finished)
+      ps.reload
       ps.runs.first.update_attribute(:status, :created)
       ps.runs.update_all(to_be_destroyed: true)
+      ps.reload
       expect {
         JobSubmitter.destroy_jobs_to_be_destroyed(@logger)
       }.to change { Run.unscoped.count }.from(3).to(2)

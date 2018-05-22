@@ -15,16 +15,14 @@ describe OacisCli do
   describe "#show_host" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host)
+      @host = FactoryBot.create(:host)
     end
 
     it "prints host information in json" do
       at_temp_dir {
         expected = [{
           "id" => @host.id.to_s,
-          "name" => @host.name,
-          "hostname" => @host.hostname,
-          "user" => @host.user
+          "name" => @host.name
         }]
         OacisCli.new.invoke(:show_host, [], {output: 'host.json'})
         expect(File.exist?('host.json')).to be_truthy

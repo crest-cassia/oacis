@@ -25,20 +25,18 @@
       %td= "#{stat_count[:submitted]} (#{(100.0*stat_count[:submitted]/total.to_f).round(1)} %)"
       %td= "#{stat_count[:created]} (#{(100.0*stat_count[:created]/total.to_f).round(1)} %)"
 
-%h3 Scheduler status
-
-%a.btn.btn-info#btn_check_scheduler_status
-  Check Scheduler Status
-  %i.fa.fa-refresh#runs_list_refresh
-
-%pre#scheduler_status{style: "margin-top: 10px;"}
-
-:javascript
-  $(function() {
-    $('#btn_check_scheduler_status').on('click', function() {
-      var url = "#{_check_scheduler_status_host_url(@host)}";
-      $.get(url, {}, function(dat) {
-        $('#scheduler_status').text(dat);
+- if OACIS_ACCESS_LEVEL >= 1
+  %h3 Scheduler status
+  %a.btn.btn-info#btn_check_scheduler_status
+    Check Scheduler Status
+    %i.fa.fa-refresh
+  %pre#scheduler_status{style: "margin-top: 10px;"}
+  :javascript
+    $(function() {
+      $('#btn_check_scheduler_status').on('click', function() {
+        var url = "#{_check_scheduler_status_host_url(@host)}";
+        $.get(url, {}, function(dat) {
+          $('#scheduler_status').text(dat);
+        })
       })
     })
-  })

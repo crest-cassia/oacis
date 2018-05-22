@@ -16,10 +16,8 @@ class Run
   # because it can be slow. See http://mongoid.org/en/mongoid/docs/relations.html
 
   before_create :set_unique_seed, :set_simulator
-  before_save :remove_runs_status_count_cache, :if => Proc.new {|run| run.status_changed? or run.to_be_destroyed_changed? }
   after_create :create_run_dir
-  before_destroy :delete_run_dir, :delete_archived_result_file,
-                 :remove_runs_status_count_cache
+  before_destroy :delete_run_dir, :delete_archived_result_file
 
   public
   def simulator
@@ -49,16 +47,9 @@ class Run
     if simulator.support_input_json
       ""
     else
-      ps = parameter_set
-      params = simulator.parameter_definitions.map do |pd|
-        if pd.type == "Boolean"
-          ps.v[pd.key] ? 1 : 0
-        else
-          ps.v[pd.key]
-        end
-      end
+      params = simulator.parameter_definitions.map {|pd| parameter_set.v[pd.key]}
       params << seed
-      params.join(' ')
+      Shellwords.shelljoin(params)
     end
   end
 
@@ -96,6 +87,7 @@ class Run
 
   def set_lower_submittable_to_be_destroyed
     analyses.update_all(to_be_destroyed: true)
+    reload
   end
 
   private
@@ -139,12 +131,6 @@ class Run
     if parameter_set
       archive = archived_result_path
       FileUtils.rm(archive) if File.exist?(archive)
-    end
-  end
-
-  def remove_runs_status_count_cache
-    if parameter_set and parameter_set.reload.runs_status_count_cache
-      parameter_set.update_attribute(:runs_status_count_cache, nil)
     end
   end
 end

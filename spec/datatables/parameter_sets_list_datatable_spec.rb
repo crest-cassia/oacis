@@ -7,17 +7,17 @@ describe "ParameterSetsListDatatable" do
     context "without quey" do
 
       before(:each) do
-        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+        @simulator = FactoryBot.create(:simulator, parameter_sets_count: 0)
         30.times do |i|
-          FactoryGirl.create(:parameter_set,
+          FactoryBot.create(:parameter_set,
                              simulator: @simulator,
                              runs_count: 0,
                              v: {"L" => i, "T" => i*2.0}
                              )
         end
-        @query = FactoryGirl.create(:parameter_set_query,
-                                    simulator: @simulator,
-                                    query: {"L" => {"gte" => 5}})
+        @query = FactoryBot.create(:parameter_set_filter,
+                                   simulator: @simulator,
+                                   conditions: [["L","gte",5]])
 
         @context = ActionController::Base.new.view_context
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
@@ -45,20 +45,20 @@ describe "ParameterSetsListDatatable" do
       end
     end
 
-    context "with query" do
+    context "with filter" do
 
       before(:each) do
-        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+        @simulator = FactoryBot.create(:simulator, parameter_sets_count: 0)
         30.times do |i|
-          FactoryGirl.create(:parameter_set,
+          FactoryBot.create(:parameter_set,
                              simulator: @simulator,
                              runs_count: 0,
                              v: {"L" => i, "T" => i*2.0}
                              )
         end
-        @query = FactoryGirl.create(:parameter_set_query,
-                                    simulator: @simulator,
-                                    query: {"L" => {"gte" => 5}})
+        @query = FactoryBot.create(:parameter_set_filter,
+                                   simulator: @simulator,
+                                   conditions: [["L","gte",5]])
 
         @context = ActionController::Base.new.view_context
         # columns ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
@@ -89,9 +89,9 @@ describe "ParameterSetsListDatatable" do
     context "with multiple sort" do
 
       before(:each) do
-        @simulator = FactoryGirl.create(:simulator, parameter_sets_count: 0)
+        @simulator = FactoryBot.create(:simulator, parameter_sets_count: 0)
         30.times do |i|
-          FactoryGirl.create(:parameter_set,
+          FactoryBot.create(:parameter_set,
                              simulator: @simulator,
                              runs_count: 0,
                              v: {"L" => i%15, "T" => i*2.0}
@@ -124,13 +124,13 @@ describe "ParameterSetsListDatatable" do
   describe ".header" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0)
     end
 
     it "returns array of th tags" do
       arr = ParameterSetsListDatatable.header(@sim)
       expect(arr).to be_an(Array)
-      expect(arr.size).to eq (5 + @sim.parameter_definitions.size)
+      expect(arr.size).to eq (4 + @sim.parameter_definitions.size)
     end
   end
 end

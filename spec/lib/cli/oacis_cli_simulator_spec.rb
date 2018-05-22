@@ -119,7 +119,7 @@ describe OacisCli do
     context "when host.json is specified" do
 
       before(:each) do
-        @host = FactoryGirl.create(:host)
+        @host = FactoryBot.create(:host)
       end
 
       def create_simulator_with_host_json
@@ -195,7 +195,7 @@ describe OacisCli do
   describe "#append_parameter_definition" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 3)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 3)
     end
 
     it "append a new parameter definition to the simulator" do
@@ -218,15 +218,6 @@ describe OacisCli do
         @sim.reload.parameter_sets.all? do |ps|
           expect(ps.v["NEW_PARAM"]).to eq 0.5
         end
-      }
-    end
-
-    it "adds Boolean parameter correctly" do
-      at_temp_dir {
-        option = {simulator: @sim.id.to_s, name: "NEW_PARAM", type: "Boolean", default: false}
-        OacisCli.new.invoke(:append_parameter_definition, [], option)
-        new_param_def = @sim.reload.parameter_definitions.order_by(id: :asc).last
-        expect(new_param_def.default).to eq false
       }
     end
 
@@ -272,7 +263,7 @@ describe OacisCli do
         end
       end
 
-      context "when type is neither 'Integer', 'Float', 'String', nor 'Boolean'" do
+      context "when type is neither 'Integer', 'Float', 'String'" do
 
         it "throws an exception" do
           at_temp_dir {

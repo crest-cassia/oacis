@@ -338,10 +338,3 @@ function draw_progress_overview(url) {
   })
 };
 
-$(function() {
-  $('body').tooltip({
-    selector: '.progress[data-toggle="tooltip"]',
-    placement: 'bottom'
-  });
-});
-

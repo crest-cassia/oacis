@@ -30,7 +30,22 @@ class HostsController < ApplicationController
     else
       status = "Failed to establish connection. Check host information."
     end
-    render text: status
+    render plain: status
+  end
+
+  # toggle remote scheduler status
+  def _toggle_status
+    xhost = Host.find(params[:id])
+    if (xhost.status == :enabled)
+      xhost.status = :disabled
+      xhost.update_attribute(:status, :disabled)
+    else
+      xhost.update_attribute(:status, :enabled)
+    end
+
+    @hosts = Host.asc(:position).all
+    @host_groups = HostGroup.asc(:created_at).all
+    redirect_to action: 'index'
   end
 
   # GET /hosts/new
@@ -102,18 +117,13 @@ class HostsController < ApplicationController
     params[:host].each_with_index do |host_id, index|
       Host.find(host_id).timeless.update_attribute(:position, index)
     end
-    render nothing: true
+    head :ok
   end
 
   private
   def permitted_host_params
     params[:host].present? ? params.require(:host)
                                    .permit(:name,
-                                           :hostname,
-                                           :status,
-                                           :user,
-                                           :port,
-                                           :ssh_key,
                                            :work_base_dir,
                                            :mounted_work_base_dir,
                                            :max_num_jobs,

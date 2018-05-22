@@ -1,10 +1,14 @@
 .page-header
-  %h1 Logs
+  %h2 Worker Activity
+  = render "current_activity"
+  %h2 Logs
+  .well
+    = render "filtering"
 %table.table.table-striped.table-condensed{style: "font-size: smaller;"}
   %thead
     %tr
       %th Worker
-      %th Date
+      %th{style: "width: 15em;"} Date
       %th Severity
       %th Message
   %tbody#log_table_body
@@ -12,6 +16,8 @@
 
 :javascript
   $(function() {
+    const dont_reload = #{@filtering ? "true" : "false"};
+    if ( dont_reload ) return;
     function reload_table() {
       $.get("/worker_logs/_contents", function(data) {
         $('#log_table_body').html(data);
@@ -19,5 +25,5 @@
     };
     setInterval( function() {
       reload_table();
-    }, 5000 );
+    }, 10000 );
   });

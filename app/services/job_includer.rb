@@ -1,24 +1,31 @@
 module JobIncluder
 
-  def self.include_remote_job(host, submittable)
+  def self.include_remote_job(host, submittable, logger = Logger.new($stderr, level: :fatal))
     host.start_ssh {|ssh|
       if remote_file_is_ready_to_include(host, submittable, ssh)
         if host.mounted_work_base_dir.present?
+          logger.debug("copying results for #{submittable.class}:#{submittable.id} from #{host.name}")
           move_local_file(host, submittable)
+          logger.debug("expanding results for #{submittable.class}:#{submittable.id} from #{host.name}")
           include_work_dir(submittable)
         else
+          logger.debug("downloading results for #{submittable.class}:#{submittable.id} from #{host.name}")
           download_remote_file(host, submittable, ssh)
+          logger.debug("expanding results for #{submittable.class}:#{submittable.id} from #{host.name}")
           include_archive(submittable)
         end
       else
         submittable.status = :failed
         submittable.save!
+        logger.debug("downloading results for failed #{submittable.class}:#{submittable.id} from #{host.name}")
         download_work_dir_if_exists(host, submittable, ssh)
+        logger.debug("parsing results for #{submittable.class}:#{submittable.id} from #{host.name}")
         include_work_dir(submittable)
       end
 
+      logger.debug("removing remote files for #{submittable.class}:#{submittable.id} from #{host.name}")
       remove_remote_files( ssh, RemoteFilePath.all_file_paths(host, submittable) )
-      create_auto_run_analyses(submittable)
+      create_auto_run_analyses(submittable, logger)
     }
   end
 
@@ -32,7 +39,7 @@ module JobIncluder
     JobScriptUtil.update_run(submittable)
   end
 
-  def self.create_auto_run_analyses(submittable)
+  def self.create_auto_run_analyses(submittable, logger = Logger.new($stderr, level: :fatal))
     return if submittable.is_a?(Analysis)
     run = submittable
     runs = run.parameter_set.runs
@@ -40,11 +47,13 @@ module JobIncluder
 
     if run.status == :finished
       analyzers.where(type: :on_run, auto_run: :yes).each do |azr|
+        logger.debug("creating Analysis of #{azr.name} on #{run.class}:#{run.id}")
         create_auto_analysis(run, azr)
       end
 
       analyzers.where(type: :on_run, auto_run: :first_run_only).each do |azr|
         unless runs.where(status: :finished).ne(id: run.id).exists?
+          logger.debug("creating Analysis of #{azr.name} on #{run.class}:#{run.id}")
           create_auto_analysis(run, azr)
         end
       end
@@ -53,6 +62,7 @@ module JobIncluder
     if run.status == :finished or run.status == :failed
       analyzers.where(type: :on_parameter_set, auto_run: :yes).each do |azr|
         unless runs.nin(status: [:finished, :failed]).exists?
+          logger.debug("creating Analysis of #{azr.name} on #{run.class}:#{run.id}")
           create_auto_analysis(run.parameter_set, azr)
         end
       end
@@ -81,7 +91,7 @@ module JobIncluder
   def self.download_remote_file(host, submittable, ssh)
     archive = RemoteFilePath.result_file_path(host, submittable)
     base = File.basename(archive)
-    SSHUtil.download(ssh, archive, submittable.dir.join('..', base))
+    SSHUtil.download_file(host.name, archive, submittable.dir.join('..', base))
 
     download_scheduler_logs(host, submittable, ssh)
   end
@@ -107,7 +117,7 @@ module JobIncluder
 
   def self.download_work_dir_if_exists(host, submittable, ssh)
     work_dir = RemoteFilePath.work_dir_path(host, submittable)
-    SSHUtil.download_recursive_if_exist(ssh, work_dir, submittable.dir)
+    SSHUtil.download_recursive_if_exist(ssh, host.name, work_dir, submittable.dir)
     download_scheduler_logs(host, submittable, ssh)
   end
 
@@ -115,7 +125,7 @@ module JobIncluder
     #include scheduler logs
     logs = RemoteFilePath.scheduler_log_file_paths(host, submittable)
     logs.each do |path|
-      SSHUtil.download_recursive_if_exist(ssh, path, submittable.dir.join(path.basename))
+      SSHUtil.download_recursive_if_exist(ssh, host.name, path, submittable.dir.join(path.basename))
     end
   end
 

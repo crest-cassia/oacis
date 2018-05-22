@@ -1,20 +1,20 @@
-- model_class = Simulator
 .page-header
-  %h1=t '.title', :default => model_class.model_name.human.pluralize
-%table.table.table-striped.table-hover
+  %h1 Simulators
+%table.table.table-condensed.table-striped.table-hover
   %thead
     %tr
       %th Name
       %th Updated_at
-      %th Progress
+      %th
+        Progress
+        %i.fa.fa-lightbulb-o{style: "float: right;", data: {toggle: "tooltip", placement: "left", 'original-title':"tips: Drag a row to sort simulators."}}
   %tbody.sortable{data: {'sort-url' => _sort_simulators_url }}
     - @simulators.each do |simulator|
       = content_tag_for :tr, simulator do
         %td= link_to h(simulator.name), simulator_path(simulator)
         %td= distance_to_now_in_words(simulator.updated_at)
-        - counts = simulator.runs_status_count
-        %td#progress= progress_bar(counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted])
+        %td#progress= progress_bar(simulator.runs_status_count)
 
-- unless OACIS_READ_ONLY
+- if OACIS_ACCESS_LEVEL == 2
   .well
     %a.btn.btn-primary.btn-sm{href: new_simulator_path} New Simulator

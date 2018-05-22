@@ -1,17 +1,23 @@
-= render partial: "description", locals: {simulator: simulator}
+%div{style:"margin-top: 20px;"}
+  - if OACIS_ACCESS_LEVEL == 2
+    = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
+    = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
+    = link_to 'Delete', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
+  = link_to 'Show in JSON', simulator_path(simulator, format: :json), class: 'btn btn-default'
 
-- unless OACIS_READ_ONLY
-  = link_to 'Duplicate', duplicate_simulator_path(simulator), class: 'btn btn-primary'
-  = link_to 'Edit', edit_simulator_path(simulator), class: 'btn btn-info'
-  = link_to 'Destroy', simulator, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-warning'
-= link_to 'Show in JSON', simulator_path(simulator, format: :json), class: 'btn btn-default'
+%h2
+  = "about \"#{simulator.name}\""
 
+- if simulator.description.present?
+  %div.well
+    = markdown(simulator.description)
 
-%h3 About
-
-%table.table.table-striped
+%table.table.table-striped.table-condensed
   %thead
   %tbody
+    %tr
+      %th ID
+      %td= simulator.id.to_s
     %tr
       %th Parameter Input Type
       %td= simulator.support_input_json ? "JSON" : "Arguments"
@@ -29,7 +35,7 @@
       %td= raw( simulator.executable_on.map {|host| h(host.name) }.join('<br />') )
 
 %h3 Defined Parameters
-%table.table.table-striped
+%table.table.table-striped.table-condensed
   %thead
     %tr
       %th.col-md-2
@@ -68,7 +74,7 @@
       = simulator.print_version_command
 
 %h3 List of Simulator Versions
-%table.table.table-striped#simulator_version_table
+%table.table.table-striped.table-condensed#simulator_version_table
   %thead
     %tr
       %th Version
@@ -88,7 +94,8 @@
         %td= sim_version['count'][:finished].to_i
         %td= sim_version['count'][:failed].to_i
         %td
-          %i.fa.fa-cog.clickable#show_cli{data: raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['version']})}
+          %i.fa.fa-cog.clickable#show_cli{data: ""+raw(render partial: "version_dialog", locals: {sim: simulator, version: sim_version['version']}) }
+          / force converting the content to String to apply html_escape again
 
 #version_dialog_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered

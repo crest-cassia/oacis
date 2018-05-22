@@ -1,59 +1,59 @@
 .page-header
   %h1 Jobs
 
-%h3 Running Jobs
-%table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "running")}"}
-  %thead
-    %tr
-      - RunsListDatatable::HEADER.each do |header|
-        = raw(header)
-  %tbody
-
-%hr
-%h3 Submitted Jobs
-%table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "submitted")}"}
-  %thead
-    %tr
-      - RunsListDatatable::HEADER.each do |header|
-        = raw(header)
-  %tbody
-
-%hr
-%h3 Created Jobs
-%table.table.table-condensed.table-hover.table-striped.jobs_datatable{:'data-source' => "#{_jobs_table_runs_path(format: "json", run_status: "created")}"}
-  %thead
-    %tr
-      - RunsListDatatable::HEADER.each do |header|
-        = raw(header)
-  %tbody
+%div.tabbable
+  %ul.nav.nav-tabs
+    %li.active
+      %a{"href": "#tab-runs-unfinished", "data-toggle": "tab"} Unfinished Runs
+    %li
+      %a{"href": "#tab-runs-finished", "data-toggle": "tab"} Finished Runs
+    %li
+      %a{"href": "#tab-analyses-unfinished", "data-toggle": "tab"} Unfinished Analyses
+    %li
+      %a{"href": "#tab-analyses-finished", "data-toggle": "tab"} Finished Analyses
+  %div.tab-content
+    %div.tab-pane.active#tab-runs-unfinished
+      %h3 Unfinished Runs
+      %table.table.table-condensed.table-hover.table-striped#unfinished_runs_list{'data-source': _jobs_table_runs_path(format: 'json', run_status: ['created','submitted','running'])}
+        %thead
+          %tr
+            - RunsListDatatable.header.each do |header|
+              = raw(header)
+        %tbody
+    %div.tab-pane#tab-runs-finished
+      %h3 Finished Runs
+      %table.table.table-condensed.table-hover.table-striped#finished_runs_list{'data-source': _jobs_table_runs_path(format: 'json', run_status: ['finished','failed'])}
+        %thead
+          %tr
+            - RunsListDatatable.header.each do |header|
+              = raw(header)
+        %tbody
+    %div.tab-pane#tab-analyses-unfinished
+      %h3 Unfinished Analyses
+      %table.table.table-condensed.table-hover.table-striped#unfinished_analyses_list{'data-source': _analyses_table_analyses_path(format: 'json', analysis_status: ['created','submitted','running'])}
+        %thead
+          %tr
+            - AnalysesListDatatable.header.each do |header|
+              = raw(header)
+        %tbody
+    %div.tab-pane#tab-analyses-finished
+      %h3 Unfinished Analyses
+      %table.table.table-condensed.table-hover.table-striped#finished_analyses_list{'data-source': _analyses_table_analyses_path(format: 'json', analysis_status: ['finished','failed'])}
+        %thead
+          %tr
+            - AnalysesListDatatable.header.each do |header|
+              = raw(header)
+        %tbody
 
 :javascript
   $(function() {
-    var aoRunsTables = []
-    $('.jobs_datatable').each( function() {
-      var source = $(this).attr("data-source");
-      var oTable = $(this).DataTable({
-        processing: true,
-        serverSide: true,
-        searching: false,
-        ajax: source
-      });
-      aoRunsTables.push(oTable);
-    });
-    function reload_runs_table() {
-      aoRunsTables.forEach( function(oTable) {
-        oTable.ajax.reload(null, false);
-      });
-    }
-    setInterval( function() {
-      if(window.bEnableAutoReload) {
-        reload_runs_table();
-      }
-    }, 5000 );
-    $('.dataTables_length').each( function() {
-      $(this).append(
-        '<i class="fa fa-refresh padding-half-em clickable" id="runs_list_refresh"></i>'
-      );
-      $(this).children('#runs_list_refresh').on('click', reload_runs_table);
-    });
+    // unfinished runs
+    const oUnfinishedRunsTable = datatables_for_runs_table('#unfinished_runs_list');
+    // finished runs
+    const oFinishedRunsTable = datatables_for_runs_table('#finished_runs_list');
+    // unfinished analyses
+    const oUnfinishedAnalysesTable = datatables_for_analyses_table('#unfinished_analyses_list');
+    // unfinished analyses
+    const oFinishedAnalysesTable = datatables_for_analyses_table('#finished_analyses_list');
   });
+

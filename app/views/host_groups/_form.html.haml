@@ -10,11 +10,12 @@
       Hosts
     .col-md-10
       = hidden_field_tag "host_group[host_ids][]", nil
-      - Host.all.each do |host|
-        .checkbox
-          %label{ for: dom_id(host) }
-            = check_box_tag "host_group[host_ids][]", host.id.to_s, @hg.host_ids.include?(host.id), id: dom_id(host)
-            = host.name
+      .checkbox
+        - Host.all.each do |host|
+          %div
+            %label{ for: dom_id(host) }
+              = check_box_tag "host_group[host_ids][]", host.id.to_s, @hg.host_ids.include?(host.id), id: dom_id(host)
+              = host.name
   .form-group
     .col-md-4.col-md-offset-2
       = f.submit('Save', class: 'btn btn-primary')

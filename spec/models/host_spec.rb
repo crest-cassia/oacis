@@ -7,10 +7,6 @@ describe Host do
     before(:each) do
       @valid_attr = {
         name: "nameABC",
-        hostname: "localhost",
-        user: ENV['USER'],
-        port: 22,
-        ssh_key: '~/.ssh/id_rsa',
         work_base_dir: '~/__cm_work__',
         status: :enabled
       }
@@ -32,50 +28,6 @@ describe Host do
     it "'name' must not be an empty string" do
       @valid_attr.update(name: '')
       expect(Host.new(@valid_attr)).not_to be_valid
-    end
-
-    it "'hostname' must be present" do
-      @valid_attr.delete(:hostname)
-      expect(Host.new(@valid_attr)).not_to be_valid
-    end
-
-    it "'hostname' must conform to a format of hostname" do
-      @valid_attr.update(hostname: 'hostname;')
-      expect(Host.new(@valid_attr)).not_to be_valid
-      @valid_attr.update(hostname: 'xn--bcher-kva.ch.')
-      expect(Host.new(@valid_attr)).to be_valid
-    end
-
-    it "'user' must be present" do
-      @valid_attr.delete(:user)
-      expect(Host.new(@valid_attr)).not_to be_valid
-    end
-
-    it "format of the 'user' must be valid" do
-      @valid_attr.update(user: 'user-XYZ')
-      expect(Host.new(@valid_attr)).to be_valid
-      @valid_attr.update(user: 'user;XYZ')
-      expect(Host.new(@valid_attr)).not_to be_valid
-    end
-
-    it "'user' can include '.'" do
-      @valid_attr.update(user: 'user.XYZ')
-      expect(Host.new(@valid_attr)).to be_valid
-    end
-
-    it "default of 'port' is 22" do
-      @valid_attr.delete(:port)
-      expect(Host.new(@valid_attr).port).to eq(22)
-    end
-
-    it "'port' must be between 1..65535" do
-      @valid_attr.update(port: 'abc')  # => casted to 0
-      expect(Host.new(@valid_attr)).not_to be_valid
-    end
-
-    it "default of 'ssh_key' is '~/.ssh/id_rsa'" do
-      @valid_attr.delete(:ssh_key)
-      expect(Host.new(@valid_attr).ssh_key).to eq('~/.ssh/id_rsa')
     end
 
     it "default of 'work_base_dir' is '~'" do
@@ -147,8 +99,8 @@ describe Host do
     end
 
     it "cannot change when submitted runs exist" do
-      host = FactoryGirl.create(:host)
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0)
+      host = FactoryBot.create(:host)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0)
       ps = sim.parameter_sets.first
       run = ps.runs.create!(submitted_to: host)
       run.update_attribute(:status, :submitted)
@@ -157,7 +109,7 @@ describe Host do
     end
 
     it "can not be destroyed when submittable_runs or submitted_runs exist" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       run = sim.parameter_sets.first.runs.first
       host = run.submitted_to
       expect(host.destroy).to be_falsey
@@ -165,7 +117,7 @@ describe Host do
     end
 
     it "cannot be destroyed when submittable_analyses or submitted_analyses exist" do
-      sim = FactoryGirl.create(:simulator,
+      sim = FactoryBot.create(:simulator,
         parameter_sets_count: 1, runs_count: 1,
         analyzers_count: 1
         )
@@ -179,7 +131,7 @@ describe Host do
     end
 
     it "can be destroyed when neither submittable_runs nor submitted_runs exist" do
-      sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 1)
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 1)
       run = sim.parameter_sets.first.runs.first
       run.update_attribute(:status, :finished)
       host = run.submitted_to
@@ -191,7 +143,7 @@ describe Host do
   describe ".find_by_name" do
 
     it "returns the host with the given name" do
-      h = FactoryGirl.create(:host)
+      h = FactoryBot.create(:host)
       found = Host.find_by_name(h.name)
       expect(h).to eq found
     end
@@ -206,34 +158,23 @@ describe Host do
   describe "#connected?" do
 
     before(:each) do
-      @host = FactoryGirl.create(:localhost)
+      @host = FactoryBot.create(:localhost)
     end
 
     it "returns true if ssh connection established" do
       expect(@host.connected?).to be_truthy
     end
 
-    it "returns false when hostname is invalid" do
-      @host.hostname = "INVALID_HOSTNAME"
+    it "returns false when name is invalid" do
+      @host.name = "INVALID_NAME"
       expect(@host.connected?).to be_falsey
-    end
-
-    it "returns false when user name is not correct" do
-      @host.user = "NOT_EXISTING_USER"
-      expect(@host.connected?).to be_falsey
-    end
-
-    it "exception is stored into connection_error variable" do
-      @host.hostname = "INVALID_HOSTNAME"
-      @host.connected?
-      expect(@host.connection_error).to be_a(SocketError)
     end
   end
 
   describe "#status" do
 
     before(:each) do
-      @host = FactoryGirl.create(:localhost)
+      @host = FactoryBot.create(:localhost)
     end
 
     it "returns status of hosts" do
@@ -244,9 +185,9 @@ describe Host do
   describe "#submittable_runs" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 2, runs_count: 0)
-      @host = FactoryGirl.create(:host)
+      @host = FactoryBot.create(:host)
       @sim.executable_on.push @host
       @sim.parameter_sets.each do |ps|
         3.times do |i|
@@ -268,14 +209,14 @@ describe Host do
     end
 
     it "returns runs whose HostGroup includes self" do
-      hg = FactoryGirl.create(:host_group, hosts: [@host])
+      hg = FactoryBot.create(:host_group, hosts: [@host])
       new_run = @sim.parameter_sets.first.runs.create!(host_group: hg)
       expect( @host.submittable_runs.size ).to eq 7
       expect( @host.submittable_runs.include?(new_run) ).to be_truthy
     end
 
     it "does not return runs whose submitted_to is not self" do
-      another_host = FactoryGirl.create(:host)
+      another_host = FactoryBot.create(:host)
       @sim.parameter_sets.each do |ps|
         1.times do |i|
           run = ps.runs.create!(submitted_to: @host)
@@ -299,18 +240,18 @@ describe Host do
   describe "#submitted_runs" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 0)
-      @host = FactoryGirl.create(:host)
-      host2 = FactoryGirl.create(:host)
+      @host = FactoryBot.create(:host)
+      host2 = FactoryBot.create(:host)
       ps = @sim.parameter_sets.first
-      FactoryGirl.create_list(:run, 3,
+      FactoryBot.create_list(:run, 3,
                               parameter_set: ps, status: :submitted, submitted_to: @host)
-      FactoryGirl.create_list(:run, 1,
+      FactoryBot.create_list(:run, 1,
                               parameter_set: ps, status: :running, submitted_to: @host)
-      FactoryGirl.create_list(:run, 1,
+      FactoryBot.create_list(:run, 1,
                               parameter_set: ps, status: :finished, submitted_to: @host)
-      FactoryGirl.create_list(:run, 2,
+      FactoryBot.create_list(:run, 2,
                               parameter_set: ps, status: :submitted, submitted_to: host2)
     end
 
@@ -326,22 +267,22 @@ describe Host do
   describe "#runs_status_count" do
 
     before(:each) do
-      @sim = FactoryGirl.create(:simulator,
+      @sim = FactoryBot.create(:simulator,
                                 parameter_sets_count: 1, runs_count: 0)
-      @host = FactoryGirl.create(:host)
-      host2 = FactoryGirl.create(:host)
+      @host = FactoryBot.create(:host)
+      host2 = FactoryBot.create(:host)
       ps = @sim.parameter_sets.first
-      FactoryGirl.create_list(:run, 5,
+      FactoryBot.create_list(:run, 5,
                               parameter_set: ps, status: :created, submitted_to: @host)
-      FactoryGirl.create_list(:run, 4,
+      FactoryBot.create_list(:run, 4,
                               parameter_set: ps, status: :submitted, submitted_to: @host)
-      FactoryGirl.create_list(:run, 3,
+      FactoryBot.create_list(:run, 3,
                               parameter_set: ps, status: :running, submitted_to: @host)
-      FactoryGirl.create_list(:run, 2,
+      FactoryBot.create_list(:run, 2,
                               parameter_set: ps, status: :finished, submitted_to: @host)
-      FactoryGirl.create_list(:run, 1,
+      FactoryBot.create_list(:run, 1,
                               parameter_set: ps, status: :failed, submitted_to: @host)
-      FactoryGirl.create_list(:run, 2,
+      FactoryBot.create_list(:run, 2,
                               parameter_set: ps, status: :submitted, submitted_to: host2)
     end
 
@@ -356,7 +297,7 @@ describe Host do
     it "returns default values of host parameters" do
       hpd1 = HostParameterDefinition.new(key: "hp1", default: "foo")
       hpd2 = HostParameterDefinition.new(key: "hp2", default: "bar")
-      host = FactoryGirl.create(:host, host_parameter_definitions: [hpd1,hpd2] )
+      host = FactoryBot.create(:host, host_parameter_definitions: [hpd1,hpd2] )
       expect( host.default_host_parameters ).to eq( {"hp1"=>"foo","hp2"=>"bar"} )
     end
   end
@@ -364,7 +305,7 @@ describe Host do
   describe "registering host_parameter_definitions" do
 
     it "gets host parameters by invoking 'get_host_parameters' when host status is changed into :enabled" do
-      @host = FactoryGirl.create(:localhost)
+      @host = FactoryBot.create(:localhost)
       @host.update_attribute(:status, :disabled)
       expect(@host).to receive(:get_host_parameters)
       @host.status = :enabled
@@ -375,7 +316,7 @@ describe Host do
       hp = {"parameters" => {"foo" => {"default"=>1}, "bar" => {"default"=>"abc"} } }
       ret_str = "XSUB_BEGIN\n#{hp.to_json}"
       expect(SSHUtil).to receive(:execute).and_return(ret_str)
-      @host = FactoryGirl.create(:localhost)
+      @host = FactoryBot.create(:localhost)
       expect(@host.host_parameter_definitions.size).to eq 2
       expect(@host.host_parameter_definitions[0].key).to eq "foo"
       expect(@host.host_parameter_definitions[0].default).to eq "1"
@@ -385,13 +326,13 @@ describe Host do
       hp = {"parameters" => {"mpi_procs" => {"default"=>1}, "omp_threads" => {"default"=>"1"} } }
       ret_str = "XSUB_BEGIN\n#{hp.to_json}"
       expect(SSHUtil).to receive(:execute).and_return(ret_str)
-      @host = FactoryGirl.create(:localhost)
+      @host = FactoryBot.create(:localhost)
       expect(@host.host_parameter_definitions).to be_empty
     end
 
     it "'xsub' command fails, validation fails" do
       expect(SSHUtil).to receive(:execute).and_return("{invalid:...")
-      @host = FactoryGirl.build(:localhost)
+      @host = FactoryBot.build(:localhost)
       expect(@host).to_not be_valid
     end
 
@@ -403,14 +344,14 @@ describe Host do
   describe "'position' field" do
 
     before(:each) do
-      FactoryGirl.create_list(:host, 2)
+      FactoryBot.create_list(:host, 2)
     end
 
     it "the largest number within existing hosts is assigned when created" do
       allow_any_instance_of(Host).to receive(:get_host_parameters) do
         []
       end
-      expect(Host.create!(name: 'h1', hostname: 'localhost', user: 'foo').position).to eq 2
+      expect(Host.create!(name: 'h1').position).to eq 2
       expect(Host.all.map(&:position)).to match_array([0,1,2])
     end
   end
@@ -418,8 +359,8 @@ describe Host do
   describe "#destroy" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 1)
+      @host = FactoryBot.create(:host_with_parameters)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 1)
       @sim.executable_on.destroy
       @sim.executable_on << @host
       @sim.save
@@ -455,8 +396,8 @@ describe Host do
   context "when status is updated to :disabled" do
 
     before(:each) do
-      @host = FactoryGirl.create(:host_with_parameters)
-      @sim = FactoryGirl.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 1)
+      @host = FactoryBot.create(:host_with_parameters)
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 0, finished_runs_count: 1)
       @sim.executable_on.destroy
       @sim.executable_on << @host
       @sim.save

@@ -8,8 +8,8 @@ class ServiceWorker < Worker
   WORKER_STDOUT_FILE = Rails.root.join('log', "service_worker_out.log")
 
   TASKS = [
-    lambda {|logger| CacheUpdater.perform(logger) },
-    lambda {|logger| DocumentDestroyer.perform(logger) }
+    lambda {|logger| DocumentDestroyer.perform(logger) },
+    lambda {|logger| ParameterSetsCreator.perform(logger) }
   ]
 end
 

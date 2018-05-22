@@ -18,8 +18,8 @@ $(function () {
 });
 
 $(function() {
-  var datatables_for_analyses_table = function() {
-    var oTable = $('#analyses_list').DataTable({
+  var datatables_for_analyses_table = function(selector) {
+    var oTable = $(selector).DataTable({
       processing: true,
       serverSide: true,
       bFilter: false,
@@ -30,13 +30,17 @@ $(function() {
         "orderable": false,
         "targets": [0, -1]
       }],
-      ajax: $('#analyses_list').data('source')
+      ajax: $(selector).data('source'),
+      "createdRow": function(row, data, dataIndex) {
+        const lnId = data[data.length-1];
+        $(row).attr('id', lnId);
+      },
+      pageLength: 100
     });
-    $('#analyses_list_length').append(
-      '<i class="fa fa-refresh clickable padding-half-em" id="analyses_list_refresh"></i>'
-    );
-    var refresh_icon = $('#analyses_list_length').children('#analyses_list_refresh');
-    refresh_icon.on('click', function() { oTable.ajax.reload(null, false); });
+    const wrapperDiv = $(selector).closest(selector+'_wrapper');
+    const lengthDiv = wrapperDiv.find(selector+'_length');
+    setupRefreshTools(oTable, lengthDiv);
+
     return oTable;
   };
 

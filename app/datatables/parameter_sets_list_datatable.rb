@@ -18,7 +18,12 @@ class ParameterSetsListDatatable
   end
 
   def self.header(simulator)
-    header = [ '<th style="min-width: 18px; width: 1%"></th>',
+    if OACIS_ACCESS_LEVEL >= 1
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" /></th>'
+    else
+      col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" disabled="disabled" /></th>'
+    end
+    header = [ col0,
                '<th class="span1" style="min-width: 150px;">Progress</th>',
                '<th class="span1" style="min-width: 50px;">ParamSetID</th>',
                '<th class="span1">Updated_at</th>'
@@ -26,21 +31,20 @@ class ParameterSetsListDatatable
     header += simulator.parameter_definitions.map do |pd|
       '<th class="span1">' + ERB::Util.html_escape(pd.key) + '</th>'
     end
-    header << '<th style="min-width: 18px; width: 1%;"></th>'
     header
   end
 
 private
   def sort_by
-    ["id", "progress_rate_cache", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
+    ["id", "progress", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
   end
 
   def data
     parameter_sets_list.map do |ps|
       tmp = []
-      tmp << @view.content_tag(:i, '', parameter_set_id: ps.id.to_s, align: "center", class: "fa fa-search clickable")
-      counts = runs_status_counts(ps)
-      progress = @view.progress_bar( counts.values.inject(:+), counts[:finished], counts[:failed], counts[:running], counts[:submitted] )
+      attr = (OACIS_ACCESS_LEVEL==0) ? {align: "center", disabled: "disabled"} : {align: "center"}
+      tmp << @view.check_box_tag("checkbox[ps]", ps.id, false, attr)
+      progress = @view.progress_bar(runs_status_counts(ps))
       tmp << @view.raw(progress)
       tmp << @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps) )
       tmp << @view.distance_to_now_in_words(ps.updated_at)
@@ -51,15 +55,7 @@ private
           tmp <<  ERB::Util.html_escape(ps.v[key])
         end
       end
-      if ps == @base_ps
-        tmp << ''
-      else
-        if OACIS_READ_ONLY
-          tmp << @view.raw('<i class="fa fa-trash-o">')
-        else
-          tmp << @view.link_to( @view.raw('<i class="fa fa-trash-o">'), ps, remote: true, method: :delete, data: {confirm: 'Are you sure?'})
-        end
-      end
+      tmp << "params_list_#{ps.id}"
       tmp
     end
   end
@@ -85,12 +81,34 @@ private
   end
 
   def parameter_sets_list
-    @ps_list_cache ||= @param_sets.order_by(sort_column_direction).skip(page).limit(per_page).to_a
+    @ps_list_cache ||= get_parameter_set_list
+  end
+
+  def get_parameter_set_list
+    pss = @param_sets.order_by(sort_column_direction).skip(page).limit(per_page).to_a
     # `to_a` is necessary to fix the contents of parameter_sets_list
+    @runs_status_counts_cache = ParameterSet.runs_status_count_batch(pss)
+
+    if sort_columns[0] == "progress"
+      pss.sort_by! do |ps|
+        r = progress_rate(ps)
+      end
+      if sort_directions[0] == "desc"
+        pss.reverse!
+      end
+    end
+    pss
+  end
+
+  def progress_rate(ps)
+    counts = runs_status_counts(ps)
+    total = counts.inject(0) {|sum, v| sum += v[1]}
+    rate = (counts[:finished]*1000000 + counts[:failed]*10000 + counts[:running]*100 + counts[:submitted]*1).to_f / total
+    rate
   end
 
   def runs_status_counts(ps)
-    @runs_status_counts_cache ||= ParameterSet.runs_status_count_batch( parameter_sets_list )
+    raise "must not happen" if @runs_status_counts_cache.nil?
     @runs_status_counts_cache[ps.id]
   end
 

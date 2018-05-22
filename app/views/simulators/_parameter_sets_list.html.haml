@@ -1,110 +1,99 @@
 %h3 List of Parameter Sets
 
-%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameters_list_simulator_path(@simulator.to_param, format: "json", query_id: @query_id)}"}
+.filter_set_area.paramset_title_area_item
+  %div{style: "float:left; margin-top: 7px; width: 80%"}
+    %i#parameter_set_filter_modal_btn.fa.fa-search.fa-lg.clickable{onclick: "$('#parameter_set_filter_form_modal').modal('show');", style: "padding: 5px;", data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
+    %span#parameter_filter_selected
+    - if @filter
+      = @filter.name if @filter.name
+      = raw(query_badge(@filter))
+      - if OACIS_ACCESS_LEVEL >= 1
+        %a#parameter_save_filter_btn{href: "#", onclick: "$('#filter_name_form_modal').modal('show');", data: {q: @filter}}
+          Save
+      %a#parameter_save_filter_btn{href: simulator_path(@simulator)}
+        Clear
+    - else
+      not filtering
+  - if OACIS_ACCESS_LEVEL >= 1
+    %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator), style: "float: right; margin-right: 3px;"}
+      New Parameter Set
+
+.clear-element
+.create_ps_area{id: "ps_being_created_#{@simulator.id}"}
+  = render partial: 'save_ps_task_status', locals: {simulator: @simulator, offset_num_ps: 0, offset_num_runs: 0}
+.clear-element
+%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameter_sets_list_simulator_path(@simulator.to_param, format: "json", q: @filter&.conditions.to_json)}"}
   %thead
     %tr
       - ParameterSetsListDatatable.header(@simulator).each do |th_element|
         = raw(th_element)
   %tbody
 
-- unless OACIS_READ_ONLY
-  %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator)}
-    New Parameter Set
+- if OACIS_ACCESS_LEVEL >= 1
+  = render partial: 'create_runs_on_selected_modal', locals: {simulator: @simulator}
 
-%h3 Parameter Filter
-.foo
-  = form_tag( _make_query_simulator_path(@simulator), class: 'form-horizontal' ) do |f|
-    #queries_form_original
-      .row
-        .form-group.col-md-2#select_param_form
-          - prm_def = @simulator.parameter_definitions.map {|x| [x.key, {"type" => x.type, "default" => x.default}] }
-          - prm_def = Hash[*prm_def.flatten]
-          = select_tag "query[][param]", options_for_select(prm_def), class: 'form-control'
-        .form-group.col-md-1#select_matcher_form
-          = select_tag "query[][matcher]", options_for_select({""=>""}), class: 'form-control'
-        .form-group.col-md-3#select_value_form
-          = text_field_tag "query[][value]", "", class: 'form-control'
-        .col-md-6
-    .btn#add_queries_form Add more filters
-    = hidden_field_tag "query_id", @query_id
-    = submit_tag "Save this Filter", :class => 'btn btn-primary'
+#parameter_set_filter_form_modal.modal.large.fade
+  .modal-dialog.modal-vertical-centered
+    .modal-content
+      = render 'filter_form', simulator: @simulator, q: (@filter&.conditions or [[]])
 
-- if @query_list
-  %h4 Select Filter
-  = form_for(@simulator, url: {controller:"simulators", action:"show"}, html: {method: :get, class: 'form-inline'} ) do |f|
-    .form-group
-      = select_tag "query_id", options_for_select(@query_list, @query_id), prompt: "all", class: 'form-control'
-    = f.submit "Load", class: 'btn btn-primary', name: nil
-
-- unless @query_id.blank?
-  %h4 Delete Filter
-  = form_tag( _make_query_simulator_path(@simulator) ) do |f|
-    = hidden_field_tag "query_id", @query_id
-    = submit_tag "Delete this Filter", :class => 'btn btn-primary', :name => :delete_query, :confirm => 'Are you sure?'
-
-#runs_list_modal.modal.large.fade
+#parameter_set_filters_list_modal.modal.large.fade
   .modal-dialog.modal-vertical-centered
     .modal-content
       .modal-header
-        %button.close{type: "button", "data-dismiss" => "modal"}
+        %button.close{type: "button", "data-dismiss": "modal"}
           &times;
-        %h4.modal-title
-      .modal-body.large#runs_list_modal_page
-      .modal-footer
-        %button.btn.btn-default{type: "button", "data-dismiss" => "modal"}
-          Close
+        %h4 Filters
+      .modal-body.large
+        = render "filters_list", simulator: @simulator
+
+- if OACIS_ACCESS_LEVEL >= 1
+  #filter_name_form_modal.modal.large.fade
+    .modal-dialog.modal-vertical-centered
+      .modal-content
+        .modal-header
+          %button.close{type: "button", "data-dismiss": "modal"}
+            &times;
+          %h4 Save this filter as
+        = form_tag(save_filter_simulator_path(@simulator), class: 'form-horizontal', id: 'save_filter_form') do
+          .modal-body.large
+            %h4 Name
+            = text_field_tag "filter_name", "filter1", class: 'form-control', id: 'filter_name_field'
+            = hidden_field_tag :q, @filter&.conditions.to_json
+          .modal-footer
+            %input#parameter_save_filter_set_ok.btn.btn-primary{type: "submit", value: "Save", "data-dismiss": "modal", 'data-find-field-path': _find_filter_simulator_path(@simulator)}
 
 :javascript
   $(function() {
-    var cloned = $('#queries_form_original').html();
-    $('#add_queries_form').click(function() {
-      $('#add_queries_form').before( cloned );
-      $('.row:last select', $(this).parent() ).trigger('change');
-    });
+    const objPSTable = create_parameter_sets_list('#params_list', 100);
   });
-
-  $(function() {
-    $("body").on("change", "#select_param_form select", function(){
-      $("#select_matcher_form option",$(this).parent().parent()).remove()
-      var matcher_form_selector = $("#select_matcher_form",$(this).parent().parent())
-      var matcher_val;
-      var matcher_text;
-      if($(":selected",this).attr('type') == "Integer" || $(":selected",this).attr('type') == "Float") {
-        matcher_val = #{raw ParameterSetQuery::NumTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetQuery::NumTypeMatcherStrings.to_json};
-      } else if($(":selected",this).attr('type') == "Boolean") {
-        matcher_val = #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetQuery::BooleanTypeMatchers.to_json};
-      } else if($(":selected",this).attr('type') == "String") {
-        matcher_val = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
-        matcher_text = #{raw ParameterSetQuery::StringTypeMatchers.to_json};
-      }
-
-      for(i in matcher_val){
-        $("select",matcher_form_selector).append("<option value=\"\"></option>");
-        $("option:nth-child("+(parseInt(i)+1)+")",matcher_form_selector).val(matcher_val[i]).text(matcher_text[i]);
-      }
-
-      var value_form_selector = $("#select_value_form",$(this).parent().parent())
-    });
+  $(function () {
+    $('#ps_check_all').prop('checked', false); // workaround for a bug of Chrome
   });
-
-  $(function() {
-    var parameter_form_selector = $("#select_param_form select")
-    parameter_form_selector.val("#{@simulator.parameter_definitions.first.key}");
-    parameter_form_selector.trigger("change");
-  });
-
-:javascript
-  $(function() {
-    var oPsTable = create_parameter_sets_list('#params_list', 100);
-    if( window.bEnableAutoReload ) {
-      setInterval( function() {
-        if( $("#tab-list-parameters").length > 0 ) { // ParameterSet tab in Simulator show page
-          if( $("#tab-list-parameters")[0].classList.contains("active") ) {
-            oPsTable.ajax.reload(null, false);
-          }
-        }
-      }, 5000);
+  $("#parameter_save_filter_set_ok").on("click", function() {
+    let name = $("#filter_name_field").val();
+    if (name == null || (name != null && name.length < 1)) {
+      alert("Name cannot be blank.");
+      return false;
     }
+    let url = $(this).data('find-field-path');
+    jQuery.ajax(url, {
+      type: 'get',
+      data: { filter_name: name },
+      dataType: 'json'
+    })
+    .done(function(data) {
+      if(data) {
+        const n = data["name"];
+        if (confirm("Filter '"+n+"' already exists. Overwrite?")) {
+          $('#save_filter_form').submit();
+        } else {
+          return false;
+        }
+      }
+      else {
+        $('#save_filter_form').submit();
+      }
+    });
   });
+

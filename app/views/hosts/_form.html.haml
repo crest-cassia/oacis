@@ -1,89 +1,69 @@
-= form_for @host, html: {class: 'form-horizontal'} do |f|
+= form_for @host, html: {class: ['form-horizontal','wide-tooltip']}, builder: ApplicationFormBuilder do |f|
   - error_messages = @host.errors.full_messages + @host.host_parameter_definitions.map {|pdef| pdef.errors.full_messages }.flatten
   = render partial: 'shared/error_messages', locals: {error_messages: error_messages}
   .form-group
-    = f.label(:name, class: 'col-md-2 control-label')
+    = f.label_c(:name)
     .col-md-3
-      = f.text_field(:name, class: 'form-control')
+      = f.text_field(:name, class: ['form-control'], data: tooltip_data(:host,:name))
   .form-group
-    = f.label(:hostname, class: 'col-md-2 control-label')
-    .col-md-3
-      = f.text_field(:hostname, class: 'form-control')
-  .form-group
-    = f.label(:status, 'Polling Status', class: 'col-md-2 control-label')
-    .col-md-3
-      = f.select(:status, Host::HOST_STATUS, {}, {class: 'form-control'})
-  .form-group
-    = f.label(:user, class: 'col-md-2 control-label')
-    .col-md-3
-      = f.text_field(:user, class: 'form-control')
-  .form-group
-    = f.label(:port, class: 'col-md-2 control-label')
-    .col-md-3
-      = f.number_field(:port, class: 'form-control')
-  .form-group
-    = f.label(:ssh_key, class: 'col-md-2 control-label')
-    .col-md-3
-      = f.text_field(:ssh_key, class: 'form-control')
-  .form-group
-    = f.label(:work_base_dir, class: 'col-md-2 control-label')
+    = f.label_c(:work_base_dir)
     .col-md-3
       - if @host.work_base_dir_is_not_editable?
         = f.text_field(:work_base_dir, class: 'form-control', disabled: true);
         not editable when a submitted run exists
       - else
-        = f.text_field(:work_base_dir, class: 'form-control')
+        = f.text_field(:work_base_dir, class: 'form-control', data: tooltip_data(:host,:work_base_dir))
   .form-group
-    = f.label(:mounted_work_base_dir, class: 'col-md-2 control-label')
+    = f.label_c(:mounted_work_base_dir)
     .col-md-3
-      = f.text_field(:mounted_work_base_dir, class: 'form-control')
+      = f.text_field(:mounted_work_base_dir, class: 'form-control', data: tooltip_data(:host,:mounted_work_base_dir))
   .form-group
-    = f.label(:max_num_jobs, class: 'col-md-2 control-label')
+    = f.label_c(:max_num_jobs)
     .col-md-3
-      = f.text_field(:max_num_jobs, class: 'form-control')
+      = f.text_field(:max_num_jobs, class: 'form-control', data: tooltip_data(:host,:max_num_jobs))
   .form-group
-    = f.label(:polling_interval, class: 'col-md-2 control-label')
+    = f.label_c(:polling_interval)
     .col-md-3
-      = f.text_field(:polling_interval, class: 'form-control')
+      = f.text_field(:polling_interval, class: 'form-control', data: tooltip_data(:host,:polling_interval))
   .form-group
-    = f.label(:min_mpi_procs, 'MPI processes', class: 'col-md-2 control-label')
+    = f.label_c(:min_mpi_procs, 'MPI processes')
     .form-group.col-md-5.small-margin-bottom
       .col-md-5
-        = f.number_field(:min_mpi_procs, class: 'form-control')
+        = f.number_field(:min_mpi_procs, class: 'form-control', data: tooltip_data(:host,:min_mpi_procs))
       .col-md-1.range-tilde
         \~
       .col-md-5
-        = f.number_field(:max_mpi_procs, class: 'form-control')
+        = f.number_field(:max_mpi_procs, class: 'form-control', data: tooltip_data(:host,:min_mpi_procs))
   .form-group
-    = f.label(:min_omp_threads, 'OMP threads', class: 'col-md-2 control-label')
+    = f.label_c(:min_omp_threads, 'OMP threads')
     .form-group.col-md-5.small-margin-bottom
       .col-md-5
-        = f.number_field(:min_omp_threads, class: 'form-control')
+        = f.number_field(:min_omp_threads, class: 'form-control', data: tooltip_data(:host,:min_omp_threads))
       .col-md-1.range-tilde
         \~
       .col-md-5
-        = f.number_field(:max_omp_threads, class: 'form-control')
+        = f.number_field(:max_omp_threads, class: 'form-control', data: tooltip_data(:host,:min_omp_threads))
   .form-group
-    %label.col-md-2.control-label
-      Executable Simulators
+    = raw(label_c('Executable Simulators'))
     .col-md-10
       = hidden_field_tag "host[executable_simulator_ids][]", nil
-      - Simulator.all.each do |sim|
-        .checkbox
-          %label{ for: dom_id(sim) }
-            = check_box_tag "host[executable_simulator_ids][]", sim.id.to_s, @host.executable_simulator_ids.include?(sim.id), id: dom_id(sim)
-            = sim.name
+      .checkbox
+        - Simulator.all.each do |sim|
+          %div
+            %label{ for: dom_id(sim) }
+              = check_box_tag "host[executable_simulator_ids][]", sim.id.to_s, @host.executable_simulator_ids.include?(sim.id), id: dom_id(sim)
+              = sim.name
   .form-group
-    %label.col-md-2.control-label
-      Executable Analyzers
+    = raw(label_c('Executable Analyzers'))
     .col-md-10
       = hidden_field_tag "host[executable_analyzer_ids][]", nil
-      - Simulator.all.each do |sim|
-        - sim.analyzers.each do |azr|
-          .checkbox
-            %label{ for: dom_id(azr) }
-              = check_box_tag "host[executable_analyzer_ids][]", azr.id.to_s, @host.executable_analyzer_ids.include?(azr.id), id: dom_id(azr)
-              = sim.name + " / " + azr.name
+      .checkbox
+        - Simulator.all.each do |sim|
+          - sim.analyzers.each do |azr|
+            %div
+              %label{ for: dom_id(azr) }
+                = check_box_tag "host[executable_analyzer_ids][]", azr.id.to_s, @host.executable_analyzer_ids.include?(azr.id), id: dom_id(azr)
+                = sim.name + " / " + azr.name
   .form-group
     .col-md-4.col-md-offset-2
       = f.submit('Save', class: 'btn btn-primary')
