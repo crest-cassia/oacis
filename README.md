@@ -3,6 +3,8 @@
 [![GitHub version](https://img.shields.io/github/release/crest-cassia/oacis.svg)](https://github.com/crest-cassia/oacis)
 [![Build Status](https://travis-ci.org/crest-cassia/oacis.svg?branch=master)](https://travis-ci.org/crest-cassia/oacis)
 
+<img src="docs/OACIS_logo.png" alt="OACIS logo" title="OACIS" height="180"></img>
+
 ## What is OACIS?
 
 *OACIS* (''Organizing Assistant for Comprehensive and Interactive Simulations'') is a **job management software** for large scale simulations.
