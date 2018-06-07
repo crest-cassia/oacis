@@ -1,5 +1,64 @@
 module SSHUtil
 
+  class ShellSession
+
+    TOKEN = "XXXDONEXXX"
+    PATTERN = /^XXXDONEXXX (\d+)$/
+
+    def initialize(channel)
+      @ch = channel
+    end
+
+    def exec!(command)
+      @ch.send_data("#{command}\necho '#{TOKEN}' $?\n")
+      o = Fiber.yield
+      o[:stdout]
+    end
+
+    def exec2!(command)
+      @ch.send_data("#{command}\necho '#{TOKEN}' $?\n")
+      Fiber.yield
+    end
+
+    def self.start(session, shell="bash -l", debug=false)
+      channel = session.open_channel do |ch|
+        ch.exec(shell) do |ch2, success|
+          raise "failed to open shell" unless success
+          # Set the terminal type
+          ch2.send_data "export TERM=vt100\necho '#{TOKEN}' $?\n"
+
+          sh = ShellSession.new(ch2)
+          f = Fiber.new do
+            yield sh
+            ch2.send_data("exit\n")
+          end
+
+          output = {stdout: "", stderr: "", rc: nil}
+
+          ch2.on_data do |c,data|
+            $stderr.puts "o: #{data}" if debug
+            if data =~ PATTERN
+              rc = $1.to_i
+              $stderr.puts "rc: #{rc}" if debug
+              output[:rc] = rc
+              o = output
+              output = {stdout: "", stderr: "", rc: nil}
+              f.resume o
+            else
+              output[:stdout] += data
+            end
+          end
+
+          ch2.on_extended_data do |c,type,data|
+            $stderr.puts "e: #{data}" if debug
+            output[:stderr] += data
+          end
+        end
+      end
+      channel.wait
+    end
+  end
+
   def self.download_file(hostname, remote_path, local_path)
     cmd = "scp -Bqr '#{hostname}:#{remote_path}' #{local_path} 2> /dev/null"
     system(cmd)
@@ -13,8 +72,8 @@ module SSHUtil
     raise "'#{cmd}' failed : #{$?.to_i}" unless $?.to_i == 0
   end
 
-  def self.download_recursive_if_exist(ssh, hostname, remote_path, local_path)
-    s = stat(ssh, remote_path)
+  def self.download_recursive_if_exist(sh, hostname, remote_path, local_path)
+    s = stat(sh, remote_path)
     if s == :directory
       download_directory(hostname, remote_path, local_path)
     elsif s == :file
@@ -32,49 +91,22 @@ module SSHUtil
     raise "'#{cmd}' failed : #{$?.to_i}" unless $?.to_i == 0
   end
 
-  def self.rm_r(ssh, remote_paths)
+  def self.rm_r(sh, remote_paths)
     remote_paths = [remote_paths] unless remote_paths.is_a?(Array)
-    ssh.exec!("rm -rf #{remote_paths.join(' ')}")
+    sh.exec!("rm -rf #{remote_paths.join(' ')}")
   end
 
-  def self.uname(ssh)
-    ssh.exec!("uname").chomp
+  def self.uname(sh)
+    sh.exec!("uname").chomp
   end
 
-  def self.execute(ssh, command)
-    ssh.exec!(command)
+  def self.execute(sh, command)
+    sh.exec!(command)
   end
 
-  def self.execute2(ssh, command)
-    stdout_data = ""
-    stderr_data = ""
-    exit_code = nil
-    exit_signal = nil
-
-    ssh.open_channel do |channel|
-      channel.exec(command) do |ch, success|
-        unless success
-          abort "FAILED: couldn't execute command (ssh.channel.exec)"
-        end
-        channel.on_data do |ch,data|
-          stdout_data+=data
-        end
-
-        channel.on_extended_data do |ch,type,data|
-          stderr_data+=data
-        end
-
-        channel.on_request("exit-status") do |ch,data|
-          exit_code = data.read_long
-        end
-
-        channel.on_request("exit-signal") do |ch, data|
-          exit_signal = data.read_long
-        end
-      end
-    end
-    ssh.loop
-    [stdout_data, stderr_data, exit_code, exit_signal]
+  def self.execute2(sh, command)
+    out = sh.exec2!(command)
+    [out[:stdout], out[:stderr], out[:rc]]
   end
 
   def self.write_remote_file(hostname, remote_path, content)
@@ -85,8 +117,8 @@ module SSHUtil
     end
   end
 
-  def self.stat(ssh, remote_path)
-    out = execute(ssh, "{ test -d #{remote_path} && echo d; } || { test -f #{remote_path} && echo f; }")
+  def self.stat(sh, remote_path)
+    out = execute(sh, "{ test -d #{remote_path} && echo d; } || { test -f #{remote_path} && echo f; }")
     if out.chomp == 'd'
       :directory
     elsif out.chomp == 'f'
@@ -96,12 +128,12 @@ module SSHUtil
     end
   end
 
-  def self.exist?(ssh, remote_path)
-    s = stat(ssh, remote_path)
+  def self.exist?(sh, remote_path)
+    s = stat(sh, remote_path)
     s == :directory || s == :file
   end
 
-  def self.directory?(ssh, remote_path)
-    stat(ssh, remote_path) == :directory
+  def self.directory?(sh, remote_path)
+    stat(sh, remote_path) == :directory
   end
 end
