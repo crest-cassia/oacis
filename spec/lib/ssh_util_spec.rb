@@ -164,30 +164,6 @@ describe SSHUtil do
     end
   end
 
-  describe ".execute_in_background" do
-
-    it "executes command in background and return it immediately" do
-      expect {
-        SSHUtil.execute_in_background(@ssh, 'sleep 3')
-      }.to change { Time.now }.by_at_most(1)
-    end
-
-    it "does not hung up when execute is called after execute_in_background" do
-      expect {
-        SSHUtil.execute_in_background(@ssh, 'sleep 3')
-        SSHUtil.execute(@ssh, 'pwd')
-      }.to change { Time.now }.by_at_most(1)
-    end
-
-    it "handles redirection properly" do
-      remote_path = @temp_dir.join('abc').expand_path
-      SSHUtil.execute_in_background(@ssh, "echo $USER > #{remote_path}")
-      sleep 1
-      expect(File.exist?(remote_path)).to be_truthy
-      expect(File.open(remote_path).read.chomp).to eq ENV['USER']
-    end
-  end
-
   describe ".execute2" do
 
     it "execute command and return outputs and exit_codes" do

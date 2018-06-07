@@ -45,13 +45,6 @@ module SSHUtil
     ssh.exec!(command)
   end
 
-  def self.execute_in_background(ssh, command)
-    # NOTE: must be redirected to a file. Otherwise, ssh.exec! does not return immediately
-    # http://stackoverflow.com/questions/29142/getting-ssh-to-execute-a-command-in-the-background-on-target-machine
-    # a semi-colon is necessary at the back of the command
-    ssh.exec!("{ #{command.sub(/;^/,'')}; } > /dev/null 2>&1 < /dev/null &")
-  end
-
   def self.execute2(ssh, command)
     stdout_data = ""
     stderr_data = ""
