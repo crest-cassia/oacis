@@ -11,7 +11,10 @@ class JobObserver
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
       begin
         logger.debug "observing host #{host.name}"
-        observe_host(host, logger)
+        bm = Benchmark.measure {
+          observe_host(host, logger)
+        }
+        logger.info "observing #{host.name} finished in #{sprintf('%.1f', bm.real)}" if bm.real > 1.0
       rescue => ex
         logger.error("Error in JobObserver: #{ex.inspect}")
       end

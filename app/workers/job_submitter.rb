@@ -17,7 +17,10 @@ class JobSubmitter
           if analyses.present?
             logger.info("submitting analyses to #{host.name}: #{analyses.map do |r| r.id.to_s end.inspect}")
             num -= analyses.length  # [warning] analyses.length ignore 'limit', so 'num' can be negative.
-            submit(analyses, host, logger)
+            bm = Benchmark.measure {
+              submit(analyses, host, logger)
+            }
+            logger.info("submission of analyses (host:#{host.name}, pri:#{priority}) finished in #{sprintf('%.1f', bm.real)}")
           else
             logger.debug("no submittable analyses of priority #{priority} found for #{host.name}")
           end
@@ -28,7 +31,10 @@ class JobSubmitter
           if runs.present?
             logger.info("submitting runs to #{host.name}: #{runs.map do |r| r.id.to_s end.inspect}")
             num -= runs.length  # [warning] runs.length ignore 'limit', so 'num' can be negative.
-            submit(runs, host, logger)
+            bm = Benchmark.measure {
+              submit(runs, host, logger)
+            }
+            logger.info("submission of runs (host:#{host.name}, pri:#{priority}) finished in #{sprintf('%.1f', bm.real)}")
           else
             logger.debug("no submittable runs of priority #{priority} found for #{host.name}")
           end
@@ -56,7 +62,7 @@ class JobSubmitter
           bm = Benchmark.measure {
             handler.submit_remote_job(job)
           }
-          logger.info("submission of #{job.id} finished in #{bm.real}")
+          logger.info("submission of #{job.id} finished in #{sprintf('%.1f', bm.real)}")
         rescue => ex
           logger.error ex.inspect
           logger.error ex.backtrace
