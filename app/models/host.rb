@@ -123,6 +123,7 @@ class Host
     host_groups.all? {|hg| hg.hosts.count > 1 }
   end
 
+  private
   def start_ssh( ssh_logger: nil )
     if @ssh
       yield @ssh
@@ -139,6 +140,7 @@ class Host
     end
   end
 
+  public
   def start_ssh_shell( ssh_logger: nil )
     start_ssh(ssh_logger: ssh_logger) do |ssh|
       if @ssh_shell
