@@ -73,13 +73,15 @@ module SSHUtil
   end
 
   def self.download_recursive_if_exist(sh, hostname, remote_path, local_path)
-    s = stat(sh, remote_path)
-    if s == :directory
+    if directory?(sh, remote_path)
       download_directory(hostname, remote_path, local_path)
-    elsif s == :file
+      :directory
+    elsif file?(sh, remote_path)
       download_file(hostname, remote_path, local_path)
+      :file
+    else
+      nil
     end
-    s
   end
 
   def self.upload(hostname, local_path, remote_path)
@@ -117,23 +119,18 @@ module SSHUtil
     end
   end
 
-  def self.stat(sh, remote_path)
-    out = execute(sh, "{ test -d #{remote_path} && echo d; } || { test -f #{remote_path} && echo f; }")
-    if out.chomp == 'd'
-      :directory
-    elsif out.chomp == 'f'
-      :file
-    else
-      nil
-    end
-  end
-
-  def self.exist?(sh, remote_path)
-    s = stat(sh, remote_path)
-    s == :directory || s == :file
+  def self.file?(sh, remote_path)
+    _out,_err,rc = execute2(sh, "test -f #{remote_path}")
+    rc == 0
   end
 
   def self.directory?(sh, remote_path)
-    stat(sh, remote_path) == :directory
+    _out,_err,rc = execute2(sh, "test -d #{remote_path}")
+    rc == 0
+  end
+
+  def self.exist?(sh, remote_path)
+    _out,_err,rc = execute2(sh, "test -e #{remote_path}")
+    rc == 0
   end
 end

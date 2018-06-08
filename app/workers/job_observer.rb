@@ -26,7 +26,7 @@ class JobObserver
   def self.observe_host(host, logger)
     # host.check_submitted_job_status(logger)
     return if host.submitted_runs.count == 0 and host.submitted_analyses.count == 0
-    host.start_ssh do |ssh|
+    host.start_ssh_shell do |sh|
       logger.debug "making SSH connection to #{host.name}"
       handler = RemoteJobHandler.new(host)
       # check if job is finished

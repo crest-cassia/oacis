@@ -52,8 +52,8 @@ class JobSubmitter
 
   private
   def self.submit(submittables, host, logger)
-    # call start_ssh in order to avoid establishing SSH connection for each run
-    host.start_ssh do |ssh|
+    # call start_ssh_shell in order to avoid establishing SSH connection for each run
+    host.start_ssh_shell do |sh|
       handler = RemoteJobHandler.new(host)
       submittables.each do |job|
         break if $term_received

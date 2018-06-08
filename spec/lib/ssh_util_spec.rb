@@ -207,26 +207,6 @@ describe SSHUtil do
     end
   end
 
-  describe ".stat" do
-
-    it "returns :directory if the remote path is a directory" do
-      remote_path = @temp_dir.join('abc').expand_path
-      FileUtils.mkdir_p(remote_path)
-      expect(SSHUtil.stat(@sh, remote_path)).to eq :directory
-    end
-
-    it "returns :file if the remote path is a file" do
-      remote_path = @temp_dir.join('abc').expand_path
-      FileUtils.touch(remote_path)
-      expect(SSHUtil.stat(@sh, remote_path)).to eq :file
-    end
-
-    it "returns nil if the path does not exist" do
-      remote_path = @temp_dir.join('abc').expand_path
-      expect(SSHUtil.stat(@sh, remote_path)).to be_nil
-    end
-  end
-
   describe ".exist?" do
 
     it "returns true when the remote file exists" do
@@ -244,6 +224,26 @@ describe SSHUtil do
       remote_path = @temp_dir.join('abc').expand_path
       FileUtils.mkdir_p(remote_path)
       expect(SSHUtil.exist?(@sh, remote_path)).to be_truthy
+    end
+  end
+
+  describe ".file?" do
+
+    it "returns true when the remote file exists" do
+      remote_path = @temp_dir.join('abc').expand_path
+      FileUtils.touch(remote_path)
+      expect(SSHUtil.file?(@sh, remote_path)).to be_truthy
+    end
+
+    it "returns false when the remote file does not exist" do
+      remote_path = @temp_dir.join('abc').expand_path
+      expect(SSHUtil.file?(@sh, remote_path)).to be_falsey
+    end
+
+    it "returns false if the path is a directory" do
+      remote_path = @temp_dir.join('abc').expand_path
+      FileUtils.mkdir_p(remote_path)
+      expect(SSHUtil.file?(@sh, remote_path)).to be_falsey
     end
   end
 
