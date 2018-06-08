@@ -38,6 +38,7 @@ module SSHUtil
           ch2.on_data do |c,data|
             $stderr.puts "o: #{data}" if debug
             if data =~ PATTERN
+              output[:stdout] += data.chomp.sub(PATTERN,'')
               rc = $1.to_i
               $stderr.puts "rc: #{rc}" if debug
               output[:rc] = rc
