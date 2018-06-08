@@ -14,7 +14,7 @@ class JobObserver
         bm = Benchmark.measure {
           observe_host(host, logger)
         }
-        logger.info "observing #{host.name} finished in #{sprintf('%.1f', bm.real)}" if bm.real > 1.0
+        logger.info "observation of #{host.name} finished in #{sprintf('%.1f', bm.real)}" if bm.real > 1.0
       rescue => ex
         logger.error("Error in JobObserver: #{ex.inspect}")
       end
