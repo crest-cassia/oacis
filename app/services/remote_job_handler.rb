@@ -7,20 +7,44 @@ class RemoteJobHandler
 
   def initialize(host)
     @host = host
+    @logger = nil
   end
 
-  def submit_remote_job(job)
+  def with_benchmarking(msg)
+    bm = Benchmark.measure {
+      yield
+    }
+    @logger.info(msg + ": #{sprintf('%.1f',bm.real)}") if @logger
+  end
+
+  def submit_remote_job(job, logger = nil)
+    @logger = logger
     @host.start_ssh_shell do |sh|
       begin
         set_submitted_to_if_necessary(job)
         execute_local_pre_process(job)
+        with_benchmarking('create_remote_work_dir') {
         create_remote_work_dir(job)
+        }
+        with_benchmarking('prepare_input_json') {
         prepare_input_json(job)
+        }
+        with_benchmarking('prepare_input_files_for_analysis') {
         prepare_input_files_for_analysis(job) if job.is_a?(Analysis)
+        }
+        with_benchmarking('copy_results_of_local_pre_process') {
         copy_results_of_local_pre_process(job)
+        }
+        with_benchmarking('execute_pre_process') {
         execute_pre_process(job)
+        }
+        job_script_path = nil
+        with_benchmarking('prepare_job_script') {
         job_script_path = prepare_job_script(job)
+        }
+        with_benchmarking('submit_to_scheduler') {
         submit_to_scheduler(job, job_script_path)
+        }
       rescue => ex
         error_handle(ex, job, sh)
       end

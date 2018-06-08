@@ -64,7 +64,7 @@ class JobSubmitter
         begin
           logger.debug("submitting #{job.id} to #{host.name}")
           bm = Benchmark.measure {
-            handler.submit_remote_job(job, logger)
+            handler.submit_remote_job(job)
           }
           logger.info("submission of #{job.id} finished in #{sprintf('%.1f', bm.real)}")
         rescue => ex
