@@ -6,7 +6,7 @@ class Run
 
   field :seed, type: Integer
 
-  belongs_to :parameter_set, autosave: false, index: true
+  belongs_to :parameter_set, autosave: false, index: true, touch: true
   belongs_to :simulator, autosave: false, index: true  # for caching. do not edit this field explicitly
   has_many :analyses, as: :analyzable
 
