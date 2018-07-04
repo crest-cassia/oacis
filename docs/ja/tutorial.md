@@ -48,7 +48,7 @@ READMEに書いてある通りにセットアップして、`run.sh`というス
 SSHの設定については別ページを参照してください。
 
 また、実行ホストでxsubコマンドを使えるようにセットアップする必要があります。
-xsub の設定方法については、https://github.com/crest-cassia/xsub を参照してください。
+xsub の設定方法については、github上の[リポジトリ](https://github.com/crest-cassia/xsub)を参照してください。
 
 ナビゲーションバーの[Hosts]をクリックし、[New Hosts]のボタンを押すと新規Host登録画面が表示されます。
 

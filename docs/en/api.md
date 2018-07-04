@@ -11,8 +11,8 @@ next_page: api_python
 
 OACIS is implemented in Ruby, and has Ruby and Python APIs. You can operate OACIS by writing a script that calls these APIs.
 In this page, we will give a brief instruction on how to use the Ruby APIs. 
-If you write Python, please go to the [next page](/en/api_python.html).
-You can find samples at [samples page](/en/api_samples.html).
+If you write Python, please go to the [next page]({{ site.baseurl }}/{{ page.lang }}/api_python.html).
+You can find samples at [samples page]({{ site.baseurl }}/{{ page.lang }}/api_samples.html).
 
 ## Prerequisites
 
@@ -28,7 +28,7 @@ We recommend the interactive environment for testing and debugging. Once you fix
 
 At the project directory of OACIS (the directory where you cloned the source code of OACIS), run `bundle exec rails c`. An interactive shell will be launched, and you can execute the operation on that.
 
-```
+```ShellSession
 $ bundle exec rails c
 Loading development environment (Rails 4.2.0)
 irb(main):001:0> Simulator.first.name
@@ -40,7 +40,7 @@ irb(main):002:0>
 
 At the project directory of OACIS (the directory where you cloned the source code of OACIS), run the script with loading `./config/environment.rb` file.
 
-```
+```ShellSession
 $ echo 'p Simulator.first.name' > test.rb   # preparing test.rb
 $ bundle exec ruby -r ./config/environment test.rb
 "my_simulator"
@@ -50,7 +50,7 @@ If you would like to run a script from other directory, you also need to set `BU
 We provide a command `bin/oacis_ruby`, which runs Ruby with loading 'environment.rb' and the necessary environment variable.
 Run your script as follows.
 
-```
+```ShellSession
 $ echo 'p Simulator.all.map(&:name)' > test.rb   # preparing test.rb
 $ ~/your_path/to/oacis/bin/oacis_ruby test.rb
 ```
@@ -214,7 +214,7 @@ The returned value is an array of Runs.
 
 You can also specify "HostGroup" as follows.
 
-```
+```ruby
 host_group = HostGroup.where(name: "my_host_group").first
 runs = ps.find_or_create_runs_upto( 10, host_group: host_group)
 ```
@@ -316,7 +316,7 @@ ps.analyses.create!(analyzer: azr, submitted_to: host, host_parameters: host_par
 
 #### removing
 
-```
+```ruby
 anl.discard
 ```
 

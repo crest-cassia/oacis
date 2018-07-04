@@ -54,14 +54,14 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 
 ### 前提条件
 
-- Ruby 2.5.1 (https://www.ruby-lang.org/)
-- MongoDB 3.6 (http://www.mongodb.org/)
-- bundler (http://bundler.io/)
-- redis (https://redis.io/)
+- Ruby 2.5.1 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
+- MongoDB 3.6 ([http://www.mongodb.org/](http://www.mongodb.org/))
+- bundler ([http://bundler.io/](http://bundler.io/))
+- redis ([https://redis.io/](https://redis.io/))
 
 Rubyのインストールにはrbenvまたはrvmを使って環境を整えるのがよいです。
 
-Mac OS Xの場合、homebrew (http://brew.sh/) を使ってrbenvとMongoDBをインストールするのが手軽です。
+Mac OS Xの場合、homebrew ([http://brew.sh/](http://brew.sh/)) を使ってrbenvとMongoDBをインストールするのが手軽です。
 Linuxの場合、yumやaptコマンドを使ってインストールできます。
 
 #### MacOSXでの前提条件の整え方
@@ -186,7 +186,7 @@ bundle install
 ```shell
 bundle exec rails s
 ```
-http://localhost:3000 にアクセスし、ページが適切に表示されればインストールは成功しています。
+[localhost:3000](http://localhost:3000) にアクセスし、ページが適切に表示されればインストールは成功しています。
 端末で Ctrl-C を押し、Railsを停止します。
 もし失敗した場合は、MongoDBが正しく起動しているか、gemは正しくインストールされたか、などを確認してください。
 
@@ -197,8 +197,8 @@ Railsおよびworkerの起動は以下のコマンドを実行します。
 ```shell
 bundle exec rake daemon:start
 ```
-http://localhost:3000 にアクセスできればRailsの起動が成功しています。
-またWorkerプロセスが起動しているかどうかは http://localhost:3000/runs にアクセスすれば確認できます。
+[localhost:3000](http://localhost:3000) にアクセスできればRailsの起動が成功しています。
+またWorkerプロセスが起動しているかどうかは [localhost:3000/runs](http://localhost:3000/runs) にアクセスすれば確認できます。
 Workerが起動していない場合にはエラーメッセージが表示されます。
 
 これらのプロセスの再起動、および停止は以下のコマンドで実行できます。

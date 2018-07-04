@@ -16,7 +16,7 @@ OACIS watcher, which is one of the libraries implemented in OACIS, is useful for
 It monitors the progress of submitted jobs, and calls callback functions registered by user's code when the specified jobs are finished.
 The APIs are provided both in Ruby and in Python.
 
-You can find some samples in [samples]({{ site.baseurl }}/{{ page.lang }}/api_samples).
+You can find some samples in [samples]({{ site.baseurl }}/{{ page.lang }}/api_samples.html).
 
 ## Getting Started
 
@@ -36,7 +36,7 @@ end                                         # event loop will start after you de
 
 Save the above script to "oacis_watcher_sample.rb" and run the script using "oacis_ruby" command.
 
-```
+```shell
 bin/oacis_ruby oacis_watcher_sample.rb
 ```
 
@@ -56,7 +56,7 @@ w.loop()                                              # starting event loop. The
 
 Run the above script as follows. It will do the same thing as the Ruby script.
 
-```
+```shell
 bin/oacis_python oacis_watcher_sample.py
 ```
 

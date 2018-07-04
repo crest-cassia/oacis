@@ -15,8 +15,8 @@ In this page, an overview of the system architecture and the data structure is p
 
 The system architecture of OACIS is depicted in the following figure.
 
-The web server is developed based on the Ruby on Rails framework (http://rubyonrails.org/), which provides an interactive user-interface to users.
-MongoDB (http://www.mongodb.org/), a document-based database, is used as data storage. It stores the information of the jobs, such as the values of parameters, executed date, and executing host.
+The web server is developed based on the Ruby on Rails framework ([http://rubyonrails.org/](http://rubyonrails.org/)), which provides an interactive user-interface to users.
+MongoDB ([http://www.mongodb.org/](http://www.mongodb.org/)), a document-based database, is used as data storage. It stores the information of the jobs, such as the values of parameters, executed date, and executing host.
 The files generated from the simulators are stored on the file system. Thus, you can directly access the simulation outputs using a file browser or a command-line terminal.
 
 The application server is responsible for handling requests from users.

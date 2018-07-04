@@ -107,7 +107,7 @@ OACISはRubyとPythonのAPIを持っており、パラメータの選択やジ�
 
 例えば、あるシミュレーターの"p1"と"p2"というパラメータを変化させながらジョブを実行したいとします。
 OACISのAPIを使って書く場合、以下のようになります。
-より詳細は http://crest-cassia.github.io/oacis/en/api.html をみてください。
+詳細は [How to use APIs]({{ site.baseurl }}/en/api.html) をみてください。
 
 ```ruby
 sim = Simulator.where(name: "my_simulator").first

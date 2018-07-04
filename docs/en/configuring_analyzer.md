@@ -88,7 +88,7 @@ You can use a wild card ('\*') in the pattern. The default value for this field 
 Suppose you would like to plot the time series data shown above using "gnuplot".
 Make an input file for gnuplot as follows. Suppose that the plot file is located in *~/path/to/plotfile.plt*.
 
-```
+```gnuplot
 set term postscript eps
 set output "sample.eps"
 plot "_input/time_series.dat" w l
