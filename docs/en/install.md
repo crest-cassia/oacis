@@ -54,10 +54,10 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 ### Prerequisites
 
 - Ruby 2.2 or 2.3. (2.4 is supported since v2.12.0.)
-- Ruby 2.5.1 (https://www.ruby-lang.org/)
-- MongoDB 3.6 (http://www.mongodb.org/)
-- bundler (http://bundler.io/)
-- redis (https://redis.io/)
+- Ruby 2.5.1 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
+- MongoDB 3.6 ([http://www.mongodb.org/](http://www.mongodb.org/))
+- bundler ([http://bundler.io/](http://bundler.io/))
+- redis ([https://redis.io/](https://redis.io/))
 
 We recommend rbenv or rvm to install proper version of Ruby.
 
@@ -184,7 +184,7 @@ If these installation have been successfully finished, you can boot a web server
 bundle exec rails s
 ```
 
-Access http://localhost:3000 and verify the top page is properly displayed.
+Access [localhost:3000](http://localhost:3000) and verify the top page is properly displayed.
 Then, stop the server by typing `Ctrl-C`.
 If the page is not properly displayed, please check if the prerequisites are properly installed.
 
@@ -196,7 +196,7 @@ To boot OACIS, run the following command.
 bundle exec rake daemon:start
 ```
 
-Access http://localhost:3000 to see the top page of OACIS.
+Access [localhost:3000](http://localhost:3000) to see the top page of OACIS.
 
 In order to restart, stop the process, run these commands.
 
@@ -289,7 +289,7 @@ ssh -N -f -L 3000:localhost:3000 server.example.com
 ## Usual OACIS update
 To update OACIS, run the following commands at "oacis" directory.
 
-```
+```shell
 bundle exec rake daemon:stop            # tentatively stop OACIS
 git pull origin master                  # get the latest source code of OACIS
 git pull origin master --tags

@@ -65,7 +65,7 @@ Runの結果のファイルすべてがAnalyzerには必要ではない場合、
 上記の例にあるような入力の時系列をgnuplotでプロットしましょう。
 次に示すようなgnuplot入力ファイルを作成し、どこかのパス（例として ~/path/to/plotfile.pltというパスにする）に保存します。
 
-```
+```gnuplot
 set term postscript eps
 set output "sample.eps"
 plot "_input/time_series.dat" w l

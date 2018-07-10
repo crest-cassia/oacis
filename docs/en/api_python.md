@@ -23,7 +23,7 @@ To use OACIS, Python 3 is necessary. It also requires "msgpack-rpc-python" and "
 
 <span class="label label-success">New in v2.13.0</span>"fibers" library is required since v2.13.0.
 
-```
+```ShellSession
 $ pip install msgpack-rpc-python fibers
 ```
 
@@ -38,7 +38,7 @@ We recommend the interactive environment for testing and debugging. Once you fix
 Run `bin/oacis_python` command in the repository of OACIS and you'll find an interactive shell.
 Import `oacis` module to access OACIS APIs.
 
-```
+```ShellSession
 $ ~/oacis/bin/oacis_python
 Python 3.5.2 |Continuum Analytics, Inc.| (default, Jul  2 2016, 17:52:12)
 [GCC 4.2.1 Compatible Apple LLVM 4.2 (clang-425.0.28)] on darwin
@@ -48,7 +48,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 or you can use **ipython** or **Jupyter** if you prefer. In that case, set `PYTHONPATH` environment variable such that you can import `oacis.py`.
 
-```
+```ShellSession
 $ export PYTHONPATH="/path/to/oacis:$PYTHONPATH"
 $ ipython
 ```
@@ -57,7 +57,7 @@ $ ipython
 
 You can run a script by giving the path to your script to `oacis_python` command.
 
-```
+```ShellSession
 $ echo 'import oacis; print( oacis.Simulator.first().name() )' > test.py   # preparing test.rb
 $ ~/oacis/bin/oacis_python test.py
 "my_simulator"
@@ -178,7 +178,7 @@ run = oacis.Run.find("...ID...")
 
 or
 
-```
+```python
 run = parameter_set.runs()[0]   # getting the first Run of a PS
 ```
 
@@ -223,7 +223,7 @@ The returned value is an array of Runs.
 
 You can also specify "HostGroup" as follows.
 
-```
+```python
 host_group = oacis.HostGroup.where(name="my_host_group").first
 runs = ps.find_or_create_runs_upto( 10, host_group=host_group)
 ```

@@ -5,7 +5,7 @@ Jekyll gem is used to render markdown in the github-pages service.
 
 In order to render the markdown on your machine, install the gem by `bundle install` and then run
 
-```
+```shell
 bundle exec jekyll serve -w --baseurl ''
 ```
 
