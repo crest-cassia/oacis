@@ -19,9 +19,11 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
     }
     const oid = data["id"];
     const status = data["status"];
+    const job_updated_at = data["updated_at"];
     const job_id = data["job_id"];
     const ps_id = data["ps_id"];
     const ps_counts = data["ps_counts"];
+    const ps_updated_at = data["ps_updated_at"];
     let class_tobe = "label-default";
     const run_list_id = "#run_list_" + oid;
     const params_list_id = "#params_list_" + ps_id;
@@ -52,6 +54,9 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
 
       const jobIdTd = $(run_list_id).find(".run_job_id");
       $(jobIdTd).text(job_id);
+
+      const runUpdatedAtTd = $(run_list_id).find(".run_updated_at");
+      $(runUpdatedAtTd).text(job_updated_at);
 
       if (status === 'finished' || status === 'failed') {
         const elapsedTd = $(run_list_id).find(".run_elapsed");
@@ -90,6 +95,8 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         psStatusDiv.find(".progress-bar-info").css("width", String(percentSubmitted) + "%");
         psStatusDiv.find(".progress-bar-info").text(String(percentSubmitted) + "%");
       }
+    const psUpdatedAtTd = $(params_list_id).find(".ps_updated_at");
+    $(psUpdatedAtTd).text(ps_updated_at);
     }
     if ($(analysis_list_id).length) { /* analyses list exists */
       switch (status) {
@@ -118,6 +125,9 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
         const versionTd = $(analysis_list_id).find(".arn_version");
         if(data["version"]) { $(versionTd).text(data["version"]); }
       }
+
+      const anlUpdatedAtTd = $(analysis_list_id).find(".arn_updated_at");
+      $(anlUpdatedAtTd).text(job_updated_at);
     }
   },
 

@@ -8,8 +8,8 @@ module OacisChannelUtil
   def self.createJobStatusMessage(job, status = nil)
     status ||= job.status
 
-    ps = ParameterSet.where({id: job.parameter_set_id}) 
-    return if ps.nil?
+    ps = ParameterSet.where({id: job.parameter_set_id})
+    return if ps.first.nil?
     status_counts = ParameterSet.runs_status_count_batch(ps)
     
     ws_mess = { :id => "#{job.id}",
@@ -17,8 +17,10 @@ module OacisChannelUtil
                 :job_id => "#{job.job_id}",
                 :real_time => "#{job.real_time}",
                 :version => "#{job.version}",
+                :updated_at => ApplicationController.helpers.distance_to_now_in_words(job.updated_at),
                 :ps_id => "#{job.parameter_set_id}",
-                :ps_counts => status_counts[job.parameter_set_id]
+                :ps_counts => status_counts[job.parameter_set_id],
+                :ps_updated_at => ApplicationController.helpers.distance_to_now_in_words(ps.first.updated_at)
               }
     ws_mess
   end
