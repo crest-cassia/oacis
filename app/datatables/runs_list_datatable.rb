@@ -48,7 +48,7 @@ private
       tmp << run.omp_threads
       tmp << @view.raw('<span class="run_version">'+run.simulator_version.to_s+'</span>')
       tmp << @view.distance_to_now_in_words(run.created_at)
-      tmp << @view.distance_to_now_in_words(run.updated_at)
+      tmp << @view.raw('<span class="run_updated_at">'+@view.distance_to_now_in_words(run.updated_at)+'</span>')
       host_like = run.submitted_to || run.host_group
       tmp << (host_like ? @view.link_to( host_like.name, host_like ) : "---")
       tmp << @view.raw('<span class="run_job_id">'+@view.shortened_job_id(run.job_id)+'</span>')

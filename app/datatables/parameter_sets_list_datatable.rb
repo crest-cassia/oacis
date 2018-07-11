@@ -47,7 +47,7 @@ private
       progress = @view.progress_bar(runs_status_counts(ps))
       tmp << @view.raw(progress)
       tmp << @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps) )
-      tmp << @view.distance_to_now_in_words(ps.updated_at)
+      tmp << @view.raw('<span class="ps_updated_at">'+@view.distance_to_now_in_words(ps.updated_at)+'</span>')
       @param_keys.each do |key|
         if @base_ps
           tmp << colorize_param_value(ps.v[key], @base_ps.v[key])
