@@ -74,10 +74,10 @@ class Host
 
   def scheduler_status
     ret = nil
-    start_ssh do |ssh|
+    start_ssh_shell do |sh|
       wrapper = SchedulerWrapper.new(self)
       cmd = wrapper.all_status_command
-      ret = SSHUtil.execute(ssh, cmd)
+      ret = SSHUtil.execute(sh, cmd)
     end
     return ret
   end
@@ -123,6 +123,7 @@ class Host
     host_groups.all? {|hg| hg.hosts.count > 1 }
   end
 
+  private
   def start_ssh( ssh_logger: nil )
     if @ssh
       yield @ssh
@@ -134,6 +135,25 @@ class Host
           yield ssh
         ensure
           @ssh = nil
+        end
+      end
+    end
+  end
+
+  public
+  def start_ssh_shell( ssh_logger: nil )
+    start_ssh(ssh_logger: ssh_logger) do |ssh|
+      if @ssh_shell
+        yield @ssh_shell
+      else
+        ssh_logger.debug("starting SSH shell: " + self.inspect ) if ssh_logger
+        SSHUtil::ShellSession.start(ssh) do |sh|
+          @ssh_shell = sh
+          begin
+            yield sh
+          ensure
+            @ssh_shell = nil
+          end
         end
       end
     end
@@ -161,19 +181,9 @@ class Host
       ssh_logger.level = :debug
       ssh_logger.error("printing SSH debug messages")
     end
-    start_ssh(ssh_logger: ssh_logger) do |ssh|
-      cmd = "bash -l -c 'echo XSUB_BEGIN && xsub -t'"
-      ## bash -l invokes bash as a login shell.
-      ##   This is necessary to load PATH properly from .bash_profile.
-      ##   Otherwise, users do not have a way to set PATH in bash.
-      ##   .bashrc is not the place to set the PATH
-      ##   because only read by a shell that's both interactive and non-login
-      ## And sourcing bashrc may print some strings into stdout.
-      ##   In order to extract the output of xsub, use 'START_XSUB' as a separator.
-      ##   Lines below 'START_XSUB' is the json output written by 'xsub -t'.
-      ret = SSHUtil.execute(ssh, cmd).lines.to_a
-      begin_idx = ret.index {|line| line =~ /^XSUB_BEGIN$/}
-      xsub_out = ret[(begin_idx+1)..-1].join
+    start_ssh_shell(ssh_logger: ssh_logger) do |sh|
+      cmd = "xsub -t"
+      xsub_out = SSHUtil.execute(sh, cmd)
       self.host_parameter_definitions = JSON.load(xsub_out)["parameters"].reject do |key,val|
         key == "mpi_procs" or key == "omp_threads"
       end.map do |key,val|

@@ -7,22 +7,46 @@ class RemoteJobHandler
 
   def initialize(host)
     @host = host
+    @logger = nil
   end
 
-  def submit_remote_job(job)
-    @host.start_ssh do |ssh|
+  def with_benchmarking(msg)
+    bm = Benchmark.measure {
+      yield
+    }
+    @logger.info(msg + ": #{sprintf('%.1f',bm.real)}") if @logger
+  end
+
+  def submit_remote_job(job, logger = nil)
+    @logger = logger
+    @host.start_ssh_shell do |sh|
       begin
         set_submitted_to_if_necessary(job)
         execute_local_pre_process(job)
+        with_benchmarking('create_remote_work_dir') {
         create_remote_work_dir(job)
+        }
+        with_benchmarking('prepare_input_json') {
         prepare_input_json(job)
+        }
+        with_benchmarking('prepare_input_files_for_analysis') {
         prepare_input_files_for_analysis(job) if job.is_a?(Analysis)
+        }
+        with_benchmarking('copy_results_of_local_pre_process') {
         copy_results_of_local_pre_process(job)
+        }
+        with_benchmarking('execute_pre_process') {
         execute_pre_process(job)
+        }
+        job_script_path = nil
+        with_benchmarking('prepare_job_script') {
         job_script_path = prepare_job_script(job)
+        }
+        with_benchmarking('submit_to_scheduler') {
         submit_to_scheduler(job, job_script_path)
+        }
       rescue => ex
-        error_handle(ex, job, ssh)
+        error_handle(ex, job, sh)
       end
     end
   end
@@ -31,13 +55,13 @@ class RemoteJobHandler
     status = :unknown
     scheduler = SchedulerWrapper.new(@host)
     cmd = scheduler.status_command(job.job_id)
-    @host.start_ssh do |ssh|
+    @host.start_ssh_shell do |sh|
       begin
-        out = SSHUtil.execute(ssh, cmd)
-        raise RemoteSchedulerError if out.empty?
+        out,err,rc = SSHUtil.execute2(sh, cmd)
+        raise RemoteSchedulerError if out.empty? or rc != 0
         status = scheduler.parse_remote_status(out)
       rescue => ex
-        error_handle(ex, job, ssh)
+        error_handle(ex, job, sh)
       end
     end
     status
@@ -48,12 +72,12 @@ class RemoteJobHandler
     if stat == :submitted or stat == :running
       scheduler = SchedulerWrapper.new(@host)
       cmd = scheduler.cancel_command(job.job_id)
-      @host.start_ssh do |ssh|
+      @host.start_ssh_shell do |sh|
         begin
-          out = SSHUtil.execute(ssh, cmd)
-          raise RemoteSchedulerError, "cancel_remote_job failed: #{out}" unless out.chomp[-1] == '0'
+          out,err,rc = SSHUtil.execute2(sh, cmd)
+          raise RemoteSchedulerError, "cancel_remote_job failed: #{out}, #{err}" unless rc == 0
         rescue => ex
-          error_handle(ex, job, ssh)
+          error_handle(ex, job, sh)
         end
       end
     end
@@ -107,10 +131,10 @@ class RemoteJobHandler
   end
 
   def create_remote_work_dir(job)
-    cmd = "mkdir -p #{RemoteFilePath.work_dir_path(@host,job)}; echo $?"
-    @host.start_ssh do |ssh|
-      out = SSHUtil.execute(ssh, cmd)
-      raise RemoteOperationError, "\"#{cmd}\" failed: #{out}" unless out.chomp[-1]=='0'
+    cmd = "mkdir -p #{RemoteFilePath.work_dir_path(@host,job)}"
+    @host.start_ssh_shell do |sh|
+      out,err,rc = SSHUtil.execute2(sh, cmd)
+      raise RemoteOperationError, "\"#{cmd}\" failed: #{out}, #{err}" unless rc==0
     end
   end
 
@@ -183,8 +207,8 @@ class RemoteJobHandler
     subdirs = relative_subdirs.map {|d| remote_work_dir.join(d) }
     cmd = "mkdir -p #{subdirs.join(' ')}"
 
-    @host.start_ssh do |ssh|
-      SSHUtil.execute(ssh, cmd)
+    @host.start_ssh_shell do |sh|
+      SSHUtil.execute(sh, cmd)
       org_dest_list.each do |origin,dest|
         remote_path = remote_work_dir.join( dest )
         SSHUtil.upload(@host.name, origin, remote_path)
@@ -196,12 +220,14 @@ class RemoteJobHandler
     script = job.executable.pre_process_script
     if script.present?
       path = RemoteFilePath.pre_process_script_path(@host, job)
-      @host.start_ssh do |ssh|
+      @host.start_ssh_shell do |sh|
         SSHUtil.write_remote_file(@host.name, path, script)
-        out = SSHUtil.execute(ssh, "chmod +x #{path}; echo $?")
-        raise RemoteOperationError, "chmod failed : #{out}" unless out.chomp[-1]=='0'
+        out,err,rc = SSHUtil.execute2(sh, "chmod +x #{path}")
+        raise RemoteOperationError, "chmod failed : #{out}, #{err}" unless rc==0
+        cd = SSHUtil.execute(sh,'pwd')
         cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} #{job.args} 1>> _stdout.txt 2>> _stderr.txt"
-        out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
+        out, err, rc = SSHUtil.execute2(sh, cmd)
+        SSHUtil.execute(sh, "cd #{cd.chomp}")
         raise RemoteJobError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
       end
     end
@@ -220,9 +246,9 @@ class RemoteJobHandler
       SSHUtil.write_remote_file(@host.name, jspath, job.job_script)
     end
 
-    @host.start_ssh do |ssh|
-      out = SSHUtil.execute(ssh, "chmod +x #{jspath}; echo $?")
-      raise RemoteOperationError, "chmod failed: #{out}" unless out.chomp[-1] == '0'
+    @host.start_ssh_shell do |sh|
+      out,err,rc = SSHUtil.execute2(sh, "chmod +x #{jspath}")
+      raise RemoteOperationError, "chmod failed: #{out}, #{err}" unless rc == 0
     end
     jspath
   end
@@ -233,9 +259,9 @@ class RemoteJobHandler
     job_parameters["omp_threads"] = job.omp_threads
     wrapper = SchedulerWrapper.new(@host)
     cmd = wrapper.submit_command(job_script_path, job.id.to_s, job_parameters)
-    @host.start_ssh do |ssh|
-      out, err, rc, sig = SSHUtil.execute2(ssh, cmd)
-      raise RemoteSchedulerError, "#{cmd} failed: rc:#{rc}, #{err}" unless rc == 0
+    @host.start_ssh_shell do |sh|
+      out, err, rc = SSHUtil.execute2(sh, cmd)
+      raise RemoteSchedulerError, "#{cmd} failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
       job.status = :submitted
 
       job_id = wrapper.parse_jobid_from_submit_command(out)
@@ -247,13 +273,13 @@ class RemoteJobHandler
   end
 
   def remove_remote_files(job)
-    @host.start_ssh do |ssh|
+    @host.start_ssh_shell do |sh|
       paths = RemoteFilePath.all_file_paths(@host, job)
-      SSHUtil.rm_r(ssh, paths)
+      SSHUtil.rm_r(sh, paths)
     end
   end
 
-  def error_handle(exception, job, ssh)
+  def error_handle(exception, job, sh)
     if exception.is_a?(RemoteOperationError)
       job.update_attribute(:error_messages, "RemoteOperaion is failed.\n#{exception.inspect}\n#{exception.backtrace}")
       #retry the operation in next time
@@ -261,7 +287,7 @@ class RemoteJobHandler
       raise exception
     elsif exception.is_a?(RemoteJobError)
       work_dir = RemoteFilePath.work_dir_path(@host, job)
-      SSHUtil.download_directory(@host.name, work_dir, job.dir) if SSHUtil.exist?(ssh, work_dir)
+      SSHUtil.download_directory(@host.name, work_dir, job.dir) if SSHUtil.exist?(sh, work_dir)
       remove_remote_files(job) # try it once even when remove operation is failed.
       job.update_attribute(:status, :failed)
       job.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")

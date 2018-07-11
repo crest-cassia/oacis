@@ -194,29 +194,29 @@ shared_examples_for RemoteJobHandler do
           }.not_to raise_error
         end
 
-        it "raises RemoteJobError" do
+        it "sets error_messages" do
           expect {
             RemoteJobHandler.new(@host).submit_remote_job(@submittable)
           }.to change { @submittable.reload.error_messages }
         end
 
-        it "raises an exception and sets status of Run to failed" do
-          RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue nil
+        it "sets status of Run to failed" do
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
           expect(@submittable.reload.status).to eq :failed
         end
 
         it "does not enqueue job script" do
           expect_any_instance_of(SchedulerWrapper).not_to receive(:submit_command)
-          RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue nil
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
         end
 
         it "removes files on remote host" do
-          RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue nil
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
           expect(File.directory?( @temp_dir.join(@submittable.id) )).to be_falsey
         end
 
         it "copies files in the remote work_dir to Run's directory" do
-          RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue nil
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
           expect(File.exist?( @submittable.dir.join('_preprocess.sh') )).to be_truthy
         end
       end
@@ -262,7 +262,7 @@ shared_examples_for RemoteJobHandler do
     describe "submit_to_scheduler" do
 
       it "raise RemoteJobHandler::RemoteSchedulerError if rc != 0" do
-        expect_any_instance_of(SchedulerWrapper).to receive(:submit_command).and_return("exit 1")
+        expect_any_instance_of(SchedulerWrapper).to receive(:submit_command).and_return("unknown_command")
         expect {
           RemoteJobHandler.new(@host).submit_remote_job(@submittable)
         }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
@@ -282,14 +282,14 @@ shared_examples_for RemoteJobHandler do
     end
 
     it "raise RemoteSchedulerError if remote status is not obtained by SchedulerWrapper" do
-      allow(SSHUtil).to receive(:execute).and_return("")
+      allow(SSHUtil).to receive(:execute2).and_return("","",1)
       expect {
         RemoteJobHandler.new(@host).remote_status(@submittable)
       }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
     end
 
     it "run.error_message is updated if remote status is not obtained by SchedulerWrapper" do
-      allow(SSHUtil).to receive(:execute2).and_return([nil, nil, 1, nil])
+      allow(SSHUtil).to receive(:execute2).and_return([nil, nil, 1])
       expect {
         RemoteJobHandler.new(@host).remote_status(@submittable) rescue nil
       }.to change { @submittable.reload.error_messages }
