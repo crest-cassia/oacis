@@ -107,8 +107,7 @@ class Run
         next_seed = found ? found[1] + 1 : seeds.last.to_i + 1
         self.seed = next_seed
       else
-        counter_epoch = self.id.to_s[-6..-1] + self.id.to_s[0..7]
-        self.seed = counter_epoch.hex % (2**31-1)
+        self.seed = Digest::MD5.hexdigest(self.id).hex % (2**31-1)
       end
     end
   end
