@@ -55,6 +55,14 @@ end
 
 Visit the [document](http://crest-cassia.github.io/oacis/) of OACIS. A docker image is also available.
 
+## Slides
+
+- [Introduction](https://speakerdeck.com/yohm/oacis-introduction)
+- [Hands-on Tutorial part1](https://speakerdeck.com/yohm/oacis-tutorial-session1-20170614)
+- [Hands-on Tutorial part2](https://speakerdeck.com/yohm/oacis-tutorial-session2-20170614)
+- [Hands-on Tutorial part3](https://speakerdeck.com/yohm/oacis-tutorial-session3-20170614)
+
+
 ## License
 
 The MIT License (MIT)
@@ -82,7 +90,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ## Publications
 
 - We would greatly appreciate if you cite one of the following article when you publish your research using OACIS.
-    - Y. Murase, T. Uchitane, and N. Ito, "An open-source job management framework for parameter-space exploration: OACIS"
+    - Y. Murase, T. Uchitane, and N. Ito, "An open-source job management framework for parameter-space exploration: OACIS", Journal of Physics: Conference Series, 921, 012001 (2017)
       - http://iopscience.iop.org/article/10.1088/1742-6596/921/1/012001
     - Y. Murase, T. Uchitane, and N. Ito, "A tool for parameter-space explorations", Physics Procedia, 57, p73-76 (2014)
       - http://www.sciencedirect.com/science/article/pii/S187538921400279X
