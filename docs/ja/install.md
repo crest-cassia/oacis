@@ -54,8 +54,8 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 
 ### 前提条件
 
-- Ruby 2.5.1 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
-- MongoDB 3.6 ([http://www.mongodb.org/](http://www.mongodb.org/))
+- Ruby 2.5.1以降 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
+- MongoDB 3.6以降 ([http://www.mongodb.org/](http://www.mongodb.org/))
 - bundler ([http://bundler.io/](http://bundler.io/))
 - redis ([https://redis.io/](https://redis.io/))
 
@@ -240,7 +240,7 @@ OACISが停止している間も実行中のジョブは計算ホストでその
       - `HostName`にリモートホストのアドレス(IP, localhostなど)を指定
       - `IdentityFile`には生成した秘密鍵を指定
       - OACIS v3より、IP・port・ユーザ名の指定はwebインターフェースを用いず、`~/.ssh/config`を参照する仕組みになりました。
-    - (リモートホストにて) `cat ~/id_rsa.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys` を実行する。
+    - (リモートホストにて) `cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys` を実行する。
     - (OACISホストにて) 接続確認を行う。
         - `ssh connection_name` でパスワードを使わずにログインできたら成功です。
             - 鍵作成時にパスフレーズを入力した場合は、ログイン時にパスフレーズの入力が要求されます。OACISの実行時にはパスワードもパスフレーズも入力せずにログインできるようにセットアップする必要があります。パスフレーズの入力を省略するには

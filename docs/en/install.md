@@ -53,9 +53,8 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 
 ### Prerequisites
 
-- Ruby 2.2 or 2.3. (2.4 is supported since v2.12.0.)
-- Ruby 2.5.1 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
-- MongoDB 3.6 ([http://www.mongodb.org/](http://www.mongodb.org/))
+- Ruby 2.5.1 or later ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
+- MongoDB 3.6 or later ([http://www.mongodb.org/](http://www.mongodb.org/))
 - bundler ([http://bundler.io/](http://bundler.io/))
 - redis ([https://redis.io/](https://redis.io/))
 
@@ -236,7 +235,7 @@ Hereafter, we call the host where OACIS is running "OACIS host".
       - Please replace `USER` and `HOST_NAME` depending on your host.
       - specify path to the secret key in `IdentityFile` value field if you created it in non-default path.
       - OACIS v3 refers `~/.ssh/config` to specify IP, port and USER instead of web interface like in v2.
-    - (At Computational host) Run `cat ~/id_rsa.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys`.
+    - (At Computational host) Run `cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys`.
     - (At OACIS host) Check connection.
         - Run `ssh CONNECTION_NAME` and verify that the password is not required to login. 
             - If you enter passphrase when you made the key, you will be required to enter the passphrase (not password) when conducting SSH. OACIS host and computational host must be setup so that neither password nor passphrase is required. To skip the passphrase, see the following.
