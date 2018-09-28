@@ -247,7 +247,7 @@ host.host_parameter_definitions
  #<HostParameterDefinition _id: 57babbb46b696d52bf250000, key: "walltime", default: "1:00:00", format: "^\\d+:\\d{2}:\\d{2}$">]
 ```
 
-For other available fields, refer to [app/models/host.rb](https://github.com/crest-cassia/oacis/blob/Development/app/models/host.rb).
+For other available fields, refer to [app/models/host.rb](https://github.com/crest-cassia/oacis/blob/develop/app/models/host.rb).
 
 ### Analyzer
 
