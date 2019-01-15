@@ -56,6 +56,7 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 - Ruby 2.5.1 or later ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
 - MongoDB 3.6 or later ([http://www.mongodb.org/](http://www.mongodb.org/))
 - bundler ([http://bundler.io/](http://bundler.io/))
+    - You may skip the installation for Ruby2.6.0 or later as it is built into Ruby as a standard library.
 - redis ([https://redis.io/](https://redis.io/))
 
 We recommend rbenv or rvm to install proper version of Ruby.
@@ -88,7 +89,7 @@ Here we show the instructions on how to setup prerequisites using homebrew.
     - `brew info mongo` will display the command to launch mongodb daemon.
     - Once you hit the command above, mongodb will be automatically launched at login.
     - Run `mongo` and find a terminal to control MongoDB is launched. Type `exit` to stop the terminal.
-- installing bundler
+- installing bundler (You can skip this process if you are using Ruby 2.6.0 or later. Bundler is built into Ruby as a standard library.)
     ``` sh
     gem install bundler
     which bundle
@@ -139,7 +140,7 @@ Here we show the instruction on how to setup prerequisites using apt-get, using 
     ```
     - The command above will launch mongod process. After this command, mongod process is automatically launched whenever you restart the system.
 
-- installing bundler
+- installing bundler (You can skip this process if you are using Ruby 2.6.0 or later. Bundler is built into Ruby as a standard library.)
     ``` sh
     gem install bundler
     which bundle
