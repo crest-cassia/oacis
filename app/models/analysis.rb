@@ -70,7 +70,7 @@ class Analysis
   # returns an array of
   #   [ absolute input path, destination relative path ]
   def input_files
-    pattern = analyzer.files_to_copy.chomp.gsub(/(\r\n|\r|\n)/, "\0")
+    pattern = analyzer.files_to_copy.chomp.split(/(\r\n|\r|\n)/)
     case analyzer.type
     when :on_run
       run = self.analyzable

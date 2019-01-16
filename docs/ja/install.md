@@ -57,6 +57,7 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 - Ruby 2.5.1以降 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
 - MongoDB 3.6以降 ([http://www.mongodb.org/](http://www.mongodb.org/))
 - bundler ([http://bundler.io/](http://bundler.io/))
+    - Ruby2.6.0以降を利用する場合は、標準ライブラリとして添付されるので個別にインストールする必要はない。
 - redis ([https://redis.io/](https://redis.io/))
 
 Rubyのインストールにはrbenvまたはrvmを使って環境を整えるのがよいです。
@@ -87,7 +88,7 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     - `brew info mongo`コマンドを実行するとmongodを起動するコマンドが表示される。
     - コマンドを実行すると、以後ログイン時にmongodも自動的に起動する。
     - `mongo` コマンドを実行し端末が表示されれば成功。`exit`で端末から抜ける
-- bundlerのインストール
+- bundlerのインストール（Ruby2.6.0以降ではbundlerは標準ライブラリとして添付されるため、この行程は不要）
     ``` sh
     gem install bundler
     which bundle
@@ -147,7 +148,7 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     - `sudo service mongod start`によってmongodを起動することができる。以後、システムの再起動時にmongodも自動的に起動する。
     - `mongo` コマンドを実行し端末が表示されれば成功。`exit`で端末から抜ける
 {% endcomment %}
-- bundlerのインストール
+- bundlerのインストール（Ruby2.6.0以降ではbundlerは標準ライブラリとして添付されるため、この行程は不要）
     ``` sh
     gem install bundler
     which bundle

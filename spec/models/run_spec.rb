@@ -386,7 +386,7 @@ describe Run do
     context "when pattern is given" do
 
       it "returns matched files" do
-        pattern = "result1.txt\0result_dir/result3.txt"
+        pattern = ["result1.txt", "result_dir/result3.txt"]
         paths = @run.result_paths(pattern)
         expected = %w(result1.txt result_dir/result3.txt).map {|f| @run.dir.join(f) }
         expect(paths).to match_array expected
