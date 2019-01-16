@@ -126,6 +126,7 @@ The available methods in `OacisWatcher` class are as follows.
 
 - `#async { ... }`
     - The blocks are evaluated concurrently. In this block, you can call `await` methods.
+    - An alias method `async_do` is also available in v3.3.
 - `OacisWatcher.await_ps( ps )`
     - Block the execution until a ParameterSet "ps" becomes completed.
 - `OacisWatcher.await_all_ps( ps_list )`
@@ -176,19 +177,20 @@ Similar to the Ruby interface, "async/await" methods are available in Python int
 Here is an example.
 
 ```python
-oacis.OacisWatcher()
+import oacis
+w = oacis.OacisWatcher()
 
 def f1():
     # --- (1)
     oacis.OacisWatcher.await_ps( ps1 )
     # --- (2)
-w.async( f1 )
+w.do_async( f1 )
 
 def f2():
     # --- (3)
     oacis.OacisWatcher.await_all_ps( ps_list )
     # --- (4)
-w.async( f2 )
+w.do_async( f2 )
 
 w.loop()
 ```
@@ -198,12 +200,14 @@ Note that you can call `await` methods in a function called by `async` otherwise
 
 The available methods in `OacisWatcher` class are as follows.
 
-- `#async( func )`
+- `#do_async( func )`
     - "func" is evaluated concurrently. In "func", you can call `await` methods.
+    - The method name is changed from `async` to `do_async` in v3.3. Although `async` is still available, it is deprecated and not recommended to use.
 - `OacisWatcher.await_ps( ps )`
     - Block the execution until a ParameterSet "ps" becomes completed.
 - `OacisWatcher.await_all_ps( ps_list )`
     - Block the execution until all the ParameterSets in "ps_list" become completed.
+
 
 ## Definition of "completed" ParameterSet
 

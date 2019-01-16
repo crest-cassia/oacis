@@ -18,9 +18,13 @@ class OacisWatcher():
         self._signal_received = False
         self._fibers = []
 
-    def async(self, func):
+    def do_async(self, func):
         f = fibers.Fiber( target=func )
         self._fibers.append(f)
+
+    def async(self, func):
+        self._logger.warning("Warning : 'async' method is deprecated. Use 'do_async' instead.")
+        return self.do_async(func)
 
     @classmethod
     def await_ps(cls, ps):

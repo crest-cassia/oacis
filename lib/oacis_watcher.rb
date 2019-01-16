@@ -36,6 +36,9 @@ class OacisWatcher
     @@current.async(&block)
   end
 
+  alias_method :do_async, :async
+  class << self; alias_method :do_async, :async; end
+
   def self.await_ps(ps)
     f = Fiber.current
     @@current.watch_ps(ps) {
