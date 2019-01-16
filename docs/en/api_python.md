@@ -19,13 +19,15 @@ Using this library, almost all methods in Ruby is directly translated into Pytho
 In the following, we assume that a Simulator "my_simulator" is registered on OACIS, which has three parameters "p1", "p2", and "p3".
 We assume that you know basics of Python programming language.
 
-To use OACIS, Python 3 is necessary. It also requires the following libraries.
+To use OACIS, **Python3** is necessary. (**As of OACIS v3.2.1, Python 3.7.0 or later is not supported** since fibers library does not work with it.) It also requires the following libraries.
 
 ```ShellSession
 $ pip install msgpack-python==0.4.8 msgpack-rpc-python==0.4.1 fibers
 ```
 
 <span class="label label-success">New in v2.13.0</span>"fibers" library is required since v2.13.0.
+
+
 
 ## Executing script
 
