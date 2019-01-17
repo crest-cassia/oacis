@@ -126,7 +126,7 @@ The available methods in `OacisWatcher` class are as follows.
 
 - `#async { ... }`
     - The blocks are evaluated concurrently. In this block, you can call `await` methods.
-    - An alias method `async_do` is also available in v3.3.
+    - An alias method `do_async` is also available in v3.3.
 - `OacisWatcher.await_ps( ps )`
     - Block the execution until a ParameterSet "ps" becomes completed.
 - `OacisWatcher.await_all_ps( ps_list )`
