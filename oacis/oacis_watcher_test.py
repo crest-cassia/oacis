@@ -32,7 +32,7 @@ class TestOacisWatcher(unittest.TestCase):
         sim = oacis.Simulator.send('create!', {'name': 'my_test_simulator', 'command': 'echo', 'parameter_definitions': [pd1,pd2]} )
         #print( repr(sim), sim.parameter_definitions() )
         assert oacis.Simulator.count() == 1
-        host = oacis.Host.send('create!', {"name":"hostA", "hostname":"localhost", "user":os.environ['USER']} )
+        host = oacis.Host.send('create!', {"name":"localhost"} )
         sim.executable_on().push(host)
         return sim
 
