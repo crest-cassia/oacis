@@ -118,6 +118,15 @@ class SimulatorsController < ApplicationController
     end
   end
 
+  # GET /simulators/:id/export_runs.csv
+  def export_runs
+    @simulator = Simulator.find(params[:id])
+    respond_to do |format|
+      format.csv { send_data @simulator.runs_csv, type: "text", disposition: 'inline' }
+      # format.csv { send_data @simulator.runs_csv, filename: "runs_#{@simulator.name}.csv", type: "text/csv", disposition: 'inline' }
+    end
+  end
+
   # POST /simulators/:_id/save_filter redirect_to simulators#show
   def save_filter
     simulator = Simulator.find(params[:id])
