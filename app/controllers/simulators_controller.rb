@@ -122,8 +122,8 @@ class SimulatorsController < ApplicationController
   def export_runs
     @simulator = Simulator.find(params[:id])
     respond_to do |format|
-      format.csv { send_data @simulator.runs_csv, type: "text", disposition: 'inline' }
-      # format.csv { send_data @simulator.runs_csv, filename: "runs_#{@simulator.name}.csv", type: "text/csv", disposition: 'inline' }
+      # format.csv { send_data @simulator.runs_csv, type: "text", disposition: 'inline' }
+      format.csv { send_data @simulator.runs_csv, filename: "runs_#{@simulator.name}.csv", type: "text/csv", disposition: 'inline' }
     end
   end
 
