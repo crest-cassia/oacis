@@ -372,7 +372,7 @@ class Simulator
     attr = run_attr + ps_attr + result_attr
     header = run_attr + ps_attr_header + result_attr_header
 
-    aggregated = Run.collection.aggregate( [
+    aggregated = Run.collection.aggregate([
       { '$match'  => runs.selector },
       { '$lookup' => { from: 'parameter_sets', localField: 'parameter_set_id', foreignField: '_id', as: 'ps' }},
       { '$unwind' => '$ps'}
