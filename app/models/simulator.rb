@@ -368,13 +368,16 @@ class Simulator
     latest_run = Run.where(simulator: self, status: :finished).order_by(updated_at: :desc).first
     result_attr = plottable_keys(latest_run.try(:result)).map {|key| "r.#{key}" }
 
-    CSV.generate(headers: run_attr+ps_attr, write_headers: true) do |csv|
+    CSV.generate(headers: run_attr+ps_attr+result_attr, write_headers: true) do |csv|
       runs.each do |r|
         x = run_attr.map {|a| r[a]}
         ps = r.parameter_set
         x << ps.id
         x += parameter_definitions.map {|pd| ps.v[pd.key] }
-        # result_attr.map {|attr| attr.split('.')[1..-1] }
+        x += result_attr.map do |attr|
+          keys = attr.split('.')[1..-1]
+          r.result&.dig(*keys)
+        end
         csv << x
       end
     end
