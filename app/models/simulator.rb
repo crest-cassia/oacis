@@ -363,7 +363,7 @@ class Simulator
 
   require 'csv'
   def runs_csv(runs = self.runs)
-    run_attr = %w(_id status hostname real_time started_at finished_at)
+    run_attr = %w(_id status hostname real_time started_at finished_at seed)
     ps_attr = [[:ps,:_id]] + parameter_definitions.map {|pd| [:ps,:v,pd.key] }
     ps_attr_header = ["ps_id"] + parameter_definitions.map {|pd| "p.#{pd.key}" }
     latest_run = Run.where(simulator: self, status: :finished).order_by(updated_at: :desc).first

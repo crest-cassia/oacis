@@ -752,7 +752,7 @@ describe Simulator do
     it "returns runs in CSV format" do
       csv = @sim.runs_csv.lines
       expected_header = <<~EOS
-        _id,status,hostname,real_time,started_at,finished_at,ps_id,p.L,p.T,r.r1,r.r2.r3,r.r2.r4
+        _id,status,hostname,real_time,started_at,finished_at,seed,ps_id,p.L,p.T,r.r1,r.r2.r3,r.r2.r4
       EOS
       id_format = /\A[0-9a-f]{24}\z/
       status_format = /\Acreated|finished\z/
@@ -768,10 +768,11 @@ describe Simulator do
         expect(a[3]).to match(float_format).or eq("")
         expect(a[4]).to match(date_format).or eq("") # started_at
         expect(a[5]).to match(date_format).or eq("") # finished_at
-        expect(a[6]).to match(id_format)             # ps_id
-        expect(a[7]).to match(int_format)            # p.L
-        expect(a[8]).to match(float_format)          # p.T
-        a[9..-1].each do |x|               # result
+        expect(a[6]).to match(/\A\d+\z/)             # seed
+        expect(a[7]).to match(id_format)             # ps_id
+        expect(a[8]).to match(int_format)            # p.L
+        expect(a[9]).to match(float_format)          # p.T
+        a[10..-1].each do |x|               # result
           expect(x).to match(int_format).or eq("")
         end
       end
