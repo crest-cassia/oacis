@@ -728,4 +728,54 @@ describe Simulator do
       end
     end
   end
+
+  describe "#runs_csv" do
+
+    before(:each) do
+      @sim = FactoryBot.create(:simulator,
+                               parameter_sets_count: 2,
+                               runs_count: 2,
+                               analyzers_count: 0)
+      runs = @sim.parameter_sets.first.runs.asc(:_id)
+      runs.each_with_index do |run, idx|
+        run.status = :finished
+        run.result = { r1: 1+idx, r2: { r3: 3+idx, r4: 4+idx} }
+        run.cpu_time = 10.0 + idx
+        run.real_time = 3.0 + idx
+        run.started_at = Time.zone.now
+        run.finished_at = Time.zone.now
+        run.hostname = "localhost"
+        run.save!
+      end
+    end
+
+    it "returns runs in CSV format" do
+      csv = @sim.runs_csv.lines
+      expected_header = <<~EOS
+        _id,status,hostname,real_time,started_at,finished_at,seed,ps_id,p.L,p.T,r.r1,r.r2.r3,r.r2.r4
+      EOS
+      id_format = /\A[0-9a-f]{24}\z/
+      status_format = /\Acreated|finished\z/
+      int_format = /\A\d+\z/
+      float_format = /\A\d+[.]?\d*\z/
+      date_format = /\A\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [A-Z]{3}\z/
+      expect(csv[0]).to eq expected_header
+      csv[1..-1].each do |row|
+        a = row.chomp.split(',')
+        expect(a[0]).to match(id_format)
+        expect(a[1]).to match(status_format)
+        expect(a[2]).to eq("localhost").or eq("")
+        expect(a[3]).to match(float_format).or eq("")
+        expect(a[4]).to match(date_format).or eq("") # started_at
+        expect(a[5]).to match(date_format).or eq("") # finished_at
+        expect(a[6]).to match(/\A\d+\z/)             # seed
+        expect(a[7]).to match(id_format)             # ps_id
+        expect(a[8]).to match(int_format)            # p.L
+        expect(a[9]).to match(float_format)          # p.T
+        a[10..-1].each do |x|               # result
+          expect(x).to match(int_format).or eq("")
+        end
+      end
+    end
+  end
 end

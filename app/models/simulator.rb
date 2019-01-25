@@ -360,4 +360,29 @@ class Simulator
 
     sim_versions.map {|key,val| val['version'] = key; val }.sort_by {|a| a['latest_started_at']}
   end
+
+  require 'csv'
+  def runs_csv(runs = self.runs)
+    run_attr = %w(_id status hostname real_time started_at finished_at seed)
+    ps_attr = [[:ps,:_id]] + parameter_definitions.map {|pd| [:ps,:v,pd.key] }
+    ps_attr_header = ["ps_id"] + parameter_definitions.map {|pd| "p.#{pd.key}" }
+    latest_run = Run.where(simulator: self, status: :finished).order_by(updated_at: :desc).first
+    result_attr_header = plottable_keys(latest_run&.result).map {|key| "r.#{key}" }
+    result_attr = plottable_keys(latest_run&.result).map {|key| [:result]+key.split('.') }
+    attr = run_attr + ps_attr + result_attr
+    header = run_attr + ps_attr_header + result_attr_header
+
+    aggregated = Run.collection.aggregate([
+      { '$match'  => runs.selector },
+      { '$lookup' => { from: 'parameter_sets', localField: 'parameter_set_id', foreignField: '_id', as: 'ps' }},
+      { '$unwind' => '$ps'}
+    ])
+
+    CSV.generate(headers: header, write_headers: true) do |csv|
+      aggregated.each do |r|
+        csv << attr.map {|keys| r.dig(*keys)}
+      end
+    end
+
+  end
 end

@@ -31,6 +31,7 @@ Rails.application.routes.draw do
     end
     member do
       get "duplicate" if OACIS_ACCESS_LEVEL == 2
+      get "export_runs"  # export runs in CSV
       get "_parameter_sets_list" # for ajax, datatables
       get "_analyzer_list" # for ajax, datatables
       get "_parameter_set_filters_list" # for ajax, datatables

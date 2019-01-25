@@ -1,7 +1,7 @@
 %h3 List of Parameter Sets
 
 .filter_set_area.paramset_title_area_item
-  %div{style: "float:left; margin-top: 7px; width: 80%"}
+  %div{style: "float:left; margin-top: 7px; width: 70%"}
     %i#parameter_set_filter_modal_btn.fa.fa-search.fa-lg.clickable{onclick: "$('#parameter_set_filter_form_modal').modal('show');", style: "padding: 5px;", data: {html: 'true', toggle: 'tooltip', original: {title: 'filter'}}}
     %span#parameter_filter_selected
     - if @filter
@@ -14,9 +14,12 @@
         Clear
     - else
       not filtering
-  - if OACIS_ACCESS_LEVEL >= 1
-    %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator), style: "float: right; margin-right: 3px;"}
-      New Parameter Set
+  %div{style: "float:right"}
+    %a.btn.btn-default{href: export_runs_simulator_path(@simulator, format: :csv), style: "float: left; margin-right: 3px;"}
+      Export CSV
+    - if OACIS_ACCESS_LEVEL >= 1
+      %a.btn.btn-primary{href: new_simulator_parameter_set_path(@simulator), style: "float: left; margin-right: 3px;"}
+        New Parameter Set
 
 .clear-element
 .create_ps_area{id: "ps_being_created_#{@simulator.id}"}

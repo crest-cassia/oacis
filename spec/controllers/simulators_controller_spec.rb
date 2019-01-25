@@ -128,6 +128,19 @@ describe SimulatorsController do
     end
   end
 
+  describe "GET export_runs" do
+
+    before(:each) do
+      @simulator = FactoryBot.create(:simulator, parameter_sets_count: 3, runs_count: 2)
+    end
+
+    it "assigns a new simulator as @simulator" do
+      get :export_runs, params: {id: @simulator}, format: :csv
+      expect(response.header['Content-Type']).to include 'text/csv'
+      expect(response.body).to eq @simulator.runs_csv(@simulator.runs)
+    end
+  end
+
   describe "GET edit" do
     it "assigns the requested simulator as @simulator" do
       simulator = Simulator.create! valid_attributes
