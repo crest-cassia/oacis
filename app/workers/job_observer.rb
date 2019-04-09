@@ -17,6 +17,7 @@ class JobObserver
         logger.info "observation of #{host.name} finished in #{sprintf('%.1f', bm.real)}" if bm.real > 1.0
       rescue => ex
         logger.error("Error in JobObserver: #{ex.inspect}")
+        logger.error(ex.backtrace)
       end
       @last_performed_at[host.id] = DateTime.now
     end
@@ -26,7 +27,7 @@ class JobObserver
   def self.observe_host(host, logger)
     # host.check_submitted_job_status(logger)
     return if host.submitted_runs.count == 0 and host.submitted_analyses.count == 0
-    host.start_ssh_shell do |sh|
+    host.start_ssh_shell(logger: logger) do |sh|
       logger.debug "making SSH connection to #{host.name}"
       handler = RemoteJobHandler.new(host)
       # check if job is finished
@@ -72,7 +73,7 @@ class JobObserver
 
   def self.observe_job(job, host, handler, logger)
     logger.debug("checking the job status of: #{job.class}:#{job.id}")
-    case handler.remote_status(job)
+    case handler.remote_status(job, logger)
     when :submitted
       logger.debug("status for #{job.class}:#{job.id} is 'submitted'")
       # DO NOTHING

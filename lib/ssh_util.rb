@@ -20,7 +20,7 @@ module SSHUtil
       Fiber.yield
     end
 
-    def self.start(session, shell="bash -l", debug=false)
+    def self.start(session, shell:"bash -l", logger: nil)
       channel = session.open_channel do |ch|
         ch.exec(shell) do |ch2, success|
           raise "failed to open shell" unless success
@@ -36,11 +36,11 @@ module SSHUtil
           output = {stdout: "", stderr: "", rc: nil}
 
           ch2.on_data do |c,data|
-            $stderr.puts "o: #{data}" if debug
+            logger&.debug "o: #{data.chomp}"
             if data =~ PATTERN
               output[:stdout] += data.chomp.sub(PATTERN,'')
               rc = $1.to_i
-              $stderr.puts "rc: #{rc}" if debug
+              logger&.debug "rc: #{rc}"
               output[:rc] = rc
               o = output
               output = {stdout: "", stderr: "", rc: nil}
@@ -51,7 +51,7 @@ module SSHUtil
           end
 
           ch2.on_extended_data do |c,type,data|
-            $stderr.puts "e: #{data}" if debug
+            logger&.debug "e: #{data.chomp}"
             output[:stderr] += data
           end
         end

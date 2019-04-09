@@ -51,13 +51,17 @@ class RemoteJobHandler
     end
   end
 
-  def remote_status(job)
+  def remote_status(job, logger = nil)
     status = :unknown
     scheduler = SchedulerWrapper.new(@host)
     cmd = scheduler.status_command(job.job_id)
     @host.start_ssh_shell do |sh|
       begin
+        logger&.debug("  executing: #{cmd}")
         out,err,rc = SSHUtil.execute2(sh, cmd)
+        logger&.debug("  stdout: #{out.chomp}")
+        logger&.debug("  stderr: #{err.chomp}")
+        logger&.debug("  rc: #{rc}")
         raise RemoteSchedulerError if out.empty? or rc != 0
         status = scheduler.parse_remote_status(out)
       rescue => ex

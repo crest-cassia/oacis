@@ -128,7 +128,7 @@ class Host
     if @ssh
       yield @ssh
     else
-      ssh_logger.debug("starting SSH: " + self.inspect ) if ssh_logger
+      ssh_logger.debug("starting SSH: " + self.name ) if ssh_logger
       Net::SSH.start(name, nil, password: nil, timeout: 1, non_interactive: true, logger: ssh_logger) do |ssh|
         @ssh = ssh
         begin
@@ -141,13 +141,13 @@ class Host
   end
 
   public
-  def start_ssh_shell( ssh_logger: nil )
+  def start_ssh_shell( ssh_logger: nil, logger: nil )
     start_ssh(ssh_logger: ssh_logger) do |ssh|
       if @ssh_shell
         yield @ssh_shell
       else
-        ssh_logger.debug("starting SSH shell: " + self.inspect ) if ssh_logger
-        SSHUtil::ShellSession.start(ssh) do |sh|
+        logger&.debug("starting SSH shell: " + self.name )
+        SSHUtil::ShellSession.start(ssh, logger: logger) do |sh|
           @ssh_shell = sh
           begin
             yield sh
