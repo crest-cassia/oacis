@@ -36,7 +36,7 @@ module SSHUtil
           output = {stdout: "", stderr: "", rc: nil}
 
           ch2.on_data do |c,data|
-            logger&.debug "o: #{data.chomp}"
+            logger&.debug "o: #{data.chomp.scrub}"
             if data =~ PATTERN
               output[:stdout] += data.chomp.sub(PATTERN,'')
               rc = $1.to_i
@@ -51,7 +51,7 @@ module SSHUtil
           end
 
           ch2.on_extended_data do |c,type,data|
-            logger&.debug "e: #{data.chomp}"
+            logger&.debug "e: #{data.chomp.scrub}"
             output[:stderr] += data
           end
         end
