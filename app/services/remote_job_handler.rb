@@ -116,7 +116,8 @@ class RemoteJobHandler
         end
       end
 
-      script = job.executable.local_pre_process_script
+      # local_pre_process may contain "\r\n". Replace it with "\n".
+      script = job.executable.local_pre_process_script.gsub(/\R/,"\n")
       File.open('_lpreprocess.sh', 'w') {|io|
         io.puts script; io.flush
       }
@@ -225,7 +226,7 @@ class RemoteJobHandler
     if script.present?
       path = RemoteFilePath.pre_process_script_path(@host, job)
       @host.start_ssh_shell do |sh|
-        SSHUtil.write_remote_file(@host.name, path, script)
+        SSHUtil.write_remote_file(@host.name, path, script.gsub(/\R/,"\n") )  # pre_process_script may contain "\r\n"
         out,err,rc = SSHUtil.execute2(sh, "chmod +x #{path}")
         raise RemoteOperationError, "chmod failed : #{out}, #{err}" unless rc==0
         cd = SSHUtil.execute(sh,'pwd')
