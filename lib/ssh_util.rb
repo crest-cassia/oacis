@@ -3,7 +3,7 @@ module SSHUtil
   class ShellSession
 
     TOKEN = "XXXDONEXXX"
-    PATTERN = /^XXXDONEXXX (\d+)$/
+    PATTERN = /XXXDONEXXX (\d+)$/
 
     def initialize(channel)
       @ch = channel
