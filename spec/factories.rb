@@ -5,7 +5,7 @@ FactoryBot.define do
 
   factory :simulator do
     sequence(:name, 'A') {|n| "simulator#{n}"}
-    command "echo"
+    command { "echo" }
 
     parameter_definitions {
       [
@@ -18,15 +18,15 @@ FactoryBot.define do
     description { Faker::Lorem.paragraphs.join("\n") }
 
     transient do
-      parameter_sets_count 5
-      runs_count 5
-      finished_runs_count 0
-      analyzers_count 2
-      run_analysis true
-      analyzers_on_parameter_set_count 0
-      run_analysis_on_parameter_set true
-      parameter_set_filters_count 0
-      ssh_host false
+      parameter_sets_count { 5 }
+      runs_count { 5 }
+      finished_runs_count { 0 }
+      analyzers_count { 2 }
+      run_analysis { true }
+      analyzers_on_parameter_set_count { 0 }
+      run_analysis_on_parameter_set { true }
+      parameter_set_filters_count { 0 }
+      ssh_host { false }
     end
 
     after(:create) do |simulator, evaluator|
@@ -70,8 +70,8 @@ FactoryBot.define do
     end
 
     transient do
-      runs_count 5
-      finished_runs_count 0
+      runs_count { 5 }
+      finished_runs_count { 0 }
     end
 
     after(:create) do |param_set, evaluator|
@@ -121,8 +121,8 @@ FactoryBot.define do
     description { Faker::Lorem.paragraphs.join("\n") }
 
     transient do
-      run_analysis true
-      ssh_host false
+      run_analysis { true }
+      ssh_host { false }
     end
 
     after(:create) do |analyzer, evaluator|
@@ -159,9 +159,8 @@ FactoryBot.define do
   end
 
   factory :analysis do
-    h = {"param1" => 1, "param2" => 2.0}
-    parameters h
-    status :finished
+    parameters { {"param1" => 1, "param2" => 2.0} }
+    status { :finished }
     submitted_to {
       hosts = self.analyzer.executable_on
       hosts.where(name: "localhost").first || hosts.first
@@ -183,10 +182,10 @@ FactoryBot.define do
       def host.get_host_parameters; []; end
     end
     sequence(:name, 'A') {|n| "Host_#{n}"}
-    min_mpi_procs 1
-    max_mpi_procs 8
-    min_omp_threads 1
-    max_omp_threads 8
+    min_mpi_procs { 1 }
+    max_mpi_procs { 8 }
+    min_omp_threads { 1 }
+    max_omp_threads { 8 }
 
     factory :host_with_parameters do
       host_parameter_definitions {
@@ -207,10 +206,11 @@ FactoryBot.define do
 
   # :localhost needs ssh connection and xsub
   factory :localhost, class: Host do
-    name "localhost"
-    min_mpi_procs 1
-    max_mpi_procs 8
-    min_omp_threads 1
-    max_omp_threads 8
+    name { "localhost" }
+    min_mpi_procs { 1 }
+    max_mpi_procs { 8 }
+    min_omp_threads { 1 }
+    max_omp_threads { 8 }
   end
 end
+

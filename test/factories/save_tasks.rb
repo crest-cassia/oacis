@@ -1,5 +1,5 @@
 FactoryBot.define do
   factory :save_task do
-    run_num ""
+    run_num { "" }
   end
 end
