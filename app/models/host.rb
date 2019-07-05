@@ -175,6 +175,8 @@ class Host
     end
   end
 
+  class XSUB_T_ERROR < StandardError; end
+
   def get_host_parameters
     if ENV['OACIS_SSH_DEBUG'] == "1"
       ssh_logger = Logger.new( Rails.root.join('log/ssh_debug.log') )
@@ -183,7 +185,10 @@ class Host
     end
     start_ssh_shell(ssh_logger: ssh_logger) do |sh|
       cmd = "xsub -t"
-      xsub_out = SSHUtil.execute(sh, cmd)
+      xsub_out,err,rc = SSHUtil.execute2(sh, cmd)
+      raise XSUB_T_ERROR.new(err) unless rc == 0
+      json = JSON.load(xsub_out)
+      raise unless json
       self.host_parameter_definitions = JSON.load(xsub_out)["parameters"].reject do |key,val|
         key == "mpi_procs" or key == "omp_threads"
       end.map do |key,val|
@@ -191,6 +196,19 @@ class Host
       end
     end
 
+  rescue XSUB_T_ERROR => ex
+    errors.add(:base, "`xsub -t` failed. Make sure if XSUB is properly installed on the remote host:")
+    if ex.message =~ /command not found/
+      errors.add(:base, "Remember that PATH must be configured in '~/.bash_profile', not in '~/.bashrc' or '~/.zshrc'")
+    end
+    errors.add(:base, ex.message)
+  rescue *CONNECTION_EXCEPTIONS => ex
+    if ex.is_a? SocketError and ex.message =~ /getaddrinfo/
+      errors.add(:base, "Hostname `#{name}` is not found. Make sure if the correct address is specified in '~/.ssh/config':")
+    else
+      errors.add(:base, "Connection failure. Make sure that `ssh #{name}` works without entering a password. Otherwise, check if a correct key is added to ssh-agent by `ssh-add` command:")
+    end
+    errors.add(:base, ex.message)
   rescue => ex
     errors.add(:base, "Error while getting host parameters: #{ex.message}")
   end
