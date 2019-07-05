@@ -7,6 +7,8 @@ gem "net-ssh"
 gem "jbuilder"
 gem "redis", '~> 3.0'
 
+gem 'bootsnap', require: false
+
 # assets
 gem "sprockets"
 gem 'record_tag_helper', '~> 1.0'
