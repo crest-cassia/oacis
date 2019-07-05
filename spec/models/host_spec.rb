@@ -314,7 +314,7 @@ describe Host do
 
     it "parse output of 'xsub -t' and set it to host_parameter_definitions" do
       hp = {"parameters" => {"foo" => {"default"=>1}, "bar" => {"default"=>"abc"} } }
-      expect(SSHUtil).to receive(:execute).and_return(hp.to_json)
+      expect(SSHUtil).to receive(:execute2).and_return([hp.to_json,"",0])
       @host = FactoryBot.create(:localhost)
       expect(@host.host_parameter_definitions.size).to eq 2
       expect(@host.host_parameter_definitions[0].key).to eq "foo"
@@ -323,13 +323,13 @@ describe Host do
 
     it "ignores 'mpi_procs' and 'omp_threads' parameters when setting host_parameter_definitions" do
       hp = {"parameters" => {"mpi_procs" => {"default"=>1}, "omp_threads" => {"default"=>"1"} } }
-      expect(SSHUtil).to receive(:execute).and_return(hp.to_json)
+      expect(SSHUtil).to receive(:execute2).and_return([hp.to_json,"",0])
       @host = FactoryBot.create(:localhost)
       expect(@host.host_parameter_definitions).to be_empty
     end
 
     it "'xsub' command fails, validation fails" do
-      expect(SSHUtil).to receive(:execute).and_return("{invalid:...")
+      expect(SSHUtil).to receive(:execute2).and_return(["{invalid:...","",0])
       @host = FactoryBot.build(:localhost)
       expect(@host).to_not be_valid
     end
