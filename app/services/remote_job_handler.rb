@@ -295,7 +295,7 @@ class RemoteJobHandler
       job.update_attribute(:status, :failed)
       job.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
     elsif exception.is_a?(RemoteSchedulerError)
-      job.update_attribute(:error_messages, "Xsub is failed. \n#{exception.inspect}\n#{exception.backtrace}")
+      job.update_attribute(:error_messages, "`xsub` failed. \n#{exception.inspect}\n#{exception.backtrace}")
       job.update_attribute(:status, :failed)
     elsif exception.is_a?(LocalPreprocessError)
       job.update_attribute(:error_messages, "failed to execute local preprocess.\n#{exception.inspect}\n#{exception.backtrace})")
