@@ -42,7 +42,7 @@ describe HostsController do
       host = Host.create! valid_attributes
       expect_any_instance_of(Host).to receive(:scheduler_status).and_return("status")
       get :_check_scheduler_status, params: {id: host.to_param}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response.body).to eq "status"
     end
   end
@@ -235,7 +235,7 @@ describe HostsController do
       hosts = Host.asc(:position).to_a
       expect {
         post :_sort, params: {host: hosts.reverse }
-        expect(response).to be_success
+        expect(response).to be_successful
       }.to change { hosts.first.reload.position }.from(0).to(2)
     end
   end

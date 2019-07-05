@@ -18,7 +18,7 @@ describe RunsController do
 
     it "returns http success" do
       get 'index', params: {}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -26,7 +26,7 @@ describe RunsController do
 
     it "returns http success" do
       get 'show', params: {id: @run}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "assigns instance variables" do
@@ -37,7 +37,7 @@ describe RunsController do
 
     it "returns success for json format" do
       get :show, params: {id: @run, format: :json}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 

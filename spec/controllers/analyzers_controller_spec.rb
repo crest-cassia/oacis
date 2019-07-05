@@ -12,7 +12,7 @@ describe AnalyzersController do
 
     it "returns http success" do
       get 'show', params: {id: @azr }
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "assigns the requested analyzer to @analyzer" do
@@ -22,7 +22,7 @@ describe AnalyzersController do
 
     it "returns success for json format" do
       get :show, params: {id: @azr, format: :json}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -310,7 +310,7 @@ describe AnalyzersController do
 
     it "returns http success" do
       get '_parameters_form', params: {id: @azr.id}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -326,13 +326,13 @@ describe AnalyzersController do
     it "returns http success" do
       valid_param = {id: @azr.to_param, host_id: @host.to_param}
       get :_host_parameters_field, params: valid_param
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "returns http success even if host_id is not found" do
       param = {id: @azr.to_param, host_id: "DO_NOT_EXIST"}
       get :_host_parameters_field, params: param
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -349,13 +349,13 @@ describe AnalyzersController do
     it "returns http success" do
       valid_param = {id: @azr.to_param, host_id: @host.to_param}
       get :_default_mpi_omp, params: valid_param
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "does not cause an error even when host is not found" do
       param = {id: @azr.to_param, host_id: 'DO_NOT_EXIST'}
       get :_default_mpi_omp, params: param
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     context "when default_mpi_procs and/or defualt_omp_threads are set" do
