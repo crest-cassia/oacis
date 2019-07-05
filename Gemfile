@@ -1,11 +1,13 @@
 source 'https://rubygems.org'
 
-gem 'rails', '~> 5.1.0'
+gem 'rails', '~> 5.2'
 gem "puma"
 gem "mongoid", ' ~> 7.0'
 gem "net-ssh"
 gem "jbuilder"
 gem "redis", '~> 3.0'
+
+gem 'bootsnap', require: false
 
 # assets
 gem "sprockets"

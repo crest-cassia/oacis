@@ -40,7 +40,7 @@ describe AnalysesController do
 
       it "returns http success" do
         get 'show', params: {id: @arn}
-        expect(response).to be_success
+        expect(response).to be_successful
       end
 
       it "assigns instance variables for analysis_on_run" do
@@ -50,7 +50,7 @@ describe AnalysesController do
 
       it "returns success for json format" do
         get :show, params: {id: @arn, format: :json}
-        expect(response).to be_success
+        expect(response).to be_successful
       end
     end
 
@@ -58,7 +58,7 @@ describe AnalysesController do
 
       it "returns http success" do
         get 'show', params: {id: @arn2}
-        expect(response).to be_success
+        expect(response).to be_successful
       end
 
       it "assigns instance variables" do
@@ -68,7 +68,7 @@ describe AnalysesController do
 
       it "returns success for json format" do
         get :show, params: {id: @arn2, format: :json}
-        expect(response).to be_success
+        expect(response).to be_successful
       end
     end
   end
@@ -320,7 +320,7 @@ describe AnalysesController do
 
     it "returns http success" do
       get '_result', params: {id: @arn}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 end

@@ -14,7 +14,7 @@ describe ParameterSetsController do
 
     it "returns http success" do
       get 'show', params: {id: @sim.parameter_sets.first}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "assigns instance variables" do
@@ -25,7 +25,7 @@ describe ParameterSetsController do
 
     it "returns success for json format" do
       get :show, params: {id: @sim.parameter_sets.first, format: :json}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -326,7 +326,7 @@ describe ParameterSetsController do
 
     it "returns CLI command" do
       get :_create_cli, params: @valid_param
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response.body).to eq <<-EOS.chomp
 ./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -o ps.json
       EOS
@@ -341,7 +341,7 @@ describe ParameterSetsController do
       @valid_param[:num_runs] = 3
 
       get :_create_cli, params: @valid_param
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response.body).to eq <<-EOS.chomp
 ./bin/oacis_cli create_parameter_sets -s #{@sim.id} -i '{"L":10,"T":2.0}' -r '{"num_runs":3,"mpi_procs":4,"omp_threads":8,"priority":2,"submitted_to":"#{h.id.to_s}","host_parameters":{"param1":"xxx","param2":"yyy"}}' -o ps.json
       EOS
@@ -436,7 +436,7 @@ describe ParameterSetsController do
     end
 
     it "return json format" do
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response.header['Content-Type']).to include 'application/json'
     end
 

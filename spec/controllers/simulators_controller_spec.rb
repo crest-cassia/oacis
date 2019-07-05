@@ -39,7 +39,7 @@ describe SimulatorsController do
     it "assigns all simulators as @simulators" do
       simulator = Simulator.create! valid_attributes
       get :index, params: {}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(assigns(:simulators)).to eq([simulator])
     end
 
@@ -65,26 +65,26 @@ describe SimulatorsController do
 
     it "assigns the requested simulator as @simulator" do
       get :show, params: {id: @simulator.to_param}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(assigns(:simulator)).to eq(@simulator)
       expect(assigns(:analyzers)).to match_array(@simulator.analyzers)
     end
 
     it "returns success for json format" do
       get :show, params: {id: @simulator, format: :json}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "assigns filter when param[:filter] is given" do
       f = @simulator.parameter_set_filters.first
       get :show, params: {id: @simulator.to_param, filter: f}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(assigns(:filter)).to eq f
     end
 
     it "assigns filter when param[:q] is given" do
       get :show, params: {id: @simulator.to_param, q: [["T","gte",3.5]].to_json}
-      expect(response).to be_success
+      expect(response).to be_successful
       f = assigns(:filter)
       expect(f.conditions).to eq [["T","gte",3.5]]
     end
@@ -495,14 +495,14 @@ describe SimulatorsController do
       expect {
         post :_delete_filter, params: @valid_param
       }.to change(ParameterSetFilter, :count).by(-1)
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "does nothing when the specified Filter is not found" do
       expect {
         post :_delete_filter, params: @valid_param.update(filter: "INVALID_ID")
       }.to_not change(ParameterSetFilter, :count)
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -579,7 +579,7 @@ describe SimulatorsController do
     end
 
     it "return json format" do
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response.header['Content-Type']).to include 'application/json'
       expect(@parsed_body["parameters"]).to eq ["L", "T"]
       expect(@parsed_body["parameter_values"]).to be_a(Array)
@@ -597,7 +597,7 @@ describe SimulatorsController do
       simulators = Simulator.asc(:position).to_a
       expect {
         post :_sort, params: {simulator: simulators.reverse }
-        expect(response).to be_success
+        expect(response).to be_successful
       }.to change { simulators.first.reload.position }.from(0).to(2)
     end
   end
@@ -613,13 +613,13 @@ describe SimulatorsController do
     it "returns http success" do
       valid_param = {id: @sim.to_param, host_id: @host.to_param}
       get :_host_parameters_field, params: valid_param
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "returns http success even if host_id is not found" do
       param = {id: @sim.to_param, host_id: "DO_NOT_EXIST"}
       get :_host_parameters_field, params: param
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -635,7 +635,7 @@ describe SimulatorsController do
     it "returns http success" do
       valid_param = {id: @sim.to_param, host_id: @host.to_param}
       get :_default_mpi_omp, params: valid_param
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     context "when default_mpi_procs and/or defualt_omp_threads are set" do
