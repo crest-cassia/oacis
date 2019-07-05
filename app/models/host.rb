@@ -77,7 +77,8 @@ class Host
     start_ssh_shell do |sh|
       wrapper = SchedulerWrapper.new(self)
       cmd = wrapper.all_status_command
-      ret = SSHUtil.execute(sh, cmd)
+      ret,err,rc = SSHUtil.execute2(sh, cmd)
+      raise "`xstat` failed: #{err}" unless rc == 0
     end
     return ret
   end

@@ -25,10 +25,10 @@ class HostsController < ApplicationController
   # return remote scheduler status
   def _check_scheduler_status
     @host = Host.find(params[:id])
-    if (@host.connected? rescue false)
+    begin
       status = @host.scheduler_status
-    else
-      status = "Failed to establish connection. Check host information."
+    rescue => ex
+      status = "Failed to get status:\n#{ex.message}"
     end
     render plain: status
   end
