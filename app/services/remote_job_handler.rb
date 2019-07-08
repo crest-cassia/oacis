@@ -284,34 +284,37 @@ class RemoteJobHandler
     end
   end
 
+  def cleanup_remote_dir(job, sh)
+    work_dir = RemoteFilePath.work_dir_path(@host, job)
+    if SSHUtil.exist?(sh, work_dir)
+      SSHUtil.download_directory(@host.name, work_dir, job.dir)
+      remove_remote_files(job) # try it once even when remove operation is failed.
+    end
+  end
+
   def error_handle(exception, job, sh)
     if exception.is_a?(RemoteOperationError)
       job.update_attribute(:error_messages, "RemoteOperaion is failed.\n#{exception.inspect}\n#{exception.backtrace}")
       #retry the operation in next time
-      # this error is caught by job_submitter or job_observer
-      raise exception
     elsif exception.is_a?(RemoteJobError)
-      work_dir = RemoteFilePath.work_dir_path(@host, job)
-      SSHUtil.download_directory(@host.name, work_dir, job.dir) if SSHUtil.exist?(sh, work_dir)
-      remove_remote_files(job) # try it once even when remove operation is failed.
-      job.update_attribute(:status, :failed)
+      cleanup_remote_dir(job, sh)
       job.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
-    elsif exception.is_a?(RemoteSchedulerError)
-      job.update_attribute(:error_messages, "Xsub is failed. \n#{exception.inspect}\n#{exception.backtrace}")
       job.update_attribute(:status, :failed)
-      raise exception # this error is catched by job_observer
+    elsif exception.is_a?(RemoteSchedulerError)
+      cleanup_remote_dir(job, sh)
+      job.update_attribute(:error_messages, "`xsub` failed. \n#{exception.inspect}\n#{exception.backtrace}")
+      job.update_attribute(:status, :failed)
     elsif exception.is_a?(LocalPreprocessError)
       job.update_attribute(:error_messages, "failed to execute local preprocess.\n#{exception.inspect}\n#{exception.backtrace})")
       job.update_attribute(:status, :failed)
-      raise exception
     else
       if exception.inspect.to_s =~ /#<NoMethodError: undefined method `stat' for nil:NilClass>/
         job.update_attribute(:error_messages, "failed to establish ssh connection to host(#{job.submitted_to.name})\n#{exception.inspect}\n#{exception.backtrace}")
       else
         job.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
       end
-      # this error is caught by job_submitter or job_observer
-      raise exception
     end
+    StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job))
+    raise exception  # this error is caught by job_submitter or job_observer
   end
 end

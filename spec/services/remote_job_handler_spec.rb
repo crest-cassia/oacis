@@ -191,38 +191,38 @@ shared_examples_for RemoteJobHandler do
         it "not raises any error" do
           expect {
             RemoteJobHandler.new(@host).submit_remote_job(@submittable)
-          }.not_to raise_error
+          }.to raise_error RemoteJobHandler::RemoteJobError
         end
 
         it "sets error_messages" do
           expect {
-            RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+            RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue RemoteJobHandler::RemoteJobError
           }.to change { @submittable.reload.error_messages }
         end
 
         it "sets status of Run to failed" do
-          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue RemoteJobHandler::RemoteJobError
           expect(@submittable.reload.status).to eq :failed
         end
 
         it "does not enqueue job script" do
           expect_any_instance_of(SchedulerWrapper).not_to receive(:submit_command)
-          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue RemoteJobHandler::RemoteJobError
         end
 
         it "removes files on remote host" do
-          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue RemoteJobHandler::RemoteJobError
           expect(File.directory?( @temp_dir.join(@submittable.id) )).to be_falsey
         end
 
         it "copies files in the remote work_dir to Run's directory" do
-          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue RemoteJobHandler::RemoteJobError
           expect(File.exist?( @submittable.dir.join('_preprocess.sh') )).to be_truthy
         end
       end
 
       it "creates a job script on remote host" do
-        RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue RemoteJobHandler::RemoteJobError
         expect(File.exist?( @temp_dir.join( @submittable.id.to_s+'.sh') )).to be_truthy
       end
     end
