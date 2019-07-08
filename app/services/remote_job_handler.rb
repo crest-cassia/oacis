@@ -284,17 +284,24 @@ class RemoteJobHandler
     end
   end
 
+  def cleanup_remote_dir(job, sh)
+    work_dir = RemoteFilePath.work_dir_path(@host, job)
+    if SSHUtil.exist?(sh, work_dir)
+      SSHUtil.download_directory(@host.name, work_dir, job.dir)
+      remove_remote_files(job) # try it once even when remove operation is failed.
+    end
+  end
+
   def error_handle(exception, job, sh)
     if exception.is_a?(RemoteOperationError)
       job.update_attribute(:error_messages, "RemoteOperaion is failed.\n#{exception.inspect}\n#{exception.backtrace}")
       #retry the operation in next time
     elsif exception.is_a?(RemoteJobError)
-      work_dir = RemoteFilePath.work_dir_path(@host, job)
-      SSHUtil.download_directory(@host.name, work_dir, job.dir) if SSHUtil.exist?(sh, work_dir)
-      remove_remote_files(job) # try it once even when remove operation is failed.
-      job.update_attribute(:status, :failed)
+      cleanup_remote_dir(job, sh)
       job.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
+      job.update_attribute(:status, :failed)
     elsif exception.is_a?(RemoteSchedulerError)
+      cleanup_remote_dir(job, sh)
       job.update_attribute(:error_messages, "`xsub` failed. \n#{exception.inspect}\n#{exception.backtrace}")
       job.update_attribute(:status, :failed)
     elsif exception.is_a?(LocalPreprocessError)
