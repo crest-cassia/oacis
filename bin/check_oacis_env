@@ -63,7 +63,7 @@ end
 def verify_redis_version
   print "checking redis version ...       "
   v = `redis-cli --version`
-  if v =~ /^redis-cli (\d+)(\.\d+\.\d+)/ and $1.to_i == 4
+  if v =~ /^redis-cli (\d+)(\.\d+\.\d+)/ and $1.to_i >= 4
     puts_ok
     return true
   else
