@@ -3,7 +3,7 @@ class ApplicationController < ActionController::Base
 
   before_action :authenticate
 
-  USERS = AcmProto::Application.config.user_config["authentication"]
+  USERS = Oacis::Application.config.user_config["authentication"]
 
   private
   def authenticate
