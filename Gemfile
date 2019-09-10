@@ -3,7 +3,9 @@ source 'https://rubygems.org'
 gem 'rails', '~> 5.2'
 gem "puma"
 gem "mongoid", ' ~> 7.0'
-gem "net-ssh"
+gem "net-ssh", '~> 5.0'
+gem "ed25519", '>= 1.2', '< 2.0'  # support openssh format: https://github.com/net-ssh/net-ssh/issues/478
+gem "bcrypt_pbkdf", '>= 1.0', '< 2.0'
 gem "jbuilder"
 gem "redis", '~> 3.0'
 
