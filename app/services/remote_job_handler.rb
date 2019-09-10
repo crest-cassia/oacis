@@ -287,7 +287,7 @@ class RemoteJobHandler
   def cleanup_remote_dir(job, sh)
     work_dir = RemoteFilePath.work_dir_path(@host, job)
     if SSHUtil.exist?(sh, work_dir)
-      SSHUtil.download_directory(@host.name, work_dir, job.dir)
+      SSHUtil.download_recursive_if_exist(sh, @host.name, work_dir, job.dir)
       remove_remote_files(job) # try it once even when remove operation is failed.
     end
   end

@@ -75,7 +75,12 @@ module SSHUtil
 
   def self.download_recursive_if_exist(sh, hostname, remote_path, local_path)
     if directory?(sh, remote_path)
-      download_directory(hostname, remote_path, local_path)
+      out = sh.exec!("ls #{remote_path}/")  # checking empty directory
+      if out.chomp.empty?
+        FileUtils.mkdir_p(local_path)
+      else
+        download_directory(hostname, remote_path, local_path)
+      end
       :directory
     elsif file?(sh, remote_path)
       download_file(hostname, remote_path, local_path)
