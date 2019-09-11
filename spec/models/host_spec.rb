@@ -30,9 +30,9 @@ describe Host do
       expect(Host.new(@valid_attr)).not_to be_valid
     end
 
-    it "default of 'work_base_dir' is '~'" do
+    it "default of 'work_base_dir' is '~/oacis_work'" do
       @valid_attr.delete(:work_base_dir)
-      expect(Host.new(@valid_attr).work_base_dir).to eq('~')
+      expect(Host.new(@valid_attr).work_base_dir).to eq('~/oacis_work')
     end
 
     it "has timestamp fields" do
