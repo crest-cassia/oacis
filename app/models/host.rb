@@ -6,10 +6,10 @@ class Host
   HOST_STATUS = [:enabled, :disabled]
 
   field :status, type: Symbol, default: HOST_STATUS[0]
-  field :work_base_dir, type: String, default: '~'
+  field :work_base_dir, type: String, default: '~/oacis_work'
   field :mounted_work_base_dir, type: String, default: ""
   field :max_num_jobs, type: Integer, default: 1
-  field :polling_interval, type: Integer, default: 60
+  field :polling_interval, type: Integer, default: 10
   field :min_mpi_procs, type: Integer, default: 1
   field :max_mpi_procs, type: Integer, default: 1
   field :min_omp_threads, type: Integer, default: 1
