@@ -78,7 +78,7 @@ describe SSHUtil do
       expect(File.exist?(local_path.join('file'))).to be_truthy
     end
 
-    it "creates local directory if specified directory does not exist" do
+    it "creates local directory if local directory does not exist" do
       remote_path = @temp_dir.join('remote').expand_path
       FileUtils.mkdir_p(remote_path)
       remote_path2 = remote_path.join('file').expand_path
@@ -88,6 +88,14 @@ describe SSHUtil do
       SSHUtil.download_recursive_if_exist(@sh, @hostname, remote_path, local_path)
       expect(File.directory?(local_path)).to be_truthy
       expect(File.exist?(local_path.join('file'))).to be_truthy
+    end
+
+    it "does not cause an error if specified directory is an empty directory" do
+      remote_path = @temp_dir.join('empty')
+      FileUtils.mkdir_p(remote_path)
+      local_path = @temp_dir.join('local')
+      SSHUtil.download_recursive_if_exist(@sh, @hostname, remote_path, local_path)
+      expect(File.directory?(local_path)).to be_truthy
     end
 
     it "download file if the remote_path is not directory but file" do
