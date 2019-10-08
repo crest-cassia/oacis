@@ -10,6 +10,7 @@ gem "jbuilder"
 gem "redis", '~> 3.0'
 
 gem 'bootsnap', require: false
+gem 'irb', require: false  # from Ruby2.6.0, irb is distributed as a default gem
 
 # assets
 gem "sprockets"
