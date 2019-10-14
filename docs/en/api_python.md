@@ -22,12 +22,19 @@ We assume that you know basics of Python programming language.
 To use OACIS, **Python3** is necessary. (**As of OACIS v3.2.1, Python 3.7.0 or later is not supported** since fibers library does not work with it.) It also requires the following libraries.
 
 ```ShellSession
-$ pip install msgpack-python==0.4.8 msgpack-rpc-python==0.4.1 fibers
+$ pip install mprpc fibers
 ```
 
 <span class="label label-success">New in v2.13.0</span>"fibers" library is required since v2.13.0.
 
+<span class="label label-success">New in v3.6.2</span>"mprpc" library is required since v3.6.2.
 
+
+For OACIS v3.6.1 or prior, the following packages are needed.
+
+```ShellSession
+$ pip install msgpack-python==0.4.8 msgpack-rpc-python==0.4.1 fibers
+```
 
 ## Executing script
 
