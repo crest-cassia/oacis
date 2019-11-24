@@ -15,12 +15,12 @@ class JobObserver
           observe_host(host, logger)
         }
         logger.info "observation of #{host.name} finished in #{sprintf('%.1f', bm.real)}" if bm.real > 1.0
+        @last_performed_at[host.id] = DateTime.now
       end
     rescue => ex
       logger.error("Error in JobObserver: #{ex.inspect}")
       logger.error(ex.backtrace)
     end
-    @last_performed_at[host.id] = DateTime.now
   end
 
   private
