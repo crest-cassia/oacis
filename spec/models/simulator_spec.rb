@@ -778,4 +778,60 @@ describe Simulator do
       end
     end
   end
+
+  describe "webhook can be triggerd" do
+
+    before(:each) do
+      @sim = FactoryBot.create(:simulator, parameter_sets_count: 2, runs_count: 0)
+      @sim.webhook_url= "https://example.com"
+      @sim.save!
+      allow(@sim).to receive(:http_post).with(anything(), anything()).and_return("Success")
+    end
+
+    it "with condition: all_finished" do
+
+      @sim.webhook_condition = Simulator::WEBHOOK_CONDITION[0] # all_finished
+      @sim.save!
+      @sim.webhook #do not call http_post
+      @sim.parameter_sets.each do |ps|
+        run = ps.runs.build
+        run.status = :finished
+        run.save
+      end
+      trigger_condition = {}
+      ParameterSet.runs_status_count_batch(@sim.parameter_sets).map do |key, val|
+        trigger_condition[key.to_s] = val.map{|k,v| [k.to_s, v] }.to_h
+      end
+      # if webhook condition is satisfied
+      expect(@sim).to have_received(:http_post).once
+      @sim.webhook # call http_post
+      @sim.reload
+      # webhook_condition and webhook_triggerd are updated
+      expect(@sim.webhook_condition).to eq(Simulator::WEBHOOK_CONDITION[0])
+      expect(@sim.webhook_triggered).to eq(trigger_condition)
+    end
+
+    it "with condition: each_ps_finished" do
+
+      @sim.webhook_condition = Simulator::WEBHOOK_CONDITION[1] # each_ps_finished
+      @sim.save!
+      @sim.webhook #do not call http_post
+      @sim.parameter_sets.each do |ps|
+        run = ps.runs.build
+        run.status = :finished
+        run.save
+      end
+      trigger_condition = {}
+      ParameterSet.runs_status_count_batch(@sim.parameter_sets).map do |key, val|
+        trigger_condition[key.to_s] = val.map{|k,v| [k.to_s, v] }.to_h
+      end
+      # if webhook condition is satisfied
+      expect(@sim).to have_received(:http_post).once
+      @sim.webhook # call http_post
+      @sim.reload
+      # webhook_condition and webhook_triggerd are updated
+      expect(@sim.webhook_condition).to eq(Simulator::WEBHOOK_CONDITION[1])
+      expect(@sim.webhook_triggered).to eq(trigger_condition)
+    end
+  end
 end
