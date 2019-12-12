@@ -1,0 +1,5 @@
+#!/bin/bash -eu
+
+script_dir=$(cd $(dirname $0); pwd)
+export BUNDLE_GEMFILE="$script_dir/../Gemfile"
+bundle exec pry -r "$script_dir/../config/environment" "$@"
