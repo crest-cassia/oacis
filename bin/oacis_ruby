@@ -2,4 +2,4 @@
 
 script_dir=$(cd $(dirname $0); pwd)
 export BUNDLE_GEMFILE="$script_dir/../Gemfile"
-ruby -r "$script_dir/../config/environment" "$@"
+bundle exec ruby -r "$script_dir/../config/environment" "$@"
