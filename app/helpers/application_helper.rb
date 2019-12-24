@@ -16,7 +16,7 @@ module ApplicationHelper
       links << link_to("Run:#{document.id}", run_path(document))
     when ParameterSet
       links = breadcrumb_links_for(document.simulator)
-      links << link_to("Param:#{document.id}", parameter_set_path(document))
+      links << link_to("PS:#{document.id}", parameter_set_path(document))
     when Simulator
       links = [ link_to("Simulators", simulators_path) ]
       links << link_to(document.name, simulator_path(document))
