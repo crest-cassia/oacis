@@ -45,7 +45,7 @@ class HostsController < ApplicationController
 
     @hosts = Host.asc(:position).all
     @host_groups = HostGroup.asc(:created_at).all
-    redirect_to action: 'index'
+    redirect_back(fallback_location: hosts_path)
   end
 
   # GET /hosts/new
