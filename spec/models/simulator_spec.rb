@@ -752,7 +752,7 @@ describe Simulator do
     it "returns runs in CSV format" do
       csv = @sim.runs_csv.lines
       expected_header = <<~EOS
-        _id,status,hostname,real_time,started_at,finished_at,seed,ps_id,p.L,p.T,r.r1,r.r2.r3,r.r2.r4
+        run_id,status,hostname,real_time,started_at,finished_at,seed,ps_id,p.L,p.T,r.r1,r.r2.r3,r.r2.r4
       EOS
       id_format = /\A[0-9a-f]{24}\z/
       status_format = /\Acreated|finished\z/

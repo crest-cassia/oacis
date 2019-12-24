@@ -371,6 +371,7 @@ class Simulator
     result_attr = plottable_keys(latest_run&.result).map {|key| [:result]+key.split('.') }
     attr = run_attr + ps_attr + result_attr
     header = run_attr + ps_attr_header + result_attr_header
+    header[0] = 'run_id'
 
     aggregated = Run.collection.aggregate([
       { '$match'  => runs.selector },
