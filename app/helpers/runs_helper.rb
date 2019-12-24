@@ -30,7 +30,7 @@ module RunsHelper
     end
   end
 
-  def make_tree_from_result_paths( result_paths, depth = 3 )
+  def make_tree_from_result_paths( result_paths, depth = 20 )
     sio = StringIO.new()
     sio.puts '<ul>'
     result_paths.sort.each do |result_path|
@@ -39,6 +39,8 @@ module RunsHelper
         sio.puts '<li class="folder">' + File.basename(result_path)
         if depth > 1
           sio.puts make_tree_from_result_paths( subpaths, depth - 1 )
+        else
+          sio.puts "...(skipped deeper directories)"
         end
         sio.puts '</li>'
       else
