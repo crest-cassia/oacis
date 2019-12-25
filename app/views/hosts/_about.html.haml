@@ -6,7 +6,11 @@
       %td= @host.name
     %tr
       %th Polling
-      %td= raw(host_status_label(@host.status))
+      %td
+        = raw(host_status_label(@host.status))
+        - if OACIS_ACCESS_LEVEL == 2
+          %a{href: _toggle_status_host_path(@host)}
+            %i.fa.fa-power-off.padding-left-half-em{data: {toggle: 'tooltip', 'original-title': 'suspend/restart polling', placement: 'bottom'}}
     %tr
       %th Work base directory
       %td= @host.work_base_dir

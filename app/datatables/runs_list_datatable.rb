@@ -40,7 +40,7 @@ private
       tmp = []
       attr = OACIS_ACCESS_LEVEL==0 ? {align: "center", disabled: "disabled"} : {align: "center"}
       tmp << @view.check_box_tag("checkbox[run]", run.id, false, attr)
-      tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run) )
+      tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(run)} )
       tmp << @view.raw( @view.status_label(run.status) )
       tmp << Run::PRIORITY_ORDER[run.priority]
       tmp << @view.raw('<span class="run_elapsed">'+@view.formatted_elapsed_time(run.real_time)+'</span>')
@@ -56,6 +56,13 @@ private
       a << tmp
     end
     a
+  end
+
+  def _tooltip_title(run)
+    <<EOS
+ID  : #{run.id}<br />
+seed: #{run.seed}
+EOS
   end
 
   def runs_lists

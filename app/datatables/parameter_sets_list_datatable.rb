@@ -46,7 +46,7 @@ private
       tmp << @view.check_box_tag("checkbox[ps]", ps.id, false, attr)
       progress = @view.progress_bar(runs_status_counts(ps))
       tmp << @view.raw(progress)
-      tmp << @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps) )
+      tmp << @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(ps)} )
       tmp << @view.raw('<span class="ps_updated_at">'+@view.distance_to_now_in_words(ps.updated_at)+'</span>')
       @param_keys.each do |key|
         if @base_ps
@@ -58,6 +58,10 @@ private
       tmp << "params_list_#{ps.id}"
       tmp
     end
+  end
+
+  def _tooltip_title(ps)
+    "ID: #{ps.id}"
   end
 
   def colorize_param_value(val, compared_val)
