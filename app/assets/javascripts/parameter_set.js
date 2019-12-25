@@ -14,7 +14,7 @@ function create_parameter_sets_list(selector, default_length) {
     }],
     dom: 'C<"clear">lrtip',
     colVis: {
-      exclude: [0, ($("th", selector).size()-1)],
+      exclude: [0],
       restore: "show all",
       buttonText: "show/hide columns"
     },
