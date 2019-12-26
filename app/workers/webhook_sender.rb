@@ -2,9 +2,7 @@ class WebhookSender
 
   def self.perform(logger)
     begin
-      Simulator.each do |sim|
-        sim.webhook.run
-      end
+      Simulator.webhook
     rescue => ex
       logger.error("Error in WebhookSender: #{ex.inspect}")
     end
