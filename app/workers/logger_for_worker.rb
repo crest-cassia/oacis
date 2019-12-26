@@ -8,7 +8,7 @@ class LoggerForWorker
   end
 
   def send_by_cable(message, severity = :debug)
-    s = @logger.formatter.call(severity, DateTime.now, nil, message.to_s.force_encoding('utf-8').scrub)
+    s = @logger.formatter.call(severity, DateTime.now, nil, message.force_encoding('utf-8').scrub)
     WorkerLogChannel.broadcast_to('message', {@type => s})
   end
 
