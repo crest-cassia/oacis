@@ -14,7 +14,7 @@ class Simulator
   has_many :parameter_set_filters, dependent: :destroy
   has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
   has_many :save_tasks, dependent: :destroy
-  has_one :webhook, dependent: :destroy
+  belongs_to :webhook
 
   default_scope ->{ where(to_be_destroyed: false) }
 
@@ -25,7 +25,6 @@ class Simulator
 
   before_create :set_position
   after_create :create_simulator_dir
-  after_create :create_a_webhook
   before_destroy :delete_simulator_dir
 
   public
@@ -386,11 +385,5 @@ class Simulator
         csv << attr.map {|keys| r.dig(*keys)}
       end
     end
-  end
-
-  private
-  def create_a_webhook
-    wh = self.build_webhook
-    wh.save
   end
 end

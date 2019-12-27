@@ -116,5 +116,8 @@ namespace :db do
       end
       update_parameter_definition(azr)
     end
+
+  # webhook is created when there is no webhook in MongoDB
+  Webhook.create if Webhook.count == 0
   end
 end
