@@ -96,6 +96,12 @@ describe SimulatorsController do
       expect(assigns(:simulator)).to be_a_new(Simulator)
     end
 
+    it "executable_on is not empty by default" do
+      h = FactoryBot.create(:host)
+      get :new, params: {}
+      expect(assigns(:simulator).executable_on.size).to be 1
+    end
+
     it "@duplicating_simulator is nil" do
       get :new, params: {}
       expect(assigns(:duplicating_simulator)).to be_nil

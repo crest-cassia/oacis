@@ -44,6 +44,9 @@ class SimulatorsController < ApplicationController
   # GET /simulators/new.json
   def new
     @simulator = Simulator.new
+    if @simulator.executable_on.empty? and h = Host.first
+      @simulator.executable_on.push h
+    end
     respond_to do |format|
       format.html
       format.json { render json: @simulator }
