@@ -14,7 +14,6 @@ class Simulator
   has_many :parameter_set_filters, dependent: :destroy
   has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
   has_many :save_tasks, dependent: :destroy
-
   belongs_to :webhook
 
   default_scope ->{ where(to_be_destroyed: false) }
