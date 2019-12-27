@@ -15,6 +15,8 @@ class Simulator
   has_many :analyzers, dependent: :destroy, autosave: true #enable autosave to copy analyzers
   has_many :save_tasks, dependent: :destroy
 
+  belongs_to :webhook
+
   default_scope ->{ where(to_be_destroyed: false) }
 
   validates :name, presence: true, uniqueness: {scope: :to_be_destroyed}, format: {with: /\A\w+\z/}, unless: :to_be_destroyed
@@ -384,6 +386,5 @@ class Simulator
         csv << attr.map {|keys| r.dig(*keys)}
       end
     end
-
   end
 end
