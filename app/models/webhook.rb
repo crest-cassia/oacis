@@ -7,8 +7,6 @@ class Webhook
   field :webhook_condition, type: Symbol , default: WEBHOOK_CONDITION[1]
   field :webhook_triggered, type: Hash, default: {} # save conditios: {sim_id => {ps_id => {created: 0, submitted: 0, running: 0, finished: 0, failed: 0}}}
 
-  has_many :simulator
-
   private
   def http_post(url, data)
     uri = URI.parse(url)
@@ -79,7 +77,7 @@ class Webhook
     webhook = Webhook.first
     return if webhook.webhook_url.length == 0
     conditions={}
-    webhook.simulator.each do |sim|
+    Simulator.all.each do |sim|
       next if sim.runs.count == 0 # do nothing when there is no runs on the simulator
       sim_status = {}
       ParameterSet.runs_status_count_batch(sim.parameter_sets).each do |key, val|

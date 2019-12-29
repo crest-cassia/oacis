@@ -10,8 +10,6 @@ describe Webhook do
       @webhook = Webhook.first
       @webhook.webhook_url = "https://example.com"
       @webhook.save!
-      @sim.webhook = @webhook
-      @sim.save
       http_mock = instance_double(Net::HTTP)
       allow(Net::HTTP).to receive(:new).with(anything(), anything()).and_return(http_mock)
       allow(http_mock).to receive(:request).with(anything()).and_return("Success")
