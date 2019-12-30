@@ -118,6 +118,6 @@ namespace :db do
     end
 
   # webhook is created when there is no webhook in MongoDB
-  Webhook.create if Webhook.count == 0
+  Webhook.create({webhook_condition: Webhook::WEBHOOK_CONDITION[0], status: Webhook::WEBHOOK_STATUS[0]}) if Webhook.count == 0
   end
 end

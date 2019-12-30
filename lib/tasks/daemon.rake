@@ -40,6 +40,10 @@ namespace :daemon do
         cmd = "bundle exec ruby -r '#{Rails.root.join('config','environment.rb')}' '#{File.join(here, 'boot_service_worker.rb')}' start"
         system(cmd)
       end
+      threads << Thread.new do
+        cmd = "bundle exec ruby -r '#{Rails.root.join('config','environment.rb')}' '#{File.join(here, 'boot_webhook_worker.rb')}' start"
+        system(cmd)
+      end
     end
 
     threads.each {|t| t.join }
