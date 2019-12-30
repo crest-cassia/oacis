@@ -86,7 +86,11 @@ class Webhook
       next if sim.runs.count == 0 # do nothing when there is no runs on the simulator
       sim_status = {}
       ParameterSet.runs_status_count_batch(sim.parameter_sets).each do |key, val|
-        sim_status[key.to_s] = val
+        v = {}
+        val.each do |k ,v|
+          v[k.to_s] = v
+        end
+        sim_status[key.to_s] = v
       end
       if sim_status != webhook.webhook_triggered[sim.id.to_s]
         webhook.check_status_and_send(sim, sim_status)
