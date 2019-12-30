@@ -26,7 +26,7 @@ class Webhook
     ps_ids = sim_status.keys
     ps_status = ps_ids.map do |ps_id|
       [:created, :submitted, :running].map do |sym|
-        sim_status[ps_id][sym]
+        sim_status[ps_id][sym.to_s]
       end.inject(:+)
     end
     # when the condition is all_finished
@@ -51,7 +51,7 @@ class Webhook
       triggered_ps_ids = ps_ids.map.with_index do |ps_id, i|
         id = ps_id
         if self.webhook_triggered.try(simulator.id.to_s).try(ps_id)
-          old_status = [:created, :submitted, :running].map do |sym| self.webhook_triggered[simulator.id.to_s][ps_id][sym] end.inject(:+)
+          old_status = [:created, :submitted, :running].map do |sym| self.webhook_triggered[simulator.id.to_s][ps_id][sym.to_s] end.inject(:+)
           id = nil unless ps_status[i] == 0 and old_status > 0
         else
           id = nil unless ps_status[i] == 0
