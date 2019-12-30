@@ -1,7 +1,7 @@
 class Webhook
   include Mongoid::Document
 
-  WEBHOOK_CONDITION = {0=>:each_simulator_finished, 1=>:each_parameter_set_finished}
+  WEBHOOK_CONDITION = [:each_simulator_finished, :each_parameter_set_finished]
   WEBHOOK_STATUS = [:enabled, :disabled]
 
   field :webhook_url, type: String, default: ""
@@ -86,11 +86,11 @@ class Webhook
       next if sim.runs.count == 0 # do nothing when there is no runs on the simulator
       sim_status = {}
       ParameterSet.runs_status_count_batch(sim.parameter_sets).each do |key, val|
-        v = {}
+        h = {}
         val.each do |k ,v|
-          v[k.to_s] = v
+          h[k.to_s] = v
         end
-        sim_status[key.to_s] = v
+        sim_status[key.to_s] = h
       end
       if sim_status != webhook.webhook_triggered[sim.id.to_s]
         webhook.check_status_and_send(sim, sim_status)
