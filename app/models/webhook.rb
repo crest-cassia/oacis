@@ -41,7 +41,7 @@ class Webhook
         This is posted by #oacis.
       EOS
       payload["text"] += <<~EOS
-        Info: All run on <#{url}|Simulator(#{simulator.id.to_s})> was finished.
+        Info: All run on <#{url}|Simulator(#{simulator.name})> was finished.
       EOS
       res = http_post(self.webhook_url, payload)
     end
@@ -68,7 +68,7 @@ class Webhook
       triggered_ps_ids.each do |ps_id|
         url = "/" + simulator.id.to_s + "/" + ps_id
         payload["text"] += <<~EOS
-          Info: All run on <#{url}|ParameterSet(#{ps_id})> was finished.
+          Info: All run on <#{url}|ParameterSet(#{ps_id}) on Simulator(#{simulator.name})> was finished.
         EOS
       end
       if triggered_ps_ids.size > 0
