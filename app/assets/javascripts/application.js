@@ -21,6 +21,7 @@
 //= require runs.js
 //= require simulator.js
 //= require sortable.js
+//= require webhook.js
 //= require dataTables/jquery.dataTables
 //= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
 //= require dataTables/extras/dataTables.colVis

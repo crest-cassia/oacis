@@ -1,18 +1,22 @@
 class Webhook
   include Mongoid::Document
 
-  WEBHOOK_CONDITION = {0=>:all_run_finished, 1=>:each_ps_finished}
+  WEBHOOK_CONDITION = {0=>:each_simulator_finished, 1=>:each_parameter_set_finished}
+  WEBHOOK_STATUS = [:enabled, :disabled]
 
   field :webhook_url, type: String, default: ""
-  field :webhook_condition, type: Symbol , default: WEBHOOK_CONDITION[1]
+  field :webhook_condition, type: Symbol , default: WEBHOOK_CONDITION[0]
+  field :status, type: Symbol , default: WEBHOOK_STATUS[0]
   field :webhook_triggered, type: Hash, default: {} # save conditios: {sim_id => {ps_id => {created: 0, submitted: 0, running: 0, finished: 0, failed: 0}}}
+  field :status
 
-  private
+  public
   def http_post(url, data)
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
-    req = Net::HTTP::Post.new(url)
-    req.set_form_data(data)
+    http.use_ssl = true
+    req = Net::HTTP::Post.new(uri.path)
+    req.set_form_data(payload: data.to_json)
     res = http.request(req)
     return res
   end
@@ -39,7 +43,7 @@ class Webhook
       payload["text"] += <<~EOS
         Info: All run on <a href="#{url}">Simulator("#{simulator.id.to_s}")</a> was finished.
       EOS
-      res = http_post(self.webhook_url, {"payload"=>payload})
+      res = http_post(self.webhook_url, payload)
     end
 
     # when the condition is each_ps_finished
@@ -68,7 +72,7 @@ class Webhook
         EOS
       end
       if triggered_ps_ids.size > 0
-        res = http_post(self.webhook_url, {"payload"=>payload})
+        res = http_post(self.webhook_url, payload)
       end
     end
   end
@@ -76,6 +80,7 @@ class Webhook
   def self.run
     webhook = Webhook.first
     return if webhook.webhook_url.length == 0
+    return if webhook.status == :disabled
     conditions={}
     Simulator.all.each do |sim|
       next if sim.runs.count == 0 # do nothing when there is no runs on the simulator

@@ -1,0 +1,23 @@
+.page-header
+  %h1= "Webhook for Slack"
+
+%table.table.table-striped.table-condensed
+  %thead
+  %tbody
+    %tr
+      %th Webhook URL
+      %td= @webhook.webhook_url
+    %tr
+      %th Polling
+      %td
+        = raw(webhook_status_label(@webhook.status))
+        - if OACIS_ACCESS_LEVEL == 2
+          %a{href: webhook__toggle_status_path}
+            %i.fa.fa-power-off.padding-left-half-em{data: {toggle: 'tooltip', 'original-title': 'suspend/restart polling', placement: 'bottom'}}
+    %tr
+      %th Webhook Condition
+      %td= raw(@webhook.webhook_condition.to_s.gsub(/_/, ' ').capitalize)
+
+- if OACIS_ACCESS_LEVEL == 2
+  = link_to('Edit', webhook_edit_path, class: 'btn btn-info')
+  %button.btn.btn-warning#webhook_test{type: "button", "data-id" => @webhook.id.to_s, "data-_test-url" => webhook__test_path} Test

@@ -40,5 +40,9 @@
      "description":"A short explanation about the analyzer.<br/>(Markdown format is supported.)",
      "executable_on":"Specify the hosts on which the simulator is executed.",
      "host_for_auto_run":"The host to which analyzers made by \"auto-run\" is submitted."
-   }
+   },
+  "webhook": {
+    "webhook_url":"webhook_url",
+    "webhook_condition":"webhook_condition"
+  }
 }

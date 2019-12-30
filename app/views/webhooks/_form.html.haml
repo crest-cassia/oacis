@@ -1,0 +1,16 @@
+= form_for @webhook, html: {class: ['form-horizontal','wide-tooltip']}, builder: ApplicationFormBuilder do |f|
+  - error_messages = @webhook.errors.full_messages
+  = render partial: 'shared/error_messages', locals: {error_messages: error_messages}
+  .form-group
+    = f.label_c(:webhook_url)
+    .col-md-3
+      = f.text_field(:webhook_url, class: ['form-control'], data: tooltip_data(:webhook,:webhook_url))
+  .form-group
+    = f.label_c(:webhook_condition)
+    .col-md-3
+      = f.select(:webhook_condition, {Webhook::WEBHOOK_CONDITION[0].to_s.gsub(/_/, ' ').capitalize => Webhook::WEBHOOK_CONDITION[0].to_s, Webhook::WEBHOOK_CONDITION[1].to_s.gsub(/_/, ' ').capitalize => Webhook::WEBHOOK_CONDITION[1].to_s}, {},{class: 'form-control', data: tooltip_data(:webhook,:webhook_condition)})
+  .form-group
+    .col-md-4.col-md-offset-2
+      = f.submit('Save', class: 'btn btn-primary')
+      = link_to('Cancel', webhook_path, class: 'btn btn-default')
+      %button.btn.btn-warning#webhook_test{type: "button", "data-id" => @webhook.id.to_s, "data-_test-url" => webhook__test_path} Test

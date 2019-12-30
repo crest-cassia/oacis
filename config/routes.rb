@@ -108,5 +108,11 @@ Rails.application.routes.draw do
   resources :host_groups, only: host_group_actions do
   end
 
+  get "webhook", to: "webhooks#show"
+  get "webhook/edit", to: "webhooks#edit" if OACIS_ACCESS_LEVEL == 2
+  patch "webhook", to: "webhooks#update" if OACIS_ACCESS_LEVEL == 2
+  post "webhook/_test", to: "webhooks#_test" if OACIS_ACCESS_LEVEL == 2 # for ajax to trigger the webhook
+  get "webhook/_toggle_status", to: "webhooks#_toggle_status" if OACIS_ACCESS_LEVEL == 2
+
   root :to => "simulators#index"
 end
