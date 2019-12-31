@@ -81,9 +81,10 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
 - mongoDBをインストール
     - [公式ドキュメント](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)の手順に従う
       - インストール後、macOSのサービスとして起動(`brew services start mongodb-community`)すれば、以後ログイン時にmongodが自動的に起動するようになる
-- bundlerのインストール（Ruby2.6.0以降ではbundlerは標準ライブラリとして添付されるため、この行程は不要）
+- bundlerのインストールと最新版への更新
     ``` sh
     gem install bundler
+    gem update bundler
     rbenv rehash
     ```
     `which bundle`を実行しコマンドへのパスが表示されればインストールに成功している
@@ -113,9 +114,10 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     を実行して、`ruby 2.5.1....`と出力されれば成功
 - mongoDBをインストール
     - [公式ドキュメント](https://docs.mongodb.com/manual/administration/install-on-linux/)の手順に従う
-- bundlerのインストール（Ruby2.6.0以降ではbundlerは標準ライブラリとして添付されるため、この行程は不要）
+- bundlerのインストールと最新版への更新
     ``` sh
     gem install bundler
+    gem update bundler
     rbenv rehash
     ```
     `which bundle`を実行しコマンドへのパスが表示されればインストールに成功している
@@ -258,6 +260,7 @@ bundle exec rake daemon:stop            # tentatively stop OACIS
 git pull origin master                  # get the latest source code of OACIS
 git pull origin master --tags
 git submodule update --init --recursive
+gem update bundler                      # update bundler gem
 bundle install                          # install dependency
 bundle exec rake daemon:start           # restart OACIS
 ```

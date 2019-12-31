@@ -82,9 +82,10 @@ Here we show the instructions on how to setup prerequisites using homebrew.
 - installing MongoDB
     - Follow the instruction of [the official document.](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
         - After installation, start MongoDB as a service (`brew services start mongodb-community`).
-- installing bundler (You can skip this process if you are using Ruby 2.6.0 or later. Bundler is built into Ruby as a standard library.)
+- install and update bundler
     ``` sh
     gem install bundler
+    gem udpate bundler
     rbenv rehash
     ```
     - After installation, run `which bundle` to verify that the bundle command is available.
@@ -114,9 +115,10 @@ Here we show the instruction on how to setup prerequisites using apt-get, using 
     - verify output is like `ruby 2.5.1....`.
 - install mongoDB
     - Follow the instruction of [the official document.](https://docs.mongodb.com/manual/administration/install-on-linux/)
-- install bundler (You can skip this process if you are using Ruby 2.6.0 or later. Bundler is built into Ruby as a standard library.)
+- install and update bundler
     ``` sh
     gem install bundler
+    gem update bundler
     rbenv rehash
     ```
     - After installation, run `which bundle` to verify that the bundle command is available.
@@ -267,6 +269,7 @@ bundle exec rake daemon:stop            # tentatively stop OACIS
 git pull origin master                  # get the latest source code of OACIS
 git pull origin master --tags
 git submodule update --init --recursive
+gem update bundler                      # update bundler
 bundle install                          # install dependency
 bundle exec rake daemon:start           # restart OACIS
 ```
