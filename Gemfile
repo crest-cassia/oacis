@@ -9,6 +9,7 @@ gem "ed25519", '>= 1.2', '< 2.0'  # support openssh format: https://github.com/n
 gem "bcrypt_pbkdf", '>= 1.0', '< 2.0'
 gem "jbuilder"
 gem "redis", '~> 3.0'
+gem "e2mmap"  # since ruby 2.7.0, e2mmap is removed from the standard library
 
 gem 'bootsnap', require: false
 gem 'irb', require: false  # from Ruby2.6.0, irb is distributed as a default gem
