@@ -1,6 +1,7 @@
 language: ruby
 rvm:
-  - "2.6.0"
+  - "2.7.0"
+  - "2.6.5"
 services:
   - mongodb
   - redis-server
