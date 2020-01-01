@@ -1,4 +1,5 @@
-source 'https://rubygems.org'
+# source 'https://rubygems.org'
+# Commented out to avoid duplicate `source`. Primary source is specified in rb_call/Gemfile.
 
 gem 'rails', '~> 5.2'
 gem "puma"
