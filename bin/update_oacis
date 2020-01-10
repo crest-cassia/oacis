@@ -6,6 +6,7 @@ bundle exec rake daemon:stop
 git pull origin
 git submodule update --init --recursive
 ./bin/check_oacis_env
-bundle
+gem update bundler
+bundle install
 bundle exec rake daemon:start
 
