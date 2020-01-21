@@ -31,19 +31,31 @@ class Webhook
     end
     # when the condition is all_finished
     if self.webhook_condition == WEBHOOK_CONDITION[0] and ps_status.inject(:+) == 0
-      url = "/" + simulator.id.to_s
-      sim_name = simulator.name
-      payload={
-        "username": "oacis bot",
-        "icon_url": "https://slack.com/img/icons/app-57.png"
-      }
-      payload["text"] = <<~EOS
-        This is posted by #oacis.
-      EOS
-      payload["text"] += <<~EOS
-        Info: All run on <#{url}|Simulator(#{simulator.name})> was finished.
-      EOS
-      res = http_post(self.webhook_url, payload)
+      old_num_finished = ps_ids.map do |ps_id|
+        num = self.webhook_triggered.try(simulator.id.to_s).try(ps_id).try(:fetch, "finished")
+        num = 0 unless num
+        num
+      end.inject(:+)
+      num_finished = ps_ids.map do |ps_id|
+        num = sim_status[ps_id].try(:fetch, "finished")
+        num = 0 unless num
+        num
+      end.inject(:+)
+      if num_finished > old_num_finished
+        url = "/" + simulator.id.to_s
+        sim_name = simulator.name
+        payload={
+          "username": "oacis bot",
+          "icon_url": "https://slack.com/img/icons/app-57.png"
+        }
+        payload["text"] = <<~EOS
+          This is posted by #oacis.
+        EOS
+        payload["text"] += <<~EOS
+          Info: All run on <#{url}|Simulator(#{simulator.name})> was finished.
+        EOS
+        res = http_post(self.webhook_url, payload)
+      end
     end
 
     # when the condition is each_ps_finished
@@ -51,10 +63,11 @@ class Webhook
       triggered_ps_ids = ps_ids.map.with_index do |ps_id, i|
         id = ps_id
         id = nil if ps_status[i] > 0
-        if self.webhook_triggered.try(simulator.id.to_s).try(ps_id)
-          old_status = [:created, :submitted, :running].map do |sym| self.webhook_triggered[simulator.id.to_s][ps_id][sym.to_s] end.inject(:+)
-          id = nil if old_status == 0
-        end
+        old_num_finished = self.webhook_triggered.try(simulator.id.to_s).try(ps_id).try(:fetch, "finished")
+        old_num_finished = 0 unless old_num_finished
+        num_finished = sim_status[ps_id].try(:fetch, "finished")
+        num_finished = 0 unless num_finished
+        id = nil if num_finished <= old_num_finished
         id
       end.compact
       payload={
