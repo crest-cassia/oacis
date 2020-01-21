@@ -50,11 +50,10 @@ class Webhook
     if self.webhook_condition == WEBHOOK_CONDITION[1]
       triggered_ps_ids = ps_ids.map.with_index do |ps_id, i|
         id = ps_id
+        id = nil if ps_status[i] > 0
         if self.webhook_triggered.try(simulator.id.to_s).try(ps_id)
           old_status = [:created, :submitted, :running].map do |sym| self.webhook_triggered[simulator.id.to_s][ps_id][sym.to_s] end.inject(:+)
-          id = nil unless ps_status[i] == 0 and old_status > 0
-        else
-          id = nil unless ps_status[i] == 0
+          id = nil if old_status == 0
         end
         id
       end.compact
