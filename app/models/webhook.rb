@@ -8,7 +8,6 @@ class Webhook
   field :webhook_condition, type: Symbol , default: WEBHOOK_CONDITION[0]
   field :status, type: Symbol , default: WEBHOOK_STATUS[0]
   field :webhook_triggered, type: Hash, default: {} # save conditios: {sim_id => {ps_id => {created: 0, submitted: 0, running: 0, finished: 0, failed: 0}}}
-  field :status
 
   public
   def http_post(url, data)
@@ -51,10 +50,10 @@ class Webhook
           "icon_url": "https://slack.com/img/icons/app-57.png"
         }
         payload["text"] = <<~EOS
-          This is posted by #oacis.
+          This message is posted by #oacis[#{`hostname`.strip}].
         EOS
         payload["text"] += <<~EOS
-          Info: All run on <#{url}|Simulator(#{simulator.name})> was finished.
+          Info: All run was finished on Simulator(#{simulator.name}) <#{url}>
         EOS
         res = http_post(self.webhook_url, payload)
       end
@@ -78,12 +77,12 @@ class Webhook
           "icon_url": "https://slack.com/img/icons/app-57.png"
         }
         payload["text"] = <<~EOS
-          This is posted by #oacis.
+          This message is posted by #oacis[#{`hostname`.strip}].
         EOS
         triggered_ps_ids.each do |ps_id|
           url = "/" + simulator.id.to_s + "/" + ps_id
           payload["text"] += <<~EOS
-            Info: All run on <#{url}|ParameterSet(#{ps_id}) on Simulator(#{simulator.name})> was finished.
+            Info: All run was finished on ParameterSet(#{ps_id}) of Simulator(#{simulator.name}) <#{url}>
           EOS
         end
         res = http_post(self.webhook_url, payload)
