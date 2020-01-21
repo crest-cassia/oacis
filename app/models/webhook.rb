@@ -32,16 +32,18 @@ class Webhook
     # when the condition is all_finished
     if self.webhook_condition == WEBHOOK_CONDITION[0] and ps_status.inject(:+) == 0
       old_num_finished = ps_ids.map do |ps_id|
-        num = self.webhook_triggered.try(simulator.id.to_s).try(ps_id).try(:fetch, "finished")
-        num = 0 unless num
-        num
+        num = self.webhook_triggered.try(:fetch, simulator.id.to_s, {}).try(:fetch, ps_id, {}).try(:fetch, "finished", 0)
+      end.inject(:+)
+      old_num_failed = ps_ids.map do |ps_id|
+        num = self.webhook_triggered.try(:fetch, simulator.id.to_s, {}).try(:fetch, ps_id, {}).try(:fetch, "failde", 0)
       end.inject(:+)
       num_finished = ps_ids.map do |ps_id|
-        num = sim_status[ps_id].try(:fetch, "finished")
-        num = 0 unless num
-        num
+        num = sim_status[ps_id]["finished"]
       end.inject(:+)
-      if num_finished > old_num_finished
+      num_failed = ps_ids.map do |ps_id|
+        num = sim_status[ps_id]["failed"]
+      end.inject(:+)
+      if (num_finished+num_failed) > (old_num_finished+old_num_failed)
         url = "/" + simulator.id.to_s
         sim_name = simulator.name
         payload={
@@ -63,11 +65,11 @@ class Webhook
       triggered_ps_ids = ps_ids.map.with_index do |ps_id, i|
         id = ps_id
         id = nil if ps_status[i] > 0
-        old_num_finished = self.webhook_triggered.try(simulator.id.to_s).try(ps_id).try(:fetch, "finished")
-        old_num_finished = 0 if old_num_finished.nil?
-        num_finished = sim_status[ps_id].try(:fetch, "finished")
-        num_finished = 0 if num_finished.nil?
-        id = nil unless num_finished > old_num_finished
+        old_num_finished = self.webhook_triggered.try(:fetch, simulator.id.to_s, {}).try(:fetch, ps_id, {}).try(:fetch, "finished", 0)
+        old_num_failed = self.webhook_triggered.try(:fetch, simulator.id.to_s, {}).try(:fetch, ps_id, {}).try(:fetch, "failed", 0)
+        num_finished = sim_status[ps_id]["finished"]
+        num_failed = sim_status[ps_id]["failed"]
+        id = nil unless (num_finished+num_failed) > (old_num_finished+old_num_failed)
         id
       end.compact
       if triggered_ps_ids.size > 0
