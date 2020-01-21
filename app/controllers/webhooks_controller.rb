@@ -28,7 +28,7 @@ class WebhooksController < ApplicationController
       "icon_url": "https://slack.com/img/icons/app-57.png"
     }
     payload["text"] = <<~EOS
-      A test message is posted by #oacis.
+      A test message is posted by #oacis[#{`hostname`.strip}].
     EOS
     webhook = Webhook.first
     # there is no tmp_url via test on webhook#show page
