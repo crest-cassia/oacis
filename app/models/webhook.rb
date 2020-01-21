@@ -70,20 +70,20 @@ class Webhook
         id = nil if num_finished <= old_num_finished
         id
       end.compact
-      payload={
-        "username": "oacis bot",
-        "icon_url": "https://slack.com/img/icons/app-57.png"
-      }
-      payload["text"] = <<~EOS
-        This is posted by #oacis.
-      EOS
-      triggered_ps_ids.each do |ps_id|
-        url = "/" + simulator.id.to_s + "/" + ps_id
-        payload["text"] += <<~EOS
-          Info: All run on <#{url}|ParameterSet(#{ps_id}) on Simulator(#{simulator.name})> was finished.
-        EOS
-      end
       if triggered_ps_ids.size > 0
+        payload={
+          "username": "oacis bot",
+          "icon_url": "https://slack.com/img/icons/app-57.png"
+        }
+        payload["text"] = <<~EOS
+          This is posted by #oacis.
+        EOS
+        triggered_ps_ids.each do |ps_id|
+          url = "/" + simulator.id.to_s + "/" + ps_id
+          payload["text"] += <<~EOS
+            Info: All run on <#{url}|ParameterSet(#{ps_id}) on Simulator(#{simulator.name})> was finished.
+          EOS
+        end
         res = http_post(self.webhook_url, payload)
       end
     end
