@@ -1,6 +1,6 @@
 class WebhookWorker < Worker
 
-  INTERVAL = 5
+  INTERVAL = 60
 
   WORKER_ID = :webhook
   WORKER_PID_FILE = Rails.root.join('tmp', 'pids', "webhook_worker.pid")

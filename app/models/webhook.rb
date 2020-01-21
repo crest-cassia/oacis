@@ -64,10 +64,10 @@ class Webhook
         id = ps_id
         id = nil if ps_status[i] > 0
         old_num_finished = self.webhook_triggered.try(simulator.id.to_s).try(ps_id).try(:fetch, "finished")
-        old_num_finished = 0 unless old_num_finished
+        old_num_finished = 0 if old_num_finished.nil?
         num_finished = sim_status[ps_id].try(:fetch, "finished")
-        num_finished = 0 unless num_finished
-        id = nil if num_finished <= old_num_finished
+        num_finished = 0 if num_finished.nil?
+        id = nil unless num_finished > old_num_finished
         id
       end.compact
       if triggered_ps_ids.size > 0
