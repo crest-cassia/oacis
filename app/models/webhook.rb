@@ -3,6 +3,10 @@ class Webhook
 
   WEBHOOK_CONDITION = [:each_simulator_finished, :each_parameter_set_finished]
   WEBHOOK_STATUS = [:enabled, :disabled]
+  SLACK_PAYLOAD_BASE = {
+          "username": "oacis bot",
+          "icon_url": "https://slack.com/img/icons/app-57.png"
+        }
 
   field :webhook_url, type: String, default: ""
   field :webhook_condition, type: Symbol , default: WEBHOOK_CONDITION[0]
@@ -45,10 +49,7 @@ class Webhook
       if (num_finished+num_failed) > (old_num_finished+old_num_failed)
         url = "/" + simulator.id.to_s
         sim_name = simulator.name
-        payload={
-          "username": "oacis bot",
-          "icon_url": "https://slack.com/img/icons/app-57.png"
-        }
+        payload = Webhook:SLACK_PAYLOAD_BASE:
         payload["text"] = <<~EOS
           This message is posted by #oacis[#{`hostname`.strip}].
         EOS
@@ -72,10 +73,7 @@ class Webhook
         id
       end.compact
       if triggered_ps_ids.size > 0
-        payload={
-          "username": "oacis bot",
-          "icon_url": "https://slack.com/img/icons/app-57.png"
-        }
+        payload = Webhook:SLACK_PAYLOAD_BASE:
         payload["text"] = <<~EOS
           This message is posted by #oacis[#{`hostname`.strip}].
         EOS

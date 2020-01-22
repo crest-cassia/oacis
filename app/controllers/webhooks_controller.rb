@@ -23,10 +23,7 @@ class WebhooksController < ApplicationController
   # POST /webhook/_test
   def _test
     tmp_url = permitted_webhook_params[:webhook_url]
-    payload={
-      "username": "oacis bot",
-      "icon_url": "https://slack.com/img/icons/app-57.png"
-    }
+    payload = Webhook::SLACK_PAYLOAD_BASE
     payload["text"] = <<~EOS
       A test message is posted by #oacis[#{`hostname`.strip}].
     EOS
