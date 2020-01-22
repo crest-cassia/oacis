@@ -49,7 +49,7 @@ class Webhook
       if (num_finished+num_failed) > (old_num_finished+old_num_failed)
         url = "/" + simulator.id.to_s
         sim_name = simulator.name
-        payload = Webhook:SLACK_PAYLOAD_BASE:
+        payload = SLACK_PAYLOAD_BASE
         payload["text"] = <<~EOS
           This message is posted by #oacis[#{`hostname`.strip}].
         EOS
@@ -73,7 +73,7 @@ class Webhook
         id
       end.compact
       if triggered_ps_ids.size > 0
-        payload = Webhook:SLACK_PAYLOAD_BASE:
+        payload = SLACK_PAYLOAD_BASE
         payload["text"] = <<~EOS
           This message is posted by #oacis[#{`hostname`.strip}].
         EOS
