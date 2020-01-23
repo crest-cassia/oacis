@@ -13,7 +13,7 @@ class Webhook
   field :status, type: Symbol , default: WEBHOOK_STATUS[0]
   field :webhook_triggered, type: Hash, default: {} # save conditios: {sim_id => {ps_id => {created: 0, submitted: 0, running: 0, finished: 0, failed: 0}}}
 
-  valid: :is_url_start_with_slack_url?
+  validate: :is_url_start_with_slack_url?
 
   public
   def http_post(url, data)
