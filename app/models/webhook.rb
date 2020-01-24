@@ -10,7 +10,7 @@ class Webhook
 
   field :webhook_url, type: String, default: "https://hooks.slack.com/services/hogehoge"
   field :webhook_condition, type: Symbol , default: WEBHOOK_CONDITION[0]
-  field :status, type: Symbol , default: WEBHOOK_STATUS[0]
+  field :status, type: Symbol , default: WEBHOOK_STATUS[1]
   field :webhook_triggered, type: Hash, default: {} # save conditios: {sim_id => {ps_id => {created: 0, submitted: 0, running: 0, finished: 0, failed: 0}}}
 
   validate :is_url_start_with_slack_url?
