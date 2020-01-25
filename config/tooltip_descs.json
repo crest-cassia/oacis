@@ -42,7 +42,7 @@
      "host_for_auto_run":"The host to which analyzers made by \"auto-run\" is submitted."
    },
   "webhook": {
-    "webhook_url":"webhook_url",
-    "webhook_condition":"webhook_condition"
+    "webhook_url":"The url must start with \"https://hooks.slack.com/services/\".",
+    "webhook_condition":"The status of all run on \"Each Simulator\" or on \"Each PS\" becomes finished."
   }
 }
