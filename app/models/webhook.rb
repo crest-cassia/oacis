@@ -8,12 +8,12 @@ class Webhook
           "icon_url": "https://slack.com/img/icons/app-57.png"
         }
 
-  field :webhook_url, type: String, default: "https://hooks.slack.com/services/hogehoge"
+  field :webhook_url, type: String, default: ""
   field :webhook_condition, type: Symbol , default: WEBHOOK_CONDITION[0]
-  field :status, type: Symbol , default: WEBHOOK_STATUS[1]
+  field :status, type: Symbol , default: WEBHOOK_STATUS[0]
   field :webhook_triggered, type: Hash, default: {} # save conditios: {sim_id => {ps_id => {created: 0, submitted: 0, running: 0, finished: 0, failed: 0}}}
 
-  validate :is_url_start_with_slack_url?
+  validate :is_url_start_with_slack_url_or_blank?
 
   public
   def http_post(url, data)
@@ -115,9 +115,9 @@ class Webhook
   end
 
   private
-  def is_url_start_with_slack_url?
-    unless self.webhook_url.starts_with?("https://hooks.slack.com/services/")
-      errors.add(:webhook_url, "slack webhook url must start with \"https://hooks.slack.com/services/\"")
+  def is_url_start_with_slack_url_or_blank?
+    unless self.webhook_url.empty? or self.webhook_url.starts_with?("https://hooks.slack.com/services/")
+      errors.add(:webhook_url, "slack webhook url must be empty or start with \"https://hooks.slack.com/services/\"")
     end
   end
 end

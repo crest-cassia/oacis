@@ -8,6 +8,7 @@ describe Webhook do
       @sim = FactoryBot.create(:simulator, parameter_sets_count: 2, runs_count: 0)
       Webhook.create() if Webhook.count == 0
       @webhook = Webhook.first
+      @webhook.update_attribute(:webhook_url, "https://hooks.slack.com/services/hogehoge")
       @http_mock = instance_double(Net::HTTP)
       allow(Net::HTTP).to receive(:new).with(anything(), anything()).and_return(@http_mock)
       allow(@http_mock).to receive(:use_ssl=).with(anything()).and_return("Anything")
