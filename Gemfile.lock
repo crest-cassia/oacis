@@ -107,7 +107,6 @@ GEM
       ruby_parser (~> 3.5)
     i18n (1.7.0)
       concurrent-ruby (~> 1.0)
-    irb (1.0.0)
     jbuilder (2.9.1)
       activesupport (>= 4.2.0)
     jquery-datatables-rails (3.2.0)
@@ -265,7 +264,6 @@ DEPENDENCIES
   faker
   font-awesome-rails
   haml-rails
-  irb
   jbuilder
   jquery-datatables-rails (~> 3.2.0)
   jquery-rails
