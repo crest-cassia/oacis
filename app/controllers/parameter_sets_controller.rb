@@ -51,13 +51,18 @@ class ParameterSetsController < ApplicationController
       key = defn.key
       parameters = params[:v].dup
       if parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
-        values = parameters[key].split(',').map {|x|
+        casted[key] = parameters[key].split(',').map {|x|
           ParametersUtil.cast_value(x.strip, defn.type)
         }
-        casted[key] = values.compact.uniq.sort
       else
         casted[key] = [parameters.has_key?(key) ? ParametersUtil.cast_value(parameters[key], defn.type) : defn.default]
       end
+      if casted[key].any? {|x| x == nil }
+        @param_set.errors.add(:base, "Invalid parameter is given for #{key}")
+        render action: "new"
+        return
+      end
+      casted[key] = casted[key].uniq.sort
     end
     if MAX_CREATION_SIZE < casted.values.map(&:size).inject(1, :*)
       flash[:alert] = "You cannot create more than #{MAX_CREATION_SIZE} ParameterSets at once."
@@ -76,7 +81,7 @@ class ParameterSetsController < ApplicationController
       num_created_ps = simulator.reload.parameter_sets.count - previous_num_ps
       num_created_runs = simulator.runs.count - previous_num_runs
       if num_created_ps == 0 and num_created_runs == 0
-        @param_set.errors.add(:base, "No parameter set is created")
+        @param_set.errors.add(:base, "Identical ParameterSet already exists. No ParameterSet was created.")
         render action: "new"
       else
         flash[:notice] = "#{num_created_ps} ParameterSets and #{num_created_runs} runs were created"
