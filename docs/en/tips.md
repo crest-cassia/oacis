@@ -17,10 +17,12 @@ We are going to explain how to make a backup of the data managed by OACIS.
 
 #### Backup
 
-First, run the following command in order to make a backup of MongoDB. The dumped files are created in *"dump"* directory. Make a backup of this directory.
+First, run the following command in order to make a backup of MongoDB.
+The following command is available for OACIS v3.8.0 or later. If you're using an older version of OACIS, update OACIS or use the command line in the lower line.
 
 {% highlight sh %}
-mongodump --db oacis_development
+./bin/oacis_dump_db
+(for v3.7 or prior: mongodump --db oacis_development )
 {% endhighlight %}
 
 Second, we need to make a backup of the files in the file system. All the files are stored in **"OACIS_PROJECT_ROOT/public/Result_development"** directory, where *"OACIS_PROJECT_ROOT"* is the directory where the source code of OACIS is cloned.
@@ -36,8 +38,8 @@ rsync -av -P --delete /path/to/OACIS/public/Result_development /backup_dir
 Run the following command. Please replace the path of the second line depending on the actual path.
 
 {% highlight sh %}
-mongo  oacis_development --eval 'db.dropDatabase();'
-mongorestore --db oacis_development #{path to your dump file, e.g. /path/to/DB_data/dump/oacis_development}
+./bin/oacis_restore_db
+(for v3.7 or prior: mongorestore --db oacis_development --drop /path/to/DB_data/dump/oacis_development )
 {% endhighlight %}
 
 (Warning) The above command is deleting the existing record once. In other words, the old documents are overwritten.

@@ -18,10 +18,12 @@ OACISによって管理されているデータは、DB上のレコード（Mong
 
 #### バックアップ
 
-まずDBのコレクションを保存するために以下のコマンドを実行します。dumpというディレクトリが作成され、その中にデータがダンプされます。
+まずMongo DBのコレクションを保存するために以下のコマンドを実行します。
+v3.8.0以降で利用できますので、古いOACISを利用している人はOACISを更新するか、下のコマンドを利用してください。
 
 {% highlight sh %}
-mongodump --db oacis_development
+./bin/oacis_dump_db
+(for v3.7 or prior: mongodump --db oacis_development )
 {% endhighlight %}
 
 ファイルシステムのデータについては *OACIS_PROJECT_ROOT/public/Result_development* 以下のファイルを全て保存してください。
@@ -36,8 +38,8 @@ rsync -av -P --delete /path/to/OACIS/public/Result_development /backup_dir
 下記のコマンドを実行します。
 
 {% highlight sh %}
-mongo  oacis_development --eval 'db.dropDatabase();'
-mongorestore --db oacis_development /path/to/DB_data/dump/oacis_development
+./bin/oacis_restore_db
+(for v3.7 or prior: mongorestore --db oacis_development --drop /path/to/DB_data/dump/oacis_development )
 {% endhighlight %}
 
 （注）上記のコマンドはDB内の既存のレコードを一度削除しています。つまり上書きしています。
