@@ -58,7 +58,7 @@ class ParameterSetsController < ApplicationController
         casted[key] = [parameters.has_key?(key) ? ParametersUtil.cast_value(parameters[key], defn.type) : defn.default]
       end
       if casted[key].any? {|x| x == nil }
-        flash[:alert] = "Invalid parameter is given for #{key}"
+        @param_set.errors.add(:base, "Invalid parameter is given for #{key}")
         render action: "new"
         return
       end
