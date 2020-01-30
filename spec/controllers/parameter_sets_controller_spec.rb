@@ -145,19 +145,6 @@ describe ParameterSetsController do
           expect(response).to redirect_to(@sim)
         end
 
-        it "non-castable elements are skipped" do
-          @valid_param.update(v: {"L" => "1, 2", "T" => "1.0, abc"})
-          expect {
-            post :create, params: @valid_param
-          }.to change { ParameterSet.count }.by(2)
-        end
-
-        it "redirects to parameter set when single paraemter set is created" do
-          @valid_param.update(v: {"L" => "1", "T" => "1.0, abc"})
-          post :create, params: @valid_param
-          expect(response).to redirect_to(ParameterSet.order_by(id: :asc).last)
-        end
-
         it "does not create duplicated parameter set" do
           @valid_param.update(v: {"L" => "1", "T" => "1.0, 1.0"})
           expect {
@@ -277,6 +264,12 @@ describe ParameterSetsController do
       end
 
       it "re-renders the 'new' template" do
+        post :create, params: @invalid_param
+        expect(response).to render_template("new")
+      end
+
+      it "when non-castable elements are included in CSV" do
+        @invalid_param.update(v: {"L" => "10", "T" => "1.0,abc"})
         post :create, params: @invalid_param
         expect(response).to render_template("new")
       end
