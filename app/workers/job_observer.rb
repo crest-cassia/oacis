@@ -98,7 +98,7 @@ class JobObserver
     b = true
     if rate > 0.95
       b = false
-      logger.error("no enough space left on device.")
+      logger.error("not enough space left on device.")
     elsif rate > 0.9
       logger.warn("little space left on device.")
     end
