@@ -97,7 +97,7 @@ To execute a simulator from OACIS, simulators must satisfy the following require
 ## Sample scripts for configuring simulators
 
 As we mentioned in the previous section, the program must receive input parameters either from command-line arguments or from JSON.
-Probably most of your simulation programs do not conform to the format of input parameters. In order to implement your simulators, you need to prepare a scritp that wraps your simulation program in order to adjust the I/O format. Let us call the script "wrap script" from now on.
+Probably most of your simulation programs do not conform to the format of input parameters. In order to implement your simulators, you need to prepare a script that wraps your simulation program in order to adjust the I/O format. Let us call the script "wrap script" from now on.
 It is easier to prepare a wrap script using a light-weight scripting language such as a shell script, Python, or Ruby.
 After you have prepared a wrap script, register the path to the wrap script as the simulation command in OACIS. OACIS executes the wrap script, which in turn executes the actual simulation program.
 
