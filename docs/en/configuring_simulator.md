@@ -219,7 +219,7 @@ The following is the list of items we set when registering a simulator.
 | Local Preprocess Script    | Script executed at OACIS server before the job. If this is empty, no pre-process is executed. |
 | Preprocess Script          | Script executed at the computational host before the job. If this is empty, no pre-process is executed. |
 | Command *                  | The command to execute the simulator. It is better to specify by the absolute path or the relative path from the home directory. (Ex. *~/path/to/simulator.out*) |
-| Pirnt version command      | The command to print the simulator version information to standard output. (Ex. *~/path/to/simulator.out --version*) |
+| Print version command      | The command to print the simulator version information to standard output. (Ex. *~/path/to/simulator.out --version*) |
 | Input type                 | How the input parameter is given to the simulator. Select either "Argument" or "JSON". |
 | Support mpi                | Whether the simulator is an MPI parallel program or not. If you enable this option, you can specify the number of MPI processes when making a Run. |
 | Support omp                | Whether the simulator is an OpenMP parallel program or not. If you enable this option, you can specify the number of OpenMP threads when making a Run. |
@@ -255,7 +255,7 @@ When you select "JSON", the input parameters are written in a JSON file `_input.
 
 ## [Advanced] MPI, OpenMP jobs
 
-If you enable the checks of **Suppot MPI** or **Support OMP** when reigstering a simualtor, you can specify the number of process or threads when making a Run.  The fields to specify these numbers will appear.
+If you enable the checks of **Support MPI** or **Support OMP** when registering a simulator, you can specify the number of process or threads when making a Run.  The fields to specify these numbers will appear.
 
 ![Specifying MPI processes, OpenMP threads]({{ site.baseurl }}/images/new_run_mpi_omp_support.png){:width="500px"}
 
@@ -276,7 +276,7 @@ mpiexec -n $OACIS_MPI_PROCS ~/path/to/simulator.out
 Some simulation programs require a pre-process before doing an actual simulation. For example, a simulator may require preparation of an input file or may require the copy of some libraries to a proper directory.
 However, it is ocassionally impossible to do such a pre-process in a job script.
 
-For example, in some HPC environments, some scripting language such as Ruby or Python is not installed on the copmutational node. They are sometimes installed only on login nodes hence users must use the script language in the login nodes. In such cases, a pre-process must be executed on the login nodes if your pre-process is written in a scripting language.
+For example, in some HPC environments, some scripting language such as Ruby or Python is not installed on the computational node. They are sometimes installed only on login nodes hence users must use the script language in the login nodes. In such cases, a pre-process must be executed on the login nodes if your pre-process is written in a scripting language.
 
 To avoid such issues, OACIS provides a way to define a pre-process for each simulator.
 This pre-process is executed on the OACIS server (called "local pre-process", available since v2.12.0) and/or the login node of the remote host (called "pre-process") before submitting the job. Therefore, you can avoid the problem described above.
