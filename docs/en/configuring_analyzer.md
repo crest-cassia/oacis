@@ -35,7 +35,7 @@ Execution sequence of an Analyzer is quite similar to that of a Simulator.
 - When the job finished, all the files included in the work directory are downloaded and stored in the database. Log information, such as execution date, elapsed time, and executed host are recorded as well.
 
 Similarly to Simulators, you can define *pre-process* to prepare prerequisites. *print\_version\_command* is also available to record the version information of the Analyzer.
-If **_ouptut.json** file is included in the work directory, the contents of the JSON file is recorded in DB. Such values can be plotted on OACIS web-UI. This is exactly the same specification with that of Simulator. 
+If **_output.json** file is included in the work directory, the contents of the JSON file is recorded in DB. Such values can be plotted on OACIS web-UI. This is exactly the same specification with that of Simulator. 
 
 You can also define parameters for Analyzers. If you define some parameters, you can specify the value of the parameters when you make an Analysis.
 
