@@ -14,7 +14,7 @@ OACIS_PRINT_VERSION_COMMAND="<%= print_version_command %>"
 
 # PRE-PROCESS ---------------------
 echo "{" > ../${OACIS_JOB_ID}_status.json
-echo "  \\"started_at\\": \\"`date`\\"," >> ../${OACIS_JOB_ID}_status.json
+echo "  \\"started_at\\": \\"`date -R`\\"," >> ../${OACIS_JOB_ID}_status.json
 echo "  \\"hostname\\": \\"`hostname`\\"," >> ../${OACIS_JOB_ID}_status.json
 
 # PRINT SIMULATOR VERSION ---------
@@ -27,7 +27,7 @@ export OMP_NUM_THREADS=${OACIS_OMP_THREADS}
 { time -p { { <%= cmd %>; } 1>> _stdout.txt 2>> _stderr.txt; } } 2>> ../${OACIS_JOB_ID}_time.txt
 RC=$?
 echo "  \\"rc\\": $RC," >> ../${OACIS_JOB_ID}_status.json
-echo "  \\"finished_at\\": \\"`date`\\"" >> ../${OACIS_JOB_ID}_status.json
+echo "  \\"finished_at\\": \\"`date -R`\\"" >> ../${OACIS_JOB_ID}_status.json
 echo "}" >> ../${OACIS_JOB_ID}_status.json
 
 # POST-PROCESS --------------------
