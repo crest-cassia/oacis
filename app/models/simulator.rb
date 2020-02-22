@@ -271,7 +271,11 @@ class Simulator
       end
     end
 
-    [x_keys, y_keys].each {|k| k.uniq!; k.sort! }
+    [x_keys, y_keys].each do |k|
+      k.uniq!
+      k.map!(&:to_s) if k.first.is_a?(Hash)
+      k.sort!
+    end
 
     num_runs = y_keys.map do |y|
       x_keys.map do |x|
