@@ -50,8 +50,8 @@ class ParameterSetsController < ApplicationController
     simulator.parameter_definitions.each do |defn|
       key = defn.key
       parameters = params[:v].dup
-      if parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
-        casted[key] = parameters[key].split(',').map {|x|
+      if parameters[key].present?
+        casted[key] = CSV.parse(parameters[key], liberal_parsing: true)[0]&.map {|x|
           ParametersUtil.cast_value(x.strip, defn.type)
         }
       else
