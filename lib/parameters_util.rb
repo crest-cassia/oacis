@@ -61,7 +61,7 @@ module ParametersUtil
         val.to_f
       end
     when "String"
-      if val.empty?
+      if val == ''
         nil
       else
         val.to_s
