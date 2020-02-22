@@ -35,6 +35,9 @@
     } else if(type == "String") {
       matcher_val = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
       matcher_text = #{raw ParameterSetFilter::StringTypeMatchers.to_json};
+    } else if(type == "Object") {
+      matcher_val = #{raw ParameterSetFilter::ObjectTypeMatchers.to_json};
+      matcher_text = #{raw ParameterSetFilter::ObjectTypeMatcherStrings.to_json};
     }
     const sel_matcher = row.find('select#matcher');
     sel_matcher.empty();
