@@ -1,6 +1,6 @@
 module ParametersUtil
 
-  TYPES = ["Integer","Float","String"]
+  TYPES = ["Integer","Float","String","Object"]
 
   def self.cast_parameter_values(parameters, definitions, errors = nil)
     casted = {}
@@ -65,6 +65,12 @@ module ParametersUtil
         nil
       else
         val.to_s
+      end
+    when "Object"
+      if val.is_a?(String)
+        JSON.is_json?(val) ? JSON.parse(val) : nil
+      else
+        val
       end
     else
       raise "Unknown type : #{type}"

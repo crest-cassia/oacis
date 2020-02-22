@@ -9,7 +9,7 @@ describe Simulator do
       parameter_definitions_attributes: [
         { key: "L", type: "Integer", default: "0" },
         { key: "T", type: "Float", default: "3.0" }
-      ]
+    ]
     }
   end
 
@@ -155,38 +155,47 @@ describe Simulator do
   describe "#find_parameter_set" do
 
     before(:each) do
-      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
+      @sim = FactoryBot.create(
+          :simulator,
+          parameter_sets_count: 0,
+          parameter_definitions: [
+              ParameterDefinition.new( { key: "L", type: "Integer", default: 50, description: "System size"}),
+              ParameterDefinition.new( { key: "T", type: "Float", default: 1.0, description: "Temperature" }),
+              ParameterDefinition.new( { key: "S", type: "String", default: "hello", description: "Greeting" }),
+              ParameterDefinition.new( { key: "O", type: "Object", default: {a:1, b:2}, description: "Obj param" }),
+          ]
+      )
     end
 
     it "returns PS with the given parameters" do
-      parameters = {"L"=>10, "T"=>2.0}
+      parameters = { "L"=>10, "T"=>2.0, "S"=>"foo", "O"=>{"a"=>1} }
       created = @sim.parameter_sets.create!(v: parameters)
       found = @sim.find_parameter_set( parameters )
       expect(found).to eq created
     end
 
     it "returns PS irrespective of the order of the parameters" do
-      created = @sim.parameter_sets.create!(v: {"L"=>10,"T"=>2.0} )
-      found = @sim.find_parameter_set( "T"=>2.0, "L"=>10 )
+      created = @sim.parameter_sets.create!(v: {"L"=>10,"T"=>2.0,"S"=>"foo","O"=>{"a"=>1}} )
+      found = @sim.find_parameter_set( "T"=>2.0, "L"=>10, "S"=>"foo", "O"=>{"a"=>1} )
       expect(found).to eq created
     end
 
     it "returns nil if matching PS is not found" do
-      parameters = {"L"=>10, "T"=>2.0}
+      parameters = { "L"=>10, "T"=>2.0, "S"=>"foo", "O"=>{"a"=>1} }
       @sim.parameter_sets.create!(v: parameters)
-      found = @sim.find_parameter_set( {"L"=>20, "T"=>1.0} )
+      found = @sim.find_parameter_set( parameters.update({"L"=>20, "T"=>1.0}) )
       expect(found).to be_nil
     end
 
     it "arguments can be a hash with symbol-keys" do
-      parameters = {"L"=>10, "T"=>2.0}
+      parameters = { "L"=>10, "T"=>2.0, "S"=>"foo", "O"=>{"a"=>1} }
       created = @sim.parameter_sets.create!(v: parameters)
-      found = @sim.find_parameter_set( L:10, T:2.0 )
+      found = @sim.find_parameter_set( L:10, T:2.0, S:"foo", O:{a:1} )
       expect(found).to eq created
     end
 
     it "raises an exception when unknown key is included in the argument" do
-      parameters = {"L"=>10, "T"=>2.0}
+      parameters = { "L"=>10, "T"=>2.0, "S"=>"foo", "O"=>{"a"=>1} }
       @sim.parameter_sets.create!(v: parameters)
       expect {
         @sim.find_parameter_set( parameters.merge({"Q"=>1}) )
@@ -203,31 +212,35 @@ describe Simulator do
   describe "#find_or_create_parameter_set" do
 
     before(:each) do
-      @sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
+      @sim = FactoryBot.create(
+          :simulator,
+          parameter_sets_count: 0,
+          parameter_definitions: [
+              ParameterDefinition.new( { key: "L", type: "Integer", default: 50, description: "System size"}),
+              ParameterDefinition.new( { key: "T", type: "Float", default: 1.0, description: "Temperature" }),
+              ParameterDefinition.new( { key: "S", type: "String", default: "hello", description: "Greeting" }),
+              ParameterDefinition.new( { key: "O", type: "Object", default: {a:1, b:2}, description: "Obj param" }),
+          ]
+      )
     end
 
     it "returns PS if there exists a PS with given parameters" do
-      parameters = {"L"=>10, "T"=>2.0}
+      parameters = {L:10, T:2.0, S:"foo", O:{a:1}}
       created = @sim.parameter_sets.create!(v: parameters)
       found = @sim.find_or_create_parameter_set( parameters )
       expect(found).to eq created
     end
 
     it "creates a new PS with given parameters if no matching PS exists" do
-      parameters = {"L"=>10, "T"=>2.0}
+      parameters = {L:10, T:2.0, S:"foo", O:{a:1}}   # keys can be symbol
       expect {
         found = @sim.find_or_create_parameter_set( parameters )
-        expect(found.v).to eq parameters
+        expect(found.v).to eq JSON.load(JSON.dump(parameters)) # convert keys to String
       }.to change { ParameterSet.count }.by(1)
     end
 
-    it "arguments can be a hash with symbol-keys" do
-      created = @sim.find_or_create_parameter_set( L:10, T:2.0 )
-      expect(created.v).to eq({"L"=>10,"T"=>2.0})
-    end
-
     it "raises an exception when unknown key is included in the argument" do
-      parameters = {"L"=>10, "T"=>2.0}
+      parameters = {L:10, T:2.0, S:"foo", O:{a:1}}
       expect {
         @sim.find_or_create_parameter_set( parameters.merge({"Q"=>1}) )
       }.to raise_error(/^Unknown keys:/)
@@ -515,7 +528,8 @@ describe Simulator do
       parameter_definitions = [
         ParameterDefinition.new({ key: "L", type: "Integer", default: 0}),
         ParameterDefinition.new({ key: "T", type: "Float", default: 1.0}),
-        ParameterDefinition.new({ key: "S", type: "String", default: 'xxx'})
+        ParameterDefinition.new({ key: "S", type: "String", default: 'xxx'}),
+        ParameterDefinition.new({ key: "O", type: "Object", default: {a:1}})
       ]
       @sim = FactoryBot.create(:simulator,
                                 parameter_definitions: parameter_definitions,
@@ -531,7 +545,8 @@ describe Simulator do
       expected = {
         "L" => [1, 3],
         "T" => [1.0, 10.0],
-        "S" => [nil, nil]
+        "S" => [nil, nil],
+        "O" => [nil, nil]
       }
       expect(@sim.parameter_ranges).to eq expected
     end
@@ -543,7 +558,8 @@ describe Simulator do
       parameter_definitions = [
         ParameterDefinition.new({ key: "L", type: "Integer", default: 0}),
         ParameterDefinition.new({ key: "T", type: "Float", default: 1.0}),
-        ParameterDefinition.new({ key: "S", type: "String", default: "xxx"})
+        ParameterDefinition.new({ key: "S", type: "String", default: "xxx"}),
+        ParameterDefinition.new({ key: "O", type: "Object", default: {a:1}})
       ]
       @sim = FactoryBot.create(:simulator,
                                 parameter_definitions: parameter_definitions,
@@ -554,7 +570,7 @@ describe Simulator do
       create_ps.call( v: {"L" => 3, "T" => 1.0}, runs_count: 2, finished_runs_count: 3)
       create_ps.call( v: {"L" => 1, "T" => 2.0}, runs_count: 2, finished_runs_count: 3)
       create_ps.call( v: {"L" => 2, "T" => 2.0}, runs_count: 0, finished_runs_count: 8)
-      create_ps.call( v: {"L" => 1, "T" => 1.0, "S" => "yyy"}, runs_count: 1, finished_runs_count: 2)
+      create_ps.call( v: {"L" => 1, "T" => 1.0, "S" => "yyy", "O"=>{a:2} }, runs_count: 1, finished_runs_count: 2)
     end
 
     it "returns a Hash with valid keys" do
