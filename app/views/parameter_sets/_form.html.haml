@@ -9,7 +9,10 @@
     .form-group
       = label_tag(property, "#{key} (#{pd.type})", class: 'col-md-2 control-label')
       .col-md-3
-        = text_field_tag(property, value.to_s, class: 'form-control', 'aria-describedby': "desc_#{key}")
+        - if pd.type == "Object"
+          = text_area_tag(property, value.to_s, class: 'form-control', 'aria-describedby': "desc_#{key}")
+        - else
+          = text_field_tag(property, value.to_s, class: 'form-control', 'aria-describedby': "desc_#{key}")
       .col-md-4
         %span{id: "desc_#{key}", class: "help-block"}
           = pd.description
