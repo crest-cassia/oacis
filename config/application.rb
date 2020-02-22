@@ -55,6 +55,12 @@ module Oacis
   end
 end
 
+class Hash
+  def to_s
+    JSON.generate(self)
+  end
+end
+
 module JSON
   def self.is_json?(foo)
     begin
