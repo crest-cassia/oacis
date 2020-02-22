@@ -50,16 +50,22 @@ module ParametersUtil
     case type
     when "Integer"
       if val.is_a?(String) and val !~ /^[-+]?[0-9]+$/
-        return nil
+        nil
+      else
+        val.to_i
       end
-      return val.to_i
     when "Float"
       if val.is_a?(String) and val !~ /^[-+]?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][-+]?[0-9]+)?$/
-        return nil
+        nil
+      else
+        val.to_f
       end
-      return val.to_f
     when "String"
-      return val.to_s
+      if val.empty?
+        nil
+      else
+        val.to_s
+      end
     else
       raise "Unknown type : #{type}"
     end
