@@ -11,6 +11,8 @@ class ParameterSetFilter
   NumTypeMatchers = ["eq", "ne", "gt", "gte", "lt", "lte"]
   NumTypeMatcherStrings = ["==", "!=", ">", ">=", "<", "<="]
   StringTypeMatchers = ["match", "start_with", "end_with", "include"]
+  ObjectTypeMatchers = ["eq"]
+  ObjectTypeMatcherStrings = ["=="]
 
   def validate_format_of_conditions
     unless !self.conditions.blank? && self.conditions.is_a?(Array)
@@ -34,6 +36,8 @@ class ParameterSetFilter
         self.errors.add(:conditions, "#{key}: #{val.inspect} must be a #{type}") unless val.is_a?(String)
       elsif type == 'Integer' or type == 'Float'
         self.errors.add(:conditions, "#{key}: #{val.inspect} must be a #{type}") unless val.is_a?(Numeric)
+      elsif type == 'Object'
+        self.errors.add(:conditions, "#{key}: #{val.inspect} must be a #{type}") unless val.is_a?(Hash)
       end
     end
   end
@@ -65,6 +69,8 @@ class ParameterSetFilter
       NumTypeMatchers
     when "String"
       StringTypeMatchers
+    when "Object"
+      ObjectTypeMatchers
     else
       raise "not supported type"
     end
@@ -105,6 +111,9 @@ class ParameterSetFilter
       return "#{key} #{s} #{val}"
     elsif self::StringTypeMatchers.index(matcher)
       return "#{key} #{matcher} #{val}"
+    elsif self::ObjectTypeMatchers.index(matcher)
+      s = self::ObjectTypeMatcherStrings[idx]
+      return "#{key} #{s} #{val}"
     else
       raise "unknown matcher: #{matcher}"
     end

@@ -69,12 +69,12 @@ private
     red = '<font color="red">' + escaped + '</font>'
     blue = '<font color="blue">' + escaped + '</font>'
 
+    if val.is_a?(Hash) or compared_val.is_a?(Hash) or val.is_a?(Array) or compared_val.is_a?(Array)
+      return red
+    end
+
     if val == compared_val
       escaped
-    elsif val == true and compared_val == false
-      red
-    elsif val == false and compared_val == true
-      blue
     elsif val < compared_val
       blue
     elsif val > compared_val

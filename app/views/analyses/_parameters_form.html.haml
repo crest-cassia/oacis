@@ -23,7 +23,7 @@
   .form-group
     = label(:analysis, "parameters[#{definition.key}]", definition.key, class: 'col-md-2 control-label')
     .col-md-3
-      = text_field(:analysis, "parameters[#{definition.key}]", value: definition.default, class: 'form-control')
+      = text_field(:analysis, "parameters[#{definition.key}]", value: definition.default.to_s, class: 'form-control')
     .col-md-6
       = definition.description
       = definition.type

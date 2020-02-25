@@ -34,7 +34,7 @@ describe ParameterDefinition do
         expect(pd2).not_to be_valid
       end
 
-      it "is valid if identical key is used in different simualtors" do
+      it "is valid if identical key is used in different simulators" do
         simA = Simulator.new(name: "simA", command: "echo")
         simB = Simulator.new(name: "simB", command: "echo")
         pd1 = simA.parameter_definitions.build(@valid_attr)

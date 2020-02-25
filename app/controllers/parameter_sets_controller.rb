@@ -50,7 +50,7 @@ class ParameterSetsController < ApplicationController
     simulator.parameter_definitions.each do |defn|
       key = defn.key
       parameters = params[:v].dup
-      if parameters[key].present?
+      if parameters[key].present? and defn.type != "Object"
         casted[key] = CSV.parse(parameters[key], liberal_parsing: true)[0]&.map {|x|
           ParametersUtil.cast_value(x.strip, defn.type)
         }
