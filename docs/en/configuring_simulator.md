@@ -215,7 +215,7 @@ The following is the list of items we set when registering a simulator.
 | field                      | explanation                                                                |
 |:---------------------------|:--------------------------------------------------------------------|
 | Name *                     | Name of the simulator. Only alphanumeric characters and underscore ('_') are available. Must be unique.  |
-| Definition of Parameters * | Definition of input parameters. Specify name, type(Integer, Float, String), default value, and explanation for each input parameter. |
+| Definition of Parameters * | Definition of input parameters. Specify name, type(Integer, Float, String, Object), default value, and explanation for each input parameter. |
 | Local Preprocess Script    | Script executed at OACIS server before the job. If this is empty, no pre-process is executed. |
 | Preprocess Script          | Script executed at the computational host before the job. If this is empty, no pre-process is executed. |
 | Command *                  | The command to execute the simulator. It is better to specify by the absolute path or the relative path from the home directory. (Ex. *~/path/to/simulator.out*) |
@@ -232,6 +232,8 @@ Required fields are indicated by (*).
 
 When you enter **Definition of Parameters** fields, make sure that the specified type and the default value are consistent with each other.
 For example, if you specify a string value as a default value of an integer field, you get an error and are required to fix the inconsistency.
+
+<span class="label label-success">New in v3.8.0</span> ***Object*** is available as a parameter type since OACIS v3.8.0. You can specify a free-format object in JSON.
 
 When you specify **Local Preprocess Script** and/or **Preprocess Script**, you can define a pre-process which is executed just before the job execution.
 It is useful for preparing input files for simulators or doing some processes which is executable only on job submission nodes.
