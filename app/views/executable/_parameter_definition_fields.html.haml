@@ -6,7 +6,8 @@
     .col-md-2
       = f.select :type, ParametersUtil::TYPES, {}, disabled: disabled, class: 'form-control'
     .col-md-3
-      = f.text_field :default, placeholder: "Default value", class: 'form-control', data: tooltip_data(:simulator, :default_parameter)
+      = f.text_field :default, value: f.object.default.to_s, placeholder: "Default value", class: 'form-control', data: tooltip_data(:simulator, :default_parameter)
+      / we must explicitly set the value when f.object.default is an array
     - unless disabled
       = link_to sanitize('<i class="fa fa-arrow-up fa-lg"/>'), '#', class: "up_fields"
     - unless disabled
