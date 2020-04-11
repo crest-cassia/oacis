@@ -67,21 +67,21 @@
     var url_with_param = url + "?row_parameter=" + rp + "&column_parameter=" + cp;
     draw_progress_overview(url_with_param);
   }
-  var progress_auto_show_id = null;
+  var auto_show_progress_id = null;
   $('#show_progress_button').on('click', function() {
     var cp = $('#column_parameter option:selected').val();
     var rp = $('#row_parameter option:selected').val();
     show_progress(rp, cp);
     clear_auto_show_progress();
-    progress_auto_show_id = setInterval( function() {
+    auto_show_progress_id = setInterval( function() {
       if( $("#tab-progress").length > 0 && $("#tab-progress")[0].classList.contains("active") && $('#progress_auto_reload_check').prop('checked') ) {
         show_progress(rp, cp);
       }
     }, 10000);
   });
   function clear_auto_show_progress() {
-    if(progress_auto_show_id != null) {
-      clearInterval(progress_auto_show_id);
+    if(auto_show_progress_id != null) {
+      clearInterval(auto_show_progress_id);
     }
   }
   $(function() {
