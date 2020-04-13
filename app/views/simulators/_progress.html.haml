@@ -72,18 +72,15 @@
     var cp = $('#column_parameter option:selected').val();
     var rp = $('#row_parameter option:selected').val();
     show_progress(rp, cp);
-    clear_auto_show_progress();
+    if(auto_show_progress_id !== null) {
+      clearInterval(auto_show_progress_id);
+    }
     auto_show_progress_id = setInterval( function() {
       if( $("#tab-progress").length > 0 && $("#tab-progress")[0].classList.contains("active") && $('#progress_auto_reload_check').prop('checked') ) {
         show_progress(rp, cp);
       }
     }, 10000);
   });
-  function clear_auto_show_progress() {
-    if(auto_show_progress_id != null) {
-      clearInterval(auto_show_progress_id);
-    }
-  }
   $(function() {
     // in order to avoid 'position: relative' style of '.col-lg-12' tag, we put 'tooltip' before '.col-lg-12' tag
     // See http://stackoverflow.com/questions/8828387
