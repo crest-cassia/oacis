@@ -60,7 +60,7 @@ rsync -av -P --delete /backup_dir/Result_development /path/to/OACIS/public
 
 Refer to [Backup and Restore](https://github.com/crest-cassia/oacis_docker/blob/master/README.md#backup-and-restore).
 
-## READ_ONLY mode
+## accessibility control (READ ONLY mode)
 
 
 If you would like to share your results with a person in a distant place, you can launch another OACIS in a public (cloud) server and sync the results in your local OACIS to the public one.
@@ -69,14 +69,17 @@ In order to prevent job submissions, OACIS provides *"Read Only"* mode. With *"R
 
 In order to enable Read-Only mode, make a file *"config/user_config.yml"* in the directory where the source code of OACIS exists.
 You can find a sample file *"config/user_config.sample.yml"*.
-To enable Read-Only mode, edit the configuration file as follows and restart OACIS.
+To control the accessibility, edit the configuration file as follows and restart OACIS.
 
 {% highlight yaml %}
 ---
-read_only: true
+access_level: 0
 {% endhighlight %}
 
-With this setting, the worker process is not launched, and any modification from web browsers become impossible.
+`access_level: 2` corresponds to the normal mode. When `access_level: 1`, creation of new Simulator, Analyzer, and edit on an existing Simulator or Analyzer are prohibited.
+You can submit a job for a Simulator that is already defined.
+
+With `access_level: 0`, the worker process is not launched, and any modification from web browsers become impossible, i.e., READ ONLY mode is set.
 Furthremore, OACIS is bound to IP address `0.0.0.0` under this setting by default, making OACIS accessible from other hosts.
 If you would like to customize the binding IP address, add a line like `binding_ip: 'localhost'`.
 

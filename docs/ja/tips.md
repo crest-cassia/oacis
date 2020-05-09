@@ -60,7 +60,7 @@ rsync -av -P --delete /backup_dir/Result_development /path/to/OACIS/public
 
 oacis_docerリポジトリの [Backup and Restore](https://github.com/crest-cassia/oacis_docker/blob/master/README.md#backup-and-restore) を参照してください。
 
-## READ_ONLY モード
+## アクセスレベルの制御
 
 地理的に離れた研究者とデータの共有をする場合など、データを共有のサーバーにアップロードしてOACISを経由してシミュレーション結果を見てもらいたい場合があります。
 この場合アップロードしたサーバー上でOACISを起動する事になりますが、その際には閲覧のみを可能にし、リモートジョブの実行や新規シミュレーターの登録などはできないようにした方が安全です。
@@ -73,9 +73,14 @@ READ_ONLYモードにする場合には以下のようにファイルに記述�
 
 {% highlight yaml %}
 ---
-read_only: true
+access_level: 0
 {% endhighlight %}
 
+access_levelの項目には0,1,2の３種類を指定することができます。通常モードは２です。
+
+1を指定するとSimulatorとAnalyzerの新規作成と編集を禁止します。すでに定義されたSimulatorのジョブは実行できるが、任意のコマンドを新たに定義したSimulatorを作成することはできません。
+
+0を指定するとREAD_ONLYモードになり、結果の閲覧のみができるような状態になります。
 このように設定後OACISを起動するとバックグラウンドのワーカープロセスは起動せず、ブラウザ上からの新規レコードの作成や編集もできなくなります。
 さらにOACISがバインドされるIPアドレスがデフォルトで`0.0.0.0`になり、他ホストからもアクセスできるようになります。
 IPアドレスについての設定を変更したい場合は、このファイルに`binding_ip: 'localhost'`というような行を追加してください。
