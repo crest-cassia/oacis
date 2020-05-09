@@ -6,6 +6,6 @@ RESULT_DIR="$script_dir/../public/Result_development"
 DUMP_FILE="$RESULT_DIR/db_dump"
 DUMP_TMP_FILE="$RESULT_DIR/db_dump.tmp"
 mongodump --archive="$DUMP_TMP_FILE" --db=oacis_development  # dump before restore just in case
-mongorestore --archive="$DUMP_TMP_FILE" --db=oacis_development --drop
+mongorestore --archive="$DUMP_FILE" --db=oacis_development --drop
 set +x
 echo "DB was successfully restored from \"$DUMP_FILE\"" >&2
