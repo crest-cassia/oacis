@@ -56,7 +56,6 @@ class JobObserver
         logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
         job.destroy
         logger.info("destroyed #{job.class} #{job.id}")
-        return
       else
         logger.warn("should not happen: #{job.class}:#{job.id} is not destroyable")
         job.set_lower_submittable_to_be_destroyed
