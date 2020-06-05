@@ -62,19 +62,19 @@
       %td= @analysis.analyzer_version
     %tr
       %th created at
-      %td= @analysis.created_at
+      %td= @analysis.created_at.to_time
     %tr
       %th submitted at
-      %td= @analysis.submitted_at
+      %td= @analysis.submitted_at.to_time
     %tr
       %th started at
-      %td= @analysis.started_at
+      %td= @analysis.started_at.to_time
     %tr
       %th finished at
-      %td= @analysis.finished_at
+      %td= @analysis.finished_at.to_time
     %tr
       %th included at
-      %td= @analysis.included_at
+      %td= @analysis.included_at.to_time
     %tr
       %th updated at
-      %td= @analysis.updated_at
+      %td= @analysis.updated_at.to_time
