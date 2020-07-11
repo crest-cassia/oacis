@@ -35,6 +35,7 @@ module Submittable
     # indexes
     base.send(:index, { status: 1, submitted_to_id: 1 }, { name: "#{base.to_s.downcase}_status_submitted_to_index" })
     base.send(:index, { status: 1, created_at: -1 }, { name: "#{base.to_s.downcase}_status_updated_at_index" })
+    base.send(:index, { updated_at: -1 }, { name: "#{base.to_s.downcase}_updated_at_index" })
 
     # validations
     base.send(:validates, :status,
