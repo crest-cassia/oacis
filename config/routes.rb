@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
 
+  resources :bookmarks
   resources :worker_logs, only: ['index'] do
     collection do
       get "_contents"
