@@ -325,6 +325,12 @@ LinePlot.prototype.AddDescription = function() {
       .on("click", function() {
         plot.Destructor();
       });
+    list.append("li").append("a").text("add to bookmarks")
+        .style("cursor", "pointer")
+        .on("click", function() {
+            // plot.data.plot_url を Bookmark に渡す
+            console.log(plot.data.plot_url);
+        });
     plot.description.append("div").style("padding-bottom", "50px");
 
     var log_check_box = plot.description.append("div").attr("class", "checkbox");
