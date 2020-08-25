@@ -328,8 +328,19 @@ LinePlot.prototype.AddDescription = function() {
     list.append("li").append("a").text("add to bookmarks")
         .style("cursor", "pointer")
         .on("click", function() {
-            // plot.data.plot_url を Bookmark に渡す
-            console.log(plot.data.plot_url);
+            $.ajax({
+                url: '/bookmarks',
+                type: 'POST',
+                data: {
+                    bookmark: {plot_url: plot.data.plot_url}
+                },
+            })
+                .done(function(response){
+                    // 成功した時の処理
+                })
+                .fail(function(xhr){
+                    // そのほか
+                });
         });
     plot.description.append("div").style("padding-bottom", "50px");
 
