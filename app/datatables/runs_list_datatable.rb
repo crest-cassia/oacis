@@ -44,7 +44,8 @@ private
       tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(run)} )
       tmp << @view.raw( @view.status_label(run.status) )
       tmp << @view.link_to( @view.shortened_id_monospaced(run.parameter_set.id), @view.parameter_set_path(run.parameter_set), data:
-        {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _parameter_set_tooltip_title(run.parameter_set)} )
+        {toggle: 'tooltip', placement: 'bottom', html: true,
+         'original-title': _parameter_set_tooltip_title(run.parameter_set)} )
       tmp << Run::PRIORITY_ORDER[run.priority]
       tmp << @view.raw('<span class="run_elapsed">'+@view.formatted_elapsed_time(run.real_time)+'</span>')
       tmp << run.mpi_procs
@@ -68,8 +69,12 @@ seed: #{run.seed}
 EOS
   end
 
-  def _parameter_set_tooltip_title(ps)
-    "ID: #{ps.id}"
+  def _parameter_set_tooltip_title(parameter_set)
+    parameters = parameter_set.v.inject('') do |str, (k, v)|
+      str + "#{k}: #{v}<br />"
+    end
+    "Simulator: #{parameter_set.simulator.name}<br />
+#{parameters}"
   end
 
   def runs_lists
