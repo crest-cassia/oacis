@@ -35,11 +35,12 @@ function datatables_for_runs_table(selector) {
     '</div>'
   );
   wrapperDiv.find('#run_check_all').on('change', function() {
-    const checkAll = $('#run_check_all').prop('checked');
+    const checkAll = $(this).prop('checked');
+    const checkedTargets = $(this).closest('table').find('input[name="checkbox[run]"]');
     if(checkAll) {
-      $('input[name="checkbox[run]"]').prop('checked', true).trigger('change');
+      $(checkedTargets).prop('checked', true).trigger('change');
     } else {
-      $('input[name="checkbox[run]"]').prop('checked', false).trigger('change');
+      $(checkedTargets).prop('checked', false).trigger('change');
     }
   });
   wrapperDiv.on('change','input[name="checkbox[run]"]', function() {
