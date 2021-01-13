@@ -575,12 +575,27 @@ describe SimulatorsController do
     end
   end
 
-  describe "GET _progress" do
+  describe "GET _number_of_runs" do
+    before(:each) do
+      @simulator = FactoryBot.create(:simulator)
+      get :_number_of_runs, params: { id: @simulator.to_param }, :format => :json
+      @parsed_body = JSON.parse(response.body)
+    end
+
+    it "return json format" do
+      expect(response).to be_successful
+      expect(response.header['Content-Type']).to include 'application/json'
+      expect(@parsed_body["total"]).to be_a(Integer)
+      expect(@parsed_body["stat_count"]).to be_a(Hash)
+    end
+  end
+
+  describe "GET _progress_overview" do
     before(:each) do
       @simulator = FactoryBot.create(:simulator,
                                       parameter_sets_count: 30, runs_count: 3
                                       )
-      get :_progress, params: {id: @simulator.to_param, column_parameter: 'L', row_parameter: 'T'}, :format => :json
+      get :_progress_overview, params: {id: @simulator.to_param, column_parameter: 'L', row_parameter: 'T'}, :format => :json
       @parsed_body = JSON.parse(response.body)
     end
 

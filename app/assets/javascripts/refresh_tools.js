@@ -1,29 +1,29 @@
-function setupRefreshTools(table, lengthDiv) {
-  lengthDiv.append(
+function setupRefreshTools(toolsDiv, callback) {
+  toolsDiv.append(
     '<i class="fa fa-refresh padding-half-em reload_icon clickable" id="list_refresh"></i>' +
     '<div class="auto_reload_setting">' +
     '<label class="form-check-label clickable" for="list_refresh_cb">auto reload<input type="checkbox" class="form-check-input" id="list_refresh_cb" /></label>' +
     '<label for="list_refresh_tb"><input type="text" pattern="^[0-9]*$" class="form-control form-control-sm" id="list_refresh_tb" size="10">sec</label>' +
     '</div>'
   );
-  const refresh_icon = lengthDiv.children('#list_refresh');
-  refresh_icon.on('click', function() { table.ajax.reload(null, false);});
+  const refresh_icon = toolsDiv.children('#list_refresh');
+  refresh_icon.on('click', callback);
 
-  setIntervalCommon(table, lengthDiv);
+  setIntervalCommon(toolsDiv, callback);
 }
 
-function setIntervalCommon(objTable, lengthDiv) {
+function setIntervalCommon(toolsDiv, callback) {
   let interval = sessionStorage.getItem("AUTO_RELOAD_INTERVAL");
   let timer;
 
-  const refresh_cb = lengthDiv.find('#list_refresh_cb');
-  const refresh_tb = lengthDiv.find('#list_refresh_tb');
+  const refresh_cb = toolsDiv.find('#list_refresh_cb');
+  const refresh_tb = toolsDiv.find('#list_refresh_tb');
 
   refresh_tb.val(interval);
   const tmReloadOn = (msec) => {
     timer = setInterval(() => {
       if(refresh_tb.is(':visible')) {
-        objTable.ajax.reload(null, false);
+        callback();
       }
     }, msec);
   }

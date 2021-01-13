@@ -186,7 +186,14 @@ class SimulatorsController < ApplicationController
     render json: ParameterSetFiltersListDatatable.new(filters, simulator, view_context, filters.count)
   end
 
-  def _progress
+  def _number_of_runs
+    sim = Simulator.find(params[:id])
+    stat_count = sim.runs_status_count
+    data = { stat_count: stat_count, total: stat_count.values.inject(:+) }
+    render json: data
+  end
+
+  def _progress_overview
     sim = Simulator.find(params[:id])
     first_parameter = params[:column_parameter]
     second_parameter = params[:row_parameter]

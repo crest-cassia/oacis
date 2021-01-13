@@ -1,3 +1,5 @@
+#refresh_tools.form-inline.clearfix{style: "margin-top: 20px;"}
+
 %h3 Number of Runs
 
 %table.table.table-striped{style: "table-layout: fixed;"}
@@ -18,12 +20,12 @@
     %tr
       - stat_count = @simulator.runs_status_count
       - total = stat_count.values.inject(:+)
-      %th= total
-      %td= "#{stat_count[:finished]} (#{(100.0*stat_count[:finished]/total.to_f).round(1)} %)"
-      %td= "#{stat_count[:failed]} (#{(100.0*stat_count[:failed]/total.to_f).round(1)} %)"
-      %td= "#{stat_count[:running]} (#{(100.0*stat_count[:running]/total.to_f).round(1)} %)"
-      %td= "#{stat_count[:submitted]} (#{(100.0*stat_count[:submitted]/total.to_f).round(1)} %)"
-      %td= "#{stat_count[:created]} (#{(100.0*stat_count[:created]/total.to_f).round(1)} %)"
+      %th#total_count= total
+      %td#finished_count= "#{stat_count[:finished]} (#{(100.0*stat_count[:finished]/total.to_f).round(1)} %)"
+      %td#failed_count= "#{stat_count[:failed]} (#{(100.0*stat_count[:failed]/total.to_f).round(1)} %)"
+      %td#running_count= "#{stat_count[:running]} (#{(100.0*stat_count[:running]/total.to_f).round(1)} %)"
+      %td#submitted_count= "#{stat_count[:submitted]} (#{(100.0*stat_count[:submitted]/total.to_f).round(1)} %)"
+      %td#created_count= "#{stat_count[:created]} (#{(100.0*stat_count[:created]/total.to_f).round(1)} %)"
 
 %h3 Progress overview
 
@@ -57,32 +59,51 @@
               = select_tag 'row_parameter', options_for_select(parameter_keys, selected: parameter_keys[1]), id: 'row_parameter', class: 'form-control'
           .form-group
             .col-md-9.col-md-offset-3
-              %a.btn.btn-primary#show_progress_button Show
-              %input#progress_auto_reload_check{type: "checkbox",style:"margin-left: 10px;"}
-              %label{for: "progress_auto_reload_check"}auto reload
+              %a.btn.btn-primary#show_progress_overview_button Show
           %svg#spin_arc{width: 300, height: 100}
 :javascript
-  var url = "#{_progress_simulator_path}" + ".json";
-  function show_progress(rp, cp) {
-    var url_with_param = url + "?row_parameter=" + rp + "&column_parameter=" + cp;
+  var number_of_runs_url = "#{_number_of_runs_simulator_path}" + ".json";
+  var progress_overview_url = "#{_progress_overview_simulator_path}" + ".json";
+  var rp, cp = null;
+
+  function update_number_of_runs() {
+    jQuery.ajax(number_of_runs_url, {
+      type: 'get',
+      dataType: 'json'
+    })
+    .done(function(data) {
+      if(data) {
+        var total = data['total'];
+        for(var key in data['stat_count']) {
+          var count = data['stat_count'][key];
+          var formatted_count = count + ' (' + (count / total * 100).toFixed(1) + ' %)';
+          $('#tab-progress #' + key + '_count').text(formatted_count);
+        }
+        $('#tab-progress #total_count').text(total);
+      }
+    });
+  }
+
+  function show_progress_overview() {
+    var url_with_param = progress_overview_url + "?row_parameter=" + rp + "&column_parameter=" + cp;
     draw_progress_overview(url_with_param);
   }
-  var auto_show_progress_id = null;
-  $('#show_progress_button').on('click', function() {
-    var cp = $('#column_parameter option:selected').val();
-    var rp = $('#row_parameter option:selected').val();
-    show_progress(rp, cp);
-    if(auto_show_progress_id !== null) {
-      clearInterval(auto_show_progress_id);
-    }
-    auto_show_progress_id = setInterval( function() {
-      if( $("#tab-progress").length > 0 && $("#tab-progress")[0].classList.contains("active") && $('#progress_auto_reload_check').prop('checked') ) {
-        show_progress(rp, cp);
-      }
-    }, 10000);
+
+  $('#show_progress_overview_button').on('click', function() {
+    cp = $('#column_parameter option:selected').val();
+    rp = $('#row_parameter option:selected').val();
+    show_progress_overview();
   });
+
   $(function() {
     // in order to avoid 'position: relative' style of '.col-lg-12' tag, we put 'tooltip' before '.col-lg-12' tag
     // See http://stackoverflow.com/questions/8828387
     $('#progress-tooltip').insertBefore('.col-lg-12');
+
+    setupRefreshTools($('#refresh_tools'), function() {
+      update_number_of_runs();
+      if( $("#progress-overview #canvas").length > 0 ) {
+        show_progress_overview();
+      }
+    });
   });

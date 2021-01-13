@@ -29,5 +29,5 @@
       ajax: $('#analyzers_list').data('source')
     });
     const lengthDiv = $('#analyzers_list_length');
-    setupRefreshTools(oAzrTable, lengthDiv);
+    setupRefreshTools(lengthDiv, function () { oAzrTable.ajax.reload(null, false) });
   });

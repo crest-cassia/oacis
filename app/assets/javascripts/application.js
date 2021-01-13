@@ -28,7 +28,7 @@
 //= require cable.js
 //= require channels/status.js
 //= require channels/worker_log.js
-//= require refresh_datatable.js
+//= require refresh_tools.js
 
 // Handle back button issues with Twitter Bootstrap's tab component.
 // Based on: http://stackoverflow.com/a/10120221/81769
