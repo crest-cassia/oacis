@@ -39,7 +39,7 @@ $(function() {
     });
     const wrapperDiv = $(selector).closest(selector+'_wrapper');
     const lengthDiv = wrapperDiv.find(selector+'_length');
-    setupRefreshTools(oTable, lengthDiv);
+    setupRefreshTools(lengthDiv, function () { oTable.ajax.reload(null, false) });
 
     return oTable;
   };

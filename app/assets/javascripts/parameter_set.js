@@ -28,7 +28,7 @@ function create_parameter_sets_list(selector, default_length) {
   const actionUrl = '/parameter_sets/_delete_selected';
   const lengthDiv = $(selector+'_length');
   lengthDiv.css('height', '45px');
-  setupRefreshTools(oPsTable, lengthDiv);
+  setupRefreshTools(lengthDiv, function() { oPsTable.ajax.reload(null, false) });
 
   lengthDiv.after(
     '<div class="dataTables_length" id="selected_pss_ctl_div" style="height: 45px;">' +

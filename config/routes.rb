@@ -35,7 +35,8 @@ Rails.application.routes.draw do
       get "_parameter_sets_list" # for ajax, datatables
       get "_analyzer_list" # for ajax, datatables
       get "_parameter_set_filters_list" # for ajax, datatables
-      get "_progress" # for progress table
+      get "_number_of_runs" # for number of runs table
+      get "_progress_overview" # for progress overview table
       get "_host_parameters_field" # for ajax, get the fields for host_parameters
       get "_default_mpi_omp" # for ajax, get the default mpi_procs and omp_threads
       get "_cancel_create_ps"

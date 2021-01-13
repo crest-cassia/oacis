@@ -20,7 +20,7 @@ function datatables_for_runs_table(selector) {
   // reload settings
   const wrapperDiv = $(selector).closest(selector+'_wrapper');
   const lengthDiv = wrapperDiv.find(selector+'_length');
-  setupRefreshTools(oTable, lengthDiv);
+  setupRefreshTools(lengthDiv, function() { oTable.ajax.reload(null, false) });
 
   // checkbox settings
   const actionUrl = '/runs/_delete_selected';
