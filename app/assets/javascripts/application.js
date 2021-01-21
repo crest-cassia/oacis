@@ -20,6 +20,7 @@
 //= require parameter_set.js
 //= require runs.js
 //= require simulator.js
+//= require files.js
 //= require sortable.js
 //= require dataTables/jquery.dataTables
 //= require dataTables/bootstrap/3/jquery.dataTables.bootstrap

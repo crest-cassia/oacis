@@ -19,6 +19,8 @@
       %a{"href"=>"#tab-list-analyses", "data-toggle" => "tab"} Analyses
     %li
       %a{"href"=>"#tab-plot", "data-toggle" => "tab"} Plot
+    %li
+      %a{"href"=>"#tab-files", "data-toggle" => "tab"} Files
 
   .tab-content
     .tab-pane#tab-about
@@ -35,3 +37,5 @@
       = render "analyses", parameter_set: @param_set
     .tab-pane#tab-plot
       = render "plot", parameter_set: @param_set
+    .tab-pane#tab-files
+      = render "files", parameter_set: @param_set

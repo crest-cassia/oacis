@@ -1,3 +1,5 @@
+require 'zip'
+
 class ParameterSetsController < ApplicationController
 
   def show
@@ -243,6 +245,29 @@ class ParameterSetsController < ApplicationController
     parameter_sets = ParameterSet.or(*selectors)
     num_ps_total = base_ps.simulator.parameter_sets.count
     render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, num_ps_total, base_ps)
+  end
+
+  def _files_list
+    param_set = ParameterSet.find(params[:id])
+    render json: FilesListDatatable.new(param_set.runs.where(status: :finished), view_context)
+  end
+
+  def download_result_files
+    param_set = ParameterSet.find(params[:id])
+    file_name = params[:file_name]
+
+    io = StringIO.new
+    io.set_encoding(Encoding::CP932)
+    Zip::OutputStream.write_buffer(io) do |zos|
+      param_set.runs.where(status: :finished).map do |run|
+        pathname = run.result_paths.select {|result_path| result_path.fnmatch?("*/#{file_name}") }.first
+        zos.put_next_entry("#{run.id}_#{file_name}")
+        buf = File.open(pathname) {|file| file.read }
+        zos.write(buf)
+      end
+    end
+
+    send_data io.string, filename: "#{file_name}.zip", type: :zip
   end
 
   def _line_plot

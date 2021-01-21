@@ -1,0 +1,34 @@
+- first_run = @param_set.runs.where(status: :finished).first
+- file_name_options = first_run&.result_paths&.map(&:basename)&.reject {|result_path| result_path.directory? || result_path.basename.to_s == "#{first_run.id.to_s}_xsub.sh" }
+
+%h3 List of files
+- if first_run.present?
+  .form-inline
+    .form-group
+      = label_tag 'file_name', 'File'
+      = select_tag 'file_name', options_for_select(file_name_options, selected: params[:file_name]), id: 'file_name', class: 'form-control', include_blank: '[Please select a file]'
+      %a.btn.btn-primary#show_file_list_button Show
+  %div{style: "margin-top: 20px;"}
+  %table.table.table-condensed.table-hover.table-striped#files_list{:'data-source' => "#{_files_list_parameter_set_path(parameter_set.to_param, format: "json", file_name: params[:file_name])}"}
+    %thead
+      %tr
+        - FilesListDatatable.header.each do |header|
+          = raw(header)
+    %tbody
+- else
+  %p There is no run yet.
+:javascript
+  $(function() {
+    const oFilesTable = datatables_for_files_table('#files_list');
+
+    $('#show_file_list_button').on('click', function() {
+      const param_set_path = "#{parameter_set_path(@param_set)}";
+      if($('#file_name').val() == "#{params['file_name']}") {
+        location.reload();
+      } else {
+        location.href = param_set_path + '?file_name=' + $('#file_name').val() + '#!tab-files';
+      }
+    });
+
+    $('#files_list_length').after('#{link_to 'Download all', download_result_files_parameter_set_path(@param_set, file_name: params[:file_name]), class: "btn btn-primary #{'disabled' if params[:file_name].blank?}", style: 'margin-left: 10px'}');
+  });
