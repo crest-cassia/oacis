@@ -54,13 +54,13 @@
       %td= @run.created_at.to_time
     %tr
       %th submitted at
-      %td= @run.submitted_at.to_time
+      %td= @run.submitted_at&.to_time
     %tr
       %th started at
-      %td= @run.started_at.to_time
+      %td= @run.started_at&.to_time
     %tr
       %th finished at
-      %td= @run.finished_at.to_time
+      %td= @run.finished_at&.to_time
     %tr
       %th included at
       %td= @run.included_at.to_time
