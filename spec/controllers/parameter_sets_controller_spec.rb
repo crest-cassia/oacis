@@ -439,6 +439,43 @@ describe ParameterSetsController do
     end
   end
 
+  describe "GET _files_list" do
+    let!(:simulator) { FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 30) }
+    let!(:param_set) { simulator.parameter_sets.first }
+
+    before(:each) do
+      param_set.runs.each {|run| run.update!(status: :finished) }
+      get :_files_list, params: {id: param_set.to_param, draw: 1, start: 0, length: 25, file_name: 'bar.png'}, :format => :json
+    end
+
+    it "return json format" do
+      expect(response.header['Content-Type']).to include 'application/json'
+      parsed_body = JSON.parse(response.body)
+      expect(parsed_body["recordsTotal"]).to eq 30
+      expect(parsed_body["recordsFiltered"]).to eq 30
+    end
+
+    it "paginates the list of parameters" do
+      parsed_body = JSON.parse(response.body)
+      expect(parsed_body["data"].size).to eq 25
+    end
+  end
+
+  describe "GET download_result_files" do
+    let!(:simulator) { FactoryBot.create(:simulator, parameter_sets_count: 1, runs_count: 30) }
+    let!(:param_set) { simulator.parameter_sets.first }
+
+    before(:each) do
+      allow(File).to receive(:open).and_return(nil)
+      get :download_result_files, params: { id: param_set.to_param, file_name: 'bar.png' }
+    end
+
+    it "return zip file" do
+      expect(response.header['Content-Disposition']).to include 'bar.png.zip'
+      expect(response.header['Content-Type']).to include 'application/zip'
+    end
+  end
+
   describe "GET _line_plot" do
 
     before(:each) do

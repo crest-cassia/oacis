@@ -1,0 +1,56 @@
+class FilesListDatatable
+  def initialize(runs, view)
+    @view = view
+    @runs = runs
+  end
+
+  def as_json(options = {})
+    {
+      draw: @view.params[:draw].to_i,
+      recordsTotal: @runs.count,
+      recordsFiltered: @runs.count,
+      data: data
+    }
+  end
+
+  def self.header
+    [ '<th class="span1">RunID</th>', '<th class="span1">Detail</th>' ]
+  end
+
+private
+
+  def data
+    return [] if file_name.blank?
+
+    @runs.order(updated_at: :desc).skip(page).limit(per_page).map do |run|
+      arr = []
+      arr << @view.link_to(@view.shortened_id_monospaced(run.id), @view.run_path(run), data: { toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(run) })
+      path = run.result_paths.select {|result_path| result_path.fnmatch?("*/#{file_name}") }.first.to_s.sub(/^#{Rails.root.join('public')}/, '')
+      if path =~ /(\.png|\.jpg|\.bmp)$/i
+        detail = @view.link_to(@view.image_tag(path, class: 'img-thumbnail'), path)
+      else
+        detail = @view.link_to('[Show]', path)
+      end
+      arr << "<div class=\"pull-right\" style=\"width: 300px\">#{detail}</div>"
+    end
+  end
+
+  def page
+    @view.params[:start].to_i
+  end
+
+  def per_page
+    @view.params[:length].to_i > 0 ? @view.params[:length].to_i : 10
+  end
+
+  def file_name
+    @view.params[:file_name]
+  end
+
+  def _tooltip_title(run)
+    <<EOS
+ID  : #{run.id}<br />
+seed: #{run.seed}
+EOS
+  end
+end

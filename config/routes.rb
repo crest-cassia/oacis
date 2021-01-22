@@ -57,6 +57,8 @@ Rails.application.routes.draw do
         get "_runs_list" # for ajax, datatables
         get "_analyses_list" # for ajax, datatables
         get "_similar_parameter_sets_list" # for ajax, datatables
+        get "_files_list" # for ajax, datatables
+        get "download_result_files" # for download result files as zip
         get "_line_plot" # for line plot
         get "_scatter_plot" # for scatter plot
         get "_figure_viewer" # for figure viewer
