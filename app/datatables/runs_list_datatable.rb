@@ -43,9 +43,14 @@ private
       tmp << @view.check_box_tag("checkbox[run]", run.id, false, attr)
       tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(run)} )
       tmp << @view.raw( @view.status_label(run.status) )
-      tmp << @view.link_to( @view.shortened_id_monospaced(run.parameter_set.id), @view.parameter_set_path(run.parameter_set), data:
-        {toggle: 'tooltip', placement: 'bottom', html: true,
-         'original-title': _parameter_set_tooltip_title(run.parameter_set)} )
+      tmp << @view.link_to(
+        @view.shortened_id_monospaced(run.parameter_set.id),
+        @view.parameter_set_path(run.parameter_set),
+        {
+          data: {toggle: 'tooltip', placement: 'bottom', html: true,
+                 'original-title': (_parameter_set_tooltip_title(run.parameter_set))
+          }
+        })
       tmp << Run::PRIORITY_ORDER[run.priority]
       tmp << @view.raw('<span class="run_elapsed">'+@view.formatted_elapsed_time(run.real_time)+'</span>')
       tmp << run.mpi_procs
@@ -71,10 +76,15 @@ EOS
 
   def _parameter_set_tooltip_title(parameter_set)
     parameters = parameter_set.v.inject('') do |str, (k, v)|
-      str + "#{k}: #{v}<br />"
+      str + "<dt>#{k}:</dt><dd> #{v}</dd>"
     end
-    "Simulator: #{parameter_set.simulator.name}<br />
-#{parameters}"
+    html = <<EOS
+<dl class='dl-horizontal'>
+  <dt>Simulator:</dt><dd>#{parameter_set.simulator.name}</dd>
+  #{parameters}
+</dl>
+EOS
+    html
   end
 
   def runs_lists
