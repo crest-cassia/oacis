@@ -1,0 +1,74 @@
+.modal-header
+  %button.close{type: "button", "data-dismiss": "modal"}
+    &times;
+  %h4 Filter
+  = form_tag(update_filter_simulator_path(@simulator), id: 'filter_update_form', method: :patch) do
+    .modal-body.large#parameter_filter_setting_body
+      .row
+        %h5 Name
+        .form-group
+          = text_field_tag "filter_name", "", class: 'form-control'
+        %h5 Condition
+        .form-group.col-md-3.filter_form_field#select_param_form
+          - options = simulator.parameter_definitions.map {|x| [x.key, x.key, {'data-param-type': x.type}] }
+          = select_tag "param", options_for_select(options), class: 'form-control'
+        .form-group.col-md-2.filter_form_field#select_matcher_form
+          = select_tag "matcher", options_for_select(["",""]), class: 'form-control'
+        .form-group.col-md-3.filter_form_field#select_value_form
+          = text_field_tag "value", "", class: 'form-control'
+        .col-md-4.filter_form_field
+          #error_message{style: "display: inline; color: red;"}
+    .modal-footer
+      %button.btn.btn-default{onclick: "$('#parameter_set_filter_update_form_modal').modal('hide');$('#parameter_set_filters_list_modal').modal('show');return false;"}
+        Filters List
+      %input#parameter_filter_update.btn.btn-primary{type: "submit", value: "Update", "data-dismiss": "modal", 'data-find-field-path': _find_filter_simulator_path(@simulator)}
+      = hidden_field_tag "filter", nil, id: 'filter_update_form_target'
+
+:javascript
+  function validate_updated_conditions(form) {
+    let has_error = false;
+    const param = form.find('select#param').val();
+    const type = form.find('select#param option:selected').data('param-type');
+    const matcher = form.find('select#matcher').val();
+    const val = form.find('input#value').val();
+    const err = validate_filter_value(type, val);
+    if(err) {
+      form.find('#error_message').text(err);
+      has_error = true;
+    }
+    const conditions = [param,matcher,val];
+    if (has_error || conditions.length != 3) { return false; }
+
+    return true;
+  }
+  $(function() {
+    $("#filter_update_form").on("change", "#select_param_form select", function() {
+      const row = $(this).closest('.row');
+      update_matcher_select(row);
+    });
+    $('#parameter_filter_update').on('click', function() {
+      const form = $('#filter_update_form');
+
+      let has_error = false;
+      if (!validate_updated_conditions(form)) { has_error = true; }
+      const name = form.find('[name=filter_name]').val();
+      if (!validate_filter_name(name)) { has_error = true; }
+      if (has_error) { return false; }
+
+      const url = $(this).data('find-field-path');
+      jQuery.ajax(url, {
+        type: 'get',
+        data: { filter_name: name },
+        dataType: 'json'
+      })
+      .done(function(data) {
+        if(data && form.data('raw-fname') != data["name"]) {
+          alert("Filter '"+data["name"]+"' already exists.");
+        } else {
+          form.submit();
+        }
+      });
+
+      return false;
+    });
+  });

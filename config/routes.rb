@@ -41,6 +41,7 @@ Rails.application.routes.draw do
       get "_default_mpi_omp" # for ajax, get the default mpi_procs and omp_threads
       get "_cancel_create_ps"
       post "save_filter" if OACIS_ACCESS_LEVEL >= 1
+      patch "update_filter" if OACIS_ACCESS_LEVEL >= 1
       post "_delete_filter" if OACIS_ACCESS_LEVEL >= 1
       get "_find_filter"
     end

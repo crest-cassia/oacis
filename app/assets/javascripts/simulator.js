@@ -338,3 +338,23 @@ function draw_progress_overview(url) {
   })
 };
 
+function validate_filter_value(type, val) {
+  if (!val) { return "must not be empty"; }
+  else if (type=="Integer") {
+    if (val.search(/^[-]?[0-9]+$/) != 0) { return "must be an Integer"; }
+  }
+  else if (type=="Float") {
+    if (val.search(/^[+-]?\d+(\.\d+)?$/) != 0) { return "must be a Float"; }
+  }
+
+  return false;
+};
+
+function validate_filter_name(name) {
+  if (name == null || (name != null && name.length < 1)) {
+    alert("Name cannot be blank.");
+    return false;
+  }
+
+  return true
+};
