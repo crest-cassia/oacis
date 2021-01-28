@@ -116,5 +116,15 @@ namespace :db do
       end
       update_parameter_definition(azr)
     end
+
+    unless client.collections.find {|col| col.name== "notification_events" }
+      client.command(create: "notification_events", capped: true, size: 1048576)
+      $stderr.puts "capped collection notification_events was created"
+    end
+
+    unless OacisSetting.exists?
+      OacisSetting.create!
+      $stderr.puts "document oacis_settings was created"
+    end
   end
 end

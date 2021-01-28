@@ -9,6 +9,8 @@ class Analysis
   belongs_to :analyzable, polymorphic: true, autosave: false, index: true, touch: true
   belongs_to :parameter_set, index: true
 
+  delegate :simulator, to: :analyzer
+
   default_scope ->{ where(:to_be_destroyed.in => [nil,false]) }
 
   validates :analyzer, :presence => true

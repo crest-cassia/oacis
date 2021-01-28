@@ -239,3 +239,39 @@ table.dataTable.fixed_thead thead th {
   top: 0;
   background-color: #ffffff;
 }
+
+#notification-event-dropdown {
+  .dropdown-toggle {
+    user-select: none;
+    padding-top: 18px;
+  }
+  .glyphicon-bell {
+    font-size: 23px;
+    color: white;
+    vertical-align: middle;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: normal;
+    position: relative;
+    margin-left: -6px;
+    vertical-align: middle;
+    background-color: #e74c3c;
+    min-width: 21px;
+    &:empty {
+      display: inline-block;
+      visibility: hidden;
+    }
+  }
+  .dropdown-menu {
+    background-color: white;
+    min-width: 400px
+  }
+  #notification-event-list {
+    margin-bottom: 0;
+  }
+}
+select[name="oacis_setting[notification_level]"] + .tooltip .tooltip-inner {
+  text-align: left;
+  width: 610px;
+}

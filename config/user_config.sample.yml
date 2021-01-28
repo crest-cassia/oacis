@@ -3,4 +3,4 @@ access_level: # 2: full access, 1: collaboration, 0: read only
   2
 authentication: {username: password}
 binding_ip: 'localhost'
-
+oacis_host: localhost:3000

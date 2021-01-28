@@ -41,5 +41,9 @@
      "description":"A short explanation about the analyzer.<br/>(Markdown format is supported.)",
      "executable_on":"Specify the hosts on which the simulator is executed.",
      "host_for_auto_run":"The host to which analyzers made by \"auto-run\" is submitted."
-   }
+   },
+  "oacis_setting": {
+    "notification_level": "Level 1: Notify when all jobs in the Simulator are finished.<br/>Level 2: Notify when all jobs in the Simulator and ParameterSet are finished.<br/>Level 3: Notify when all jobs in the Simulator and ParameterSet, and each job is finished.",
+    "webhook_url": "Webhook URL which is used to send notifications to Slack channel."
+  }
 }
