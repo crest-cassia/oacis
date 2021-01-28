@@ -478,21 +478,20 @@ describe SimulatorsController do
     context "with valid params" do
 
       before(:each) do
-        @valid_param = {id: @sim.to_param, filter: @filter.id, filter_name: "filter2", param: 'L', matcher: 'eq', value: 2 }
+        @valid_param = {id: @sim.to_param, filter: @filter.id, filter_name: "filter2", conditions: [['T','gte',4.0], ['L','eq',2]].to_json }
       end
 
       it "update a new ParameterSetFilter" do
         post :update_filter, params: @valid_param
-        f = @sim.reload.parameter_set_filters.first
+        f = @filter.reload
         expect(f.name).to eq 'filter2'
-        expect(f.conditions).to eq [['L','eq',2]]
+        expect(f.conditions).to eq [['T','gte',4.0], ['L','eq',2]]
       end
 
       it "redirects to show with the current parameter_set_filter" do
-        f = @sim.parameter_set_filters.first
-        request.env['HTTP_REFERER'] = simulator_path(@sim, filter: f.to_param)
+        request.env['HTTP_REFERER'] = simulator_path(@sim, filter: @filter.to_param)
         post :update_filter, params: @valid_param
-        expect(response).to redirect_to(simulator_path(@sim, filter: f.to_param))
+        expect(response).to redirect_to(simulator_path(@sim, filter: @filter.to_param))
       end
     end
   end

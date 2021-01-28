@@ -356,5 +356,5 @@ function validate_filter_name(name) {
     return false;
   }
 
-  return true
+  return true;
 };

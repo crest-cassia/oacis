@@ -154,8 +154,8 @@ class SimulatorsController < ApplicationController
   # PATCH /simulators/:_id/update_filter redirect_to simulators#show
   def update_filter
     simulator = Simulator.find(params[:id])
-    filter = simulator.parameter_set_filters.where(id: params[:filter]).first
-    if filter.update(name: params[:filter_name], conditions: [[params[:param], params[:matcher], params[:value].to_i]]) # TODO
+    filter = simulator.parameter_set_filters.find(params[:filter])
+    if filter.update(name: params[:filter_name], conditions: JSON.load(params[:conditions]))
       flash[:notice] = "Filter '#{filter.name}' was updated."
     else
       flash[:alert] = "Failed to update Filter: #{filter.errors.messages}"

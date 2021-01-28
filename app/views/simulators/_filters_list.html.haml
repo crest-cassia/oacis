@@ -6,18 +6,14 @@
   %tbody#parameter_set_filters_table_body
 
 :javascript
-  function init_filter_update_form(target) {
+  function init_filter_update_form_data(target) {
+    const form = $('#filter_update_form');
     const fid = target.data('filter-id');
     const fname = target.data('filter-name');
-    const fconditions = target.data('filter-conditions')[0];
-    const form = $('#filter_update_form');
-    form.find('#error_message').text('');
-    form.find('#filter_update_form_target').val(fid);
-    form.find('[name=filter_name]').val(fname);
-    form.find('select#param').val(fconditions[0]).change();
-    form.find('select#matcher').val(fconditions[1]);
-    form.find('input#value').val(fconditions[2]);
-    form.data('raw-fname', fname);
+    const fconditions = target.data('filter-conditions');
+    form.data('filter-id', fid)
+    form.data('filter-name', fname)
+    form.data('filter-conditions', fconditions)
   }
   var oFilterSetTable = null;
   $("#parameter_set_filters_list_modal").on('show.bs.modal', function(event) {
@@ -42,7 +38,7 @@
     }
   });
   $('#parameter_set_filters_table_body').on('click', "#edit_filter_btn", function() {
-    init_filter_update_form($(this));
+    init_filter_update_form_data($(this));
 
     $('#parameter_set_filters_list_modal').modal('hide');
     $('#parameter_set_filter_update_form_modal').modal("show");
