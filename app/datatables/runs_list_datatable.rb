@@ -76,13 +76,15 @@ EOS
 
   def _parameter_set_tooltip_title(parameter_set)
     parameters = parameter_set.v.inject('') do |str, (k, v)|
-      str + "<dt>#{k}:</dt><dd> #{v}</dd>"
+      str + "<tr><th>#{k}:</th><td>#{v}</td></tr>"
     end
     html = <<EOS
-<dl class='dl-horizontal'>
-  <dt>Simulator:</dt><dd>#{parameter_set.simulator.name}</dd>
-  #{parameters}
-</dl>
+<table class='table table-condensed'>
+  <tbody>
+    <tr><th>Simulator</th><td>#{parameter_set.simulator.name}</td></tr>
+#{parameters}
+  </tbody>
+</table>
 EOS
     html
   end

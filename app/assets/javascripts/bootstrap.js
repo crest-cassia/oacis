@@ -11,7 +11,9 @@ jQuery(function() {
 
 (function(){
   let myDefaultWhitelist = $.fn.tooltip.Constructor.DEFAULTS.whiteList;
-  myDefaultWhitelist.dl = [];
-  myDefaultWhitelist.dt = [];
-  myDefaultWhitelist.dd = [];
+  myDefaultWhitelist.table = [];
+  myDefaultWhitelist.tbody = [];
+  myDefaultWhitelist.tr = [];
+  myDefaultWhitelist.th = [];
+  myDefaultWhitelist.td = [];
 })();
