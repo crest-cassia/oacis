@@ -77,6 +77,11 @@ i.padding-left-half-em {
 .navbar-default .navbar-nav > li > a:focus {
   background-color: transparent;
 }
+.navbar-default .navbar-nav > li.dropdown > ul.dropdown-menu {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  min-width: 400px;
+}
 .well {
   padding: 14px;
 }

@@ -81,7 +81,7 @@ EOS
     html = <<EOS
 <table class='table table-condensed'>
   <tbody>
-    <tr><th>Simulator</th><td>#{parameter_set.simulator.name}</td></tr>
+    <tr><th>Simulator:</th><td>#{parameter_set.simulator.name}</td></tr>
 #{parameters}
   </tbody>
 </table>
