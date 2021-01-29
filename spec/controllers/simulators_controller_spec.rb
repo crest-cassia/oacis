@@ -465,6 +465,37 @@ describe SimulatorsController do
     end
   end
 
+  describe "PATCH update_filter" do
+    before(:each) do
+      @sim = FactoryBot.create(:simulator,
+                               parameter_sets_count: 1, runs_count: 0)
+      @filter = FactoryBot.create(:parameter_set_filter,
+                                  simulator: @sim,
+                                  name: 'filter1',
+                                  conditions: [["T","gte",5]])
+    end
+
+    context "with valid params" do
+
+      before(:each) do
+        @valid_param = {id: @sim.to_param, filter: @filter.id, filter_name: "filter2", conditions: [['T','gte',4.0], ['L','eq',2]].to_json }
+      end
+
+      it "update a new ParameterSetFilter" do
+        post :update_filter, params: @valid_param
+        f = @filter.reload
+        expect(f.name).to eq 'filter2'
+        expect(f.conditions).to eq [['T','gte',4.0], ['L','eq',2]]
+      end
+
+      it "redirects to show with the current parameter_set_filter" do
+        request.env['HTTP_REFERER'] = simulator_path(@sim, filter: @filter.to_param)
+        post :update_filter, params: @valid_param
+        expect(response).to redirect_to(simulator_path(@sim, filter: @filter.to_param))
+      end
+    end
+  end
+
   describe "GET _find_filter" do
 
     before(:each) do

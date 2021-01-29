@@ -66,6 +66,12 @@
           .modal-footer
             %input#parameter_save_filter_set_ok.btn.btn-primary{type: "submit", value: "Save", "data-dismiss": "modal", 'data-find-field-path': _find_filter_simulator_path(@simulator)}
 
+- if OACIS_ACCESS_LEVEL >= 1
+  #parameter_set_filter_update_form_modal.modal.large.fade
+    .modal-dialog.modal-vertical-centered
+      .modal-content
+        = render 'filter_update_form', simulator: @simulator
+
 :javascript
   $(function() {
     const objPSTable = create_parameter_sets_list('#params_list', 100);
@@ -75,10 +81,8 @@
   });
   $("#parameter_save_filter_set_ok").on("click", function() {
     let name = $("#filter_name_field").val();
-    if (name == null || (name != null && name.length < 1)) {
-      alert("Name cannot be blank.");
-      return false;
-    }
+    if (!validate_filter_name(name)) { return false; }
+
     let url = $(this).data('find-field-path');
     jQuery.ajax(url, {
       type: 'get',

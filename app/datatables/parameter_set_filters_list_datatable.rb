@@ -29,10 +29,13 @@ class ParameterSetFiltersListDatatable
       trash = (OACIS_ACCESS_LEVEL >= 1) ?
                   "<a href='#' data-delete-url='#{delete_url}' data-filter-id='#{filter.id}'>#{@view.raw(@view.fa_icon('trash-o'))}</a>" :
                   @view.raw(@view.fa_icon('trash-o'))
+      edit = (OACIS_ACCESS_LEVEL >= 1) ?
+                  "<a href='#' data-filter-id='#{filter.id}' data-filter-name='#{filter.name}' data-filter-conditions='#{filter.conditions}' id='edit_filter_btn'>#{@view.raw(@view.fa_icon('edit'))}</a>" :
+                  @view.raw(@view.fa_icon('edit'))
       tmp << @view.raw(
           "<ul style=\"list-style: none; margin: 0px; padding: 0px;\">
              <li style=\"float: left;\"><a href=\"#{filter_path(filter)}\">#{filter.name}</a></li>
-             <li>#{trash}</li>
+             <li>#{edit} #{trash}</li>
              <ul style=\"list-style: none; margin: 0px; padding: 0px;\">
                <li style=\"text-align: left; margin-top: 5px;\">#{query_badge(filter)}</li>
              </ul>

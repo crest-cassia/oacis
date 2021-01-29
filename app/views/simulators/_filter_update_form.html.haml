@@ -1,0 +1,109 @@
+.modal-header
+  %button.close{type: "button", "data-dismiss": "modal"}
+    &times;
+  %h4 Filter
+  = form_tag(update_filter_simulator_path(@simulator), id: 'filter_update_form', method: :patch) do
+    .modal-body.large#parameter_filter_setting_body
+      .row
+        %h5 Name
+        .form-group
+          = text_field_tag "filter_name", "", class: 'form-control'
+      .row
+        %h5 Conditions
+      .filter_conditions_form
+        .row
+          .form-group.col-md-3.filter_form_field#select_param_form
+            - options = simulator.parameter_definitions.map {|x| [x.key, x.key, {'data-param-type': x.type}] }
+            = select_tag "param", options_for_select(options), class: 'form-control'
+          .form-group.col-md-2.filter_form_field#select_matcher_form
+            = select_tag "matcher", options_for_select(["",""]), class: 'form-control'
+          .form-group.col-md-3.filter_form_field#select_value_form
+            = text_field_tag "value", "", class: 'form-control'
+          .col-md-4.filter_form_field
+            %a#delete_field_btn{href:'#'}
+              %i.fa.fa-times{style: "padding-top: 10px;"}
+            #error_message{style: "display: inline; color: red;"}
+      %a#add_field_btn{href:'#'}
+        %i.fa.fa-plus
+    .modal-footer
+      %button.btn.btn-default{onclick: "$('#parameter_set_filter_update_form_modal').modal('hide');$('#parameter_set_filters_list_modal').modal('show');return false;"}
+        Filters List
+      %input#parameter_filter_update.btn.btn-primary{type: "submit", value: "Update", 'data-find-field-path': _find_filter_simulator_path(@simulator)}
+      = hidden_field_tag "filter", "", id: 'filter_update_form_target'
+      = hidden_field_tag "conditions", "", id: 'filter_update_form_conditions'
+
+:javascript
+  $(function() {
+    let field = $('.filter_conditions_form').html();
+    $("#parameter_set_filter_update_form_modal").on('show.bs.modal', function() {
+      const form = $('#filter_update_form');
+
+      const fid = form.data('filter-id');
+      form.find('#filter_update_form_target').val(fid);
+      const fname = form.data('filter-name');
+      form.find('[name=filter_name]').val(fname);
+      form.data('raw-fname', fname);
+
+      $('.filter_conditions_form').empty();
+      const conditions = form.data('filter-conditions');
+      for(const condition of conditions) {
+        const key = condition[0];
+        const matcher = condition[1];
+        const val = condition[2];
+        const appended = $(field).appendTo('.filter_conditions_form');
+        appended.find('select#param').val(key);
+        appended.find('input#value').val(val);
+        update_matcher_select(appended);
+        appended.find('select#matcher').val(matcher);
+      }
+    });
+    $('#filter_update_form').on("click", "#add_field_btn", function() {
+      const appended = $(field).appendTo('.filter_conditions_form');
+      update_matcher_select(appended);
+    })
+    $('#filter_update_form').on("click", "#delete_field_btn", function() {
+      $(this).closest('.row').remove();
+    })
+    $("#filter_update_form").on("change", "#select_param_form select", function() {
+      const row = $(this).closest('.row');
+      update_matcher_select(row);
+    });
+    $('#parameter_filter_update').on('click', function() {
+      const form = $('#filter_update_form');
+
+      let has_error = false;
+      const name = form.find('[name=filter_name]').val();
+      if (!validate_filter_name(name)) { has_error = true; }
+      const conditions = [];
+      $('.filter_conditions_form .row').each(function(i,o) {
+        const param = $(o).find('select#param').val();
+        const type = $(o).find('select#param option:selected').data('param-type');
+        const matcher = $(o).find('select#matcher').val();
+        const val = $(o).find('input#value').val();
+        const err = validate_filter_value(type, val);
+        if(err) {
+          $(o).find('#error_message').text(err);
+          has_error = true;
+        }
+        conditions.push([param,matcher,val]);
+      });
+      if (has_error || conditions.length == 0) { return false; }
+
+      form.find('#filter_update_form_conditions').val(JSON.stringify(conditions));
+      const url = $(this).data('find-field-path');
+      jQuery.ajax(url, {
+        type: 'get',
+        data: { filter_name: name },
+        dataType: 'json'
+      })
+      .done(function(data) {
+        if(data && form.data('raw-fname') != data["name"]) {
+          alert("Filter '"+data["name"]+"' already exists.");
+        } else {
+          form.submit();
+        }
+      });
+
+      return false;
+    });
+  });
