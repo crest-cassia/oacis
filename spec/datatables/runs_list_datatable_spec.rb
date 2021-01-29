@@ -20,6 +20,7 @@ describe "RunsListDatatable" do
       allow(@context).to receive(:shortened_id_monospaced).and_return("xxxx..yy")
       allow(@context).to receive(:host_path).and_return("/host/xxx")
       allow(@context).to receive(:shortened_job_id).and_return("123456..")
+      allow(@context).to receive(:parameter_set_path).and_return("/parameter_set/#{@param_set.id}")
       @rld = RunsListDatatable.new(@runs, @context)
       @rld_json = JSON.parse(@rld.to_json)
     end
@@ -56,6 +57,7 @@ describe "RunsListDatatable" do
         allow(@context).to receive(:shortened_id_monospaced).and_return("xxxx..yy")
         allow(@context).to receive(:host_path).and_return("/host/xxx")
         allow(@context).to receive(:shortened_job_id).and_return("123456..")
+        allow(@context).to receive(:parameter_set_path).and_return("/parameter_set/#{@param_set.id}")
         @rld = RunsListDatatable.new(@runs, @context)
         @rld_json = JSON.parse(@rld.to_json)
       end

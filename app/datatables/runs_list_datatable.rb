@@ -1,8 +1,7 @@
 class RunsListDatatable
-
   SORT_BY = [nil, "id", "status", "priority", "real_time",
              "mpi_procs", "omp_threads", "simulator_version",
-             "created_at", "updated_at", "submitted_to", "job_id"]
+             "created_at", "updated_at", "submitted_to", "job_id", "parameter_set_id"]
 
   def initialize(runs, view)
     @view = view
@@ -25,7 +24,9 @@ class RunsListDatatable
       col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="run_check_all" value="true" /></th>'
     end
     header  = [col0,
-             '<th class="span1">RunID</th>', '<th class="span1">status</th>', '<th class="span1">priority</th>',
+             '<th class="span1">RunID</th>', '<th class="span1">status</th>',
+             '<th class="span1">ParamSetID</th>',
+             '<th class="span1">priority</th>',
              '<th class="span1">elapsed</th>',
              '<th class="span1">MPI</th>', '<th class="span1">OMP</th>', '<th class="span1">version</th>',
              '<th class="span1">created_at</th>', '<th class="span1">updated_at</th>', '<th class="span1">host(group)</th>', '<th class="span1">job_id</th>']
@@ -42,6 +43,14 @@ private
       tmp << @view.check_box_tag("checkbox[run]", run.id, false, attr)
       tmp << @view.link_to( @view.shortened_id_monospaced(run.id), @view.run_path(run), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(run)} )
       tmp << @view.raw( @view.status_label(run.status) )
+      tmp << @view.link_to(
+        @view.shortened_id_monospaced(run.parameter_set.id),
+        @view.parameter_set_path(run.parameter_set),
+        {
+          data: {toggle: 'tooltip', placement: 'bottom', html: true,
+                 'original-title': (_parameter_set_tooltip_title(run.parameter_set))
+          }
+        })
       tmp << Run::PRIORITY_ORDER[run.priority]
       tmp << @view.raw('<span class="run_elapsed">'+@view.formatted_elapsed_time(run.real_time)+'</span>')
       tmp << run.mpi_procs
@@ -63,6 +72,21 @@ private
 ID  : #{run.id}<br />
 seed: #{run.seed}
 EOS
+  end
+
+  def _parameter_set_tooltip_title(parameter_set)
+    parameters = parameter_set.v.inject('') do |str, (k, v)|
+      str + "<tr><th>#{k}:</th><td>#{v}</td></tr>"
+    end
+    html = <<EOS
+<table class='table table-condensed'>
+  <tbody>
+    <tr><th>Simulator:</th><td>#{parameter_set.simulator.name}</td></tr>
+#{parameters}
+  </tbody>
+</table>
+EOS
+    html
   end
 
   def runs_lists

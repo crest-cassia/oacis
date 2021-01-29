@@ -8,3 +8,12 @@ jQuery(function() {
     trigger: 'hover'
   });
 });
+
+(function(){
+  let myDefaultWhitelist = $.fn.tooltip.Constructor.DEFAULTS.whiteList;
+  myDefaultWhitelist.table = [];
+  myDefaultWhitelist.tbody = [];
+  myDefaultWhitelist.tr = [];
+  myDefaultWhitelist.th = [];
+  myDefaultWhitelist.td = [];
+})();

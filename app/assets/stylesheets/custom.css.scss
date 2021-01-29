@@ -77,6 +77,11 @@ i.padding-left-half-em {
 .navbar-default .navbar-nav > li > a:focus {
   background-color: transparent;
 }
+.navbar-default .navbar-nav > li.dropdown > ul.dropdown-menu {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  min-width: 400px;
+}
 .well {
   padding: 14px;
 }
@@ -152,6 +157,13 @@ pre {
 }
 .tooltip-inner {
   max-width: unset;
+  .table {
+    background-color: unset;
+    margin-bottom: 0;
+    &>tbody>tr>td, &>tbody>tr>th, &>tbody>tr>td {
+      border: 0;
+    }
+  }
 }
 .wide-tooltip .tooltip {width: 280px; line-height: 1.4}
 .wide-tooltip .tooltip dl {margin-top: 3px; margin-bottom: 3px;}
