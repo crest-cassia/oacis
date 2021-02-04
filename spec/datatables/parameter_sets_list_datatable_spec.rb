@@ -41,7 +41,7 @@ describe "ParameterSetsListDatatable" do
         expect(@psld_json["recordsTotal"]).to eq(30)
         expect(@psld_json["recordsFiltered"]).to eq(30)
         expect(@psld_json["data"].size).to eq(25)
-        expect(@psld_json["data"].first[4].to_i).to eq(ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).min("v.L"))
+        expect(ApplicationController.helpers.strip_tags(@psld_json["data"].first['L']).to_i).to eq(ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).min("v.L"))
       end
     end
 
@@ -82,7 +82,7 @@ describe "ParameterSetsListDatatable" do
         expect(@psld_json["recordsTotal"]).to eq(30)
         expect(@psld_json["recordsFiltered"]).to eq(25)
         expect(@psld_json["data"].size).to eq(5)
-        expect(@psld_json["data"].first[4].to_i).to eq(@query.parameter_sets.only("v.L").max("v.L"))#["aaData"].first[4].to_i is qeual to v.L (["aaData"].first[id, updated_at, [keys]])
+        expect(ApplicationController.helpers.strip_tags(@psld_json["data"].first['L']).to_i).to eq(@query.parameter_sets.only("v.L").max("v.L"))
       end
     end
 
@@ -115,8 +115,8 @@ describe "ParameterSetsListDatatable" do
         expect(@psld_json["recordsTotal"]).to eq(30)
         expect(@psld_json["recordsFiltered"]).to eq(30)
         expect(@psld_json["data"].size).to eq(25)
-        expect(@psld_json["data"].first[4].to_i).to eq(ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).max("v.L"))
-        expect(@psld_json["data"].first[5].to_f).to eq(ParameterSet.only("v.T").where(:simulator_id => @simulator.to_param).where({"v.L"=>14}).min("v.T"))
+        expect(ApplicationController.helpers.strip_tags(@psld_json["data"].first['L']).to_i).to eq(ParameterSet.only("v.L").where(:simulator_id => @simulator.to_param).max("v.L"))
+        expect(ApplicationController.helpers.strip_tags(@psld_json["data"].first['T']).to_f).to eq(ParameterSet.only("v.T").where(:simulator_id => @simulator.to_param).where({"v.L"=>14}).min("v.T"))
       end
     end
   end

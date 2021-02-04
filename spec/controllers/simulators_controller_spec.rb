@@ -585,7 +585,7 @@ describe SimulatorsController do
       it "show the list of filtered ParameterSets" do
         expect(@parsed_body["data"].size).to eq 5
         @parsed_body["data"].each do |ps|
-          expect(ps[4].to_i).to be >= 5 #ps[4].to_i is qeual to v.L(ps[checkbox, progress, id, updated_at, [keys]])
+          expect(ApplicationController.helpers.strip_tags(ps['L']).to_i).to be >= 5
         end
       end
     end

@@ -1,4 +1,5 @@
 class ParameterSetsListDatatable
+  HUE_MAX = 215
 
   def initialize(parameter_sets, parameter_definition_keys, view, num_ps_total, base_ps = nil)
     @view = view
@@ -40,28 +41,33 @@ private
   end
 
   def data
+    data = []
     parameter_sets_list.map do |ps|
-      tmp = []
+      tmp = {}
       attr = (OACIS_ACCESS_LEVEL==0) ? {align: "center", disabled: "disabled"} : {align: "center"}
-      tmp << @view.check_box_tag("checkbox[ps]", ps.id, false, attr)
+      tmp.store('Checkbox', @view.check_box_tag("checkbox[ps]", ps.id, false, attr))
       progress = @view.progress_bar(runs_status_counts(ps))
-      tmp << @view.raw(progress)
-      tmp << @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(ps)} )
-      tmp << @view.raw('<span class="ps_updated_at">'+@view.distance_to_now_in_words(ps.updated_at)+'</span>')
+      tmp.store('Progress', @view.raw(progress))
+      tmp.store('ParamSetID', @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(ps)} ))
+      tmp.store('Updated_at', @view.raw('<span class="ps_updated_at">'+@view.distance_to_now_in_words(ps.updated_at)+'</span>'))
       @param_keys.each do |key|
         if @base_ps
-          tmp << colorize_param_value(ps.v[key], @base_ps.v[key])
+          tmp.store("#{key}", colorize_param_value(ps.v[key], @base_ps.v[key]))
+        elsif colorized_key?(key)
+          tmp.store("#{key}", @view.raw("<span class=color-#{colorize_cell_by_param_value[key][ps.v[key]]}>" + ERB::Util.html_escape(ps.v[key]) + '</span>'))
         else
-          tmp <<  ERB::Util.html_escape(ps.v[key])
+          tmp.store("#{key}", ERB::Util.html_escape(ps.v[key]))
         end
       end
-      tmp << "params_list_#{ps.id}"
-      tmp
+      tmp.store('params_list', "params_list_#{ps.id}")
+      data << tmp
     end
+    data
   end
 
-  def _tooltip_title(ps)
-    "ID: #{ps.id}"
+  def colorized_key?(key)
+    value = ordered_param_sets_per_page.first.v[key]
+    value.is_a?(Integer) || value.is_a?(Float)
   end
 
   def colorize_param_value(val, compared_val)
@@ -84,12 +90,42 @@ private
     end
   end
 
+  def colorize_cell_by_param_value
+    return @colors if @colors.present?
+
+    colors = {}
+    @param_keys.each do |key|
+      next unless colorized_key?(key)
+
+      unique_values_by_key = ordered_param_sets_per_page.group_by { |param_set| param_set.v[key] }.sort.reverse
+      colors_by_key = {}
+      unique_values_by_key.size.times do |i|
+        value = unique_values_by_key[i][0]
+        colors_by_key.store(value, calculate_cell_colors(i, unique_values_by_key.size))
+      end
+      colors.store(key, colors_by_key)
+    end
+    @colors = colors
+    @colors
+  end
+
+  def calculate_cell_colors(index, size)
+    return 0 if size == 1
+
+    angle = HUE_MAX / (size - 1)
+    angle * index
+  end
+
+  def _tooltip_title(ps)
+    "ID: #{ps.id}"
+  end
+
   def parameter_sets_list
     @ps_list_cache ||= get_parameter_set_list
   end
 
   def get_parameter_set_list
-    pss = @param_sets.order_by(sort_column_direction).skip(page).limit(per_page).to_a
+    pss = ordered_param_sets_per_page.to_a
     # `to_a` is necessary to fix the contents of parameter_sets_list
     @runs_status_counts_cache = ParameterSet.runs_status_count_batch(pss)
 
@@ -102,6 +138,10 @@ private
       end
     end
     pss
+  end
+
+  def ordered_param_sets_per_page
+    @ordered_param_sets_per_page ||= @param_sets.order_by(sort_column_direction).skip(page).limit(per_page)
   end
 
   def progress_rate(ps)
@@ -132,7 +172,8 @@ private
   def sort_columns
     return ["updated_at"] if @view.params["order"].nil?
     @view.params["order"].keys.sort.map do |key|
-      sort_by[@view.params["order"][key]["column"].to_i]
+      sort_column = @view.params['sort_column']
+      sort_column ? sort_by[sort_column.to_i] : sort_by[@view.params["order"][key]["column"].to_i]
     end
   end
 

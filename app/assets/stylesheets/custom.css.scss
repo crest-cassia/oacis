@@ -232,3 +232,10 @@ input[type="checkbox"] {
 .alert {
   padding: 10px;
 }
+
+table.dataTable.fixed_thead thead th {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
+}
