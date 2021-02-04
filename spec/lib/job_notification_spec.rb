@@ -20,7 +20,7 @@ describe JobNotificationUtil do
   let!(:other_ps_run) { FactoryBot.create(:run, status: :running, parameter_set: other_ps) }
   let!(:other_sim_run) { FactoryBot.create(:run, status: :running, parameter_set: other_sim_ps) }
 
-  let!(:analyses) { FactoryBot.create_list(:analysis, 2, status: :running, parameter_set: ps, analyzer: analyzer, analyzable: ps) }
+  let!(:analyses) { FactoryBot.create_list(:analysis, 2, status: :running, parameter_set: ps, analyzer: analyzer, analyzable: runs.first) }
   let!(:other_ps_analysis) { FactoryBot.create(:analysis, status: :running, parameter_set: other_ps, analyzer: analyzer, analyzable: other_ps) }
   let!(:other_sim_analysis) { FactoryBot.create(:analysis, status: :running, parameter_set: other_sim_ps, analyzer: other_sim_analyzer, analyzable: other_sim_run) }
 

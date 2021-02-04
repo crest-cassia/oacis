@@ -28,7 +28,8 @@ module JobNotificationUtil
     end
 
     def notify_all_jobs_in_param_set_finished(job)
-      return if job.parameter_set.send(job.class.name.underscore.pluralize).unfinished.exists?
+      return if job.instance_of?(Run) && job.parameter_set.runs.unfinished.exists?
+      return if job.instance_of?(Analysis) && Analysis.where(parameter_set_id: job.parameter_set.id.to_s).unfinished.exists?
 
       NotificationEvent.create!(message: generate_all_jobs_in_param_set_finished_message(job))
     end
