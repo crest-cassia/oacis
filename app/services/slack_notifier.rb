@@ -4,6 +4,8 @@ class SlackNotifier
   end
 
   def notify(message:, color:)
+    return if Rails.env.test?
+
     begin
       payload = { username: 'Oacis', attachments: [{ text: message, color: color }] }.to_json
       Net::HTTP.post_form(URI(@webhook_url), { payload: payload })

@@ -3,7 +3,7 @@ module NotificationEventsHelper
     simulator_id = job.simulator.id
     id_link = link_to(shortened_id(simulator_id), simulator_url(simulator_id, host: Oacis::Application.config.user_config['oacis_host']))
 
-    return "All #{job.class} in SimulatorId #{id_link} finished."
+    return "All #{job.class} in SimulatorID #{id_link} finished."
   end
 
   def generate_all_jobs_in_param_set_finished_message(job)
