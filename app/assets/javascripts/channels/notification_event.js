@@ -11,15 +11,25 @@ function create_subscription_to_notification_event_channel() {
     received: function (data) {
       if (data['notification_event']) {
         $('#no-notification-event').hide();
-        const item = $(data['notification_event']).hide().fadeIn(1000).css('display', 'block');
-        $('#notification-event-list').prepend(item);
+
+        const eventListEl = $('#notification-event-list');
+        const newEventEl = $(data['notification_event']).hide().fadeIn(1000).css('display', 'block');
+        eventListEl.prepend(newEventEl);
+
+        const eventsEl = eventListEl.children('.list-group-item');
+        if (eventsEl.length > 10) {
+          eventsEl.last().remove();
+        }
       }
+
+      const eventDropdownEl = $('#notification-event-dropdown');
+      const badgeEl = eventDropdownEl.find('.badge');
       if (data['unread_count'] && data['unread_count'] > 0) {
-        $('#notification-event-dropdown .badge').text(data['unread_count']);
+        badgeEl.text(data['unread_count']);
       } else {
-        $('#notification-event-dropdown .badge').empty();
+        badgeEl.empty();
       }
-      if ($('#notification-event-dropdown').hasClass('open')) {
+      if (eventDropdownEl.hasClass('open')) {
         this.read_all();
       }
       // Called when there's incoming data on the websocket for this channel
