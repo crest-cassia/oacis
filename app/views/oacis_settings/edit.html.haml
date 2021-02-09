@@ -12,5 +12,16 @@
     .col-md-5
       = f.text_field :webhook_url, class: 'form-control', data: tooltip_data(:oacis_setting, :webhook_url)
   .form-group
+    = f.label_c :oacis_url
+    .col-md-5
+      = f.text_field :oacis_url, class: 'form-control', data: tooltip_data(:oacis_setting, :oacis_url)
+  .form-group
     .col-md-2.col-md-offset-2
       = f.submit(class: 'btn btn-primary')
+:javascript
+  $(function() {
+    const oacisUrlEl = $('input[name="oacis_setting[oacis_url]"]');
+    if (oacisUrlEl.val() === '') {
+      oacisUrlEl.val(document.location.origin);
+    }
+  });

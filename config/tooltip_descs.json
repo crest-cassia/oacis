@@ -44,6 +44,7 @@
    },
   "oacis_setting": {
     "notification_level": "Level 1: Notify when all jobs in the Simulator are finished.<br/>Level 2: Notify when all jobs in the Simulator and ParameterSet are finished.<br/>Level 3: Notify when all jobs in the Simulator and ParameterSet, and each job is finished.",
-    "webhook_url": "Webhook URL which is used to send notifications to Slack channel."
+    "webhook_url": "Webhook URL which is used to send notifications to Slack channel.",
+    "oacis_url": "The base URL which is used to resolve relative links in Slack notifications."
   }
 }

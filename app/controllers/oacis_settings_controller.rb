@@ -19,6 +19,6 @@ class OacisSettingsController < ApplicationController
   end
 
   def oacis_setting_params
-    params.require(:oacis_setting).permit(:notification_level, :webhook_url)
+    params.require(:oacis_setting).permit(:notification_level, :webhook_url, :oacis_url)
   end
 end
