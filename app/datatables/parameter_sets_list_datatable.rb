@@ -54,7 +54,7 @@ private
         if @base_ps
           tmp.store("#{key}", colorize_param_value(ps.v[key], @base_ps.v[key]))
         elsif colorized_key?(key)
-          tmp.store("#{key}", @view.raw("<span class=color-#{colorize_cell_by_param_value[key][ps.v[key]]}>" + ERB::Util.html_escape(ps.v[key]) + '</span>'))
+          tmp.store("#{key}", @view.raw("<span class=color-#{colorize_unique_param_values[key][ps.v[key]]}>" + ERB::Util.html_escape(ps.v[key]) + '</span>'))
         else
           tmp.store("#{key}", ERB::Util.html_escape(ps.v[key]))
         end
@@ -90,7 +90,7 @@ private
     end
   end
 
-  def colorize_cell_by_param_value
+  def colorize_unique_param_values
     return @colors if @colors.present?
 
     colors = {}
@@ -101,7 +101,7 @@ private
       colors_by_key = {}
       unique_values_by_key.size.times do |i|
         value = unique_values_by_key[i][0]
-        colors_by_key.store(value, calculate_cell_colors(i, unique_values_by_key.size))
+        colors_by_key.store(value, calculate_hue(i, unique_values_by_key.size))
       end
       colors.store(key, colors_by_key)
     end
@@ -109,7 +109,7 @@ private
     @colors
   end
 
-  def calculate_cell_colors(index, size)
+  def calculate_hue(index, size)
     return 0 if size == 1
 
     angle = HUE_MAX / (size - 1)
