@@ -8,9 +8,10 @@
     .col-md-2
       = f.select :notification_level, [1, 2, 3], {}, class: 'form-control', data: tooltip_data(:oacis_setting, :notification_level)
   .form-group
-    = f.label_c :webhook_url
+    = f.label_c :webhook_url, 'Slack webhook URL'
     .col-md-5
       = f.text_field :webhook_url, class: 'form-control', data: tooltip_data(:oacis_setting, :webhook_url)
+      = link_to 'How to setup incoming webhook for slack.', 'https://api.slack.com/messaging/webhooks', target: '_blank'
   .form-group
     = f.label_c :oacis_url
     .col-md-5
