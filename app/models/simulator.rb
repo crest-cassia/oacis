@@ -39,6 +39,10 @@ class Simulator
     self.analyzers.where(type: :on_parameter_set)
   end
 
+  def analyses
+    Analysis.where(:analyzer.in => analyzers.pluck(:id))
+  end
+
   def params_key_count
     counts = {}
     parameter_definitions.each do |pd|

@@ -1,0 +1,9 @@
+.page-header
+  %h2 Notification Events
+%table.table.table-striped.table-condensed{style: "font-size: smaller;"}
+  %thead
+    %tr
+      %th{style: "width: 15em;"} CreatedAt
+      %th Message
+  %tbody#log_table_body
+    = render "table_contents"

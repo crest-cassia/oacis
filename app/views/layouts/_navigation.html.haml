@@ -16,5 +16,19 @@
           = link_to 'Hosts', hosts_path
         %li
           = link_to 'Logs', worker_logs_path
+        %li
+          = link_to 'Settings', edit_oacis_setting_path
       %ul.nav.navbar-nav.navbar-right
         %li= link_to 'Document', 'http://crest-cassia.github.io/oacis/', target: '_blank'
+        %li#notification-event-dropdown.dropdown
+          = link_to '#', class: 'dropdown-toggle', 'data-toggle': 'dropdown', role: 'button' do
+            %span.glyphicon.glyphicon-bell(aria-hidden="true")>
+            %span.badge
+          %ul.dropdown-menu(role="menu")
+            %ul#notification-event-list.list-group
+              - if NotificationEvent.exists?
+                - NotificationEvent.all.order(created_at: :desc).limit(10).each do |event|
+                  = render partial: 'notification_events/notification_event', locals: { notification_event: event }
+              - else
+                %li#no-notification-event.list-group-item No notifications
+            %p.text-center(style="margin-top: 10px")= link_to 'more...', notification_events_path

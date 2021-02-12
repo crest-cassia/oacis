@@ -1,4 +1,5 @@
 module JobScriptUtil
+  include JobNotificationUtil
 
   TEMPLATE = <<-EOS
 #!/bin/bash
@@ -148,6 +149,7 @@ EOS
         begin
           job.save!
           StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job))
+          JobNotificationUtil.notify_job_finished(job)
         rescue => ex
           error_message += "failed to save: #{ex.inspect}"
           job.reload # reload must be called. Otherwise update_attribute will fail.

@@ -110,4 +110,14 @@ $(document).ready( function() {
     if ( em == null ) return;
     exchange_form_order(me, em);
   });
+
+  $('#notification-event-dropdown .dropdown-menu').on('click', function (e) {
+    e.stopPropagation();
+  });
+
+  $('#notification-event-dropdown').on('shown.bs.dropdown', function () {
+    App.notification_event.read_all();
+  });
+
+  create_subscription_to_notification_event_channel();
 });

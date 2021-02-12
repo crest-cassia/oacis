@@ -60,6 +60,8 @@ module Submittable
                              # since seed is set at before_create callback
                              :update_default_host_parameter_on_its_executable,
                              :update_default_mpi_procs_omp_threads)
+
+    base.send(:scope, :unfinished, -> { where(:status.in => %i[created submitted running]) })
   end
 
   def executable

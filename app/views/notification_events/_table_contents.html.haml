@@ -1,0 +1,4 @@
+- @notification_events.each do |event|
+  = content_tag_for :tr, event do
+    %td= event.created_at
+    %td= sanitize event.message, tags: %w[a]

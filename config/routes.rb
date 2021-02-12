@@ -112,5 +112,8 @@ Rails.application.routes.draw do
   resources :host_groups, only: host_group_actions do
   end
 
+  resources :notification_events, only: :index
+  resource :oacis_setting, only: %i[edit update] if OACIS_ACCESS_LEVEL == 2
+
   root :to => "simulators#index"
 end

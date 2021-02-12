@@ -212,5 +212,15 @@ FactoryBot.define do
     min_omp_threads { 1 }
     max_omp_threads { 8 }
   end
+
+  factory :oacis_setting, class: OacisSetting do
+    notification_level { 3 }
+    webhook_url { 'http://example.com/webhook' }
+  end
+
+  factory :notification_event, class: NotificationEvent do
+    message { 'This is a test message.' }
+    read { false }
+  end
 end
 
