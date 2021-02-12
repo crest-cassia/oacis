@@ -1,9 +1,8 @@
 module NotificationEventsHelper
   def generate_all_jobs_in_simulator_finished_message(job)
-    simulator_id = job.simulator.id
-    id_link = link_to(shortened_id(simulator_id), simulator_path(simulator_id))
+    name_link = link_to(job.simulator.name, simulator_path(job.simulator.id))
 
-    return "All #{job.class} in SimulatorID #{id_link} finished."
+    return "All #{job.class} in Simulator #{name_link} finished."
   end
 
   def generate_all_jobs_in_param_set_finished_message(job)
