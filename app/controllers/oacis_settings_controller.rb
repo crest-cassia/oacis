@@ -5,8 +5,13 @@ class OacisSettingsController < ApplicationController
   end
 
   def update
-    if @oacis_setting.update(oacis_setting_params)
-      redirect_to edit_oacis_setting_path, notice: 'Oacis setting was successfully updated.'
+    @oacis_setting.assign_attributes(oacis_setting_params)
+    webhook_url_changed = @oacis_setting.webhook_url_changed?
+    if @oacis_setting.update
+      success_message = 'Oacis setting was successfully updated.'
+      SlackNotifier.new(@oacis_setting.webhook_url).notify(message: success_message, color: 'good') if @oacis_setting.webhook_url.present? && webhook_url_changed
+
+      redirect_to edit_oacis_setting_path, notice: success_message
     else
       render :edit
     end
