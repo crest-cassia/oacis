@@ -25,6 +25,7 @@
 //= require dataTables/jquery.dataTables
 //= require dataTables/bootstrap/3/jquery.dataTables.bootstrap
 //= require dataTables/extras/dataTables.colVis
+//= require dataTables/extras/dataTables.colReorder
 //= require dynatree/jquery.dynatree
 //= require cable.js
 //= require channels/status.js

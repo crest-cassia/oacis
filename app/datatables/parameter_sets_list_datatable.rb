@@ -1,4 +1,5 @@
 class ParameterSetsListDatatable
+  HUE_MAX = 215
 
   def initialize(parameter_sets, parameter_definition_keys, view, num_ps_total, base_ps = nil)
     @view = view
@@ -24,9 +25,9 @@ class ParameterSetsListDatatable
       col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" disabled="disabled" /></th>'
     end
     header = [ col0,
-               '<th class="span1" style="min-width: 150px;">Progress</th>',
-               '<th class="span1" style="min-width: 50px;">ParamSetID</th>',
-               '<th class="span1">Updated_at</th>'
+               "<th class='span1' style='min-width: 150px;'>#{default_columns[1]}</th>",
+               "<th class='span1' style='min-width: 50px;'>#{default_columns[2]}</th>",
+               "<th class='span1'>#{default_columns[3]}</th>"
              ]
     header += simulator.parameter_definitions.map do |pd|
       '<th class="span1">' + ERB::Util.html_escape(pd.key) + '</th>'
@@ -35,33 +36,43 @@ class ParameterSetsListDatatable
   end
 
 private
+  def self.default_columns
+    ["", "Progress", "ParamSetID", "Updated_at"]
+  end
+
   def sort_by
     ["id", "progress", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
   end
 
   def data
+    data = []
+    default_columns = ParameterSetsListDatatable.default_columns
     parameter_sets_list.map do |ps|
-      tmp = []
+      tmp = {}
       attr = (OACIS_ACCESS_LEVEL==0) ? {align: "center", disabled: "disabled"} : {align: "center"}
-      tmp << @view.check_box_tag("checkbox[ps]", ps.id, false, attr)
+      tmp.store('-Checkbox', @view.check_box_tag("checkbox[ps]", ps.id, false, attr))
       progress = @view.progress_bar(runs_status_counts(ps))
-      tmp << @view.raw(progress)
-      tmp << @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(ps)} )
-      tmp << @view.raw('<span class="ps_updated_at">'+@view.distance_to_now_in_words(ps.updated_at)+'</span>')
+      tmp.store("-#{default_columns[1]}", @view.raw(progress))
+      tmp.store("-#{default_columns[2]}", @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(ps)} ))
+      tmp.store("-#{default_columns[3]}", @view.raw('<span class="ps_updated_at">'+@view.distance_to_now_in_words(ps.updated_at)+'</span>'))
       @param_keys.each do |key|
         if @base_ps
-          tmp << colorize_param_value(ps.v[key], @base_ps.v[key])
+          tmp.store("#{key}", colorize_param_value(ps.v[key], @base_ps.v[key]))
+        elsif colorized_key?(key)
+          tmp.store("#{key}", @view.raw("<span class=color-#{colorize_unique_param_values[key][ps.v[key]]}>" + ERB::Util.html_escape(ps.v[key]) + '</span>'))
         else
-          tmp <<  ERB::Util.html_escape(ps.v[key])
+          tmp.store("#{key}", ERB::Util.html_escape(ps.v[key]))
         end
       end
-      tmp << "params_list_#{ps.id}"
-      tmp
+      tmp.store('params_list', "params_list_#{ps.id}")
+      data << tmp
     end
+    data
   end
 
-  def _tooltip_title(ps)
-    "ID: #{ps.id}"
+  def colorized_key?(key)
+    value = ordered_param_sets_per_page.first.v[key]
+    value.is_a?(Integer) || value.is_a?(Float)
   end
 
   def colorize_param_value(val, compared_val)
@@ -84,12 +95,42 @@ private
     end
   end
 
+  def colorize_unique_param_values
+    return @colors if @colors.present?
+
+    colors = {}
+    @param_keys.each do |key|
+      next unless colorized_key?(key)
+
+      unique_values_by_key = ordered_param_sets_per_page.group_by { |param_set| param_set.v[key] }.sort.reverse
+      colors_by_key = {}
+      unique_values_by_key.size.times do |i|
+        value = unique_values_by_key[i][0]
+        colors_by_key.store(value, calculate_hue(i, unique_values_by_key.size))
+      end
+      colors.store(key, colors_by_key)
+    end
+    @colors = colors
+    @colors
+  end
+
+  def calculate_hue(index, size)
+    return 0 if size == 1
+
+    angle = HUE_MAX / (size - 1)
+    angle * index
+  end
+
+  def _tooltip_title(ps)
+    "ID: #{ps.id}"
+  end
+
   def parameter_sets_list
     @ps_list_cache ||= get_parameter_set_list
   end
 
   def get_parameter_set_list
-    pss = @param_sets.order_by(sort_column_direction).skip(page).limit(per_page).to_a
+    pss = ordered_param_sets_per_page.to_a
     # `to_a` is necessary to fix the contents of parameter_sets_list
     @runs_status_counts_cache = ParameterSet.runs_status_count_batch(pss)
 
@@ -102,6 +143,10 @@ private
       end
     end
     pss
+  end
+
+  def ordered_param_sets_per_page
+    @ordered_param_sets_per_page ||= @param_sets.order_by(sort_column_direction).skip(page).limit(per_page)
   end
 
   def progress_rate(ps)
@@ -132,7 +177,8 @@ private
   def sort_columns
     return ["updated_at"] if @view.params["order"].nil?
     @view.params["order"].keys.sort.map do |key|
-      sort_by[@view.params["order"][key]["column"].to_i]
+      sort_column = @view.params['sort_column']
+      sort_column ? sort_by[sort_column.to_i] : sort_by[@view.params["order"][key]["column"].to_i]
     end
   end
 

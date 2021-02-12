@@ -25,7 +25,7 @@
 .create_ps_area{id: "ps_being_created_#{@simulator.id}"}
   = render partial: 'save_ps_task_status', locals: {simulator: @simulator, offset_num_ps: 0, offset_num_runs: 0}
 .clear-element
-%table.table.table-condensed.table-striped#params_list{:'data-source' => "#{_parameter_sets_list_simulator_path(@simulator.to_param, format: "json", q: @filter&.conditions.to_json)}"}
+%table.table.table-condensed.table-striped.fixed_thead#params_list{:'data-source' => "#{_parameter_sets_list_simulator_path(@simulator.to_param, format: "json", q: @filter&.conditions.to_json)}"}
   %thead
     %tr
       - ParameterSetsListDatatable.header(@simulator).each do |th_element|

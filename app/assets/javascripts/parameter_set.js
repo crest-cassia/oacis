@@ -1,4 +1,25 @@
 function create_parameter_sets_list(selector, default_length) {
+  const default_columns = 4;
+  let columns = [];
+  $(selector).find('th').each(function(index, element) {
+    if (index === 0) {
+      columns.push({ data: '-Checkbox' });
+    } else if (index < default_columns) {
+      columns.push({ data: '-' + $(element).text() });
+    } else {
+      columns.push({
+        data: $(element).text(),
+        createdCell: function(td, cellData, rowData, row, col) {
+          const span = $(td).children('span')[0];
+          if (span) {
+            const hue = span.className.split('color-')[1];
+            if (hue) { $(td).css('background', "hsla(" + hue + ", 100%, 50%, 0.3)") }
+          }
+        }
+      })
+    }
+  })
+
   var oPsTable = $(selector).DataTable({
     processing: true,
     serverSide: true,
@@ -12,18 +33,31 @@ function create_parameter_sets_list(selector, default_length) {
       "orderable": false,
       "targets": [0,1]
     }],
-    dom: 'C<"clear">lrtip',
+    'columns': columns,
+    dom: 'C<"clear"><Rlrtp>t<ip>',
+    "colReorder": {
+      "fixedColumns": default_columns
+    },
     colVis: {
       exclude: [0],
       restore: "show all",
       buttonText: "show/hide columns"
     },
     bStateSave: true,
-    ajax: $(selector).data('source'),
-      "createdRow": function(row, data, dataIndex) {
-        const lnId = data[data.length-1];
-        $(row).attr('id', lnId);
+    ajax: {
+      url: $(selector).data('source'),
+      data: function (d) {
+        const data = JSON.parse(localStorage.getItem(`DataTables_${$(selector)[0].id}_`+window.location.pathname));
+        d.sort_column = data ? data['order'][0][0] : null;
       }
+    },
+    "createdRow": function(row, data, dataIndex) {
+      const lnId = data['params_list'];
+      $(row).attr('id', lnId);
+    }
+  });
+  oPsTable.on('column-reorder', function(e, settings, details) {
+    oPsTable.ajax.reload();
   });
   const actionUrl = '/parameter_sets/_delete_selected';
   const lengthDiv = $(selector+'_length');

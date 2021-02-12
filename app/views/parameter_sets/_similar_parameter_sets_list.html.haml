@@ -1,6 +1,6 @@
 %h3 List of Similar Parameter Sets
 
-%table.table.table-condensed.table-striped#similar_params_list{data: {'source' => "#{_similar_parameter_sets_list_parameter_set_path(parameter_set.to_param, format: "json")}"} }
+%table.table.table-condensed.table-striped.fixed_thead#similar_params_list{data: {'source' => "#{_similar_parameter_sets_list_parameter_set_path(parameter_set.to_param, format: "json")}"} }
   %thead
     %tr
       - ParameterSetsListDatatable.header(parameter_set.simulator).each do |th_element|
