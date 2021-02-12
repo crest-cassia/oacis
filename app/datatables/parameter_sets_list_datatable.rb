@@ -25,9 +25,9 @@ class ParameterSetsListDatatable
       col0 = '<th style="min-width: 18px; width: 1%; padding-left: 5px; padding-right: 3px;"><input type="checkbox" id="ps_check_all" value="true" disabled="disabled" /></th>'
     end
     header = [ col0,
-               '<th class="span1" style="min-width: 150px;">Progress</th>',
-               '<th class="span1" style="min-width: 50px;">ParamSetID</th>',
-               '<th class="span1">Updated_at</th>'
+               "<th class='span1' style='min-width: 150px;'>#{default_columns[1]}</th>",
+               "<th class='span1' style='min-width: 50px;'>#{default_columns[2]}</th>",
+               "<th class='span1'>#{default_columns[3]}</th>"
              ]
     header += simulator.parameter_definitions.map do |pd|
       '<th class="span1">' + ERB::Util.html_escape(pd.key) + '</th>'
@@ -36,20 +36,25 @@ class ParameterSetsListDatatable
   end
 
 private
+  def self.default_columns
+    ["", "Progress", "ParamSetID", "Updated_at"]
+  end
+
   def sort_by
     ["id", "progress", "id", "updated_at"] + @param_keys.map {|key| "v.#{key}"} + ["id"]
   end
 
   def data
     data = []
+    default_columns = ParameterSetsListDatatable.default_columns
     parameter_sets_list.map do |ps|
       tmp = {}
       attr = (OACIS_ACCESS_LEVEL==0) ? {align: "center", disabled: "disabled"} : {align: "center"}
-      tmp.store('Checkbox', @view.check_box_tag("checkbox[ps]", ps.id, false, attr))
+      tmp.store('-Checkbox', @view.check_box_tag("checkbox[ps]", ps.id, false, attr))
       progress = @view.progress_bar(runs_status_counts(ps))
-      tmp.store('Progress', @view.raw(progress))
-      tmp.store('ParamSetID', @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(ps)} ))
-      tmp.store('Updated_at', @view.raw('<span class="ps_updated_at">'+@view.distance_to_now_in_words(ps.updated_at)+'</span>'))
+      tmp.store("-#{default_columns[1]}", @view.raw(progress))
+      tmp.store("-#{default_columns[2]}", @view.link_to( @view.shortened_id_monospaced(ps.id), @view.parameter_set_path(ps), data: {toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(ps)} ))
+      tmp.store("-#{default_columns[3]}", @view.raw('<span class="ps_updated_at">'+@view.distance_to_now_in_words(ps.updated_at)+'</span>'))
       @param_keys.each do |key|
         if @base_ps
           tmp.store("#{key}", colorize_param_value(ps.v[key], @base_ps.v[key]))

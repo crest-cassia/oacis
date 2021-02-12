@@ -1,8 +1,11 @@
 function create_parameter_sets_list(selector, default_length) {
+  const default_columns = 4;
   let columns = [];
   $(selector).find('th').each(function(index, element) {
     if (index === 0) {
-      columns.push({ data: 'Checkbox' });
+      columns.push({ data: '-Checkbox' });
+    } else if (index < default_columns) {
+      columns.push({ data: '-' + $(element).text() });
     } else {
       columns.push({
         data: $(element).text(),
@@ -33,7 +36,7 @@ function create_parameter_sets_list(selector, default_length) {
     'columns': columns,
     dom: 'C<"clear"><Rlrtp>t<ip>',
     "colReorder": {
-      "fixedColumns": 4
+      "fixedColumns": default_columns
     },
     colVis: {
       exclude: [0],
@@ -53,7 +56,7 @@ function create_parameter_sets_list(selector, default_length) {
       $(row).attr('id', lnId);
     }
   });
-  oPsTable.on('column-reorder', function (e, settings, details) {
+  oPsTable.on('column-reorder', function(e, settings, details) {
     oPsTable.ajax.reload();
   });
   const actionUrl = '/parameter_sets/_delete_selected';
