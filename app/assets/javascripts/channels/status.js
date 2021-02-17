@@ -24,10 +24,14 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
     const ps_id = data["ps_id"];
     const ps_counts = data["ps_counts"];
     const ps_updated_at = data["ps_updated_at"];
+    const sim_id = data["sim_id"];
+    const sim_counts = data["sim_counts"];
+    const sim_updated_at = data["sim_updated_at"];
     let class_tobe = "label-default";
     const run_list_id = "#run_list_" + oid;
     const params_list_id = "#params_list_" + ps_id;
     const analysis_list_id = "#analysis_list_" + oid;
+    const simulator_list_id =  "#simulator_" + sim_id;
 
     if ($(run_list_id).length) { /* run list exists */
       switch (status) {
@@ -128,6 +132,40 @@ App.status = App.cable.subscriptions.create("StatusChannel", {
 
       const anlUpdatedAtTd = $(analysis_list_id).find(".arn_updated_at");
       $(anlUpdatedAtTd).text(job_updated_at);
+    }
+    if ($(simulator_list_id).length) { /* simulator list exists */
+      const simStatusDiv = $(simulator_list_id).find(".progress");
+      if (simStatusDiv.length) {
+        let tooltip_h = simStatusDiv.attr("data-original-title")
+          .replace(/<span id=\"finished_count">\d+<\/span>/, '<span id="finished_count">'+sim_counts["finished"]+'</span>')
+          .replace(/<span id=\"failed_count">\d+<\/span>/, '<span id="failed_count">'+sim_counts["failed"]+'</span>')
+          .replace(/<span id=\"running_count">\d+<\/span>/, '<span id="running_count">'+sim_counts["running"]+'</span>')
+          .replace(/<span id=\"submitted_count">\d+<\/span>/, '<span id="submitted_count">'+sim_counts["submitted"]+'</span>')
+          .replace(/<span id=\"created_count">\d+<\/span>/, '<span id="created_count">'+sim_counts["created"]+'</span>');
+        simStatusDiv.attr("data-original-title", tooltip_h);
+        let percentSuccess = 0.0;
+        let percentDanger = 0.0;
+        let percentWarning = 0.0;
+        let percentSubmitted = 0.0;
+        simStatusDiv.attr("data-original-title", tooltip_h);
+        const simTotal = parseFloat(sim_counts["finished"]) + parseFloat(sim_counts["failed"]) + parseFloat(sim_counts["running"]) + parseFloat(sim_counts["submitted"]) + parseFloat(sim_counts["created"]);
+        if (simTotal > 0){
+          percentSuccess = Math.round(parseFloat(sim_counts["finished"]) / parseFloat(simTotal) *100);
+          percentDanger = Math.round(parseFloat(sim_counts["failed"]) / parseFloat(simTotal) *100);
+          percentWarning = Math.round(parseFloat(sim_counts["running"]) / parseFloat(simTotal) *100);
+          percentSubmitted = Math.round(parseFloat(sim_counts["submitted"]) / parseFloat(simTotal) *100);
+        }
+        simStatusDiv.find(".progress-bar-success").css("width", String(percentSuccess) + "%");
+        simStatusDiv.find(".progress-bar-success").text(String(percentSuccess) + "%");
+        simStatusDiv.find(".progress-bar-danger").css("width", String(percentDanger) + "%");
+        simStatusDiv.find(".progress-bar-danger").text(String(percentDanger) + "%");
+        simStatusDiv.find(".progress-bar-warning").css("width", String(percentWarning) + "%");
+        simStatusDiv.find(".progress-bar-warning").text(String(percentWarning) + "%");
+        simStatusDiv.find(".progress-bar-info").css("width", String(percentSubmitted) + "%");
+        simStatusDiv.find(".progress-bar-info").text(String(percentSubmitted) + "%");
+      }
+      const simUpdatedAtTd = $(simulator_list_id).find(".sim_updated_at");
+      $(simUpdatedAtTd).text(sim_updated_at);
     }
   },
 

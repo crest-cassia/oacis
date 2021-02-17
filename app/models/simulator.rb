@@ -71,6 +71,43 @@ class Simulator
     counts.merge!(default) {|key, self_val, other_val| self_val }
   end
 
+  def self.runs_status_count_batch(simulators)
+    aggregated = Run.collection.aggregate([
+      {
+        '$match' => Run.in(simulator: simulators.map(&:id)).selector
+      },
+      {
+        '$group' => {
+          '_id' => {'simid'=>'$simulator_id', 'status'=>'$status'},
+          'count' => { '$sum' => 1}
+        }
+      },
+      {
+        '$group' => {
+          '_id' => '$_id.simid',
+          'counts' => {
+            '$push' =>{'status'=>'$_id.status', 'count'=> '$count' }
+          }
+        }
+      }
+    ])
+
+    count_default = {created: 0, submitted: 0, running: 0, failed: 0, finished: 0}
+    ret = {}
+    simulators.each {|sim| ret[sim.id] = count_default.dup }
+
+    aggregated.each do |doc|
+      simid = doc["_id"]
+      status_hash = count_default.dup
+      doc["counts"].each do |c|
+        key = c["status"]
+        status_hash[key] = c["count"]
+      end
+      ret[ simid ] = status_hash
+    end
+    ret
+  end
+
   def parameter_definition_for(key)
     found = self.parameter_definitions.detect do |pd|
       pd.key == key

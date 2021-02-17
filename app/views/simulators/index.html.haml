@@ -5,14 +5,15 @@
     %tr
       %th Name
       %th Updated_at
-      %th
+      %th{style: "min-width: 105px;"}
         Progress
         %i.fa.fa-lightbulb-o{style: "float: right;", data: {toggle: "tooltip", placement: "left", 'original-title':"tips: Drag a row to sort simulators."}}
   %tbody.sortable{data: {'sort-url' => _sort_simulators_url }}
     - @simulators.each do |simulator|
       = content_tag_for :tr, simulator do
         %td= link_to h(simulator.name), simulator_path(simulator)
-        %td= distance_to_now_in_words(simulator.updated_at)
+        %td
+          %span.sim_updated_at= distance_to_now_in_words(simulator.updated_at)
         %td#progress= progress_bar(simulator.runs_status_count)
 
 - if OACIS_ACCESS_LEVEL == 2
