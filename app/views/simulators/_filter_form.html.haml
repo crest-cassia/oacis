@@ -85,7 +85,7 @@
         const type = $(o).find('select#param option:selected').data('param-type');
         const matcher = $(o).find('select#matcher').val();
         const val = $(o).find('input#value').val();
-        const err = validate_filter_value(type, val);
+        const err = OACIS.validate_filter_value(type, val);
         if(err) {
           $(o).find('#error_message').text(err);
           has_error = true;

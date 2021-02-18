@@ -19,7 +19,7 @@
   %p There is no run yet.
 :javascript
   $(function() {
-    const oFilesTable = datatables_for_files_table('#files_list');
+    const oFilesTable = OACIS.datatables_for_files_table('#files_list');
 
     $('#show_file_list_button').on('click', function() {
       const param_set_path = "#{parameter_set_path(@param_set)}";

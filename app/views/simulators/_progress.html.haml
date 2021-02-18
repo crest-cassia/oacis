@@ -46,7 +46,7 @@
             .col-md-2.add-margin-top{align: 'left'} 100%
         #color-map
         :javascript
-          draw_color_map();
+          OACIS.draw_color_map();
         %form.form-horizontal
           - parameter_keys = @simulator.parameter_definitions.map(&:key)
           .form-group
@@ -86,7 +86,7 @@
 
   function show_progress_overview() {
     const url_with_param = progress_overview_url + "?row_parameter=" + rp + "&column_parameter=" + cp;
-    draw_progress_overview(url_with_param);
+    OACIS.draw_progress_overview(url_with_param);
   }
 
   $('#show_progress_overview_button').on('click', function() {
@@ -100,7 +100,7 @@
     // See http://stackoverflow.com/questions/8828387
     $('#progress-tooltip').insertBefore('.col-lg-12');
 
-    setupRefreshTools($('#refresh_tools'), function() {
+    OACIS.setupRefreshTools($('#refresh_tools'), function() {
       update_number_of_runs();
       if( $("#progress-overview #canvas").length > 0 ) {
         show_progress_overview();

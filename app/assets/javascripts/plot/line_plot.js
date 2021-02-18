@@ -416,20 +416,23 @@ LinePlot.prototype.Draw = function() {
   this.AddDescription();
 };
 
-function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
-  const plot = new LinePlot();
-  const progress = show_loading_spin_arc(plot.main_group, plot.width, plot.height);
-  const xhr = d3.json(url)
-    .on("load", function(dat) {
-      progress.remove();
-      plot.Init(dat, url, parameter_set_base_url, current_ps_id);
-      plot.Draw();
-    })
-  .on("error", function() {progress.remove();})
-  .get();
-  progress.on("mousedown", function(){
-    xhr.abort();
-    plot.Destructor();
-  });
-}
+(() => {
+  function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
+    const plot = new LinePlot();
+    const progress = OACIS.show_loading_spin_arc(plot.main_group, plot.width, plot.height);
+    const xhr = d3.json(url)
+      .on("load", function(dat) {
+        progress.remove();
+        plot.Init(dat, url, parameter_set_base_url, current_ps_id);
+        plot.Draw();
+      })
+      .on("error", function() {progress.remove();})
+      .get();
+    progress.on("mousedown", function(){
+      xhr.abort();
+      plot.Destructor();
+    });
+  }
 
+  OACIS.draw_line_plot = draw_line_plot;
+})();

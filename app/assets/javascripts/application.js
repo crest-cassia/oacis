@@ -14,6 +14,7 @@
 //= require jquery-ui/widgets/sortable
 //= require jquery_ujs
 //= require bootstrap-sprockets
+//= require oacis.js
 //= require analyses.js
 //= require analyzers.js
 //= require bootstrap.js
@@ -51,35 +52,40 @@ $(document).ready(function () {
 
 // add/remove/Up/Down nested forms
 
-function find_from_parameter_definition_fields(me, offset) {
-  const p_lst =  $('.parameter-definition-field');
-  let idx, em = null;
-  for ( idx = 0; idx < p_lst.length; idx++ ) {
-    if ( p_lst[idx] === me ) {
-      em = p_lst[idx];
-      break;
+(() => {
+  function find_from_parameter_definition_fields(me, offset) {
+    const p_lst =  $('.parameter-definition-field');
+    let idx, em = null;
+    for ( idx = 0; idx < p_lst.length; idx++ ) {
+      if ( p_lst[idx] === me ) {
+        em = p_lst[idx];
+        break;
+      }
     }
+    if ( em == null ) return null;
+    const idx2 = idx + offset;
+    if ( idx2 < 0 || idx2 >= p_lst.length ) return null;
+    return p_lst[idx2];
   }
-  if ( em == null ) return null;
-  const idx2 = idx + offset;
-  if ( idx2 < 0 || idx2 >= p_lst.length ) return null;
-  return p_lst[idx2];
-}
 
-function exchange_form_order(me, em) {
-  const my_name = me.children[0].children[0].children[0].value;
-  const my_type = me.children[0].children[1].children[0].value;
-  const my_dval = me.children[0].children[2].children[0].value;
-  const my_desc = me.children[1].children[0].children[0].value;
-  me.children[0].children[0].children[0].value = em.children[0].children[0].children[0].value;
-  me.children[0].children[1].children[0].value = em.children[0].children[1].children[0].value;
-  me.children[0].children[2].children[0].value = em.children[0].children[2].children[0].value;
-  me.children[1].children[0].children[0].value = em.children[1].children[0].children[0].value;
-  em.children[0].children[0].children[0].value = my_name;
-  em.children[0].children[1].children[0].value = my_type;
-  em.children[0].children[2].children[0].value = my_dval;
-  em.children[1].children[0].children[0].value = my_desc;
-}
+  function exchange_form_order(me, em) {
+    const my_name = me.children[0].children[0].children[0].value;
+    const my_type = me.children[0].children[1].children[0].value;
+    const my_dval = me.children[0].children[2].children[0].value;
+    const my_desc = me.children[1].children[0].children[0].value;
+    me.children[0].children[0].children[0].value = em.children[0].children[0].children[0].value;
+    me.children[0].children[1].children[0].value = em.children[0].children[1].children[0].value;
+    me.children[0].children[2].children[0].value = em.children[0].children[2].children[0].value;
+    me.children[1].children[0].children[0].value = em.children[1].children[0].children[0].value;
+    em.children[0].children[0].children[0].value = my_name;
+    em.children[0].children[1].children[0].value = my_type;
+    em.children[0].children[2].children[0].value = my_dval;
+    em.children[1].children[0].children[0].value = my_desc;
+  }
+
+  OACIS.find_from_parameter_definition_fields = find_from_parameter_definition_fields;
+  OACIS.exchange_form_order = exchange_form_order;
+})();
 
 $(document).ready( function() {
   $('form').on('click', '.remove_fields', function() {
@@ -100,15 +106,15 @@ $(document).ready( function() {
   });
   $('form').on('click', '.up_fields', function() {
     const me = $(this).closest('.parameter-definition-field')[0];
-    const em = find_from_parameter_definition_fields(me, -1);
+    const em = OACIS.find_from_parameter_definition_fields(me, -1);
     if ( em == null ) return;
-    exchange_form_order(me, em);
+    OACIS.exchange_form_order(me, em);
   });
   $('form').on('click', '.down_fields', function() {
     const me = $(this).closest('.parameter-definition-field')[0];
-    const em = find_from_parameter_definition_fields(me, +1);
+    const em = OACIS.find_from_parameter_definition_fields(me, +1);
     if ( em == null ) return;
-    exchange_form_order(me, em);
+    OACIS.exchange_form_order(me, em);
   });
 
   $('#notification-event-dropdown .dropdown-menu').on('click', function (e) {
@@ -119,5 +125,5 @@ $(document).ready( function() {
     App.notification_event.read_all();
   });
 
-  create_subscription_to_notification_event_channel();
+  OACIS.create_subscription_to_notification_event_channel();
 });

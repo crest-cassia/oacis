@@ -406,21 +406,24 @@ FigureViewer.prototype.Draw = function() {
   this.UpdatePlot("small");
 };
 
-function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
-  const plot = new FigureViewer();
-  const progress = show_loading_spin_arc(plot.main_group, plot.width, plot.height);
+(() => {
+  function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
+    const plot = new FigureViewer();
+    const progress = OACIS.show_loading_spin_arc(plot.main_group, plot.width, plot.height);
 
-  const xhr = d3.json(url)
-    .on("load", function(dat) {
-      progress.remove();
-      plot.Init(dat, url, parameter_set_base_url, current_ps_id);
-      plot.Draw();
-    })
-  .on("error", function() {progress.remove();})
-  .get();
-  progress.on("mousedown", function(){
-    xhr.abort();
-    plot.Destructor();
-  });
-}
+    const xhr = d3.json(url)
+      .on("load", function(dat) {
+        progress.remove();
+        plot.Init(dat, url, parameter_set_base_url, current_ps_id);
+        plot.Draw();
+      })
+      .on("error", function() {progress.remove();})
+      .get();
+    progress.on("mousedown", function(){
+      xhr.abort();
+      plot.Destructor();
+    });
+  }
 
+  OACIS.draw_figure_viewer = draw_figure_viewer;
+})();

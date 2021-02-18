@@ -89,7 +89,7 @@
       "&series=" + encodeURIComponent(series) +
       "&irrelevants=" + encodeURIComponent(irrelevants);
     const ps_base_url = "#{parameter_set_path('PSID')}".replace('PSID', '');
-    draw_line_plot(url_with_param, ps_base_url, "#{@param_set.id}");
+    OACIS.draw_line_plot(url_with_param, ps_base_url, "#{@param_set.id}");
   }
   $('#add_line_plot_button').on('click', function() {
     let x = $('#line-plot-form #x_axis_key').val();
@@ -134,7 +134,7 @@
       "&result=" + encodeURIComponent(result) +
       "&irrelevants=" + encodeURIComponent(irrelevants);
     const ps_base_url = "#{parameter_set_path('PSID')}".replace('PSID', '');
-    draw_scatter_plot(url_with_param, ps_base_url, "#{@param_set.id}");
+    OACIS.draw_scatter_plot(url_with_param, ps_base_url, "#{@param_set.id}");
   }
   $('#add_scatter_plot_button').on('click', function() {
     const x = $('#scatter-plot-form #x_axis_key').val();
@@ -152,7 +152,7 @@
       "&result=" + encodeURIComponent(result) +
       "&irrelevants=" + encodeURIComponent(irrelevants);
     const ps_base_url = "#{parameter_set_path('PSID')}".replace('PSID', '');
-    draw_figure_viewer(url_with_param, ps_base_url, "#{@param_set.id}");
+    OACIS.draw_figure_viewer(url_with_param, ps_base_url, "#{@param_set.id}");
   }
   $('#add_figure_viewer_button').on('click', function() {
     const x = $('#figure-viewer-form #x_axis_key').val();

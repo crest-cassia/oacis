@@ -17,7 +17,7 @@ $(function () {
   });
 });
 
-$(function() {
+(() => {
   const datatables_for_analyses_table = function(selector) {
     const oTable = $(selector).DataTable({
       processing: true,
@@ -39,10 +39,10 @@ $(function() {
     });
     const wrapperDiv = $(selector).closest(selector+'_wrapper');
     const lengthDiv = wrapperDiv.find(selector+'_length');
-    setupRefreshTools(lengthDiv, function () { oTable.ajax.reload(null, false) });
+    OACIS.setupRefreshTools(lengthDiv, function () { oTable.ajax.reload(null, false) });
 
     return oTable;
   };
 
-  window.datatables_for_analyses_table = datatables_for_analyses_table;
-});
+  OACIS.datatables_for_analyses_table = datatables_for_analyses_table;
+})();
