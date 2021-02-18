@@ -1,5 +1,5 @@
 function datatables_for_runs_table(selector) {
-  var oTable = $(selector).DataTable({
+  const oTable = $(selector).DataTable({
     processing: true,
     serverSide: true,
     searching: false,

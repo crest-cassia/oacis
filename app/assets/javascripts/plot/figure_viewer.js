@@ -20,7 +20,7 @@ FigureViewer.prototype.Init = function(data, url, parameter_set_base_url, curren
 };
 
 FigureViewer.prototype.SetXScale = function(xscale) {
-  var scale = null, min, max;
+  let scale = null, min, max;
   switch(xscale) {
   case "linear":
     scale = d3.scale.linear().range([0, this.width]);
@@ -33,7 +33,7 @@ FigureViewer.prototype.SetXScale = function(xscale) {
     this.IsLog[0] = false;
     break;
   case "log":
-    var data_in_logscale = this.data.data.filter(function(element) {
+    const data_in_logscale = this.data.data.filter(function(element) {
       return element[0] > 0.0;
     });
     scale = d3.scale.log().clamp(true).range([0, this.width]);
@@ -51,7 +51,7 @@ FigureViewer.prototype.SetXScale = function(xscale) {
 };
 
 FigureViewer.prototype.SetYScale = function(yscale) {
-  var scale = null, min, max;
+  let scale = null, min, max;
   switch(yscale) {
   case "linear":
     scale = d3.scale.linear().range([this.height, 0]);
@@ -64,7 +64,7 @@ FigureViewer.prototype.SetYScale = function(yscale) {
     this.IsLog[1] = false;
     break;
   case "log":
-    var data_in_logscale = this.data.data.filter(function(element) {
+    const data_in_logscale = this.data.data.filter(function(element) {
       return element[0] > 0.0;
     });
     scale = d3.scale.log().clamp(true).range([this.height, 0]);
@@ -121,16 +121,16 @@ FigureViewer.prototype.UpdatePlot = function(new_size) {
 };
 
 FigureViewer.prototype.AddFigurePlot = function() {
-  var plot = this;
+  const plot = this;
 
   function add_figure_group() {
-    var tooltip = d3.select("#plot-tooltip");
-    var mapped = plot.data.data.map(function(v) {
+    const tooltip = d3.select("#plot-tooltip");
+    const mapped = plot.data.data.map(function(v) {
       return { x: v[0], y: v[1], path:v[2], psid: v[3] };
     });
-    var figure_group = plot.main_group.append("g")
+    const figure_group = plot.main_group.append("g")
       .attr("id", "figure-group");
-    var figure = figure_group.selectAll("image")
+    const figure = figure_group.selectAll("image")
       .data(mapped).enter();
     figure.append("svg:image")
       .attr("clip-path", "url(#clip)")
@@ -140,7 +140,7 @@ FigureViewer.prototype.AddFigurePlot = function() {
           .duration(200)
           .style("opacity", 1.0);
         tooltip.html(function() {
-          var str = plot.data.xlabel + " : " + d.x + "<br/>" +
+          let str = plot.data.xlabel + " : " + d.x + "<br/>" +
           plot.data.ylabel + " : " + d.y + "<br/>" +
           "ID: " + d.psid + "<br />";
           if(d.path) {
@@ -170,11 +170,11 @@ FigureViewer.prototype.AddFigurePlot = function() {
 };
 
 FigureViewer.prototype.UpdateFigurePlot = function() {
-  var plot = this;
-  var x_figure_scale = (this.figure_size == "small") ? 0.1 : 0.2;
-  var y_figure_scale = (this.figure_size == "small") ? 0.1 : 0.2;
-  var xdomain = plot.xScale.domain();
-  var ydomain = plot.yScale.domain();
+  const plot = this;
+  let x_figure_scale = (this.figure_size == "small") ? 0.1 : 0.2;
+  let y_figure_scale = (this.figure_size == "small") ? 0.1 : 0.2;
+  const xdomain = plot.xScale.domain();
+  const ydomain = plot.yScale.domain();
   if(xdomain[0] != xdomain[1]) {
     x_figure_scale*=(plot.xaxis_original_domain[1] - plot.xaxis_original_domain[0])/(xdomain[1] - xdomain[0]);
   }
@@ -182,7 +182,7 @@ FigureViewer.prototype.UpdateFigurePlot = function() {
     y_figure_scale*=(plot.yaxis_original_domain[1] - plot.yaxis_original_domain[0])/(ydomain[1] - ydomain[0]);
   }
   function update_figure_plot() {
-    var figure_group = plot.main_group.select("g#figure-group");
+    const figure_group = plot.main_group.select("g#figure-group");
     figure_group.selectAll("image")
       .attr("x", function(d) { return plot.xScale(d.x);})
       .attr("y", function(d) { return plot.yScale(d.y) - plot.height*y_figure_scale;})
@@ -194,16 +194,16 @@ FigureViewer.prototype.UpdateFigurePlot = function() {
 };
 
 FigureViewer.prototype.AddPointPlot = function() {
-  var plot = this;
+  const plot = this;
 
   function add_point_group() {
-    var tooltip = d3.select("#plot-tooltip");
-    var mapped = plot.data.data.map(function(v) {
+    const tooltip = d3.select("#plot-tooltip");
+    const mapped = plot.data.data.map(function(v) {
       return { x: v[0], y: v[1], path:v[2], psid: v[3] };
     });
-    var point_group = plot.main_group.append("g")
+    const point_group = plot.main_group.append("g")
       .attr("id", "point-group");
-    var point = point_group.selectAll("circle")
+    const point = point_group.selectAll("circle")
       .data(mapped).enter();
     point.append("circle")
       .attr("clip-path", "url(#clip)")
@@ -214,7 +214,7 @@ FigureViewer.prototype.AddPointPlot = function() {
           .duration(200)
           .style("opacity", 0.8);
         tooltip.html(function() {
-          var str = plot.data.xlabel + " : " + d.x + "<br/>" +
+          let str = plot.data.xlabel + " : " + d.x + "<br/>" +
           plot.data.ylabel + " : " + d.y + "<br/>" +
           "ID: " + d.psid + "<br />";
           if(d.path) {
@@ -245,10 +245,10 @@ FigureViewer.prototype.AddPointPlot = function() {
 };
 
 FigureViewer.prototype.UpdatePointPlot = function() {
-  var plot = this;
+  const plot = this;
 
   function update_point_group() {
-    var point_group = plot.main_group.select("g#point-group");
+    const point_group = plot.main_group.select("g#point-group");
     point_group.selectAll("circle")
       .attr("cx", function(d) { return plot.xScale(d.x);})
       .attr("cy", function(d) { return plot.yScale(d.y);});
@@ -257,11 +257,11 @@ FigureViewer.prototype.UpdatePointPlot = function() {
 };
 
 FigureViewer.prototype.AddDescription = function() {
-  var plot = this;
+  const plot = this;
 
   // description for the specification of the plot
   function add_label_table() {
-    var dl = plot.description.append("dl");
+    const dl = plot.description.append("dl");
     dl.append("dt").text("X-Axis");
     dl.append("dd").text(plot.data.xlabel);
     dl.append("dt").text("Y-Axis");
@@ -281,12 +281,12 @@ FigureViewer.prototype.AddDescription = function() {
   add_label_table();
 
   function add_tools() {
-    var actions = plot.description.append("div").attr('class', 'btn-group');
+    const actions = plot.description.append("div").attr('class', 'btn-group');
     actions.append("a")
       .attr({"class": "btn btn-primary btn-sm dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
       .text("Action")
       .append("span").attr("class", "caret");
-    var list = actions.append("ul").attr('class', 'dropdown-menu');
+    const list = actions.append("ul").attr('class', 'dropdown-menu');
     list.append("li").append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
     list.append("li").append("a").text("show smaller image").style('cursor','pointer').on("click", function() {
       if(plot.figure_size == "small") {
@@ -311,8 +311,8 @@ FigureViewer.prototype.AddDescription = function() {
       });
     plot.description.append("div").style("padding-bottom", "50px");
 
-    var log_check_box = plot.description.append("div").attr("class", "checkbox");
-    var check_box_x_label = log_check_box.append("label").attr("id", "x_log_check");
+    const log_check_box = plot.description.append("div").attr("class", "checkbox");
+    const check_box_x_label = log_check_box.append("label").attr("id", "x_log_check");
     check_box_x_label.html('<input type="checkbox"> log scale on x axis');
     //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
     d3.select('label#x_log_check input').on("change", function() {
@@ -320,7 +320,7 @@ FigureViewer.prototype.AddDescription = function() {
     });
     log_check_box.append("br");
 
-    var check_box_y_label = log_check_box.append("label").attr("id", "y_log_check");
+    const check_box_y_label = log_check_box.append("label").attr("id", "y_log_check");
     check_box_y_label.html('<input type="checkbox"> log scale on y axis');
     //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
     d3.select('label#y_log_check input').on("change", function() {
@@ -328,38 +328,38 @@ FigureViewer.prototype.AddDescription = function() {
     });
 
     plot.description.append("br");
-    var control_plot = plot.description.append("div").style("margin-top", "10px");
+    const control_plot = plot.description.append("div").style("margin-top", "10px");
     function add_brush() {
-      var selector = (plot.figure_size == "point") ? "g#point-group" : "g#figure-group";
-      var clone = plot.main_group.select(selector).node().cloneNode(true);
+      const selector = (plot.figure_size == "point") ? "g#point-group" : "g#figure-group";
+      const clone = plot.main_group.select(selector).node().cloneNode(true);
       control_plot.append("svg")
         .attr("width","210")
         .attr("height","155")
         .attr("viewBox","0 0 574 473")
         .node().appendChild(clone);
 
-      var x = plot.IsLog[0] ? d3.scale.log() : d3.scale.linear();
+      const x = plot.IsLog[0] ? d3.scale.log() : d3.scale.linear();
       x.range([0, plot.width]);
       x.domain(plot.xScale.domain());
-      var x_min = x.domain()[0];
-      var x_max = x.domain()[1];
+      const x_min = x.domain()[0];
+      const x_max = x.domain()[1];
       plot.xaxis_original_domain = x.domain().concat();
 
-      var y = plot.IsLog[1] ? d3.scale.log() : d3.scale.linear();
+      const y = plot.IsLog[1] ? d3.scale.log() : d3.scale.linear();
       y.range([plot.height, 0]);
       y.domain(plot.yScale.domain());
-      var y_min = y.domain()[0];
-      var y_max = y.domain()[1];
+      const y_min = y.domain()[0];
+      const y_max = y.domain()[1];
       plot.yaxis_original_domain = y.domain().concat();
 
-      var brush = d3.svg.brush()
+      const brush = d3.svg.brush()
         .x(x)
         .y(y)
         .on("brush", brushed);
 
-      var cloned_main_group = d3.select(clone)
+      const cloned_main_group = d3.select(clone)
         .attr("transform", "translate(5,5)");
-      var line_shape = "M0,0V" + plot.height + "H" + plot.width;
+      const line_shape = "M0,0V" + plot.height + "H" + plot.width;
       cloned_main_group.append("path").attr("d", line_shape)
         .style({
           "fill": "none",
@@ -374,7 +374,7 @@ FigureViewer.prototype.AddDescription = function() {
         .style({"stroke": "orange", "stroke-width": 4, "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
 
       function brushed() {
-        var domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
+        const domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
         plot.SetXDomain(domain[0][0], domain[1][0]);
         plot.SetYDomain(domain[0][1], domain[1][1]);
         plot.UpdatePlot(plot.figure_size);
@@ -386,7 +386,7 @@ FigureViewer.prototype.AddDescription = function() {
     function reset_brush (x_linear_log, y_linear_log) {
       plot.SetXScale(x_linear_log); // reset xScale domain to draw non expanded plot
       plot.SetYScale(y_linear_log); // reset xScale domain to draw non expanded plot
-      var size = plot.figure_size;
+      const size = plot.figure_size;
       plot.UpdatePlot("point");  // point plot is drawn for brush
       while (control_plot.node().firstChild) {
         control_plot.node().removeChild(control_plot.node().firstChild);
@@ -407,10 +407,10 @@ FigureViewer.prototype.Draw = function() {
 };
 
 function draw_figure_viewer(url, parameter_set_base_url, current_ps_id) {
-  var plot = new FigureViewer();
-  var progress = show_loading_spin_arc(plot.main_group, plot.width, plot.height);
+  const plot = new FigureViewer();
+  const progress = show_loading_spin_arc(plot.main_group, plot.width, plot.height);
 
-  var xhr = d3.json(url)
+  const xhr = d3.json(url)
     .on("load", function(dat) {
       progress.remove();
       plot.Init(dat, url, parameter_set_base_url, current_ps_id);

@@ -20,7 +20,7 @@ function create_parameter_sets_list(selector, default_length) {
     }
   })
 
-  var oPsTable = $(selector).DataTable({
+  const oPsTable = $(selector).DataTable({
     processing: true,
     serverSide: true,
     searching: false,

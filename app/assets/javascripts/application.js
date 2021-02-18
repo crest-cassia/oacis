@@ -52,8 +52,8 @@ $(document).ready(function () {
 // add/remove/Up/Down nested forms
 
 function find_from_parameter_definition_fields(me, offset) {
-  var p_lst =  $('.parameter-definition-field');
-  var idx, em = null;
+  const p_lst =  $('.parameter-definition-field');
+  let idx, em = null;
   for ( idx = 0; idx < p_lst.length; idx++ ) {
     if ( p_lst[idx] === me ) {
       em = p_lst[idx];
@@ -61,16 +61,16 @@ function find_from_parameter_definition_fields(me, offset) {
     }
   }
   if ( em == null ) return null;
-  var idx2 = idx + offset;
+  const idx2 = idx + offset;
   if ( idx2 < 0 || idx2 >= p_lst.length ) return null;
   return p_lst[idx2];
 }
 
 function exchange_form_order(me, em) {
-  var my_name = me.children[0].children[0].children[0].value;
-  var my_type = me.children[0].children[1].children[0].value;
-  var my_dval = me.children[0].children[2].children[0].value;
-  var my_desc = me.children[1].children[0].children[0].value;
+  const my_name = me.children[0].children[0].children[0].value;
+  const my_type = me.children[0].children[1].children[0].value;
+  const my_dval = me.children[0].children[2].children[0].value;
+  const my_desc = me.children[1].children[0].children[0].value;
   me.children[0].children[0].children[0].value = em.children[0].children[0].children[0].value;
   me.children[0].children[1].children[0].value = em.children[0].children[1].children[0].value;
   me.children[0].children[2].children[0].value = em.children[0].children[2].children[0].value;
@@ -83,30 +83,30 @@ function exchange_form_order(me, em) {
 
 $(document).ready( function() {
   $('form').on('click', '.remove_fields', function() {
-    var me = $(this).closest('.parameter-definition-field')[0];
-    var res = confirm("Are you sure to remove the parameter: " +
-                      me.children[0].children[0].children[0].value);
+    const me = $(this).closest('.parameter-definition-field')[0];
+    const res = confirm("Are you sure to remove the parameter: " +
+                        me.children[0].children[0].children[0].value);
     if ( ! res ) event.preventDefault();
     $(this).closest('.parameter-definition-field').next('input[type=hidden]').val(true);
     $(this).closest('.parameter-definition-field').remove();
   });
   $('form').on('click', '.add_fields', function() {
-      var time = new Date().getTime();
-      var regexp = new RegExp($(this).data('id'), 'g');
-      var position_to_add = $(this);
+      const time = new Date().getTime();
+      const regexp = new RegExp($(this).data('id'), 'g');
+      let position_to_add = $(this);
       if( $('#add_field_here').size() > 0 ) { position_to_add = $('#add_field_here'); }
       position_to_add.before($(this).data('fields').replace(regexp, time));
       event.preventDefault();
   });
   $('form').on('click', '.up_fields', function() {
-    var me = $(this).closest('.parameter-definition-field')[0];
-    var em = find_from_parameter_definition_fields(me, -1);
+    const me = $(this).closest('.parameter-definition-field')[0];
+    const em = find_from_parameter_definition_fields(me, -1);
     if ( em == null ) return;
     exchange_form_order(me, em);
   });
   $('form').on('click', '.down_fields', function() {
-    var me = $(this).closest('.parameter-definition-field')[0];
-    var em = find_from_parameter_definition_fields(me, +1);
+    const me = $(this).closest('.parameter-definition-field')[0];
+    const em = find_from_parameter_definition_fields(me, +1);
     if ( em == null ) return;
     exchange_form_order(me, em);
   });

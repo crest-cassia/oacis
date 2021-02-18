@@ -1,9 +1,9 @@
 //= require d3
 
 function draw_color_map() {
-  var colorScale = d3.scale.linear().domain([0.0,1.0])
+  const colorScale = d3.scale.linear().domain([0.0,1.0])
     .range(["#dddddd", "#0041ff"]);
-  var cmap = d3.select('svg#colormap-svg')
+  const cmap = d3.select('svg#colormap-svg')
     .attr("width", 180)
     .attr("height", 30);
   cmap.selectAll("rect")
@@ -19,11 +19,11 @@ function draw_color_map() {
 };
 
 function show_loading_spin_arc(svg, width, height) {
-  var radius = Math.min(width, height) / 2;
-  var loading_spin = svg.append("g")
+  const radius = Math.min(width, height) / 2;
+  const loading_spin = svg.append("g")
     .attr("transform", "translate(" + radius + "," + radius + ")")
     .attr("id", "loading-spin");
-  var arc = d3.svg.arc()
+  const arc = d3.svg.arc()
     .innerRadius(radius*0.5)
     .outerRadius(radius*0.9)
     .startAngle(0);
@@ -32,7 +32,7 @@ function show_loading_spin_arc(svg, width, height) {
     .style("fill", "#4D4D4D")
     .attr("d", arc)
     .call(spin, 1500);
-  var message = radius > 100 ? "LOADING: click here to cancel" : "LOADING";
+  const message = radius > 100 ? "LOADING: click here to cancel" : "LOADING";
   loading_spin.append("g")
     .attr("transform", "translate(" + radius + ",0)")
     .append("text")
@@ -55,46 +55,46 @@ function show_loading_spin_arc(svg, width, height) {
 }
 
 function draw_progress_overview(url) {
-  var colorScale = d3.scale.linear().domain([0.0,1.0])
+  const colorScale = d3.scale.linear().domain([0.0,1.0])
     .range(["#dddddd", "#0041ff"]);
 
-  var margin = {top: 10, right: 0, bottom: 10, left: 0},
-      width = 720,
-      height = 720;
-  var rowLabelMargin = 100;
-  var columnLabelMargin = 100;
-  var tickTextOffset = [10, 5];
-  var labelTextOffset = {column: -7, row: 2};
-  var fontsize =12;
+  const margin = {top: 10, right: 0, bottom: 10, left: 0},
+        width = 720,
+        height = 720;
+  const rowLabelMargin = 100;
+  const columnLabelMargin = 100;
+  const tickTextOffset = [10, 5];
+  const labelTextOffset = {column: -7, row: 2};
+  const fontsize = 12;
 
-  var toolTip = d3.select("#progress-tooltip");
+  const toolTip = d3.select("#progress-tooltip");
 
-  var progress_overview = d3.select("#progress-overview");
-  var svg = progress_overview.append("svg")
+  const progress_overview = d3.select("#progress-overview");
+  const svg = progress_overview.append("svg")
     .attr("id", "canvas")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom);
-  var arc_svg = d3.select('#spin_arc');
-  var loading = show_loading_spin_arc(arc_svg, arc_svg.attr("width"), arc_svg.attr("height"));
+  const arc_svg = d3.select('#spin_arc');
+  const loading = show_loading_spin_arc(arc_svg, arc_svg.attr("width"), arc_svg.attr("height"));
 
-  var xhr = d3.json(url)
+  const xhr = d3.json(url)
     .on("load", function(dat) {
     progress_overview.select("svg").remove();
     loading.remove();
 
-    var rectSizeX = (width - rowLabelMargin) / dat.parameter_values[0].length;
-    var rectSizeY = (height - columnLabelMargin) / dat.parameter_values[1].length;
+    const rectSizeX = (width - rowLabelMargin) / dat.parameter_values[0].length;
+    const rectSizeY = (height - columnLabelMargin) / dat.parameter_values[1].length;
 
-    var drag_flag = 0;
-    var mousedownX = 0;
-    var mousedownY = 0;
-    var mousedragX = 0;
-    var mousedragY = 0;
-    var vbox_x = 0;
-    var vbox_y = 0;
-    var vbox_default_width = vbox_width = width - columnLabelMargin;
-    var vbox_default_height = vbox_height = height - rowLabelMargin;
-    var zoom_scale=1.0;
+    let drag_flag = 0;
+    let mousedownX = 0;
+    let mousedownY = 0;
+    let mousedragX = 0;
+    let mousedragY = 0;
+    let vbox_x = 0;
+    let vbox_y = 0;
+    const vbox_default_width = vbox_width = width - columnLabelMargin;
+    const vbox_default_height = vbox_height = height - rowLabelMargin;
+    let zoom_scale = 1.0;
 
     function adjust_boundary_conditions(x, y) {
       if (x < 0) {
@@ -122,14 +122,14 @@ function draw_progress_overview(url) {
     };
 
     function mouse_zoom(eventObject) {
-      var center = d3.mouse(eventObject);
+      const center = d3.mouse(eventObject);
       vbox_width = vbox_default_width * zoom_scale;
       vbox_height = vbox_default_height * zoom_scale;
       vbox_x = center[0] - vbox_width/2;
       vbox_y = center[1] - vbox_height/2;
-      var vboxes = adjust_boundary_conditions(vbox_x, vbox_y);
-      vbox_x=vboxes[0];
-      vbox_y=vboxes[1];
+      const vboxes = adjust_boundary_conditions(vbox_x, vbox_y);
+      vbox_x = vboxes[0];
+      vbox_y = vboxes[1];
       set_view_box(vbox_x,vbox_y);
       d3.select('g#rowLabelRegion')
         .attr("font-size",fontsize*Math.sqrt(zoom_scale));
@@ -139,7 +139,7 @@ function draw_progress_overview(url) {
 
 
 
-    var inner_svg = svg.append("svg")
+    const inner_svg = svg.append("svg")
       .attr("id", "inner_canvas")
       .attr("x", margin.left + rowLabelMargin)
       .attr("y", margin.top + columnLabelMargin)
@@ -153,9 +153,9 @@ function draw_progress_overview(url) {
           mousedragY = d3.event.pageY - mousedownY;
           vbox_x -= mousedragX * zoom_scale;
           vbox_y -= mousedragY * zoom_scale;
-          var vboxes = adjust_boundary_conditions(vbox_x, vbox_y);
-          vbox_x=vboxes[0];
-          vbox_y=vboxes[1];
+          const vboxes = adjust_boundary_conditions(vbox_x, vbox_y);
+          vbox_x = vboxes[0];
+          vbox_y = vboxes[1];
           set_view_box(vbox_x,vbox_y);
         }
       })
@@ -205,9 +205,9 @@ function draw_progress_overview(url) {
         "stroke-width": 1
       });
 
-    var rectRegion = inner_svg.append("g");
+    const rectRegion = inner_svg.append("g");
 
-    var row = rectRegion.selectAll("g")
+    const row = rectRegion.selectAll("g")
       .data(dat.num_runs)
       .enter().append("g")
         .attr("transform", function(d, i) {
@@ -253,7 +253,7 @@ function draw_progress_overview(url) {
             .style("opacity", 0);
         });
 
-    var rowLabelKeyRegion = svg.append("g")
+    const rowLabelKeyRegion = svg.append("g")
       .attr("transform", "translate(" + 0 + "," + columnLabelMargin + ")");
 
     rowLabelKeyRegion.append("text")
@@ -264,7 +264,7 @@ function draw_progress_overview(url) {
       })
       .text(dat.parameters[1]);
 
-    var rowLabelsvg = svg.append("svg")
+    const rowLabelsvg = svg.append("svg")
       .attr("id", "rowLabel_canvas")
       .attr("x", margin.left)
       .attr("y", margin.top + columnLabelMargin)
@@ -273,7 +273,7 @@ function draw_progress_overview(url) {
       .attr("preserveAspectRatio", "none")
       .attr("viewBox", "" + 0 + " " + vbox_y + " " + (rowLabelMargin-tickTextOffset[0]) + " " + vbox_height);
 
-    var rowLabelRegion = rowLabelsvg.append("g")
+    const rowLabelRegion = rowLabelsvg.append("g")
       .attr("id","rowLabelRegion")
       .attr("font-size",fontsize);
 
@@ -289,7 +289,7 @@ function draw_progress_overview(url) {
       })
       .text(function(d) { return d;});
 
-    var columnLabelKeyRegion = svg.append("g")
+    const columnLabelKeyRegion = svg.append("g")
       .attr("transform", "translate(" + rowLabelMargin + "," + columnLabelMargin + ") rotate(-90)");
 
     columnLabelKeyRegion.append("text")
@@ -300,7 +300,7 @@ function draw_progress_overview(url) {
       })
       .text(dat.parameters[0]);
 
-    var columnLabelsvg = svg.append("svg")
+    const columnLabelsvg = svg.append("svg")
       .attr("id", "columnLabel_canvas")
       .attr("x", margin.left + rowLabelMargin)
       .attr("y", margin.top)
@@ -309,7 +309,7 @@ function draw_progress_overview(url) {
       .attr("preserveAspectRatio", "none")
       .attr("viewBox", "" + vbox_x + " " + 0 + " " + vbox_width + " " + (columnLabelMargin-tickTextOffset[1]));
 
-    var columnLabelRegion = columnLabelsvg.append("g")
+    const columnLabelRegion = columnLabelsvg.append("g")
       .attr("id","columnLabelRegion")
       .attr("font-size",fontsize)
       .attr("transform", "translate(" + 0 + "," + columnLabelMargin + ") rotate(-90)");
