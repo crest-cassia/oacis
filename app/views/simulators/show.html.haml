@@ -12,6 +12,10 @@
     %li.active
       %a{"href"=>"#tab-list-parameters", "data-toggle" => "tab"} Parameter Sets
     %li
+      %a{"href"=>"#tab-list-unfinished-runs", "data-toggle" => "tab"} Unfinished Runs
+    %li
+      %a{"href"=>"#tab-list-finished-runs", "data-toggle" => "tab"} Finished Runs
+    %li
       %a{"href"=>"#tab-progress", "data-toggle" => "tab"} Progress
 
   %div.tab-content
@@ -20,5 +24,10 @@
       = render "analyzers_list"
     %div.tab-pane.active#tab-list-parameters
       = render "parameter_sets_list"
+    %div.tab-pane#tab-list-unfinished-runs
+      = render "unfinished_runs_list"
+    %div.tab-pane#tab-list-finished-runs
+      = render "finished_runs_list"
     %div.tab-pane#tab-progress
       = render "progress"
+

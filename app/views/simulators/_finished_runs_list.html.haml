@@ -1,0 +1,13 @@
+%h3 Finished Runs
+%table.table.table-condensed.table-hover.table-striped#finished_runs_list{'data-source': _jobs_table_runs_path(format: 'json', run_status: ['finished','failed'], simulator_id: @simulator.id)}
+  %thead
+    %tr
+      - RunsListDatatable.header.each do |header|
+        = raw(header)
+  %tbody
+
+:javascript
+  $(function() {
+    // finished runs
+    const oFinishedRunsTable = datatables_for_runs_table('#finished_runs_list');
+  });
