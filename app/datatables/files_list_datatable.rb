@@ -27,10 +27,11 @@ private
       arr << @view.link_to(@view.shortened_id_monospaced(run.id), @view.run_path(run), data: { toggle: 'tooltip', placement: 'bottom', html: true, 'original-title': _tooltip_title(run) })
       path = run.result_paths.select {|result_path| result_path.fnmatch?("*/#{file_name}") }.first.to_s
       public_path = path.sub(/^#{Rails.root.join('public')}/, '')
-      if file_name =~ /(\.png|\.jpg|\.bmp)$/i
+      case file_name
+      when /(\.png|\.jpg|\.bmp)$/i
         detail = @view.link_to(@view.image_tag(public_path, class: 'img-thumbnail'), public_path)
         arr << "<div class=\"pull-right\" style=\"width: 300px\">#{detail}</div>"
-      elsif file_name == '_output.json'
+      when /^_output\.json$/
         output_json = JSON.parse(File.read(path))
         detail = @view.render_output_json(output_json)
         arr << "<div class=\"pull-right\" style=\"width: 500px;\">#{detail}</div>"
