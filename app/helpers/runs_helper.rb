@@ -59,4 +59,40 @@ module RunsHelper
     sio.puts '</ul>'
     sio.string.html_safe
   end
+
+  def render_output_json(output_json)
+    case output_json
+    when Hash
+      tag.table(class: 'table table-condensed') do
+        concat tag.thead
+        tbody = tag.tbody do
+          output_json.each do |key, val|
+            tr = tag.tr do
+              concat tag.th h(key)
+              td = tag.td do
+                if val.is_a?(Hash) or val.is_a?(Array)
+                  begin
+                    j = JSON.pretty_generate(val)
+                  rescue JSON::GeneratorError
+                    j = val.to_json
+                  end
+                  concat tag.pre h(j)
+                else
+                  h(val)
+                end
+              end
+              concat td
+            end
+
+            concat tr
+          end
+        end
+        concat tbody
+      end
+    when Array
+      tag.pre h(JSON.pretty_generate(output_json))
+    else
+      tag.pre h(output_json.inspect) unless output_json.nil?
+    end
+  end
 end

@@ -275,3 +275,18 @@ select[name="oacis_setting[notification_level]"] + .tooltip .tooltip-inner {
   text-align: left;
   width: 610px;
 }
+
+table#files_list {
+  table {
+    background-color: transparent;
+    margin-bottom: 0;
+    tr:first-child {
+      th, td {
+        border-top: none;
+      }
+    }
+  }
+  pre {
+    margin: 5px;
+  }
+}
