@@ -74,14 +74,14 @@
 
 :javascript
   $(function() {
-    const objPSTable = create_parameter_sets_list('#params_list', 100);
+    const objPSTable = OACIS.create_parameter_sets_list('#params_list', 100);
   });
   $(function () {
     $('#ps_check_all').prop('checked', false); // workaround for a bug of Chrome
   });
   $("#parameter_save_filter_set_ok").on("click", function() {
     let name = $("#filter_name_field").val();
-    if (!validate_filter_name(name)) { return false; }
+    if (!OACIS.validate_filter_name(name)) { return false; }
 
     let url = $(this).data('find-field-path');
     jQuery.ajax(url, {

@@ -85,7 +85,7 @@
         const type = $(o).find('select#param option:selected').data('param-type');
         const matcher = $(o).find('select#matcher').val();
         const val = $(o).find('input#value').val();
-        const err = validate_filter_value(type, val);
+        const err = OACIS.validate_filter_value(type, val);
         if(err) {
           $(o).find('#error_message').text(err);
           has_error = true;
@@ -94,7 +94,7 @@
       });
       if(has_error || q.length == 0) { return; }
       const sim_path = "#{raw simulator_path(simulator)}";
-      var path = sim_path + '?q=' + encodeURIComponent(JSON.stringify(q));
+      const path = sim_path + '?q=' + encodeURIComponent(JSON.stringify(q));
       location.href = path;
     });
   });

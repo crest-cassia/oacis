@@ -28,32 +28,32 @@
 
 :javascript
   $(function() {
-    var update_analysis_mpi_omp_fields = function(analyzer_id, host_id) {
-      var mpi_field = $('input#analysis_mpi_procs');
-      var omp_field = $('input#analysis_omp_threads');
+    const update_analysis_mpi_omp_fields = function(analyzer_id, host_id) {
+      const mpi_field = $('input#analysis_mpi_procs');
+      const omp_field = $('input#analysis_omp_threads');
       if( mpi_field.size() + omp_field.size() == 0 ) return;
-      var url = "#{_default_mpi_omp_analyzer_url(':analyzer_id')}.json" + "?host_id=" + host_id;
+      let url = "#{_default_mpi_omp_analyzer_url(':analyzer_id')}.json" + "?host_id=" + host_id;
       url = url.replace(':analyzer_id', analyzer_id);
       $.get(url, function(data) {
         if( mpi_field.size() > 0 ) { mpi_field.val(data['mpi_procs']); }
         if( omp_field.size() > 0 ) { omp_field.val(data['omp_threads']); }
       });
     }
-    var update_host_parameters = function(analyzer_id, host_id) {
-      var url = "#{_host_parameters_field_analyzer_url(':analyzer_id')}" + "?host_id=" + host_id;
+    const update_host_parameters = function(analyzer_id, host_id) {
+      let url = "#{_host_parameters_field_analyzer_url(':analyzer_id')}" + "?host_id=" + host_id;
       url = url.replace(':analyzer_id', analyzer_id);
       $.get(url, function(data) {
         $('#analysis_host_parameters').html(data);
       });
     }
-    var analyzer_field = $('#analysis_form_analyzer')
+    const analyzer_field = $('#analysis_form_analyzer')
     analyzer_field.change(function(){
-      var analyzer_id = $(this).val();
+      const analyzer_id = $(this).val();
       $.get("#{_parameters_form_analyzer_path(':analyzer_id')}".replace(':analyzer_id',analyzer_id), function(data) {
         $('#analysis_parameters_form').html(data);
-        var submitted_to = $('#analysis_parameters_form select#analysis_submitted_to');
+        const submitted_to = $('#analysis_parameters_form select#analysis_submitted_to');
         submitted_to.change(function() {
-          var host_id = $(this).val();
+          const host_id = $(this).val();
           update_analysis_mpi_omp_fields( analyzer_id, host_id );
           update_host_parameters( analyzer_id, host_id );
         });

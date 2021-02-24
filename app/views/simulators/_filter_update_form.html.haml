@@ -73,14 +73,14 @@
 
       let has_error = false;
       const name = form.find('[name=filter_name]').val();
-      if (!validate_filter_name(name)) { has_error = true; }
+      if (!OACIS.validate_filter_name(name)) { has_error = true; }
       const conditions = [];
       $('.filter_conditions_form .row').each(function(i,o) {
         const param = $(o).find('select#param').val();
         const type = $(o).find('select#param option:selected').data('param-type');
         const matcher = $(o).find('select#matcher').val();
         const val = $(o).find('input#value').val();
-        const err = validate_filter_value(type, val);
+        const err = OACIS.validate_filter_value(type, val);
         if(err) {
           $(o).find('#error_message').text(err);
           has_error = true;

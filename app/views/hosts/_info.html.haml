@@ -34,7 +34,7 @@
   :javascript
     $(function() {
       $('#btn_check_scheduler_status').on('click', function() {
-        var url = "#{_check_scheduler_status_host_url(@host)}";
+        const url = "#{_check_scheduler_status_host_url(@host)}";
         $.get(url, {}, function(dat) {
           $('#scheduler_status').text(dat);
         })

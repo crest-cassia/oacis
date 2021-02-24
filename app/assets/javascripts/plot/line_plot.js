@@ -7,7 +7,7 @@ LinePlot.prototype.constructor = LinePlot;// override constructor
 LinePlot.prototype.IsLog = [false,false];
 
 LinePlot.prototype.SetXScale = function(xscale) {
-  var scale = null, min, max;
+  let scale = null, min, max;
   switch(xscale) {
   case "linear":
     scale = d3.scale.linear().range([0, this.width]);
@@ -20,7 +20,7 @@ LinePlot.prototype.SetXScale = function(xscale) {
     this.IsLog[0] = false;
     break;
   case "log":
-    var data_in_logscale = this.data.data.map(function(element) {
+    const data_in_logscale = this.data.data.map(function(element) {
       return element.filter(function(element){
         return element[0] > 0.0;
       });
@@ -40,7 +40,7 @@ LinePlot.prototype.SetXScale = function(xscale) {
 };
 
 LinePlot.prototype.SetYScale = function(yscale) {
-  var scale = null, min, max;
+  let scale = null, min, max;
   switch(yscale) {
   case "linear":
     scale = d3.scale.linear().range([this.height, 0]);
@@ -53,7 +53,7 @@ LinePlot.prototype.SetYScale = function(yscale) {
     this.IsLog[1] = false;
     break;
   case "log":
-    var data_in_logscale = this.data.data.map(function(element) {
+    const data_in_logscale = this.data.data.map(function(element) {
       return element.filter(function(element){
         return element[0] > 0.0;
       });
@@ -73,7 +73,7 @@ LinePlot.prototype.SetYScale = function(yscale) {
 };
 
 LinePlot.prototype.SetXDomain = function(xmin, xmax) {
-  var plot = this;
+  const plot = this;
   if( plot.IsLog[0] ) {
     if( xmin <= 0.0 ) {
       plot.SetXScale("log"); // call this to calculate auto-domain
@@ -87,7 +87,7 @@ LinePlot.prototype.SetXDomain = function(xmin, xmax) {
 };
 
 LinePlot.prototype.SetYDomain = function(ymin, ymax) {
-  var plot = this;
+  const plot = this;
   if( plot.IsLog[1] ) {
     if( ymin <= 0.0 ) {
       plot.SetYScale("log"); // call this to calculate auto-domain
@@ -101,12 +101,12 @@ LinePlot.prototype.SetYDomain = function(ymin, ymax) {
 };
 
 LinePlot.prototype.AddPlot = function() {
-  var plot = this;
-  var colorScale = d3.scale.category10();
+  const plot = this;
+  const colorScale = d3.scale.category10();
 
   function add_series_group() {
-    var plot_group = plot.main_group.append("g").attr("id", "plot-group");
-    var series = plot_group
+    const plot_group = plot.main_group.append("g").attr("id", "plot-group");
+    const series = plot_group
       .selectAll("g")
       .data(plot.data.data)
       .enter().append("g")
@@ -122,8 +122,8 @@ LinePlot.prototype.AddPlot = function() {
       });
 
     // add circle
-    var tooltip = d3.select("#plot-tooltip");
-    var point = series.selectAll("circle")
+    const tooltip = d3.select("#plot-tooltip");
+    const point = series.selectAll("circle")
       .data(function(d,i) {
         return d.map(function(v) {
           return {
@@ -176,15 +176,15 @@ LinePlot.prototype.AddPlot = function() {
   add_series_group();
 
   function add_legend_group() {
-    var legend_region = plot.main_group.append("g")
+    const legend_region = plot.main_group.append("g")
       .attr("id", "legend-group")
       .attr("transform", "translate(" + plot.width + "," + 0 + ")");
-    var legend = legend_region.append("g")
+    const legend = legend_region.append("g")
       .attr("id", "legend")
       .attr("transform", "translate(" + 0 + "," + 20 + ")");
 
     // add legend
-    var legendItem = legend.selectAll("g")
+    const legendItem = legend.selectAll("g")
       .data(plot.data.series_values)
       .enter().append("g")
       .attr("class", "legend-item")
@@ -202,7 +202,7 @@ LinePlot.prototype.AddPlot = function() {
       .text( function(d) { return d; });
 
     // add legend title
-    var legend_title = legend_region.append("g")
+    const legend_title = legend_region.append("g")
       .attr("id", "legend-title");
     legend_title.append("text")
       .attr({
@@ -219,14 +219,14 @@ LinePlot.prototype.AddPlot = function() {
 };
 
 LinePlot.prototype.UpdatePlot = function() {
-  var plot = this;
-  var colorScale = d3.scale.category10();
-  var line = d3.svg.line()
+  const plot = this;
+  const colorScale = d3.scale.category10();
+  const line = d3.svg.line()
     .x( function(d) { return plot.xScale(d[0]);} )
     .y( function(d) { return plot.yScale(d[1]);} );
 
   function update_series() {
-    var series = plot.main_group.selectAll("g.series");
+    const series = plot.main_group.selectAll("g.series");
     // draw line path
     series.selectAll("path").attr("d", function(d) { return line(d);});
 
@@ -270,11 +270,11 @@ LinePlot.prototype.UpdatePlot = function() {
 };
 
 LinePlot.prototype.AddDescription = function() {
-  var plot = this;
+  const plot = this;
 
   // description for the specification of the plot
   function add_label_table() {
-    var dl = plot.description.append("dl");
+    const dl = plot.description.append("dl");
     dl.append("dt").text("X-Axis");
     dl.append("dd").text(plot.data.xlabel);
     dl.append("dt").text("Y-Axis");
@@ -296,25 +296,25 @@ LinePlot.prototype.AddDescription = function() {
   add_label_table();
 
   function add_tools() {
-    var actions = plot.description.append("div").attr('class', 'btn-group');
+    const actions = plot.description.append("div").attr('class', 'btn-group');
     actions.append("a")
       .attr({"class": "btn btn-primary btn-sm dropdown-toggle", "data-toggle": "dropdown", "href": "#"})
       .text("Action")
       .append("span").attr("class", "caret");
-    var list = actions.append("ul").attr('class', 'dropdown-menu');
+    const list = actions.append("ul").attr('class', 'dropdown-menu');
     list.append("li").append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
-    var plt_url = plot.url.replace(/\.json/, '.plt');
+    const plt_url = plot.url.replace(/\.json/, '.plt');
     list.append("li").append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
-    var downloadAsFile = function(fileName, content, a_element) {
-      var blob = new Blob([content]);
-      var url = window.URL || window.webkitURL;
-      var blobURL = url.createObjectURL(blob);
+    const downloadAsFile = function(fileName, content, a_element) {
+      const blob = new Blob([content]);
+      const url = window.URL || window.webkitURL;
+      const blobURL = url.createObjectURL(blob);
       a_element.download = fileName;
       a_element.href = blobURL;
     };
     list.append("li").append("a").text("download svg").style("cursor", "pointer")
       .on("click", function() {
-        var clone_region = document.createElement('div');
+        const clone_region = document.createElement('div');
         clone_region.appendChild(plot.svg.node().cloneNode(true));
         d3.select(clone_region).select("svg")
           .attr("xmlns", "http://www.w3.org/2000/svg");
@@ -327,8 +327,8 @@ LinePlot.prototype.AddDescription = function() {
       });
     plot.description.append("div").style("padding-bottom", "50px");
 
-    var log_check_box = plot.description.append("div").attr("class", "checkbox");
-    var check_box_x_label = log_check_box.append("label").attr("id", "x_log_check");
+    const log_check_box = plot.description.append("div").attr("class", "checkbox");
+    const check_box_x_label = log_check_box.append("label").attr("id", "x_log_check");
     check_box_x_label.html('<input type="checkbox"> log scale on x axis');
     //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
     d3.select('label#x_log_check input').on("change", function() {
@@ -336,7 +336,7 @@ LinePlot.prototype.AddDescription = function() {
     });
     log_check_box.append("br");
 
-    var check_box_y_label = log_check_box.append("label").attr("id", "y_log_check");
+    const check_box_y_label = log_check_box.append("label").attr("id", "y_log_check");
     check_box_y_label.html('<input type="checkbox"> log scale on y axis');
     //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
     d3.select('label#y_log_check input').on("change", function() {
@@ -344,35 +344,35 @@ LinePlot.prototype.AddDescription = function() {
     });
 
     plot.description.append("br");
-    var control_plot = plot.description.append("div").style("margin-top", "10px");
+    const control_plot = plot.description.append("div").style("margin-top", "10px");
     function add_brush() {
-      var clone = plot.main_group.select("g#plot-group").node().cloneNode(true);
+      const clone = plot.main_group.select("g#plot-group").node().cloneNode(true);
       control_plot.append("svg")
         .attr("width","210")
         .attr("height","155")
         .attr("viewBox","0 0 574 473")
         .node().appendChild(clone);
 
-      var x = plot.IsLog[0] ? d3.scale.log() : d3.scale.linear();
+      const x = plot.IsLog[0] ? d3.scale.log() : d3.scale.linear();
       x.range([0, plot.width]);
       x.domain(plot.xScale.domain());
-      var x_min = x.domain()[0];
-      var x_max = x.domain()[1];
+      const x_min = x.domain()[0];
+      const x_max = x.domain()[1];
 
-      var y = plot.IsLog[1] ? d3.scale.log() : d3.scale.linear();
+      const y = plot.IsLog[1] ? d3.scale.log() : d3.scale.linear();
       y.range([plot.height, 0]);
       y.domain(plot.yScale.domain());
-      var y_min = y.domain()[0];
-      var y_max = y.domain()[1];
+      const y_min = y.domain()[0];
+      const y_max = y.domain()[1];
 
-      var brush = d3.svg.brush()
+      const brush = d3.svg.brush()
         .x(x)
         .y(y)
         .on("brush", brushed);
 
-      var cloned_main_group = d3.select(clone)
+      const cloned_main_group = d3.select(clone)
         .attr("transform", "translate(5,5)");
-      var line_shape = "M0,0V" + plot.height + "H" + plot.width;
+      const line_shape = "M0,0V" + plot.height + "H" + plot.width;
       cloned_main_group.append("path").attr("d", line_shape)
         .style({
           "fill": "none",
@@ -387,7 +387,7 @@ LinePlot.prototype.AddDescription = function() {
         .style({"stroke": "orange", "stroke-width": 4, "fill-opacity": 0.125, "shape-rendering": "crispEdges"});
 
       function brushed() {
-        var domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
+        const domain = brush.empty() ? [[x_min,y_min],[x_max, y_max]] : brush.extent();
         plot.SetXDomain(domain[0][0], domain[1][0]);
         plot.SetYDomain(domain[0][1], domain[1][1]);
         plot.UpdatePlot();
@@ -416,20 +416,23 @@ LinePlot.prototype.Draw = function() {
   this.AddDescription();
 };
 
-function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
-  var plot = new LinePlot();
-  var progress = show_loading_spin_arc(plot.main_group, plot.width, plot.height);
-  var xhr = d3.json(url)
-    .on("load", function(dat) {
-      progress.remove();
-      plot.Init(dat, url, parameter_set_base_url, current_ps_id);
-      plot.Draw();
-    })
-  .on("error", function() {progress.remove();})
-  .get();
-  progress.on("mousedown", function(){
-    xhr.abort();
-    plot.Destructor();
-  });
-}
+(() => {
+  function draw_line_plot(url, parameter_set_base_url, current_ps_id) {
+    const plot = new LinePlot();
+    const progress = OACIS.show_loading_spin_arc(plot.main_group, plot.width, plot.height);
+    const xhr = d3.json(url)
+      .on("load", function(dat) {
+        progress.remove();
+        plot.Init(dat, url, parameter_set_base_url, current_ps_id);
+        plot.Draw();
+      })
+      .on("error", function() {progress.remove();})
+      .get();
+    progress.on("mousedown", function(){
+      xhr.abort();
+      plot.Destructor();
+    });
+  }
 
+  OACIS.draw_line_plot = draw_line_plot;
+})();

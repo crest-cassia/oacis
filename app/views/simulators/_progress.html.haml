@@ -46,7 +46,7 @@
             .col-md-2.add-margin-top{align: 'left'} 100%
         #color-map
         :javascript
-          draw_color_map();
+          OACIS.draw_color_map();
         %form.form-horizontal
           - parameter_keys = @simulator.parameter_definitions.map(&:key)
           .form-group
@@ -62,9 +62,9 @@
               %a.btn.btn-primary#show_progress_overview_button Show
           %svg#spin_arc{width: 300, height: 100}
 :javascript
-  var number_of_runs_url = "#{_number_of_runs_simulator_path}" + ".json";
-  var progress_overview_url = "#{_progress_overview_simulator_path}" + ".json";
-  var rp, cp = null;
+  const number_of_runs_url = "#{_number_of_runs_simulator_path}" + ".json";
+  const progress_overview_url = "#{_progress_overview_simulator_path}" + ".json";
+  let rp, cp = null;
 
   function update_number_of_runs() {
     jQuery.ajax(number_of_runs_url, {
@@ -73,10 +73,10 @@
     })
     .done(function(data) {
       if(data) {
-        var total = data['total'];
-        for(var key in data['stat_count']) {
-          var count = data['stat_count'][key];
-          var formatted_count = count + ' (' + (count / total * 100).toFixed(1) + ' %)';
+        const total = data['total'];
+        for(let key in data['stat_count']) {
+          const count = data['stat_count'][key];
+          const formatted_count = count + ' (' + (count / total * 100).toFixed(1) + ' %)';
           $('#tab-progress #' + key + '_count').text(formatted_count);
         }
         $('#tab-progress #total_count').text(total);
@@ -85,8 +85,8 @@
   }
 
   function show_progress_overview() {
-    var url_with_param = progress_overview_url + "?row_parameter=" + rp + "&column_parameter=" + cp;
-    draw_progress_overview(url_with_param);
+    const url_with_param = progress_overview_url + "?row_parameter=" + rp + "&column_parameter=" + cp;
+    OACIS.draw_progress_overview(url_with_param);
   }
 
   $('#show_progress_overview_button').on('click', function() {
@@ -100,7 +100,7 @@
     // See http://stackoverflow.com/questions/8828387
     $('#progress-tooltip').insertBefore('.col-lg-12');
 
-    setupRefreshTools($('#refresh_tools'), function() {
+    OACIS.setupRefreshTools($('#refresh_tools'), function() {
       update_number_of_runs();
       if( $("#progress-overview #canvas").length > 0 ) {
         show_progress_overview();

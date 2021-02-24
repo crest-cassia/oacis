@@ -15,10 +15,10 @@
     form.data('filter-name', fname)
     form.data('filter-conditions', fconditions)
   }
-  var oFilterSetTable = null;
+  let oFilterSetTable = null;
   $("#parameter_set_filters_list_modal").on('show.bs.modal', function(event) {
     const url = "#{_parameter_set_filters_list_simulator_path(@simulator)}";
-    oFilterSetTable = create_parameter_set_filters_list('#parameter_set_filters_list', url);
+    oFilterSetTable = OACIS.create_parameter_set_filters_list('#parameter_set_filters_list', url);
   });
   $("#parameter_set_filters_list_modal").on('hide.bs.modal', function(event) {
     oFilterSetTable.destroy();

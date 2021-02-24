@@ -25,21 +25,21 @@
 :javascript
   $(function() {
     $('#run_fields select#run_submitted_to').change(function() {
-      var host_id = $(this).val();
-      var fields = $(this).closest('#run_fields');
-      var update_mpi_omp_fields = function() {
-        var mpi_field = fields.find('#run_mpi_procs');
-        var omp_field = fields.find('#run_omp_threads');
+      const host_id = $(this).val();
+      const fields = $(this).closest('#run_fields');
+      const update_mpi_omp_fields = function() {
+        const mpi_field = fields.find('#run_mpi_procs');
+        const omp_field = fields.find('#run_omp_threads');
         if( mpi_field.size() + omp_field.size() == 0 ) return;
-        var url = "#{_default_mpi_omp_simulator_url(run.simulator)}.json" + "?host_id=" + host_id;
+        const url = "#{_default_mpi_omp_simulator_url(run.simulator)}.json" + "?host_id=" + host_id;
         $.get(url, function(data) {
           if( mpi_field.size() > 0 ) { mpi_field.val(data['mpi_procs']); }
           if( omp_field.size() > 0 ) { omp_field.val(data['omp_threads']); }
         });
       }
       update_mpi_omp_fields();
-      var update_host_parameters = function() {
-        var url = "#{_host_parameters_field_simulator_url(run.simulator)}" + "?host_id=" + host_id;
+      const update_host_parameters = function() {
+        const url = "#{_host_parameters_field_simulator_url(run.simulator)}" + "?host_id=" + host_id;
         $.get(url, function(data) {
           fields.find('#host_parameters').html(data);
           if( $('#new_parameter_set').length > 0 ) {

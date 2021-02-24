@@ -76,26 +76,26 @@
   $('#plot-type').change(show_form_for_plots);
 
   function get_irrelevants() {
-    var irrelevants = $('#irrelevant-params').find("input:checkbox:checked").map(function() {
+    const irrelevants = $('#irrelevant-params').find("input:checkbox:checked").map(function() {
       return $(this).data('key');
     }).get().join(',');
     return irrelevants;
   }
   function add_line_plot(x, y, series, irrelevants) {
-    var url = "#{_line_plot_parameter_set_path(@param_set)}" + ".json";
-    var url_with_param = url + 
+    const url = "#{_line_plot_parameter_set_path(@param_set)}" + ".json";
+    const url_with_param = url + 
       "?x_axis_key=" + encodeURIComponent(x) +
       "&y_axis_key=" + encodeURIComponent(y) +
       "&series=" + encodeURIComponent(series) +
       "&irrelevants=" + encodeURIComponent(irrelevants);
-    var ps_base_url = "#{parameter_set_path('PSID')}".replace('PSID', '');
-    draw_line_plot(url_with_param, ps_base_url, "#{@param_set.id}");
+    const ps_base_url = "#{parameter_set_path('PSID')}".replace('PSID', '');
+    OACIS.draw_line_plot(url_with_param, ps_base_url, "#{@param_set.id}");
   }
   $('#add_line_plot_button').on('click', function() {
-    var x = $('#line-plot-form #x_axis_key').val();
-    var y = $('#line-plot-form #y_axis_key').val();
-    var series = $('#line-plot-form #series').val();
-    var irrelevants = get_irrelevants();
+    let x = $('#line-plot-form #x_axis_key').val();
+    let y = $('#line-plot-form #y_axis_key').val();
+    const series = $('#line-plot-form #series').val();
+    const irrelevants = get_irrelevants();
     if( x == "" ) {
       x = new Array();
       $('#x_axis_key').children('option').each(function() {
@@ -127,38 +127,38 @@
   });
 
   function add_scatter_plot(x, y, result, irrelevants) {
-    var url = "#{_scatter_plot_parameter_set_path(@param_set)}" + ".json";
-    var url_with_param = url +
+    const url = "#{_scatter_plot_parameter_set_path(@param_set)}" + ".json";
+    const url_with_param = url +
       "?x_axis_key=" + encodeURIComponent(x) +
       "&y_axis_key=" + encodeURIComponent(y) +
       "&result=" + encodeURIComponent(result) +
       "&irrelevants=" + encodeURIComponent(irrelevants);
-    var ps_base_url = "#{parameter_set_path('PSID')}".replace('PSID', '');
-    draw_scatter_plot(url_with_param, ps_base_url, "#{@param_set.id}");
+    const ps_base_url = "#{parameter_set_path('PSID')}".replace('PSID', '');
+    OACIS.draw_scatter_plot(url_with_param, ps_base_url, "#{@param_set.id}");
   }
   $('#add_scatter_plot_button').on('click', function() {
-    var x = $('#scatter-plot-form #x_axis_key').val();
-    var y = $('#scatter-plot-form #y_axis_key').val();
-    var result = $('#scatter-plot-form #result').val();
-    var irrelevants = get_irrelevants();
+    const x = $('#scatter-plot-form #x_axis_key').val();
+    const y = $('#scatter-plot-form #y_axis_key').val();
+    const result = $('#scatter-plot-form #result').val();
+    const irrelevants = get_irrelevants();
     add_scatter_plot(x, y, result, irrelevants);
   });
 
   function add_figure_viewer(x, y, result, irrelevants) {
-    var url = "#{_figure_viewer_parameter_set_path(@param_set)}" + ".json";
-    var url_with_param = url +
+    const url = "#{_figure_viewer_parameter_set_path(@param_set)}" + ".json";
+    const url_with_param = url +
       "?x_axis_key=" + encodeURIComponent(x) +
       "&y_axis_key=" + encodeURIComponent(y) +
       "&result=" + encodeURIComponent(result) +
       "&irrelevants=" + encodeURIComponent(irrelevants);
-    var ps_base_url = "#{parameter_set_path('PSID')}".replace('PSID', '');
-    draw_figure_viewer(url_with_param, ps_base_url, "#{@param_set.id}");
+    const ps_base_url = "#{parameter_set_path('PSID')}".replace('PSID', '');
+    OACIS.draw_figure_viewer(url_with_param, ps_base_url, "#{@param_set.id}");
   }
   $('#add_figure_viewer_button').on('click', function() {
-    var x = $('#figure-viewer-form #x_axis_key').val();
-    var y = $('#figure-viewer-form #y_axis_key').val();
-    var result = $('#figure-viewer-form #result').val();
-    var irrelevants = get_irrelevants();
+    const x = $('#figure-viewer-form #x_axis_key').val();
+    const y = $('#figure-viewer-form #y_axis_key').val();
+    const result = $('#figure-viewer-form #result').val();
+    const irrelevants = get_irrelevants();
     add_figure_viewer(x, y, result, irrelevants);
   });
 
@@ -172,20 +172,20 @@
     add_tooltip();
     function get_query_param() {
       if( 1 < document.location.search.length ) {
-        var query = document.location.search.substring(1);  // remove first '?'
-        var parameters = query.split('&');
-        var result = new Object();
-        for( var i=0; i < parameters.length; i++) {
-          var element = parameters[i].split('=');
-          var key = decodeURIComponent(element[0]);
-          var value = decodeURIComponent(element[1]);
+        const query = document.location.search.substring(1);  // remove first '?'
+        const parameters = query.split('&');
+        const result = new Object();
+        for( let i=0; i < parameters.length; i++) {
+          const element = parameters[i].split('=');
+          const key = decodeURIComponent(element[0]);
+          const value = decodeURIComponent(element[1]);
           result[key] = value;
         }
         return result;
       }
       return null;
     }
-    var qparam = get_query_param();
+    const qparam = get_query_param();
     if( qparam == null ) { return; }
     if( qparam['plot_type'] == 'line' ) {
       add_line_plot( qparam['x_axis'], qparam['y_axis'], qparam['series'] || '', qparam['irrelevants'] || '');
