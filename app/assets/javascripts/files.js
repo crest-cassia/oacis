@@ -1,4 +1,4 @@
-$(() => {
+(() => {
   function datatables_for_files_table(selector) {
     const oTable = $(selector).DataTable({
       processing: true,
@@ -18,4 +18,4 @@ $(() => {
   }
 
   OACIS.datatables_for_files_table = datatables_for_files_table;
-});
+})();
