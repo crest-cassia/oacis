@@ -1,26 +1,7 @@
 - title ||= "Results"
 - if result.present?
   %h3= title
-- if result.is_a?(Hash)
-  %table.table.table-condensed
-    %thead
-    %tbody
-      - result.each do |key,val|
-        %tr
-          %th= h(key)
-          %td
-            - if val.is_a?(Hash) or val.is_a?(Array)
-              - begin
-                - j = JSON.pretty_generate(val)
-              - rescue JSON::GeneratorError
-                - j = val.to_json
-              %pre= h(j)
-            - else
-              = h(val)
-- elsif result.is_a?(Array)
-  %pre= h(JSON.pretty_generate(result))
-- elsif not result.nil?
-  %pre= h(result.inspect)
+= render_output_json(result)
 
 - if result_paths.present?
   %h3 Output Files
