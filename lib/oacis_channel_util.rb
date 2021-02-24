@@ -12,7 +12,7 @@ module OacisChannelUtil
     return if ps.first.nil?
     ps_status_counts = ParameterSet.runs_status_count_batch(ps)
 
-    sim = Simulator.where({id: job.simulator_id})
+    sim = Simulator.where({id: job.simulator.id})
     sim_status_counts = Simulator.runs_status_count_batch(sim)
     
     ws_mess = { :id => "#{job.id}",
@@ -24,8 +24,8 @@ module OacisChannelUtil
                 :ps_id => "#{job.parameter_set_id}",
                 :ps_counts => ps_status_counts[job.parameter_set_id],
                 :ps_updated_at => ApplicationController.helpers.distance_to_now_in_words(ps.first.updated_at),
-                :sim_id => "#{job.simulator_id}",
-                :sim_counts => sim_status_counts[job.simulator_id],
+                :sim_id => "#{job.simulator.id}",
+                :sim_counts => sim_status_counts[job.simulator.id],
                 :sim_updated_at => ApplicationController.helpers.distance_to_now_in_words(sim.first.updated_at)
               }
     ws_mess

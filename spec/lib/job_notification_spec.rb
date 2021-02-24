@@ -36,7 +36,7 @@ describe JobNotificationUtil do
         other_ps_run.update!(status: :finished)
         described_class.notify_job_finished(other_ps_run)
         expect(NotificationEvent.count).to eq 1
-        expect(NotificationEvent.last.message).to include('Run', 'SimulatorID')
+        expect(NotificationEvent.last.message).to include('Run', 'Simulator')
 
         analyses.each {|run| run.update!(status: :finished) }
         described_class.notify_job_finished(analyses.second)
@@ -45,7 +45,7 @@ describe JobNotificationUtil do
         other_ps_analysis.update!(status: :finished)
         described_class.notify_job_finished(other_ps_analysis)
         expect(NotificationEvent.count).to eq 2
-        expect(NotificationEvent.last.message).to include('Analysis', 'SimulatorID')
+        expect(NotificationEvent.last.message).to include('Analysis', 'Simulator')
       end
     end
 
@@ -61,7 +61,7 @@ describe JobNotificationUtil do
         other_ps_run.update!(status: :finished)
         described_class.notify_job_finished(other_ps_run)
         expect(NotificationEvent.count).to eq 3
-        expect(NotificationEvent.last.message).to include('Run', 'SimulatorID')
+        expect(NotificationEvent.last.message).to include('Run', 'Simulator')
 
         analyses.each {|run| run.update!(status: :finished) }
         described_class.notify_job_finished(analyses.second)
@@ -71,7 +71,7 @@ describe JobNotificationUtil do
         other_ps_analysis.update!(status: :finished)
         described_class.notify_job_finished(other_ps_analysis)
         expect(NotificationEvent.count).to eq 6
-        expect(NotificationEvent.last.message).to include('Analysis', 'SimulatorID')
+        expect(NotificationEvent.last.message).to include('Analysis', 'Simulator')
       end
     end
 
@@ -92,7 +92,7 @@ describe JobNotificationUtil do
         other_ps_run.update!(status: :finished)
         described_class.notify_job_finished(other_ps_run)
         expect(NotificationEvent.count).to eq 6
-        expect(NotificationEvent.last.message).to include('Run', 'SimulatorID')
+        expect(NotificationEvent.last.message).to include('Run', 'Simulator')
 
         analyses.first.update!(status: :finished)
         described_class.notify_job_finished(analyses.first)
@@ -107,7 +107,7 @@ describe JobNotificationUtil do
         other_ps_analysis.update!(status: :finished)
         described_class.notify_job_finished(other_ps_analysis)
         expect(NotificationEvent.count).to eq 12
-        expect(NotificationEvent.last.message).to include('Analysis', 'SimulatorID')
+        expect(NotificationEvent.last.message).to include('Analysis', 'Simulator')
       end
     end
   end
