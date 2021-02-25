@@ -41,6 +41,18 @@ describe RunsController do
     end
   end
 
+  describe "GET _jobs_table" do
+    it "returns json record without filtering" do
+      get :_jobs_table, params: {run_status: ['created']}
+      expect(JSON.parse(response.body)['recordsTotal']).to eq(1)
+    end
+
+    it "returns json record with filtering" do
+      get :_jobs_table, params: {run_status: ['created'], simulator_id: 'dummy'}
+      expect(JSON.parse(response.body)['recordsTotal']).to eq(0)
+    end
+  end
+
   describe "POST 'create'" do
 
     before(:each) do
