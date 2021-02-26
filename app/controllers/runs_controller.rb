@@ -23,8 +23,10 @@ class RunsController < ApplicationController
   end
 
   def _jobs_table
-    stat = params["run_status"]
-    render json: RunsListDatatable.new(Run.in(status: stat), view_context)
+    conditions = {}
+    conditions[:status] = params["run_status"] # required
+    conditions[:simulator_id] = params["simulator_id"] if params["simulator_id"].present?
+    render json: RunsListDatatable.new(Run.in(conditions), view_context)
   end
 
   def show

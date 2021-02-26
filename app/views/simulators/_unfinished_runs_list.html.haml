@@ -1,0 +1,14 @@
+%h3 Unfinished Runs
+%table.table.table-condensed.table-hover.table-striped#unfinished_runs_list{'data-source': _jobs_table_runs_path(format: 'json', run_status: ['created','submitted','running'], simulator_id: @simulator.id)}
+  %thead
+    %tr
+      - RunsListDatatable.header.each do |header|
+        = raw(header)
+  %tbody
+
+:javascript
+  $(function() {
+    // unfinished runs
+    const oUnfinishedRunsTable = OACIS.datatables_for_runs_table('#unfinished_runs_list');
+  });
+
