@@ -1,0 +1,41 @@
+name: Rails
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [2.6, 2.7]
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+    - name: Setup
+      run: |
+        ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+        cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+        chmod 600 ~/.ssh/authorized_keys
+        ssh-keyscan -H localhost >> ~/.ssh/known_hosts
+        chmod 755 ~/
+        ssh localhost ls
+        git clone https://github.com/crest-cassia/xsub.git
+        echo "export PATH=\"$GITHUB_WORKSPACE/xsub/bin:$PATH\"" >> ~/.bash_profile
+        echo "export XSUB_TYPE=\"none\"" >> ~/.bash_profile
+        cat ~/.bash_profile
+    - name: Run tests
+      run: |
+        bundle exec rspec
