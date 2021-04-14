@@ -51,7 +51,7 @@
       %td= @run.simulator_version
     %tr
       %th created at
-      %td= @run.created_at.to_time
+      %td= @run.created_at&.to_time
     %tr
       %th submitted at
       %td= @run.submitted_at&.to_time
@@ -63,10 +63,10 @@
       %td= @run.finished_at&.to_time
     %tr
       %th included at
-      %td= @run.included_at.to_time
+      %td= @run.included_at&.to_time
     %tr
       %th updated at
-      %td= @run.updated_at.to_time
+      %td= @run.updated_at&.to_time
 
 %h3 Directory
 %pre= @run.dir
