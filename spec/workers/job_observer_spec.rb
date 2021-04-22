@@ -55,6 +55,7 @@ describe JobObserver do
 
       @run = @sim.parameter_sets.first.runs.first
       @run.status = :submitted
+      @run.job_id = "123"
       @run.submitted_to = @host
       @run.save!
 
@@ -72,6 +73,13 @@ describe JobObserver do
       expect(@run.reload.status).to eq :submitted
     end
 
+    it "do nothing if remote_status is 'submitted' when multiple xstat is available" do
+      allow_any_instance_of(RemoteJobHandler).to receive(:support_multiple_xstat?).and_return(true)
+      expect_any_instance_of(RemoteJobHandler).to receive(:remote_status_multiple).and_return({"123" => :submitted})
+      JobObserver.__send__(:observe_host, @host, @logger)
+      expect(@run.reload.status).to eq :submitted
+    end
+
     it "update status to 'running' when remote_status of Run is 'running'" do
       allow_any_instance_of(RemoteJobHandler).to receive(:support_multiple_xstat?).and_return(false)
       expect_any_instance_of(RemoteJobHandler).to receive(:remote_status).and_return(:running)
@@ -79,9 +87,25 @@ describe JobObserver do
       expect(@run.reload.status).to eq :running
     end
 
+    it "update status to 'running' when remote_status of Run is 'running' when multiple xstat is available" do
+      allow_any_instance_of(RemoteJobHandler).to receive(:support_multiple_xstat?).and_return(true)
+      expect_any_instance_of(RemoteJobHandler).to receive(:remote_status_multiple).and_return({"123" => :running})
+      JobObserver.__send__(:observe_host, @host, @logger)
+      expect(@run.reload.status).to eq :running
+    end
+
     it "include remote data and update status to 'finished' or 'failed'" do
       allow_any_instance_of(RemoteJobHandler).to receive(:support_multiple_xstat?).and_return(false)
       expect_any_instance_of(RemoteJobHandler).to receive(:remote_status).and_return(:includable)
+      expect(JobIncluder).to receive(:include_remote_job) do |host, run|
+        expect(run.id).to eq @run.id
+      end
+      JobObserver.__send__(:observe_host, @host, @logger)
+    end
+
+    it "include remote data and update status to 'finished' or 'failed' when multiple xstat is available" do
+      allow_any_instance_of(RemoteJobHandler).to receive(:support_multiple_xstat?).and_return(true)
+      expect_any_instance_of(RemoteJobHandler).to receive(:remote_status_multiple).and_return({"123" => :includable})
       expect(JobIncluder).to receive(:include_remote_job) do |host, run|
         expect(run.id).to eq @run.id
       end

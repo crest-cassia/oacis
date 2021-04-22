@@ -64,7 +64,7 @@ class JobObserver
   end
 
   def self.observe_jobs(jobs, host, handler, logger)
-    remote_statuses = handler.remote_status_multiple(jobs, logger) if handler.support_multiple_xstat?
+    remote_statuses = handler.remote_status_multiple(jobs, logger) if jobs.present? and handler.support_multiple_xstat?
     jobs.each do |job|
       break if $term_received
       remote_status = remote_statuses[job.job_id] if remote_statuses
