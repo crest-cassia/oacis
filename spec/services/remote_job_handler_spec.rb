@@ -287,7 +287,7 @@ shared_examples_for RemoteJobHandler do
       out = <<-EOS
         Usage: xstat [options]
       EOS
-      allow(SSHUtil).to receive(:execute).and_return(out)
+      allow(SSHUtil).to receive(:execute2).and_return([out,'',0])
       expect(RemoteJobHandler.new(@host).support_multiple_xstat?).to be_falsey
     end
   end
