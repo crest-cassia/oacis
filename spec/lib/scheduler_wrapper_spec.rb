@@ -66,6 +66,37 @@ EOS
     end
   end
 
+  describe "#status_multiple_command" do
+
+    it "returns a command to show the statuses of the host" do
+      expect(@wrapper.status_multiple_command(["job_id0", "job_id1", "job_id2"])).to eq("xstat -m job_id0 job_id1 job_id2")
+    end
+  end
+
+  describe "#parse_remote_status_multiple" do
+
+    it "parses standard output of the status_multiple_command" do
+      stdout = <<-EOS
+        {
+          "123": {
+            "status": "running",
+            "raw_output": [
+              "  PID TTY           TIME CMD",
+              "  123 ??        25:13.39 ./a.out"
+            ]
+          },
+          "234": {
+            "status": "finished",
+            "raw_output": [
+              "  PID TTY           TIME CMD"
+            ]
+          }
+        }
+      EOS
+      expect(@wrapper.parse_remote_status_multiple(stdout)).to eq({"123" => :running, "234" => :includable})
+    end
+  end
+
   describe "#cancel_command" do
 
     it "returns command to cancel a job" do

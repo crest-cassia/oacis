@@ -51,6 +51,23 @@ class RemoteJobHandler
     end
   end
 
+  def support_multiple_xstat?(logger = nil)
+    scheduler = SchedulerWrapper.new(@host)
+    cmd = scheduler.status_help_command
+    ret = false
+    @host.start_ssh_shell do |sh|
+      begin
+        logger&.debug("  executing: #{cmd}")
+        out,err,rc = SSHUtil.execute2(sh, cmd)
+        logger&.debug("  stdout: #{out.chomp}")
+        logger&.debug("  stderr: #{err.chomp}")
+        logger&.debug("  rc: #{rc}")
+        ret = true if rc == 0 and out =~ /multiple/
+      end
+    end
+    ret
+  end
+
   def remote_status(job, logger = nil)
     status = :unknown
     scheduler = SchedulerWrapper.new(@host)
@@ -69,6 +86,28 @@ class RemoteJobHandler
       end
     end
     status
+  end
+
+  def remote_status_multiple(jobs, logger = nil)
+    statuses = nil
+    scheduler = SchedulerWrapper.new(@host)
+    cmd = scheduler.status_multiple_command(jobs.map(&:job_id))
+    @host.start_ssh_shell do |sh|
+      begin
+        logger&.debug("  executing: #{cmd}")
+        out,err,rc = SSHUtil.execute2(sh, cmd)
+        logger&.debug("  stdout: #{out.chomp}")
+        logger&.debug("  stderr: #{err.chomp}")
+        logger&.debug("  rc: #{rc}")
+        raise RemoteSchedulerError if out.empty? or rc != 0
+        statuses = scheduler.parse_remote_status_multiple(out)
+      rescue => ex
+        jobs.each do |job|
+          error_handle(ex, job, sh)
+        end
+      end
+    end
+    statuses
   end
 
   def cancel_remote_job(job)
