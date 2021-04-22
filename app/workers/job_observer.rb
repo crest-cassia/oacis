@@ -64,15 +64,20 @@ class JobObserver
   end
 
   def self.observe_jobs(jobs, host, handler, logger)
+    remote_statuses = handler.remote_status_multiple(jobs, logger) if handler.support_multiple_xstat?
     jobs.each do |job|
       break if $term_received
-      observe_job(job, host, handler, logger)
+      remote_status = remote_statuses[job.job_id] if remote_statuses
+      observe_job(job, host, handler, remote_status, logger)
     end
   end
 
-  def self.observe_job(job, host, handler, logger)
-    logger.debug("checking the job status of: #{job.class}:#{job.id}")
-    case handler.remote_status(job, logger)
+  def self.observe_job(job, host, handler, remote_status, logger)
+    if remote_status.nil?
+      logger.debug("checking the job status of: #{job.class}:#{job.id}")
+      remote_status = handler.remote_status(job, logger)
+    end
+    case remote_status
     when :submitted
       logger.debug("status for #{job.class}:#{job.id} is 'submitted'")
       # DO NOTHING

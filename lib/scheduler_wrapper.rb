@@ -20,8 +20,16 @@ class SchedulerWrapper
     "xstat"
   end
 
+  def status_help_command
+    "xstat --help"
+  end
+
   def status_command(job_id)
     "xstat #{job_id}"
+  end
+
+  def status_multiple_command(job_ids)
+    "xstat -m #{job_ids.join(' ')}"
   end
 
   def parse_remote_status(stdout)
@@ -36,6 +44,25 @@ class SchedulerWrapper
     else
       raise "unknown status"
     end
+  end
+
+  def parse_remote_status_multiple(stdout)
+    parsed = JSON.load(stdout)
+    statuses = {}
+    parsed.each do |key,val|
+      status = case val["status"]
+               when "queued"
+                 :submitted
+               when "running"
+                 :running
+               when "finished"
+                 :includable
+               else
+                 raise "unknown status"
+               end
+      statuses[key] = status
+    end
+    statuses
   end
 
   def cancel_command(job_id)

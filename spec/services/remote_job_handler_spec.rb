@@ -270,6 +270,28 @@ shared_examples_for RemoteJobHandler do
     end
   end
 
+  describe "#support_multiple_xstat?(logger = nil)" do
+
+    it "returns true is xstat -m option is available" do
+      allow_any_instance_of(SchedulerWrapper).to receive(:status_help_command).and_return("xstat --help")
+      out = <<-EOS
+        Usage: xstat [options]
+            -m, --multiple
+      EOS
+      allow(SSHUtil).to receive(:execute2).and_return([out,"",0])
+      expect(RemoteJobHandler.new(@host).support_multiple_xstat?).to be_truthy
+    end
+
+    it "returns false is xstat -m option is not available" do
+      allow_any_instance_of(SchedulerWrapper).to receive(:status_help_command).and_return("xstat --help")
+      out = <<-EOS
+        Usage: xstat [options]
+      EOS
+      allow(SSHUtil).to receive(:execute).and_return(out)
+      expect(RemoteJobHandler.new(@host).support_multiple_xstat?).to be_falsey
+    end
+  end
+
   describe ".remote_status" do
 
     before(:each) do
@@ -292,6 +314,29 @@ shared_examples_for RemoteJobHandler do
       allow(SSHUtil).to receive(:execute2).and_return([nil, nil, 1])
       expect {
         RemoteJobHandler.new(@host).remote_status(@submittable) rescue nil
+      }.to change { @submittable.reload.error_messages }
+    end
+  end
+
+  describe "#remote_status_multiple" do
+
+    before(:each) do
+      @submittable.job_id = "12345"
+    end
+
+    it "returns statuses parsed by SchedulerWrapper#parse_remote_status_multiple as a Hash" do
+      expected = {"12345" => :submitted}
+      expect_any_instance_of(SchedulerWrapper).to receive(:parse_remote_status_multiple).and_return(expected)
+      allow(SSHUtil).to receive(:execute2).and_return(["dummy","",0])
+      expect(RemoteJobHandler.new(@host).remote_status_multiple([@submittable])).to eq(expected)
+    end
+
+    it "raise RemoteSchedulerError is remote status is not obtained and change run.error_message" do
+      allow(SSHUtil).to receive(:execute2).and_return(["", "", 1])
+      expect {
+        expect {
+          RemoteJobHandler.new(@host).remote_status_multiple([@submittable])
+        }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
       }.to change { @submittable.reload.error_messages }
     end
   end
