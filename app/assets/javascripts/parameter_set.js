@@ -14,7 +14,7 @@
             const span = $(td).children('span')[0];
             if (span) {
               const hue = span.className.split('color-')[1];
-              if (hue) { $(td).css('background', "hsla(" + hue + ", 100%, 50%, 0.3)") }
+              if (hue) { $(td).css('background', "hsla(" + hue + ", 100%, 50%, 0.2)") }
             }
           }
         })
