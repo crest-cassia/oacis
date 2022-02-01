@@ -71,13 +71,13 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
 
 - rbenvのインストール
     - [公式ドキュメント](https://github.com/rbenv/rbenv#homebrew-on-macos)の手順に従う
-- rbenvを用いてrubyをインストール（以下は2.5.1をインストールする場合）
+- rbenvを用いてrubyをインストール（以下は2.7.5をインストールする場合）
     ``` sh
-    rbenv install 2.5.1 && rbenv global 2.5.1
+    rbenv install 2.7.5 && rbenv global 2.7.5
     rbenv rehash
     ruby --version
     ```
-    を実行して、`ruby 2.5.1....`と出力されれば成功
+    を実行して、`ruby 2.7.5....`と出力されれば成功
 - mongoDBをインストール
     - [公式ドキュメント](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)の手順に従う
       - インストール後、macOSのサービスとして起動(`brew services start mongodb-community`)すれば、以後ログイン時にmongodが自動的に起動するようになる
@@ -105,13 +105,13 @@ Linuxの場合、yumやaptコマンドを使ってインストールできます
     ```
 - rbenvのインストール
     - [公式ドキュメント](https://github.com/rbenv/rbenv#installation)の手順に従う
-- rbenvを用いてrubyをインストール（以下は2.5.1をインストールする場合）
+- rbenvを用いてrubyをインストール（以下は2.7.5をインストールする場合）
     ``` sh
-    rbenv install 2.5.1 && rbenv global 2.5.1
+    rbenv install 2.7.5 && rbenv global 2.7.5
     rbenv rehash
     ruby --version
     ```
-    を実行して、`ruby 2.5.1....`と出力されれば成功
+    を実行して、`ruby 2.7.5....`と出力されれば成功
 - mongoDBをインストール
     - [公式ドキュメント](https://docs.mongodb.com/manual/administration/install-on-linux/)の手順に従う
 - bundlerのインストールと最新版への更新

@@ -72,13 +72,13 @@ Here we show the instructions on how to setup prerequisites using homebrew.
 
 - installing rbenv
     - Follow the instruction of [the official document of rbenv](https://github.com/rbenv/rbenv#homebrew-on-macos)
-- install ruby using rbenv (The following is an example to install Ruby 2.5.1)
+- install ruby using rbenv (The following is an example to install Ruby 2.7.5)
     ``` sh
-    rbenv install 2.5.1 && rbenv global 2.5.1
+    rbenv install 2.7.5 && rbenv global 2.7.5
     rbenv rehash
     ruby --version
     ```
-    - verify output is like `ruby 2.5.1....`.
+    - verify output is like `ruby 2.7.5....`.
 - installing MongoDB
     - Follow the instruction of [the official document.](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
         - After installation, start MongoDB as a service (`brew services start mongodb-community`).
@@ -106,13 +106,13 @@ Here we show the instruction on how to setup prerequisites using apt-get, using 
     ```
 - installing rbenv
     - Follow the instruction of [the official document of rbenv](https://github.com/rbenv/rbenv#installation)
-- install ruby using rbenv (The following is an example to install Ruby 2.5.1)
+- install ruby using rbenv (The following is an example to install Ruby 2.7.5)
     ``` sh
-    rbenv install 2.5.1 && rbenv global 2.5.1
+    rbenv install 2.7.5 && rbenv global 2.7.5
     rbenv rehash
     ruby --version
     ```
-    - verify output is like `ruby 2.5.1....`.
+    - verify output is like `ruby 2.7.5....`.
 - install mongoDB
     - Follow the instruction of [the official document.](https://docs.mongodb.com/manual/administration/install-on-linux/)
 - install and update bundler
