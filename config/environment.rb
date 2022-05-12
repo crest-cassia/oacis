@@ -10,6 +10,7 @@ Dir.chdir(Rails.root) {
   end
 }
 Mime::Type.register "text/plain", :plt  # MIME type for gnuplot script file
+Mime::Type.register "text/plain", :py   # MIME type for python script file
 # user code end ------------
 
 # Initialize the Rails application.
