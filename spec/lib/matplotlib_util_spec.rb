@@ -134,4 +134,35 @@ plt.show()
       expect(MatplotlibUtil.script_for_multi_line_plot(data_arr, "XXX", "YYY", true, "ZZZ", [5, 4])).to eq expected
     end
   end
+
+  describe ".script_for_3d_scatter_plot" do
+
+    it "returns a script to plot 3d scatter plot" do
+      data_arr = [
+        [{"param_1" => 1.0, "param_2" => 2.0, "other_param" => 3.0}, 3.0, 0.001, "PSID1"],
+        [{"param_1" => 4.0, "param_2" => 5.0, "other_param" => 6.0}, 7.0, 0.001, "PSID2"]
+      ]
+      expected = <<-EOS
+# %%
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+
+ax.set_xlabel("param_1")
+ax.set_ylabel("param_2")
+ax.set_zlabel("z_label")
+
+x = [1.0, 4.0]
+y = [2.0, 5.0]
+z = [3.0, 7.0]
+ax.scatter(x, y, z)
+plt.show()
+      EOS
+
+      expect(MatplotlibUtil.script_for_3d_scatter_plot(data_arr, "param_1", "param_2", "z_label")).to eq expected
+    end
+
+  end
 end

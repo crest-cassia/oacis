@@ -517,6 +517,10 @@ class ParameterSetsController < ApplicationController
           data: data
         }
       }
+      format.py {
+        script = MatplotlibUtil.script_for_3d_scatter_plot(data, x_axis_key, y_axis_key, result)
+        render plain: script
+      }
     end
   end
 

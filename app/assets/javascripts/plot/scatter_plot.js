@@ -319,6 +319,8 @@ ScatterPlot.prototype.AddDescription = function() {
       a_element.download = fileName;
       a_element.href = blobURL;
     };
+    const mpl_url = plot.url.replace(/\.json/, '.py');
+    list.append("li").append("a").attr({target: "_blank", href: mpl_url}).text("matplotlib script file");
     list.append("li").append("a").text("download svg").style("cursor", "pointer")
       .on("click", function() {
         const clone_region = document.createElement('div');
