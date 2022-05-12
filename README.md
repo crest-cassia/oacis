@@ -67,7 +67,7 @@ Visit the [document](http://crest-cassia.github.io/oacis/) of OACIS. A docker im
 
 The MIT License (MIT)
 
-Copyright (c) 2013-2018 RIKEN, R-CCS
+Copyright (c) 2013-2022 RIKEN, R-CCS
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -98,6 +98,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Contact
 
+- Please post your questions, feedbacks, or whatever to Github Discussion
+    - https://github.com/crest-cassia/oacis/discussions
 - Please send your feedback to us.
     - `oacis-dev _at_ googlegroups.com` (replace _at_ with @)
     - We appreciate your questions, feature requests, and bug reports. Do not hesitate to give us your feedbacks.
