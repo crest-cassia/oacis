@@ -68,6 +68,37 @@ module MatplotlibUtil
     sio.string
   end
 
+  def self.script_for_3d_scatter_plot(data, xlabel = nil, ylabel = nil, zlabel = nil)
+    sio = StringIO.new
+    sio.puts "# %%"
+    sio.puts "import numpy as np"
+    sio.puts "import matplotlib.pyplot as plt", ""
+
+    sio.puts "fig = plt.figure()"
+    sio.puts "ax = fig.add_subplot(projection='3d')", ""
+
+    sio.puts "ax.set_xlabel(\"#{xlabel}\")" if xlabel
+    sio.puts "ax.set_ylabel(\"#{ylabel}\")" if ylabel
+    sio.puts "ax.set_zlabel(\"#{zlabel}\")" if zlabel
+    sio.puts ""
+
+    x = []
+    y = []
+    z = []
+    data.each do |entry|
+      x.push entry[0][xlabel]
+      y.push entry[0][ylabel]
+      z.push entry[1]
+    end
+    sio.puts "x = [#{x.join(', ')}]"
+    sio.puts "y = [#{y.join(', ')}]"
+    sio.puts "z = [#{z.join(', ')}]"
+    sio.puts "ax.scatter(x, y, z)"
+    sio.puts "plt.show()"
+
+    sio.string
+  end
+
   private
   def self.to_arrays(data)
     x = []
