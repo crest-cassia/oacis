@@ -305,6 +305,8 @@ LinePlot.prototype.AddDescription = function() {
     list.append("li").append("a").attr({target: "_blank", href: plot.url}).text("show data in json");
     const plt_url = plot.url.replace(/\.json/, '.plt');
     list.append("li").append("a").attr({target: "_blank", href: plt_url}).text("gnuplot script file");
+    const mpl_url = plot.url.replace(/\.json/, '.py');
+    list.append("li").append("a").attr({target: "_blank", href: mpl_url}).text("matplotlib script file");
     const downloadAsFile = function(fileName, content, a_element) {
       const blob = new Blob([content]);
       const url = window.URL || window.webkitURL;

@@ -323,6 +323,14 @@ class ParameterSetsController < ApplicationController
         end
         render plain: script
       }
+      format.py {
+        if series.blank?
+          script = MatplotlibUtil.script_for_single_line_plot(data[0], x_axis_key, ylabel, true)
+        else
+          script = MatplotlibUtil.script_for_multi_line_plot(data, x_axis_key, ylabel, true, series, series_values)
+        end
+        render plain: script
+      }
     end
   end
 
