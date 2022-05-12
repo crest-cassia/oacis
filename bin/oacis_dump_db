@@ -3,7 +3,9 @@
 set -eux
 script_dir=$(cd $(dirname $0); pwd)
 RESULT_DIR="$script_dir/../public/Result_development"
-DUMP_FILE="$RESULT_DIR/db_dump"
+DUMP_FILE="$RESULT_DIR/db_dump_$(date '+%Y%m%d_%H:%M:%S')"  # save to a timestamped file just in case
+DUMP_FILE_LINK="$RESULT_DIR/db_dump"
 mongodump --archive="$DUMP_FILE" --db=oacis_development
+ln -fs "$(basename ${DUMP_FILE})" "${DUMP_FILE_LINK}"
 set +x
-echo "File \"$DUMP_FILE\" was successfully written" >&2
+echo "File \"$DUMP_FILE\" was successfully written"
