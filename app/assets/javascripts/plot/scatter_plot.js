@@ -161,7 +161,8 @@ ScatterPlot.prototype.AddPlot = function() {
     const mapped = plot.data.data.map(function(v) {
       return {
         x: v[0][plot.data.xlabel], y: v[0][plot.data.ylabel],
-        average: v[1], error: v[2], psid: v[3]
+        average: v[1], error: v[2], psid: v[3],
+        count: v[4]
       };
     });
     const point = plot_group.append("g")
@@ -176,12 +177,14 @@ ScatterPlot.prototype.AddPlot = function() {
           tooltip.transition()
             .duration(200)
             .style("opacity", 0.8);
-          tooltip.html(
-            plot.data.xlabel + " : " + d.x + "<br/>" +
-            plot.data.ylabel + " : " + d.y + "<br/>" +
-            "Result : " + Math.round(d.average*1000000)/1000000 +
-            " (" + Math.round(d.error*1000000)/1000000 + ")<br/>" +
-            "ID: " + d.psid);
+          let html =
+              plot.data.xlabel + " : " + d.x + "<br/>" +
+              plot.data.ylabel + " : " + d.y + "<br/>" +
+              "Result : " + Math.round(d.average*1000000)/1000000 +
+              " (" + Math.round(d.error*1000000)/1000000 + ")<br/>" +
+              "ID: " + d.psid;
+          if (d.count) html += `<br/>${d.count} Runs`;
+          tooltip.html(html);
         })
         .on("mousemove", function() {
           tooltip

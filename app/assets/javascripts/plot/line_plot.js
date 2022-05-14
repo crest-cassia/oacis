@@ -128,7 +128,8 @@ LinePlot.prototype.AddPlot = function() {
         return d.map(function(v) {
           return {
             x: v[0], y: v[1], yerror: v[2],
-            series_index: i, series_value: plot.data.series_values[i], psid: v[3]
+            series_index: i, series_value: plot.data.series_values[i], psid: v[3],
+            count: v[4]
           };
         });
       }).enter();
@@ -140,12 +141,13 @@ LinePlot.prototype.AddPlot = function() {
         tooltip.transition()
           .duration(200)
           .style("opacity", 0.8);
-        tooltip.html(
-          plot.data.xlabel + " : " + d.x + "<br/>" +
-          plot.data.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
-          " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
-          (plot.data.series ? (plot.data.series + " : " + d.series_value + "<br/>") : "") +
-          "ID: " + d.psid);
+        let html = plot.data.xlabel + " : " + d.x + "<br/>" +
+            plot.data.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
+            " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
+            (plot.data.series ? (plot.data.series + " : " + d.series_value + "<br/>") : "") +
+            "ID: " + d.psid;
+        if (d.count) html += `<br />${d.count} Runs`;
+        tooltip.html(html);
       })
       .on("mousemove", function() {
         tooltip
