@@ -523,9 +523,9 @@ describe ParameterSetsController do
         plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=&irrelevants=#!tab-plot",
         data: [
           [
-            [1, 99.0, nil, @ps_array[0].id.to_s],
-            [2, 99.0, nil, @ps_array[1].id.to_s],
-            [3, 99.0, nil, @ps_array[2].id.to_s],
+            [1, 99.0, nil, @ps_array[0].id.to_s, 1],
+            [2, 99.0, nil, @ps_array[1].id.to_s, 1],
+            [3, 99.0, nil, @ps_array[2].id.to_s, 1],
           ]
         ]
       }.to_json
@@ -540,9 +540,9 @@ describe ParameterSetsController do
         plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=cpu_time&series=&irrelevants=#!tab-plot",
         data: [
           [
-            [1, 10.0, nil, @ps_array[0].id.to_s],
-            [2, 10.0, nil, @ps_array[1].id.to_s],
-            [3, 10.0, nil, @ps_array[2].id.to_s],
+            [1, 10.0, nil, @ps_array[0].id.to_s, nil],
+            [2, 10.0, nil, @ps_array[1].id.to_s, nil],
+            [3, 10.0, nil, @ps_array[2].id.to_s, nil],
           ]
         ]
       }.to_json
@@ -559,13 +559,13 @@ describe ParameterSetsController do
           plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=T&irrelevants=#!tab-plot",
           data: [
             [
-              [1, 99.0, nil, @ps_array[3].id.to_s],
-              [2, 99.0, nil, @ps_array[4].id.to_s],
+              [1, 99.0, nil, @ps_array[3].id.to_s, 1],
+              [2, 99.0, nil, @ps_array[4].id.to_s, 1],
             ],
             [
-              [1, 99.0, nil, @ps_array[0].id.to_s],
-              [2, 99.0, nil, @ps_array[1].id.to_s],
-              [3, 99.0, nil, @ps_array[2].id.to_s]
+              [1, 99.0, nil, @ps_array[0].id.to_s, 1],
+              [2, 99.0, nil, @ps_array[1].id.to_s, 1],
+              [3, 99.0, nil, @ps_array[2].id.to_s, 1]
             ]
           ]
         }.to_json
@@ -583,14 +583,14 @@ describe ParameterSetsController do
           plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=.ResultKey1&series=T&irrelevants=P#!tab-plot",
           data: [
             [
-              [1, 99.0, nil, @ps_array[3].id.to_s],
-              [2, 99.0, nil, @ps_array[4].id.to_s],
-              [3, 99.0, nil, @ps_array[5].id.to_s]
+              [1, 99.0, nil, @ps_array[3].id.to_s, 1],
+              [2, 99.0, nil, @ps_array[4].id.to_s, 1],
+              [3, 99.0, nil, @ps_array[5].id.to_s, 1]
             ],
             [
-              [1, 99.0, nil, @ps_array[0].id.to_s],
-              [2, 99.0, nil, @ps_array[1].id.to_s],
-              [3, 99.0, nil, @ps_array[2].id.to_s]
+              [1, 99.0, nil, @ps_array[0].id.to_s, 1],
+              [2, 99.0, nil, @ps_array[1].id.to_s, 1],
+              [3, 99.0, nil, @ps_array[2].id.to_s, 1]
             ]
           ]
         }.to_json
@@ -630,9 +630,9 @@ describe ParameterSetsController do
           plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=&irrelevants=#!tab-plot",
           data: [
             [
-              [1, 999.0, nil, @ps_array[0].id.to_s],
-              [2, 999.0, nil, @ps_array[1].id.to_s],
-              [3, 999.0, nil, @ps_array[2].id.to_s],
+              [1, 999.0, nil, @ps_array[0].id.to_s, 1],
+              [2, 999.0, nil, @ps_array[1].id.to_s, 1],
+              [3, 999.0, nil, @ps_array[2].id.to_s, 1],
             ]
           ]
         }.to_json
@@ -649,13 +649,13 @@ describe ParameterSetsController do
             plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=T&irrelevants=#!tab-plot",
             data: [
               [
-                [1, 999.0, nil, @ps_array[3].id.to_s],
-                [2, 999.0, nil, @ps_array[4].id.to_s],
+                [1, 999.0, nil, @ps_array[3].id.to_s, 1],
+                [2, 999.0, nil, @ps_array[4].id.to_s, 1],
               ],
               [
-                [1, 999.0, nil, @ps_array[0].id.to_s],
-                [2, 999.0, nil, @ps_array[1].id.to_s],
-                [3, 999.0, nil, @ps_array[2].id.to_s]
+                [1, 999.0, nil, @ps_array[0].id.to_s, 1],
+                [2, 999.0, nil, @ps_array[1].id.to_s, 1],
+                [3, 999.0, nil, @ps_array[2].id.to_s, 1]
               ]
             ]
           }.to_json
@@ -673,14 +673,14 @@ describe ParameterSetsController do
             plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=T&irrelevants=P#!tab-plot",
             data: [
               [
-                [1, 999.0, nil, @ps_array[3].id.to_s],
-                [2, 999.0, nil, @ps_array[4].id.to_s],
-                [3, 999.0, nil, @ps_array[5].id.to_s]
+                [1, 999.0, nil, @ps_array[3].id.to_s, 1],
+                [2, 999.0, nil, @ps_array[4].id.to_s, 1],
+                [3, 999.0, nil, @ps_array[5].id.to_s, 1]
               ],
               [
-                [1, 999.0, nil, @ps_array[0].id.to_s],
-                [2, 999.0, nil, @ps_array[1].id.to_s],
-                [3, 999.0, nil, @ps_array[2].id.to_s]
+                [1, 999.0, nil, @ps_array[0].id.to_s, 1],
+                [2, 999.0, nil, @ps_array[1].id.to_s, 1],
+                [3, 999.0, nil, @ps_array[2].id.to_s, 1]
               ]
             ]
           }.to_json
@@ -719,9 +719,9 @@ describe ParameterSetsController do
           plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=&irrelevants=#!tab-plot",
           data: [
             [
-              [1, 9999, nil, @ps_array[0].id.to_s],
-              [2, 9999, nil, @ps_array[1].id.to_s],
-              [3, 9999, nil, @ps_array[2].id.to_s],
+              [1, 9999, nil, @ps_array[0].id.to_s, 1],
+              [2, 9999, nil, @ps_array[1].id.to_s, 1],
+              [3, 9999, nil, @ps_array[2].id.to_s, 1],
             ]
           ]
         }.to_json
@@ -738,13 +738,13 @@ describe ParameterSetsController do
             plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=T&irrelevants=#!tab-plot",
             data: [
               [
-                [1, 9999, nil, @ps_array[3].id.to_s],
-                [2, 9999, nil, @ps_array[4].id.to_s],
+                [1, 9999, nil, @ps_array[3].id.to_s, 1],
+                [2, 9999, nil, @ps_array[4].id.to_s, 1],
               ],
               [
-                [1, 9999, nil, @ps_array[0].id.to_s],
-                [2, 9999, nil, @ps_array[1].id.to_s],
-                [3, 9999, nil, @ps_array[2].id.to_s]
+                [1, 9999, nil, @ps_array[0].id.to_s, 1],
+                [2, 9999, nil, @ps_array[1].id.to_s, 1],
+                [3, 9999, nil, @ps_array[2].id.to_s, 1]
               ]
             ]
           }.to_json
@@ -762,14 +762,14 @@ describe ParameterSetsController do
             plot_url: parameter_set_url(@ps_array.first) + "?plot_type=line&x_axis=L&y_axis=#{@analyzer.name}.ResultKey1&series=T&irrelevants=P#!tab-plot",
             data: [
               [
-                [1, 9999, nil, @ps_array[3].id.to_s],
-                [2, 9999, nil, @ps_array[4].id.to_s],
-                [3, 9999, nil, @ps_array[5].id.to_s]
+                [1, 9999, nil, @ps_array[3].id.to_s, 1],
+                [2, 9999, nil, @ps_array[4].id.to_s, 1],
+                [3, 9999, nil, @ps_array[5].id.to_s, 1]
               ],
               [
-                [1, 9999, nil, @ps_array[0].id.to_s],
-                [2, 9999, nil, @ps_array[1].id.to_s],
-                [3, 9999, nil, @ps_array[2].id.to_s]
+                [1, 9999, nil, @ps_array[0].id.to_s, 1],
+                [2, 9999, nil, @ps_array[1].id.to_s, 1],
+                [3, 9999, nil, @ps_array[2].id.to_s, 1]
               ]
             ]
           }.to_json
@@ -822,11 +822,11 @@ describe ParameterSetsController do
       get :_scatter_plot,
         params: {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: ".ResultKey1", irrelevants: "", format: :json}
       expected_data = [
-        [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s],
-        [@ps_array[3].v, 99.0, nil, @ps_array[3].id.to_s],
-        [@ps_array[1].v, 99.0, nil, @ps_array[1].id.to_s],
-        [@ps_array[4].v, 99.0, nil, @ps_array[4].id.to_s],
-        [@ps_array[2].v, 99.0, nil, @ps_array[2].id.to_s]
+        [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s, 1],
+        [@ps_array[3].v, 99.0, nil, @ps_array[3].id.to_s, 1],
+        [@ps_array[1].v, 99.0, nil, @ps_array[1].id.to_s, 1],
+        [@ps_array[4].v, 99.0, nil, @ps_array[4].id.to_s, 1],
+        [@ps_array[2].v, 99.0, nil, @ps_array[2].id.to_s, 1]
       ]
 
       loaded = JSON.load(response.body)
@@ -844,10 +844,10 @@ describe ParameterSetsController do
           irrelevants: "", range: {"L" => [1,2]}.to_json,
           format: :json}
       expected_data = [
-        [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s],
-        [@ps_array[3].v, 99.0, nil, @ps_array[3].id.to_s],
-        [@ps_array[1].v, 99.0, nil, @ps_array[1].id.to_s],
-        [@ps_array[4].v, 99.0, nil, @ps_array[4].id.to_s]
+        [@ps_array[0].v, 99.0, nil, @ps_array[0].id.to_s, 1],
+        [@ps_array[3].v, 99.0, nil, @ps_array[3].id.to_s, 1],
+        [@ps_array[1].v, 99.0, nil, @ps_array[1].id.to_s, 1],
+        [@ps_array[4].v, 99.0, nil, @ps_array[4].id.to_s, 1]
       ]
 
       loaded = JSON.load(response.body)
@@ -862,11 +862,11 @@ describe ParameterSetsController do
       get :_scatter_plot,
         params: {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "cpu_time", irrelevants: "", format: :json}
       expected_data = [
-        [@ps_array[0].v, 10.0, nil, @ps_array[0].id.to_s],
-        [@ps_array[3].v, 10.0, nil, @ps_array[3].id.to_s],
-        [@ps_array[1].v, 10.0, nil, @ps_array[1].id.to_s],
-        [@ps_array[4].v, 10.0, nil, @ps_array[4].id.to_s],
-        [@ps_array[2].v, 10.0, nil, @ps_array[2].id.to_s]
+        [@ps_array[0].v, 10.0, nil, @ps_array[0].id.to_s, nil],
+        [@ps_array[3].v, 10.0, nil, @ps_array[3].id.to_s, nil],
+        [@ps_array[1].v, 10.0, nil, @ps_array[1].id.to_s, nil],
+        [@ps_array[4].v, 10.0, nil, @ps_array[4].id.to_s, nil],
+        [@ps_array[2].v, 10.0, nil, @ps_array[2].id.to_s, nil]
       ]
 
       loaded = JSON.load(response.body)
@@ -886,7 +886,7 @@ describe ParameterSetsController do
       expect(loaded["ylabel"]).to eq "T"
       expect(loaded["result"]).to eq "cpu_time"
       expect(loaded["irrelevants"]).to eq ["P"]
-      expect(loaded["data"]).to include( [@ps_array[5].v, 10.0, nil, @ps_array[5].id.to_s] )
+      expect(loaded["data"]).to include( [@ps_array[5].v, 10.0, nil, @ps_array[5].id.to_s, nil] )
     end
 
     it "contains url for the plot" do
@@ -924,11 +924,11 @@ describe ParameterSetsController do
         get :_scatter_plot,
           params: {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "", format: :json}
         expected_data = [
-          [@ps_array[0].v, 999.0, nil, @ps_array[0].id.to_s],
-          [@ps_array[3].v, 999.0, nil, @ps_array[3].id.to_s],
-          [@ps_array[1].v, 999.0, nil, @ps_array[1].id.to_s],
-          [@ps_array[4].v, 999.0, nil, @ps_array[4].id.to_s],
-          [@ps_array[2].v, 999.0, nil, @ps_array[2].id.to_s]
+          [@ps_array[0].v, 999.0, nil, @ps_array[0].id.to_s, 1],
+          [@ps_array[3].v, 999.0, nil, @ps_array[3].id.to_s, 1],
+          [@ps_array[1].v, 999.0, nil, @ps_array[1].id.to_s, 1],
+          [@ps_array[4].v, 999.0, nil, @ps_array[4].id.to_s, 1],
+          [@ps_array[2].v, 999.0, nil, @ps_array[2].id.to_s, 1]
         ]
 
         loaded = JSON.load(response.body)
@@ -946,10 +946,10 @@ describe ParameterSetsController do
             irrelevants: "", range: {"L" => [1,2]}.to_json,
             format: :json}
           expected_data = [
-            [@ps_array[0].v, 999.0, nil, @ps_array[0].id.to_s],
-            [@ps_array[3].v, 999.0, nil, @ps_array[3].id.to_s],
-            [@ps_array[1].v, 999.0, nil, @ps_array[1].id.to_s],
-            [@ps_array[4].v, 999.0, nil, @ps_array[4].id.to_s]
+            [@ps_array[0].v, 999.0, nil, @ps_array[0].id.to_s, 1],
+            [@ps_array[3].v, 999.0, nil, @ps_array[3].id.to_s, 1],
+            [@ps_array[1].v, 999.0, nil, @ps_array[1].id.to_s, 1],
+            [@ps_array[4].v, 999.0, nil, @ps_array[4].id.to_s, 1]
           ]
 
           loaded = JSON.load(response.body)
@@ -969,7 +969,7 @@ describe ParameterSetsController do
         expect(loaded["ylabel"]).to eq "T"
         expect(loaded["result"]).to eq "ResultKey1"
         expect(loaded["irrelevants"]).to eq ["P"]
-        expect(loaded["data"]).to include( [@ps_array[5].v, 999.0, nil, @ps_array[5].id.to_s] )
+        expect(loaded["data"]).to include( [@ps_array[5].v, 999.0, nil, @ps_array[5].id.to_s, 1] )
       end
 
       it "contains url for the plot" do
@@ -1006,11 +1006,11 @@ describe ParameterSetsController do
         get :_scatter_plot,
           params: {id: @ps_array.first, x_axis_key: "L", y_axis_key: "T", result: "#{@analyzer.name}.ResultKey1", irrelevants: "", format: :json}
         expected_data = [
-          [@ps_array[0].v, 9999, nil, @ps_array[0].id.to_s],
-          [@ps_array[3].v, 9999, nil, @ps_array[3].id.to_s],
-          [@ps_array[1].v, 9999, nil, @ps_array[1].id.to_s],
-          [@ps_array[4].v, 9999, nil, @ps_array[4].id.to_s],
-          [@ps_array[2].v, 9999, nil, @ps_array[2].id.to_s]
+          [@ps_array[0].v, 9999, nil, @ps_array[0].id.to_s, 1],
+          [@ps_array[3].v, 9999, nil, @ps_array[3].id.to_s, 1],
+          [@ps_array[1].v, 9999, nil, @ps_array[1].id.to_s, 1],
+          [@ps_array[4].v, 9999, nil, @ps_array[4].id.to_s, 1],
+          [@ps_array[2].v, 9999, nil, @ps_array[2].id.to_s, 1]
         ]
 
         loaded = JSON.load(response.body)
@@ -1028,10 +1028,10 @@ describe ParameterSetsController do
             irrelevants: "", range: {"L" => [1,2]}.to_json,
             format: :json}
           expected_data = [
-            [@ps_array[0].v, 9999, nil, @ps_array[0].id.to_s],
-            [@ps_array[3].v, 9999, nil, @ps_array[3].id.to_s],
-            [@ps_array[1].v, 9999, nil, @ps_array[1].id.to_s],
-            [@ps_array[4].v, 9999, nil, @ps_array[4].id.to_s]
+            [@ps_array[0].v, 9999, nil, @ps_array[0].id.to_s, 1],
+            [@ps_array[3].v, 9999, nil, @ps_array[3].id.to_s, 1],
+            [@ps_array[1].v, 9999, nil, @ps_array[1].id.to_s, 1],
+            [@ps_array[4].v, 9999, nil, @ps_array[4].id.to_s, 1]
           ]
 
           loaded = JSON.load(response.body)
@@ -1051,7 +1051,7 @@ describe ParameterSetsController do
         expect(loaded["ylabel"]).to eq "T"
         expect(loaded["result"]).to eq "ResultKey1"
         expect(loaded["irrelevants"]).to eq ["P"]
-        expect(loaded["data"]).to include( [@ps_array[5].v, 9999, nil, @ps_array[5].id.to_s] )
+        expect(loaded["data"]).to include( [@ps_array[5].v, 9999, nil, @ps_array[5].id.to_s, 1] )
       end
 
       it "contains url for the plot" do
