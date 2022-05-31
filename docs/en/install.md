@@ -224,10 +224,11 @@ Hereafter, we call the host where OACIS is running "OACIS host" while the host w
                     - ``eval `ssh-agent` `` This will launch ssh-agent process.
                     - `ssh-add ~/.ssh/id_rsa` Specify the path of private key. This command will ask you to enter the passphrase. After you entered passphrase, you will be no longer required to enter the passphrase on the same shell session.
                         - You may also use [Keychain](http://www.funtoo.org/Keychain) instead, which is a tool to reduce the number of times you need to enter you passphrase.
-2. (At Computational host) Install [xsub](https://github.com/crest-cassia/xsub).
+2. (At Computational host) Install [xsub](https://github.com/crest-cassia/xsub) or [xsub_py](https://github.com/crest-cassia/xsub_py).
     - XSUB is a small script which absorbs the difference of the specification of job schedulers. OACIS uses XSUB to submit a job therefore you must install xsub in advance.
-    - For setting up XSUB, plesae refer to the [README of XSUB](https://github.com/crest-cassia/xsub/blob/master/README.md).
-        - XSUB requires Ruby 2.0 or later as a prerequisites. Install Ruby if it is not installed yet.
+    - For setting up xsub command, plesae refer to the [README of xsub](https://github.com/crest-cassia/xsub/blob/master/README.md) or [README of xsub_py](https://github.com/crest-cassia/xsub_py/blob/main/readme.md).
+        - [xsub](https://github.com/crest-cassia/xsub) and [xsub_py](https://github.com/crest-cassia/xsub_py) are implemented in Ruby and Python, respectively. These behave similarly so choose either one.
+        - xsub requires Ruby 2.0 or later. xsub_py requires Python 3.6 or later.
 3. (At OACIS host) Verifying the set up
     - Run `ssh remotehost 'bash -l -c xstat'`. If you find the job status of the remote host without an error, all the setup has been correctly finished.
         - If you find an SSH error, please check Procedure 1.

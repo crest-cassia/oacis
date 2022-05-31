@@ -20,11 +20,11 @@ Generally speaking, we need to use a job scheduler, such as Torque, to submit a 
 When submitting a job to a job scheduler, we usually need to specify various parameters such as the number of nodes required for the job, the maximum elapsed time, and the number of CPU cores.
 
 The problem is that the specifications of these job schedulers are different from each other, showing a wide variety.
-Therefore, OACIS uses a small script, called [XSUB](https://github.com/crest-cassia/xsub) to absorb the difference between schedulers.
+Therefore, OACIS uses a small script, called **XSUB** to absorb the difference between schedulers.
 XSUB must be prepared in the computational hosts before you register the host information on OACIS.
 
-About the installation procedure of XSUB, please refer to the [official document](https://github.com/crest-cassia/xsub).
-After you install XSUB properly, the commands **xsub**, **xstat**, and **xdel** became available.
+About the installation procedure of XSUB, please refer to the [readme of xsub](https://github.com/crest-cassia/xsub) or [readme of xsub_py](https://github.com/crest-cassia/xsub_py).
+After you install either `xsub` or `xsub_py` properly, the commands **xsub**, **xstat**, and **xdel** became available.
 
 (Note) OACIS runs these command from bash launched as a login-shell. Therefore, please set the environment variables required to use XSUB, such as PATH, in `.bash_profile` file, not in `.bashrc`.
 

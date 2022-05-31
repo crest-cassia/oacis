@@ -216,10 +216,11 @@ OACISが停止している間も実行中のジョブは計算ホストでその
                     - ``eval `ssh-agent` `` (SSH agentを起動する）
                     - `ssh-add ~/.ssh/id_rsa` （秘密鍵のパスを指定する。このときにパスフレーズの入力を要求されますが、以降はパスフレーズの入力を省略できます。
                     - さらに入力を簡便にするために[Keychain](http://www.funtoo.org/Keychain)というツールもあります。
-2. (計算ホストにて) [xsub](https://github.com/crest-cassia/xsub)を導入する。
+2. (計算ホストにて) [xsub](https://github.com/crest-cassia/xsub) または [xsub_py](https://github.com/crest-cassia/xsub_py) を導入する。
     - xsubというのは、ジョブスケジューラの仕様の差異を吸収するスクリプトで、OACISはxsubコマンドを利用してジョブを投入します。
     - xsubの実行にはruby2.0以降が必要です。システムにインストールされていない場合はRubyもインストールしてください。
-    - 詳細はxsubの[README](https://github.com/crest-cassia/xsub/blob/master/README.md)を参照してください。
+    - xsub_py はPythonで実装されたxsubコマンドで、Python 3.6以降が必要です。
+    - 詳細は[xsubのREADME](https://github.com/crest-cassia/xsub/blob/master/README.md)または[xsub_pyのREADME](https://github.com/crest-cassia/xsub_py/blob/main/readme.md) を参照してください。
 3. (OACISホストにて) 導入の確認
     - `ssh remotehost 'bash -l -c xstat'` を実行します。エラーメッセージが出ずに、リモートホストのステータスが表示されれば完了です。
         - もしSSH接続に失敗している場合は1の設定を見直します。
