@@ -76,12 +76,12 @@ To control the accessibility, edit the configuration file as follows and restart
 access_level: 0
 {% endhighlight %}
 
-`access_level: 2` corresponds to the normal mode. When `access_level: 1`, creation of new Simulator, Analyzer, and edit on an existing Simulator or Analyzer are prohibited.
+`access_level: 2` corresponds to the normal mode. When `access_level: 1`, creation, update, deletion of Simulator, Analyzer, and Host are prohibited.
 You can submit a job for a Simulator that is already defined.
 
 With `access_level: 0`, the worker process is not launched, and any modification from web browsers become impossible, i.e., READ ONLY mode is set.
 Furthremore, OACIS is bound to IP address `0.0.0.0` under this setting by default, making OACIS accessible from other hosts.
 If you would like to customize the binding IP address, add a line like `binding_ip: 'localhost'`.
 
-We recommend to periodically synchronize the files of the public OACIS server with your local OACIS server where actual simulations are conducted.
+It is easy to share data with other people by running jobs from OACIS on the local machine with access level 2, while launching another OACIS on a shared machine with access level 0 and periodically synchronizing the data to the shared server with the backup commands.
 
