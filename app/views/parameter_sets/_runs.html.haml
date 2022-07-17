@@ -14,7 +14,7 @@
     .form-group
       = label_tag('num_runs', '# of Runs', class: 'col-md-2 control-label')
       .col-md-3
-        = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20]), {class: 'form-control'})
+        = select_tag('num_runs', options_for_select([1,2,3,4,5,10,20,50,100]), {class: 'form-control'})
     = render 'runs/fields', run: run, f: f
     .form-group
       .col-md-4.col-md-offset-2
