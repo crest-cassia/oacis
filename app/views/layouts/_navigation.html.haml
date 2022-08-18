@@ -16,8 +16,9 @@
           = link_to 'Hosts', hosts_path
         %li
           = link_to 'Logs', worker_logs_path
-        %li
-          = link_to 'Settings', edit_oacis_setting_path
+        - if OACIS_ACCESS_LEVEL == 2
+          %li
+            = link_to 'Settings', edit_oacis_setting_path
       %ul.nav.navbar-nav.navbar-right
         %li= link_to 'Document', 'http://crest-cassia.github.io/oacis/', target: '_blank'
         %li#notification-event-dropdown.dropdown
