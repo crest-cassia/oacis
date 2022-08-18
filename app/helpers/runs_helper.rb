@@ -46,7 +46,7 @@ module RunsHelper
       else
         sio.puts "<li><a href=\"#{file_path_to_link_path(result_path)}\">"
         sio.puts File.basename(result_path)
-        if result_path.to_s =~ /(\.png|\.jpg|\.bmp)$/i
+        if result_path.to_s =~ /(\.png|\.jpg|\.bmp|\.svg)$/i
           sio.puts '<br />'
           sio.puts image_tag( file_path_to_link_path(result_path) )
         elsif result_path.to_s =~ /\.html$/
