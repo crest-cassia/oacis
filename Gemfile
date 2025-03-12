@@ -55,4 +55,3 @@ group :test do
 end
 
 eval_gemfile "#{File.dirname(__FILE__)}/rb_call/Gemfile"
-
