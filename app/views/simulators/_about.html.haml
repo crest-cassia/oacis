@@ -48,7 +48,10 @@
         %th= pd.key
         %td= pd.type
         %td= pd.default.nil? ? '-' : pd.default
-        %td= pd.description ? pd.description : "-"
+        - if pd.type == 'Selection'
+          %td= "#{pd.description} \n[#{pd.options_array.join(', ')}]"
+        - else
+          %td= pd.description ? pd.description : "-"
 
 %h3 Commands
 %ul
