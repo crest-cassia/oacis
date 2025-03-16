@@ -74,5 +74,28 @@ describe ParameterDefinition do
         expect(pd).to be_valid
       end
     end
+
+    describe "options field for Selection type" do
+
+      before(:each) do
+        @valid_attr.update(type: "Selection", options: ["option1", "option2"])
+      end
+
+      it "must be present if type is Selection" do
+        @valid_attr.delete(:options)
+        pd = ParameterDefinition.new(@valid_attr)
+        expect(pd).not_to be_valid
+      end
+
+      it "must contain unique values" do
+        pd = ParameterDefinition.new(@valid_attr.update(options: ["option1", "option1"]))
+        expect(pd).not_to be_valid
+      end
+
+      it "is valid with unique options" do
+        pd = ParameterDefinition.new(@valid_attr)
+        expect(pd).to be_valid
+      end
+    end
   end
 end

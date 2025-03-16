@@ -10,7 +10,8 @@ describe ParametersUtil do
         ParameterDefinition.new(key: "param2", type: "Float", default: 1.0, description: "temperature"),
         ParameterDefinition.new(key: "param3", type: "Integer", default: 0, description: "sequential update?"),
         ParameterDefinition.new(key: "param4", type: "String", default: "abc", description: "a string parameter"),
-        ParameterDefinition.new(key: "param5", type: "Object", default: {"x" => [99,3.14,"hello"]}, description: "an object parameter")
+        ParameterDefinition.new(key: "param5", type: "Object", default: {"x" => [99,3.14,"hello"]}, description: "an object parameter"),
+        ParameterDefinition.new(key: "param6", type: "Selection", default: "option1", options: ["option1", "option2", "option3"], description: "a selection parameter")
       ]
     end
 
@@ -20,7 +21,8 @@ describe ParametersUtil do
         "param2" => "3.0",
         "param3" => "1",
         "param4" => 12345,
-        "param5" => '{"x": [3.14, "hello", "world"], "y": 123}'
+        "param5" => '{"x": [3.14, "hello", "world"], "y": 123}',
+        "param6" => "option2"
       }
       casted = ParametersUtil.cast_parameter_values(parameters, @definitions)
 
@@ -34,6 +36,7 @@ describe ParametersUtil do
       expect(casted["param4"]).to eq("12345")
       expect(casted["param5"]).to be_a(Hash)
       expect(casted["param5"]).to eq({"x" => [3.14, "hello", "world"], "y" => 123})
+      expect(casted["param6"]).to eq("option2")
     end
 
     it "casts values properly even if the argument is a hash whose keys are symbol" do
@@ -42,7 +45,8 @@ describe ParametersUtil do
         param2: "3.0",
         param3: "1",
         param4: 12345,
-        param5: '{"x": [3.14, "hello", "world"], "y": 123}'
+        param5: '{"x": [3.14, "hello", "world"], "y": 123}',
+        param6: "option2"
       }
       casted = ParametersUtil.cast_parameter_values(parameters, @definitions)
 
@@ -56,6 +60,7 @@ describe ParametersUtil do
       expect(casted["param4"]).to eq("12345")
       expect(casted["param5"]).to be_a(Hash)
       expect(casted["param5"]).to eq({"x" => [3.14, "hello", "world"], "y" => 123})
+      expect(casted["param6"]).to eq("option2")
     end
 
     it "uses the defined default value if a parameter is not specified" do
@@ -68,6 +73,7 @@ describe ParametersUtil do
       expect(casted["param3"]).to eq(0)
       expect(casted["param4"]).to eq("abc")
       expect(casted["param5"]).to eq( {"x"=>[99,3.14,"hello"]} )
+      expect(casted["param6"]).to eq("option1")
     end
 
     it "returns nil when a parameter is not given for the key whose default value is not defined" do
