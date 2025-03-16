@@ -3,9 +3,9 @@
   .form-group.row.no-margin.no-gutter.small-margin-bottom
     .col-md-3
       = f.text_field :key, placeholder: "Name", disabled: disabled, class: 'form-control', data: tooltip_data(:simulator,:definition_of_parameters)
-    .col-md-2
+    .col-md-2#type_select
       = f.select :type, ParametersUtil::TYPES, {}, disabled: disabled, class: 'form-control'
-    .col-md-3
+    .col-md-3#default_field
       - if f.object.type == "Object"
         = f.text_field :default, value: f.object.default.to_json, placeholder: "Default value", class: 'form-control', data: tooltip_data(:simulator, :default_parameter)
         / we must explicitly set the value when f.object.default is an array
@@ -13,11 +13,12 @@
         = f.text_field :default, placeholder: "Default value", class: 'form-control', data: tooltip_data(:simulator, :default_parameter)
     - unless disabled
       = link_to sanitize('<i class="fa fa-arrow-up fa-lg"/>'), '#', class: "up_fields"
-    - unless disabled
       = link_to sanitize('<i class="fa fa-arrow-down fa-lg"/>'), '#', class: "down_fields"
+      = link_to sanitize('<i class="fa fa-trash-o fa-lg"/>'), '#', class: "remove_fields"
+  .form-group.row.no-margin.no-gutter.small-margin-bottom
+    .col-md-8
+      = f.text_area :options, placeholder: "Enter options separated by newlines", rows: 5, class: 'form-control', data: tooltip_data(:simulator, :options)
   .form-group.row.no-margin.no-gutter
     .col-md-8
       = f.text_area :description, placeholder: "Description", rows: 3, class: 'form-control'
-    - unless disabled
-      = link_to sanitize('<i class="fa fa-trash-o fa-lg"/>'), '#', class: "remove_fields"
 = f.hidden_field :_destroy
