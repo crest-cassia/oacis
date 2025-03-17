@@ -40,6 +40,18 @@ module ParametersUtil
         end
       end
 
+      # check if val is included in options
+      if pdef.type == "Selection"
+        options = pdef.options_array
+        unless options.include?(val)
+          if errors
+            errors.add(key.to_sym, "is not included in options: #{options.inspect}")
+          else
+            return nil
+          end
+        end
+      end
+
       casted[key] = val
     end
     return casted
