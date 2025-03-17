@@ -52,10 +52,12 @@ class ParameterSetsController < ApplicationController
     simulator.parameter_definitions.each do |defn|
       key = defn.key
       parameters = params[:v].dup
-      if parameters[key].present? and defn.type != "Object"
+      if parameters[key].present? and defn.type != "Object" and defn.type != "Selection"
         casted[key] = CSV.parse(parameters[key], liberal_parsing: true)[0]&.map {|x|
           ParametersUtil.cast_value(x.strip, defn.type)
         }
+      elsif defn.type == "Selection"
+        casted[key] = parameters[key].to_a
       else
         casted[key] = [parameters.has_key?(key) ? ParametersUtil.cast_value(parameters[key], defn.type) : defn.default]
       end
@@ -180,7 +182,9 @@ class ParameterSetsController < ApplicationController
     simulator.parameter_definitions.each do |defn|
       key = defn.key
       casted = nil
-      if parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
+      if defn.type == "Selection"
+        casted = parameters[key].to_a
+      elsif parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
         casted = parameters[key].split(',').map {|x|
           ParametersUtil.cast_value( x.strip, defn["type"] )
         }.compact.uniq

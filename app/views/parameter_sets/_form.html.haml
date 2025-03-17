@@ -9,7 +9,9 @@
     .form-group
       = label_tag(property, "#{key} (#{pd.type})", class: 'col-md-2 control-label')
       .col-md-3
-        - if pd.type == "Object"
+        - if pd.type == "Selection"
+          = select_tag(property, options_for_select(pd.options_array, selected: value), multiple: true, class: 'form-control', 'aria-describedby': "desc_#{key}")
+        - elsif pd.type == "Object"
           = text_area_tag(property, value.to_s, class: 'form-control', 'aria-describedby': "desc_#{key}", data: {html: 'true', toggle: 'tooltip', placement: 'bottom', 'original-title': "use JSON format"})
         - else
           = text_field_tag(property, value.to_s, class: 'form-control', 'aria-describedby': "desc_#{key}")
