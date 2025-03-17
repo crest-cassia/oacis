@@ -11,7 +11,7 @@ describe ParametersUtil do
         ParameterDefinition.new(key: "param3", type: "Integer", default: 0, description: "sequential update?"),
         ParameterDefinition.new(key: "param4", type: "String", default: "abc", description: "a string parameter"),
         ParameterDefinition.new(key: "param5", type: "Object", default: {"x" => [99,3.14,"hello"]}, description: "an object parameter"),
-        ParameterDefinition.new(key: "param6", type: "Selection", default: "option1", options: ["option1", "option2", "option3"], description: "a selection parameter")
+        ParameterDefinition.new(key: "param6", type: "Selection", default: "option1", options: "option1\noption2\noption3", description: "a selection parameter")
       ]
     end
 
