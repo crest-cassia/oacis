@@ -88,6 +88,28 @@ $(document).ready(function () {
 })();
 
 $(document).ready( function() {
+
+  function toggleOptionsTextArea() {
+    $('.parameter-definition-field').each(function() {
+      const typeSelect = $(this).find('select[name*="[type]"]');
+      const optionsTextArea = $(this).find('textarea[name*="[options]"]');
+      const defaultField = $(this).find('#default_field');
+      if (typeSelect.val() === "Selection") {
+        optionsTextArea.closest('.form-group').show();
+        defaultField.hide();
+      } else {
+        optionsTextArea.closest('.form-group').hide();
+        defaultField.show();
+      }
+    });
+  }
+  // Initial call to set the correct visibility on page load
+  toggleOptionsTextArea();
+  // Event listener for changes in the select element
+  $(document).on('change', 'select[name*="[type]"]', function() {
+    toggleOptionsTextArea();
+  });
+
   $('form').on('click', '.remove_fields', function() {
     const me = $(this).closest('.parameter-definition-field')[0];
     const res = confirm("Are you sure to remove the parameter: " +
@@ -103,6 +125,7 @@ $(document).ready( function() {
       if( $('#add_field_here').size() > 0 ) { position_to_add = $('#add_field_here'); }
       position_to_add.before($(this).data('fields').replace(regexp, time));
       event.preventDefault();
+      toggleOptionsTextArea();
   });
   $('form').on('click', '.up_fields', function() {
     const me = $(this).closest('.parameter-definition-field')[0];

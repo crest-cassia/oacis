@@ -1,6 +1,6 @@
 module ParametersUtil
 
-  TYPES = ["Integer","Float","String","Object"]
+  TYPES = ["Integer","Float","String","Object","Selection"]
 
   def self.cast_parameter_values(parameters, definitions, errors = nil)
     casted = {}
@@ -22,7 +22,7 @@ module ParametersUtil
       val = parameters.has_key?(key) ? parameters[key] : pdef.default
       # parameters[key] can be false. Do not write 'val = parameters[key] || pdef.default'
 
-      # neither parameter and defualt value is specified
+      # neither parameter and default value is specified
       if val.nil?
         if errors
           errors.add(key.to_sym, "is not specified")
@@ -37,6 +37,18 @@ module ParametersUtil
           errors.add(key.to_sym, "can not cast to #{type}")
         else
           return nil
+        end
+      end
+
+      # check if val is included in options
+      if pdef.type == "Selection"
+        options = pdef.options_array
+        unless options.include?(val)
+          if errors
+            errors.add(key.to_sym, "is not included in options: #{options.inspect}")
+          else
+            return nil
+          end
         end
       end
 
@@ -71,6 +83,12 @@ module ParametersUtil
         JSON.is_json?(val) ? JSON.parse(val) : nil
       else
         val
+      end
+    when "Selection"
+      if val == ''
+        nil
+      else
+        val.to_s
       end
     else
       raise "Unknown type : #{type}"

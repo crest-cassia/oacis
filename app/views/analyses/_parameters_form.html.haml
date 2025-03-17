@@ -23,7 +23,10 @@
   .form-group
     = label(:analysis, "parameters[#{definition.key}]", definition.key, class: 'col-md-2 control-label')
     .col-md-3
-      = text_field(:analysis, "parameters[#{definition.key}]", value: definition.default.to_s, class: 'form-control')
+      - if definition.type == "Selection"
+        = select_tag("analysis[parameters][#{definition.key}]", options_for_select(definition.options_array, selected: definition.default), class: 'form-control')
+      - else
+        = text_field(:analysis, "parameters[#{definition.key}]", value: definition.default.to_s, class: 'form-control')
     .col-md-6
       = definition.description
       = definition.type

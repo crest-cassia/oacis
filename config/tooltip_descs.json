@@ -14,6 +14,7 @@
      "name":"Name of the simulator.<br/>Only alphanumeric characters and underscore (‘_’) are available.<br/>e.g. `my_simulator`",
      "definition_of_parameters":"Input parameter name.<br/>e.g. `param1`", 
      "default_parameter":"Default parameter value.<br />For Object type value, specify the value in JSON.",
+     "options":"Options for the parameter value.<br/>Write options in each line.",
      "pre_process_script":"Script executed before the job.<br/>When it is not necessary, leave it empty.",
      "local_pre_process_script":"Script executed at OACIS server before the job.<br/>When it is not necessary, leave it empty.",
      "command":"The command to execute the simulator.<br/>It is recommended to specify it by the path from the home directory.<br/>e.g. `~/path/to/my_simulator.out`",
