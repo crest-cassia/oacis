@@ -49,7 +49,7 @@
         %td= pd.type
         %td= pd.default.nil? ? '-' : pd.default
         - if pd.type == 'Selection'
-          %td= "#{pd.description} \n[#{pd.options_array.join(', ')}]"
+          %td= "#{pd.description} [#{pd.options_array.join(', ')}]"
         - else
           %td= pd.description ? pd.description : "-"
 
