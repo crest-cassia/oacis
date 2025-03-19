@@ -1,10 +1,15 @@
 - if host
   - simulator.get_default_host_parameter(host).each do |key, val|
+    - host_param_def = host.host_parameter_definitions.select {|hpd| hpd.key == key}.first
     .form-group
       = label_tag(:"run[host_parameters][#{key}]", key, class: 'col-md-2 control-label')
       .col-md-3
         - value = (defined?(run) && run.host_parameters[key]) || val
-        = text_field_tag(:"run[host_parameters][#{key}]", value, id: "run_host_parameters_#{key}_#{host.id}", class: "form-control", 'aria-describedby': "desc_host_param_#{key}")
+        - if host_param_def.options.present?
+          = select_tag(:"run[host_parameters][#{key}]", options_for_select(host_param_def.options, selected: value), id: "run_host_parameters_#{key}_#{host.id}", class: "form-control", 'aria-describedby': "desc_host_param_#{key}")
+        - else
+          = text_field_tag(:"run[host_parameters][#{key}]", value, id: "run_host_parameters_#{key}_#{host.id}", class: "form-control", 'aria-describedby': "desc_host_param_#{key}")
       .col-md-4
         %span{id: "desc_host_param_#{key}", class: "help-block"}
-          = "Format: /#{host.host_parameter_definitions.select {|hpd| hpd.key == key}.first.format }/"
+          - if host_param_def.format.present?
+            = "Format: /#{host_param_def.format}/"

@@ -193,7 +193,7 @@ class Host
       self.host_parameter_definitions = JSON.load(xsub_out)["parameters"].reject do |key,val|
         key == "mpi_procs" or key == "omp_threads"
       end.map do |key,val|
-        HostParameterDefinition.new(key: key, default: val["default"], format: val["format"])
+        HostParameterDefinition.new(key: key, default: val["default"], format: val["format"], options: val["options"].to_a)
       end
     end
 
