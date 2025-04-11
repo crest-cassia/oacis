@@ -1,6 +1,10 @@
 class HostGroupsController < ApplicationController
 
   def show
+    unless HostGroup.where(id: params[:id]).exists?
+      flash[:alert] = "HostGroup #{params[:id]} is not found"
+      redirect_to hosts_path and return
+    end
     @hg = HostGroup.find(params[:id])
 
     respond_to do |format|
@@ -31,6 +35,10 @@ class HostGroupsController < ApplicationController
   end
 
   def edit
+    unless HostGroup.where(id: params[:id]).exists?
+      flash[:alert] = "HostGroup #{params[:id]} is not found"
+      redirect_to hosts_path and return
+    end
     @hg = HostGroup.find(params[:id])
 
     respond_to do |format|

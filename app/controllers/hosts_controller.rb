@@ -14,6 +14,10 @@ class HostsController < ApplicationController
   # GET /hosts/1
   # GET /hosts/1.json
   def show
+    unless Host.where(id: params[:id]).exists?
+      flash[:alert] = "Host #{params[:id]} is not found"
+      redirect_to hosts_path and return
+    end
     @host = Host.find(params[:id])
 
     respond_to do |format|
@@ -61,6 +65,10 @@ class HostsController < ApplicationController
 
   # GET /hosts/1/edit
   def edit
+    unless Host.where(id: params[:id]).exists?
+      flash[:alert] = "Host #{params[:id]} is not found"
+      redirect_to hosts_path and return
+    end
     @host = Host.find(params[:id])
   end
 

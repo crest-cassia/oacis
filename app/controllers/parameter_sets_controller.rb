@@ -3,6 +3,10 @@ require 'zip'
 class ParameterSetsController < ApplicationController
 
   def show
+    unless ParameterSet.where(id: params[:id]).exists?
+      flash[:alert] = "ParameterSet #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     @param_set = ParameterSet.find(params[:id])
     respond_to do |format|
       format.html
@@ -11,6 +15,10 @@ class ParameterSetsController < ApplicationController
   end
 
   def new
+    unless Simulator.where(id: params[:simulator_id]).exists?
+      flash[:alert] = "Simulator #{params[:simulator_id]} is not found"
+      redirect_to root_path and return
+    end
     simulator = Simulator.find(params[:simulator_id])
     v = {}
     simulator.parameter_definitions.each do |defn|
@@ -20,6 +28,10 @@ class ParameterSetsController < ApplicationController
   end
 
   def duplicate
+    unless ParameterSet.where(id: params[:id]).exists?
+      flash[:alert] = "ParameterSet #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     base_ps = ParameterSet.find(params[:id])
     simulator = base_ps.simulator
     @param_set = simulator.parameter_sets.build(v: base_ps.v)

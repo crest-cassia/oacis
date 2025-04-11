@@ -1,6 +1,10 @@
 class AnalysesController < ApplicationController
 
   def show
+    unless Analysis.where(id: params[:id]).exists?
+      flash[:alert] = "Analysis #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     @analysis = Analysis.find(params[:id])
 
     respond_to do |format|

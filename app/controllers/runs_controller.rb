@@ -30,6 +30,10 @@ class RunsController < ApplicationController
   end
 
   def show
+    unless Run.where(id: params[:id]).exists?
+      flash[:alert] = "Run #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     @run = Run.find(params[:id])
     @param_set = @run.parameter_set
     respond_to do |format|
