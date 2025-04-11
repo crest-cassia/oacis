@@ -1,6 +1,10 @@
 class AnalyzersController < ApplicationController
 
   def show
+    unless Analyzer.where(id: params[:id]).exists?
+      flash[:alert] = "Analyzer #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     @analyzer = Analyzer.find(params[:id])
 
     respond_to do |format|
@@ -20,6 +24,10 @@ class AnalyzersController < ApplicationController
   end
 
   def edit
+    unless Analyzer.where(id: params[:id]).exists?
+      flash[:alert] = "Analyzer #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     @analyzer = Analyzer.find(params[:id])
   end
 
@@ -39,6 +47,10 @@ class AnalyzersController < ApplicationController
   end
 
   def update
+    unless Analyzer.where(id: params[:id]).exists?
+      flash[:alert] = "Analyzer #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     @analyzer = Analyzer.find(params[:id])
 
     respond_to do |format|

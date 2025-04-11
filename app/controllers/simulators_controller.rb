@@ -15,6 +15,10 @@ class SimulatorsController < ApplicationController
   # GET /simulators/1
   # GET /simulators/1.json
   def show
+    unless Simulator.where(id: params[:id]).exists?
+      flash[:alert] = "Simulator #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     @simulator = Simulator.find(params[:id])
     @analyzers = @simulator.analyzers
     @filter = nil
@@ -55,6 +59,10 @@ class SimulatorsController < ApplicationController
 
   # GET /simulators/1/duplicate
   def duplicate
+    unless Simulator.where(id: params[:id]).exists?
+      flash[:alert] = "Simulator #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     @duplicating_simulator = Simulator.find(params[:id])
     @copied_analyzers = @duplicating_simulator.analyzers
     @simulator = @duplicating_simulator.clone
@@ -63,6 +71,10 @@ class SimulatorsController < ApplicationController
 
   # GET /simulators/1/edit
   def edit
+    unless Simulator.where(id: params[:id]).exists?
+      flash[:alert] = "Simulator #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     @simulator = Simulator.find(params[:id])
   end
 
@@ -96,6 +108,10 @@ class SimulatorsController < ApplicationController
   # PUT /simulators/1
   # PUT /simulators/1.json
   def update
+    unless Simulator.where(id: params[:id]).exists?
+      flash[:alert] = "Simulator #{params[:id]} is not found"
+      redirect_to root_path and return
+    end
     @simulator = Simulator.find(params[:id])
 
     respond_to do |format|
