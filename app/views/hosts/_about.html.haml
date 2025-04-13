@@ -44,13 +44,19 @@
           %thead
             %th Name
             %th Default
-            %th Format
+            %th Format/Options
           %tbody
             - @host.host_parameter_definitions.each do |host_prm|
               %tr
                 %td= host_prm.key
                 %td= host_prm.default
-                %td= host_prm.format
+                %td
+                  - if host_prm.options.present?
+                    = host_prm.options
+                  - else
+                    = host_prm.format
+
+
     %tr
       %th Executable simulators
       %td= raw( @host.executable_simulators.map {|sim| h(sim.name) }.join('<br />') )
