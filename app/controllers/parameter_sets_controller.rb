@@ -69,7 +69,7 @@ class ParameterSetsController < ApplicationController
           ParametersUtil.cast_value(x.strip, defn.type)
         }
       elsif defn.type == "Selection"
-        casted[key] = parameters[key].to_a
+        casted[key] = parameters[key]
       else
         casted[key] = [parameters.has_key?(key) ? ParametersUtil.cast_value(parameters[key], defn.type) : defn.default]
       end
@@ -195,7 +195,7 @@ class ParameterSetsController < ApplicationController
       key = defn.key
       casted = nil
       if defn.type == "Selection"
-        casted = parameters[key].to_a
+        casted = parameters[key]
       elsif parameters[key] and JSON.is_not_json?(parameters[key]) and parameters[key].include?(',')
         casted = parameters[key].split(',').map {|x|
           ParametersUtil.cast_value( x.strip, defn["type"] )
