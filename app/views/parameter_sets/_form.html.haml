@@ -10,7 +10,11 @@
       = label_tag(property, "#{key} (#{pd.type})", class: 'col-md-2 control-label')
       .col-md-3
         - if pd.type == "Selection"
-          = select_tag(property, options_for_select(pd.options_array, selected: value), multiple: true, class: 'form-control', 'aria-describedby': "desc_#{key}")
+          = check_box_tag("v_#{key}_multi_toggle", "1", false, id: "v_#{key}_multi_toggle")
+          = label_tag("v_#{key}_multi_toggle", "multiple selection")
+          %br/
+          = select_tag("v[#{key}][]", options_for_select(pd.options_array, selected: value), id: "v_#{key}_select", class: 'form-control', 'aria-describedby': "desc_#{key}")
+          -# to make sure that the select_tag returns an array, the name must be "v[#{key}][]"
         - elsif pd.type == "Object"
           = text_area_tag(property, value.to_s, class: 'form-control', 'aria-describedby': "desc_#{key}", data: {html: 'true', toggle: 'tooltip', placement: 'bottom', 'original-title': "use JSON format"})
         - else
@@ -55,4 +59,19 @@
     }
     $('#new_parameter_set').change(show_cli_command);
     show_cli_command();
+  });
+
+  $(function() {
+    $('input[id$="_multi_toggle"]').change(function() {
+      const selectId = this.id.replace('_multi_toggle', '_select');
+      const $select = $('#' + selectId);
+
+      if ($(this).is(':checked')) {
+        $select.attr('multiple', 'multiple');
+        $select.addClass('multi-select');
+      } else {
+        $select.removeAttr('multiple');
+        $select.removeClass('multi-select');
+      }
+    });
   });
