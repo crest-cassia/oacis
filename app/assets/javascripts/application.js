@@ -72,15 +72,25 @@ $(document).ready(function () {
     const my_name = me.children[0].children[0].children[0].value;
     const my_type = me.children[0].children[1].children[0].value;
     const my_dval = me.children[0].children[2].children[0].value;
-    const my_desc = me.children[2].children[0].children[0].value;
+    const my_opts = $(me).find('textarea[name*="[options]"]').val();
+    const my_opts_visible = window.getComputedStyle(me.children[1]).display !== 'none';
+    const my_desc = $(me).find('textarea[name*="[description]"]').val();
+    const my_desc_visible = window.getComputedStyle(me.children[2]).display !== 'none';
+
     me.children[0].children[0].children[0].value = em.children[0].children[0].children[0].value;
     me.children[0].children[1].children[0].value = em.children[0].children[1].children[0].value;
     me.children[0].children[2].children[0].value = em.children[0].children[2].children[0].value;
-    me.children[2].children[0].children[0].value = em.children[2].children[0].children[0].value;
+    $(me).find('textarea[name*="[options]"]').val( $(em).find('textarea[name*="[options]"]').val() );
+    $(me.children[1]).toggle(window.getComputedStyle(em.children[1]).display !== 'none');
+    $( me ).find('textarea[name*="[description]"]').val( $(em).find('textarea[name*="[description]"]').val() );
+    $(me.children[2]).toggle(window.getComputedStyle(em.children[2]).display !== 'none');
     em.children[0].children[0].children[0].value = my_name;
     em.children[0].children[1].children[0].value = my_type;
     em.children[0].children[2].children[0].value = my_dval;
-    em.children[2].children[0].children[0].value = my_desc;
+    $(em).find('textarea[name*="[options]"]').val(my_opts);
+    $(em.children[1]).toggle(my_opts_visible);
+    $(em).find('textarea[name*="[description]"]').val(my_desc);
+    $(em.children[2]).toggle(my_desc_visible);
   }
 
   OACIS.find_from_parameter_definition_fields = find_from_parameter_definition_fields;
