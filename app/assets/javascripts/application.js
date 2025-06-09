@@ -72,15 +72,15 @@ $(document).ready(function () {
     const my_name = me.children[0].children[0].children[0].value;
     const my_type = me.children[0].children[1].children[0].value;
     const my_dval = me.children[0].children[2].children[0].value;
-    const my_desc = me.children[1].children[0].children[0].value;
+    const my_desc = me.children[2].children[0].children[0].value;
     me.children[0].children[0].children[0].value = em.children[0].children[0].children[0].value;
     me.children[0].children[1].children[0].value = em.children[0].children[1].children[0].value;
     me.children[0].children[2].children[0].value = em.children[0].children[2].children[0].value;
-    me.children[1].children[0].children[0].value = em.children[1].children[0].children[0].value;
+    me.children[2].children[0].children[0].value = em.children[2].children[0].children[0].value;
     em.children[0].children[0].children[0].value = my_name;
     em.children[0].children[1].children[0].value = my_type;
     em.children[0].children[2].children[0].value = my_dval;
-    em.children[1].children[0].children[0].value = my_desc;
+    em.children[2].children[0].children[0].value = my_desc;
   }
 
   OACIS.find_from_parameter_definition_fields = find_from_parameter_definition_fields;
