@@ -1,8 +1,8 @@
 .form-group
   = label(:analysis, :submitted_to, 'submitted_to', class: 'col-md-2 control-label')
   .col-md-3
-    - host_names = analyzer.executable_on.map {|h| [h.name, h.id.to_s]}
-    - host_names += HostGroup.all.map {|hg| ["HostGroup:#{hg.name}", hg.id.to_s] }
+    - host_names = analyzer.executable_on.map {|h| [h.name, h.id.to_s]}.sort_by {|h| h[0]}
+    - host_names += HostGroup.all.map {|hg| ["HostGroup:#{hg.name}", hg.id.to_s] }.sort_by {|h| h[0]}
     - selected_id = host_names.first.last
     = select(:analysis, :submitted_to, options_for_select(host_names, selected: selected_id), {}, {class: 'form-control'})
 .form-group
