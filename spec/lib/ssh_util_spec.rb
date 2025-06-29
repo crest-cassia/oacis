@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe SSHUtil do
+RSpec.shared_examples "SSHUtil backend" do |backend_name, ssh_module|
 
   around(:each) do |example|
     @temp_dir = Pathname.new('__temp__').expand_path
     FileUtils.mkdir_p(@temp_dir)
     @hostname = 'localhost'
-    Net::SSH.start(@hostname, ENV['USER'], password: "", timeout: 1) do |ssh|
+    ssh_module.start(@hostname, ENV['USER'], non_interactive: true, timeout: 1) do |ssh|
       SSHUtil::ShellSession.start(ssh) do |sh|
         @sh = sh
         example.run
@@ -273,5 +273,15 @@ describe SSHUtil do
       remote_path = @temp_dir.join('abc').expand_path
       expect(SSHUtil.directory?(@sh, remote_path)).to be_falsey
     end
+  end
+end
+
+describe SSHUtil do
+  context "with Net::SSH backend" do
+    it_behaves_like "SSHUtil backend", "Net::SSH", Net::SSH
+  end
+
+  context "with PopenSSH backend" do
+    it_behaves_like "SSHUtil backend", "PopenSSH", PopenSSH
   end
 end
