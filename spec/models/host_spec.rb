@@ -140,6 +140,30 @@ describe Host do
     end
   end
 
+  describe "ssh_backend field" do
+    before(:each) do
+      @valid_attr = {
+        name: "nameABC",
+        work_base_dir: '~/__cm_work__',
+        status: :enabled,
+        ssh_backend: "net_ssh"
+      }
+    end
+
+    it "must be either 'net_ssh' or 'popen_ssh'" do
+      @valid_attr.update(ssh_backend: "invalid_backend")
+      host = Host.new(@valid_attr)
+      expect(host).not_to be_valid
+      expect(host.errors[:ssh_backend]).to include("is not included in the list")
+    end
+
+    it "defaults to 'net_ssh'" do
+      @valid_attr.delete(:ssh_backend)
+      host = Host.new(@valid_attr)
+      expect(host.ssh_backend).to eq("net_ssh")
+    end
+  end
+
   describe ".find_by_name" do
 
     it "returns the host with the given name" do

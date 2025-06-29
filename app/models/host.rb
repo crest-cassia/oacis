@@ -14,6 +14,7 @@ class Host
   field :max_mpi_procs, type: Integer, default: 1
   field :min_omp_threads, type: Integer, default: 1
   field :max_omp_threads, type: Integer, default: 1
+  field :ssh_backend, type: String, default: "net_ssh" # "net_ssh" or "popen_ssh"
   field :position, type: Integer # position in the table. start from zero
 
   has_and_belongs_to_many :executable_simulators, class_name: "Simulator", inverse_of: :executable_on
@@ -29,6 +30,7 @@ class Host
   validates :max_mpi_procs, numericality: {greater_than_or_equal_to: 1}
   validates :min_omp_threads, numericality: {greater_than_or_equal_to: 1}
   validates :max_omp_threads, numericality: {greater_than_or_equal_to: 1}
+  validates :ssh_backend, inclusion: {in: ["net_ssh", "popen_ssh"]}
   validates :status, presence: true,
                      inclusion: {in: HOST_STATUS}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
@@ -138,8 +140,8 @@ class Host
       yield @ssh
     else
       ssh_logger.debug("starting SSH: " + self.name ) if ssh_logger
-      #PopenSSH.start(name, nil, password: nil, timeout: 1, non_interactive: true, logger: ssh_logger) do |ssh|
-      Net::SSH.start(name, nil, password: nil, timeout: 1, non_interactive: true, logger: ssh_logger) do |ssh|
+      ssh_module = ssh_backend == "popen_ssh" ? PopenSSH : Net::SSH
+      ssh_module.start(name, nil, password: nil, timeout: 1, non_interactive: true, logger: ssh_logger) do |ssh|
         @ssh = ssh
         begin
           yield ssh
