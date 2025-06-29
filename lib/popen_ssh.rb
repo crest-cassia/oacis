@@ -1,6 +1,8 @@
 require 'open3'
 
 module PopenSSH
+  class ConnectionError < StandardError; end
+
   def self.start(host, user, **opts, &block)
     session = Session.new(host, user, opts)
     yield session if block
@@ -44,8 +46,25 @@ module PopenSSH
 
       @logger&.debug("[PopenSSH] exec: #{args.join(' ')}")
 
-      @stdin, @stdout, @stderr, @wait_thr = *Open3.popen3(*args)
+      begin
+        @stdin, @stdout, @stderr, @wait_thr = *Open3.popen3(*args)
+      rescue => e
+        raise PopenSSH::ConnectionError, "Failed to start ssh: #{e.class}: #{e.message}"
+      end
+      check_ssh_startup_failure!
+
       yield self, true if block
+    end
+
+    def check_ssh_startup_failure!
+      # If the SSH process exited immediately, assume failure.
+      timeout = @opts[:timeout] || 1
+      if @wait_thr.join(timeout)
+        exit_code = @wait_thr.value.exitstatus
+        stderr_output = @stderr.read.to_s.strip
+        raise PopenSSH::ConnectionError,
+              "SSH exited immediately with status #{exit_code}: #{stderr_output}"
+      end
     end
 
     def send_data(data)

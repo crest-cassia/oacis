@@ -46,6 +46,7 @@ class Host
     Errno::ENETUNREACH,
     SocketError,
     Net::SSH::Exception,
+    PopenSSH::ConnectionError,
     OpenSSL::PKey::RSAError,
     Timeout::Error
   ]
@@ -62,7 +63,14 @@ class Host
   # return false otherwise
   # connection exception is stored in @connection_error
   def connected?
-    start_ssh {|ssh| } # do nothing
+    start_ssh do |ssh|
+      SSHUtil::ShellSession.start(ssh) do |sh|
+        out,err,rc = SSHUtil.execute2(sh, "echo OACIS-SSH-CONNECTED")
+        unless rc == 0 and out.strip == "OACIS-SSH-CONNECTED"
+          raise "SSH connection failed: #{out} #{err} #{rc}"
+        end
+      end
+    end # do nothing
   rescue *CONNECTION_EXCEPTIONS => ex
     @connection_error = ex
     return false
@@ -130,6 +138,7 @@ class Host
       yield @ssh
     else
       ssh_logger.debug("starting SSH: " + self.name ) if ssh_logger
+      #PopenSSH.start(name, nil, password: nil, timeout: 1, non_interactive: true, logger: ssh_logger) do |ssh|
       Net::SSH.start(name, nil, password: nil, timeout: 1, non_interactive: true, logger: ssh_logger) do |ssh|
         @ssh = ssh
         begin
