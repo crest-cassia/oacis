@@ -39,11 +39,13 @@ describe PopenSSH do
 
     describe '#exec' do
       it 'executes the command via SSH' do
+        allow(channel).to receive(:check_ssh_startup_failure!) # stub it out
         expect(Open3).to receive(:popen3).with('ssh', '-o', 'BatchMode=yes', '-l', user, host, '--', 'echo', 'Hello')
         channel.exec(command)
       end
 
       it 'logs the command execution' do
+        allow(channel).to receive(:check_ssh_startup_failure!) # stub it out
         expect(logger).to receive(:debug).with("[PopenSSH] exec: ssh -o BatchMode=yes -l test_user example.com -- echo Hello")
         channel.exec(command)
       end
@@ -52,6 +54,7 @@ describe PopenSSH do
     describe '#send_data' do
       it 'writes data to stdin' do
         stdin = double('stdin', write: nil, flush: nil)
+        allow(channel).to receive(:check_ssh_startup_failure!) # stub it out
         allow(Open3).to receive(:popen3).and_return([stdin, nil, nil, nil])
         channel.exec(command)
         channel.send_data('test data')
