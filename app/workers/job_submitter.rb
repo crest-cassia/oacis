@@ -3,6 +3,14 @@ class JobSubmitter
   def self.perform(logger)
     @last_performed_at ||= {}
     destroy_jobs_to_be_destroyed(logger)
+    if ENV['OACIS_SSH_DEBUG'] == "1" and @ssh_logger.nil?
+       @ssh_logger = Logger.new( Rails.root.join('log/ssh_debug.log') )
+       @ssh_logger.level = :debug
+       @ssh_logger.debug("printing SSH debug messages for JobSubmitter")
+       @ssh_logger.formatter = proc do |severity, datetime, progname, msg|
+        "[JobSubmitter] #{datetime.strftime('%Y-%m-%d %H:%M:%S')} #{severity}: #{msg}\n"
+      end
+    end
     Host.where(status: :enabled).each do |host|
       break if $term_received
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
@@ -10,7 +18,7 @@ class JobSubmitter
         num = host.max_num_jobs - host.submitted_runs.count - host.submitted_analyses.count
         logger.debug "checking jobs going to be submitted to #{host.name}."
         if num > 0 and (host.submittable_analyses.count > 0 or host.submittable_runs.count > 0)
-          host.start_ssh_shell do |sh|
+          host.start_ssh_shell(ssh_logger: @ssh_logger) do |sh|
             prev_num = num
             Run::PRIORITY_ORDER.keys.sort.each do |priority|
               break if $term_received

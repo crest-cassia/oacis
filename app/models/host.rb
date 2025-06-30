@@ -139,8 +139,8 @@ class Host
     if @ssh
       yield @ssh
     else
-      ssh_logger.debug("starting SSH: " + self.name ) if ssh_logger
       ssh_module = ssh_backend == "popen_ssh" ? PopenSSH : Net::SSH
+      ssh_logger.debug("starting SSH: #{self.name} using #{ssh_module}" ) if ssh_logger
       ssh_module.start(name, nil, password: nil, timeout: 1, non_interactive: true, logger: ssh_logger) do |ssh|
         @ssh = ssh
         begin
