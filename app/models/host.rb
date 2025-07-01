@@ -159,13 +159,13 @@ class Host
         yield @ssh_shell
       else
         logger&.debug("starting SSH shell: " + self.name )
-        SSHUtil::ShellSession.start(ssh, logger: logger) do |sh|
-          @ssh_shell = sh
-          begin
+        begin
+          SSHUtil::ShellSession.start(ssh, logger: logger) do |sh|
+            @ssh_shell = sh
             yield sh
-          ensure
-            @ssh_shell = nil
           end
+        ensure
+          @ssh_shell = nil
         end
       end
     end

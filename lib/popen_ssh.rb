@@ -9,7 +9,7 @@ module PopenSSH
   end
 
   class Session
-    attr_reader :host, :user, :channel
+    attr_reader :host, :user, :opts
 
     def initialize(host, user, opts = {})
       @host = host
@@ -18,13 +18,9 @@ module PopenSSH
     end
 
     def open_channel(&block)
-      @channel = Channel.new(self, @opts)
-      yield @channel if block
-      @channel
-    end
-
-    def loop
-      @channel.wait(timeout: @opts[:timeout])
+      channel = Channel.new(self, @opts)
+      yield channel if block
+      channel
     end
   end
 
@@ -86,16 +82,10 @@ module PopenSSH
 
     def wait(timeout: nil)
       ios = [@stdout, @stderr]
-      start_time = Time.now
+      timeout ||= @opts[:timeout]
 
       loop do
-        if timeout
-          elapsed = Time.now - start_time
-          raise Timeout::Error, "SSH command timed out (stdout/stderr)" if elapsed > timeout
-        end
-
-        remaining = timeout ? [timeout - (Time.now - start_time), 0.1].max : nil
-        ready = IO.select(ios, nil, nil, remaining)
+        ready = IO.select(ios, nil, nil, timeout)
 
         break unless ready
 
