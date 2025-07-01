@@ -82,7 +82,6 @@ module PopenSSH
 
     def wait(timeout: nil)
       ios = [@stdout, @stderr]
-      timeout ||= @opts[:timeout]
 
       loop do
         ready = IO.select(ios, nil, nil, timeout)
