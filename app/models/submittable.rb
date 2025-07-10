@@ -133,9 +133,9 @@ module Submittable
   def omp_threads_is_in_range
     if submitted_to
       if omp_threads.to_i < submitted_to.min_omp_threads
-        errors.add(:omp_threads, "must be equal to or larger than #{submitted_to.min_mpi_procs}")
+        errors.add(:omp_threads, "must be equal to or larger than #{submitted_to.min_omp_threads}")
       elsif omp_threads.to_i > submitted_to.max_omp_threads
-        errors.add(:omp_threads, "must be equal to or smaller than #{submitted_to.max_mpi_procs}")
+        errors.add(:omp_threads, "must be equal to or smaller than #{submitted_to.max_omp_threads}")
       end
     end
   end
