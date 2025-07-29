@@ -53,6 +53,7 @@ We will explain the list of information which you need to specify when registeri
 | OMP threads                | The available range of the number of OpenMP threads. |
 | Executable simulators      | List of executable simulators on that host. |
 | Executable analyzers       | List of executable analyzers on that host. |
+| SSH Backend                | The SSH implementation to use, either Net::SSH (Ruby) or PopenSSH (Shell). |
 |----------------------------|---------------------------------------------------------------------|
 
 The SSH setting must be written in "~/.ssh/config" file. For instance, setting of "MyHost" may be written as the following.
@@ -70,7 +71,7 @@ If you specify *"Mounted work base dir"*, OACIS uses copy instead of SFTP to dow
 This may significantly improve the performance of the file transfer.
 For "localhost", always specify the same value as "Work base dir". The performance will be much improved.
 If the "Work base dir" on the computational host is mounted by NFS, specify the mounted path.
-If the directory is not accessible from OACIS, leave it blank. 
+If the directory is not accessible from OACIS, leave it blank.
 {% endcapture %}{% include tips %}
 
 {% capture tips %}
@@ -103,4 +104,25 @@ Set the execution command as follows.
 By setting "command" and "pre-process" like these, we can submit jobs to the K-computer.
 All the simulation results are properly staged-out if all the output files are generated in the current directory because all the files in the current directory are staged-out.
 
+## Using SSH Multiplexing
 
+SSH multiplexing allows re-use of the SSH connection after an initial login.
+The re-use of the connection means that you can log in one time, leave the connection open, and then connect again without having to reauthenticate.
+Therefore, you can authenticate using a password or Multi-Factor Authentication (MFA), and then you can access the same system using OACIS without using your password or MFA token in OACIS.
+
+In order to use the multiplexing, when creating your `~/.ssh/config` file, add `controlmaster auto` and `controlpath /tmp/ssh-%r@%h:%p`. The configuration may be as the following:
+
+```
+Host MyHost
+  HostName example.com
+  User user_ABC
+  IdentityFile ~/.ssh/id_rsa
+  port 22
+  controlmaster auto
+  controlpath /tmp/ssh-%r@%h:%p
+```
+In the terminal, log in to the host using `ssh MyHost`.
+
+In OACIS, select `PopenSSH (Shell)` for the SSH Backend, which will use OpenSSH, which includes ControlMaster, unlike Net::SSH (Ruby).
+
+Then, OACIS should be connected to the host and be able to show the Host status and submit jobs.
