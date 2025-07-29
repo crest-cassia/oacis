@@ -378,3 +378,20 @@ cd ~/path/to; git describe --always
 You can delete or replace the runs having a specified by version at once using the command line interface (CLI).
 Please refer to the page for [CLI]({{ site.baseurl }}/ja/cli.html) for details.
 
+## [Advanced] Viewing GPU Profiling Results
+
+If you are using GPUs with OACIS, the nsight2pyplot provides options to view profiling information. nsight2pyplot is an external tool, so its repo needs to be cloned on the Host. The repo is available at: [https://github.com/kodingkoning/nsight2pyplot](https://github.com/kodingkoning/nsight2pyplot).
+
+nsight2pyplot generates figues for the timeline of the kernels in the profiled run, and a boxplot of the kernel runtimes. The timeline may look like:
+
+![Example timeline of nsight2pyplot](https://github.com/kodingkoning/nsight2pyplot/blob/main/figures/report1_timeline.png)
+
+The commands to create and process a profile must be added to the Simulator command. `nsys profile` is required to create the profile, and then the `plot_profile.sh` script from nsight2pyplot can be run on the profiling output. The commands for the similar will look like the follow, with the name of the simulator script and the path to nsight2pyplot specified:
+
+```
+nsys profile --stats=true --cuda-memory-usage true SIM_SCRIPT && ~/path/to/nsight2pyplot/plot_profile.sh report1
+```
+
+These commands do assume that the profile will have the prefix of `report1`, which will be the case if `nsys profile` is running in the directory created by OACIS.
+
+More information and examples are available in the documentation for nsight2pyplot.

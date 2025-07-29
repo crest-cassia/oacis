@@ -6,13 +6,21 @@ class JobObserver
       logger.error("Disk space is not enough to include submitted jobs. Aborting.")
       return
     end
+    if ENV['OACIS_SSH_DEBUG'] == "1" and @ssh_logger.nil?
+      @ssh_logger = Logger.new( Rails.root.join('log/ssh_debug.log') )
+      @ssh_logger.level = :debug
+      @ssh_logger.debug("printing SSH debug messages for JobObserver")
+      @ssh_logger.formatter = proc do |severity, datetime, progname, msg|
+        "[JobObserver] #{datetime.strftime('%Y-%m-%d %H:%M:%S')} #{severity}: #{msg}\n"
+      end
+    end
     Host.where(status: :enabled).each do |host|
       break if $term_received
       next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
       begin
         logger.debug "observing host #{host.name}"
         bm = Benchmark.measure {
-          observe_host(host, logger)
+          observe_host(host, logger, @ssh_logger)
         }
         logger.info "observation of #{host.name} finished in #{sprintf('%.1f', bm.real)}" if bm.real > 1.0
       rescue => ex
@@ -24,10 +32,10 @@ class JobObserver
   end
 
   private
-  def self.observe_host(host, logger)
+  def self.observe_host(host, logger, ssh_logger = nil)
     # host.check_submitted_job_status(logger)
     return if host.submitted_runs.count == 0 and host.submitted_analyses.count == 0
-    host.start_ssh_shell(logger: logger) do |sh|
+    host.start_ssh_shell(logger: logger, ssh_logger: ssh_logger) do |sh|
       logger.debug "making SSH connection to #{host.name}"
       handler = RemoteJobHandler.new(host)
       # check if job is finished

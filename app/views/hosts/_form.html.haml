@@ -44,6 +44,10 @@
       .col-md-5
         = f.number_field(:max_omp_threads, class: 'form-control', data: tooltip_data(:host,:min_omp_threads))
   .form-group
+    = f.label_c(:ssh_backend, 'SSH Backend')
+    .col-md-3
+      = f.select(:ssh_backend, options_for_select([['Net::SSH (Ruby)', 'net_ssh'], ['PopenSSH (Shell)', 'popen_ssh']], @host.ssh_backend), {}, class: 'form-control', data: tooltip_data(:host, :ssh_backend))
+  .form-group
     = raw(label_c('Executable Simulators'))
     .col-md-10
       = hidden_field_tag "host[executable_simulator_ids][]", nil

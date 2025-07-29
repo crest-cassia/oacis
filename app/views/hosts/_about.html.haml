@@ -55,8 +55,9 @@
                     = host_prm.options
                   - else
                     = host_prm.format
-
-
+    %tr
+      %th SSH Backend
+      %td= @host.ssh_backend == 'net_ssh' ? 'Net::SSH (Ruby)' : 'PopenSSH (Shell)'
     %tr
       %th Executable simulators
       %td= raw( @host.executable_simulators.map {|sim| h(sim.name) }.join('<br />') )

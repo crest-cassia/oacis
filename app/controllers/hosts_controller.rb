@@ -140,6 +140,7 @@ class HostsController < ApplicationController
                                            :max_mpi_procs,
                                            :min_omp_threads,
                                            :max_omp_threads,
+                                           :ssh_backend,
                                            executable_simulator_ids: [],
                                            executable_analyzer_ids: []
                                           ) : {}
