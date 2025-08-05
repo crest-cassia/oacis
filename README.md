@@ -18,6 +18,42 @@ It also provides APIs, which helps us automate parameter sweep, optimization of 
 
 If you have a trouble of handling many simulation jobs, OACIS will definitely help you!
 
+## Getting Started
+
+The easiest way to try OACIS is using Docker. We provide a pre-configured Docker environment that sets up OACIS with all necessary dependencies.
+
+### Quick Start with Docker
+
+1. **Prerequisites**: Install [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
+
+2. **Clone the Docker repository**:
+   ```bash
+   git clone https://github.com/crest-cassia/oacis_docker.git
+   cd oacis_docker
+   ```
+
+3. **Start OACIS**:
+   ```bash
+   ./oacis_boot.sh
+   ```
+
+4. **Access OACIS**: Open your browser and go to `http://localhost:3000`
+
+### Docker Management Commands
+
+- **Stop container temporarily**: `./oacis_stop.sh`
+- **Restart container**: `./oacis_start.sh`
+- **Access container shell**: `./oacis_shell.sh`
+- **Permanently terminate**: `./oacis_terminate.sh` (⚠️ Backup your data first!)
+
+### Notes for Different Platforms
+
+- **Ubuntu**: Use `sudo -E ./oacis_boot.sh` and ensure SSH agent is properly configured
+
+For detailed Docker setup instructions and troubleshooting, visit the [OACIS Docker repository](https://github.com/crest-cassia/oacis_docker).
+
+For native installation and advanced usage, see the [full documentation](http://crest-cassia.github.io/oacis/).
+
 ## Screenshots
 
 ![screenshot](docs/images/screenshots/1.png)
@@ -51,9 +87,9 @@ p1_values.each do |p1|                  # iterate over p1
 end
 ```
 
-## Usage
+## Documentation
 
-Visit the [document](http://crest-cassia.github.io/oacis/) of OACIS. A docker image is also available.
+Visit the [full documentation](http://crest-cassia.github.io/oacis/) for comprehensive guides on installation, configuration, and usage.
 
 ## Slides
 
