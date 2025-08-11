@@ -1,7 +1,6 @@
 # OACIS
 
 [![GitHub version](https://img.shields.io/github/release/crest-cassia/oacis.svg)](https://github.com/crest-cassia/oacis)
-[![Build Status](https://travis-ci.org/crest-cassia/oacis.svg?branch=master)](https://travis-ci.org/crest-cassia/oacis)
 
 <img src="docs/OACIS_logo.png" alt="OACIS logo" title="OACIS" height="180"></img>
 
@@ -24,6 +23,8 @@ The easiest way to try OACIS is using Docker. We provide a pre-configured Docker
 
 ### Quick Start with Docker
 
+See [OACIS docker](https://github.com/crest-cassia/oacis_docker) for the full documentation.
+
 1. **Prerequisites**: Install [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
 
 2. **Clone the Docker repository**:
@@ -44,7 +45,7 @@ The easiest way to try OACIS is using Docker. We provide a pre-configured Docker
 - **Stop container temporarily**: `./oacis_stop.sh`
 - **Restart container**: `./oacis_start.sh`
 - **Access container shell**: `./oacis_shell.sh`
-- **Permanently terminate**: `./oacis_terminate.sh` (⚠️ Backup your data first!)
+- **Permanently terminate**: `./oacis_terminate.sh`
 
 ### Notes for Different Platforms
 
