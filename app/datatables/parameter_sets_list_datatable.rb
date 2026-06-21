@@ -84,15 +84,16 @@ private
       return red
     end
 
-    if val == compared_val
-      escaped
-    elsif val < compared_val
-      blue
-    elsif val > compared_val
-      red
-    else
-      escaped
-    end
+    return escaped if val == compared_val
+
+    # Booleans and other non-comparable types don't support < / > (e.g.
+    # `true <=> false` is nil, not a number), so guard the spaceship result
+    # instead of calling the operators directly. Values that can't be ordered
+    # fall through uncolored, matching the original else branch.
+    cmp = (val <=> compared_val)
+    return escaped if cmp.nil?
+
+    cmp < 0 ? blue : red
   end
 
   def colorize_unique_param_values
