@@ -1,5 +1,9 @@
 class OacisCli < Thor
 
+  def self.exit_on_failure?
+    true
+  end
+
   class_option :verbose, type: :boolean, aliases: '-v', desc: 'verbose mode'
   class_option :yes, type: :boolean, aliases: '-y', desc: 'say "yes" for all questions'
 

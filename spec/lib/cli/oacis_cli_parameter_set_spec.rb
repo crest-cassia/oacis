@@ -65,7 +65,7 @@ describe OacisCli do
         at_temp_dir {
           create_simulator_id_json(@sim, 'simulator_id.json')
           FileUtils.touch('parameter_sets.json')
-          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", {add_to_history: false}).and_return("y")
           option = {simulator: 'simulator_id.json', output: 'parameter_sets.json'}
           OacisCli.new.invoke(:parameter_sets_template, [], option)
           expect(File.exist?('parameter_sets.json')).to be_truthy
@@ -82,7 +82,7 @@ describe OacisCli do
         at_temp_dir {
           create_simulator_id_json(@sim, 'simulator_id.json')
           FileUtils.touch('parameter_sets.json')
-          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", {add_to_history: false})
           option = {simulator: 'simulator_id.json', output: 'parameter_sets.json', yes: true}
           OacisCli.new.invoke(:parameter_sets_template, [], option)
           expect(File.exist?('parameter_sets.json')).to be_truthy
@@ -396,7 +396,7 @@ describe OacisCli do
       it "asks a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch('parameter_set_ids.json')
-          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", {add_to_history: false}).and_return("y")
           invoke_create_parameter_sets
         }
       end
@@ -407,7 +407,7 @@ describe OacisCli do
       it "does not ask a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch('parameter_set_ids.json')
-          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", {add_to_history: false})
           create_simulator_id_json(@sim, 'simulator_id.json')
           create_parameter_sets_json('parameter_sets.json')
           option = {simulator: 'simulator_id.json', input: 'parameter_sets.json', output: "parameter_set_ids.json", yes: true}
@@ -438,7 +438,7 @@ describe OacisCli do
 
       it "does not destroy parameter sets" do
         options = {simulator: @sim.id.to_s}
-        expect(Thor::LineEditor).to receive(:readline).with("Destroy 3 parameter sets? ", :add_to_history => false).and_return("n")
+        expect(Thor::LineEditor).to receive(:readline).with("Destroy 3 parameter sets? ", {add_to_history: false}).and_return("n")
         expect {
           OacisCli.new.invoke(:destroy_parameter_sets, [], options)
         }.not_to change { @sim.parameter_sets.count }

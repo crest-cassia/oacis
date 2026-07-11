@@ -82,7 +82,7 @@ describe OacisCli do
         at_temp_dir {
           options = { analyzer_id: @sim.analyzers.first.id.to_s, output: 'anz_parameters.json' }
           FileUtils.touch(options[:output])
-          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", {add_to_history: false}).and_return("y")
           OacisCli.new.invoke(:analyses_template, [], options)
         }
       end
@@ -94,7 +94,7 @@ describe OacisCli do
         at_temp_dir {
           options = { analyzer_id: @sim.analyzers.first.id.to_s, output: 'anz_parameters.json', yes: true}
           FileUtils.touch(options[:output])
-          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", {add_to_history: false})
           OacisCli.new.invoke(:analyses_template, [], options)
           expected = @sim.analyzers.first.parameter_definitions.map {|pdef| [pdef["key"], pdef["default"]] }
           expect(JSON.load(File.read('anz_parameters.json'))).to eq [Hash[expected]]
@@ -258,7 +258,7 @@ describe OacisCli do
       it "asks a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch("analysis_ids_tmp.json")
-          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", {add_to_history: false}).and_return("y")
           invoke_create_analyses(:on_run, {output: "analysis_ids_tmp.json"})
         }
       end
@@ -269,7 +269,7 @@ describe OacisCli do
       it "does not ask a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch("analysis_ids_tmp.json")
-          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", {add_to_history: false})
           invoke_create_analyses(:on_run, {output: "analysis_ids_tmp.json", yes: true})
           expect(File.exist?('analysis_ids_tmp.json')).to be_truthy
           expected = Analysis.all.map {|anl| {"analysis_id" => anl.id.to_s} }.sort_by {|h| h["analysis_id"]}
@@ -377,7 +377,7 @@ describe OacisCli do
           Analysis.limit(2).each do |anl|
             anl.update_attribute(:analyzer_version, "v0.1.0")
           end
-          expect(Thor::LineEditor).to receive(:readline).with("Destroy 2 analyses? ", :add_to_history => false).and_return("n")
+          expect(Thor::LineEditor).to receive(:readline).with("Destroy 2 analyses? ", {add_to_history: false}).and_return("n")
           options = {analyzer_id: analyzer_id, query: {"analyzer_version" => "v0.1.0"}}
           expect {
             OacisCli.new.invoke(:destroy_analyses, [], options)
@@ -398,7 +398,7 @@ describe OacisCli do
           Analysis.limit(2).each do |anl|
             anl.update_attribute(:analyzer_version, "v0.1.0")
           end
-          expect(Thor::LineEditor).not_to receive(:readline).with("Destroy 2 analyses? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Destroy 2 analyses? ", {add_to_history: false})
           options = {analyzer_id: analyzer_id, query: {"analyzer_version" => "v0.1.0"}, yes: true}
           expect {
             OacisCli.new.invoke(:destroy_analyses, [], options)
@@ -498,7 +498,7 @@ describe OacisCli do
         at_temp_dir {
           prepare_finished_and_failed_analyses
 
-          expect(Thor::LineEditor).to receive(:readline).with("Replace 2 analyses with new ones? ", :add_to_history => false).and_return("n")
+          expect(Thor::LineEditor).to receive(:readline).with("Replace 2 analyses with new ones? ", {add_to_history: false}).and_return("n")
           options = {analyzer_id: analyzer_id, query: {"status" => "failed"} }
           expect {
             OacisCli.new.invoke(:replace_analyses, [], options)
@@ -512,7 +512,7 @@ describe OacisCli do
       at_temp_dir {
         prepare_finished_and_failed_analyses
 
-        expect(Thor::LineEditor).to receive(:readline).with("Replace 2 analyses with new ones? ", :add_to_history => false).and_return("y")
+        expect(Thor::LineEditor).to receive(:readline).with("Replace 2 analyses with new ones? ", {add_to_history: false}).and_return("y")
         options = {analyzer_id: analyzer_id, query: {"status" => "failed"} }
         expect {
           OacisCli.new.invoke(:replace_analyses, [], options)
