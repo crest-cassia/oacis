@@ -134,8 +134,9 @@ shared_examples_for JobScriptUtil do
 
       it "raise error" do
 
-        expect(JobScriptUtil).to receive(:system)
-        expect($?).to receive(:to_i).and_return(1)
+        # Process::Status ($?) is frozen since Ruby 3.4 and cannot be stubbed;
+        # run a genuinely failing command instead
+        expect(JobScriptUtil).to receive(:system) { Kernel.system("false") }
         expect {
           JobScriptUtil.expand_result_file(@submittable)
         }.to raise_error "failed to extract the archive"
@@ -143,8 +144,7 @@ shared_examples_for JobScriptUtil do
 
       it "update submittable.error_messages" do
 
-        expect(JobScriptUtil).to receive(:system)
-        expect($?).to receive(:to_i).and_return(1)
+        expect(JobScriptUtil).to receive(:system) { Kernel.system("false") }
         expect {
           JobScriptUtil.expand_result_file(@submittable) rescue nil
         }.to change { @submittable.reload.error_messages }
