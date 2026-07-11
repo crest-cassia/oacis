@@ -50,6 +50,13 @@ class SchedulerWrapper
     "xdel #{job_id}"
   end
 
+  def scheduler_log_file_paths(run)
+    paths = []
+    dir = Pathname.new(@work_base_dir)
+    paths << dir.join("#{run.id}_log")
+    paths
+  end
+
   private
   def translate_status(remote_status)
     case remote_status
@@ -62,12 +69,5 @@ class SchedulerWrapper
     else
       raise "unknown status"
     end
-  end
-
-  def scheduler_log_file_paths(run)
-    paths = []
-    dir = Pathname.new(@work_base_dir)
-    paths << dir.join("#{run.id}_log")
-    paths
   end
 end
