@@ -50,7 +50,7 @@ module Oacis
     config.user_config = {}
     user_config_yml = Rails.root.join("config/user_config.yml")
     if File.exist? user_config_yml
-      config.user_config = YAML.load(File.open(user_config_yml))
+      config.user_config = YAML.safe_load(File.read(user_config_yml), permitted_classes: [Symbol], aliases: true)
     end
   end
 end

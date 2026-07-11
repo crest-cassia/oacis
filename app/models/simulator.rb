@@ -358,7 +358,7 @@ class Simulator
   end
 
   def delete_simulator_dir
-    FileUtils.rm_r(dir) if Dir.exists?(dir)
+    FileUtils.rm_r(dir) if Dir.exist?(dir)
   end
 
   private

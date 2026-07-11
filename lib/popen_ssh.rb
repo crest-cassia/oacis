@@ -3,7 +3,7 @@ require 'open3'
 module PopenSSH
   class ConnectionError < StandardError; end
 
-  def self.start(host, user, **opts, &block)
+  def self.start(host, user, opts = {}, &block)
     session = Session.new(host, user, opts)
     yield session if block
   end
