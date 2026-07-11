@@ -8,7 +8,7 @@ class NotificationEvent
   scope :unread, -> { where(read: false) }
 
   after_create do
-    ActionCable.server.broadcast 'notification_event', notification_event: render_notification_event, unread_count: self.class.unread.count
+    ActionCable.server.broadcast 'notification_event', { notification_event: render_notification_event, unread_count: self.class.unread.count }
     if OacisSetting.instance.webhook_url.present?
       oacis_url = OacisSetting.instance.oacis_url.present? ? OacisSetting.instance.oacis_url : 'http://localhost:3000'
       slack_message = message.gsub(/<a href="(.*)">(.*)<\/a>/) { "<#{File.join(oacis_url, $1)}|#{$2}>" }
