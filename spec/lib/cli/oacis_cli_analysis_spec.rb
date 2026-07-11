@@ -196,8 +196,8 @@ describe OacisCli do
                        }
                      }
         }
-        it { is_expected.to change { Analysis.count }.by(2) }
-        it { is_expected.to change { Analysis.where(parameter_set_id: @sim.parameter_sets.first.id.to_s).count }.by(1) }
+        it { expect { subject.call }.to change { Analysis.count }.by(2) }
+        it { expect { subject.call }.to change { Analysis.where(parameter_set_id: @sim.parameter_sets.first.id.to_s).count }.by(1) }
       end
     end
 
