@@ -3,7 +3,7 @@ class SaveTask
   field :param_values, type: Hash  # {p1: [1,2,3], p2: [4], ...}
   field :run_params, type: Hash
   field :num_runs, type: Integer
-  field :cancel_flag, type: Boolean, default: false
+  field :cancel_flag, type: Mongoid::Boolean, default: false
   field :creation_size, type: Integer
 
   belongs_to :simulator

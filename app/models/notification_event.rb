@@ -3,7 +3,7 @@ class NotificationEvent
   include Mongoid::Timestamps::Created
 
   field :message, type: String
-  field :read, type: Boolean, default: false
+  field :read, type: Mongoid::Boolean, default: false
 
   scope :unread, -> { where(read: false) }
 

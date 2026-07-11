@@ -8,7 +8,7 @@ class Analyzer
   field :auto_run, type: Symbol, default: :no
   field :files_to_copy, type: String, default: '*'
   field :description, type: String
-  field :to_be_destroyed, type: Boolean, default: false
+  field :to_be_destroyed, type: Mongoid::Boolean, default: false
 
   embeds_many :parameter_definitions
   belongs_to :simulator

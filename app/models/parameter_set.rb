@@ -3,7 +3,7 @@ class ParameterSet
   include Mongoid::Timestamps
 
   field :v, type: Hash
-  field :to_be_destroyed, type: Boolean, default: false
+  field :to_be_destroyed, type: Mongoid::Boolean, default: false
   index({ simulator_id: 1, v: 1 })
   index({ simulator_id: 1, updated_at: -1 })
   belongs_to :simulator, autosave: false, index: true, touch: true

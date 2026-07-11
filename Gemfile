@@ -10,6 +10,7 @@ gem "jbuilder"
 gem "redis", '~> 4.8'
 
 gem 'bootsnap', require: false
+gem 'concurrent-ruby', '< 1.3.5'  # 1.3.5 dropped `require "logger"`, breaking Rails < 7.1; remove after Rails 7.1+
 
 # assets
 gem "sprockets", '~> 3.7'  # sprockets 4 requires app/assets/config/manifest.js; upgrade separately

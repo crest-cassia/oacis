@@ -5,9 +5,9 @@ class Simulator
 
   field :name, type: String
   field :description, type: String
-  field :sequential_seed, type: Boolean, default: false
+  field :sequential_seed, type: Mongoid::Boolean, default: false
   field :position, type: Integer # position in the table. start from zero
-  field :to_be_destroyed, type: Boolean, default: false
+  field :to_be_destroyed, type: Mongoid::Boolean, default: false
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :runs

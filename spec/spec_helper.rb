@@ -70,7 +70,7 @@ RSpec.configure do |config|
   config.order = "random"
 
   config.before(:suite) do
-    DatabaseCleaner.strategy = :truncation
+    DatabaseCleaner.strategy = :deletion
 
     root_dir = ResultDirectory.root
     FileUtils.rm_r(root_dir) if FileTest.directory?(root_dir)
