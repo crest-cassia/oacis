@@ -8,6 +8,7 @@ gem "ed25519", '>= 1.2', '< 2.0'  # support openssh format: https://github.com/n
 gem "bcrypt_pbkdf", '>= 1.0', '< 2.0'
 gem "jbuilder"
 gem "redis", '~> 5.0'
+gem "csv"  # no longer a default gem since Ruby 3.4
 
 gem 'bootsnap', require: false
 
