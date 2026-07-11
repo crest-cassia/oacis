@@ -119,7 +119,10 @@ GEM
       railties (>= 5.0.0)
     faker (3.4.2)
       i18n (>= 1.8.11, < 2)
+    ffi (1.17.4)
+    ffi (1.17.4-aarch64-linux-gnu)
     ffi (1.17.4-arm64-darwin)
+    ffi (1.17.4-x86_64-linux-gnu)
     font-awesome-rails (4.7.0.9)
       railties (>= 3.2, < 9.0)
     globalid (1.4.0)
@@ -168,6 +171,7 @@ GEM
     marcel (1.2.1)
     method_source (1.1.0)
     mini_mime (1.1.5)
+    mini_portile2 (2.8.9)
     minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
@@ -191,7 +195,14 @@ GEM
       net-protocol
     net-ssh (7.2.0)
     nio4r (2.7.5)
+    nokogiri (1.19.4)
+      mini_portile2 (~> 2.8.2)
+      racc (~> 1.4)
+    nokogiri (1.19.4-aarch64-linux-gnu)
+      racc (~> 1.4)
     nokogiri (1.19.4-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.19.4-x86_64-linux-gnu)
       racc (~> 1.4)
     ostruct (0.6.3)
     pp (0.6.4)
@@ -326,8 +337,11 @@ GEM
     zeitwerk (2.8.2)
 
 PLATFORMS
+  aarch64-linux
   arm64-darwin-24
   arm64-darwin-25
+  ruby
+  x86_64-linux
 
 DEPENDENCIES
   bcrypt_pbkdf (>= 1.0, < 2.0)
