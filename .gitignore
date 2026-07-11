@@ -91,3 +91,6 @@ __work__
 
 # user_config file
 config/user_config.yml
+
+# per-installation secret_key_base (generated on first boot)
+/config/local_secret.txt
