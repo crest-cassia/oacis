@@ -12,7 +12,7 @@ shared_examples_for RemoteJobHandler do
             HostParameterDefinition.new(key: "param1"),
             HostParameterDefinition.new(key: "param2", default: "XXX")
         ])
-        @submittable.update_attributes!( submitted_to: nil, host_group: hg )
+        @submittable.update!( submitted_to: nil, host_group: hg )
         allow_any_instance_of(RemoteJobHandler).to receive(:submit_to_scheduler)
       end
 

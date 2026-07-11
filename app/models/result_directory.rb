@@ -1,7 +1,7 @@
 module ResultDirectory
 
   yml_path = Rails.root.join('config', 'result_directory.yml')
-  base_dir = YAML.load(File.open(yml_path))[Rails.env]
+  base_dir = YAML.safe_load(File.read(yml_path), aliases: true)[Rails.env]
   raise "Result directory is not specified for this environment. Edit #{yml_path}"  unless base_dir
   DefaultResultRoot = Rails.root.join('public', base_dir)
 

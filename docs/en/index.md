@@ -35,7 +35,7 @@ With a user-friendly interface, you can easily submit various jobs to appropriat
 After these jobs are finished, all the result files are automatically downloaded from the remote hosts and stored in a traceable way together with logs of the date, host, and elapsed time of the jobs.
 You can easily find the status of the jobs or results files from the browser-based UI, which lets you focus on more productive and essential parts of your research activities.
 
-It also provides Ruby and Python APIs, which helps us automate parameter sweep, optimization of parameters, and sensitivity analysis etc.
+It also provides Ruby APIs, which help us automate parameter sweep, optimization of parameters, and sensitivity analysis etc.
 
 ## Screenshots
 
@@ -111,7 +111,6 @@ It also provides Ruby and Python APIs, which helps us automate parameter sweep, 
 
 A small sample of parameter sweep over parameters "p1" and "p2" of your simulator.
 See http://crest-cassia.github.io/oacis/en/api.html for more details.
-OACIS has both Ruby and Python APIs.
 
 ```ruby
 sim = Simulator.where(name: "my_simulator").first

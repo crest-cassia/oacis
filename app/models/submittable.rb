@@ -5,7 +5,7 @@ module Submittable
   def self.included(base)
     base.send(:field, :status, type: Symbol, default: :created)
     # either :created, :submitted, :running, :failed, or :finished
-    base.send(:field, :to_be_destroyed, type: Boolean, default: false)
+    base.send(:field, :to_be_destroyed, type: Mongoid::Boolean, default: false)
 
     # fields which are set when created
     base.send(:belongs_to, :submitted_to, class_name: "Host")

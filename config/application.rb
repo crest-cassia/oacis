@@ -20,7 +20,7 @@ Bundler.require(*Rails.groups)
 module Oacis
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 5.0
+    config.load_defaults 7.2
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers
@@ -36,8 +36,22 @@ module Oacis
     end
 
     # Custom directories with classes and modules you want to be autoloadable.
-    config.enable_dependency_loading = true
     config.autoload_paths += %W(#{config.root}/lib)
+    config.eager_load_paths += %W(#{config.root}/lib)
+    # lib/cli defines OacisCli with its own require_relative chain, and
+    # lib/tasks holds boot scripts; neither follows Zeitwerk conventions.
+    Rails.autoloaders.main.ignore(
+      "#{config.root}/lib/cli",
+      "#{config.root}/lib/tasks",
+      "#{config.root}/lib/assets"
+    )
+    # Acronym-style constants that Zeitwerk cannot infer from file names.
+    Rails.autoloaders.each do |autoloader|
+      autoloader.inflector.inflect(
+        "ssh_util" => "SSHUtil",
+        "popen_ssh" => "PopenSSH"
+      )
+    end
 
     # get local timezone name
     jan_offset = Time.now.beginning_of_year.utc_offset
@@ -50,7 +64,7 @@ module Oacis
     config.user_config = {}
     user_config_yml = Rails.root.join("config/user_config.yml")
     if File.exist? user_config_yml
-      config.user_config = YAML.load(File.open(user_config_yml))
+      config.user_config = YAML.safe_load(File.read(user_config_yml), permitted_classes: [Symbol], aliases: true)
     end
   end
 end

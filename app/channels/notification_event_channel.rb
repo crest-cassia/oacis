@@ -16,6 +16,6 @@ class NotificationEventChannel < ApplicationCable::Channel
   private
 
   def broadcast_unread_count
-    ActionCable.server.broadcast 'notification_event', unread_count: NotificationEvent.unread.count
+    ActionCable.server.broadcast 'notification_event', { unread_count: NotificationEvent.unread.count }
   end
 end

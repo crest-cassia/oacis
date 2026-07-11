@@ -53,7 +53,7 @@ describe OacisCli do
       it "asks a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch("job_parameters.json")
-          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", {add_to_history: false}).and_return("y")
           options = { host_id: @host.id.to_s, output: 'job_parameters.json'}
           OacisCli.new.invoke(:job_parameter_template, [], options)
         }
@@ -65,7 +65,7 @@ describe OacisCli do
       it "does not ask a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch("job_parameters.json")
-          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", {add_to_history: false})
           options = { host_id: @host.id.to_s, output: 'job_parameters.json', yes: true}
           OacisCli.new.invoke(:job_parameter_template, [], options)
           expect(File.exist?('job_parameters.json')).to be_truthy
@@ -265,7 +265,7 @@ describe OacisCli do
       it "asks a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch("run_ids.json")
-          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", {add_to_history: false}).and_return("y")
           create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
           create_job_parameters_json('job_parameters.json')
           options = {
@@ -284,7 +284,7 @@ describe OacisCli do
       it "does not ask a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch("run_ids.json")
-          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", {add_to_history: false})
           create_parameter_set_ids_json(@sim.parameter_sets, 'parameter_set_ids.json')
           create_job_parameters_json('job_parameters.json')
           options = {
@@ -394,7 +394,7 @@ describe OacisCli do
 
       it "destroys nothing" do
         at_temp_dir {
-          expect(Thor::LineEditor).to receive(:readline).with("Destroy 1 runs? ", :add_to_history => false).and_return("n")
+          expect(Thor::LineEditor).to receive(:readline).with("Destroy 1 runs? ", {add_to_history: false}).and_return("n")
           options = {simulator: @sim.id.to_s, query: {"status" => "failed"} }
           expect {
             OacisCli.new.invoke(:destroy_runs, [], options)
@@ -407,7 +407,7 @@ describe OacisCli do
 
       it "destroys runs without confirmation" do
         at_temp_dir {
-          expect(Thor::LineEditor).not_to receive(:readline).with("Destroy 1 runs? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Destroy 1 runs? ", {add_to_history: false})
           options = {simulator: @sim.id.to_s, query: {"status" => "failed"}, yes: true}
           expect {
             OacisCli.new.invoke(:destroy_runs, [], options)
@@ -484,7 +484,7 @@ describe OacisCli do
 
       it "replaces nothing" do
         at_temp_dir {
-          expect(Thor::LineEditor).to receive(:readline).with("Replace 1 runs with new ones? ", :add_to_history => false).and_return("n")
+          expect(Thor::LineEditor).to receive(:readline).with("Replace 1 runs with new ones? ", {add_to_history: false}).and_return("n")
           options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}}
           expect {
             OacisCli.new.invoke(:replace_runs, [], options)
@@ -497,7 +497,7 @@ describe OacisCli do
 
       it "replaces runs without confirmation" do
         at_temp_dir {
-          expect(Thor::LineEditor).not_to receive(:readline).with("Replace 1 runs with new ones? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Replace 1 runs with new ones? ", {add_to_history: false})
           options = {simulator: @sim.id.to_s, query: {"simulator_version" => "1.0.0"}, yes: true}
           expect {
             OacisCli.new.invoke(:replace_runs, [], options)

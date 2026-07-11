@@ -10,7 +10,7 @@
         %i.fa.fa-lightbulb-o{style: "float: right;", data: {toggle: "tooltip", placement: "left", 'original-title':"tips: Drag a row to sort simulators."}}
   %tbody.sortable{data: {'sort-url' => _sort_simulators_url }}
     - @simulators.each do |simulator|
-      = content_tag_for :tr, simulator do
+      %tr{id: dom_id(simulator), class: dom_class(simulator)}
         %td= link_to h(simulator.name), simulator_path(simulator)
         %td
           %span.sim_updated_at= distance_to_now_in_words(simulator.updated_at)

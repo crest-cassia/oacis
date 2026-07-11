@@ -53,7 +53,7 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 
 ### Prerequisites
 
-- Ruby 2.5.1 or later ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
+- Ruby 3.2 or later ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
 - MongoDB 3.6 or later ([http://www.mongodb.org/](http://www.mongodb.org/))
 - bundler ([http://bundler.io/](http://bundler.io/))
     - You may skip the installation for Ruby2.6.0 or later as it is built into Ruby as a standard library.
@@ -72,13 +72,13 @@ Here we show the instructions on how to setup prerequisites using homebrew.
 
 - installing rbenv
     - Follow the instruction of [the official document of rbenv](https://github.com/rbenv/rbenv#homebrew-on-macos)
-- install ruby using rbenv (The following is an example to install Ruby 2.7.5)
+- install ruby using rbenv (The following is an example to install Ruby 3.4.2)
     ``` sh
-    rbenv install 2.7.5 && rbenv global 2.7.5
+    rbenv install 3.4.2 && rbenv global 3.4.2
     rbenv rehash
     ruby --version
     ```
-    - verify output is like `ruby 2.7.5....`.
+    - verify output is like `ruby 3.4.2....`.
 - installing MongoDB
     - Follow the instruction of [the official document.](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
         - After installation, start MongoDB as a service (`brew services start mongodb-community`).
@@ -106,13 +106,13 @@ Here we show the instruction on how to setup prerequisites using apt-get, using 
     ```
 - installing rbenv
     - Follow the instruction of [the official document of rbenv](https://github.com/rbenv/rbenv#installation)
-- install ruby using rbenv (The following is an example to install Ruby 2.7.5)
+- install ruby using rbenv (The following is an example to install Ruby 3.4.2)
     ``` sh
-    rbenv install 2.7.5 && rbenv global 2.7.5
+    rbenv install 3.4.2 && rbenv global 3.4.2
     rbenv rehash
     ruby --version
     ```
-    - verify output is like `ruby 2.7.5....`.
+    - verify output is like `ruby 3.4.2....`.
 - install mongoDB
     - Follow the instruction of [the official document.](https://docs.mongodb.com/manual/administration/install-on-linux/)
 - install and update bundler

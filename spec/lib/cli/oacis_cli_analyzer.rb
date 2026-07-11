@@ -20,7 +20,7 @@ describe OacisCli do
       it "ask a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch('analyzer.json')
-          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", {add_to_history: false}).and_return("y")
           OacisCli.new.invoke(:analyzer_template, [], {output: 'analyzer.json'})
         }
       end
@@ -31,7 +31,7 @@ describe OacisCli do
       it "does not ask a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch('analyzer.json')
-          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", {add_to_history: false})
           OacisCli.new.invoke(:analyzer_template, [], {output: 'analyzer.json', yes: true})
           expect(File.exist?('analyzer.json')).to be_truthy
           expect {
@@ -173,7 +173,7 @@ describe OacisCli do
       it "asks a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch("analyzer_id.json")
-          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", :add_to_history => false).and_return("y")
+          expect(Thor::LineEditor).to receive(:readline).with("Overwrite output file? ", {add_to_history: false}).and_return("y")
           create_analyzer_json('analyzer.json')
           option = {simulator: @sim.id.to_s, input: 'analyzer.json', output: 'analyzer_id.json'}
           OacisCli.new.invoke(:create_analyzer, [], option)
@@ -186,7 +186,7 @@ describe OacisCli do
       it "does not ask a question to overwrite the output file" do
         at_temp_dir {
           FileUtils.touch("analyzer_id.json")
-          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", :add_to_history => false)
+          expect(Thor::LineEditor).not_to receive(:readline).with("Overwrite output file? ", {add_to_history: false})
           create_analyzer_json('analyzer.json')
           option = {simulator: @sim.id.to_s, input: 'analyzer.json', output: 'analyzer_id.json', yes: true}
           expect {
