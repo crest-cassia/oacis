@@ -111,7 +111,7 @@ class ParameterSetFilter
       return "#{key} #{s} #{val}"
     elsif self::StringTypeMatchers.index(matcher)
       return "#{key} #{matcher} #{val}"
-    elsif self::ObjectTypeMatchers.index(matcher)
+    elsif idx = self::ObjectTypeMatchers.index(matcher)
       s = self::ObjectTypeMatcherStrings[idx]
       return "#{key} #{s} #{val}"
     else

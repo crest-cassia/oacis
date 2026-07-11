@@ -34,7 +34,25 @@ class SchedulerWrapper
 
   def parse_remote_status(stdout)
     return :unknown if stdout.empty?
-    case JSON.load(stdout)["status"]
+    translate_status(JSON.load(stdout)["status"])
+  end
+
+  def parse_remote_status_multiple(stdout)
+    parsed = JSON.load(stdout)
+    statuses = {}
+    parsed.each do |key,val|
+      statuses[key] = translate_status(val["status"])
+    end
+    statuses
+  end
+
+  def cancel_command(job_id)
+    "xdel #{job_id}"
+  end
+
+  private
+  def translate_status(remote_status)
+    case remote_status
     when "queued"
       :submitted
     when "running"
@@ -44,29 +62,6 @@ class SchedulerWrapper
     else
       raise "unknown status"
     end
-  end
-
-  def parse_remote_status_multiple(stdout)
-    parsed = JSON.load(stdout)
-    statuses = {}
-    parsed.each do |key,val|
-      status = case val["status"]
-               when "queued"
-                 :submitted
-               when "running"
-                 :running
-               when "finished"
-                 :includable
-               else
-                 raise "unknown status"
-               end
-      statuses[key] = status
-    end
-    statuses
-  end
-
-  def cancel_command(job_id)
-    "xdel #{job_id}"
   end
 
   def scheduler_log_file_paths(run)

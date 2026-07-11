@@ -14,12 +14,12 @@ class ParameterSet
 
   validates :simulator, :presence => true
   validate :cast_parameter_values, on: :create
-  validate :validate_parameter_values, on: :create, unless: :skip_check_uniquness
+  validate :validate_parameter_values, on: :create, unless: :skip_check_uniqueness
 
   after_create :create_parameter_set_dir
   before_destroy :delete_parameter_set_dir
 
-  attr_accessor :skip_check_uniquness
+  attr_accessor :skip_check_uniqueness
 
   public
   def dir

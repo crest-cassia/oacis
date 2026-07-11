@@ -98,7 +98,7 @@ EOS
     parsed = load_json_file_or_string(path_or_str)
     validate_parameter_set_ids(parsed)
     parameter_sets = ParameterSet.in(id: parsed.map {|h| h["parameter_set_id"] } ).to_a
-    raise "Invalid #{parsed.length - parameter_sets.count} prameter_set_ids are found" if parameter_sets.count != parsed.length
+    raise "Invalid #{parsed.length - parameter_sets.count} parameter_set_ids are found" if parameter_sets.count != parsed.length
     parameter_sets
   end
 
@@ -115,7 +115,7 @@ EOS
     parsed = load_json_file_or_string(path_or_str)
     validate_run_ids(parsed)
     runs = Run.in(id: parsed.map {|h| h["run_id"] } )
-    raise "Invalid #{parsed.length - runs.count} prameter_set_ids are incdluding" if runs.count != parsed.length
+    raise "Invalid #{parsed.length - runs.count} run_ids are included" if runs.count != parsed.length
     runs
   end
 
@@ -132,7 +132,7 @@ EOS
     parsed = load_json_file_or_string(path_or_str)
     validate_analyzer_ids(parsed)
     analyzers = Analyzer.in(id: parsed.map {|h| h["analyzer_id"] } )
-    raise "Invalid #{parsed.length - analyzers.count} prameter_set_ids are incdluding" if analyzers.count != parsed.length
+    raise "Invalid #{parsed.length - analyzers.count} analyzer_ids are included" if analyzers.count != parsed.length
     analyzers
   end
 

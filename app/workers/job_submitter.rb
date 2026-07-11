@@ -90,7 +90,7 @@ class JobSubmitter
         run.destroy
         logger.info "Deleted Run #{run.id}"
       else
-        logger.warn("should not happen: #{job.class}:#{job.id} is not destroyable")
+        logger.warn("should not happen: #{run.class}:#{run.id} is not destroyable")
         run.set_lower_submittable_to_be_destroyed
       end
     end
