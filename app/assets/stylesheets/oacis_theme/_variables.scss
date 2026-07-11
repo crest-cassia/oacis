@@ -2,9 +2,9 @@
 // Loaded before bootstrap so every value here wins over bootstrap's !default.
 
 // Theme-specific tokens (not Bootstrap variables)
-$oacis-accent-bright: #2dd4bf;   // navbar underline, focus tint
-$oacis-teal-tint:     #f0fdfa;   // hover backgrounds
-$oacis-selection-bg:  #ccfbf1;   // dynatree selection
+$oacis-accent-bright: #818cf8;   // navbar underline, focus tint
+$oacis-accent-tint:   #eef2ff;   // hover backgrounds
+$oacis-selection-bg:  #e0e7ff;   // dynatree selection
 
 // Grays (slate scale)
 $gray-darker:  #1e293b;
@@ -14,7 +14,7 @@ $gray-light:   #94a3b8;
 $gray-lighter: #f1f5f9;
 
 // Brand / state colors (all AA-contrast with white text)
-$brand-primary: #0f766e;
+$brand-primary: #4f46e5;
 $brand-success: #15803d;
 $brand-info:    #0369a1;
 $brand-warning: #b45309;
@@ -41,7 +41,7 @@ $border-radius-small: 3px;
 // Tables
 $table-bg:        #fff;
 $table-bg-accent: #f8fafc;
-$table-bg-hover:  $oacis-teal-tint;
+$table-bg-hover:  $oacis-accent-tint;
 $table-border-color: #e2e8f0;
 $table-condensed-cell-padding: 3px;
 
@@ -56,9 +56,9 @@ $input-border:       #cbd5e1;
 $input-border-focus: $brand-primary;
 $input-color:        $text-color;
 
-// Navbar — dark teal, keeps the white logo and bell
-$navbar-default-bg:     #134e4a;
-$navbar-default-border: #115e59;
+// Navbar — deep indigo, keeps the white logo and bell
+$navbar-default-bg:     #312e81;
+$navbar-default-border: #3730a3;
 $navbar-default-color:             rgba(255, 255, 255, .8);
 $navbar-default-link-color:        rgba(255, 255, 255, .8);
 $navbar-default-link-hover-color:  #fff;
@@ -104,7 +104,7 @@ $breadcrumb-separator:    "\203A";
 $pagination-color:         $brand-primary;
 $pagination-border:        #e2e8f0;
 $pagination-hover-color:   $brand-primary;
-$pagination-hover-bg:      $oacis-teal-tint;
+$pagination-hover-bg:      $oacis-accent-tint;
 $pagination-active-bg:     $brand-primary;
 $pagination-active-border: $brand-primary;
 
@@ -112,7 +112,7 @@ $pagination-active-border: $brand-primary;
 $dropdown-border:          #e2e8f0;
 $dropdown-fallback-border: #e2e8f0;
 $dropdown-link-color:      $gray-dark;
-$dropdown-link-hover-bg:   $oacis-teal-tint;
+$dropdown-link-hover-bg:   $oacis-accent-tint;
 $dropdown-link-active-bg:  $brand-primary;
 
 // Tooltips / popovers
