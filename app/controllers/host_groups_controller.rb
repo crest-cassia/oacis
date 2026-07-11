@@ -50,7 +50,7 @@ class HostGroupsController < ApplicationController
     @hg = HostGroup.find(params[:id])
 
     respond_to do |format|
-      if @hg.update_attributes(permitted_host_group_params)
+      if @hg.update(permitted_host_group_params)
         format.html {
           redirect_to @hg, notice: 'HostGroup was successfully updated.'
         }

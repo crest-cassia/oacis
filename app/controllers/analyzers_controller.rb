@@ -54,7 +54,7 @@ class AnalyzersController < ApplicationController
     @analyzer = Analyzer.find(params[:id])
 
     respond_to do |format|
-      if @analyzer.update_attributes(permitted_analyzer_params)
+      if @analyzer.update(permitted_analyzer_params)
         format.html { redirect_to @analyzer, notice: 'Analyzer was successfully updated.' }
         format.json { head :no_content }
       else

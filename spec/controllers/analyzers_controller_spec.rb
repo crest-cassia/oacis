@@ -227,13 +227,13 @@ describe AnalyzersController do
     describe "with invalid params" do
 
       it "assigns the analyzer as @analyzer" do
-        allow_any_instance_of(Analyzer).to receive(:update_attributes).and_return(false)
+        allow_any_instance_of(Analyzer).to receive(:update).and_return(false)
         put :update, params: {:id => @azr.to_param, :analyzer => {}}
         expect(assigns(:analyzer)).to eq(@azr)
       end
 
       it "re-renders the 'edit' template" do
-        allow_any_instance_of(Analyzer).to receive(:update_attributes).and_return(false)
+        allow_any_instance_of(Analyzer).to receive(:update).and_return(false)
         put :update, params: {:id => @azr.to_param, :analyzer => {}}
         expect(response).to render_template("edit")
       end

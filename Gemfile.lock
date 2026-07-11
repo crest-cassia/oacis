@@ -166,9 +166,10 @@ GEM
     mongo (2.24.1)
       base64
       bson (>= 4.14.1, < 6.0.0)
-    mongoid (7.6.1)
-      activemodel (>= 5.1, < 7.1, != 7.0.0)
-      mongo (>= 2.10.5, < 3.0.0)
+    mongoid (8.1.12)
+      activemodel (>= 5.1, < 8.1, != 7.0.0)
+      concurrent-ruby (>= 1.0.5, < 2.0)
+      mongo (>= 2.18.0, < 3.0.0)
       ruby2_keywords (~> 0.0.5)
     msgpack (1.8.0)
     mutex_m (0.3.0)
@@ -313,7 +314,7 @@ DEPENDENCIES
   jquery-datatables-rails (~> 3.2.0)
   jquery-rails
   jquery-ui-rails
-  mongoid (~> 7.5)
+  mongoid (~> 8.1)
   net-ssh (~> 7.2)
   pry
   pry-byebug

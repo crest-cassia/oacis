@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rails', '~> 7.0.8'
 gem "puma"
-gem "mongoid", '~> 7.5'
+gem "mongoid", '~> 8.1'
 gem "net-ssh", '~> 7.2'
 gem "ed25519", '>= 1.2', '< 2.0'  # support openssh format: https://github.com/net-ssh/net-ssh/issues/478
 gem "bcrypt_pbkdf", '>= 1.0', '< 2.0'

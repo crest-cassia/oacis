@@ -41,11 +41,12 @@ describe ParameterSet do
       expect(built_param).not_to be_valid
     end
 
-    it "should raise an error when v is not a Hash" do
+    it "should not be valid when v is not a Hash" do
+      # Mongoid 8 discards values that cannot be cast to the field type
       invalid_attr = @valid_attr.update({v: "xxx"})
-      expect {
-        @sim.parameter_sets.build(invalid_attr)
-      }.to raise_error Mongoid::Errors::InvalidValue
+      built_param = @sim.parameter_sets.build(invalid_attr)
+      expect(built_param.v).to be_nil
+      expect(built_param).not_to be_valid
     end
 
     it "should not be valid when keys of v are not consistent with its Simulator" do

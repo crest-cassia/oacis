@@ -41,7 +41,7 @@ class Host
   before_create :set_position
   before_destroy :validate_destroyable, :delete_default_parameters_from_simulator
   after_update :delete_default_parameters_from_simulator,
-               :if => lambda { status_changed? and status == :disabled }
+               :if => lambda { saved_change_to_status? and status == :disabled }
 
   CONNECTION_EXCEPTIONS = [
     Errno::ECONNREFUSED,

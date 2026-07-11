@@ -57,10 +57,10 @@ describe HostParameterDefinition do
         expect(hpd.default).to eq "option1"
       end
 
-      it "is raises an exception when options is not an array" do
-        expect {
-          hpd = HostParameterDefinition.new(@valid_attr.update(options: "option1"))
-        }.to raise_error(Mongoid::Errors::InvalidValue)
+      it "discards options when it is not an array" do
+        # Mongoid 8 discards values that cannot be cast to the field type
+        hpd = HostParameterDefinition.new(@valid_attr.update(options: "option1"))
+        expect(hpd.options).to be_nil
       end
 
       it "is not valid with an array containing non-string values" do

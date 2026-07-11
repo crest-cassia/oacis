@@ -318,7 +318,7 @@ describe SimulatorsController do
 
       it "updates the requested simulator" do
         simulator = Simulator.create! valid_attributes
-        expect_any_instance_of(Simulator).to receive(:update_attributes).with({'description' => 'yyy zzz'})
+        expect_any_instance_of(Simulator).to receive(:update).with({'description' => 'yyy zzz'})
         put :update, params: {:id => simulator.to_param, :simulator => {'description' => 'yyy zzz'}}
       end
 

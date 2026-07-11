@@ -73,7 +73,7 @@ describe Run do
     it "mpi_procs must between Host#min_mpi_procs and Host#max_mpi_procs" do
       run = @param_set.runs.build(@valid_attribute)
       host = run.submitted_to
-      host.update_attributes(min_mpi_procs: 1, max_mpi_procs: 256)
+      host.update(min_mpi_procs: 1, max_mpi_procs: 256)
       run.mpi_procs = 256
       expect(run).to be_valid
       run.mpi_procs = 512
@@ -83,7 +83,7 @@ describe Run do
     it "skips validation of mpi_procs for a persisted document" do
       run = @param_set.runs.build(@valid_attribute)
       host = run.submitted_to
-      host.update_attributes(min_mpi_procs: 1, max_mpi_procs: 256)
+      host.update(min_mpi_procs: 1, max_mpi_procs: 256)
       run.mpi_procs = 256
       run.save!
       host.update_attribute(:max_mpi_procs, 128)
@@ -93,7 +93,7 @@ describe Run do
     it "omp_threads must between Host#min_omp_threads and Host#max_omp_threads" do
       run = @param_set.runs.build(@valid_attribute)
       host = run.submitted_to
-      host.update_attributes(min_omp_threads: 1, max_omp_threads: 256)
+      host.update(min_omp_threads: 1, max_omp_threads: 256)
       run.omp_threads = 256
       expect(run).to be_valid
       run.omp_threads = 512
@@ -103,7 +103,7 @@ describe Run do
     it "skips validation of omp_threads for a persisted document" do
       run = @param_set.runs.build(@valid_attribute)
       host = run.submitted_to
-      host.update_attributes(min_omp_threads: 1, max_omp_threads: 256)
+      host.update(min_omp_threads: 1, max_omp_threads: 256)
       run.omp_threads = 256
       run.save!
       host.update_attribute(:max_omp_threads, 128)

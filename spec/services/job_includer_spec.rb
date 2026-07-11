@@ -327,14 +327,14 @@ describe JobIncluder do
         before(:each) { @azr.update_attribute(:auto_run, :no) }
 
         it "does not create analysis if Anaylzer#auto_run is :no" do
-          @azr.update_attributes!(auto_run: :no)
+          @azr.update!(auto_run: :no)
           expect { invoke }.to_not change { @run.reload.analyses.count }
         end
       end
 
       context "when Analyzer#auto_run is :first_run_only" do
 
-        before(:each) { @azr.update_attributes!(auto_run: :first_run_only) }
+        before(:each) { @azr.update!(auto_run: :first_run_only) }
 
         it "creates analysis if the run is the first 'finished' run within the parameter set" do
           expect { invoke }.to change { @run.reload.analyses.count }.by(1)
