@@ -240,9 +240,8 @@ GEM
     rubyzip (2.3.0)
     sass-rails (6.0.0)
       sassc-rails (~> 2.1, >= 2.1.1)
-    sassc (2.0.1)
+    sassc (2.4.0)
       ffi (~> 1.9)
-      rake
     sassc-rails (2.1.2)
       railties (>= 4.0.0)
       sassc (>= 2.0)
@@ -275,7 +274,6 @@ GEM
 
 PLATFORMS
   arm64-darwin-24
-  ruby
 
 DEPENDENCIES
   bcrypt_pbkdf (>= 1.0, < 2.0)
