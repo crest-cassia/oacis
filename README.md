@@ -66,7 +66,6 @@ For native installation and advanced usage, see the [full documentation](http://
 
 A small sample of parameter sweep over parameters "p1" and "p2" of your simulator.
 See http://crest-cassia.github.io/oacis/en/api.html for more details.
-OACIS has both Ruby and Python APIs.
 
 ```ruby
 sim = Simulator.where(name: "my_simulator").first

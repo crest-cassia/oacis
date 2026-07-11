@@ -2,16 +2,15 @@
 layout: default
 title: "Ruby API"
 lang: en
-next_page: api_python
+next_page: api_watcher
 ---
 
 # How to use APIs
 
 ---
 
-OACIS is implemented in Ruby, and has Ruby and Python APIs. You can operate OACIS by writing a script that calls these APIs.
+OACIS is implemented in Ruby, and has Ruby APIs. You can operate OACIS by writing a script that calls these APIs.
 In this page, we will give a brief instruction on how to use the Ruby APIs. 
-If you write Python, please go to the [next page]({{ site.baseurl }}/{{ page.lang }}/api_python.html).
 You can find samples at [samples page]({{ site.baseurl }}/{{ page.lang }}/api_samples.html).
 
 ## Prerequisites

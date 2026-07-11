@@ -14,7 +14,6 @@ Such case includes optimization of parameters, binary search of phase boundaries
 
 OACIS watcher, which is one of the libraries implemented in OACIS, is useful for realizing such iterative processes.
 It monitors the progress of submitted jobs, and calls callback functions registered by user's code when the specified jobs are finished.
-The APIs are provided both in Ruby and in Python.
 
 You can find some samples in [samples]({{ site.baseurl }}/{{ page.lang }}/api_samples.html).
 
@@ -41,24 +40,6 @@ bin/oacis_ruby oacis_watcher_sample.rb
 ```
 
 If all jobs of these ParameterSets have finished, the script will finish in seconds. If some of the jobs are still running, the script will wait until all the jobs under the specified ParameterSets get completed. You can type "ctrl-c" to gracefully stop monitoring.
-
-A Python script corresponding to the above code would look like the following.
-
-```python
-import oacis
-w = oacis.OacisWatcher()                              # create an instance of OacisWatcher
-def on_ps_finished(ps):                               # define a function which is called when a ParameterSet is completed
-    print("jobs of ParameterSet %s have finished" % str(ps.id()) )
-for ps in oacis.ParameterSet.all().limit(10):         # taking 10 arbitrary ParameterSet
-    w.watch_ps(ps, on_ps_finished)                    # setting callback function to each ParameterSet
-w.loop()                                              # starting event loop. The method returns when all the callback functions finished
-```
-
-Run the above script as follows. It will do the same thing as the Ruby script.
-
-```shell
-bin/oacis_python oacis_watcher_sample.py
-```
 
 ## Ruby Interface
 
@@ -131,83 +112,6 @@ The available methods in `OacisWatcher` class are as follows.
     - Block the execution until a ParameterSet "ps" becomes completed.
 - `OacisWatcher.await_all_ps( ps_list )`
     - Block the execution until all the ParameterSets in "ps_list" become completed.
-
-## Python Interface
-
-### Defining your callback functions in Python
-
-Import `oacis` module and create an instance of `oacis.OacisWatcher`.
-Then call `watch_ps` or `watch_all_ps` methods to register your callback functions.
-Finally, call `loop` method, which will start the event loop monitoring the completion of the jobs.
-The `loop` method returns after all the registered callback functions have been called.
-
-```python
-import oacis
-w = oacis.OacisWatcher()
-
-# add some initialization here if necessary
-# ...
-
-def my_callback(finished_ps):   # definition of callback function. The argument is the finished ParameterSet object.
-    # do something
-
-w.watch_ps( ps, my_callback )   # registers callback functions.
-# You can register multiple functions by calling the method several times.
-
-w.loop()                        # monitoring will start when this method is called.
-```
-
-The available methods of OACIS Watcher are
-
-- `#watch_ps( ps, callback_func )`
-    - Registers `callback_func` as the callback function which is called when all the runs under `ps` has completed.
-    - The argument of the callback function is the completed parameter set.
-- `#watch_all_ps( list_of_parameter_sets, callback_func )`
-    - Registers `callback_func` as the callback function which is called when all the parameter sets in the list have completed.
-    - The argument of the callback function is a list of the completed parameter sets.
-
-You can recursively define another callback from inside of a callback functions.
-
-### Async/Await methods
-
-<span class="label label-success">New in v2.13.0</span>
-
-Similar to the Ruby interface, "async/await" methods are available in Python interface as well.
-
-Here is an example.
-
-```python
-import oacis
-w = oacis.OacisWatcher()
-
-def f1():
-    # --- (1)
-    oacis.OacisWatcher.await_ps( ps1 )
-    # --- (2)
-w.do_async( f1 )
-
-def f2():
-    # --- (3)
-    oacis.OacisWatcher.await_all_ps( ps_list )
-    # --- (4)
-w.do_async( f2 )
-
-w.loop()
-```
-
-In the above example, (1) and (3) are evaluated first while keeping (2) and (4) unexecuted. After the jobs for "ps1" and "ps_list" are finished, (2) and (4) are executed, respectively.
-Note that you can call `await` methods in a function called by `async` otherwise you'll get an exception.
-
-The available methods in `OacisWatcher` class are as follows.
-
-- `#do_async( func )`
-    - "func" is evaluated concurrently. In "func", you can call `await` methods.
-    - The method name is changed from `async` to `do_async` in v3.3. Although `async` is still available, it is deprecated and not recommended to use.
-- `OacisWatcher.await_ps( ps )`
-    - Block the execution until a ParameterSet "ps" becomes completed.
-- `OacisWatcher.await_all_ps( ps_list )`
-    - Block the execution until all the ParameterSets in "ps_list" become completed.
-
 
 ## Definition of "completed" ParameterSet
 
