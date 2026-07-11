@@ -258,7 +258,10 @@ class ParameterSetsController < ApplicationController
     base_ps = ParameterSet.find(params[:id])
     keys = base_ps.simulator.parameter_definitions.map(&:key)
     selectors = keys.map {|key| base_ps.parameter_sets_with_different(key).selector }
-    parameter_sets = ParameterSet.or(*selectors)
+    # each selector already carries the default scope (to_be_destroyed: false);
+    # start from unscoped since Mongoid 7.1+ `or` adds the receiver's scope as
+    # another disjunct, which would match every parameter set
+    parameter_sets = ParameterSet.unscoped.or(*selectors)
     num_ps_total = base_ps.simulator.parameter_sets.count
     render json: ParameterSetsListDatatable.new(parameter_sets, keys, view_context, num_ps_total, base_ps)
   end

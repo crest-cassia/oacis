@@ -84,7 +84,7 @@ class JobSubmitter
   end
 
   def self.destroy_jobs_to_be_destroyed(logger)
-    Run.where(status: :created, to_be_destroyed: true).each do |run|
+    Run.unscoped.where(status: :created, to_be_destroyed: true).each do |run|
       if run.destroyable?
         logger.debug "Deleting Run #{run.id}"
         run.destroy
@@ -94,7 +94,7 @@ class JobSubmitter
         run.set_lower_submittable_to_be_destroyed
       end
     end
-    Analysis.where(status: :created, to_be_destroyed: true).each do |anl|
+    Analysis.unscoped.where(status: :created, to_be_destroyed: true).each do |anl|
       if anl.destroyable?
         logger.debug "Deleting Analysis #{anl.id}"
         anl.destroy

@@ -3,14 +3,14 @@ class DocumentDestroyer
   def self.perform(logger)
     @logger = logger
 
-    destroy_documents( Simulator.where(to_be_destroyed: true) )
-    destroy_documents( ParameterSet.where(to_be_destroyed: true) )
-    destroy_documents( Analyzer.where(to_be_destroyed: true) )
+    destroy_documents( Simulator.unscoped.where(to_be_destroyed: true) )
+    destroy_documents( ParameterSet.unscoped.where(to_be_destroyed: true) )
+    destroy_documents( Analyzer.unscoped.where(to_be_destroyed: true) )
     destroy_documents(
-      Run.where(:to_be_destroyed => true, :status.in => [:finished, :failed])
+      Run.unscoped.where(:to_be_destroyed => true, :status.in => [:finished, :failed])
     )
     destroy_documents(
-      Analysis.where(:to_be_destroyed => true, :status.in => [:finished, :failed])
+      Analysis.unscoped.where(:to_be_destroyed => true, :status.in => [:finished, :failed])
     )
 
   rescue => ex
