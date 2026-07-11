@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '~> 6.1.7'
+gem 'rails', '~> 7.0.8'
 gem "puma"
 gem "mongoid", '~> 7.5'
 gem "net-ssh", '~> 7.2'
