@@ -2,7 +2,7 @@
 layout: default
 title: "Samples"
 lang: en
-next_page: tips
+next_page: mcp
 ---
 
 # Samples
