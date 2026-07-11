@@ -16,7 +16,7 @@
       %th
   %tbody.sortable{data: {'sort-url' => _sort_hosts_url }}
     - @hosts.each do |host|
-      = content_tag_for :tr, host do
+      %tr{id: dom_id(host), class: dom_class(host)}
         %td= link_to(host.name, host)
         %td
           = raw(host_status_label(host.status))

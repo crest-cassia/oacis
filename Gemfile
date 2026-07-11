@@ -1,23 +1,20 @@
 source 'https://rubygems.org'
 
-gem 'rails', '~> 5.2'
+gem 'rails', '~> 6.1.7'
 gem "puma"
-gem "mongoid", ' ~> 7.0'
+gem "mongoid", '~> 7.5'
 gem "net-ssh", '~> 7.2'
 gem "ed25519", '>= 1.2', '< 2.0'  # support openssh format: https://github.com/net-ssh/net-ssh/issues/478
 gem "bcrypt_pbkdf", '>= 1.0', '< 2.0'
 gem "jbuilder"
-gem "redis", '~> 3.0'
+gem "redis", '~> 4.8'
 
 gem 'bootsnap', require: false
 
 # assets
-gem "sprockets"
-gem 'record_tag_helper', '~> 1.0'
-  # fix version of sprockets to prevent deprecation warning.
-  # should be updated after less-rails fixed issue https://github.com/metaskills/less-rails/issues/122
+gem "sprockets", '~> 3.7'  # sprockets 4 requires app/assets/config/manifest.js; upgrade separately
 gem "haml-rails"
-gem "sass-rails"
+gem "sass-rails", '~> 6.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'jquery-datatables-rails', ' ~> 3.2.0'
@@ -26,7 +23,7 @@ gem "redcarpet"
 gem 'dynatree-rails'
 gem 'bootstrap-sass'
 gem 'bootswatch-rails'
-gem 'font-awesome-rails'
+gem 'font-awesome-rails', '~> 4.7.0.9'
 gem 'rubyzip'
 
 # for workers
@@ -39,12 +36,12 @@ gem "ruby-progressbar"
 # utility tool
 gem "pry"
 gem "pry-rails"
-gem "rspec-rails", '~>3.5' # must be in :development group to use the rake task 'spec'
+gem "rspec-rails", '~> 5.1' # must be in :development group to use the rake task 'spec'
 gem "stackprof"
 
 group :test do
-  gem "factory_bot_rails"
-  gem "database_cleaner"
+  gem "factory_bot_rails", '~> 6.0'
+  gem "database_cleaner-mongoid"
   gem 'rails-controller-testing'
   gem "faker"
   gem "pry-byebug"
