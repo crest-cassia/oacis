@@ -20,8 +20,6 @@ jobs:
         ruby: [2.7]
     steps:
     - uses: actions/checkout@v2
-      with:
-        submodules: true
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}

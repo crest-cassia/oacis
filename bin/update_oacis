@@ -4,7 +4,6 @@ set -eux
 cd $(dirname $BASH_SOURCE)/..
 bundle exec rake daemon:stop
 git pull origin
-git submodule update --init --recursive
 ./bin/check_oacis_env
 gem update bundler
 bundle install

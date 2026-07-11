@@ -1,5 +1,4 @@
-# source 'https://rubygems.org'
-# Commented out to avoid duplicate `source`. Primary source is specified in rb_call/Gemfile.
+source 'https://rubygems.org'
 
 gem 'rails', '~> 5.2'
 gem "puma"
@@ -9,7 +8,6 @@ gem "ed25519", '>= 1.2', '< 2.0'  # support openssh format: https://github.com/n
 gem "bcrypt_pbkdf", '>= 1.0', '< 2.0'
 gem "jbuilder"
 gem "redis", '~> 3.0'
-gem "e2mmap"  # since ruby 2.7.0, e2mmap is removed from the standard library
 
 gem 'bootsnap', require: false
 
@@ -49,9 +47,5 @@ group :test do
   gem "database_cleaner"
   gem 'rails-controller-testing'
   gem "faker"
-  if RUBY_VERSION >= '2.0.0'
-    gem "pry-byebug"
-  end
+  gem "pry-byebug"
 end
-
-eval_gemfile "#{File.dirname(__FILE__)}/rb_call/Gemfile"
