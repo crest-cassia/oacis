@@ -85,8 +85,6 @@ GEM
     bootstrap-sass (3.4.1)
       autoprefixer-rails (>= 5.2.1)
       sassc (>= 2.0.0)
-    bootswatch-rails (3.3.5)
-      railties (>= 3.1)
     bson (5.2.0)
     builder (3.3.0)
     byebug (13.0.0)
@@ -347,7 +345,6 @@ DEPENDENCIES
   bcrypt_pbkdf (>= 1.0, < 2.0)
   bootsnap
   bootstrap-sass
-  bootswatch-rails
   csv
   d3-rails (~> 3.4)
   daemon-spawn

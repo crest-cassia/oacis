@@ -23,7 +23,6 @@ gem "d3-rails", '~> 3.4'
 gem "redcarpet"
 gem 'dynatree-rails'
 gem 'bootstrap-sass'
-gem 'bootswatch-rails'
 gem 'font-awesome-rails', '~> 4.7.0.9'
 gem 'rubyzip'
 
