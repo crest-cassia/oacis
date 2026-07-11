@@ -1,3 +1,7 @@
+// variables only — emits no CSS; needed because sprockets also compiles
+// this file standalone (manifest.js link_directory)
+@import "oacis_theme/variables";
+
 .field_with_errors {
   @extend .control-group !optional;
   @extend .error !optional;
