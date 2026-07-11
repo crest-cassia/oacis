@@ -173,11 +173,11 @@ GEM
     mongo (2.24.1)
       base64
       bson (>= 4.14.1, < 6.0.0)
-    mongoid (8.1.12)
-      activemodel (>= 5.1, < 8.1, != 7.0.0)
+    mongoid (9.1.0)
+      activemodel (>= 5.1, < 8.2, != 7.0.0)
       concurrent-ruby (>= 1.0.5, < 2.0)
       mongo (>= 2.18.0, < 3.0.0)
-      ruby2_keywords (~> 0.0.5)
+      ostruct
     msgpack (1.8.0)
     net-imap (0.6.4.1)
       date
@@ -192,6 +192,7 @@ GEM
     nio4r (2.7.5)
     nokogiri (1.19.4-arm64-darwin)
       racc (~> 1.4)
+    ostruct (0.6.3)
     pp (0.6.4)
       prettyprint
     prettyprint (0.2.0)
@@ -286,7 +287,6 @@ GEM
       rspec-support (~> 3.13)
     rspec-support (3.13.7)
     ruby-progressbar (1.10.1)
-    ruby2_keywords (0.0.5)
     rubyzip (2.3.0)
     sass-rails (6.0.0)
       sassc-rails (~> 2.1, >= 2.1.1)
@@ -347,7 +347,7 @@ DEPENDENCIES
   jquery-datatables-rails (~> 3.2.0)
   jquery-rails
   jquery-ui-rails
-  mongoid (~> 8.1)
+  mongoid (~> 9.0)
   net-ssh (~> 7.2)
   pry
   pry-byebug

@@ -534,10 +534,11 @@ describe Run do
       host = FactoryBot.create(:host_with_parameters)
       param = {param1: 3, param2: 1}
       expected = {"param1" => 3, "param2" => 1}
+      # Mongoid 9 stringifies Hash keys at assignment, before save
       run = @param_set.runs.build(submitted_to: host, host_parameters: param)
-      expect {
-        run.save!
-      }.to change { run.host_parameters }.from(param).to(expected)
+      expect(run.host_parameters).to eq expected
+      run.save!
+      expect(run.reload.host_parameters).to eq expected
     end
 
     it "sets default_host_parameters to simulator" do
