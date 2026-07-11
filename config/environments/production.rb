@@ -18,6 +18,12 @@ Rails.application.configure do
   # or in config/master.key. This key is used to decrypt credentials (and other encrypted files).
   # config.require_master_key = true
 
+  # OACIS runs on localhost or in a trusted network (see the docs); the fixed
+  # fallback keeps zero-config installs working like the old secrets.yml did.
+  # Set SECRET_KEY_BASE when exposing the server beyond a trusted network.
+  config.secret_key_base = ENV["SECRET_KEY_BASE"].presence ||
+    "b78110841c7eeb79db7495922baabb24f2a4205938bfa0239fda26f48f13f0ec659080529f8d0b952b4c90288a9c98631bb2eaf5cff0b48d958f94588bb00cfc"
+
   # Disable serving static files from the `/public` folder by default since
   # Apache or NGINX already handles this.
   config.public_file_server.enabled = true # ENV['RAILS_SERVE_STATIC_FILES'].present?

@@ -1,16 +1,15 @@
 source 'https://rubygems.org'
 
-gem 'rails', '~> 7.0.8'
+gem 'rails', '~> 7.2.2'
 gem "puma"
 gem "mongoid", '~> 8.1'
 gem "net-ssh", '~> 7.2'
 gem "ed25519", '>= 1.2', '< 2.0'  # support openssh format: https://github.com/net-ssh/net-ssh/issues/478
 gem "bcrypt_pbkdf", '>= 1.0', '< 2.0'
 gem "jbuilder"
-gem "redis", '~> 4.8'
+gem "redis", '~> 5.0'
 
 gem 'bootsnap', require: false
-gem 'concurrent-ruby', '< 1.3.5'  # 1.3.5 dropped `require "logger"`, breaking Rails < 7.1; remove after Rails 7.1+
 
 # assets
 gem "sprockets", '~> 3.7'  # sprockets 4 requires app/assets/config/manifest.js; upgrade separately
