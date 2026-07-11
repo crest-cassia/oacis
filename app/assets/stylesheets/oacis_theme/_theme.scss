@@ -1,0 +1,152 @@
+// OACIS light theme — component polish applied after bootstrap.
+// (Plays the role a bootswatch _bootswatch.scss used to play.)
+
+// ---- Navbar -----------------------------------------------------------
+.navbar-default {
+  border: 0;
+  border-bottom: 2px solid $oacis-accent-bright;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .15);
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  background-color: transparent;
+}
+.navbar-default .navbar-nav > li.dropdown > ul.dropdown-menu {
+  background-color: #fff;
+  border: 1px solid $dropdown-border;
+  min-width: 400px;
+}
+
+// ---- Buttons ----------------------------------------------------------
+.btn {
+  transition: background-color .12s ease, border-color .12s ease, color .12s ease;
+}
+.btn-default:hover,
+.btn-default:focus {
+  background-color: #f8fafc;
+}
+
+// ---- Tables / DataTables ----------------------------------------------
+.table > thead > tr > th {
+  font-weight: 600;
+  color: #475569;
+  border-bottom-width: 2px;
+}
+table.dataTable td {
+  font-variant-numeric: tabular-nums;
+}
+table.dataTable.fixed_thead thead th {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  // a real border scrolls away under position: sticky
+  box-shadow: inset 0 -2px 0 $table-border-color;
+}
+
+// ---- Wells rendered as cards -------------------------------------------
+.well {
+  border-radius: $border-radius-large;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .05);
+}
+
+// ---- Labels / status pills ----------------------------------------------
+.label {
+  border-radius: 1em;
+  font-weight: 600;
+}
+.status-label {
+  display: inline-block;
+  width: 70px;
+  border-radius: 0.5em;
+  position: relative;
+  bottom: 1px;
+}
+
+// ---- Monospace ----------------------------------------------------------
+tt {
+  font-family: $font-family-monospace;
+}
+tt.short-id {
+  font-size: $font-size-base;
+}
+.monospace {
+  font-family: $font-family-monospace;
+}
+
+// ---- Modals -------------------------------------------------------------
+.modal-content {
+  box-shadow: 0 10px 25px rgba(15, 23, 42, .18);
+}
+
+// ---- Dropdowns ------------------------------------------------------------
+.dropdown-menu {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, .1);
+}
+
+// ---- Form feedback --------------------------------------------------------
+#error_explanation {
+  color: $brand-danger;
+  ul {
+    list-style: none;
+    margin: 0 0 18px 0;
+  }
+}
+#success_explanation {
+  color: $brand-success;
+  ul {
+    list-style: none;
+    margin: 0 0 18px 0;
+  }
+}
+
+// ---- Dynatree (overrides the vendored skin, which loads earlier) -----------
+ul.dynatree-container {
+  background-color: #fff;
+  border: 1px solid $table-border-color;
+  border-radius: $border-radius-base;
+}
+span.dynatree-focused a:link {
+  background-color: $oacis-accent-tint;
+}
+// the vendored skin uses !important for the active state
+span.dynatree-active a {
+  background-color: $oacis-selection-bg !important;
+  color: $brand-primary !important;
+}
+span.dynatree-selected a {
+  color: $brand-primary;
+}
+
+// ---- Notification bell dropdown ---------------------------------------------
+#notification-event-dropdown {
+  .dropdown-toggle {
+    user-select: none;
+    padding-top: 18px;
+  }
+  .fa-bell {
+    font-size: 23px;
+    color: rgba(255, 255, 255, .9);
+    vertical-align: middle;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: normal;
+    position: relative;
+    margin-left: -6px;
+    vertical-align: middle;
+    background-color: $brand-danger;
+    min-width: 21px;
+    &:empty {
+      display: inline-block;
+      visibility: hidden;
+    }
+  }
+  .dropdown-menu {
+    background-color: #fff;
+    min-width: 400px;
+  }
+  #notification-event-list {
+    margin-bottom: 0;
+  }
+}

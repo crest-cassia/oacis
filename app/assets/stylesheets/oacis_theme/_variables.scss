@@ -1,0 +1,132 @@
+// OACIS light theme — Bootstrap 3 variable overrides.
+// Loaded before bootstrap so every value here wins over bootstrap's !default.
+
+// Theme-specific tokens (not Bootstrap variables)
+$oacis-accent-bright: #8d96d8;   // navbar underline, focus tint
+$oacis-accent-tint:   #eff1f9;   // hover backgrounds
+$oacis-selection-bg:  #e1e5f4;   // dynatree selection
+
+// Grays (slate scale)
+$gray-darker:  #1e293b;
+$gray-dark:    #334155;
+$gray:         #64748b;
+$gray-light:   #94a3b8;
+$gray-lighter: #f1f5f9;
+
+// Brand / state colors (all AA-contrast with white text),
+// desaturated to sit comfortably next to the muted indigo accent
+$brand-primary: #4c51bf;
+$brand-success: #367a58;
+$brand-info:    #3d6f94;
+$brand-warning: #96662f;
+$brand-danger:  #b84a4a;
+
+// Scaffolding
+$body-bg:    #f8fafc;
+$text-color: $gray-darker;
+$link-color: $brand-primary;
+$link-hover-color: darken($brand-primary, 8%);
+
+// Typography — system stacks, no webfonts
+$font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-family-monospace: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+$font-size-base: 14px;
+$font-size-small: 13px;
+$headings-font-weight: 500;
+
+// Radii
+$border-radius-base:  4px;
+$border-radius-large: 6px;
+$border-radius-small: 3px;
+
+// Tables
+$table-bg:        #fff;
+$table-bg-accent: #f8fafc;
+$table-bg-hover:  $oacis-accent-tint;
+$table-border-color: #e2e8f0;
+$table-condensed-cell-padding: 3px;
+
+// Buttons — flat
+$btn-default-color:  $gray-dark;
+$btn-default-bg:     #fff;
+$btn-default-border: #cbd5e1;
+$btn-primary-border: darken($brand-primary, 6%);
+
+// Forms
+$input-border:       #cbd5e1;
+$input-border-focus: $brand-primary;
+$input-color:        $text-color;
+
+// Navbar — deep muted indigo, keeps the white logo and bell
+$navbar-default-bg:     #30336b;
+$navbar-default-border: #3b3e7d;
+$navbar-default-color:             rgba(255, 255, 255, .8);
+$navbar-default-link-color:        rgba(255, 255, 255, .8);
+$navbar-default-link-hover-color:  #fff;
+$navbar-default-link-active-color: #fff;
+$navbar-default-link-active-bg:    rgba(255, 255, 255, .08);
+$navbar-default-brand-color:       #fff;
+$navbar-default-brand-hover-color: #fff;
+
+// Status pills (run status "created" uses label-default)
+$label-default-bg: $gray;
+
+// Alert / state backgrounds
+$state-success-text:   $brand-success;
+$state-success-bg:     #f0fdf4;
+$state-success-border: #bbf7d0;
+$state-info-text:      $brand-info;
+$state-info-bg:        #ecfeff;
+$state-info-border:    #a5f3fc;
+$state-warning-text:   $brand-warning;
+$state-warning-bg:     #fffbeb;
+$state-warning-border: #fde68a;
+$state-danger-text:    $brand-danger;
+$state-danger-bg:      #fef2f2;
+$state-danger-border:  #fecaca;
+
+// Wells (rendered as cards by the theme)
+$well-bg:     #fff;
+$well-border: #e2e8f0;
+
+// Modals
+$modal-content-border-color: rgba(15, 23, 42, .12);
+$modal-backdrop-opacity:     .4;
+$modal-header-border-color:  #e2e8f0;
+$modal-footer-border-color:  #e2e8f0;
+
+// Breadcrumb
+$breadcrumb-bg:           transparent;
+$breadcrumb-color:        $gray;
+$breadcrumb-active-color: $gray;
+$breadcrumb-separator:    "\203A";
+
+// Pagination
+$pagination-color:         $brand-primary;
+$pagination-border:        #e2e8f0;
+$pagination-hover-color:   $brand-primary;
+$pagination-hover-bg:      $oacis-accent-tint;
+$pagination-active-bg:     $brand-primary;
+$pagination-active-border: $brand-primary;
+
+// Dropdowns
+$dropdown-border:          #e2e8f0;
+$dropdown-fallback-border: #e2e8f0;
+$dropdown-link-color:      $gray-dark;
+$dropdown-link-hover-bg:   $oacis-accent-tint;
+$dropdown-link-active-bg:  $brand-primary;
+
+// Tooltips / popovers
+$tooltip-bg:          $gray-darker;
+$tooltip-opacity:     .95;
+$popover-border-color: #e2e8f0;
+
+// Progress bars
+$progress-bg:     #e2e8f0;
+$progress-bar-bg: $brand-primary;
+
+// Code
+$code-color: $brand-primary;
+$code-bg:    $gray-lighter;
+$pre-bg:     #f8fafc;
+$pre-border-color: #e2e8f0;
