@@ -14,7 +14,7 @@ gem 'concurrent-ruby', '< 1.3.5'  # 1.3.5 dropped `require "logger"`, breaking R
 
 # assets
 gem "sprockets", '~> 3.7'  # sprockets 4 requires app/assets/config/manifest.js; upgrade separately
-gem "haml-rails"
+gem "haml-rails", '~> 2.1'
 gem "sass-rails", '~> 6.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
@@ -37,7 +37,7 @@ gem "ruby-progressbar"
 # utility tool
 gem "pry"
 gem "pry-rails"
-gem "rspec-rails", '~> 5.1' # must be in :development group to use the rake task 'spec'
+gem "rspec-rails", '~> 6.1' # must be in :development group to use the rake task 'spec'
 gem "stackprof"
 
 group :test do
