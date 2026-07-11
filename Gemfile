@@ -12,7 +12,7 @@ gem "redis", '~> 5.0'
 gem 'bootsnap', require: false
 
 # assets
-gem "sprockets", '~> 3.7'  # sprockets 4 requires app/assets/config/manifest.js; upgrade separately
+gem "sprockets", '~> 4.2'
 gem "haml-rails", '~> 2.1'
 gem "sass-rails", '~> 6.0'
 gem 'jquery-rails'
@@ -36,7 +36,7 @@ gem "ruby-progressbar"
 # utility tool
 gem "pry"
 gem "pry-rails"
-gem "rspec-rails", '~> 6.1' # must be in :development group to use the rake task 'spec'
+gem "rspec-rails", '~> 7.1' # must be in :development group to use the rake task 'spec'
 gem "stackprof"
 
 group :test do
