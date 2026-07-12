@@ -34,33 +34,14 @@ class SchedulerWrapper
 
   def parse_remote_status(stdout)
     return :unknown if stdout.empty?
-    case JSON.load(stdout)["status"]
-    when "queued"
-      :submitted
-    when "running"
-      :running
-    when "finished"
-      :includable
-    else
-      raise "unknown status"
-    end
+    translate_status(JSON.load(stdout)["status"])
   end
 
   def parse_remote_status_multiple(stdout)
     parsed = JSON.load(stdout)
     statuses = {}
     parsed.each do |key,val|
-      status = case val["status"]
-               when "queued"
-                 :submitted
-               when "running"
-                 :running
-               when "finished"
-                 :includable
-               else
-                 raise "unknown status"
-               end
-      statuses[key] = status
+      statuses[key] = translate_status(val["status"])
     end
     statuses
   end
@@ -74,5 +55,19 @@ class SchedulerWrapper
     dir = Pathname.new(@work_base_dir)
     paths << dir.join("#{run.id}_log")
     paths
+  end
+
+  private
+  def translate_status(remote_status)
+    case remote_status
+    when "queued"
+      :submitted
+    when "running"
+      :running
+    when "finished"
+      :includable
+    else
+      raise "unknown status"
+    end
   end
 end

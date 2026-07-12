@@ -244,7 +244,7 @@ describe OacisCli do
         at_temp_dir {
           expect {
             invoke_create_runs_with_invalid_parameter_set_ids
-          }.to raise_error "Invalid 1 prameter_set_ids are found"
+          }.to raise_error "Invalid 1 parameter_set_ids are found"
         }
       end
 
