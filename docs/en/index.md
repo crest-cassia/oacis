@@ -35,7 +35,7 @@ With a user-friendly interface, you can easily submit various jobs to appropriat
 After these jobs are finished, all the result files are automatically downloaded from the remote hosts and stored in a traceable way together with logs of the date, host, and elapsed time of the jobs.
 You can easily find the status of the jobs or results files from the browser-based UI, which lets you focus on more productive and essential parts of your research activities.
 
-It also provides Ruby APIs, which help us automate parameter sweep, optimization of parameters, and sensitivity analysis etc.
+It also provides an MCP (Model Context Protocol) server so that AI agents can operate OACIS on your behalf, and Ruby APIs for writing reproducible scripts that automate parameter sweep, optimization of parameters, and sensitivity analysis etc.
 
 ## Screenshots
 
@@ -107,8 +107,15 @@ It also provides Ruby APIs, which help us automate parameter sweep, optimization
   </a>
 </div>
 
+## Controlling OACIS with AI agents
+
+OACIS ships an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server, which lets AI agents such as Claude operate OACIS on your behalf.
+An agent connected to the server can create parameter sets, submit runs, monitor their status, and inspect the results — you can simply ask it to "sweep parameters p1 and p2 of my simulator and report the results".
+See http://crest-cassia.github.io/oacis/en/mcp.html for more details.
+
 ## A sample of APIs
 
+For scripted, reproducible workflows, use the Ruby API.
 A small sample of parameter sweep over parameters "p1" and "p2" of your simulator.
 See http://crest-cassia.github.io/oacis/en/api.html for more details.
 
@@ -142,6 +149,8 @@ The remaining pages are organized as follows.
 - Tutorial
 - Configuration
 - Command Line Interface(CLI)
+- MCP Server
+- Ruby API
 - Tips
 
 You will be able to start using OACIS if you read the first three pages.
