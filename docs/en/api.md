@@ -13,6 +13,9 @@ OACIS is implemented in Ruby, and has Ruby APIs. You can operate OACIS by writin
 In this page, we will give a brief instruction on how to use the Ruby APIs. 
 You can find samples at [samples page]({{ site.baseurl }}/{{ page.lang }}/api_samples.html).
 
+The Ruby API is the right tool for reproducible batch workflows: parameter sweeps, optimization loops, and other scripts that you can rerun and publish.
+For interactive, AI-agent-driven control of OACIS, see the [MCP server]({{ site.baseurl }}/{{ page.lang }}/mcp.html) instead.
+
 ## Prerequisites
 
 In the following, we assume that a Simulator "my_simulator" is registered on OACIS, which has three parameters "p1", "p2", and "p3".

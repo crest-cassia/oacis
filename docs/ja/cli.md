@@ -2,7 +2,7 @@
 layout: default
 title: "CLIの使い方"
 lang: ja
-next_page: api
+next_page: tips
 ---
 
 # Command Line Interface(CLI)の使い方

@@ -2,7 +2,7 @@
 layout: default
 title: "MCP Server"
 lang: en
-next_page: tips
+next_page: api
 ---
 
 # MCP Server for AI agents
@@ -13,6 +13,8 @@ OACIS ships an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) s
 An agent connected to this server can explore parameter spaces autonomously: create parameter sets, submit runs, poll their status, read result files, and trigger analyzers.
 
 The server speaks JSON-RPC over stdio and accesses the OACIS database in-process, exactly like the [Ruby API]({{ site.baseurl }}/{{ page.lang }}/api.html). Jobs created through it are picked up and submitted to remote hosts by the ordinary OACIS background workers.
+
+MCP is the recommended interface for interactive, agent-driven use. For unattended long-running workflows — for example an optimization loop that keeps submitting jobs for days — a script using the [Ruby API]({{ site.baseurl }}/{{ page.lang }}/api.html) and [OACIS watcher]({{ site.baseurl }}/{{ page.lang }}/api_watcher.html) is the better tool. The two combine well: you can ask an agent to write such a script for you.
 
 ## Setup
 

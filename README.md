@@ -62,8 +62,18 @@ For native installation and advanced usage, see the [full documentation](http://
 ![screenshot](docs/images/screenshots/5.png)
 ![screenshot](docs/images/screenshots/8.png)
 
-## A sample of APIs
+## Controlling OACIS with AI agents
 
+OACIS ships an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server, `bin/oacis_mcp`, which lets AI agents such as Claude operate OACIS on your behalf: create parameter sets, submit runs, monitor their status, and inspect the results.
+See http://crest-cassia.github.io/oacis/en/mcp.html for more details.
+
+```shell
+claude mcp add oacis -- /path/to/oacis/bin/oacis_mcp
+```
+
+## Scripting with the Ruby API
+
+For scripted, reproducible workflows, use the Ruby API.
 A small sample of parameter sweep over parameters "p1" and "p2" of your simulator.
 See http://crest-cassia.github.io/oacis/en/api.html for more details.
 

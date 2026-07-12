@@ -103,8 +103,15 @@ OACISはRubyのAPIを持っており、パラメータの選択やジョブの�
   </a>
 </div>
 
+## AIエージェントによる操作
+
+OACISは [MCP (Model Context Protocol)](https://modelcontextprotocol.io) サーバーを同梱しており、ClaudeなどのAIエージェントからOACISを操作できます。
+エージェントはパラメータセットの作成、ジョブの投入、実行状況の監視、結果の確認を自律的に行えます。例えば「シミュレーターのp1とp2をスイープして結果を報告して」と依頼するだけでパラメータスイープを実行できます。
+詳細は [MCP Server]({{ site.baseurl }}/en/mcp.html) をみてください。
+
 ## APIのサンプル
 
+再現可能なスクリプトとして実験を記述したい場合はRuby APIを使います。
 例えば、あるシミュレーターの"p1"と"p2"というパラメータを変化させながらジョブを実行したいとします。
 OACISのAPIを使って書く場合、以下のようになります。
 詳細は [How to use APIs]({{ site.baseurl }}/en/api.html) をみてください。
@@ -138,6 +145,8 @@ end
 - 基本的な使い方
 - 高度な使い方
 - Command Line Interface(CLI)の使い方
+- MCPサーバー (英語のみ)
+- Ruby API (英語のみ)
 - Tips
 
 とりあえず使ってみたい場合は「基本的な使い方」の章までを見れば使い始められるようになっています。
