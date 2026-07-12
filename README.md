@@ -62,29 +62,13 @@ For native installation and advanced usage, see the [full documentation](http://
 ![screenshot](docs/images/screenshots/5.png)
 ![screenshot](docs/images/screenshots/8.png)
 
-## A sample of APIs
+## Controlling OACIS with AI agents
 
-A small sample of parameter sweep over parameters "p1" and "p2" of your simulator.
-See http://crest-cassia.github.io/oacis/en/api.html for more details.
+OACIS ships an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server, `bin/oacis_mcp`, which lets AI agents such as Claude operate OACIS on your behalf: create parameter sets, submit runs, monitor their status, and inspect the results.
+See http://crest-cassia.github.io/oacis/en/mcp.html for more details.
 
-```ruby
-sim = Simulator.where(name: "my_simulator").first
-
-p1_values = [1.0,2.0,3.0,4.0,5.0]                                         # a standard way to make an array
-p2_values = [2.0,4.0,6.0,8.0,10.0]
-base_param = sim.default_parameters                                  # => {"p1"=>1.0, "p2"=>2.0, "p3"=>3.0}
-
-host = Host.where(name: "localhost").first
-host_param = host.default_host_parameters
-
-# We are going to fix the parameters other than "p1" and "p2"
-p1_values.each do |p1|                  # iterate over p1
-  p2_values.each do |p2|                # iterate over p2
-    param = base_param.merge({"p1"=>p1,"p2"=>p2})           #   => {"p1"=>p1, "p2"=>p2, "p3"=>3.0}
-    ps = sim.find_or_create_parameter_set( param )          #   => ParameterSet of the given parameters
-    runs = ps.find_or_create_runs_upto(5, submitted_to: host, host_param: host_param)  # creating runs under given parameter sets
-  end
-end
+```shell
+claude mcp add oacis -- /path/to/oacis/bin/oacis_mcp
 ```
 
 ## Documentation

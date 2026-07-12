@@ -12,7 +12,7 @@ next_page: tips
 OACIS ships an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server, `bin/oacis_mcp`, which lets AI agents such as Claude submit and monitor simulation jobs.
 An agent connected to this server can explore parameter spaces autonomously: create parameter sets, submit runs, poll their status, read result files, and trigger analyzers.
 
-The server speaks JSON-RPC over stdio and accesses the OACIS database in-process, exactly like the [Ruby API]({{ site.baseurl }}/{{ page.lang }}/api.html). Jobs created through it are picked up and submitted to remote hosts by the ordinary OACIS background workers.
+The server speaks JSON-RPC over stdio and accesses the OACIS database in-process. Jobs created through it are picked up and submitted to remote hosts by the ordinary OACIS background workers.
 
 ## Setup
 
@@ -42,7 +42,7 @@ claude mcp add oacis -- docker exec -i -u oacis my_oacis /home/oacis/oacis/bin/o
 
 ## Security model
 
-- The server is stdio-only; it opens no network port. Whoever can execute `bin/oacis_mcp` gets the same database access as `bin/oacis_ruby`.
+- The server is stdio-only; it opens no network port. Whoever can execute `bin/oacis_mcp` gets full access to the OACIS database.
 - When `OACIS_ACCESS_LEVEL` is `0`, or when the environment variable `OACIS_MCP_READONLY=1` is set, the three write tools are hidden and rejected — the agent can only inspect.
 - There are no destructive tools: agents cannot delete simulators, parameter sets, runs, or analyses, and cannot modify simulator/host configurations.
 - File access is restricted to the result directories of runs and analyses, with size limits.

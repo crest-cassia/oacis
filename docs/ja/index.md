@@ -103,31 +103,11 @@ OACISはRubyのAPIを持っており、パラメータの選択やジョブの�
   </a>
 </div>
 
-## APIのサンプル
+## AIエージェントによる操作
 
-例えば、あるシミュレーターの"p1"と"p2"というパラメータを変化させながらジョブを実行したいとします。
-OACISのAPIを使って書く場合、以下のようになります。
-詳細は [How to use APIs]({{ site.baseurl }}/en/api.html) をみてください。
-
-```ruby
-sim = Simulator.where(name: "my_simulator").first
-
-p1_values = [1.0,2.0,3.0,4.0,5.0]                                         # a standard way to make an array
-p2_values = [2.0,4.0,6.0,8.0,10.0]
-base_param = sim.default_parameters                                  # => {"p1"=>1.0, "p2"=>2.0, "p3"=>3.0}
-
-host = Host.where(name: "localhost").first
-host_param = host.default_host_parameters
-
-# We are going to fix the parameters other than "p1" and "p2"
-p1_values.each do |p1|                  # iterate over p1
-  p2_values.each do |p2|                # iterate over p2
-    param = base_param.merge({"p1"=>p1,"p2"=>p2})           #   => {"p1"=>p1, "p2"=>p2, "p3"=>3.0}
-    ps = sim.find_or_create_parameter_set( param )          #   => ParameterSet of the given parameters
-    runs = ps.find_or_create_runs_upto(5, submitted_to: host, host_param: host_param)  # creating runs under given parameter sets
-  end
-end
-```
+OACISは [MCP (Model Context Protocol)](https://modelcontextprotocol.io) サーバーを同梱しており、ClaudeなどのAIエージェントからOACISを操作できます。
+エージェントはパラメータセットの作成、ジョブの投入、実行状況の監視、結果の確認を自律的に行えます。例えば「シミュレーターのp1とp2をスイープして結果を報告して」と依頼するだけでパラメータスイープを実行できます。
+詳細は [MCP Server]({{ site.baseurl }}/en/mcp.html) をみてください。
 
 ## このドキュメントの構成
 
@@ -138,6 +118,7 @@ end
 - 基本的な使い方
 - 高度な使い方
 - Command Line Interface(CLI)の使い方
+- MCPサーバー
 - Tips
 
 とりあえず使ってみたい場合は「基本的な使い方」の章までを見れば使い始められるようになっています。
