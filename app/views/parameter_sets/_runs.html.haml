@@ -1,4 +1,6 @@
 %div{style: "margin-top: 20px;"}
+  - if OACIS_ACCESS_LEVEL >= 1
+    = link_to("Duplicate", duplicate_parameter_set_path(parameter_set), class: 'btn btn-primary')
 %table.table.table-condensed.table-hover.table-striped#runs_list{:'data-source' => "#{_runs_list_parameter_set_path(parameter_set.to_param, format: "json")}"}
   %thead
     %tr
