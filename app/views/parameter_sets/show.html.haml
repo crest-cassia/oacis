@@ -8,6 +8,9 @@
   = "ID : #{@param_set.id}"
   %br
   = "data directory: #{@param_set.dir}"
+  - if OACIS_ACCESS_LEVEL >= 1
+    %div{style: "margin-top: 10px;"}
+      = link_to("Duplicate", duplicate_parameter_set_path(@param_set), class: 'btn btn-primary')
 
 %div.tabbable
   %ul.nav.nav-tabs
