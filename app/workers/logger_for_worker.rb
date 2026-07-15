@@ -1,5 +1,16 @@
 class LoggerForWorker
 
+  # Same format as the one defined in config/environments/{development,production}.rb.
+  # Defined here as well because those copies do not exist in the test environment.
+  class LoggerFormatWithTime
+    def call(severity, timestamp, progname, msg)
+      format = "[%s] %5s -- %s: %s\n"
+      format % ["#{timestamp.strftime("%Y/%m/%d %H:%M:%S")}.#{'%06d' % timestamp.usec.to_s}", severity, progname, String === msg ? msg : msg.inspect]
+    end
+  end
+
+  LEVELS = { debug: 0, info: 1, warn: 2, error: 3, fatal: 4 }
+
   def initialize(worker_type, logdev, shift_age=0, shift_size=1048576)
     @type = worker_type
     @logger = Logger.new(logdev, shift_age, shift_size)
@@ -12,32 +23,12 @@ class LoggerForWorker
     WorkerLogChannel.broadcast_to('message', {@type => s})
   end
 
-  def debug(message)
-    send_by_cable(message, :debug)
-    @logger.debug(message)
-  end
-
-  def info(message)
-    send_by_cable(message, :info)
-    @logger.info(message)
-    WorkerLog.create({worker: @type, level: 1, message: message})
-  end
-
-  def warn(message)
-    send_by_cable(message, :warn)
-    @logger.warn(message)
-    WorkerLog.create({worker: @type, level: 2, message: message})
-  end
-
-  def error(message)
-    send_by_cable(message, :error)
-    @logger.error(message)
-    WorkerLog.create({worker: @type, level: 3, message: message})
-  end
-
-  def fatal(message)
-    send_by_cable(message, :fatal)
-    @logger.fatal(message)
-    WorkerLog.create({worker: @type, level: 4, message: message})
+  LEVELS.each do |severity, level|
+    define_method(severity) do |message|
+      send_by_cable(message, severity)
+      @logger.public_send(severity, message)
+      # debug messages are not persisted to avoid bloating the collection
+      WorkerLog.create({worker: @type, level: level, message: message}) if level >= LEVELS[:info]
+    end
   end
 end

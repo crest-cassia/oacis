@@ -1,39 +1,23 @@
 class JobObserver
 
+  extend HostPolling
+
   def self.perform(logger)
-    @last_performed_at ||= {}
     unless is_enough_disk_space_left?(logger)
       logger.error("Disk space is not enough to include submitted jobs. Aborting.")
       return
     end
-    if ENV['OACIS_SSH_DEBUG'] == "1" and @ssh_logger.nil?
-      @ssh_logger = Logger.new( Rails.root.join('log/ssh_debug.log') )
-      @ssh_logger.level = :debug
-      @ssh_logger.debug("printing SSH debug messages for JobObserver")
-      @ssh_logger.formatter = proc do |severity, datetime, progname, msg|
-        "[JobObserver] #{datetime.strftime('%Y-%m-%d %H:%M:%S')} #{severity}: #{msg}\n"
-      end
-    end
-    Host.where(status: :enabled).each do |host|
-      break if $term_received
-      next if DateTime.now.to_i - @last_performed_at[host.id].to_i < host.polling_interval
-      begin
-        logger.debug "observing host #{host.name}"
-        bm = Benchmark.measure {
-          observe_host(host, logger, @ssh_logger)
-        }
-        logger.info "observation of #{host.name} finished in #{sprintf('%.1f', bm.real)}" if bm.real > 1.0
-      rescue => ex
-        logger.error("Error in JobObserver: #{ex.inspect}")
-        logger.error(ex.backtrace)
-      end
-      @last_performed_at[host.id] = DateTime.now
+    each_host_to_poll(logger) do |host|
+      logger.debug "observing host #{host.name}"
+      bm = Benchmark.measure {
+        observe_host(host, logger, ssh_debug_logger)
+      }
+      logger.info "observation of #{host.name} finished in #{sprintf('%.1f', bm.real)}" if bm.real > 1.0
     end
   end
 
   private
   def self.observe_host(host, logger, ssh_logger = nil)
-    # host.check_submitted_job_status(logger)
     return if host.submitted_runs.count == 0 and host.submitted_analyses.count == 0
     host.start_ssh_shell(logger: logger, ssh_logger: ssh_logger) do |sh|
       logger.debug "making SSH connection to #{host.name}"
@@ -57,24 +41,37 @@ class JobObserver
   def self.destroy_jobs(jobs, host, handler, logger)
     logger.debug "deleting cancelled jobs #{jobs.map(&:id)}" if jobs.present?
     jobs.each do |job|
-      break if $term_received
-      if job.destroyable?
-        logger.info("canceling remote job: #{job.class}:#{job.id} from #{host.name}")
-        handler.cancel_remote_job(job)
-        logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
-        job.destroy
-        logger.info("destroyed #{job.class} #{job.id}")
-      else
-        logger.warn("should not happen: #{job.class}:#{job.id} is not destroyable")
-        job.set_lower_submittable_to_be_destroyed
+      break if Worker.term_received?
+      begin
+        if job.destroyable?
+          logger.info("canceling remote job: #{job.class}:#{job.id} from #{host.name}")
+          handler.cancel_remote_job(job)
+          logger.info("canceled remote job: #{job.class}:#{job.id} from #{host.name}")
+          job.destroy
+          logger.info("destroyed #{job.class} #{job.id}")
+        else
+          logger.warn("should not happen: #{job.class}:#{job.id} is not destroyable")
+          job.set_lower_submittable_to_be_destroyed
+        end
+      rescue => ex
+        # continue to the remaining jobs; canceling is retried in the next cycle
+        logger.error("Error while canceling #{job.class}:#{job.id}: #{ex.inspect}")
+        logger.error(ex.backtrace)
       end
     end
   end
 
   def self.observe_jobs(jobs, host, handler, logger)
-    remote_statuses = handler.remote_status_multiple(jobs, logger) if jobs.present? and handler.support_multiple_xstat?
+    remote_statuses = nil
+    if jobs.present? and handler.support_multiple_xstat?
+      begin
+        remote_statuses = handler.remote_status_multiple(jobs, logger)
+      rescue => ex
+        logger.warn("remote_status_multiple failed: #{ex.inspect}; falling back to individual status check")
+      end
+    end
     jobs.each do |job|
-      break if $term_received
+      break if Worker.term_received?
       remote_status = remote_statuses[job.job_id] if remote_statuses
       observe_job(job, host, handler, remote_status, logger)
     end

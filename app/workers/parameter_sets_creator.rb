@@ -10,7 +10,7 @@ class ParameterSetsCreator
       ensure
         task.destroy
       end
-      break if $term_received
+      break if Worker.term_received?
     end
   rescue => ex
     logger.error("Error in ParameterSetsCreator: #{ex.inspect}")

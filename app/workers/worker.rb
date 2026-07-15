@@ -7,33 +7,50 @@ class Worker < DaemonSpawn::Base
   #   - WORKER_STDOUT_FILE
   #   - TASKS
 
+  # The flag is stored on Worker itself so that subclasses and task classes
+  # (JobSubmitter, JobObserver, ...) all see the same flag.
+  def self.term_received?
+    !!Worker.instance_variable_get(:@term_received)
+  end
+
+  def self.term_received=(val)
+    Worker.instance_variable_set(:@term_received, val)
+  end
+
   def start(args)
     @logger = LoggerForWorker.new(self.class::WORKER_ID, self.class::WORKER_LOG_FILE, 7)
     @logger.info("starting #{self.class}")
 
-    $term_received = false
+    Worker.term_received = false
     trap('TERM') {
-      $term_received = true
+      Worker.term_received = true
       puts "TERM received. stopping"
     }
 
     loop do
       self.class::TASKS.each do |task|
-        task.call(@logger)
-        break if $term_received
+        begin
+          task.call(@logger)
+        rescue => ex
+          # a failure of one task must not kill the daemon
+          @logger.error("Error in #{self.class}: #{ex.inspect}")
+          @logger.error(ex.backtrace)
+        end
+        break if Worker.term_received?
       end
-      self.class::INTERVAL.times do |t|
-        break if $term_received
+      break if Worker.term_received?
+      self.class::INTERVAL.times do
+        break if Worker.term_received?
         sleep 1
       end
-      break if $term_received
+      break if Worker.term_received?
     end
 
   rescue => ex
-    @logger.fatal(ex.message)
-    @logger.fatal(ex.backtrace)
+    @logger&.fatal(ex.message)
+    @logger&.fatal(ex.backtrace)
   ensure
-    @logger.info("stopped")
+    @logger&.info("stopped")
   end
 
   def stop
@@ -59,4 +76,3 @@ class Worker < DaemonSpawn::Base
     false
   end
 end
-
