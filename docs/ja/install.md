@@ -56,14 +56,14 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 
 - Ruby 3.2以降 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
 - MongoDB 4.4以降 ([http://www.mongodb.org/](http://www.mongodb.org/))
-- bundler ([http://bundler.io/](http://bundler.io/))
-    - Rubyの標準ライブラリとして添付されるので個別にインストールする必要はない。
 - redis ([https://redis.io/](https://redis.io/))
 
 Rubyのインストールにはrbenvまたはrvmを使って環境を整えるのがよいです。
 
 Mac OS Xの場合、homebrew ([http://brew.sh/](http://brew.sh/)) を使ってrbenvとMongoDBをインストールするのが手軽です。
 Linuxの場合、yumやaptコマンドを使ってインストールできます。
+
+bundlerはRubyに標準ライブラリとして添付されるので、個別にインストールする必要はありません。
 
 #### MacOSXでの前提条件の整え方
 

@@ -55,8 +55,6 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 
 - Ruby 3.2 or later ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
 - MongoDB 4.4 or later ([http://www.mongodb.org/](http://www.mongodb.org/))
-- bundler ([http://bundler.io/](http://bundler.io/))
-    - You may skip the installation as it is built into Ruby as a standard library.
 - redis ([https://redis.io/](https://redis.io/))
 
 We recommend rbenv or rvm to install a proper version of Ruby.
@@ -64,7 +62,7 @@ We recommend rbenv or rvm to install a proper version of Ruby.
 For MacOS X users, it is easy to use [homebrew](http://brew.sh/) to install rbenv and MongoDB.
 For Linux users, yum or apt commands are available to install these.
 
-In order to install bundler, run `gem install bundler` after you have installed Ruby.
+Bundler ships with Ruby as a standard library, so no separate installation is required.
 
 #### Setting up prerequisites in MacOS X
 
