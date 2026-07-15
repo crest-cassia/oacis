@@ -55,9 +55,9 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 ### 前提条件
 
 - Ruby 3.2以降 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
-- MongoDB 3.6以降 ([http://www.mongodb.org/](http://www.mongodb.org/))
+- MongoDB 4.4以降 ([http://www.mongodb.org/](http://www.mongodb.org/))
 - bundler ([http://bundler.io/](http://bundler.io/))
-    - Ruby2.6.0以降を利用する場合は、標準ライブラリとして添付されるので個別にインストールする必要はない。
+    - Rubyの標準ライブラリとして添付されるので個別にインストールする必要はない。
 - redis ([https://redis.io/](https://redis.io/))
 
 Rubyのインストールにはrbenvまたはrvmを使って環境を整えるのがよいです。
@@ -305,6 +305,40 @@ V3ではHostの設定項目から、"Hostname", "User", "Port", "IdentityFile"�
 bundle install                          # install dependent libraries
 bundle exec rake daemon:start           # restart OACIS
 ```
+
+## OACIS v3からv4への更新
+OACIS v4では利用するソフトウェアスタックが更新されました。**Ruby 3.2以降**（Ruby 2.x系はサポート対象外）と**MongoDB 4.4以降**（同梱するMongoDBドライバが古いサーバのサポートを打ち切ったため）が必要です。内部的にはRails 7.2、Mongoid 9にアップグレードされています。
+
+保存されるデータの形式は変わらないため、データの移行作業は不要です。以下の手順で更新してください。
+
+#### Rubyの更新
+前提条件の項で説明した通り、rbenvまたはrvmでRuby 3.2以降（3.4を推奨）をインストールしてください。
+``` sh
+rbenv install 3.4.2 && rbenv global 3.4.2
+rbenv rehash
+ruby --version   # 3.2以降であることを確認
+```
+
+#### MongoDBの更新
+MongoDBが4.4より古い場合は4.4以降に更新してください。MongoDBはメジャーバージョン間を段階的にアップグレードする必要があるため、データをダンプし、新しいMongoDBをインストールしてからデータを書き戻すのが簡単です。
+``` sh
+mongodump --db oacis_development   # データをバックアップ
+# ... MongoDB 4.4以降をインストール ...
+mongorestore --db oacis_development dump/oacis_development   # データを書き戻す
+```
+詳細は[公式ドキュメント](https://docs.mongodb.com/manual/tutorial/upgrade-revision/)を参照してください。
+
+#### OACISの更新と再起動
+``` sh
+bundle exec rake daemon:stop            # OACISを停止
+git pull origin master                  # 最新のソースコードを取得
+git pull origin master --tags
+gem update bundler                      # bundlerを更新
+bundle install                          # 依存ライブラリをインストール
+bundle exec rake daemon:start           # OACISを再起動
+```
+
+> **注意.** OACIS v4ではPython API（`oacis` Pythonパッケージ）は同梱されなくなりました。再現可能なスクリプトによる操作は[Ruby API]({{ site.baseurl }}/en/api.html)で、AIエージェントによる対話的な操作は新しい[MCPサーバ]({{ site.baseurl }}/en/mcp.html)で行えます。
 
 OACISのユーザーメーリングリストに登録することをお勧めします。新規リリースについての情報がメールで通知されます。
 [oacis-users mailing list](https://groups.google.com/forum/#!forum/oacis-users)
