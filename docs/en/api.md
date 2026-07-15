@@ -32,7 +32,7 @@ At the project directory of OACIS (the directory where you cloned the source cod
 
 ```ShellSession
 $ bundle exec rails c
-Loading development environment (Rails 4.2.0)
+Loading development environment (Rails 7.2.3)
 irb(main):001:0> Simulator.first.name
 => "my_simulator
 irb(main):002:0>
@@ -69,14 +69,12 @@ To operate OACIS, we are going to use the methods of the following classes. Majo
 - Analysis
 
 
-These APIs are available for OACIS 2.7.0 or later. If you are using 2.6.0 or earlier, update OACIS first.
-
 ### [Optional] Reference materials
 
 The data of OACIS are stored in MongoDB, and Mongoid, which is a library to handle MongoDB from Ruby, is adopted.
-[The document of Mongoid](https://docs.mongodb.com/ruby-driver/master/mongoid-tutorials/) helps you understand this page more deeply. Especially the page for [Queries](https://docs.mongodb.com/ruby-driver/master/tutorials/mongoid-queries/) is useful.
+[The document of Mongoid](https://www.mongodb.com/docs/mongoid/current/) helps you understand this page more deeply. Especially the page for [Queries](https://www.mongodb.com/docs/mongoid/current/reference/queries/) is useful.
 
-In the source code of OACIS, the code for defining the data structure is in the [app/model](https://github.com/crest-cassia/oacis/tree/Development/app/models) directory.
+In the source code of OACIS, the code for defining the data structure is in the [app/model](https://github.com/crest-cassia/oacis/tree/develop/app/models) directory.
 
 ### Simulator
 
@@ -90,8 +88,6 @@ sim = Simulator.find("...ID...")
 
 ```ruby
 sim = Simulator.find_by_name("my_simulator")
-# If you are using OACIS v2.9.0 or prior, use the following.
-#   sim = Simulator.where(name: "my_simulator").first
 ```
 
 #### referring
@@ -233,8 +229,6 @@ run.discard
 
 ```ruby
 host = Host.find_by_name("localhost")
-# If you are using OACIS v2.9.0 or prior, use the following.
-# host = Host.where(name: "localhost").first
 ```
 
 #### referring
@@ -263,8 +257,6 @@ azr = Analyzer.find("...ID...")
 
 ```ruby
 azr = sim.find_analyzer_by_name("my_analyzer")
-# If you are using OACIS v2.9.0 or prior, use the following.
-# azr = sim.analyzers.where(name:"my_analyzer").first
 ```
 
 #### referring

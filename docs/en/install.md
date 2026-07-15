@@ -54,9 +54,7 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 ### Prerequisites
 
 - Ruby 3.2 or later ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
-- MongoDB 3.6 or later ([http://www.mongodb.org/](http://www.mongodb.org/))
-- bundler ([http://bundler.io/](http://bundler.io/))
-    - You may skip the installation for Ruby2.6.0 or later as it is built into Ruby as a standard library.
+- MongoDB 4.4 or later ([http://www.mongodb.org/](http://www.mongodb.org/))
 - redis ([https://redis.io/](https://redis.io/))
 
 We recommend rbenv or rvm to install a proper version of Ruby.
@@ -64,7 +62,7 @@ We recommend rbenv or rvm to install a proper version of Ruby.
 For MacOS X users, it is easy to use [homebrew](http://brew.sh/) to install rbenv and MongoDB.
 For Linux users, yum or apt commands are available to install these.
 
-In order to install bundler, run `gem install bundler` after you have installed Ruby.
+Bundler ships with Ruby as a standard library, so no separate installation is required.
 
 #### Setting up prerequisites in MacOS X
 
@@ -306,6 +304,40 @@ From version 3, OACIS refers to "~/.ssh/config" file to retrieve the SSH informa
 bundle install                          # install dependent libraries
 bundle exec rake daemon:start           # restart OACIS
 ```
+
+## Update OACIS v3 -> v4
+OACIS v4 updates the underlying software stack. It now requires **Ruby 3.2 or later** (Ruby 2.x is no longer supported) and **MongoDB 4.4 or later** (the bundled MongoDB driver dropped support for older servers). Internally, OACIS was upgraded to Rails 7.2 and Mongoid 9.
+
+The stored data format is unchanged, so no data migration is required. Follow the steps below.
+
+#### Updating Ruby
+Install Ruby 3.2 or later (Ruby 3.4 is recommended) with rbenv or rvm, as described in the Prerequisites section above.
+``` sh
+rbenv install 3.4.2 && rbenv global 3.4.2
+rbenv rehash
+ruby --version   # verify it is 3.2 or later
+```
+
+#### Updating MongoDB
+If your MongoDB is older than 4.4, upgrade it to 4.4 or later. Because MongoDB must be upgraded incrementally between major versions, the easiest path is to dump the data, install the new MongoDB, and restore the data.
+``` sh
+mongodump --db oacis_development   # back up the database
+# ... install MongoDB 4.4 or later ...
+mongorestore --db oacis_development dump/oacis_development   # restore the database
+```
+Refer to [the official document of MongoDB.](https://docs.mongodb.com/manual/tutorial/upgrade-revision/)
+
+#### Updating OACIS and rebooting
+``` sh
+bundle exec rake daemon:stop            # stop OACIS
+git pull origin master                  # get the latest source code
+git pull origin master --tags
+gem update bundler                      # update bundler
+bundle install                          # install dependent libraries
+bundle exec rake daemon:start           # restart OACIS
+```
+
+> **Note.** OACIS v4 no longer ships the Python API (the `oacis` Python package). Reproducible scripting is now done with the [Ruby API]({{ site.baseurl }}/{{ page.lang }}/api.html), and interactive, AI-agent-driven control is available through the new [MCP server]({{ site.baseurl }}/{{ page.lang }}/mcp.html).
 
 Please consider subscribing to [oacis-users mailing list](https://groups.google.com/forum/#!forum/oacis-users). A new release will be notified via this mailing list.
 
