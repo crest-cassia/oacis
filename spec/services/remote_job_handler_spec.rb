@@ -371,6 +371,22 @@ shared_examples_for RemoteJobHandler do
         end
       }.to_not change { @submittable.reload.status }
     end
+
+    it "resets the failure count when remote_status_multiple succeeds for the job" do
+      handler = RemoteJobHandler.new(@host)
+      allow(SSHUtil).to receive(:execute2).and_return(["","",1])
+      (RemoteJobHandler::STATUS_CHECK_FAILURE_LIMIT - 1).times do
+        handler.remote_status(@submittable) rescue nil
+      end
+      allow(SSHUtil).to receive(:execute2).and_return(['{"12345":{"status":"running"}}',"",0])
+      expect( handler.remote_status_multiple([@submittable]) ).to eq({"12345" => :running})
+      allow(SSHUtil).to receive(:execute2).and_return(["","",1])
+      expect {
+        (RemoteJobHandler::STATUS_CHECK_FAILURE_LIMIT - 1).times do
+          handler.remote_status(@submittable) rescue nil
+        end
+      }.to_not change { @submittable.reload.status }
+    end
   end
 
   describe "#remote_status_multiple" do

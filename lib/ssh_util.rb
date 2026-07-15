@@ -96,7 +96,9 @@ module SSHUtil
         end
       else  # PopenSSH
         begin
-          channel.wait(timeout: command_timeout)
+          # the block is polled as an absolute per-command deadline; the
+          # `timeout` argument alone only limits inactivity between outputs
+          channel.wait(timeout: command_timeout) { sh && sh.deadline_exceeded? }
         rescue Timeout::Error
           raise CommandTimeoutError, "remote command did not finish within #{command_timeout} seconds"
         end

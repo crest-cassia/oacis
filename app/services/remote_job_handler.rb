@@ -129,6 +129,10 @@ class RemoteJobHandler
       # the status check of each job, which tolerates transient errors
       raise RemoteSchedulerError, "#{cmd} failed: rc:#{rc}, #{out}, #{err}" if out.empty? or rc != 0
       statuses = scheduler.parse_remote_status_multiple(out)
+      # a successful status report resets the consecutive-failure count as well
+      jobs.each do |job|
+        self.class.status_check_failures.delete(job.id) if statuses.key?(job.job_id)
+      end
     end
     statuses
   end

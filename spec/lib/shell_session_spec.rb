@@ -121,4 +121,31 @@ describe SSHUtil::ShellSession do
     }.to raise_error(SSHUtil::CommandTimeoutError)
     expect(channel.active?).to be_falsey
   end
+
+  describe "command timeout with a real SSH connection to localhost" do
+
+    # the command keeps producing output at intervals shorter than the
+    # timeout: the deadline must be absolute, not an inactivity timeout
+    STREAMING_COMMAND = "while true; do echo tick; sleep 0.2; done"
+
+    it "raises CommandTimeoutError with the Net::SSH backend" do
+      Net::SSH.start('localhost', ENV['USER'], non_interactive: true, timeout: 1) do |ssh|
+        expect {
+          SSHUtil::ShellSession.start(ssh, command_timeout: 2) do |sh|
+            sh.exec!(STREAMING_COMMAND)
+          end
+        }.to raise_error(SSHUtil::CommandTimeoutError)
+      end
+    end
+
+    it "raises CommandTimeoutError with the PopenSSH backend" do
+      PopenSSH.start('localhost', ENV['USER'], non_interactive: true, timeout: 1) do |ssh|
+        expect {
+          SSHUtil::ShellSession.start(ssh, command_timeout: 2) do |sh|
+            sh.exec!(STREAMING_COMMAND)
+          end
+        }.to raise_error(SSHUtil::CommandTimeoutError)
+      end
+    end
+  end
 end

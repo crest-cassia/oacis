@@ -25,10 +25,25 @@ class LoggerForWorker
 
   LEVELS.each do |severity, level|
     define_method(severity) do |message|
-      send_by_cable(message, severity)
+      # the log file is the primary log; it must be written even when
+      # MongoDB (WorkerLog) or the ActionCable backend is down
       @logger.public_send(severity, message)
-      # debug messages are not persisted to avoid bloating the collection
-      WorkerLog.create({worker: @type, level: level, message: message}) if level >= LEVELS[:info]
+      best_effort("broadcast") { send_by_cable(message, severity) }
+      if level >= LEVELS[:info]
+        # debug messages are not persisted to avoid bloating the collection
+        best_effort("WorkerLog") { WorkerLog.create({worker: @type, level: level, message: message}) }
+      end
+    end
+  end
+
+  private
+  def best_effort(target)
+    yield
+  rescue => ex
+    begin
+      @logger.warn("failed to record log to #{target}: #{ex.inspect}")
+    rescue
+      # give up: logging must never raise
     end
   end
 end

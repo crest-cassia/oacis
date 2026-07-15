@@ -80,29 +80,44 @@ module PopenSSH
       @on_close_block = block
     end
 
-    def wait(timeout: nil)
+    # `timeout` limits how long to wait without receiving any output.
+    # The optional block is an interrupt condition polled while waiting
+    # (e.g. an absolute deadline); when it returns true the SSH process is
+    # terminated and Timeout::Error is raised, even if the process keeps
+    # producing output.
+    def wait(timeout: nil, &interrupt)
       ios = [@stdout, @stderr]
+      last_activity = Time.now
 
       loop do
-        ready = IO.select(ios, nil, nil, timeout)
+        if interrupt&.call
+          close
+          raise Timeout::Error, "interrupted while waiting for SSH output"
+        end
 
-        break unless ready
+        select_timeout = [timeout, (0.5 if interrupt)].compact.min
+        ready = IO.select(ios, nil, nil, select_timeout)
 
-        ready[0].each do |io|
-          begin
-            data = io.read_nonblock(1024)
-            case io
-            when @stdout
-              @on_data_block&.call(self, data)
-            when @stderr
-              @on_extended_data_block&.call(self, 1, data)
+        if ready
+          last_activity = Time.now
+          ready[0].each do |io|
+            begin
+              data = io.read_nonblock(1024)
+              case io
+              when @stdout
+                @on_data_block&.call(self, data)
+              when @stderr
+                @on_extended_data_block&.call(self, 1, data)
+              end
+            rescue IO::WaitReadable
+              next
+            rescue EOFError
+              ios.delete(io)
+              io.close
             end
-          rescue IO::WaitReadable
-            next
-          rescue EOFError
-            ios.delete(io)
-            io.close
           end
+        elsif timeout && Time.now - last_activity >= timeout
+          break # no output within the inactivity timeout; the process is killed below
         end
 
         break if ios.empty?
@@ -114,6 +129,11 @@ module PopenSSH
       end
 
       @on_close_block&.call
+    end
+
+    def close
+      Process.kill("TERM", @wait_thr.pid) if @wait_thr&.alive?
+    rescue Errno::ESRCH
     end
   end
 end

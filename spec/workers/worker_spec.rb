@@ -32,6 +32,17 @@ describe Worker do
       expect(calls).to eq [:first, :second]
     end
 
+    it "keeps running when both a task and the log persistence fail (e.g. MongoDB is down)" do
+      allow(WorkerLog).to receive(:create).and_raise("mongodb is down")
+      calls = []
+      WorkerSpecDummy.const_set(:TASKS, [
+        lambda {|logger| calls << :first; raise "task error" },
+        lambda {|logger| calls << :second; Worker.term_received = true }
+      ])
+      WorkerSpecDummy.allocate.start([])
+      expect(calls).to eq [:first, :second]
+    end
+
     it "stops the loop when term_received is set" do
       count = 0
       WorkerSpecDummy.const_set(:TASKS, [
