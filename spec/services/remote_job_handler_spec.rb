@@ -267,6 +267,24 @@ shared_examples_for RemoteJobHandler do
           RemoteJobHandler.new(@host).submit_remote_job(@submittable)
         }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
       end
+
+      it "does not persist status=submitted when job_id is not obtained" do
+        expect_any_instance_of(SchedulerWrapper).to receive(:submit_command).and_return("echo '{}'")
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
+        expect(@submittable.reload.status).to eq :failed
+        expect(@submittable.reload.job_id).to be_nil
+      end
+
+      it "does not persist status=submitted when the submit output is not parsable" do
+        expect_any_instance_of(SchedulerWrapper).to receive(:submit_command).and_return("echo not-a-json")
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable)
+        }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
+        expect(@submittable.reload.status).to eq :failed
+        expect(@submittable.reload.job_id).to be_nil
+      end
     end
   end
 
@@ -290,6 +308,13 @@ shared_examples_for RemoteJobHandler do
       allow(SSHUtil).to receive(:execute2).and_return([out,'',0])
       expect(RemoteJobHandler.new(@host).support_multiple_xstat?).to be_falsey
     end
+
+    it "caches the result per host and does not run the command again" do
+      allow_any_instance_of(SchedulerWrapper).to receive(:status_help_command).and_return("xstat --help")
+      expect(SSHUtil).to receive(:execute2).once.and_return(["-m, --multiple","",0])
+      expect(RemoteJobHandler.new(@host).support_multiple_xstat?).to be_truthy
+      expect(RemoteJobHandler.new(@host).support_multiple_xstat?).to be_truthy
+    end
   end
 
   describe ".remote_status" do
@@ -304,17 +329,63 @@ shared_examples_for RemoteJobHandler do
     end
 
     it "raise RemoteSchedulerError if remote status is not obtained by SchedulerWrapper" do
-      allow(SSHUtil).to receive(:execute2).and_return("","",1)
+      allow(SSHUtil).to receive(:execute2).and_return(["","",1])
       expect {
         RemoteJobHandler.new(@host).remote_status(@submittable)
       }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
     end
 
-    it "run.error_message is updated if remote status is not obtained by SchedulerWrapper" do
-      allow(SSHUtil).to receive(:execute2).and_return([nil, nil, 1])
+    it "does not update the job until the status check fails several times in a row" do
+      allow(SSHUtil).to receive(:execute2).and_return(["","",1])
+      handler = RemoteJobHandler.new(@host)
       expect {
-        RemoteJobHandler.new(@host).remote_status(@submittable) rescue nil
-      }.to change { @submittable.reload.error_messages }
+        (RemoteJobHandler::STATUS_CHECK_FAILURE_LIMIT - 1).times do
+          handler.remote_status(@submittable) rescue nil
+        end
+      }.to_not change { [@submittable.reload.error_messages, @submittable.reload.status] }
+    end
+
+    it "marks the job as failed after consecutive status check failures" do
+      allow(SSHUtil).to receive(:execute2).and_return(["","",1])
+      handler = RemoteJobHandler.new(@host)
+      expect {
+        RemoteJobHandler::STATUS_CHECK_FAILURE_LIMIT.times do
+          handler.remote_status(@submittable) rescue nil
+        end
+      }.to change { @submittable.reload.status }.to(:failed)
+      expect(@submittable.reload.error_messages).to_not be_empty
+    end
+
+    it "resets the failure count when a status check succeeds" do
+      handler = RemoteJobHandler.new(@host)
+      allow(SSHUtil).to receive(:execute2).and_return(["","",1])
+      (RemoteJobHandler::STATUS_CHECK_FAILURE_LIMIT - 1).times do
+        handler.remote_status(@submittable) rescue nil
+      end
+      allow(SSHUtil).to receive(:execute2).and_return(['{"status":"running"}',"",0])
+      expect( handler.remote_status(@submittable) ).to eq :running
+      allow(SSHUtil).to receive(:execute2).and_return(["","",1])
+      expect {
+        (RemoteJobHandler::STATUS_CHECK_FAILURE_LIMIT - 1).times do
+          handler.remote_status(@submittable) rescue nil
+        end
+      }.to_not change { @submittable.reload.status }
+    end
+
+    it "resets the failure count when remote_status_multiple succeeds for the job" do
+      handler = RemoteJobHandler.new(@host)
+      allow(SSHUtil).to receive(:execute2).and_return(["","",1])
+      (RemoteJobHandler::STATUS_CHECK_FAILURE_LIMIT - 1).times do
+        handler.remote_status(@submittable) rescue nil
+      end
+      allow(SSHUtil).to receive(:execute2).and_return(['{"12345":{"status":"running"}}',"",0])
+      expect( handler.remote_status_multiple([@submittable]) ).to eq({"12345" => :running})
+      allow(SSHUtil).to receive(:execute2).and_return(["","",1])
+      expect {
+        (RemoteJobHandler::STATUS_CHECK_FAILURE_LIMIT - 1).times do
+          handler.remote_status(@submittable) rescue nil
+        end
+      }.to_not change { @submittable.reload.status }
     end
   end
 
@@ -331,13 +402,18 @@ shared_examples_for RemoteJobHandler do
       expect(RemoteJobHandler.new(@host).remote_status_multiple([@submittable])).to eq(expected)
     end
 
-    it "raise RemoteSchedulerError is remote status is not obtained and change run.error_message" do
+    it "raise RemoteSchedulerError if remote status is not obtained" do
       allow(SSHUtil).to receive(:execute2).and_return(["", "", 1])
       expect {
-        expect {
-          RemoteJobHandler.new(@host).remote_status_multiple([@submittable])
-        }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
-      }.to change { @submittable.reload.error_messages }
+        RemoteJobHandler.new(@host).remote_status_multiple([@submittable])
+      }.to raise_error(RemoteJobHandler::RemoteSchedulerError)
+    end
+
+    it "does not update the jobs on failure so that the caller can fall back to individual status checks" do
+      allow(SSHUtil).to receive(:execute2).and_return(["", "", 1])
+      expect {
+        RemoteJobHandler.new(@host).remote_status_multiple([@submittable]) rescue nil
+      }.to_not change { [@submittable.reload.error_messages, @submittable.reload.status] }
     end
   end
 
@@ -463,17 +539,26 @@ shared_examples_for RemoteJobHandler do
     context "when it get ssh connection error" do
 
       it "write error_message" do
-        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise("#<NoMethodError: undefined method `stat' for nil:NilClass>")
+        # net-ssh raises NoMethodError on nil when the transport socket is gone
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(NoMethodError, "undefined method 'stat' for nil")
         expect {
           RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue nil
         }.to change { @submittable.reload.error_messages }.to match(/failed to establish ssh connection to host\(#{@submittable.submitted_to.name}\)/)
       end
 
       it "does not change run status" do
-        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise("#<NoMethodError: undefined method `stat' for nil:NilClass>")
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(NoMethodError, "undefined method 'stat' for nil")
         expect {
           RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue nil
         }.not_to change { @submittable.reload.status }
+      end
+
+      it "handles Net::SSH exceptions as connection errors" do
+        expect_any_instance_of(RemoteJobHandler).to receive(:create_remote_work_dir).and_raise(Net::SSH::Exception, "connection closed by remote host")
+        expect {
+          RemoteJobHandler.new(@host).submit_remote_job(@submittable) rescue nil
+        }.to change { @submittable.reload.error_messages }.to match(/failed to establish ssh connection to host\(#{@submittable.submitted_to.name}\)/)
+        expect(@submittable.reload.status).to_not eq :failed
       end
     end
 

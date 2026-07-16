@@ -5,6 +5,21 @@ class RemoteJobHandler
   class RemoteSchedulerError < StandardError; end
   class RemoteJobError < StandardError; end
 
+  # A job is marked as failed only after this number of consecutive
+  # status-check failures, so that a transient scheduler error does not
+  # kill a job which is actually running.
+  STATUS_CHECK_FAILURE_LIMIT = 3
+
+  class << self
+    def status_check_failures
+      @status_check_failures ||= Hash.new(0)
+    end
+
+    def support_multiple_xstat_cache
+      @support_multiple_xstat_cache ||= {}
+    end
+  end
+
   def initialize(host)
     @host = host
     @logger = nil
@@ -52,6 +67,10 @@ class RemoteJobHandler
   end
 
   def support_multiple_xstat?(logger = nil)
+    # whether xstat supports '-m' does not change unless the remote xsub
+    # installation is replaced, so the result is cached per host
+    cache = self.class.support_multiple_xstat_cache
+    return cache[@host.id] if cache.key?(@host.id)
     scheduler = SchedulerWrapper.new(@host)
     cmd = scheduler.status_help_command
     ret = false
@@ -65,7 +84,7 @@ class RemoteJobHandler
         ret = true if rc == 0 and out =~ /multiple/
       end
     end
-    ret
+    cache[@host.id] = ret
   end
 
   def remote_status(job, logger = nil)
@@ -79,10 +98,18 @@ class RemoteJobHandler
         logger&.debug("  stdout: #{out.chomp}")
         logger&.debug("  stderr: #{err.chomp}")
         logger&.debug("  rc: #{rc}")
-        raise RemoteSchedulerError if out.empty? or rc != 0
+        raise RemoteSchedulerError, "#{cmd} failed: rc:#{rc}, #{out}, #{err}" if out.empty? or rc != 0
         status = scheduler.parse_remote_status(out)
+        self.class.status_check_failures.delete(job.id)
       rescue => ex
-        error_handle(ex, job, sh)
+        failures = (self.class.status_check_failures[job.id] += 1)
+        if failures >= STATUS_CHECK_FAILURE_LIMIT
+          self.class.status_check_failures.delete(job.id)
+          error_handle(ex, job, sh)
+        else
+          logger&.warn("status check of #{job.class}:#{job.id} failed (#{failures}/#{STATUS_CHECK_FAILURE_LIMIT}): #{ex.inspect}")
+          raise ex
+        end
       end
     end
     status
@@ -93,18 +120,18 @@ class RemoteJobHandler
     scheduler = SchedulerWrapper.new(@host)
     cmd = scheduler.status_multiple_command(jobs.map(&:job_id))
     @host.start_ssh_shell do |sh|
-      begin
-        logger&.debug("  executing: #{cmd}")
-        out,err,rc = SSHUtil.execute2(sh, cmd)
-        logger&.debug("  stdout: #{out.chomp}")
-        logger&.debug("  stderr: #{err.chomp}")
-        logger&.debug("  rc: #{rc}")
-        raise RemoteSchedulerError if out.empty? or rc != 0
-        statuses = scheduler.parse_remote_status_multiple(out)
-      rescue => ex
-        jobs.each do |job|
-          error_handle(ex, job, sh)
-        end
+      logger&.debug("  executing: #{cmd}")
+      out,err,rc = SSHUtil.execute2(sh, cmd)
+      logger&.debug("  stdout: #{out.chomp}")
+      logger&.debug("  stderr: #{err.chomp}")
+      logger&.debug("  rc: #{rc}")
+      # do not mark the jobs as failed here; the caller falls back to
+      # the status check of each job, which tolerates transient errors
+      raise RemoteSchedulerError, "#{cmd} failed: rc:#{rc}, #{out}, #{err}" if out.empty? or rc != 0
+      statuses = scheduler.parse_remote_status_multiple(out)
+      # a successful status report resets the consecutive-failure count as well
+      jobs.each do |job|
+        self.class.status_check_failures.delete(job.id) if statuses.key?(job.job_id)
       end
     end
     statuses
@@ -175,7 +202,7 @@ class RemoteJobHandler
   end
 
   def create_remote_work_dir(job)
-    cmd = "mkdir -p #{RemoteFilePath.work_dir_path(@host,job)}"
+    cmd = "mkdir -p #{SSHUtil.escape_remote_path(RemoteFilePath.work_dir_path(@host,job))}"
     @host.start_ssh_shell do |sh|
       out,err,rc = SSHUtil.execute2(sh, cmd)
       raise RemoteOperationError, "\"#{cmd}\" failed: #{out}, #{err}" unless rc==0
@@ -249,7 +276,7 @@ class RemoteJobHandler
 
     relative_subdirs = org_dest_list.map {|o,d| File.dirname(d) }.uniq.select {|d| d != "."}
     subdirs = relative_subdirs.map {|d| remote_work_dir.join(d) }
-    cmd = "mkdir -p #{subdirs.join(' ')}"
+    cmd = "mkdir -p #{subdirs.map {|d| SSHUtil.escape_remote_path(d) }.join(' ')}"
 
     @host.start_ssh_shell do |sh|
       SSHUtil.execute(sh, cmd)
@@ -266,12 +293,12 @@ class RemoteJobHandler
       path = RemoteFilePath.pre_process_script_path(@host, job)
       @host.start_ssh_shell do |sh|
         SSHUtil.write_remote_file(@host.name, path, script.gsub(/\R/,"\n") )  # pre_process_script may contain "\r\n"
-        out,err,rc = SSHUtil.execute2(sh, "chmod +x #{path}")
+        out,err,rc = SSHUtil.execute2(sh, "chmod +x #{SSHUtil.escape_remote_path(path)}")
         raise RemoteOperationError, "chmod failed : #{out}, #{err}" unless rc==0
         cd = SSHUtil.execute(sh,'pwd')
-        cmd = "cd #{File.dirname(path)} && ./#{File.basename(path)} #{job.args} 1>> _stdout.txt 2>> _stderr.txt"
+        cmd = "cd #{SSHUtil.escape_remote_path(File.dirname(path))} && ./#{Shellwords.escape(File.basename(path))} #{job.args} 1>> _stdout.txt 2>> _stderr.txt"
         out, err, rc = SSHUtil.execute2(sh, cmd)
-        SSHUtil.execute(sh, "cd #{cd.chomp}")
+        SSHUtil.execute(sh, "cd #{Shellwords.escape(cd.chomp)}")
         raise RemoteJobError, "\"#{cmd}\" failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
       end
     end
@@ -291,7 +318,7 @@ class RemoteJobHandler
     end
 
     @host.start_ssh_shell do |sh|
-      out,err,rc = SSHUtil.execute2(sh, "chmod +x #{jspath}")
+      out,err,rc = SSHUtil.execute2(sh, "chmod +x #{SSHUtil.escape_remote_path(jspath)}")
       raise RemoteOperationError, "chmod failed: #{out}, #{err}" unless rc == 0
     end
     jspath
@@ -306,9 +333,17 @@ class RemoteJobHandler
     @host.start_ssh_shell do |sh|
       out, err, rc = SSHUtil.execute2(sh, cmd)
       raise RemoteSchedulerError, "#{cmd} failed: rc:#{rc}, #{out}, #{err}" unless rc == 0
-      job.status = :submitted
 
-      job_id = wrapper.parse_jobid_from_submit_command(out)
+      # do not mark the job as submitted until job_id is obtained; otherwise
+      # a job without job_id could be persisted by the error handling below
+      job_id = begin
+        wrapper.parse_jobid_from_submit_command(out)
+      rescue => ex
+        raise RemoteSchedulerError, "failed to parse job_id from the output of \"#{cmd}\": #{out}, #{ex.inspect}"
+      end
+      raise RemoteSchedulerError, "job_id is not found in the output of \"#{cmd}\": #{out}" if job_id.nil?
+
+      job.status = :submitted
       job.job_id = job_id
       job.submitted_at = DateTime.now
       job.save!
@@ -331,6 +366,13 @@ class RemoteJobHandler
     end
   end
 
+  # net-ssh raises NoMethodError on nil when the underlying transport socket
+  # is gone; the message is version dependent, so match it loosely
+  def connection_error?(exception)
+    return true if Host::CONNECTION_EXCEPTIONS.any? {|klass| exception.is_a?(klass) }
+    exception.is_a?(NoMethodError) && exception.message.match?(/undefined method .stat. for nil/)
+  end
+
   def error_handle(exception, job, sh)
     if exception.is_a?(RemoteOperationError)
       job.update_attribute(:error_messages, "RemoteOperaion is failed.\n#{exception.inspect}\n#{exception.backtrace}")
@@ -346,12 +388,10 @@ class RemoteJobHandler
     elsif exception.is_a?(LocalPreprocessError)
       job.update_attribute(:error_messages, "failed to execute local preprocess.\n#{exception.inspect}\n#{exception.backtrace})")
       job.update_attribute(:status, :failed)
+    elsif connection_error?(exception)
+      job.update_attribute(:error_messages, "failed to establish ssh connection to host(#{job.submitted_to.name})\n#{exception.inspect}\n#{exception.backtrace}")
     else
-      if exception.inspect.to_s =~ /#<NoMethodError: undefined method `stat' for nil:NilClass>/
-        job.update_attribute(:error_messages, "failed to establish ssh connection to host(#{job.submitted_to.name})\n#{exception.inspect}\n#{exception.backtrace}")
-      else
-        job.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
-      end
+      job.update_attribute(:error_messages, "#{exception.inspect}\n#{exception.backtrace}")
     end
     StatusChannel.broadcast_to('message', OacisChannelUtil.createJobStatusMessage(job))
     raise exception  # this error is caught by job_submitter or job_observer

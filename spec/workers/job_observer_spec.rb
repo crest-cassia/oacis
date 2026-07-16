@@ -135,6 +135,30 @@ describe JobObserver do
           JobObserver.__send__(:observe_host, @host, @logger)
         }.to change { Run.unscoped.count }.by(-1)
       end
+
+      it "continues processing other jobs when canceling one job fails" do
+        run2 = @sim.parameter_sets.first.runs.create(submitted_to: @host)
+        run2.status = :submitted
+        run2.job_id = "234"
+        run2.save!
+        allow_any_instance_of(RemoteJobHandler).to receive(:support_multiple_xstat?).and_return(false)
+        allow_any_instance_of(RemoteJobHandler).to receive(:cancel_remote_job).and_raise("cancel failed")
+        expect_any_instance_of(RemoteJobHandler).to receive(:remote_status).and_return(:submitted)
+        expect {
+          JobObserver.__send__(:observe_host, @host, @logger)
+        }.to_not change { Run.unscoped.count }
+      end
+    end
+
+    context "when remote_status_multiple fails" do
+
+      it "falls back to the status check of each job" do
+        allow_any_instance_of(RemoteJobHandler).to receive(:support_multiple_xstat?).and_return(true)
+        allow_any_instance_of(RemoteJobHandler).to receive(:remote_status_multiple).and_raise(RemoteJobHandler::RemoteSchedulerError)
+        expect_any_instance_of(RemoteJobHandler).to receive(:remote_status).and_return(:running)
+        JobObserver.__send__(:observe_host, @host, @logger)
+        expect(@run.reload.status).to eq :running
+      end
     end
 
     context "when ssh connection error occers" do

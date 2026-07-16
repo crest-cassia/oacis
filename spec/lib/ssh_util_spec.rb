@@ -284,4 +284,20 @@ describe SSHUtil do
   context "with PopenSSH backend" do
     it_behaves_like "SSHUtil backend", "PopenSSH", PopenSSH
   end
+
+  describe ".escape_remote_path" do
+
+    it "escapes shell special characters" do
+      expect(SSHUtil.escape_remote_path("/tmp/dir with space")).to eq "/tmp/dir\\ with\\ space"
+    end
+
+    it "keeps a leading tilde intact so that it is expanded by the remote shell" do
+      expect(SSHUtil.escape_remote_path("~/oacis work/run1")).to eq "~/oacis\\ work/run1"
+      expect(SSHUtil.escape_remote_path("~")).to eq "~"
+    end
+
+    it "accepts a Pathname" do
+      expect(SSHUtil.escape_remote_path(Pathname.new("/tmp/abc"))).to eq "/tmp/abc"
+    end
+  end
 end
