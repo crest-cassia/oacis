@@ -4,7 +4,6 @@ function LinePlot() {
 
 LinePlot.prototype = Object.create(Plot.prototype);// LinePlot is sub class of Plot
 LinePlot.prototype.constructor = LinePlot;// override constructor
-LinePlot.prototype.IsLog = [false,false];
 
 LinePlot.prototype.SetXScale = function(xscale) {
   let scale = null, min, max;
@@ -53,11 +52,6 @@ LinePlot.prototype.SetYScale = function(yscale) {
     this.IsLog[1] = false;
     break;
   case "log":
-    const data_in_logscale = this.data.data.map(function(element) {
-      return element.filter(function(element){
-        return element[0] > 0.0;
-      });
-    });
     scale = d3.scale.log().clamp(true).range([this.height, 0]);
     min = d3.min( this.data.data, function(r) { return d3.min(r, function(v) { return v[1] - v[2];});});
     max = d3.max( this.data.data, function(r) { return d3.max(r, function(v) { return v[1] + v[2];});});
@@ -102,10 +96,11 @@ LinePlot.prototype.SetYDomain = function(ymin, ymax) {
 
 LinePlot.prototype.AddPlot = function() {
   const plot = this;
-  const colorScale = d3.scale.category10();
+  plot.colorScale = d3.scale.category10().domain(d3.range(plot.data.data.length));
+  const colorScale = plot.colorScale;
 
   function add_series_group() {
-    const plot_group = plot.main_group.append("g").attr("id", "plot-group");
+    const plot_group = plot.main_group.append("g").attr("class", "plot-group");
     const series = plot_group
       .selectAll("g")
       .data(plot.data.data)
@@ -114,7 +109,7 @@ LinePlot.prototype.AddPlot = function() {
 
     // add line
     series.append("path")
-      .attr("clip-path", "url(#clip)")
+      .attr("clip-path", "url(#" + plot.clipId + ")")
       .style({
         "stroke": function(d, i) { return colorScale(i);},
         "fill": "none",
@@ -134,7 +129,7 @@ LinePlot.prototype.AddPlot = function() {
         });
       }).enter();
     point.append("circle")
-      .attr("clip-path", "url(#clip)")
+      .attr("clip-path", "url(#" + plot.clipId + ")")
       .style("fill", function(d) { return colorScale(d.series_index);})
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .on("mouseover", function(d) {
@@ -143,7 +138,7 @@ LinePlot.prototype.AddPlot = function() {
           .style("opacity", 0.8);
         let html = plot.data.xlabel + " : " + d.x + "<br/>" +
             plot.data.ylabel + " : " + Math.round(d.y*1000000)/1000000 +
-            " (" + Math.round(d.yerror*1000000)/1000000 + ")<br/>" +
+            (d.yerror != null ? " (" + Math.round(d.yerror*1000000)/1000000 + ")" : "") + "<br/>" +
             (plot.data.series ? (plot.data.series + " : " + d.series_value + "<br/>") : "") +
             "ID: " + d.psid;
         if (d.count) html += `<br />${d.count} Runs`;
@@ -166,23 +161,23 @@ LinePlot.prototype.AddPlot = function() {
 
     // add error bar
     point.insert("line", "circle")
-      .attr("clip-path", "url(#clip)")
+      .attr("clip-path", "url(#" + plot.clipId + ")")
       .attr("class", "line yerror bar");
     point.insert("line", "circle")
-      .attr("clip-path", "url(#clip)")
+      .attr("clip-path", "url(#" + plot.clipId + ")")
       .attr("class", "line yerror top");
     point.insert("line", "circle")
-      .attr("clip-path", "url(#clip)")
+      .attr("clip-path", "url(#" + plot.clipId + ")")
       .attr("class", "line yerror bottom");
   }
   add_series_group();
 
   function add_legend_group() {
     const legend_region = plot.main_group.append("g")
-      .attr("id", "legend-group")
+      .attr("class", "legend-group")
       .attr("transform", "translate(" + plot.width + "," + 0 + ")");
     const legend = legend_region.append("g")
-      .attr("id", "legend")
+      .attr("class", "legend")
       .attr("transform", "translate(" + 0 + "," + 20 + ")");
 
     // add legend
@@ -205,7 +200,7 @@ LinePlot.prototype.AddPlot = function() {
 
     // add legend title
     const legend_title = legend_region.append("g")
-      .attr("id", "legend-title");
+      .attr("class", "legend-title");
     legend_title.append("text")
       .attr({
         x: 0,
@@ -222,7 +217,7 @@ LinePlot.prototype.AddPlot = function() {
 
 LinePlot.prototype.UpdatePlot = function() {
   const plot = this;
-  const colorScale = d3.scale.category10();
+  const colorScale = plot.colorScale;
   const line = d3.svg.line()
     .x( function(d) { return plot.xScale(d[0]);} )
     .y( function(d) { return plot.yScale(d[1]);} );
@@ -332,25 +327,23 @@ LinePlot.prototype.AddDescription = function() {
     plot.description.append("div").style("padding-bottom", "50px");
 
     const log_check_box = plot.description.append("div").attr("class", "checkbox");
-    const check_box_x_label = log_check_box.append("label").attr("id", "x_log_check");
+    const check_box_x_label = log_check_box.append("label");
     check_box_x_label.html('<input type="checkbox"> log scale on x axis');
-    //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
-    d3.select('label#x_log_check input').on("change", function() {
+    check_box_x_label.select("input").on("change", function() {
       reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
     });
     log_check_box.append("br");
 
-    const check_box_y_label = log_check_box.append("label").attr("id", "y_log_check");
+    const check_box_y_label = log_check_box.append("label");
     check_box_y_label.html('<input type="checkbox"> log scale on y axis');
-    //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
-    d3.select('label#y_log_check input').on("change", function() {
+    check_box_y_label.select("input").on("change", function() {
       reset_brush(plot.IsLog[0] ? "log" : "linear", this.checked ? "log" : "linear");
     });
 
     plot.description.append("br");
     const control_plot = plot.description.append("div").style("margin-top", "10px");
     function add_brush() {
-      const clone = plot.main_group.select("g#plot-group").node().cloneNode(true);
+      const clone = plot.main_group.select("g.plot-group").node().cloneNode(true);
       control_plot.append("svg")
         .attr("width","210")
         .attr("height","155")
