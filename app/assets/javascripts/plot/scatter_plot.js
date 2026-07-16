@@ -6,7 +6,6 @@ function ScatterPlot() {
 
 ScatterPlot.prototype = Object.create(Plot.prototype);// ScatterPlot is sub class of Plot
 ScatterPlot.prototype.constructor = ScatterPlot;// override constructor
-ScatterPlot.prototype.IsLog = [false, false];   // true if x/y scale is log
 
 ScatterPlot.prototype.SetXScale = function(xscale) {
   const plot = this;
@@ -116,7 +115,7 @@ ScatterPlot.prototype.AddPlot = function() {
     const color_map = plot.main_group.append("g")
       .attr({
         "transform": "translate(" + plot.width + "," + plot.margin.top + ")",
-        "id": "color-map-group"
+        "class": "color-map-group"
       });
     const scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(plot.colorScale.range());
     color_map.append("text")
@@ -134,25 +133,25 @@ ScatterPlot.prototype.AddPlot = function() {
         fill: function(d) { return scale(d); }
       });
     color_map.append("text")
-      .attr({id:"result-range-max", x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
+      .attr({class:"result-range-max", x: 30.0, y: 40.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
       .text( plot.colorScale.domain()[2] );
     color_map.append("text")
-      .attr({id:"result-range-middle", x: 30.0, y: 100.0, dx: "0.2em", dy: "-0.3em"})
+      .attr({class:"result-range-middle", x: 30.0, y: 100.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
       .text( plot.colorScale.domain()[1] );
     color_map.append("text")
-      .attr({id:"result-range-min", x: 30.0, y: 160.0, dx: "0.2em", dy: "-0.3em"})
+      .attr({class:"result-range-min", x: 30.0, y: 160.0, dx: "0.2em", dy: "-0.3em"})
       .style("text-anchor", "begin")
       .text( plot.colorScale.domain()[0] );
   }
   add_color_map_group();
 
-  const plot_group = plot.main_group.append("g").attr("id", "plot-group");
+  const plot_group = plot.main_group.append("g").attr("class", "plot-group");
 
   function add_voronoi_group() {
     const voronoi_group = plot_group.append("g")
-      .attr("id", "voronoi-group");
+      .attr("class", "voronoi-group");
   }
   add_voronoi_group();
 
@@ -166,12 +165,12 @@ ScatterPlot.prototype.AddPlot = function() {
       };
     });
     const point = plot_group.append("g")
-      .attr("id", "point-group");
+      .attr("class", "point-group");
     point.selectAll("circle")
       .data(mapped)
       .enter()
         .append("circle")
-        .attr("clip-path", "url(#clip)")
+        .attr("clip-path", "url(#" + plot.clipId + ")")
         .style("fill", function(d) { return plot.colorScalePoint(d.average);})
         .on("mouseover", function(d) {
           tooltip.transition()
@@ -212,11 +211,11 @@ ScatterPlot.prototype.UpdatePlot = function() {
   function update_color_scale() {
     const scale = d3.scale.linear().domain([0.0, 0.5, 1.0]).range(plot.colorScale.range());
 
-    plot.main_group.select("#result-range-max")
+    plot.main_group.select(".result-range-max")
       .text( plot.colorScale.domain()[2] );
-    plot.main_group.select("#result-range-middle")
+    plot.main_group.select(".result-range-middle")
       .text( plot.colorScale.domain()[1] );
-    plot.main_group.select("#result-range-min")
+    plot.main_group.select(".result-range-min")
       .text( plot.colorScale.domain()[0] );
 
     plot.main_group.selectAll("circle")
@@ -227,7 +226,7 @@ ScatterPlot.prototype.UpdatePlot = function() {
   function update_voronoi_group() {
     const result_min_val = d3.min( plot.data.data, function(d) { return d[1];});
     const result_max_val = d3.max( plot.data.data, function(d) { return d[1];});
-    const voronoi = plot.main_group.select("g#voronoi-group");
+    const voronoi = plot.main_group.select("g.voronoi-group");
     const d3voronoi = d3.geom.voronoi()
       .clipExtent([[0, 0], [plot.width, plot.height]]);
     const filtered_data = plot.data.data.filter(function(v) {
@@ -252,8 +251,8 @@ ScatterPlot.prototype.UpdatePlot = function() {
         .enter()
           .append("path")
           .attr("fill", function(d, i) {
-            if(filtered_data[i][1] < plot.colorScale.domain()[0]) {return "url(#TrianglePattern)";}
-            if(filtered_data[i][1] > plot.colorScale.domain()[2]) {return "url(#TrianglePattern)";}
+            if(filtered_data[i][1] < plot.colorScale.domain()[0]) {return "url(#triangle-pattern-" + plot.plotId + ")";}
+            if(filtered_data[i][1] > plot.colorScale.domain()[2]) {return "url(#triangle-pattern-" + plot.plotId + ")";}
             return plot.colorScale(filtered_data[i][1]);
           })
           .attr("d", function(d) { return "M" + d.join('L') + "Z"; })
@@ -272,7 +271,7 @@ ScatterPlot.prototype.UpdatePlot = function() {
   update_voronoi_group();
 
   function update_point_group() {
-    const point = plot.main_group.select("g#point-group");
+    const point = plot.main_group.select("g.point-group");
     point.selectAll("circle")
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .attr("cx", function(d) { return plot.xScale(d.x);})
@@ -340,25 +339,23 @@ ScatterPlot.prototype.AddDescription = function() {
     plot.description.append("div").style("margin-bottom", "20px");
 
     const log_check_box = plot.description.append("div").attr("class", "checkbox");
-    const check_box_x_label = log_check_box.append("label").attr("id", "x_log_check");
+    const check_box_x_label = log_check_box.append("label");
     check_box_x_label.html('<input type="checkbox"> log scale on x axis');
-    //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
-    d3.select('label#x_log_check input').on("change", function() {
+    check_box_x_label.select("input").on("change", function() {
       reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
     });
     log_check_box.append("br");
 
-    const check_box_y_label = log_check_box.append("label").attr("id", "y_log_check");
+    const check_box_y_label = log_check_box.append("label");
     check_box_y_label.html('<input type="checkbox"> log scale on y axis');
-    //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
-    d3.select('label#y_log_check input').on("change", function() {
+    check_box_y_label.select("input").on("change", function() {
       reset_brush(plot.IsLog[0] ? "log" : "linear", this.checked ? "log" : "linear");
     });
 
     plot.description.append("br");
     const control_plot = plot.description.append("div").style("margin-top", "10px");
     function add_brush() {
-      const clone = plot.main_group.select("g#plot-group").node().cloneNode(true);
+      const clone = plot.main_group.select("g.plot-group").node().cloneNode(true);
       control_plot.append("svg")
         .attr("width","210")
         .attr("height","155")
@@ -421,7 +418,7 @@ ScatterPlot.prototype.AddDescription = function() {
     function add_result_scale_controller() {
       const pattern = plot.main_group.select("defs").append("pattern");
       pattern
-        .attr("id", "TrianglePattern")
+        .attr("id", "triangle-pattern-" + plot.plotId)
         .attr("patternUnits", "userSpaceOnUse")
         .attr("x", 0)
         .attr("y", 0)
@@ -435,22 +432,20 @@ ScatterPlot.prototype.AddDescription = function() {
         .attr("fill", "black");
 
       const color_scale_control = plot.description.append("div")
-        .attr("id","color-scale-control")
+        .attr("class","color-scale-control")
         .style("margin-top", "10px");
 
       color_scale_control.text("Result range :");
       const form = color_scale_control.append("form").attr("class", "form-inline");
       form.append("input").attr({
         "type": "text",
-        "class": "input-sm form-control",
-        "placeholder": "min",
-        "id": "range-min"
+        "class": "input-sm form-control range-min",
+        "placeholder": "min"
       });
       form.append("input").attr({
         "type": "text",
-        "class": "input-sm form-control",
-        "placeholder": "max",
-        "id": "range-max"
+        "class": "input-sm form-control range-max",
+        "placeholder": "max"
       });
 
       const range_change = function(key, text_field) {
@@ -483,12 +478,12 @@ ScatterPlot.prototype.AddDescription = function() {
           alert(e);
         }
       };
-      plot.description.select("#range-max")
+      plot.description.select(".range-max")
         .attr("value", plot.colorScale.domain()[2])
         .on("change", function() {
           range_change("max", this);
         });
-      plot.description.select("#range-min")
+      plot.description.select(".range-min")
         .attr("value", plot.colorScale.domain()[0])
         .on("change", function() {
           range_change("min", this);

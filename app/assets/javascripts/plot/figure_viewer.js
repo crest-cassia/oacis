@@ -13,7 +13,7 @@ FigureViewer.prototype.figure_size = "point";
 
 FigureViewer.prototype.Init = function(data, url, parameter_set_base_url, current_ps_id) {
   Plot.prototype.Init.call(this, data, url, parameter_set_base_url, current_ps_id);
-  d3.select("#clip rect")
+  this.main_group.select("#" + this.clipId + " rect")
     .attr("y", -5-92)
     .attr("width", this.width+10+112)
     .attr("height", this.height+10+92);
@@ -65,7 +65,7 @@ FigureViewer.prototype.SetYScale = function(yscale) {
     break;
   case "log":
     const data_in_logscale = this.data.data.filter(function(element) {
-      return element[0] > 0.0;
+      return element[1] > 0.0;
     });
     scale = d3.scale.log().clamp(true).range([this.height, 0]);
     min = d3.min( data_in_logscale, function(d) { return d[1];});
@@ -101,7 +101,7 @@ FigureViewer.prototype.UpdatePlot = function(new_size) {
     if(new_size == "point") {
       this.UpdatePointPlot();
     } else {
-      this.main_group.select("g#point-group").remove();
+      this.main_group.select("g.point-group").remove();
       this.AddPlot();
     }
     break;
@@ -109,7 +109,7 @@ FigureViewer.prototype.UpdatePlot = function(new_size) {
   case "large":
     this.figure_size = new_size;
     if(new_size == "point") {
-      this.main_group.select("g#figure-group").remove();
+      this.main_group.select("g.figure-group").remove();
       this.AddPlot();
     } else {
       this.UpdateFigurePlot();
@@ -129,11 +129,11 @@ FigureViewer.prototype.AddFigurePlot = function() {
       return { x: v[0], y: v[1], path:v[2], psid: v[3] };
     });
     const figure_group = plot.main_group.append("g")
-      .attr("id", "figure-group");
+      .attr("class", "figure-group");
     const figure = figure_group.selectAll("image")
       .data(mapped).enter();
     figure.append("svg:image")
-      .attr("clip-path", "url(#clip)")
+      .attr("clip-path", "url(#" + plot.clipId + ")")
       .attr("xlink:href", function(d) { return d.path; })
       .on("mouseover", function(d) {
         tooltip.transition()
@@ -182,7 +182,7 @@ FigureViewer.prototype.UpdateFigurePlot = function() {
     y_figure_scale*=(plot.yaxis_original_domain[1] - plot.yaxis_original_domain[0])/(ydomain[1] - ydomain[0]);
   }
   function update_figure_plot() {
-    const figure_group = plot.main_group.select("g#figure-group");
+    const figure_group = plot.main_group.select("g.figure-group");
     figure_group.selectAll("image")
       .attr("x", function(d) { return plot.xScale(d.x);})
       .attr("y", function(d) { return plot.yScale(d.y) - plot.height*y_figure_scale;})
@@ -202,11 +202,11 @@ FigureViewer.prototype.AddPointPlot = function() {
       return { x: v[0], y: v[1], path:v[2], psid: v[3] };
     });
     const point_group = plot.main_group.append("g")
-      .attr("id", "point-group");
+      .attr("class", "point-group");
     const point = point_group.selectAll("circle")
       .data(mapped).enter();
     point.append("circle")
-      .attr("clip-path", "url(#clip)")
+      .attr("clip-path", "url(#" + plot.clipId + ")")
       .style("fill", function() { return "black";})
       .attr("r", function(d) { return (d.psid == plot.current_ps_id) ? 5 : 3;})
       .on("mouseover", function(d) {
@@ -248,7 +248,7 @@ FigureViewer.prototype.UpdatePointPlot = function() {
   const plot = this;
 
   function update_point_group() {
-    const point_group = plot.main_group.select("g#point-group");
+    const point_group = plot.main_group.select("g.point-group");
     point_group.selectAll("circle")
       .attr("cx", function(d) { return plot.xScale(d.x);})
       .attr("cy", function(d) { return plot.yScale(d.y);});
@@ -312,25 +312,23 @@ FigureViewer.prototype.AddDescription = function() {
     plot.description.append("div").style("padding-bottom", "50px");
 
     const log_check_box = plot.description.append("div").attr("class", "checkbox");
-    const check_box_x_label = log_check_box.append("label").attr("id", "x_log_check");
+    const check_box_x_label = log_check_box.append("label");
     check_box_x_label.html('<input type="checkbox"> log scale on x axis');
-    //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
-    d3.select('label#x_log_check input').on("change", function() {
+    check_box_x_label.select("input").on("change", function() {
       reset_brush(this.checked ? "log" : "linear", plot.IsLog[1] ? "log" : "linear");
     });
     log_check_box.append("br");
 
-    const check_box_y_label = log_check_box.append("label").attr("id", "y_log_check");
+    const check_box_y_label = log_check_box.append("label");
     check_box_y_label.html('<input type="checkbox"> log scale on y axis');
-    //d3.select gets the first element. This selection is available only when new svg will appear at the above of the old svg.
-    d3.select('label#y_log_check input').on("change", function() {
+    check_box_y_label.select("input").on("change", function() {
       reset_brush(plot.IsLog[0] ? "log" : "linear", this.checked ? "log" : "linear");
     });
 
     plot.description.append("br");
     const control_plot = plot.description.append("div").style("margin-top", "10px");
     function add_brush() {
-      const selector = (plot.figure_size == "point") ? "g#point-group" : "g#figure-group";
+      const selector = (plot.figure_size == "point") ? "g.point-group" : "g.figure-group";
       const clone = plot.main_group.select(selector).node().cloneNode(true);
       control_plot.append("svg")
         .attr("width","210")
