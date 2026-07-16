@@ -35,6 +35,7 @@ class Host
                      inclusion: {in: HOST_STATUS}
   validate :work_base_dir_is_not_editable_when_submitted_runs_exist
   validate :min_is_not_larger_than_max
+  validate :name_is_valid_ssh_alias
 
   before_validation :get_host_parameters,
                :if => lambda { status == :enabled }
@@ -49,6 +50,7 @@ class Host
     SocketError,
     Net::SSH::Exception,
     PopenSSH::ConnectionError,
+    SSHUtil::InvalidHostnameError,
     OpenSSL::PKey::RSAError,
     Timeout::Error
   ]
@@ -140,8 +142,9 @@ class Host
       yield @ssh
     else
       ssh_module = ssh_backend == "popen_ssh" ? PopenSSH : Net::SSH
-      ssh_logger.debug("starting SSH: #{self.name} using #{ssh_module}" ) if ssh_logger
-      ssh_module.start(name, nil, password: nil, timeout: 1, non_interactive: true, logger: ssh_logger) do |ssh|
+      hostname = SSHUtil.validate_hostname!(name)
+      ssh_logger.debug("starting SSH: #{hostname} using #{ssh_module}" ) if ssh_logger
+      ssh_module.start(hostname, nil, password: nil, timeout: 1, non_interactive: true, logger: ssh_logger) do |ssh|
         @ssh = ssh
         begin
           yield ssh
@@ -172,6 +175,12 @@ class Host
   end
 
   private
+  def name_is_valid_ssh_alias
+    return if name.blank? || SSHUtil.valid_hostname?(name)
+
+    errors.add(:name, SSHUtil::HOST_ALIAS_REQUIREMENTS)
+  end
+
   def work_base_dir_is_not_editable_when_submitted_runs_exist
     if work_base_dir_is_not_editable? and self.work_base_dir_changed?
       errors.add(:work_base_dir, "is not editable when submitted runs exist")
@@ -247,4 +256,3 @@ class Host
     end
   end
 end
-

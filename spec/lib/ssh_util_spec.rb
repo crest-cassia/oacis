@@ -25,6 +25,16 @@ RSpec.shared_examples "SSHUtil backend" do |backend_name, ssh_module|
       SSHUtil.download_file(@hostname, remote_path, local_path)
       expect(File.exist?(local_path)).to be_truthy
     end
+
+    it "handles spaces and shell metacharacters in remote and local paths" do
+      remote_path = @temp_dir.join(%q{remote ; $(not_a_command) 'quoted'}).expand_path
+      FileUtils.touch(remote_path)
+      local_path = @temp_dir.join(%q{local ; $(not_a_command) 'quoted'}).expand_path
+
+      SSHUtil.download_file(@hostname, remote_path, local_path)
+
+      expect(File.exist?(local_path)).to be_truthy
+    end
   end
 
   describe ".download_directory" do
@@ -50,6 +60,17 @@ RSpec.shared_examples "SSHUtil backend" do |backend_name, ssh_module|
       SSHUtil.download_directory(@hostname, remote_path, local_path)
       expect(File.directory?(local_path)).to be_truthy
       expect(File.exist?(local_path.join('file'))).to be_truthy
+    end
+
+    it "handles spaces and shell metacharacters while expanding directory contents" do
+      remote_path = @temp_dir.join(%q{remote dir ; $(not_a_command) 'quoted'}).expand_path
+      FileUtils.mkdir_p(remote_path)
+      FileUtils.touch(remote_path.join(%q{file ; $(not_a_command) 'quoted'}))
+      local_path = @temp_dir.join('local directory')
+
+      SSHUtil.download_directory(@hostname, remote_path, local_path)
+
+      expect(File.exist?(local_path.join(%q{file ; $(not_a_command) 'quoted'}))).to be_truthy
     end
 
     it "raise exception if the remote_path is not directory but file" do
@@ -127,6 +148,16 @@ RSpec.shared_examples "SSHUtil backend" do |backend_name, ssh_module|
       expect(File.exist?(remote_path)).to be_truthy
     end
 
+    it "handles spaces and shell metacharacters in local and remote paths" do
+      local_path = @temp_dir.join(%q{local ; $(not_a_command) 'quoted'})
+      FileUtils.touch(local_path)
+      remote_path = @temp_dir.join(%q{remote ; $(not_a_command) 'quoted'}).expand_path
+
+      SSHUtil.upload(@hostname, local_path, remote_path)
+
+      expect(File.exist?(remote_path)).to be_truthy
+    end
+
     it "upload local directory recursively" do
       local_dir = @temp_dir.join('dir/dir2')
       FileUtils.mkdir_p(local_dir)
@@ -137,6 +168,21 @@ RSpec.shared_examples "SSHUtil backend" do |backend_name, ssh_module|
       SSHUtil.upload(@hostname, @temp_dir.join('dir'), remote_path.join('dir'))
       expect( File.directory?(@temp_dir.join('remote/dir/dir2')) ).to be_truthy
       expect( File.exist?( @temp_dir.join('remote/dir/dir2/file')) ).to be_truthy
+    end
+
+    it "keeps tilde expansion for remote paths" do
+      remote_dir_name = ".oacis_ssh_util_#{SecureRandom.hex(8)}"
+      remote_dir = Pathname.new(Dir.home).join(remote_dir_name)
+      FileUtils.mkdir_p(remote_dir)
+      local_path = @temp_dir.join('local file')
+      File.write(local_path, "content")
+      remote_path = "~/#{remote_dir_name}/remote file"
+
+      SSHUtil.upload(@hostname, local_path, remote_path)
+
+      expect(remote_dir.join('remote file').read).to eq "content"
+    ensure
+      FileUtils.rm_rf(remote_dir) if remote_dir
     end
   end
 
@@ -298,6 +344,107 @@ describe SSHUtil do
 
     it "accepts a Pathname" do
       expect(SSHUtil.escape_remote_path(Pathname.new("/tmp/abc"))).to eq "/tmp/abc"
+    end
+  end
+
+  describe "scp command construction" do
+
+    let(:status) { double(success?: true) }
+
+    it "passes download arguments separately from the local shell" do
+      remote_path = %q{~/remote path;$(touch injected)'quoted}
+      local_path = Pathname.new(%q{/tmp/local path;$(touch injected)'quoted})
+      remote_operand = "host_alias:~/#{Shellwords.escape(remote_path[2..])}"
+      expect(Open3).to receive(:capture3)
+        .with("scp", "-O", "-Bqr", "--", remote_operand, local_path.to_s)
+        .and_return(["", "", status])
+
+      SSHUtil.download_file("host_alias", remote_path, local_path)
+    end
+
+    it "leaves only the directory contents wildcard unescaped" do
+      remote_path = %q{/remote path;$(touch injected)'quoted}
+      local_path = Pathname.new("/tmp/local path")
+      remote_operand = "host_alias:#{Shellwords.escape(remote_path)}/*"
+      allow(FileUtils).to receive(:mkdir_p)
+      expect(Open3).to receive(:capture3)
+        .with("scp", "-O", "-Bqr", "--", remote_operand, local_path.to_s)
+        .and_return(["", "", status])
+
+      SSHUtil.download_directory("host_alias", remote_path, local_path)
+    end
+
+    it "passes file upload arguments separately from the local shell" do
+      local_path = Pathname.new(%q{/tmp/local path;$(touch injected)'quoted})
+      remote_path = %q{~/remote path;$(touch injected)'quoted}
+      remote_operand = "host_alias:~/#{Shellwords.escape(remote_path[2..])}"
+      allow(File).to receive(:directory?).with(local_path).and_return(false)
+      expect(Open3).to receive(:capture3)
+        .with("scp", "-O", "-Bqr", "--", local_path.to_s, remote_operand)
+        .and_return(["", "", status])
+
+      SSHUtil.upload("host_alias", local_path, remote_path)
+    end
+
+    it "preserves the trailing slash when uploading a directory" do
+      local_path = Pathname.new("/tmp/local directory")
+      remote_path = "/tmp/remote directory"
+      remote_operand = "host_alias:#{Shellwords.escape(remote_path)}"
+      allow(File).to receive(:directory?).with(local_path).and_return(true)
+      expect(Open3).to receive(:capture3)
+        .with("scp", "-O", "-Bqr", "--", "#{local_path}/", remote_operand)
+        .and_return(["", "", status])
+
+      SSHUtil.upload("host_alias", local_path, remote_path)
+    end
+
+    it "falls back when the local scp is too old to accept -O" do
+      unsupported_status = double(success?: false)
+      remote_path = "/tmp/remote path"
+      local_path = Pathname.new("/tmp/local path")
+      remote_operand = "host_alias:#{Shellwords.escape(remote_path)}"
+      expect(Open3).to receive(:capture3)
+        .with("scp", "-O", "-Bqr", "--", remote_operand, local_path.to_s)
+        .and_return(["", "scp: illegal option -- O", unsupported_status])
+      expect(Open3).to receive(:capture3)
+        .with("scp", "-Bqr", "--", remote_operand, local_path.to_s)
+        .and_return(["", "", status])
+
+      SSHUtil.download_file("host_alias", remote_path, local_path)
+    end
+  end
+
+  describe ".validate_hostname!" do
+
+    it "accepts SSH config aliases beyond a restrictive hostname whitelist" do
+      valid_hostnames = [
+        "host-1.example_name",
+        "gpu+cluster%2"
+      ]
+
+      valid_hostnames.each do |hostname|
+        expect(SSHUtil.validate_hostname!(hostname)).to eq hostname
+      end
+    end
+
+    it "rejects only values that can break SSH or scp argument parsing" do
+      invalid_hostnames = [
+        "-oProxyCommand=touch",
+        "host:22",
+        "user@host",
+        "host/path",
+        "host\\name",
+        "[host]",
+        "host name",
+        "host\nname",
+        "host\0name"
+      ]
+
+      invalid_hostnames.each do |hostname|
+        expect {
+          SSHUtil.validate_hostname!(hostname)
+        }.to raise_error(SSHUtil::InvalidHostnameError)
+      end
     end
   end
 end
