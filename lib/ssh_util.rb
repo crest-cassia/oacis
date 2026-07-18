@@ -7,9 +7,9 @@ module SSHUtil
   class CommandTimeoutError < StandardError; end
   class InvalidHostnameError < ArgumentError; end
 
-  HOST_ALIAS_FORBIDDEN_PATTERN = /[[:space:]\x00-\x1f\x7f:@\/\\\[\]]/
+  HOST_ALIAS_FORBIDDEN_PATTERN = /[[:space:]\x00-\x1f\x7f:\/\\\[\]]/
   HOST_ALIAS_REQUIREMENTS =
-    "must not start with '-' or contain whitespace, control characters, ':', '@', '/', '\\', '[' or ']'"
+    "must not start with '-' or contain whitespace, control characters, ':', '/', '\\', '[' or ']'"
 
   class ShellSession
 

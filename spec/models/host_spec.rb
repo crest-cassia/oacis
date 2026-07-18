@@ -31,7 +31,7 @@ describe Host do
     end
 
     it "'name' accepts SSH config aliases beyond a restrictive hostname whitelist" do
-      ['host-1.example_name', 'gpu+cluster%2'].each do |name|
+      ['host-1.example_name', 'gpu+cluster%2', 'user@host'].each do |name|
         @valid_attr.update(name: name)
         expect(Host.new(@valid_attr)).to be_valid
       end
@@ -41,7 +41,6 @@ describe Host do
       invalid_names = [
         '-oProxyCommand=touch',
         'host:22',
-        'user@host',
         'host/path',
         "host\\name",
         '[host]',

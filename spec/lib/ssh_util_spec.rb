@@ -419,7 +419,8 @@ describe SSHUtil do
     it "accepts SSH config aliases beyond a restrictive hostname whitelist" do
       valid_hostnames = [
         "host-1.example_name",
-        "gpu+cluster%2"
+        "gpu+cluster%2",
+        "user@host"
       ]
 
       valid_hostnames.each do |hostname|
@@ -431,7 +432,6 @@ describe SSHUtil do
       invalid_hostnames = [
         "-oProxyCommand=touch",
         "host:22",
-        "user@host",
         "host/path",
         "host\\name",
         "[host]",
