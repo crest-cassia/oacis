@@ -99,9 +99,10 @@ module JobIncluder
   def self.move_local_file(host, submittable)
     work_dir = map_remote_path_to_mounted_path(host, RemoteFilePath.work_dir_path(host, submittable))
     archive = map_remote_path_to_mounted_path(host, RemoteFilePath.result_file_path(host, submittable))
-    cmd = "rsync -a #{work_dir}/ #{submittable.dir} && mv #{archive} #{submittable.dir.join("..")}/"
-    system(cmd)
-    raise "can not move work_directory from #{work_dir}" unless $?.exitstatus == 0
+    copied = system("rsync", "-a", "--", "#{work_dir}/", submittable.dir.to_s)
+    raise "can not move work_directory from #{work_dir}" unless copied
+
+    FileUtils.mv(archive, submittable.dir.join(".."))
 
     RemoteFilePath.scheduler_log_file_paths(host, submittable).each do |path|
       if path.exist?

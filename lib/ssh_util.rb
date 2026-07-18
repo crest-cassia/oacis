@@ -1,9 +1,15 @@
 require 'open3'
 require 'securerandom'
+require 'shellwords'
 
 module SSHUtil
 
   class CommandTimeoutError < StandardError; end
+  class InvalidHostnameError < ArgumentError; end
+
+  HOST_ALIAS_FORBIDDEN_PATTERN = /[[:space:]\x00-\x1f\x7f:\/\\\[\]]/
+  HOST_ALIAS_REQUIREMENTS =
+    "must not start with '-' or contain whitespace, control characters, ':', '/', '\\', '[' or ']'"
 
   class ShellSession
 
@@ -119,17 +125,30 @@ module SSHUtil
     end
   end
 
+  def self.valid_hostname?(hostname)
+    hostname = hostname.to_s
+    !hostname.empty? &&
+      !hostname.start_with?("-") &&
+      !HOST_ALIAS_FORBIDDEN_PATTERN.match?(hostname)
+  end
+
+  def self.validate_hostname!(hostname)
+    hostname = hostname.to_s
+    return hostname if valid_hostname?(hostname)
+
+    raise InvalidHostnameError,
+          "invalid SSH host alias #{hostname.inspect}; #{HOST_ALIAS_REQUIREMENTS}"
+  end
+
   def self.download_file(hostname, remote_path, local_path)
-    cmd = "scp -Bqr '#{hostname}:#{remote_path}' #{local_path}"
-    _out, err, status = Open3.capture3(cmd)
-    raise "'#{cmd}' failed with #{status.exitstatus}: #{err.chomp}" unless status.success?
+    source = remote_scp_operand(hostname, remote_path)
+    run_scp(source, local_path)
   end
 
   def self.download_directory(hostname, remote_path, local_path)
     FileUtils.mkdir_p(local_path)
-    cmd = "scp -Bqr '#{hostname}:#{remote_path}/*' #{local_path}"
-    _out, err, status = Open3.capture3(cmd)
-    raise "'#{cmd}' failed with #{status.exitstatus}: #{err.chomp}" unless status.success?
+    source = remote_scp_operand(hostname, remote_path, directory_contents: true)
+    run_scp(source, local_path)
   end
 
   def self.download_recursive_if_exist(sh, hostname, remote_path, local_path)
@@ -150,12 +169,10 @@ module SSHUtil
   end
 
   def self.upload(hostname, local_path, remote_path)
-    cmd = "scp -Bqr #{Shellwords.escape(local_path.to_s)} '#{hostname}:#{remote_path}'"
-    if File.directory?(local_path)
-      cmd = "scp -Bqr #{Shellwords.escape(local_path.to_s)}/ '#{hostname}:#{remote_path}'"
-    end
-    _out, err, status = Open3.capture3(cmd)
-    raise "'#{cmd}' failed with #{status.exitstatus}: #{err.chomp}" unless status.success?
+    source = local_path.to_s
+    source += "/" if File.directory?(local_path)
+    destination = remote_scp_operand(hostname, remote_path)
+    run_scp(source, destination)
   end
 
   def self.rm_r(sh, remote_paths)
@@ -199,4 +216,36 @@ module SSHUtil
     _out,_err,rc = execute2(sh, "test -e #{escape_remote_path(remote_path)}")
     rc == 0
   end
+
+  def self.remote_scp_operand(hostname, remote_path, directory_contents: false)
+    hostname = validate_hostname!(hostname)
+    path = escape_remote_path(remote_path)
+    path += "/*" if directory_contents
+    "#{hostname}:#{path}"
+  end
+  private_class_method :remote_scp_operand
+
+  def self.run_scp(source, destination)
+    # Remote operands are escaped for the legacy scp protocol's remote shell.
+    # Modern clients need -O because SFTP mode treats those backslashes literally;
+    # older clients already use the legacy protocol and reject -O, so retry safely.
+    # Legacy mode requires an scp binary on the remote host. If a future client
+    # removes legacy scp support, switch this transfer to SFTP mode and adapt the
+    # remote path handling accordingly.
+    argv = ["scp", "-O", "-Bqr", "--", source.to_s, destination.to_s]
+    _out, err, status = Open3.capture3(*argv)
+    if !status.success? && scp_legacy_option_unsupported?(err)
+      argv.delete("-O")
+      _out, err, status = Open3.capture3(*argv)
+    end
+    return if status.success?
+
+    raise "'#{Shellwords.shelljoin(argv)}' failed with #{status.exitstatus}: #{err.chomp}"
+  end
+  private_class_method :run_scp
+
+  def self.scp_legacy_option_unsupported?(stderr)
+    stderr.match?(/(?:illegal|unknown) option -- O/i)
+  end
+  private_class_method :scp_legacy_option_unsupported?
 end

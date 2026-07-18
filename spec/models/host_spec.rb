@@ -30,6 +30,31 @@ describe Host do
       expect(Host.new(@valid_attr)).not_to be_valid
     end
 
+    it "'name' accepts SSH config aliases beyond a restrictive hostname whitelist" do
+      ['host-1.example_name', 'gpu+cluster%2', 'user@host'].each do |name|
+        @valid_attr.update(name: name)
+        expect(Host.new(@valid_attr)).to be_valid
+      end
+    end
+
+    it "'name' rejects only values that can break SSH or scp argument parsing" do
+      invalid_names = [
+        '-oProxyCommand=touch',
+        'host:22',
+        'host/path',
+        "host\\name",
+        '[host]',
+        'host name',
+        "host\nname",
+        "host\0name"
+      ]
+
+      invalid_names.each do |name|
+        @valid_attr.update(name: name)
+        expect(Host.new(@valid_attr)).not_to be_valid
+      end
+    end
+
     it "default of 'work_base_dir' is '~/oacis_work'" do
       @valid_attr.delete(:work_base_dir)
       expect(Host.new(@valid_attr).work_base_dir).to eq('~/oacis_work')

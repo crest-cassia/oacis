@@ -385,4 +385,50 @@ describe JobIncluder do
       end
     end
   end
+
+  describe ".move_local_file" do
+
+    let(:host) { instance_double(Host) }
+    let(:submittable) {
+      instance_double(Run, dir: Pathname.new(%q{/local/result dir;$(touch injected)/run}))
+    }
+    let(:remote_work_dir) { Pathname.new("/remote/work") }
+    let(:remote_archive) { Pathname.new("/remote/archive.tar.bz2") }
+    let(:mounted_work_dir) { Pathname.new(%q{/mounted/work dir;$(touch injected)}) }
+    let(:mounted_archive) { Pathname.new(%q{/mounted/archive ;$(touch injected).tar.bz2}) }
+
+    before do
+      allow(RemoteFilePath).to receive(:work_dir_path)
+        .with(host, submittable).and_return(remote_work_dir)
+      allow(RemoteFilePath).to receive(:result_file_path)
+        .with(host, submittable).and_return(remote_archive)
+      allow(JobIncluder).to receive(:map_remote_path_to_mounted_path)
+        .with(host, remote_work_dir).and_return(mounted_work_dir)
+      allow(JobIncluder).to receive(:map_remote_path_to_mounted_path)
+        .with(host, remote_archive).and_return(mounted_archive)
+      allow(RemoteFilePath).to receive(:scheduler_log_file_paths)
+        .with(host, submittable).and_return([])
+    end
+
+    it "runs rsync with argv and moves the archive only after success" do
+      expect(JobIncluder).to receive(:system)
+        .with("rsync", "-a", "--", "#{mounted_work_dir}/", submittable.dir.to_s)
+        .and_return(true)
+      expect(FileUtils).to receive(:mv)
+        .with(mounted_archive, submittable.dir.join(".."))
+
+      JobIncluder.send(:move_local_file, host, submittable)
+    end
+
+    it "does not move the archive when rsync fails" do
+      allow(JobIncluder).to receive(:system)
+        .with("rsync", "-a", "--", "#{mounted_work_dir}/", submittable.dir.to_s)
+        .and_return(false)
+      expect(FileUtils).not_to receive(:mv)
+
+      expect {
+        JobIncluder.send(:move_local_file, host, submittable)
+      }.to raise_error("can not move work_directory from #{mounted_work_dir}")
+    end
+  end
 end

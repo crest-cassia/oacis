@@ -71,9 +71,8 @@ EOS
   def self.expand_result_file(job)
 
     Dir.chdir(job.dir.join('..')) {
-      cmd = "tar xjf #{job.id}.tar.bz2"
-      system(cmd)
-      unless $?.to_i == 0
+      expanded = system("tar", "xjf", "#{job.id}.tar.bz2")
+      unless expanded
         job.update_attribute(:error_messages, "failed to extract the archive")
         raise "failed to extract the archive"
       end
