@@ -229,6 +229,9 @@ module SSHUtil
     # Remote operands are escaped for the legacy scp protocol's remote shell.
     # Modern clients need -O because SFTP mode treats those backslashes literally;
     # older clients already use the legacy protocol and reject -O, so retry safely.
+    # Legacy mode requires an scp binary on the remote host. If a future client
+    # removes legacy scp support, switch this transfer to SFTP mode and adapt the
+    # remote path handling accordingly.
     argv = ["scp", "-O", "-Bqr", "--", source.to_s, destination.to_s]
     _out, err, status = Open3.capture3(*argv)
     if !status.success? && scp_legacy_option_unsupported?(err)
