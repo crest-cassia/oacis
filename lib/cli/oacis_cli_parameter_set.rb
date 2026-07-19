@@ -62,19 +62,19 @@ class OacisCli < Thor
     input.each do |psid_value|
       ps_value = psid_value[:value]
       progressbar.log "  parameter values : #{ps_value.inspect}" if options[:verbose]
-      param_set = simulator.parameter_sets.build({v: ps_value, skip_check_uniqueness: true})
-      if (! psid_value[:id]) and param_set.valid?
-        param_set.save!
-        parameter_set_ids << param_set.id
-      elsif psid_value[:id] # An identical parameter_set is found
+      if psid_value[:id] # An identical parameter_set is found
         progressbar.log "  An identical parameter_set already exists. Skipping..."
         parameter_set_ids << psid_value[:id]
-        # do not use 'ps_value' instead of 'param_set.v'.
-        # Otherwise the existing ps is not found because 'ps_value' is not casted and ordered properly.
       else
-        progressbar.log param_set.inspect
-        progressbar.log param_set.errors.full_messages
-        raise "validation of parameter_set failed"
+        begin
+          param_set, created = ParameterSet.find_or_create!(simulator, ps_value)
+        rescue Mongoid::Errors::Validations => ex
+          progressbar.log ex.document.inspect
+          progressbar.log ex.document.errors.full_messages
+          raise "validation of parameter_set failed"
+        end
+        progressbar.log "  An identical parameter_set already exists. Skipping..." unless created
+        parameter_set_ids << param_set.id
       end
       progressbar.increment
     end

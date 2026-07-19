@@ -166,6 +166,53 @@ describe Run do
           expect( seeds ).to eq [1,3,4]
         end
       end
+
+      describe "uniqueness at the DB level" do
+
+        before(:each) do
+          Run.create_indexes
+        end
+
+        it "raises an error when an explicitly specified seed is duplicated" do
+          @param_set.runs.create!(@valid_attribute.merge(seed: 5))
+          expect {
+            @param_set.runs.create!(@valid_attribute.merge(seed: 5))
+          }.to raise_error(Mongo::Error::OperationFailure, /E11000/)
+        end
+
+        it "does not reuse the seed of a run which is waiting for destruction" do
+          @simulator.update_attribute(:sequential_seed, true)
+          @param_set.runs.destroy
+          run1 = @param_set.runs.create!(@valid_attribute)
+          expect( run1.seed ).to eq 1
+          run1.discard
+          run2 = @param_set.runs.create!(@valid_attribute)
+          expect( run2.seed ).to eq 2
+        end
+
+        it "retries with another seed when a concurrent creation takes the same seed" do
+          run1 = @param_set.runs.create!(@valid_attribute)
+          run2 = @param_set.runs.build(@valid_attribute)
+          simulate_race = true
+          allow(run2).to receive(:set_unique_seed).and_wrap_original do |m|
+            if simulate_race
+              simulate_race = false
+              run2.seed = run1.seed
+              run2.instance_variable_set(:@seed_auto_generated, true)
+            else
+              m.call
+            end
+          end
+          expect( run2.save ).to be_truthy
+          expect( run2.seed ).to_not eq run1.seed
+        end
+
+        it "does not retry when the seed is explicitly specified" do
+          run1 = @param_set.runs.create!(@valid_attribute.merge(seed: 7))
+          run2 = @param_set.runs.build(@valid_attribute.merge(seed: 7))
+          expect { run2.save }.to raise_error(Mongo::Error::OperationFailure, /E11000/)
+        end
+      end
     end
 
     describe "'host_parameters' field" do

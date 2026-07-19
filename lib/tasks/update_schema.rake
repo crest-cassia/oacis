@@ -126,5 +126,55 @@ namespace :db do
       OacisSetting.create!
       $stderr.puts "document oacis_settings was created"
     end
+
+    # backfill ParameterSet#fingerprint for the unique index (simulator_id, fingerprint).
+    # Discarded PSs (to_be_destroyed) are excluded by the default scope and
+    # intentionally left without a fingerprint.
+    q = ParameterSet.where(:fingerprint.exists => false)
+    if q.count > 0
+      $stderr.puts "backfilling ParameterSet#fingerprint..."
+      progressbar = ProgressBar.create(total: q.count, format: "%t %B %p%% (%c/%C)")
+      q.each do |ps|
+        ps.set(fingerprint: ParameterSet.fingerprint_of(ps.v))
+        progressbar.increment
+      end
+    end
+
+    # ParameterSets that are already duplicated cannot enter the unique index.
+    # Keep the fingerprint on the oldest one and exclude the rest, so that
+    # index creation succeeds. The duplicates remain usable until the user
+    # merges or destroys them manually.
+    dup_groups = ParameterSet.collection.aggregate([
+      { '$match' => { 'fingerprint' => { '$exists' => true } } },
+      { '$group' => { '_id' => { 'sim' => '$simulator_id', 'fp' => '$fingerprint' },
+                      'ids' => { '$push' => '$_id' }, 'count' => { '$sum' => 1 } } },
+      { '$match' => { 'count' => { '$gt' => 1 } } }
+    ]).to_a
+    dup_groups.each do |g|
+      ids = g['ids'].sort_by {|oid| oid.to_s }
+      kept = ids.shift
+      ParameterSet.collection.update_many({ '_id' => { '$in' => ids } },
+                                          { '$unset' => { 'fingerprint' => '' } })
+      $stderr.puts "WARNING: ParameterSets with identical parameters found: kept #{kept}, " \
+                   "excluded from the uniqueness constraint: #{ids.join(', ')}. " \
+                   "Consider destroying the duplicates."
+    end
+
+    # Runs with duplicated seeds block creation of the unique index
+    # (parameter_set_id, seed). They cannot be fixed automatically because a
+    # seed is part of the simulation record; ask the user to resolve them.
+    dup_seeds = Run.collection.aggregate([
+      { '$group' => { '_id' => { 'ps' => '$parameter_set_id', 'seed' => '$seed' },
+                      'ids' => { '$push' => '$_id' }, 'count' => { '$sum' => 1 } } },
+      { '$match' => { 'count' => { '$gt' => 1 } } }
+    ]).to_a
+    if dup_seeds.any?
+      $stderr.puts "ERROR: Runs with duplicated seeds were found:"
+      dup_seeds.each do |g|
+        $stderr.puts "  ParameterSet #{g.dig('_id','ps')}, seed #{g.dig('_id','seed')}: Runs #{g['ids'].join(', ')}"
+      end
+      raise "Duplicated seeds must be resolved (e.g. destroy one of each pair in 'rails console') " \
+            "before the unique index on (parameter_set_id, seed) can be created."
+    end
   end
 end

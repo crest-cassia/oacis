@@ -198,7 +198,14 @@ class Simulator
   end
 
   def find_or_create_parameter_set( parameters )
-    find_parameter_set( parameters ) or parameter_sets.create!(v: parameters)
+    given_keys = parameters.keys.map(&:to_s)
+    expected_keys = default_parameters.keys
+    unknown_keys = given_keys - expected_keys
+    raise "Unknown keys: #{unknown_keys}" unless unknown_keys.empty?
+    missing_keys = expected_keys - given_keys
+    raise "Missing keys: #{missing_keys}" unless missing_keys.empty?
+
+    ParameterSet.find_or_create!(self, parameters).first
   end
 
   def default_parameters

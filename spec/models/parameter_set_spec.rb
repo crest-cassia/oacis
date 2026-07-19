@@ -472,6 +472,89 @@ describe ParameterSet do
     end
   end
 
+  describe "fingerprint" do
+
+    it "is set when a ParameterSet is created" do
+      ps = @sim.parameter_sets.create!(@valid_attr)
+      expect(ps.fingerprint).to eq ParameterSet.fingerprint_of(ps.v)
+    end
+
+    it "is identical for hashes with different key orders" do
+      fp1 = ParameterSet.fingerprint_of({"a"=>1, "o"=>{"x"=>1, "y"=>2}})
+      fp2 = ParameterSet.fingerprint_of({"o"=>{"y"=>2, "x"=>1}, "a"=>1})
+      expect(fp1).to eq fp2
+    end
+
+    it "distinguishes value types" do
+      expect(ParameterSet.fingerprint_of({"a"=>1})).to_not eq ParameterSet.fingerprint_of({"a"=>1.0})
+    end
+
+    it "prevents creation of an identical ParameterSet at the DB level even when validation is skipped" do
+      ParameterSet.create_indexes
+      @sim.parameter_sets.create!(@valid_attr)
+      expect {
+        @sim.parameter_sets.create!(@valid_attr.merge(skip_check_uniqueness: true))
+      }.to raise_error(Mongo::Error::OperationFailure, /E11000/)
+    end
+
+    it "permits creation of an identical ParameterSet after the existing one is discarded" do
+      ParameterSet.create_indexes
+      ps = @sim.parameter_sets.create!(@valid_attr)
+      ps.discard
+      expect(ps.fingerprint).to be_nil
+      expect {
+        @sim.parameter_sets.create!(@valid_attr)
+      }.to_not raise_error
+    end
+  end
+
+  describe ".find_or_create!" do
+
+    before(:each) do
+      ParameterSet.create_indexes
+    end
+
+    it "creates a new ParameterSet and returns created=true" do
+      ps = nil; created = nil
+      expect {
+        ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0})
+      }.to change { ParameterSet.count }.by(1)
+      expect(created).to be_truthy
+      expect(ps.persisted?).to be_truthy
+      expect(ps.v).to eq({"L"=>10, "T"=>2.0})
+    end
+
+    it "returns the existing ParameterSet and created=false" do
+      existing = @sim.parameter_sets.create!(v: {"L"=>10, "T"=>2.0})
+      ps = nil; created = nil
+      expect {
+        ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0})
+      }.to_not change { ParameterSet.count }
+      expect(created).to be_falsey
+      expect(ps).to eq existing
+    end
+
+    it "casts values and fills default values for omitted keys" do
+      ps, _created = ParameterSet.find_or_create!(@sim, {"L"=>"10"})
+      expect(ps.v).to eq({"L"=>10, "T"=>1.0})
+    end
+
+    it "returns the winner's ParameterSet when the insert loses a race" do
+      existing = @sim.parameter_sets.create!(v: {"L"=>10, "T"=>2.0})
+      # simulate a race: the first lookup misses, then the insert hits the unique index
+      allow(ParameterSet).to receive(:find_by_casted_values).and_return(nil, existing)
+      ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0})
+      expect(created).to be_falsey
+      expect(ps).to eq existing
+    end
+
+    it "raises a validation error for an invalid parameter" do
+      expect {
+        ParameterSet.find_or_create!(@sim, {"L"=>"not_an_integer"})
+      }.to raise_error(Mongoid::Errors::Validations)
+    end
+  end
+
   describe "#discard" do
 
     before(:each) do
