@@ -11,6 +11,11 @@ class Simulator
   # true while `oacis_cli append_parameter_definition` is migrating the
   # existing ParameterSets; creation of a new PS is rejected meanwhile
   field :parameter_definitions_updating, type: Mongoid::Boolean, default: false
+  # incremented atomically whenever parameter_definitions have been changed.
+  # ParameterSet creation compares this value (loaded atomically together
+  # with the embedded parameter_definitions) against a fresh DB read to
+  # detect that it is about to cast v with stale definitions.
+  field :parameter_definitions_version, type: Integer, default: 0
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :runs
@@ -229,8 +234,15 @@ class Simulator
     !found.nil?
   end
 
+  # Releasing the flag and bumping the version MUST happen in one atomic
+  # command: if they were two separate writes, a creator holding stale
+  # definitions could pass its validation between them (flag already
+  # cleared, version not yet bumped). Any future forced-unlock path must
+  # bump the version as well.
   def unlock_parameter_definitions_update
-    set(parameter_definitions_updating: false)
+    Simulator.where(id: id).find_one_and_update(
+      { '$set' => { parameter_definitions_updating: false },
+        '$inc' => { parameter_definitions_version: 1 } })
   end
 
   def find_analyzer_by_name( azr_name )

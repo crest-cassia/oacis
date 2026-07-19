@@ -2,6 +2,13 @@ class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
 
+  # Raised when the parameter definitions of the simulator were changed
+  # concurrently with the creation of a ParameterSet; the insert has been
+  # rolled back and the caller should retry with a reloaded simulator.
+  # Deliberately a direct StandardError so that rescues of
+  # Mongoid::Errors::Validations or Mongo::Error do not swallow it.
+  class DefinitionsChangedError < StandardError; end
+
   field :v, type: Hash
   field :fingerprint, type: String
   field :to_be_destroyed, type: Mongoid::Boolean, default: false
@@ -32,6 +39,21 @@ class ParameterSet
   attr_accessor :skip_check_uniqueness
 
   public
+  # The definitions-check in the validation and the insert are not atomic,
+  # so a migration by append_parameter_definition can complete in between,
+  # leaving this PS without the newly added key. Verify after a successful
+  # insert and roll back when the race was lost.
+  # Note: save(validate: false) bypasses this protection entirely; no
+  # production code path uses it.
+  def save(options = {})
+    was_new = new_record?
+    result = super
+    if result and was_new and @pd_version_at_validation
+      verify_parameter_definitions_after_insert
+    end
+    result
+  end
+
   def dir
     ResultDirectory.parameter_set_path(self)
   end
@@ -181,11 +203,17 @@ class ParameterSet
 
   def validate_parameter_definitions_not_updating
     return unless simulator_id
-    # read a fresh value; the in-memory simulator may have been loaded
-    # before the lock was taken
-    updating = Simulator.where(id: simulator_id).pluck(:parameter_definitions_updating).first
+    # read fresh values; the in-memory simulator (and thereby the
+    # definitions used for casting v) may have been loaded before a lock
+    # was taken or before the definitions were changed
+    updating, fresh_version = Simulator.where(id: simulator_id)
+      .pluck(:parameter_definitions_updating, :parameter_definitions_version).first
     if updating
       errors.add(:base, "Cannot create a ParameterSet while the parameter definitions of the simulator are being updated. Try again later.")
+    elsif simulator and fresh_version.to_i != simulator.parameter_definitions_version.to_i
+      errors.add(:base, "Parameter definitions of the simulator have been updated. Reload the simulator and try again.")
+    else
+      @pd_version_at_validation = fresh_version.to_i
     end
   end
 
@@ -218,25 +246,45 @@ class ParameterSet
   # Atomically find or create a ParameterSet for the given parameters.
   # Concurrent creation of an identical PS is prevented by the unique index
   # on (simulator_id, fingerprint); when the insert loses the race, the PS
-  # created by the winner is returned.
+  # created by the winner is returned. A concurrent change of the parameter
+  # definitions is absorbed by reloading the simulator and retrying once.
   # Returns [parameter_set, created].
   def self.find_or_create!(simulator, parameters)
-    casted = ParametersUtil.cast_parameter_values(parameters, simulator.parameter_definitions)
-    if casted.nil?
-      # let the validation report the cast error
-      return [simulator.parameter_sets.create!(v: parameters), true]
-    end
-    found = find_by_casted_values(simulator, casted)
-    return [found, false] if found
+    retried = false
     begin
-      ps = simulator.parameter_sets.create!(v: casted, skip_check_uniqueness: true)
-      [ps, true]
-    rescue Mongo::Error::OperationFailure => ex
-      raise unless duplicate_key_error?(ex)
+      # pre-flight: when the in-memory definitions are stale, reload before
+      # casting so that the common case needs no exception round-trip
+      fresh_version = Simulator.where(id: simulator.id).pluck(:parameter_definitions_version).first
+      simulator.reload if fresh_version.to_i != simulator.parameter_definitions_version.to_i
+
+      casted = ParametersUtil.cast_parameter_values(parameters, simulator.parameter_definitions)
+      if casted.nil?
+        # let the validation report the cast error
+        return [simulator.parameter_sets.create!(v: parameters), true]
+      end
       found = find_by_casted_values(simulator, casted)
-      raise unless found
-      [found, false]
+      return [found, false] if found
+      begin
+        ps = simulator.parameter_sets.create!(v: casted, skip_check_uniqueness: true)
+        [ps, true]
+      rescue Mongo::Error::OperationFailure => ex
+        raise unless duplicate_key_error?(ex)
+        found = find_by_casted_values(simulator, casted)
+        raise unless found
+        [found, false]
+      end
+    rescue DefinitionsChangedError, Mongoid::Errors::Validations => ex
+      raise if retried or !definitions_changed_failure?(ex)
+      retried = true
+      simulator.reload
+      retry
     end
+  end
+
+  def self.definitions_changed_failure?(exception)
+    return true if exception.is_a?(DefinitionsChangedError)
+    exception.respond_to?(:document) &&
+      exception.document.errors[:base].any? {|m| m.include?("have been updated") }
   end
 
   def self.find_by_casted_values(simulator, casted)
@@ -247,6 +295,25 @@ class ParameterSet
 
   def set_fingerprint
     self.fingerprint = self.class.fingerprint_of(v) if v.is_a?(Hash)
+  end
+
+  def verify_parameter_definitions_after_insert
+    updating, fresh_version = Simulator.where(id: simulator_id)
+      .pluck(:parameter_definitions_updating, :parameter_definitions_version).first
+    return if !updating and fresh_version.to_i == @pd_version_at_validation
+    if destroyable?
+      destroy
+      raise DefinitionsChangedError, "Parameter definitions of the simulator were updated concurrently; the created ParameterSet has been rolled back. Retry with a reloaded simulator."
+    else
+      # a Run has been attached in the tiny window after the insert;
+      # repair this PS in place instead of destroying it
+      defs = simulator.reload.parameter_definitions
+      casted = ParametersUtil.cast_parameter_values(v, defs)
+      if casted
+        self.v = casted
+        timeless.save! # refresh_fingerprint keeps the unique index consistent
+      end
+    end
   end
 
   # Keep the fingerprint consistent when v is modified after creation

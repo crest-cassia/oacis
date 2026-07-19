@@ -498,6 +498,28 @@ describe ParameterSet do
       expect(@sim.parameter_sets.build(@valid_attr)).to be_valid
     end
 
+    it "cannot be created from a simulator instance holding stale parameter definitions" do
+      stale_sim = Simulator.find(@sim.id)
+      @sim.lock_parameter_definitions_update
+      @sim.unlock_parameter_definitions_update # bumps the version
+      ps = stale_sim.parameter_sets.build(@valid_attr)
+      expect(ps).to_not be_valid
+      expect(ps.errors.full_messages.join).to match(/have been updated/)
+    end
+
+    it "rolls back the insert when definitions were updated between validation and insert" do
+      ps = @sim.parameter_sets.build(@valid_attr)
+      allow(ps).to receive(:validate_parameter_definitions_not_updating).and_wrap_original do |m|
+        m.call
+        # simulate a migration completing between the validation and the insert
+        @sim.lock_parameter_definitions_update
+        @sim.unlock_parameter_definitions_update
+      end
+      expect {
+        expect { ps.save! }.to raise_error(ParameterSet::DefinitionsChangedError)
+      }.to_not change { ParameterSet.unscoped.count }
+    end
+
     it "prevents creation of an identical ParameterSet at the DB level even when validation is skipped" do
       ParameterSet.create_indexes
       @sim.parameter_sets.create!(@valid_attr)
@@ -576,6 +598,15 @@ describe ParameterSet do
       expect {
         ParameterSet.find_or_create!(@sim, {"L"=>"not_an_integer"})
       }.to raise_error(Mongoid::Errors::Validations)
+    end
+
+    it "succeeds transparently when the given simulator instance holds stale definitions" do
+      stale_sim = Simulator.find(@sim.id)
+      @sim.lock_parameter_definitions_update
+      @sim.unlock_parameter_definitions_update # bumps the version
+      ps, created = ParameterSet.find_or_create!(stale_sim, {"L"=>10, "T"=>2.0})
+      expect(created).to be_truthy
+      expect(ps.persisted?).to be_truthy
     end
   end
 

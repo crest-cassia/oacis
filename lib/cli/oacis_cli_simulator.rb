@@ -123,16 +123,25 @@ EOS
       raise "Another update of parameter definitions is in progress for this simulator. Try again later."
     end
     begin
-      key = new_param_def.key
-      # Repeat until no PS misses the new key: a PS whose creation
-      # started just before the lock was taken is picked up by the next sweep.
+      # Sweep every PS which misses any of the defined keys (not only the
+      # new one) and fill them with the default values. This repeats until
+      # convergence, so a PS whose creation slipped in just before the
+      # lock became visible is picked up by the next round, and a PS left
+      # inconsistent by an earlier interrupted migration is repaired here
+      # as well.
+      defaults = { new_param_def.key => new_param_def.default }
+      # keys without a default value cannot be repaired; leave them out
+      simulator.parameter_definitions.each {|pd| defaults[pd.key] = pd.default unless pd.default.nil? }
       loop do
-        query = simulator.parameter_sets.where("v.#{key}" => { '$exists' => false })
+        missing_any = defaults.keys.map {|key| { "v.#{key}" => { '$exists' => false } } }
+        query = simulator.parameter_sets.where('$or' => missing_any)
         total = query.count
         break if total == 0
         progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
         query.each do |ps|
-          ps.v[ key ] = new_param_def.default
+          defaults.each do |key, default_value|
+            ps.v[ key ] = default_value unless ps.v.has_key?(key)
+          end
           ps.timeless.save!
           progressbar.increment
         end

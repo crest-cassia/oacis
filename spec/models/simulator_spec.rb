@@ -253,6 +253,24 @@ describe Simulator do
     end
   end
 
+  describe "#unlock_parameter_definitions_update" do
+
+    it "clears the flag and bumps the version in one step" do
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
+      expect( sim.lock_parameter_definitions_update ).to be_truthy
+      expect {
+        sim.unlock_parameter_definitions_update
+      }.to change { sim.reload.parameter_definitions_version }.by(1)
+      expect( sim.parameter_definitions_updating ).to be_falsey
+    end
+
+    it "lock cannot be acquired twice" do
+      sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
+      expect( sim.lock_parameter_definitions_update ).to be_truthy
+      expect( sim.lock_parameter_definitions_update ).to be_falsey
+    end
+  end
+
   describe "#default_parameters" do
 
     it "returns default parameters" do

@@ -205,6 +205,42 @@ describe OacisCli do
       end
     end
 
+    context "when an identical parameter_set was discarded and waits for destruction" do
+
+      it "creates a new parameter_set instead of returning the discarded one" do
+        at_temp_dir {
+          discarded = @sim.parameter_sets.create(v: {"L" => 10, "T" => 0.1})
+          discarded.discard
+          expect {
+            invoke_create_parameter_sets
+          }.to change { ParameterSet.count }.by(6)
+          loaded = JSON.load(File.read('parameter_set_ids.json'))
+          expect(loaded.size).to eq 6
+          expect(loaded).to_not include({"parameter_set_id" => discarded.id.to_s})
+        }
+      end
+
+      it "creates runs on the newly created parameter_set when run option is given" do
+        host = FactoryBot.create(:host_with_parameters)
+        @sim.executable_on.push host
+        @sim.save!
+        at_temp_dir {
+          discarded = @sim.parameter_sets.create(v: {"L" => 10, "T" => 0.1})
+          discarded.discard
+          run_param = {
+            "num_runs" => 1, "submitted_to" => host.id.to_s,
+            "host_parameters" => {"param1" => "XXX", "param2" => "YYY"}
+          }
+          option = {simulator: @sim.id.to_s, input: {"L" => 10, "T" => 0.1}.to_json,
+            output: "parameter_set_ids.json", run: run_param.to_json}
+          expect {
+            OacisCli.new.invoke(:create_parameter_sets, [], option)
+          }.to change { @sim.runs.count }.by(1)
+          expect( discarded.reload.runs.unscoped.count ).to eq 0
+        }
+      end
+    end
+
     context "when PS with identical v exists under a different simulator" do
 
       before(:each) do
