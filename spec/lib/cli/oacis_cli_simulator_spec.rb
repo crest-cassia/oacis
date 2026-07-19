@@ -221,6 +221,47 @@ describe OacisCli do
       }
     end
 
+    it "keeps the fingerprint of the existing parameter sets consistent" do
+      at_temp_dir {
+        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
+        OacisCli.new.invoke(:append_parameter_definition, [], option)
+        @sim.reload.parameter_sets.each do |ps|
+          expect(ps.fingerprint).to eq ParameterSet.fingerprint_of(ps.v)
+        end
+      }
+    end
+
+    it "releases the lock for ParameterSet creation after the migration" do
+      at_temp_dir {
+        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
+        OacisCli.new.invoke(:append_parameter_definition, [], option)
+        expect(@sim.reload.parameter_definitions_updating).to be_falsey
+      }
+    end
+
+    it "releases the lock even when the migration fails" do
+      at_temp_dir {
+        allow(ParameterSet).to receive(:fingerprint_of).and_raise("migration failed")
+        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
+        expect {
+          OacisCli.new.invoke(:append_parameter_definition, [], option)
+        }.to raise_error("migration failed")
+        expect(@sim.reload.parameter_definitions_updating).to be_falsey
+      }
+    end
+
+    it "raises an error when another update is already in progress" do
+      at_temp_dir {
+        @sim.set(parameter_definitions_updating: true)
+        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
+        expect {
+          OacisCli.new.invoke(:append_parameter_definition, [], option)
+        }.to raise_error(/in progress/)
+        # the lock is owned by the other process; it must not be released here
+        expect(@sim.reload.parameter_definitions_updating).to be_truthy
+      }
+    end
+
     describe "error case" do
 
       context "when invalid simulator ID is given" do

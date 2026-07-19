@@ -8,6 +8,9 @@ class Simulator
   field :sequential_seed, type: Mongoid::Boolean, default: false
   field :position, type: Integer # position in the table. start from zero
   field :to_be_destroyed, type: Mongoid::Boolean, default: false
+  # true while `oacis_cli append_parameter_definition` is migrating the
+  # existing ParameterSets; creation of a new PS is rejected meanwhile
+  field :parameter_definitions_updating, type: Mongoid::Boolean, default: false
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :runs
@@ -214,6 +217,20 @@ class Simulator
       default[pd.key] = pd.default
     end
     default.with_indifferent_access
+  end
+
+  # Atomically acquires the lock which blocks creation of ParameterSets
+  # while parameter definitions are being updated. Returns true when the
+  # lock is acquired, false when another update is already in progress.
+  # ('$ne' => true also matches documents which do not have the field yet)
+  def lock_parameter_definitions_update
+    found = Simulator.where(id: id, parameter_definitions_updating: {'$ne' => true})
+                     .find_one_and_update({'$set' => {parameter_definitions_updating: true}})
+    !found.nil?
+  end
+
+  def unlock_parameter_definitions_update
+    set(parameter_definitions_updating: false)
   end
 
   def find_analyzer_by_name( azr_name )

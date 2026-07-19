@@ -111,19 +111,35 @@ EOS
 
     new_param_def = simulator.parameter_definitions.build(key: options[:name], type: options[:type], default: options[:default])
 
-    if new_param_def.valid?
-      total = simulator.parameter_sets.count
-      progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
-      simulator.parameter_sets.each do |ps|
-        ps.v[ new_param_def.key ] = new_param_def.default
-        ps.timeless.save!
-        progressbar.increment
-      end
-      new_param_def.save!
-    else
+    unless new_param_def.valid?
       $stderr.puts new_param_def.inspect
       $stderr.puts new_param_def.errors.full_messages
       raise "validation of new parameter definition failed"
+    end
+
+    # Block creation of new ParameterSets while the existing ones are
+    # migrated, so that no PS is left without the new key.
+    unless simulator.lock_parameter_definitions_update
+      raise "Another update of parameter definitions is in progress for this simulator. Try again later."
+    end
+    begin
+      key = new_param_def.key
+      # Repeat until no PS misses the new key: a PS whose creation
+      # started just before the lock was taken is picked up by the next sweep.
+      loop do
+        query = simulator.parameter_sets.where("v.#{key}" => { '$exists' => false })
+        total = query.count
+        break if total == 0
+        progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
+        query.each do |ps|
+          ps.v[ key ] = new_param_def.default
+          ps.timeless.save!
+          progressbar.increment
+        end
+      end
+      new_param_def.save!
+    ensure
+      simulator.unlock_parameter_definitions_update
     end
   end
 end

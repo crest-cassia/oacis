@@ -22,6 +22,7 @@ class ParameterSet
   validates :simulator, :presence => true
   validate :cast_parameter_values, on: :create
   validate :validate_parameter_values, on: :create, unless: :skip_check_uniqueness
+  validate :validate_parameter_definitions_not_updating, on: :create
 
   before_create :set_fingerprint
   before_update :refresh_fingerprint
@@ -175,6 +176,16 @@ class ParameterSet
     if found and found.id != self.id
       errors.add(:parameters, "An identical parameters already exists : #{found.to_param}")
       return
+    end
+  end
+
+  def validate_parameter_definitions_not_updating
+    return unless simulator_id
+    # read a fresh value; the in-memory simulator may have been loaded
+    # before the lock was taken
+    updating = Simulator.where(id: simulator_id).pluck(:parameter_definitions_updating).first
+    if updating
+      errors.add(:base, "Cannot create a ParameterSet while the parameter definitions of the simulator are being updated. Try again later.")
     end
   end
 

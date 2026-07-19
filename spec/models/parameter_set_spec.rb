@@ -489,6 +489,15 @@ describe ParameterSet do
       expect(ParameterSet.fingerprint_of({"a"=>1})).to_not eq ParameterSet.fingerprint_of({"a"=>1.0})
     end
 
+    it "cannot be created while parameter definitions of the simulator are being updated" do
+      @sim.set(parameter_definitions_updating: true)
+      ps = @sim.parameter_sets.build(@valid_attr)
+      expect(ps).to_not be_valid
+      expect(ps.errors.full_messages.join).to match(/being updated/)
+      @sim.set(parameter_definitions_updating: false)
+      expect(@sim.parameter_sets.build(@valid_attr)).to be_valid
+    end
+
     it "prevents creation of an identical ParameterSet at the DB level even when validation is skipped" do
       ParameterSet.create_indexes
       @sim.parameter_sets.create!(@valid_attr)
