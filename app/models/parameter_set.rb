@@ -24,6 +24,7 @@ class ParameterSet
   validate :validate_parameter_values, on: :create, unless: :skip_check_uniqueness
 
   before_create :set_fingerprint
+  before_update :refresh_fingerprint
   after_create :create_parameter_set_dir
   before_destroy :delete_parameter_set_dir
 
@@ -235,6 +236,17 @@ class ParameterSet
 
   def set_fingerprint
     self.fingerprint = self.class.fingerprint_of(v) if v.is_a?(Hash)
+  end
+
+  # Keep the fingerprint consistent when v is modified after creation
+  # (e.g. `oacis_cli append_parameter_definition` adds a key to every PS).
+  # PSs whose fingerprint has been removed on purpose (discarded ones, or
+  # duplicates exempted by db:update_schema) must stay out of the unique
+  # index, so they are left untouched.
+  def refresh_fingerprint
+    if v_changed? and fingerprint.present?
+      self.fingerprint = self.class.fingerprint_of(v)
+    end
   end
 
   def create_parameter_set_dir

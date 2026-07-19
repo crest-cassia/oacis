@@ -497,6 +497,21 @@ describe ParameterSet do
       }.to raise_error(Mongo::Error::OperationFailure, /E11000/)
     end
 
+    it "is recomputed when v is modified after creation (like append_parameter_definition does)" do
+      ps = @sim.parameter_sets.create!(@valid_attr)
+      ps.v["Z"] = 42
+      ps.timeless.save!
+      expect(ps.reload.fingerprint).to eq ParameterSet.fingerprint_of(ps.v)
+    end
+
+    it "is not resurrected by an update after the ParameterSet is discarded" do
+      ps = @sim.parameter_sets.create!(@valid_attr)
+      ps.discard
+      ps.v["Z"] = 42
+      ps.timeless.save!
+      expect(ps.reload.fingerprint).to be_nil
+    end
+
     it "permits creation of an identical ParameterSet after the existing one is discarded" do
       ParameterSet.create_indexes
       ps = @sim.parameter_sets.create!(@valid_attr)
