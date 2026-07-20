@@ -161,11 +161,16 @@ class ParameterSet
   end
 
   def discard
-    # Release the fingerprint so that an identical PS can be created again
-    # while this one is waiting for actual destruction by the worker.
-    unset(:fingerprint)
-    update_attribute(:to_be_destroyed, true)
-    set_lower_submittable_to_be_destroyed
+    # Release the fingerprint (so that an identical PS can be created
+    # again while this one waits for actual destruction) and mark
+    # to_be_destroyed in ONE atomic write: with two separate writes, a
+    # concurrent migration sweep could slip in between and set a
+    # fingerprint on a document which then becomes to_be_destroyed — an
+    # invisible zombie blocking recreation via the unique index.
+    ParameterSet.unscoped.where(id: id).find_one_and_update(
+      { '$set' => { to_be_destroyed: true }, '$currentDate' => { updated_at: true },
+        '$unset' => { fingerprint: '' } })
+    set_lower_submittable_to_be_destroyed # reloads at the end
   end
 
   def destroyable?
@@ -352,7 +357,12 @@ class ParameterSet
     return ps if filled == ps.v
     new_fingerprint = fingerprint_of(filled)
     begin
-      updated = ParameterSet.where(id: ps.id, :to_be_destroyed.in => [nil,false], fingerprint: ps.fingerprint)
+      # the CAS must compare v itself, not only the fingerprint: on a PS
+      # whose fingerprint is absent (an exempted legacy duplicate), nil
+      # would match nil even after a concurrent sweep of a DIFFERENT
+      # appended key updated v, and this stale write would erase that key
+      updated = ParameterSet.where(id: ps.id, :to_be_destroyed.in => [nil,false],
+                                   v: ps.v, fingerprint: ps.fingerprint)
         .find_one_and_update({ '$set' => { v: filled, fingerprint: new_fingerprint } })
       updated ? ps.reload : nil
     rescue Mongo::Error::OperationFailure => ex
@@ -369,11 +379,15 @@ class ParameterSet
   # Fills the missing keys of a legacy PS which duplicates an existing,
   # fully migrated PS, removing it from the uniqueness constraint at the
   # same time (the operator decides whether to merge or destroy it).
-  # CAS-guarded: a concurrently discarded PS is left untouched.
+  # CAS-guarded on (alive, v, fingerprint) as read with the document: a
+  # concurrently discarded PS is left untouched, and a concurrent sweep
+  # of a different appended key is never overwritten with stale v.
+  # Returns nil on a CAS miss; the caller's next sweep round converges.
   def self.exempt_and_fill!(ps, defaults)
     filled = ps.v.dup
     defaults.each {|key,val| filled[key] = val unless filled.key?(key) }
-    ParameterSet.where(id: ps.id, :to_be_destroyed.in => [nil,false])
+    ParameterSet.where(id: ps.id, :to_be_destroyed.in => [nil,false],
+                       v: ps.v, fingerprint: ps.fingerprint)
       .find_one_and_update({ '$set' => { v: filled }, '$unset' => { fingerprint: '' } })
   end
 

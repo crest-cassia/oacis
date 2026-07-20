@@ -671,6 +671,37 @@ describe ParameterSet do
         expect(result.simulator_id).to eq @sim.id
       end
 
+      it "migrate_legacy! does not overwrite a concurrent update on a fingerprint-less PS" do
+        @ps.unset(:fingerprint) # an exempted legacy PS
+        stale = ParameterSet.unscoped.find(@ps.id)
+        # a concurrent sweep of a DIFFERENT appended key fills another key
+        @ps.set(v: @ps.v.merge("W" => 3))
+        result = ParameterSet.migrate_legacy!(stale, {"Z" => 7})
+        expect(result).to be_nil
+        reloaded = ParameterSet.unscoped.find(@ps.id)
+        expect(reloaded.v["W"]).to eq 3
+        expect(reloaded.v).to_not have_key("Z")
+        expect(reloaded.fingerprint).to be_nil
+      end
+
+      it "exempt_and_fill! does not overwrite a concurrent update with stale v" do
+        stale = ParameterSet.unscoped.find(@ps.id)
+        @ps.set(v: @ps.v.merge("W" => 3))
+        result = ParameterSet.exempt_and_fill!(stale, {"Z" => 7})
+        expect(result).to be_nil
+        reloaded = ParameterSet.unscoped.find(@ps.id)
+        expect(reloaded.v["W"]).to eq 3
+        expect(reloaded.v).to_not have_key("Z")
+        expect(reloaded.fingerprint).to_not be_nil
+      end
+
+      it "discard clears the fingerprint and marks to_be_destroyed in one atomic update" do
+        @ps.discard
+        raw = ParameterSet.collection.find(_id: @ps.id).first
+        expect(raw["to_be_destroyed"]).to eq true
+        expect(raw).to_not have_key("fingerprint")
+      end
+
       it "migrate_legacy! does not resurrect the fingerprint of a PS discarded after it was read" do
         stale = ParameterSet.unscoped.find(@ps.id)
         @ps.discard
