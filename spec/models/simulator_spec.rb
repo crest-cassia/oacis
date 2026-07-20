@@ -207,6 +207,16 @@ describe Simulator do
         @sim.find_parameter_set( "L" => 10 )
       }.to raise_error(/^Missing keys:/)
     end
+
+    it "finds a PS which misses a newly appended key when the requested value equals its default" do
+      parameters = { "L"=>10, "T"=>2.0, "S"=>"foo", "O"=>{"a"=>1} }
+      created = @sim.parameter_sets.create!(v: parameters)
+      new_def = { "_id" => BSON::ObjectId.new, "key" => "Z", "type" => "Integer", "default" => 7 }
+      Simulator.collection.update_one({"_id" => @sim.id}, {'$push' => {"parameter_definitions" => new_def}})
+      @sim.reload
+      expect( @sim.find_parameter_set( parameters.merge("Z"=>7) ) ).to eq created
+      expect( @sim.find_parameter_set( parameters.merge("Z"=>8) ) ).to be_nil
+    end
   end
 
   describe "#find_or_create_parameter_set" do
@@ -253,21 +263,20 @@ describe Simulator do
     end
   end
 
-  describe "#unlock_parameter_definitions_update" do
+  describe "#append_parameter_definition_atomically" do
 
-    it "clears the flag and bumps the version in one step" do
+    it "appends the definition and returns true" do
       sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
-      expect( sim.lock_parameter_definitions_update ).to be_truthy
-      expect {
-        sim.unlock_parameter_definitions_update
-      }.to change { sim.reload.parameter_definitions_version }.by(1)
-      expect( sim.parameter_definitions_updating ).to be_falsey
+      pd = ParameterDefinition.new(key: "Z", type: "Integer", default: 1)
+      expect( sim.append_parameter_definition_atomically(pd) ).to be_truthy
+      expect( sim.reload.parameter_definitions.map(&:key) ).to include("Z")
     end
 
-    it "lock cannot be acquired twice" do
+    it "returns false and appends nothing when the key already exists" do
       sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
-      expect( sim.lock_parameter_definitions_update ).to be_truthy
-      expect( sim.lock_parameter_definitions_update ).to be_falsey
+      pd = ParameterDefinition.new(key: "L", type: "Integer", default: 1)
+      expect( sim.append_parameter_definition_atomically(pd) ).to be_falsey
+      expect( sim.reload.parameter_definitions.count {|d| d.key == "L" } ).to eq 1
     end
   end
 

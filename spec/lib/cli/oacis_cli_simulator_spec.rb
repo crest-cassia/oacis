@@ -244,43 +244,79 @@ describe OacisCli do
       }
     end
 
-    it "bumps parameter_definitions_version so that stale simulator instances are detected" do
+    context "when the same key is appended concurrently" do
+
+      def raw_push_definition(sim, key, type, default)
+        new_def = { "_id" => BSON::ObjectId.new, "key" => key, "type" => type, "default" => default }
+        Simulator.collection.update_one({"_id" => sim.id}, {'$push' => {"parameter_definitions" => new_def}})
+      end
+
+      it "raises when the winner's definition has a different type or default" do
+        at_temp_dir {
+          # the competitor commits Z:Float=0.5 right before our atomic push
+          allow_any_instance_of(Simulator).to receive(:append_parameter_definition_atomically).and_wrap_original do |m, pd|
+            raw_push_definition(@sim, 'Z', "Float", 0.5)
+            m.call(pd)
+          end
+          option = {simulator: @sim.id.to_s, name: 'Z', type: "Integer", default: 1}
+          expect {
+            capture_stdout_stderr {
+              OacisCli.new.invoke(:append_parameter_definition, [], option)
+            }
+          }.to raise_error(/validation of new parameter definition failed/)
+        }
+      end
+
+      it "succeeds as an idempotent no-op when the winner's definition matches" do
+        at_temp_dir {
+          allow_any_instance_of(Simulator).to receive(:append_parameter_definition_atomically).and_wrap_original do |m, pd|
+            raw_push_definition(@sim, 'Z', "Float", 0.5)
+            m.call(pd)
+          end
+          option = {simulator: @sim.id.to_s, name: 'Z', type: "Float", default: 0.5}
+          capture_stdout_stderr {
+            OacisCli.new.invoke(:append_parameter_definition, [], option)
+          }
+          @sim.reload
+          expect(@sim.parameter_definitions.count {|pd| pd.key == 'Z' }).to eq 1
+          @sim.parameter_sets.each do |ps|
+            expect(ps.v["Z"]).to eq 0.5
+          end
+        }
+      end
+    end
+
+    it "exempts a legacy PS which becomes identical to an already migrated PS" do
       at_temp_dir {
-        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
-        expect {
+        ParameterSet.create_indexes
+        legacy = @sim.parameter_sets.asc(:created_at).first
+        new_def = { "_id" => BSON::ObjectId.new, "key" => "Z", "type" => "Float", "default" => 0.5 }
+        Simulator.collection.update_one({"_id" => @sim.id}, {'$push' => {"parameter_definitions" => new_def}})
+        @sim.reload
+        winner = @sim.parameter_sets.create!(v: legacy.v.merge("Z" => 0.5), skip_check_uniqueness: true)
+        option = {simulator: @sim.id.to_s, name: 'Z', type: "Float", default: 0.5}
+        capture_stdout_stderr {
           OacisCli.new.invoke(:append_parameter_definition, [], option)
-        }.to change { @sim.reload.parameter_definitions_version }.by(1)
+        }
+        legacy.reload
+        expect(legacy.v["Z"]).to eq 0.5
+        expect(legacy.fingerprint).to be_nil
+        expect(winner.reload.fingerprint).to_not be_nil
       }
     end
 
-    it "releases the lock for ParameterSet creation after the migration" do
+    it "is idempotent: re-running after an interrupted migration fills missing keys" do
       at_temp_dir {
         option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
         OacisCli.new.invoke(:append_parameter_definition, [], option)
-        expect(@sim.reload.parameter_definitions_updating).to be_falsey
-      }
-    end
-
-    it "releases the lock even when the migration fails" do
-      at_temp_dir {
-        allow(ParameterSet).to receive(:fingerprint_of).and_raise("migration failed")
-        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
-        expect {
+        # simulate an interrupted migration: one PS lost the key again
+        broken = @sim.reload.parameter_sets.first
+        broken.set(v: broken.v.reject {|key,_| key == "NEW_PARAM" })
+        capture_stdout_stderr {
           OacisCli.new.invoke(:append_parameter_definition, [], option)
-        }.to raise_error("migration failed")
-        expect(@sim.reload.parameter_definitions_updating).to be_falsey
-      }
-    end
-
-    it "raises an error when another update is already in progress" do
-      at_temp_dir {
-        @sim.set(parameter_definitions_updating: true)
-        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
-        expect {
-          OacisCli.new.invoke(:append_parameter_definition, [], option)
-        }.to raise_error(/in progress/)
-        # the lock is owned by the other process; it must not be released here
-        expect(@sim.reload.parameter_definitions_updating).to be_truthy
+        }
+        expect(broken.reload.v["NEW_PARAM"]).to eq 0.5
+        expect(@sim.reload.parameter_definitions.count {|pd| pd.key == "NEW_PARAM" }).to eq 1
       }
     end
 

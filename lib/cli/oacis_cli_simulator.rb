@@ -109,46 +109,89 @@ EOS
   def append_parameter_definition
     simulator = get_simulator(options[:simulator])
 
-    new_param_def = simulator.parameter_definitions.build(key: options[:name], type: options[:type], default: options[:default])
-
-    unless new_param_def.valid?
-      $stderr.puts new_param_def.inspect
-      $stderr.puts new_param_def.errors.full_messages
-      raise "validation of new parameter definition failed"
-    end
-
-    # Block creation of new ParameterSets while the existing ones are
-    # migrated, so that no PS is left without the new key.
-    unless simulator.lock_parameter_definitions_update
-      raise "Another update of parameter definitions is in progress for this simulator. Try again later."
-    end
-    begin
-      # Sweep every PS which misses any of the defined keys (not only the
-      # new one) and fill them with the default values. This repeats until
-      # convergence, so a PS whose creation slipped in just before the
-      # lock became visible is picked up by the next round, and a PS left
-      # inconsistent by an earlier interrupted migration is repaired here
-      # as well.
-      defaults = { new_param_def.key => new_param_def.default }
-      # keys without a default value cannot be repaired; leave them out
-      simulator.parameter_definitions.each {|pd| defaults[pd.key] = pd.default unless pd.default.nil? }
-      loop do
-        missing_any = defaults.keys.map {|key| { "v.#{key}" => { '$exists' => false } } }
-        query = simulator.parameter_sets.where('$or' => missing_any)
-        total = query.count
-        break if total == 0
-        progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
-        query.each do |ps|
-          defaults.each do |key, default_value|
-            ps.v[ key ] = default_value unless ps.v.has_key?(key)
-          end
-          ps.timeless.save!
-          progressbar.increment
+    # Commit the definition change first (atomic single-document update).
+    # From that point on, every newly created PS is casted with the new
+    # definitions: PS-creation transactions write the simulator document,
+    # so they conflict with this write and retry against the committed
+    # state. The sweep below therefore only has to migrate the PSs which
+    # existed before the commit — no lock is needed.
+    # When a definition with the same key already exists (a re-run after an
+    # interrupted migration, or a concurrent append which won the race),
+    # the committed type/default MUST match this request — otherwise the
+    # request was not applied and succeeding silently would be a lie.
+    appended = false
+    3.times do
+      existing = simulator.parameter_definitions.detect {|pd| pd.key == options[:name] }
+      if existing
+        casted_default = ParametersUtil.cast_value(options[:default], existing.type)
+        if existing.type == options[:type] and existing.default == casted_default
+          $stderr.puts "Parameter '#{options[:name]}' is already defined. Filling missing default values..."
+        else
+          $stderr.puts "A parameter named '#{options[:name]}' already exists " \
+                       "with type=#{existing.type}, default=#{existing.default.inspect}"
+          raise "validation of new parameter definition failed"
         end
+        appended = true
+        break
       end
-      new_param_def.save!
-    ensure
-      simulator.unlock_parameter_definitions_update
+      new_param_def = simulator.parameter_definitions.build(key: options[:name], type: options[:type], default: options[:default])
+      unless new_param_def.valid?
+        $stderr.puts new_param_def.inspect
+        $stderr.puts new_param_def.errors.full_messages
+        raise "validation of new parameter definition failed"
+      end
+      if simulator.append_parameter_definition_atomically(new_param_def)
+        appended = true
+        break
+      end
+      # lost a concurrent append of the same key: reload and re-check that
+      # the committed definition matches this request
+      simulator.reload
+    end
+    raise "failed to append the parameter definition" unless appended
+    simulator.reload
+
+    # Sweep every PS which misses any of the defined keys (not only the
+    # new one) and fill them with the default values, until convergence.
+    # This also repairs PSs left inconsistent by an earlier interrupted
+    # migration. Keys without a default value cannot be repaired and are
+    # left out.
+    defaults = ParameterSet.casted_defaults_of(simulator)
+    previous_total = nil
+    stalled = 0
+    loop do
+      missing_any = defaults.keys.map {|key| { "v.#{key}" => { '$exists' => false } } }
+      query = simulator.parameter_sets.where('$or' => missing_any)
+      total = query.count
+      break if total == 0
+      # safety valve: without progress across passes (e.g. a corrupted
+      # document which cannot be migrated), abort instead of looping forever
+      if previous_total and total >= previous_total
+        stalled += 1
+        if stalled >= 2
+          $stderr.puts "WARNING: #{total} ParameterSets could not be migrated: " \
+                       "#{query.map(&:id).join(', ')}. Resolve them manually and re-run."
+          break
+        end
+      else
+        stalled = 0
+      end
+      previous_total = total
+      progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
+      query.each do |ps|
+        # CAS-guarded (see ParameterSet.migrate_legacy!): a PS discarded
+        # after being read here is left untouched — a plain save would
+        # resurrect its fingerprint on a to_be_destroyed document
+        result = ParameterSet.migrate_legacy!(ps, defaults)
+        if result and result.id != ps.id
+          # an identical, fully migrated PS already exists: fill this one
+          # but leave it exempted from the uniqueness constraint
+          ParameterSet.exempt_and_fill!(ps, defaults)
+          $stderr.puts "WARNING: #{ps.id} became identical to #{result.id} " \
+                       "after filling default values; consider merging or destroying it."
+        end
+        progressbar.increment
+      end
     end
   end
 end

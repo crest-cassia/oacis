@@ -55,7 +55,7 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 ### 前提条件
 
 - Ruby 3.2以降 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
-- MongoDB 4.4以降 ([http://www.mongodb.org/](http://www.mongodb.org/))
+- MongoDB 6.0以降、シングルノードのreplica setとして起動していること ([http://www.mongodb.org/](http://www.mongodb.org/)) — 設定手順は後述
 - redis ([https://redis.io/](https://redis.io/))
 
 Rubyのインストールにはrbenvまたはrvmを使って環境を整えるのがよいです。
@@ -81,6 +81,18 @@ bundlerはRubyに標準ライブラリとして添付されるので、個別に
 - mongoDBをインストール
     - [公式ドキュメント](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)の手順に従う
       - インストール後、macOSのサービスとして起動(`brew services start mongodb-community`)すれば、以後ログイン時にmongodが自動的に起動するようになる
+    - OACISはMongoDBのトランザクションを使うため、シングルノードのreplica setとして設定する
+      - `/opt/homebrew/etc/mongod.conf` に以下を追記する
+
+        ```
+        replication:
+          replSetName: rs0
+        ```
+      - MongoDBを再起動(`brew services restart mongodb-community`)し、以下を一度だけ実行する
+
+        ```sh
+        mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+        ```
 - bundlerのインストールと最新版への更新
     ``` sh
     gem install bundler
@@ -114,6 +126,18 @@ bundlerはRubyに標準ライブラリとして添付されるので、個別に
     を実行して、`ruby 3.4.2....`と出力されれば成功
 - mongoDBをインストール
     - [公式ドキュメント](https://docs.mongodb.com/manual/administration/install-on-linux/)の手順に従う
+    - OACISはMongoDBのトランザクションを使うため、シングルノードのreplica setとして設定する
+      - `/etc/mongod.conf` に以下を追記してmongodを再起動する
+
+        ```
+        replication:
+          replSetName: rs0
+        ```
+      - 以下を一度だけ実行する
+
+        ```sh
+        mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+        ```
 - bundlerのインストールと最新版への更新
     ``` sh
     gem install bundler

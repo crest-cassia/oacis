@@ -2,13 +2,6 @@ class ParameterSet
   include Mongoid::Document
   include Mongoid::Timestamps
 
-  # Raised when the parameter definitions of the simulator were changed
-  # concurrently with the creation of a ParameterSet; the insert has been
-  # rolled back and the caller should retry with a reloaded simulator.
-  # Deliberately a direct StandardError so that rescues of
-  # Mongoid::Errors::Validations or Mongo::Error do not swallow it.
-  class DefinitionsChangedError < StandardError; end
-
   field :v, type: Hash
   field :fingerprint, type: String
   field :to_be_destroyed, type: Mongoid::Boolean, default: false
@@ -29,29 +22,46 @@ class ParameterSet
   validates :simulator, :presence => true
   validate :cast_parameter_values, on: :create
   validate :validate_parameter_values, on: :create, unless: :skip_check_uniqueness
-  validate :validate_parameter_definitions_not_updating, on: :create
 
   before_create :set_fingerprint
   before_update :refresh_fingerprint
-  after_create :create_parameter_set_dir
+  # after_create_commit (not after_create): creation runs inside a
+  # transaction which may be retried or aborted; the directory must be
+  # created only once the insert is actually committed
+  after_create_commit :create_parameter_set_dir
   before_destroy :delete_parameter_set_dir
 
   attr_accessor :skip_check_uniqueness
 
   public
-  # The definitions-check in the validation and the insert are not atomic,
-  # so a migration by append_parameter_definition can complete in between,
-  # leaving this PS without the newly added key. Verify after a successful
-  # insert and roll back when the race was lost.
-  # Note: save(validate: false) bypasses this protection entirely; no
-  # production code path uses it.
+  # Creation runs inside a multi-document transaction so that v is always
+  # casted against the current parameter definitions even when they are
+  # being changed concurrently (append_parameter_definition):
+  # - The simulator document is WRITTEN first. MongoDB transactions detect
+  #   write-write conflicts only (snapshot isolation, no write-skew
+  #   protection), so a mere read of the definitions would NOT conflict
+  #   with a concurrent definitions change. The write makes the two
+  #   operations mutually exclusive: the loser aborts and is retried by
+  #   the driver against a fresh snapshot.
+  # - The simulator is then reloaded inside the transaction snapshot, so
+  #   the cast validator uses definitions that are guaranteed current at
+  #   commit time.
   def save(options = {})
-    was_new = new_record?
-    result = super
-    if result and was_new and @pd_version_at_validation
-      verify_parameter_definitions_after_insert
+    return super unless new_record? and simulator_id
+    return super if self.class.inside_transaction?
+    first_attempt = true
+    self.class.transaction do
+      unless first_attempt
+        # the previous attempt was rolled back but left this document
+        # flagged as persisted; without re-arming, the retry would take
+        # the update path and silently insert nothing
+        self.new_record = true
+      end
+      first_attempt = false
+      Simulator.where(id: simulator_id).find_one_and_update('$currentDate' => { updated_at: true })
+      simulator.reload if simulator
+      super
     end
-    result
   end
 
   def dir
@@ -151,11 +161,16 @@ class ParameterSet
   end
 
   def discard
-    # Release the fingerprint so that an identical PS can be created again
-    # while this one is waiting for actual destruction by the worker.
-    unset(:fingerprint)
-    update_attribute(:to_be_destroyed, true)
-    set_lower_submittable_to_be_destroyed
+    # Release the fingerprint (so that an identical PS can be created
+    # again while this one waits for actual destruction) and mark
+    # to_be_destroyed in ONE atomic write: with two separate writes, a
+    # concurrent migration sweep could slip in between and set a
+    # fingerprint on a document which then becomes to_be_destroyed — an
+    # invisible zombie blocking recreation via the unique index.
+    ParameterSet.unscoped.where(id: id).find_one_and_update(
+      { '$set' => { to_be_destroyed: true }, '$currentDate' => { updated_at: true },
+        '$unset' => { fingerprint: '' } })
+    set_lower_submittable_to_be_destroyed # reloads at the end
   end
 
   def destroyable?
@@ -194,31 +209,17 @@ class ParameterSet
   end
 
   def validate_parameter_values
-    found = self.class.find_identical_parameter_set(simulator, v)
+    # validations do not halt the chain: when the cast failed, v is not in
+    # canonical form and must not be matched against
+    return if errors.any?
+    # read-only lookup: this validator runs inside the creation
+    # transaction, so any migration written here would be rolled back on
+    # a validation failure. Legacy migration lives in find_or_create!.
+    found = self.class.find_by_casted_values(simulator, v)
     if found and found.id != self.id
       errors.add(:parameters, "An identical parameters already exists : #{found.to_param}")
       return
     end
-  end
-
-  def validate_parameter_definitions_not_updating
-    return unless simulator_id
-    # read fresh values; the in-memory simulator (and thereby the
-    # definitions used for casting v) may have been loaded before a lock
-    # was taken or before the definitions were changed
-    updating, fresh_version = Simulator.where(id: simulator_id)
-      .pluck(:parameter_definitions_updating, :parameter_definitions_version).first
-    if updating
-      errors.add(:base, "Cannot create a ParameterSet while the parameter definitions of the simulator are being updated. Try again later.")
-    elsif simulator and fresh_version.to_i != simulator.parameter_definitions_version.to_i
-      errors.add(:base, "Parameter definitions of the simulator have been updated. Reload the simulator and try again.")
-    else
-      @pd_version_at_validation = fresh_version.to_i
-    end
-  end
-
-  def self.find_identical_parameter_set(simulator, sim_param_hash)
-    self.where(:simulator => simulator, :v => sim_param_hash).first
   end
 
   # digest of the parameter values, insensitive to the key order of (nested) hashes
@@ -243,77 +244,155 @@ class ParameterSet
       ( exception.code == 11000 or exception.message.include?("E11000") )
   end
 
+  def self.inside_transaction?
+    session = Mongoid::Threaded.get_session(client: collection.client)
+    !!(session && session.in_transaction?)
+  end
+
   # Atomically find or create a ParameterSet for the given parameters.
   # Concurrent creation of an identical PS is prevented by the unique index
   # on (simulator_id, fingerprint); when the insert loses the race, the PS
   # created by the winner is returned. A concurrent change of the parameter
-  # definitions is absorbed by reloading the simulator and retrying once.
+  # definitions is handled by the transaction inside ParameterSet#save.
   # Returns [parameter_set, created].
   def self.find_or_create!(simulator, parameters)
-    retried = false
-    begin
-      # pre-flight: when the in-memory definitions are stale, reload before
-      # casting so that the common case needs no exception round-trip
-      fresh_version = Simulator.where(id: simulator.id).pluck(:parameter_definitions_version).first
-      simulator.reload if fresh_version.to_i != simulator.parameter_definitions_version.to_i
-
-      casted = ParametersUtil.cast_parameter_values(parameters, simulator.parameter_definitions)
-      if casted.nil?
-        # let the validation report the cast error
-        return [simulator.parameter_sets.create!(v: parameters), true]
-      end
+    # operate on fresh definitions; the given instance may be long-lived
+    simulator.reload
+    casted = ParametersUtil.cast_parameter_values(parameters, simulator.parameter_definitions)
+    if casted.nil?
+      # let the validation report the cast error
+      return [simulator.parameter_sets.create!(v: parameters), true]
+    end
+    MAX_LEGACY_MIGRATION_RETRY.times do
       found = find_by_casted_values(simulator, casted)
-      return [found, false] if found
+      if found
+        return [found, false] if (casted.keys - found.v.keys).empty?
+        # a legacy PS not yet migrated after append_parameter_definition:
+        # bring it up to date instead of creating a duplicate
+        migrated = migrate_legacy!(found, casted_defaults_of(simulator))
+        return [migrated, false] if migrated
+        next # the PS changed underneath (filled or discarded); redo the lookup
+      end
       begin
         ps = simulator.parameter_sets.create!(v: casted, skip_check_uniqueness: true)
-        [ps, true]
+        return [ps, true]
       rescue Mongo::Error::OperationFailure => ex
         raise unless duplicate_key_error?(ex)
-        found = find_by_casted_values(simulator, casted)
-        raise unless found
-        [found, false]
+        # the definitions may have changed while we were trying to insert;
+        # re-cast before looking up the winner
+        recasted = ParametersUtil.cast_parameter_values(parameters, simulator.reload.parameter_definitions) || casted
+        found = find_by_casted_values(simulator, recasted)
+        return [found, false] if found
+        raise
       end
-    rescue DefinitionsChangedError, Mongoid::Errors::Validations => ex
-      raise if retried or !definitions_changed_failure?(ex)
-      retried = true
-      simulator.reload
-      retry
+    end
+    raise "find_or_create! did not converge for #{parameters.inspect}"
+  end
+
+  # Finds the ParameterSet whose logical values equal `casted`, including
+  # "legacy" PSs which have not yet been migrated after a parameter
+  # definition was appended: a missing key matches only when the requested
+  # value equals the key's default — which is exactly the value the
+  # migration sweep will fill in.
+  # MongoDB equality on Hash/Array values has surprising semantics
+  # (array-element containment, subdocument key order), so the DB queries
+  # act as pre-filters and a Ruby-side check is the authority.
+  def self.find_by_casted_values(simulator, casted)
+    defaults = casted_defaults_of(simulator)
+    scope = simulator.parameter_sets
+
+    # 1. exact per-key match; prefer fingerprinted docs (an exempted
+    #    duplicate has none), then the oldest
+    query = casted.map {|key,val| ["v.#{key}", val] }.to_h
+    found = scope.where(query).desc(:fingerprint).asc(:created_at)
+                 .detect {|ps| values_match?(ps, casted, defaults) }
+    return found if found
+
+    # 2. fingerprint (canonical form; key-order insensitive)
+    found = scope.where(fingerprint: fingerprint_of(casted)).first
+    return found if found
+
+    # 3. legacy PSs with missing keys; only possible when some requested
+    #    value equals its default
+    legacy_keys = casted.keys.select {|key| defaults.key?(key) and defaults[key] == casted[key] }
+    return nil if legacy_keys.empty?
+    clauses = casted.map do |key,val|
+      if legacy_keys.include?(key)
+        { '$or' => [ { "v.#{key}" => val }, { "v.#{key}" => { '$exists' => false } } ] }
+      else
+        { "v.#{key}" => val }
+      end
+    end
+    scope.where('$and' => clauses).asc(:created_at)
+         .detect {|ps| values_match?(ps, casted, defaults) }
+  end
+
+  def self.casted_defaults_of(simulator)
+    simulator.parameter_definitions.each_with_object({}) do |pd, h|
+      next if pd.default.nil?
+      val = ParametersUtil.cast_value(pd.default, pd.type)
+      h[pd.key] = val unless val.nil?
     end
   end
 
-  def self.definitions_changed_failure?(exception)
-    return true if exception.is_a?(DefinitionsChangedError)
-    exception.respond_to?(:document) &&
-      exception.document.errors[:base].any? {|m| m.include?("have been updated") }
+  def self.values_match?(ps, casted, defaults)
+    return false unless ps.v.is_a?(Hash)
+    return false unless (ps.v.keys - casted.keys).empty?
+    casted.all? do |key, val|
+      ps.v.key?(key) ? ps.v[key] == val : defaults[key] == val
+    end
   end
 
-  def self.find_by_casted_values(simulator, casted)
-    query = casted.map {|key,val| ["v.#{key}", val] }.to_h
-    simulator.parameter_sets.where(query).first ||
-      simulator.parameter_sets.where(fingerprint: fingerprint_of(casted)).first
+  MAX_LEGACY_MIGRATION_RETRY = 3
+
+  # Fills the keys missing on a legacy PS with their default values, as
+  # the migration sweep of append_parameter_definition would. A CAS on
+  # (to_be_destroyed, fingerprint) guarantees that a concurrently
+  # discarded PS is never resurrected and concurrent fillers do not
+  # clobber each other. Returns the PS to use, or nil when the state
+  # changed underneath and the caller should redo its lookup.
+  def self.migrate_legacy!(ps, defaults)
+    filled = ps.v.dup
+    defaults.each {|key,val| filled[key] = val unless filled.key?(key) }
+    return ps if filled == ps.v
+    new_fingerprint = fingerprint_of(filled)
+    begin
+      # the CAS must compare v itself, not only the fingerprint: on a PS
+      # whose fingerprint is absent (an exempted legacy duplicate), nil
+      # would match nil even after a concurrent sweep of a DIFFERENT
+      # appended key updated v, and this stale write would erase that key
+      updated = ParameterSet.where(id: ps.id, :to_be_destroyed.in => [nil,false],
+                                   v: ps.v, fingerprint: ps.fingerprint)
+        .find_one_and_update({ '$set' => { v: filled, fingerprint: new_fingerprint } })
+      updated ? ps.reload : nil
+    rescue Mongo::Error::OperationFailure => ex
+      raise unless duplicate_key_error?(ex)
+      # a fully migrated duplicate already exists; return that winner.
+      # The lookup MUST be scoped to the simulator: the fingerprint hashes
+      # only the values, so another simulator can hold the same one.
+      # The legacy PS is left to the sweep, which warns the operator.
+      ParameterSet.where(simulator_id: ps.simulator_id, fingerprint: new_fingerprint).first ||
+        ParameterSet.where(simulator_id: ps.simulator_id, v: filled).ne(id: ps.id).first
+    end
+  end
+
+  # Fills the missing keys of a legacy PS which duplicates an existing,
+  # fully migrated PS, removing it from the uniqueness constraint at the
+  # same time (the operator decides whether to merge or destroy it).
+  # CAS-guarded on (alive, v, fingerprint) as read with the document: a
+  # concurrently discarded PS is left untouched, and a concurrent sweep
+  # of a different appended key is never overwritten with stale v.
+  # Returns nil on a CAS miss; the caller's next sweep round converges.
+  def self.exempt_and_fill!(ps, defaults)
+    filled = ps.v.dup
+    defaults.each {|key,val| filled[key] = val unless filled.key?(key) }
+    ParameterSet.where(id: ps.id, :to_be_destroyed.in => [nil,false],
+                       v: ps.v, fingerprint: ps.fingerprint)
+      .find_one_and_update({ '$set' => { v: filled }, '$unset' => { fingerprint: '' } })
   end
 
   def set_fingerprint
     self.fingerprint = self.class.fingerprint_of(v) if v.is_a?(Hash)
-  end
-
-  def verify_parameter_definitions_after_insert
-    updating, fresh_version = Simulator.where(id: simulator_id)
-      .pluck(:parameter_definitions_updating, :parameter_definitions_version).first
-    return if !updating and fresh_version.to_i == @pd_version_at_validation
-    if destroyable?
-      destroy
-      raise DefinitionsChangedError, "Parameter definitions of the simulator were updated concurrently; the created ParameterSet has been rolled back. Retry with a reloaded simulator."
-    else
-      # a Run has been attached in the tiny window after the insert;
-      # repair this PS in place instead of destroying it
-      defs = simulator.reload.parameter_definitions
-      casted = ParametersUtil.cast_parameter_values(v, defs)
-      if casted
-        self.v = casted
-        timeless.save! # refresh_fingerprint keeps the unique index consistent
-      end
-    end
   end
 
   # Keep the fingerprint consistent when v is modified after creation

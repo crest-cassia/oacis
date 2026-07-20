@@ -6,10 +6,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     services:
-      mongo:
-        image: mongo
-        ports:
-          - 27017:27017
       redis:
         image: redis
         ports:
@@ -20,6 +16,21 @@ jobs:
         ruby: ['3.2', '3.3', '3.4']
     steps:
     - uses: actions/checkout@v4
+    # OACIS requires a (single-node) replica set for multi-document
+    # transactions; the services block cannot override the container
+    # command, so start MongoDB manually.
+    - name: Start MongoDB as a single-node replica set
+      run: |
+        docker run -d --name mongo -p 27017:27017 mongo:8.0 mongod --replSet rs0 --bind_ip_all
+        for i in $(seq 1 30); do
+          docker exec mongo mongosh --quiet --eval 'db.adminCommand("ping").ok' && break
+          sleep 1
+        done
+        docker exec mongo mongosh --quiet --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+        for i in $(seq 1 30); do
+          docker exec mongo mongosh --quiet --eval 'db.hello().isWritablePrimary' | grep -q true && break
+          sleep 1
+        done
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}

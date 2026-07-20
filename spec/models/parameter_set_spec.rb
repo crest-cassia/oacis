@@ -489,35 +489,32 @@ describe ParameterSet do
       expect(ParameterSet.fingerprint_of({"a"=>1})).to_not eq ParameterSet.fingerprint_of({"a"=>1.0})
     end
 
-    it "cannot be created while parameter definitions of the simulator are being updated" do
-      @sim.set(parameter_definitions_updating: true)
-      ps = @sim.parameter_sets.build(@valid_attr)
-      expect(ps).to_not be_valid
-      expect(ps.errors.full_messages.join).to match(/being updated/)
-      @sim.set(parameter_definitions_updating: false)
-      expect(@sim.parameter_sets.build(@valid_attr)).to be_valid
+    it "casts v against the current definitions even when the in-memory simulator is stale" do
+      new_def = { "_id" => BSON::ObjectId.new, "key" => "Z", "type" => "Integer", "default" => 7 }
+      Simulator.collection.update_one({ "_id" => @sim.id },
+                                      { '$push' => { "parameter_definitions" => new_def } })
+      # @sim still holds the old definitions in memory; the creation
+      # transaction must reload them inside its snapshot
+      ps = @sim.parameter_sets.create!(@valid_attr)
+      expect(ps.v["Z"]).to eq 7
+      expect(ps.fingerprint).to eq ParameterSet.fingerprint_of(ps.v)
     end
 
-    it "cannot be created from a simulator instance holding stale parameter definitions" do
-      stale_sim = Simulator.find(@sim.id)
-      @sim.lock_parameter_definitions_update
-      @sim.unlock_parameter_definitions_update # bumps the version
-      ps = stale_sim.parameter_sets.build(@valid_attr)
-      expect(ps).to_not be_valid
-      expect(ps.errors.full_messages.join).to match(/have been updated/)
-    end
-
-    it "rolls back the insert when definitions were updated between validation and insert" do
+    it "inserts exactly once when the creation transaction is retried" do
       ps = @sim.parameter_sets.build(@valid_attr)
-      allow(ps).to receive(:validate_parameter_definitions_not_updating).and_wrap_original do |m|
-        m.call
-        # simulate a migration completing between the validation and the insert
-        @sim.lock_parameter_definitions_update
-        @sim.unlock_parameter_definitions_update
+      attempts = 0
+      allow(ps).to receive(:insert).and_wrap_original do |m, *args|
+        attempts += 1
+        result = m.call(*args)
+        if attempts == 1
+          raise Mongo::Error::OperationFailure.new("simulated write conflict", nil,
+                                                   code: 112, labels: ["TransientTransactionError"])
+        end
+        result
       end
-      expect {
-        expect { ps.save! }.to raise_error(ParameterSet::DefinitionsChangedError)
-      }.to_not change { ParameterSet.unscoped.count }
+      expect( ps.save ).to be_truthy
+      expect( attempts ).to eq 2
+      expect( ParameterSet.where(id: ps.id).count ).to eq 1
     end
 
     it "prevents creation of an identical ParameterSet at the DB level even when validation is skipped" do
@@ -601,12 +598,119 @@ describe ParameterSet do
     end
 
     it "succeeds transparently when the given simulator instance holds stale definitions" do
-      stale_sim = Simulator.find(@sim.id)
-      @sim.lock_parameter_definitions_update
-      @sim.unlock_parameter_definitions_update # bumps the version
-      ps, created = ParameterSet.find_or_create!(stale_sim, {"L"=>10, "T"=>2.0})
+      new_def = { "_id" => BSON::ObjectId.new, "key" => "Z", "type" => "Integer", "default" => 7 }
+      Simulator.collection.update_one({ "_id" => @sim.id },
+                                      { '$push' => { "parameter_definitions" => new_def } })
+      ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0})
       expect(created).to be_truthy
       expect(ps.persisted?).to be_truthy
+      expect(ps.v["Z"]).to eq 7
+    end
+
+    context "when a definition was appended but an existing PS is not yet migrated" do
+
+      before(:each) do
+        @ps = @sim.parameter_sets.create!(v: {"L"=>10, "T"=>2.0})
+        new_def = { "_id" => BSON::ObjectId.new, "key" => "Z", "type" => "Integer", "default" => 7 }
+        Simulator.collection.update_one({ "_id" => @sim.id },
+                                        { '$push' => { "parameter_definitions" => new_def } })
+      end
+
+      it "reuses and migrates the unmigrated PS when the requested value equals the default" do
+        ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0, "Z"=>7})
+        expect(created).to be_falsey
+        expect(ps.id).to eq @ps.id
+        expect(ps.v["Z"]).to eq 7
+        expect(ps.fingerprint).to eq ParameterSet.fingerprint_of(ps.v)
+      end
+
+      it "reuses the unmigrated PS when the new key is omitted" do
+        ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0})
+        expect(created).to be_falsey
+        expect(ps.id).to eq @ps.id
+      end
+
+      it "creates a new PS when the requested value differs from the default" do
+        ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0, "Z"=>8})
+        expect(created).to be_truthy
+        expect(ps.id).to_not eq @ps.id
+        expect(@ps.reload.v).to_not have_key("Z")
+      end
+
+      it "rejects a direct create! of logically identical values via validation" do
+        expect {
+          @sim.parameter_sets.create!(v: {"L"=>10, "T"=>2.0})
+        }.to raise_error(Mongoid::Errors::Validations, /identical parameters already exists/)
+      end
+
+      it "does not resurrect a PS which was discarded before the lookup" do
+        @ps.discard
+        ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0})
+        expect(created).to be_truthy
+        expect(ps.id).to_not eq @ps.id
+        expect(@ps.reload.fingerprint).to be_nil
+      end
+
+      it "migrate_legacy! returns the winner of the same simulator when it hits a duplicate" do
+        ParameterSet.create_indexes
+        # another simulator whose PS has identical values and therefore an
+        # identical fingerprint; created first so a natural-order lookup
+        # would return it when the query is not scoped by simulator
+        other_sim = FactoryBot.create(:simulator, parameter_sets_count: 0,
+          parameter_definitions: [
+            ParameterDefinition.new(key: "L", type: "Integer", default: 50),
+            ParameterDefinition.new(key: "T", type: "Float", default: 1.0),
+            ParameterDefinition.new(key: "Z", type: "Integer", default: 7),
+          ])
+        foreign = other_sim.parameter_sets.create!(v: {"L"=>10, "T"=>2.0, "Z"=>7})
+        winner = @sim.parameter_sets.create!(v: {"L"=>10, "T"=>2.0, "Z"=>7}, skip_check_uniqueness: true)
+        expect(foreign.fingerprint).to eq winner.fingerprint
+
+        result = ParameterSet.migrate_legacy!(@ps, ParameterSet.casted_defaults_of(@sim.reload))
+        expect(result.id).to eq winner.id
+        expect(result.simulator_id).to eq @sim.id
+      end
+
+      it "migrate_legacy! does not overwrite a concurrent update on a fingerprint-less PS" do
+        @ps.unset(:fingerprint) # an exempted legacy PS
+        stale = ParameterSet.unscoped.find(@ps.id)
+        # a concurrent sweep of a DIFFERENT appended key fills another key
+        @ps.set(v: @ps.v.merge("W" => 3))
+        result = ParameterSet.migrate_legacy!(stale, {"Z" => 7})
+        expect(result).to be_nil
+        reloaded = ParameterSet.unscoped.find(@ps.id)
+        expect(reloaded.v["W"]).to eq 3
+        expect(reloaded.v).to_not have_key("Z")
+        expect(reloaded.fingerprint).to be_nil
+      end
+
+      it "exempt_and_fill! does not overwrite a concurrent update with stale v" do
+        stale = ParameterSet.unscoped.find(@ps.id)
+        @ps.set(v: @ps.v.merge("W" => 3))
+        result = ParameterSet.exempt_and_fill!(stale, {"Z" => 7})
+        expect(result).to be_nil
+        reloaded = ParameterSet.unscoped.find(@ps.id)
+        expect(reloaded.v["W"]).to eq 3
+        expect(reloaded.v).to_not have_key("Z")
+        expect(reloaded.fingerprint).to_not be_nil
+      end
+
+      it "discard clears the fingerprint and marks to_be_destroyed in one atomic update" do
+        @ps.discard
+        raw = ParameterSet.collection.find(_id: @ps.id).first
+        expect(raw["to_be_destroyed"]).to eq true
+        expect(raw).to_not have_key("fingerprint")
+      end
+
+      it "migrate_legacy! does not resurrect the fingerprint of a PS discarded after it was read" do
+        stale = ParameterSet.unscoped.find(@ps.id)
+        @ps.discard
+        result = ParameterSet.migrate_legacy!(stale, ParameterSet.casted_defaults_of(@sim.reload))
+        expect(result).to be_nil
+        reloaded = ParameterSet.unscoped.find(@ps.id)
+        expect(reloaded.fingerprint).to be_nil
+        expect(reloaded.v).to_not have_key("Z")
+      end
     end
   end
 
