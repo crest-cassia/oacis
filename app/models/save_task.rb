@@ -39,7 +39,7 @@ class SaveTask
           begin
             ps, _new_ps = ParameterSet.find_or_create!(simulator, v)
             created << ps
-          rescue Mongoid::Errors::Validations, ParameterSet::DefinitionsChangedError
+          rescue Mongoid::Errors::Validations
             # skip an invalid parameter combination (previously a silent save failure)
           end
         else
@@ -50,7 +50,7 @@ class SaveTask
         begin
           ps, _new_ps = ParameterSet.find_or_create!(simulator, v)
           created << ps
-        rescue Mongoid::Errors::Validations, ParameterSet::DefinitionsChangedError
+        rescue Mongoid::Errors::Validations
           # skip an invalid parameter combination (previously a silent save failure)
         end
         StatusChannel.broadcast_to('message', OacisChannelUtil.progressSaveTaskMessage(simulator, -i-1)) if i%100==0

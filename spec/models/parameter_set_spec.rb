@@ -489,35 +489,32 @@ describe ParameterSet do
       expect(ParameterSet.fingerprint_of({"a"=>1})).to_not eq ParameterSet.fingerprint_of({"a"=>1.0})
     end
 
-    it "cannot be created while parameter definitions of the simulator are being updated" do
-      @sim.set(parameter_definitions_updating: true)
-      ps = @sim.parameter_sets.build(@valid_attr)
-      expect(ps).to_not be_valid
-      expect(ps.errors.full_messages.join).to match(/being updated/)
-      @sim.set(parameter_definitions_updating: false)
-      expect(@sim.parameter_sets.build(@valid_attr)).to be_valid
+    it "casts v against the current definitions even when the in-memory simulator is stale" do
+      new_def = { "_id" => BSON::ObjectId.new, "key" => "Z", "type" => "Integer", "default" => 7 }
+      Simulator.collection.update_one({ "_id" => @sim.id },
+                                      { '$push' => { "parameter_definitions" => new_def } })
+      # @sim still holds the old definitions in memory; the creation
+      # transaction must reload them inside its snapshot
+      ps = @sim.parameter_sets.create!(@valid_attr)
+      expect(ps.v["Z"]).to eq 7
+      expect(ps.fingerprint).to eq ParameterSet.fingerprint_of(ps.v)
     end
 
-    it "cannot be created from a simulator instance holding stale parameter definitions" do
-      stale_sim = Simulator.find(@sim.id)
-      @sim.lock_parameter_definitions_update
-      @sim.unlock_parameter_definitions_update # bumps the version
-      ps = stale_sim.parameter_sets.build(@valid_attr)
-      expect(ps).to_not be_valid
-      expect(ps.errors.full_messages.join).to match(/have been updated/)
-    end
-
-    it "rolls back the insert when definitions were updated between validation and insert" do
+    it "inserts exactly once when the creation transaction is retried" do
       ps = @sim.parameter_sets.build(@valid_attr)
-      allow(ps).to receive(:validate_parameter_definitions_not_updating).and_wrap_original do |m|
-        m.call
-        # simulate a migration completing between the validation and the insert
-        @sim.lock_parameter_definitions_update
-        @sim.unlock_parameter_definitions_update
+      attempts = 0
+      allow(ps).to receive(:insert).and_wrap_original do |m, *args|
+        attempts += 1
+        result = m.call(*args)
+        if attempts == 1
+          raise Mongo::Error::OperationFailure.new("simulated write conflict", nil,
+                                                   code: 112, labels: ["TransientTransactionError"])
+        end
+        result
       end
-      expect {
-        expect { ps.save! }.to raise_error(ParameterSet::DefinitionsChangedError)
-      }.to_not change { ParameterSet.unscoped.count }
+      expect( ps.save ).to be_truthy
+      expect( attempts ).to eq 2
+      expect( ParameterSet.where(id: ps.id).count ).to eq 1
     end
 
     it "prevents creation of an identical ParameterSet at the DB level even when validation is skipped" do
@@ -601,12 +598,13 @@ describe ParameterSet do
     end
 
     it "succeeds transparently when the given simulator instance holds stale definitions" do
-      stale_sim = Simulator.find(@sim.id)
-      @sim.lock_parameter_definitions_update
-      @sim.unlock_parameter_definitions_update # bumps the version
-      ps, created = ParameterSet.find_or_create!(stale_sim, {"L"=>10, "T"=>2.0})
+      new_def = { "_id" => BSON::ObjectId.new, "key" => "Z", "type" => "Integer", "default" => 7 }
+      Simulator.collection.update_one({ "_id" => @sim.id },
+                                      { '$push' => { "parameter_definitions" => new_def } })
+      ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0})
       expect(created).to be_truthy
       expect(ps.persisted?).to be_truthy
+      expect(ps.v["Z"]).to eq 7
     end
   end
 

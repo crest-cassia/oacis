@@ -253,21 +253,20 @@ describe Simulator do
     end
   end
 
-  describe "#unlock_parameter_definitions_update" do
+  describe "#append_parameter_definition_atomically" do
 
-    it "clears the flag and bumps the version in one step" do
+    it "appends the definition and returns true" do
       sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
-      expect( sim.lock_parameter_definitions_update ).to be_truthy
-      expect {
-        sim.unlock_parameter_definitions_update
-      }.to change { sim.reload.parameter_definitions_version }.by(1)
-      expect( sim.parameter_definitions_updating ).to be_falsey
+      pd = ParameterDefinition.new(key: "Z", type: "Integer", default: 1)
+      expect( sim.append_parameter_definition_atomically(pd) ).to be_truthy
+      expect( sim.reload.parameter_definitions.map(&:key) ).to include("Z")
     end
 
-    it "lock cannot be acquired twice" do
+    it "returns false and appends nothing when the key already exists" do
       sim = FactoryBot.create(:simulator, parameter_sets_count: 0)
-      expect( sim.lock_parameter_definitions_update ).to be_truthy
-      expect( sim.lock_parameter_definitions_update ).to be_falsey
+      pd = ParameterDefinition.new(key: "L", type: "Integer", default: 1)
+      expect( sim.append_parameter_definition_atomically(pd) ).to be_falsey
+      expect( sim.reload.parameter_definitions.count {|d| d.key == "L" } ).to eq 1
     end
   end
 

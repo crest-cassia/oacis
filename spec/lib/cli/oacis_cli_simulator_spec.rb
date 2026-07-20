@@ -244,43 +244,18 @@ describe OacisCli do
       }
     end
 
-    it "bumps parameter_definitions_version so that stale simulator instances are detected" do
-      at_temp_dir {
-        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
-        expect {
-          OacisCli.new.invoke(:append_parameter_definition, [], option)
-        }.to change { @sim.reload.parameter_definitions_version }.by(1)
-      }
-    end
-
-    it "releases the lock for ParameterSet creation after the migration" do
+    it "is idempotent: re-running after an interrupted migration fills missing keys" do
       at_temp_dir {
         option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
         OacisCli.new.invoke(:append_parameter_definition, [], option)
-        expect(@sim.reload.parameter_definitions_updating).to be_falsey
-      }
-    end
-
-    it "releases the lock even when the migration fails" do
-      at_temp_dir {
-        allow(ParameterSet).to receive(:fingerprint_of).and_raise("migration failed")
-        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
-        expect {
+        # simulate an interrupted migration: one PS lost the key again
+        broken = @sim.reload.parameter_sets.first
+        broken.set(v: broken.v.reject {|key,_| key == "NEW_PARAM" })
+        capture_stdout_stderr {
           OacisCli.new.invoke(:append_parameter_definition, [], option)
-        }.to raise_error("migration failed")
-        expect(@sim.reload.parameter_definitions_updating).to be_falsey
-      }
-    end
-
-    it "raises an error when another update is already in progress" do
-      at_temp_dir {
-        @sim.set(parameter_definitions_updating: true)
-        option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
-        expect {
-          OacisCli.new.invoke(:append_parameter_definition, [], option)
-        }.to raise_error(/in progress/)
-        # the lock is owned by the other process; it must not be released here
-        expect(@sim.reload.parameter_definitions_updating).to be_truthy
+        }
+        expect(broken.reload.v["NEW_PARAM"]).to eq 0.5
+        expect(@sim.reload.parameter_definitions.count {|pd| pd.key == "NEW_PARAM" }).to eq 1
       }
     end
 

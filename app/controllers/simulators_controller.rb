@@ -116,12 +116,6 @@ class SimulatorsController < ApplicationController
 
     respond_to do |format|
       if @simulator.update(permitted_simulator_params.to_h)
-        # the form disables editing of parameter definitions once a PS
-        # exists, but bump the version whenever they were touched so that
-        # ParameterSet creation detects stale in-memory definitions
-        if permitted_simulator_params.to_h.key?("parameter_definitions_attributes")
-          @simulator.inc(parameter_definitions_version: 1)
-        end
         format.html { redirect_to @simulator, notice: 'Simulator was successfully updated.' }
         format.json { head :no_content }
       else

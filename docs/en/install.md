@@ -54,7 +54,7 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 ### Prerequisites
 
 - Ruby 3.2 or later ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
-- MongoDB 4.4 or later ([http://www.mongodb.org/](http://www.mongodb.org/))
+- MongoDB 6.0 or later, running as a single-node replica set ([http://www.mongodb.org/](http://www.mongodb.org/)) — see the setup steps below
 - redis ([https://redis.io/](https://redis.io/))
 
 We recommend rbenv or rvm to install a proper version of Ruby.
@@ -79,7 +79,20 @@ Here we show the instructions on how to setup prerequisites using homebrew.
     - verify output is like `ruby 3.4.2....`.
 - installing MongoDB
     - Follow the instruction of [the official document.](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
-        - After installation, start MongoDB as a service (`brew services start mongodb-community`).
+    - After installation, start MongoDB as a service (`brew services start mongodb-community`).
+    - Configure MongoDB as a single-node replica set (required by OACIS, which uses MongoDB transactions):
+        - add the following lines to `/opt/homebrew/etc/mongod.conf`:
+
+          ```
+          replication:
+            replSetName: rs0
+          ```
+        - restart MongoDB (`brew services restart mongodb-community`)
+        - run the following once:
+
+          ```sh
+          mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+          ```
 - install and update bundler
     ``` sh
     gem install bundler
@@ -113,6 +126,18 @@ Here we show the instruction on how to setup prerequisites using apt-get, using 
     - verify output is like `ruby 3.4.2....`.
 - install mongoDB
     - Follow the instruction of [the official document.](https://docs.mongodb.com/manual/administration/install-on-linux/)
+    - Configure MongoDB as a single-node replica set (required by OACIS, which uses MongoDB transactions):
+        - add the following lines to `/etc/mongod.conf` and restart mongod:
+
+          ```
+          replication:
+            replSetName: rs0
+          ```
+        - run the following once:
+
+          ```sh
+          mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+          ```
 - install and update bundler
     ``` sh
     gem install bundler

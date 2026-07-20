@@ -109,46 +109,65 @@ EOS
   def append_parameter_definition
     simulator = get_simulator(options[:simulator])
 
-    new_param_def = simulator.parameter_definitions.build(key: options[:name], type: options[:type], default: options[:default])
-
-    unless new_param_def.valid?
-      $stderr.puts new_param_def.inspect
-      $stderr.puts new_param_def.errors.full_messages
-      raise "validation of new parameter definition failed"
-    end
-
-    # Block creation of new ParameterSets while the existing ones are
-    # migrated, so that no PS is left without the new key.
-    unless simulator.lock_parameter_definitions_update
-      raise "Another update of parameter definitions is in progress for this simulator. Try again later."
-    end
-    begin
-      # Sweep every PS which misses any of the defined keys (not only the
-      # new one) and fill them with the default values. This repeats until
-      # convergence, so a PS whose creation slipped in just before the
-      # lock became visible is picked up by the next round, and a PS left
-      # inconsistent by an earlier interrupted migration is repaired here
-      # as well.
-      defaults = { new_param_def.key => new_param_def.default }
-      # keys without a default value cannot be repaired; leave them out
-      simulator.parameter_definitions.each {|pd| defaults[pd.key] = pd.default unless pd.default.nil? }
-      loop do
-        missing_any = defaults.keys.map {|key| { "v.#{key}" => { '$exists' => false } } }
-        query = simulator.parameter_sets.where('$or' => missing_any)
-        total = query.count
-        break if total == 0
-        progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
-        query.each do |ps|
-          defaults.each do |key, default_value|
-            ps.v[ key ] = default_value unless ps.v.has_key?(key)
-          end
-          ps.timeless.save!
-          progressbar.increment
-        end
+    existing = simulator.parameter_definitions.detect {|pd| pd.key == options[:name] }
+    if existing
+      casted_default = ParametersUtil.cast_value(options[:default], existing.type)
+      if existing.type == options[:type] and existing.default == casted_default
+        # idempotent re-run, e.g. after an interrupted migration: only sweep
+        $stderr.puts "Parameter '#{options[:name]}' is already defined. Filling missing default values..."
+      else
+        $stderr.puts "A parameter named '#{options[:name]}' already exists " \
+                     "with type=#{existing.type}, default=#{existing.default.inspect}"
+        raise "validation of new parameter definition failed"
       end
-      new_param_def.save!
-    ensure
-      simulator.unlock_parameter_definitions_update
+    else
+      new_param_def = simulator.parameter_definitions.build(key: options[:name], type: options[:type], default: options[:default])
+      unless new_param_def.valid?
+        $stderr.puts new_param_def.inspect
+        $stderr.puts new_param_def.errors.full_messages
+        raise "validation of new parameter definition failed"
+      end
+      # Commit the definition change first (atomic single-document update).
+      # From this point on, every newly created PS is casted with the new
+      # definitions: PS-creation transactions write the simulator document,
+      # so they conflict with this write and retry against the committed
+      # state. The sweep below therefore only has to migrate the PSs which
+      # existed before the commit — no lock is needed.
+      unless simulator.append_parameter_definition_atomically(new_param_def)
+        $stderr.puts "Parameter '#{new_param_def.key}' was defined concurrently. Filling missing default values..."
+      end
+    end
+    simulator.reload
+
+    # Sweep every PS which misses any of the defined keys (not only the
+    # new one) and fill them with the default values, until convergence.
+    # This also repairs PSs left inconsistent by an earlier interrupted
+    # migration. Keys without a default value cannot be repaired and are
+    # left out.
+    defaults = {}
+    simulator.parameter_definitions.each {|pd| defaults[pd.key] = pd.default unless pd.default.nil? }
+    loop do
+      missing_any = defaults.keys.map {|key| { "v.#{key}" => { '$exists' => false } } }
+      query = simulator.parameter_sets.where('$or' => missing_any)
+      total = query.count
+      break if total == 0
+      progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
+      query.each do |ps|
+        defaults.each do |key, default_value|
+          ps.v[ key ] = default_value unless ps.v.has_key?(key)
+        end
+        begin
+          ps.timeless.save!
+        rescue Mongo::Error::OperationFailure => ex
+          raise unless ParameterSet.duplicate_key_error?(ex)
+          # filling the defaults made this PS identical to an existing one;
+          # exempt it from the uniqueness constraint and let the user decide
+          ps.unset(:fingerprint)
+          $stderr.puts "WARNING: #{ps.id} became identical to an existing ParameterSet " \
+                       "after filling default values; consider merging or destroying it."
+        end
+        progressbar.increment
+      end
     end
   end
 end
