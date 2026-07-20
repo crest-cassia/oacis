@@ -358,10 +358,23 @@ class ParameterSet
     rescue Mongo::Error::OperationFailure => ex
       raise unless duplicate_key_error?(ex)
       # a fully migrated duplicate already exists; return that winner.
+      # The lookup MUST be scoped to the simulator: the fingerprint hashes
+      # only the values, so another simulator can hold the same one.
       # The legacy PS is left to the sweep, which warns the operator.
-      ParameterSet.where(fingerprint: new_fingerprint).first ||
+      ParameterSet.where(simulator_id: ps.simulator_id, fingerprint: new_fingerprint).first ||
         ParameterSet.where(simulator_id: ps.simulator_id, v: filled).ne(id: ps.id).first
     end
+  end
+
+  # Fills the missing keys of a legacy PS which duplicates an existing,
+  # fully migrated PS, removing it from the uniqueness constraint at the
+  # same time (the operator decides whether to merge or destroy it).
+  # CAS-guarded: a concurrently discarded PS is left untouched.
+  def self.exempt_and_fill!(ps, defaults)
+    filled = ps.v.dup
+    defaults.each {|key,val| filled[key] = val unless filled.key?(key) }
+    ParameterSet.where(id: ps.id, :to_be_destroyed.in => [nil,false])
+      .find_one_and_update({ '$set' => { v: filled }, '$unset' => { fingerprint: '' } })
   end
 
   def set_fingerprint

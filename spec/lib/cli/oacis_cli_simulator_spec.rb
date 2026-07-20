@@ -286,6 +286,25 @@ describe OacisCli do
       end
     end
 
+    it "exempts a legacy PS which becomes identical to an already migrated PS" do
+      at_temp_dir {
+        ParameterSet.create_indexes
+        legacy = @sim.parameter_sets.asc(:created_at).first
+        new_def = { "_id" => BSON::ObjectId.new, "key" => "Z", "type" => "Float", "default" => 0.5 }
+        Simulator.collection.update_one({"_id" => @sim.id}, {'$push' => {"parameter_definitions" => new_def}})
+        @sim.reload
+        winner = @sim.parameter_sets.create!(v: legacy.v.merge("Z" => 0.5), skip_check_uniqueness: true)
+        option = {simulator: @sim.id.to_s, name: 'Z', type: "Float", default: 0.5}
+        capture_stdout_stderr {
+          OacisCli.new.invoke(:append_parameter_definition, [], option)
+        }
+        legacy.reload
+        expect(legacy.v["Z"]).to eq 0.5
+        expect(legacy.fingerprint).to be_nil
+        expect(winner.reload.fingerprint).to_not be_nil
+      }
+    end
+
     it "is idempotent: re-running after an interrupted migration fills missing keys" do
       at_temp_dir {
         option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}

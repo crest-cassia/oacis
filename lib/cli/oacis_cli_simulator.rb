@@ -157,24 +157,37 @@ EOS
     # migration. Keys without a default value cannot be repaired and are
     # left out.
     defaults = ParameterSet.casted_defaults_of(simulator)
+    previous_total = nil
+    stalled = 0
     loop do
       missing_any = defaults.keys.map {|key| { "v.#{key}" => { '$exists' => false } } }
       query = simulator.parameter_sets.where('$or' => missing_any)
       total = query.count
       break if total == 0
+      # safety valve: without progress across passes (e.g. a corrupted
+      # document which cannot be migrated), abort instead of looping forever
+      if previous_total and total >= previous_total
+        stalled += 1
+        if stalled >= 2
+          $stderr.puts "WARNING: #{total} ParameterSets could not be migrated: " \
+                       "#{query.map(&:id).join(', ')}. Resolve them manually and re-run."
+          break
+        end
+      else
+        stalled = 0
+      end
+      previous_total = total
       progressbar = ProgressBar.create(total: total, format: "%t %B %p%% (%c/%C)")
       query.each do |ps|
-        defaults.each do |key, default_value|
-          ps.v[ key ] = default_value unless ps.v.has_key?(key)
-        end
-        begin
-          ps.timeless.save!
-        rescue Mongo::Error::OperationFailure => ex
-          raise unless ParameterSet.duplicate_key_error?(ex)
-          # filling the defaults made this PS identical to an existing one;
-          # exempt it from the uniqueness constraint and let the user decide
-          ps.unset(:fingerprint)
-          $stderr.puts "WARNING: #{ps.id} became identical to an existing ParameterSet " \
+        # CAS-guarded (see ParameterSet.migrate_legacy!): a PS discarded
+        # after being read here is left untouched — a plain save would
+        # resurrect its fingerprint on a to_be_destroyed document
+        result = ParameterSet.migrate_legacy!(ps, defaults)
+        if result and result.id != ps.id
+          # an identical, fully migrated PS already exists: fill this one
+          # but leave it exempted from the uniqueness constraint
+          ParameterSet.exempt_and_fill!(ps, defaults)
+          $stderr.puts "WARNING: #{ps.id} became identical to #{result.id} " \
                        "after filling default values; consider merging or destroying it."
         end
         progressbar.increment

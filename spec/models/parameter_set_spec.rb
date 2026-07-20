@@ -650,6 +650,36 @@ describe ParameterSet do
         expect(ps.id).to_not eq @ps.id
         expect(@ps.reload.fingerprint).to be_nil
       end
+
+      it "migrate_legacy! returns the winner of the same simulator when it hits a duplicate" do
+        ParameterSet.create_indexes
+        # another simulator whose PS has identical values and therefore an
+        # identical fingerprint; created first so a natural-order lookup
+        # would return it when the query is not scoped by simulator
+        other_sim = FactoryBot.create(:simulator, parameter_sets_count: 0,
+          parameter_definitions: [
+            ParameterDefinition.new(key: "L", type: "Integer", default: 50),
+            ParameterDefinition.new(key: "T", type: "Float", default: 1.0),
+            ParameterDefinition.new(key: "Z", type: "Integer", default: 7),
+          ])
+        foreign = other_sim.parameter_sets.create!(v: {"L"=>10, "T"=>2.0, "Z"=>7})
+        winner = @sim.parameter_sets.create!(v: {"L"=>10, "T"=>2.0, "Z"=>7}, skip_check_uniqueness: true)
+        expect(foreign.fingerprint).to eq winner.fingerprint
+
+        result = ParameterSet.migrate_legacy!(@ps, ParameterSet.casted_defaults_of(@sim.reload))
+        expect(result.id).to eq winner.id
+        expect(result.simulator_id).to eq @sim.id
+      end
+
+      it "migrate_legacy! does not resurrect the fingerprint of a PS discarded after it was read" do
+        stale = ParameterSet.unscoped.find(@ps.id)
+        @ps.discard
+        result = ParameterSet.migrate_legacy!(stale, ParameterSet.casted_defaults_of(@sim.reload))
+        expect(result).to be_nil
+        reloaded = ParameterSet.unscoped.find(@ps.id)
+        expect(reloaded.fingerprint).to be_nil
+        expect(reloaded.v).to_not have_key("Z")
+      end
     end
   end
 
