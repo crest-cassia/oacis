@@ -8,6 +8,14 @@ class Simulator
   field :sequential_seed, type: Mongoid::Boolean, default: false
   field :position, type: Integer # position in the table. start from zero
   field :to_be_destroyed, type: Mongoid::Boolean, default: false
+  # true while `oacis_cli append_parameter_definition` is migrating the
+  # existing ParameterSets; creation of a new PS is rejected meanwhile
+  field :parameter_definitions_updating, type: Mongoid::Boolean, default: false
+  # incremented atomically whenever parameter_definitions have been changed.
+  # ParameterSet creation compares this value (loaded atomically together
+  # with the embedded parameter_definitions) against a fresh DB read to
+  # detect that it is about to cast v with stale definitions.
+  field :parameter_definitions_version, type: Integer, default: 0
   embeds_many :parameter_definitions
   has_many :parameter_sets, dependent: :destroy
   has_many :runs
@@ -198,7 +206,14 @@ class Simulator
   end
 
   def find_or_create_parameter_set( parameters )
-    find_parameter_set( parameters ) or parameter_sets.create!(v: parameters)
+    given_keys = parameters.keys.map(&:to_s)
+    expected_keys = default_parameters.keys
+    unknown_keys = given_keys - expected_keys
+    raise "Unknown keys: #{unknown_keys}" unless unknown_keys.empty?
+    missing_keys = expected_keys - given_keys
+    raise "Missing keys: #{missing_keys}" unless missing_keys.empty?
+
+    ParameterSet.find_or_create!(self, parameters).first
   end
 
   def default_parameters
@@ -207,6 +222,27 @@ class Simulator
       default[pd.key] = pd.default
     end
     default.with_indifferent_access
+  end
+
+  # Atomically acquires the lock which blocks creation of ParameterSets
+  # while parameter definitions are being updated. Returns true when the
+  # lock is acquired, false when another update is already in progress.
+  # ('$ne' => true also matches documents which do not have the field yet)
+  def lock_parameter_definitions_update
+    found = Simulator.where(id: id, parameter_definitions_updating: {'$ne' => true})
+                     .find_one_and_update({'$set' => {parameter_definitions_updating: true}})
+    !found.nil?
+  end
+
+  # Releasing the flag and bumping the version MUST happen in one atomic
+  # command: if they were two separate writes, a creator holding stale
+  # definitions could pass its validation between them (flag already
+  # cleared, version not yet bumped). Any future forced-unlock path must
+  # bump the version as well.
+  def unlock_parameter_definitions_update
+    Simulator.where(id: id).find_one_and_update(
+      { '$set' => { parameter_definitions_updating: false },
+        '$inc' => { parameter_definitions_version: 1 } })
   end
 
   def find_analyzer_by_name( azr_name )

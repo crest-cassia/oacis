@@ -5,6 +5,10 @@ class Run
   include Submittable
 
   field :seed, type: Integer
+  # Seeds are unique within a ParameterSet at the DB level. Soft-destroyed
+  # runs (to_be_destroyed) keep their seed until actual destruction, so seed
+  # assignment must look at unscoped runs. See #set_unique_seed.
+  index({ parameter_set_id: 1, seed: 1 }, { unique: true })
 
   belongs_to :parameter_set, autosave: false, index: true, touch: true
   belongs_to :simulator, autosave: false, index: true  # for caching. do not edit this field explicitly
@@ -19,7 +23,26 @@ class Run
   after_create :create_run_dir
   before_destroy :delete_run_dir, :delete_archived_result_file
 
+  MAX_SEED_RETRY = 10
+
   public
+  # Retries the insert with a new auto-generated seed when a concurrent
+  # creation took the same seed (duplicate key error on the unique index).
+  # Explicitly specified seeds are not retried; the error is propagated.
+  def save(options = {})
+    retry_count = 0
+    begin
+      super
+    rescue Mongo::Error::OperationFailure => ex
+      raise unless new_record? and @seed_auto_generated and ParameterSet.duplicate_key_error?(ex)
+      retry_count += 1
+      raise if retry_count > MAX_SEED_RETRY
+      @seed_retry_count = retry_count
+      self.seed = nil
+      retry
+    end
+  end
+
   def simulator
     set_simulator if simulator_id.nil?
     if simulator_id
@@ -102,13 +125,18 @@ class Run
   def set_unique_seed
     unless seed
       if simulator.sequential_seed
-        seeds = parameter_set.reload.runs.asc(:seed).only(:seed).map {|r| r.seed }
+        # unscoped: seeds of to_be_destroyed runs are still present in the
+        # unique index, so they must not be reused until actually destroyed
+        seeds = Run.unscoped.where(parameter_set_id: parameter_set_id)
+                   .asc(:seed).only(:seed).map {|r| r.seed }
         found = seeds.each_with_index.find {|seed,idx| seed != idx + 1 }
         next_seed = found ? found[1] + 1 : seeds.last.to_i + 1
         self.seed = next_seed
       else
-        self.seed = Digest::MD5.hexdigest(self.id).hex % (2**31-1)
+        digest_src = @seed_retry_count ? "#{self.id}-retry#{@seed_retry_count}" : self.id
+        self.seed = Digest::MD5.hexdigest(digest_src).hex % (2**31-1)
       end
+      @seed_auto_generated = true
     end
   end
 

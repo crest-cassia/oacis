@@ -107,13 +107,12 @@ module McpServer
           sim = Resolvers.simulator(args["simulator"])
           merged = sim.default_parameters.merge(args["v"])
           casted = cast_parameters!(sim, merged, sim.parameter_definitions)
-          existing = sim.find_parameter_set(casted)
-          if existing
-            counts = ParameterSet.runs_status_count_batch([existing])[existing.id]
-            Serializers.parameter_set(existing, run_counts: counts).merge("created" => false)
-          else
-            ps = sim.parameter_sets.create!(v: casted)
+          ps, created = ParameterSet.find_or_create!(sim, casted)
+          if created
             Serializers.parameter_set(ps).merge("created" => true)
+          else
+            counts = ParameterSet.runs_status_count_batch([ps])[ps.id]
+            Serializers.parameter_set(ps, run_counts: counts).merge("created" => false)
           end
         end
       end

@@ -36,15 +36,23 @@ class SaveTask
       if now
         if i < NOW_CREATION_SIZE
           v = Hash[definitions.zip(param_values).map {|defn, v| [defn.key, v]}]
-          ps = simulator.parameter_sets.find_or_initialize_by(v: v)
-          created << ps if ps.persisted? or ps.save
+          begin
+            ps, _new_ps = ParameterSet.find_or_create!(simulator, v)
+            created << ps
+          rescue Mongoid::Errors::Validations, ParameterSet::DefinitionsChangedError
+            # skip an invalid parameter combination (previously a silent save failure)
+          end
         else
           break
         end
       else
         v = Hash[definitions.zip(param_values).map {|defn, v| [defn.key, v]}]
-        ps = simulator.parameter_sets.find_or_initialize_by(v: v)
-        created << ps if ps.persisted? or ps.save
+        begin
+          ps, _new_ps = ParameterSet.find_or_create!(simulator, v)
+          created << ps
+        rescue Mongoid::Errors::Validations, ParameterSet::DefinitionsChangedError
+          # skip an invalid parameter combination (previously a silent save failure)
+        end
         StatusChannel.broadcast_to('message', OacisChannelUtil.progressSaveTaskMessage(simulator, -i-1)) if i%100==0
       end
     end
@@ -58,7 +66,8 @@ class SaveTask
           new_runs << ps.runs.build(run_params_p)
         end
       end
-      set_sequential_seeds(new_runs) if simulator.sequential_seed
+      # sequential seeds are assigned in Run#set_unique_seed at save time;
+      # the unique index on (parameter_set_id, seed) makes this race-safe
       new_runs.each_with_index do |r,idx|
         r.save
         if now == false && idx % 20 == 0
@@ -74,17 +83,4 @@ class SaveTask
   end
 
   private
-  def set_sequential_seeds(runs)
-    ps_runs = runs.group_by {|run| run.parameter_set }
-    ps_runs.each_pair do |ps, runs_in_ps|
-      seeds = ps.reload.runs.asc(:seed).only(:seed).map {|r| r.seed }
-      runs_in_ps.each do |run_in_ps|
-        found = seeds.each_with_index.find {|seed,idx| seed != idx + 1 }
-        next_seed_idx = found ? found[1] : seeds.size
-        run_in_ps.seed = next_seed_idx + 1
-        seeds.insert(next_seed_idx, next_seed_idx + 1 )
-      end
-    end
-  end
-
 end

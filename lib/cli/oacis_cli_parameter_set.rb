@@ -50,7 +50,7 @@ class OacisCli < Thor
     simulator = get_simulator(options[:simulator])
 
     input = expand_input(input)
-    input = check_uniqueness(input, simulator)
+    input = validate_and_cast_input(input, simulator)
 
     progressbar = ProgressBar.create(total: input.size, format: "%t %B %p%% (%c/%C)")
     if options[:verbose]
@@ -59,23 +59,17 @@ class OacisCli < Thor
     end
 
     parameter_set_ids = []
-    input.each do |psid_value|
-      ps_value = psid_value[:value]
+    input.each do |ps_value|
       progressbar.log "  parameter values : #{ps_value.inspect}" if options[:verbose]
-      param_set = simulator.parameter_sets.build({v: ps_value, skip_check_uniqueness: true})
-      if (! psid_value[:id]) and param_set.valid?
-        param_set.save!
-        parameter_set_ids << param_set.id
-      elsif psid_value[:id] # An identical parameter_set is found
-        progressbar.log "  An identical parameter_set already exists. Skipping..."
-        parameter_set_ids << psid_value[:id]
-        # do not use 'ps_value' instead of 'param_set.v'.
-        # Otherwise the existing ps is not found because 'ps_value' is not casted and ordered properly.
-      else
-        progressbar.log param_set.inspect
-        progressbar.log param_set.errors.full_messages
+      begin
+        param_set, created = ParameterSet.find_or_create!(simulator, ps_value)
+      rescue Mongoid::Errors::Validations => ex
+        progressbar.log ex.document.inspect
+        progressbar.log ex.document.errors.full_messages
         raise "validation of parameter_set failed"
       end
+      progressbar.log "  An identical parameter_set already exists. Skipping..." unless created
+      parameter_set_ids << param_set.id
       progressbar.increment
     end
 
@@ -160,7 +154,11 @@ class OacisCli < Thor
     end
   end
 
-  def check_uniqueness(input, simulator)
+  # validates the input strictly (duplicated entries, value types) and
+  # returns the casted parameter values. Whether an identical PS already
+  # exists is left to ParameterSet.find_or_create!, which sees only alive
+  # (not to_be_destroyed) documents and is race-safe.
+  def validate_and_cast_input(input, simulator)
     old_size = input.size
     input.uniq! # this operation can remove {p2:0, p1:0} from [{p1:0, p2:0}, {p2:0, p1:0}]
     if old_size > input.size
@@ -184,26 +182,7 @@ class OacisCli < Thor
       end
       Hash[key_val_array]
     end
-    list_created_ps = {}
-    ParameterSet.collection.aggregate([
-      { '$match' => {'simulator_id' => simulator.id, 'v' => {'$in'=>input}} },
-      { '$group' => {'_id' => '$_id', v: {'$first' => '$v'}} }
-    ]).each do |psid_v|
-      list_created_ps[psid_v['v']]=psid_v['_id']
-    end
-    input.map do |ps_v|
-      if list_created_ps[ps_v]
-        id = list_created_ps[ps_v]
-        value = ps_v
-      else
-        id = nil
-        value = ps_v
-      end
-      {
-        id: id,
-        value: value
-      }
-    end
+    input
   end
 
   def write_parameter_set_ids_to_file(path, parameter_set_ids)
