@@ -42,6 +42,13 @@ If you run OACIS with docker (oacis_docker), connect through `docker exec` (note
 claude mcp add oacis -- docker exec -i -u oacis my_oacis /home/oacis/oacis/bin/oacis_mcp
 ```
 
+Running multiple OACIS docker instances on one machine works fine with MCP: the server is stdio-only and opens no network port, and each instance's `oacis_mcp.sh` (in the oacis_docker checkout) connects to the container of its own docker compose project. Just register each instance under a distinct server name, and pick names that make clear which instance the agent is writing to:
+
+```shell
+claude mcp add oacis_proj_a -- /path/to/proj_a/oacis_docker/oacis_mcp.sh
+claude mcp add oacis_proj_b -- /path/to/proj_b/oacis_docker/oacis_mcp.sh
+```
+
 ## Security model
 
 - The server is stdio-only; it opens no network port. Whoever can execute `bin/oacis_mcp` gets the same database access as `bin/oacis_ruby`.
