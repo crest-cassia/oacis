@@ -606,6 +606,51 @@ describe ParameterSet do
       expect(ps.persisted?).to be_truthy
       expect(ps.v["Z"]).to eq 7
     end
+
+    context "when a definition was appended but an existing PS is not yet migrated" do
+
+      before(:each) do
+        @ps = @sim.parameter_sets.create!(v: {"L"=>10, "T"=>2.0})
+        new_def = { "_id" => BSON::ObjectId.new, "key" => "Z", "type" => "Integer", "default" => 7 }
+        Simulator.collection.update_one({ "_id" => @sim.id },
+                                        { '$push' => { "parameter_definitions" => new_def } })
+      end
+
+      it "reuses and migrates the unmigrated PS when the requested value equals the default" do
+        ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0, "Z"=>7})
+        expect(created).to be_falsey
+        expect(ps.id).to eq @ps.id
+        expect(ps.v["Z"]).to eq 7
+        expect(ps.fingerprint).to eq ParameterSet.fingerprint_of(ps.v)
+      end
+
+      it "reuses the unmigrated PS when the new key is omitted" do
+        ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0})
+        expect(created).to be_falsey
+        expect(ps.id).to eq @ps.id
+      end
+
+      it "creates a new PS when the requested value differs from the default" do
+        ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0, "Z"=>8})
+        expect(created).to be_truthy
+        expect(ps.id).to_not eq @ps.id
+        expect(@ps.reload.v).to_not have_key("Z")
+      end
+
+      it "rejects a direct create! of logically identical values via validation" do
+        expect {
+          @sim.parameter_sets.create!(v: {"L"=>10, "T"=>2.0})
+        }.to raise_error(Mongoid::Errors::Validations, /identical parameters already exists/)
+      end
+
+      it "does not resurrect a PS which was discarded before the lookup" do
+        @ps.discard
+        ps, created = ParameterSet.find_or_create!(@sim, {"L"=>10, "T"=>2.0})
+        expect(created).to be_truthy
+        expect(ps.id).to_not eq @ps.id
+        expect(@ps.reload.fingerprint).to be_nil
+      end
+    end
   end
 
   describe "#discard" do

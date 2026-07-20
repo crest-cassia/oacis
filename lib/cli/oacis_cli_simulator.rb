@@ -109,34 +109,46 @@ EOS
   def append_parameter_definition
     simulator = get_simulator(options[:simulator])
 
-    existing = simulator.parameter_definitions.detect {|pd| pd.key == options[:name] }
-    if existing
-      casted_default = ParametersUtil.cast_value(options[:default], existing.type)
-      if existing.type == options[:type] and existing.default == casted_default
-        # idempotent re-run, e.g. after an interrupted migration: only sweep
-        $stderr.puts "Parameter '#{options[:name]}' is already defined. Filling missing default values..."
-      else
-        $stderr.puts "A parameter named '#{options[:name]}' already exists " \
-                     "with type=#{existing.type}, default=#{existing.default.inspect}"
-        raise "validation of new parameter definition failed"
+    # Commit the definition change first (atomic single-document update).
+    # From that point on, every newly created PS is casted with the new
+    # definitions: PS-creation transactions write the simulator document,
+    # so they conflict with this write and retry against the committed
+    # state. The sweep below therefore only has to migrate the PSs which
+    # existed before the commit — no lock is needed.
+    # When a definition with the same key already exists (a re-run after an
+    # interrupted migration, or a concurrent append which won the race),
+    # the committed type/default MUST match this request — otherwise the
+    # request was not applied and succeeding silently would be a lie.
+    appended = false
+    3.times do
+      existing = simulator.parameter_definitions.detect {|pd| pd.key == options[:name] }
+      if existing
+        casted_default = ParametersUtil.cast_value(options[:default], existing.type)
+        if existing.type == options[:type] and existing.default == casted_default
+          $stderr.puts "Parameter '#{options[:name]}' is already defined. Filling missing default values..."
+        else
+          $stderr.puts "A parameter named '#{options[:name]}' already exists " \
+                       "with type=#{existing.type}, default=#{existing.default.inspect}"
+          raise "validation of new parameter definition failed"
+        end
+        appended = true
+        break
       end
-    else
       new_param_def = simulator.parameter_definitions.build(key: options[:name], type: options[:type], default: options[:default])
       unless new_param_def.valid?
         $stderr.puts new_param_def.inspect
         $stderr.puts new_param_def.errors.full_messages
         raise "validation of new parameter definition failed"
       end
-      # Commit the definition change first (atomic single-document update).
-      # From this point on, every newly created PS is casted with the new
-      # definitions: PS-creation transactions write the simulator document,
-      # so they conflict with this write and retry against the committed
-      # state. The sweep below therefore only has to migrate the PSs which
-      # existed before the commit — no lock is needed.
-      unless simulator.append_parameter_definition_atomically(new_param_def)
-        $stderr.puts "Parameter '#{new_param_def.key}' was defined concurrently. Filling missing default values..."
+      if simulator.append_parameter_definition_atomically(new_param_def)
+        appended = true
+        break
       end
+      # lost a concurrent append of the same key: reload and re-check that
+      # the committed definition matches this request
+      simulator.reload
     end
+    raise "failed to append the parameter definition" unless appended
     simulator.reload
 
     # Sweep every PS which misses any of the defined keys (not only the
@@ -144,8 +156,7 @@ EOS
     # This also repairs PSs left inconsistent by an earlier interrupted
     # migration. Keys without a default value cannot be repaired and are
     # left out.
-    defaults = {}
-    simulator.parameter_definitions.each {|pd| defaults[pd.key] = pd.default unless pd.default.nil? }
+    defaults = ParameterSet.casted_defaults_of(simulator)
     loop do
       missing_any = defaults.keys.map {|key| { "v.#{key}" => { '$exists' => false } } }
       query = simulator.parameter_sets.where('$or' => missing_any)

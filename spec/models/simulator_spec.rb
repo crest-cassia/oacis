@@ -207,6 +207,16 @@ describe Simulator do
         @sim.find_parameter_set( "L" => 10 )
       }.to raise_error(/^Missing keys:/)
     end
+
+    it "finds a PS which misses a newly appended key when the requested value equals its default" do
+      parameters = { "L"=>10, "T"=>2.0, "S"=>"foo", "O"=>{"a"=>1} }
+      created = @sim.parameter_sets.create!(v: parameters)
+      new_def = { "_id" => BSON::ObjectId.new, "key" => "Z", "type" => "Integer", "default" => 7 }
+      Simulator.collection.update_one({"_id" => @sim.id}, {'$push' => {"parameter_definitions" => new_def}})
+      @sim.reload
+      expect( @sim.find_parameter_set( parameters.merge("Z"=>7) ) ).to eq created
+      expect( @sim.find_parameter_set( parameters.merge("Z"=>8) ) ).to be_nil
+    end
   end
 
   describe "#find_or_create_parameter_set" do

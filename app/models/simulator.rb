@@ -193,8 +193,9 @@ class Simulator
     missing_keys = expected_keys - given_keys
     raise "Missing keys: #{missing_keys}" unless missing_keys.empty?
 
-    query = parameters.map {|k,v| ["v.#{k}", v] }.to_h
-    parameter_sets.where( query ).first
+    casted = ParametersUtil.cast_parameter_values(parameters, parameter_definitions)
+    return nil if casted.nil? # a value which cannot be cast matches nothing
+    ParameterSet.find_by_casted_values(self, casted)
   end
 
   def find_or_create_parameter_set( parameters )

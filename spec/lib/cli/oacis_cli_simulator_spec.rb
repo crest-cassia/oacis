@@ -244,6 +244,48 @@ describe OacisCli do
       }
     end
 
+    context "when the same key is appended concurrently" do
+
+      def raw_push_definition(sim, key, type, default)
+        new_def = { "_id" => BSON::ObjectId.new, "key" => key, "type" => type, "default" => default }
+        Simulator.collection.update_one({"_id" => sim.id}, {'$push' => {"parameter_definitions" => new_def}})
+      end
+
+      it "raises when the winner's definition has a different type or default" do
+        at_temp_dir {
+          # the competitor commits Z:Float=0.5 right before our atomic push
+          allow_any_instance_of(Simulator).to receive(:append_parameter_definition_atomically).and_wrap_original do |m, pd|
+            raw_push_definition(@sim, 'Z', "Float", 0.5)
+            m.call(pd)
+          end
+          option = {simulator: @sim.id.to_s, name: 'Z', type: "Integer", default: 1}
+          expect {
+            capture_stdout_stderr {
+              OacisCli.new.invoke(:append_parameter_definition, [], option)
+            }
+          }.to raise_error(/validation of new parameter definition failed/)
+        }
+      end
+
+      it "succeeds as an idempotent no-op when the winner's definition matches" do
+        at_temp_dir {
+          allow_any_instance_of(Simulator).to receive(:append_parameter_definition_atomically).and_wrap_original do |m, pd|
+            raw_push_definition(@sim, 'Z', "Float", 0.5)
+            m.call(pd)
+          end
+          option = {simulator: @sim.id.to_s, name: 'Z', type: "Float", default: 0.5}
+          capture_stdout_stderr {
+            OacisCli.new.invoke(:append_parameter_definition, [], option)
+          }
+          @sim.reload
+          expect(@sim.parameter_definitions.count {|pd| pd.key == 'Z' }).to eq 1
+          @sim.parameter_sets.each do |ps|
+            expect(ps.v["Z"]).to eq 0.5
+          end
+        }
+      end
+    end
+
     it "is idempotent: re-running after an interrupted migration fills missing keys" do
       at_temp_dir {
         option = {simulator: @sim.id.to_s, name: 'NEW_PARAM', type: "Float", default: 0.5}
