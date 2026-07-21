@@ -62,7 +62,7 @@ When OACIS runs in a container and the agent on the host, set `OACIS_MCP_DIR_MAP
 - The server is stdio-only; it opens no network port. Whoever can execute `bin/oacis_mcp` gets the same database access as `bin/oacis_ruby`.
 - When `OACIS_ACCESS_LEVEL` is `0`, or when the environment variable `OACIS_MCP_READONLY=1` is set, the three write tools are hidden and rejected — the agent can only inspect.
 - There are no destructive tools: agents cannot delete simulators, parameter sets, runs, or analyses, and cannot modify simulator/host configurations.
-- File access is restricted to the result directories of runs and analyses, with size limits.
+- File access *through the MCP tools* (`list_result_files` / `read_result_file`) is restricted to the result directories of runs and analyses, with size limits and symlink-escape checks. These guarantees do not extend to direct reads: when the agent opens a reported `dir` with its own file tools, what it can access is governed solely by the agent's own sandbox and filesystem permissions — including symlinks inside a result directory, which may point anywhere. Confine the agent accordingly (e.g. Claude Code's permission prompts, or a container).
 
 ## Tools
 
