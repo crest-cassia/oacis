@@ -17,8 +17,10 @@ module McpServer
         registry.register(
           "get_run",
           description: "Get one run: status, destination host, host parameters, seed, timings, error messages, " \
-                       "and the parsed result values once finished. Use list_result_files/read_result_file " \
-                       "to inspect its raw output files.",
+                       "and the parsed result values once finished. 'dir' is the run's result directory; " \
+                       "if it is accessible from your filesystem (local or Docker-mounted OACIS), read the " \
+                       "output files there directly — including binary ones such as plot images. " \
+                       "Fall back to list_result_files/read_result_file only when the path is not accessible.",
           input_schema: {
             "type" => "object",
             "properties" => { "run_id" => { "type" => "string" } },

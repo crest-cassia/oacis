@@ -15,8 +15,10 @@ module McpServer
         registry.register(
           "get_analysis",
           description: "Get one analysis: status, analyzer, target (run or parameter set), parameters, " \
-                       "and the parsed result once finished. Use list_result_files/read_result_file " \
-                       "with analysis_id to inspect its raw output files.",
+                       "and the parsed result once finished. 'dir' is the analysis result directory; " \
+                       "if it is accessible from your filesystem (local or Docker-mounted OACIS), read the " \
+                       "output files there directly — including binary ones such as plot images. " \
+                       "Fall back to list_result_files/read_result_file only when the path is not accessible.",
           input_schema: {
             "type" => "object",
             "properties" => { "analysis_id" => { "type" => "string" } },

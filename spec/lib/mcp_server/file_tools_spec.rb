@@ -32,6 +32,16 @@ describe "McpServer file tools" do
     it "requires exactly one of run_id and analysis_id" do
       expect { registry.call("list_result_files", {}) }.to raise_error(McpServer::InvalidArgumentsError)
     end
+
+    it "reports base_dir through OACIS_MCP_DIR_MAP" do
+      ENV['OACIS_MCP_DIR_MAP'] = "#{ResultDirectory.root}=/host/Result"
+      begin
+        result = registry.call("list_result_files", {"run_id" => @run.id.to_s})
+        expect(result["base_dir"]).to eq @run.dir.to_s.sub(ResultDirectory.root.to_s, "/host/Result")
+      ensure
+        ENV.delete('OACIS_MCP_DIR_MAP')
+      end
+    end
   end
 
   describe "read_result_file" do

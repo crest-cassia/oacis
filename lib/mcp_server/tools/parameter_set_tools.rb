@@ -73,6 +73,7 @@ module McpServer
           ps = Resolvers.parameter_set(args["parameter_set_id"])
           counts = ParameterSet.runs_status_count_batch([ps])[ps.id]
           h = Serializers.parameter_set(ps, run_counts: counts)
+          h["dir"] = Serializers.map_dir(ps.dir)
           unless args["include_runs"] == false
             runs = ps.runs.asc(:created_at).limit(RUNS_PREVIEW_LIMIT).to_a
             h["runs"] = runs.map {|r| Serializers.run(r, brief: true) }

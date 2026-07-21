@@ -8,6 +8,25 @@ module McpServer
 
     module_function
 
+    # Translates a server-local directory path into one valid for the MCP client,
+    # using OACIS_MCP_DIR_MAP="server_prefix=client_prefix" (e.g. set by
+    # oacis_docker's oacis_mcp.sh so an agent on the Docker host receives host
+    # paths for the mounted Result directory). No-op when the variable is unset
+    # or the path is outside the mapped prefix.
+    def map_dir(path)
+      s = path.to_s
+      mapping = ENV['OACIS_MCP_DIR_MAP'].to_s
+      return s if mapping.empty?
+      from, to = mapping.split('=', 2)
+      return s if from.nil? || to.nil? || from.empty?
+      from = from.chomp(File::SEPARATOR)
+      if s == from || s.start_with?(from + File::SEPARATOR)
+        to.chomp(File::SEPARATOR) + s[from.size..-1]
+      else
+        s
+      end
+    end
+
     def simulator(sim, runs_status_count: nil)
       {
         "id" => sim.id.to_s,
@@ -103,6 +122,7 @@ module McpServer
       h.merge(
         "parameter_set_id" => run.parameter_set_id.to_s,
         "simulator" => run.simulator&.name,
+        "dir" => map_dir(run.dir),
         "host_parameters" => clean(run.host_parameters),
         "mpi_procs" => run.mpi_procs,
         "omp_threads" => run.omp_threads,
@@ -133,6 +153,7 @@ module McpServer
       return h if brief
       h.merge(
         "parameter_set_id" => anl.parameter_set_id.to_s,
+        "dir" => map_dir(anl.dir),
         "submitted_to" => anl.submitted_to&.name,
         "host_group" => anl.host_group&.name,
         "host_parameters" => clean(anl.host_parameters),
@@ -158,7 +179,7 @@ module McpServer
       if json.bytesize > RESULT_JSON_LIMIT
         {
           "_truncated" => true,
-          "_note" => "result is #{json.bytesize} bytes of JSON (limit #{RESULT_JSON_LIMIT}); use list_result_files / read_result_file to inspect the raw output files.",
+          "_note" => "result is #{json.bytesize} bytes of JSON (limit #{RESULT_JSON_LIMIT}); read _output.json under 'dir' directly, or use list_result_files / read_result_file.",
           "_keys" => (cleaned.is_a?(Hash) ? cleaned.keys : nil)
         }.compact
       else

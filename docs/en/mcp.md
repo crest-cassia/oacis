@@ -49,6 +49,14 @@ claude mcp add oacis_proj_a -- /path/to/proj_a/oacis_docker/oacis_mcp.sh
 claude mcp add oacis_proj_b -- /path/to/proj_b/oacis_docker/oacis_mcp.sh
 ```
 
+## Direct access to result files
+
+`get_run`, `get_analysis`, `get_parameter_set`, and `list_result_files` report the result directory of the record as `dir` (or `base_dir`). When the agent runs on a machine where that path is accessible — the same machine as OACIS, or a Docker host with the Result directory bind-mounted — it should read the output files there directly with its own file tools. This is the preferred way to consume results: unlike `read_result_file`, it has no size cap and works for binary files such as plot images, so a multimodal agent can look at the plots an analyzer produced.
+
+When OACIS runs in a container and the agent on the host, set `OACIS_MCP_DIR_MAP="<server_prefix>=<client_prefix>"` in the server's environment and all reported paths are rewritten accordingly. `oacis_docker`'s `oacis_mcp.sh` sets this automatically, mapping the container's Result directory to the bind-mounted `Result/` on the host.
+
+`read_result_file` remains available as a fallback for setups where the result directory is not reachable from the agent (e.g. OACIS on a remote server).
+
 ## Security model
 
 - The server is stdio-only; it opens no network port. Whoever can execute `bin/oacis_mcp` gets the same database access as `bin/oacis_ruby`.
@@ -76,7 +84,7 @@ A typical agent workflow:
 1. `list_simulators` and `list_hosts` to learn what exists,
 2. `find_or_create_parameter_set` → `create_runs` to submit jobs,
 3. poll `get_parameter_set` (or `search_parameter_sets` for many) until runs finish — jobs are submitted asynchronously by the background workers, so results take a while,
-4. inspect `get_run`, `read_result_file`, or aggregate with `include_average_results`,
+4. inspect `get_run` and read the files under its `dir` directly (or `read_result_file` remotely), or aggregate with `include_average_results`,
 5. `create_analysis` on the finished runs and poll `get_analysis`,
 6. decide the next parameter sets and repeat.
 
