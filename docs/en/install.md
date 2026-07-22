@@ -53,7 +53,7 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 
 ### Prerequisites
 
-- Ruby 3.2 or later ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
+- Ruby 3.2 or later, 3.4 recommended ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
 - MongoDB 6.0 or later, running as a single-node replica set ([http://www.mongodb.org/](http://www.mongodb.org/)) — see the setup steps below
 - redis ([https://redis.io/](https://redis.io/))
 
@@ -91,15 +91,10 @@ Here we show the instructions on how to setup prerequisites using homebrew.
         - run the following once:
 
           ```sh
-          mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+          mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
           ```
-- install and update bundler
-    ``` sh
-    gem install bundler
-    gem udpate bundler
-    rbenv rehash
-    ```
-    - After installation, run `which bundle` to verify that the bundle command is available.
+- verify bundler
+    - Bundler ships with Ruby, so no installation is needed. Run `which bundle` to verify that the bundle command is available.
 - installing redis
     ``` sh
     brew install redis
@@ -108,7 +103,7 @@ Here we show the instructions on how to setup prerequisites using homebrew.
 
 #### Setting up prerequisites in Linux
 
-Here we show the instruction on how to setup prerequisites using apt-get, using Ubuntu14.04 as an example.
+Here we show the instruction on how to setup prerequisites using apt-get, using Ubuntu 24.04 as an example.
 
 - install pre-requied packages
     ``` sh
@@ -136,15 +131,10 @@ Here we show the instruction on how to setup prerequisites using apt-get, using 
         - run the following once:
 
           ```sh
-          mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+          mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
           ```
-- install and update bundler
-    ``` sh
-    gem install bundler
-    gem update bundler
-    rbenv rehash
-    ```
-    - After installation, run `which bundle` to verify that the bundle command is available.
+- verify bundler
+    - Bundler ships with Ruby, so no installation is needed. Run `which bundle` to verify that the bundle command is available.
 - install redis
     ``` sh
     sudo apt-get install redis
@@ -293,7 +283,6 @@ bundle exec rake daemon:stop            # tentatively stop OACIS
 git pull origin master                  # get the latest source code of OACIS
 git pull origin master --tags
 git submodule update --init --recursive
-gem update bundler                      # update bundler
 bundle install                          # install dependency
 bundle exec rake daemon:start           # restart OACIS
 ```
@@ -331,9 +320,9 @@ bundle exec rake daemon:start           # restart OACIS
 ```
 
 ## Update OACIS v3 -> v4
-OACIS v4 updates the underlying software stack. It now requires **Ruby 3.2 or later** (Ruby 2.x is no longer supported) and **MongoDB 4.4 or later** (the bundled MongoDB driver dropped support for older servers). Internally, OACIS was upgraded to Rails 7.2 and Mongoid 9.
+OACIS v4 updates the underlying software stack. It now requires **Ruby 3.2 or later** (Ruby 2.x is no longer supported; Ruby 3.4 is recommended) and **MongoDB 6.0 or later, running as a single-node replica set** (OACIS v4 uses MongoDB transactions, which require a replica set). Internally, OACIS was upgraded to Rails 7.2 and Mongoid 9.
 
-The stored data format is unchanged, so no data migration is required. Follow the steps below.
+The stored data format is unchanged, so no data migration is required. Note, however, that reconfiguring MongoDB as a single-node replica set is mandatory — a standalone `mongod` no longer works with v4. Follow the steps below.
 
 #### Updating Ruby
 Install Ruby 3.2 or later (Ruby 3.4 is recommended) with rbenv or rvm, as described in the Prerequisites section above.
@@ -344,20 +333,36 @@ ruby --version   # verify it is 3.2 or later
 ```
 
 #### Updating MongoDB
-If your MongoDB is older than 4.4, upgrade it to 4.4 or later. Because MongoDB must be upgraded incrementally between major versions, the easiest path is to dump the data, install the new MongoDB, and restore the data.
+If your MongoDB is older than 6.0, upgrade it to 6.0 or later. Because MongoDB must be upgraded incrementally between major versions, the easiest path is to dump the data, install the new MongoDB, and restore the data.
 ``` sh
 mongodump --db oacis_development   # back up the database
-# ... install MongoDB 4.4 or later ...
+# ... install MongoDB 6.0 or later ...
 mongorestore --db oacis_development dump/oacis_development   # restore the database
 ```
 Refer to [the official document of MongoDB.](https://docs.mongodb.com/manual/tutorial/upgrade-revision/)
+
+#### Configuring MongoDB as a single-node replica set (required)
+OACIS v4 requires MongoDB to run as a single-node replica set even on a single machine.
+Add the following lines to your MongoDB configuration file (`/opt/homebrew/etc/mongod.conf` for Homebrew on macOS, `/etc/mongod.conf` on Linux):
+
+```
+replication:
+  replSetName: rs0
+```
+
+Restart MongoDB, then initialize the replica set once:
+
+```sh
+mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
+```
+
+If the replica set is not configured, OACIS v4 fails to start. You can check the setup with `./bin/check_oacis_env`.
 
 #### Updating OACIS and rebooting
 ``` sh
 bundle exec rake daemon:stop            # stop OACIS
 git pull origin master                  # get the latest source code
 git pull origin master --tags
-gem update bundler                      # update bundler
 bundle install                          # install dependent libraries
 bundle exec rake daemon:start           # restart OACIS
 ```

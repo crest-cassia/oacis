@@ -200,7 +200,7 @@ The following is the list of items we set when registering an analyzer.
 | Input type                 | How the input parameter is given to the simulator. Select either “Argument” or “JSON”. |
 | Files to Copy              | Specify the files to be copied to "_input/" directory by a pattern. The pattern is used by [Dir.glob](http://ruby-doc.org/core-2.2.0/Dir.html#method-c-glob) method of Ruby. The default value is the wild card "\*", indicating that all the files are copied by default. |
 | Support MPI                | Whether the simulator is an MPI parallel program or not. If you enable this option, you can specify the number of MPI processes when making a Run. |
-| Support MPI                | Whether the simulator is an OpenMP parallel program or not. If you enable this option, you can specify the number of OpenMP threads when making a Run. |
+| Support OMP                | Whether the simulator is an OpenMP parallel program or not. If you enable this option, you can specify the number of OpenMP threads when making a Run. |
 | Auto Run                   | Set "Auto-Run" flag. (Details are shown in the follwoing section) |
 | Description                | An explanation of the simulator. You can refer to the explanation from OACIS web UI. Markdown format is available. |
 | Executable on              | Specify the hosts on which the simulator can be executed. You can select one of these as the computational host when making a Run. |

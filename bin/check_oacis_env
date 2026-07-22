@@ -37,12 +37,12 @@ end
 def verify_mongodb_version
   print "checking mongodb version ...     "
   v = `mongod --version`
-  if v =~ /(\d+)\.(\d+)\.\d+/ and ($1.to_i>4 or ($1.to_i==4 and $2.to_i>=4))
+  if v =~ /(\d+)\.(\d+)\.\d+/ and $1.to_i >= 6
     puts_ok
     return true
   else
     puts_error
-    puts "\tmongoDB version must be 4.4 or later, but is #{v}"
+    puts "\tmongoDB version must be 6.0 or later, but is #{v}"
     return false
   end
 end
@@ -56,6 +56,19 @@ def verify_mongod_process_is_running
   else
     puts_error
     puts "\tmongod process is not found"
+    return false
+  end
+end
+
+def verify_mongod_replica_set
+  print "checking mongodb replica set ... "
+  v = `mongosh --quiet --eval "try { db.hello().isWritablePrimary } catch (e) { print(false) }"`.to_s.strip
+  if v.lines.last.to_s.strip == "true"
+    puts_ok
+    return true
+  else
+    puts_error
+    puts "\tmongod is not running as a writable replica set primary. Configure a single-node replica set (replSetName: rs0) and run rs.initiate()."
     return false
   end
 end
@@ -90,6 +103,7 @@ if verify_ruby_version and
    verify_bundler_installation and
    verify_mongodb_version and
    verify_mongod_process_is_running and
+   verify_mongod_replica_set and
    verify_redis_version and
    verify_redis_server_is_running
   puts "\e[32mAll the environment checks have passed!\e[0m"

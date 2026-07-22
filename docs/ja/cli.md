@@ -228,7 +228,7 @@ ParameterSetを新規作成する
 {% endhighlight %}
 
 {% highlight sh %}
-./bin/oacis_cli create_parameter_sets -s 5361e421b93f96bbc500000e -i '{"p1":1,"p2":[2.0,3.0}' -o parameter_set_ids.json
+./bin/oacis_cli create_parameter_sets -s 5361e421b93f96bbc500000e -i '{"p1":1,"p2":[2.0,3.0]}' -o parameter_set_ids.json
 {% endhighlight %}
 
 #### オプション
@@ -444,7 +444,7 @@ Runを削除する
 #### 実行方法
 
 {% highlight sh %}
-../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:failed
+./bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:failed
 {% endhighlight %}
 
 #### オプション
@@ -468,19 +468,19 @@ Runを削除する
 
 - simulator_versionが"1.0.0"のRunを削除する
 {% highlight sh %}
-../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
+./bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
 {% endhighlight %}
 
 - simulator_version が存在しないRunを削除する。
 
 {% highlight sh %}
-../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:
+./bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:
 {% endhighlight %}
 
 - statusが "created" （ジョブ投入前）のRunを削除する。
 
 {% highlight sh %}
-../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:created
+./bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:created
 {% endhighlight %}
 
 ---
@@ -526,7 +526,7 @@ IDを指定してRunを削除する
 #### 実行方法
 
 {% highlight sh %}
-../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:0.0.1
+./bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:0.0.1
 {% endhighlight %}
 
 #### オプション
@@ -552,7 +552,7 @@ IDを指定してRunを削除する
 simulator_versionが"1.0.0"のRunを削除し、同じ設定で新しいRunを再作成する。
 
 {% highlight sh %}
-../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
+./bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
 {% endhighlight %}
 
 ---
@@ -826,7 +826,7 @@ Analysisを削除する
 #### 実行方法
 
 {% highlight sh %}
-../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:v0.1.0
+./bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:v0.1.0
 {% endhighlight %}
 
 #### オプション
@@ -852,7 +852,7 @@ Analysisを削除する
 statusが "failed" （解析失敗）かつanalyzer_versionが "nil"のAnalysisを削除する
 
 {% highlight sh %}
-../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:
+./bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:
 {% endhighlight %}
 
 ---
@@ -896,7 +896,7 @@ IDを指定してAnalysisを削除する
 #### 実行方法
 
 {% highlight sh %}
-../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished analyzer_version:v0.1.0
+./bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished analyzer_version:v0.1.0
 {% endhighlight %}
 
 #### オプション
@@ -922,7 +922,7 @@ IDを指定してAnalysisを削除する
 - statusが"finished"のAnalysisを削除し、同じ設定で新しいAnalysisを再作成する。
 
 {% highlight sh %}
-../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
+./bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
 {% endhighlight %}
 
 ---

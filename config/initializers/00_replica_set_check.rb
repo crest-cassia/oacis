@@ -23,7 +23,7 @@ Rails.application.config.after_initialize do
                  replSetName: rs0
           2. restart mongod
           3. run once in mongosh:
-               rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})
+               rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})
 
         Set OACIS_SKIP_REPLICA_SET_CHECK=1 to bypass this check (not recommended;
         creating parameter sets will fail on a standalone mongod).

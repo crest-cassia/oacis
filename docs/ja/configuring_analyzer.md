@@ -91,7 +91,7 @@ Simulatorの画面を開き、[About]タブをクリックするとAnalyzerを�
 | Input type                 | JSON入力か引数入力か指定する。 |
 | Files to Copy              | 解析時に_inputディレクトリにコピーするファイルを指定する。 |
 | Support MPI                | MPI並列の場合はチェックを入れる。Analysis作成時に並列数を指定できるようになる。 |
-| Support MPI                | OpenMP並列の場合はチェックを入れる。Analysis作成時に並列数を指定できるようになる。 |
+| Support OMP                | OpenMP並列の場合はチェックを入れる。Analysis作成時に並列数を指定できるようになる。 |
 | Auto Run                   | Runの終了後に解析が自動実行されるか指定する。(後述) |
 | Description                | Analyzerに対する説明。入力は任意。 |
 | Executable on              | 実行可能なホスト。Analyzerを実行できるホストにチェックを入れる |
