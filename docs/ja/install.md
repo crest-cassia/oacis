@@ -91,7 +91,7 @@ bundlerはRubyに標準ライブラリとして添付されるので、個別に
       - MongoDBを再起動(`brew services restart mongodb-community`)し、以下を一度だけ実行する
 
         ```sh
-        mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+        mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
         ```
 - bundlerの確認
     - bundlerはRubyに標準添付されるため、インストールは不要。`which bundle`を実行しコマンドへのパスが表示されることを確認する
@@ -131,7 +131,7 @@ bundlerはRubyに標準ライブラリとして添付されるので、個別に
       - 以下を一度だけ実行する
 
         ```sh
-        mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+        mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
         ```
 - bundlerの確認
     - bundlerはRubyに標準添付されるため、インストールは不要。`which bundle`を実行しコマンドへのパスが表示されることを確認する
@@ -353,7 +353,7 @@ replication:
 MongoDBを再起動した後、以下を一度だけ実行してreplica setを初期化します。
 
 ```sh
-mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
 ```
 
 replica setが設定されていない場合、OACIS v4は起動しません。設定は `./bin/check_oacis_env` で確認できます。

@@ -26,7 +26,7 @@ jobs:
           docker exec mongo mongosh --quiet --eval 'db.adminCommand("ping").ok' && break
           sleep 1
         done
-        docker exec mongo mongosh --quiet --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+        docker exec mongo mongosh --quiet --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
         for i in $(seq 1 30); do
           docker exec mongo mongosh --quiet --eval 'db.hello().isWritablePrimary' | grep -q true && break
           sleep 1

@@ -62,13 +62,13 @@ end
 
 def verify_mongod_replica_set
   print "checking mongodb replica set ... "
-  v = `mongosh --quiet --eval "try { rs.status().ok } catch (e) { print(0) }"`.to_s.strip
-  if v.lines.last.to_s.strip == "1"
+  v = `mongosh --quiet --eval "try { db.hello().isWritablePrimary } catch (e) { print(false) }"`.to_s.strip
+  if v.lines.last.to_s.strip == "true"
     puts_ok
     return true
   else
     puts_error
-    puts "\tmongod is not running as a replica set. Configure a single-node replica set (replSetName: rs0) and run rs.initiate()."
+    puts "\tmongod is not running as a writable replica set primary. Configure a single-node replica set (replSetName: rs0) and run rs.initiate()."
     return false
   end
 end

@@ -91,7 +91,7 @@ Here we show the instructions on how to setup prerequisites using homebrew.
         - run the following once:
 
           ```sh
-          mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+          mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
           ```
 - verify bundler
     - Bundler ships with Ruby, so no installation is needed. Run `which bundle` to verify that the bundle command is available.
@@ -131,7 +131,7 @@ Here we show the instruction on how to setup prerequisites using apt-get, using 
         - run the following once:
 
           ```sh
-          mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+          mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
           ```
 - verify bundler
     - Bundler ships with Ruby, so no installation is needed. Run `which bundle` to verify that the bundle command is available.
@@ -353,7 +353,7 @@ replication:
 Restart MongoDB, then initialize the replica set once:
 
 ```sh
-mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
 ```
 
 If the replica set is not configured, OACIS v4 fails to start. You can check the setup with `./bin/check_oacis_env`.
