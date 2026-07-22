@@ -80,9 +80,9 @@ From OACIS version 3, "Hostname, "User", "Port" fields are removed. Instead, OAC
 
 If you find an error like *"no such command: xsub"* when registering a host, please check if XSUB is properly installed.
 
-## [Advanced] Using the K-computer
+## [Advanced] Using a host that requires file staging
 
-In addition to the SSH and XSUB configurations, a special configuration is needed for the K-computer because of the staging functionality.
+Some supercomputers (such as the former K-computer) stage files in and out when executing a job. In addition to the SSH and XSUB configurations, a special configuration is needed for such hosts because of the staging functionality.
 
 Since the executable file is also copied by staging, you can not specify the path to the executable by absolute path. The path changes after staging-in.
 Use "preprocess" to copy the executable to the current directory and specify the simulation command using the relative path from the current directory.
@@ -101,7 +101,7 @@ Set the execution command as follows.
 ./simulator.out
 ```
 
-By setting "command" and "pre-process" like these, we can submit jobs to the K-computer.
+By setting "command" and "pre-process" like these, we can submit jobs to a host that requires staging.
 All the simulation results are properly staged-out if all the output files are generated in the current directory because all the files in the current directory are staged-out.
 
 ## Using SSH Multiplexing

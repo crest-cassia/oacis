@@ -228,7 +228,7 @@ Create new ParameterSets.
 {% endhighlight %}
 
 {% highlight sh %}
-./bin/oacis_cli create_parameter_sets -s 5361e421b93f96bbc500000e -i '{"p1":1,"p2":[2.0,3.0}' -o parameter_set_ids.json
+./bin/oacis_cli create_parameter_sets -s 5361e421b93f96bbc500000e -i '{"p1":1,"p2":[2.0,3.0]}' -o parameter_set_ids.json
 {% endhighlight %}
 
 #### Options
@@ -444,7 +444,7 @@ Destroy Runs.
 #### How to run
 
 {% highlight sh %}
-../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:failed
+./bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:failed
 {% endhighlight %}
 
 #### Options
@@ -468,19 +468,19 @@ Destroy Runs.
 
 - Destroy Runs whose simulator_version is "1.0.0".
 {% highlight sh %}
-../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
+./bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
 {% endhighlight %}
 
 - Destroy Runs that have no simulator_version.
 
 {% highlight sh %}
-../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:
+./bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q simulator_version:
 {% endhighlight %}
 
 - Destroy Runs whose status is "created" (before job submission).
 
 {% highlight sh %}
-../bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:created
+./bin/oacis_cli destroy_runs -s 5226f430899e532cf6000008 -q status:created
 {% endhighlight %}
 
 ---
@@ -526,7 +526,7 @@ However, the random number seed _seed is changed.
 #### How to run
 
 {% highlight sh %}
-../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:0.0.1
+./bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:0.0.1
 {% endhighlight %}
 
 #### Options
@@ -552,7 +552,7 @@ However, the random number seed _seed is changed.
 Destroy Runs whose simulator_version is "1.0.0" and re-create new Runs with the same settings.
 
 {% highlight sh %}
-../bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
+./bin/oacis_cli replace_runs -s 5226f430899e532cf6000008 -q simulator_version:1.0.0
 {% endhighlight %}
 
 ---
@@ -826,7 +826,7 @@ Destroy Analyses.
 #### How to run
 
 {% highlight sh %}
-../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:v0.1.0
+./bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:v0.1.0
 {% endhighlight %}
 
 #### Options
@@ -852,7 +852,7 @@ Destroy Analyses.
 Destroy Analyses whose status is "failed" (analysis failed) and whose analyzer_version is "nil".
 
 {% highlight sh %}
-../bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:
+./bin/oacis_cli destroy_analyses -a 5226f430899e532cf6000009 -q status:failed analyzer_version:
 {% endhighlight %}
 
 ---
@@ -896,7 +896,7 @@ Destroy the specified Analyses and re-create new Analyses with the same settings
 #### How to run
 
 {% highlight sh %}
-../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished analyzer_version:v0.1.0
+./bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished analyzer_version:v0.1.0
 {% endhighlight %}
 
 #### Options
@@ -922,7 +922,7 @@ Destroy the specified Analyses and re-create new Analyses with the same settings
 - Destroy Analyses whose status is "finished" and re-create new Analyses with the same settings.
 
 {% highlight sh %}
-../bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
+./bin/oacis_cli replace_analyses -a 5226f430899e532cf6000009 -q status:finished
 {% endhighlight %}
 
 ---

@@ -376,7 +376,7 @@ cd ~/path/to; git describe --always
 ```
 
 You can delete or replace the runs having a specified by version at once using the command line interface (CLI).
-Please refer to the page for [CLI]({{ site.baseurl }}/ja/cli.html) for details.
+Please refer to the page for [CLI]({{ site.baseurl }}/{{ page.lang }}/cli.html) for details.
 
 ## [Advanced] Viewing GPU Profiling Results
 

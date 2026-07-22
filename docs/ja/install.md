@@ -54,7 +54,7 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 
 ### 前提条件
 
-- Ruby 3.2以降 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
+- Ruby 3.4以降 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
 - MongoDB 6.0以降、シングルノードのreplica setとして起動していること ([http://www.mongodb.org/](http://www.mongodb.org/)) — 設定手順は後述
 - redis ([https://redis.io/](https://redis.io/))
 
@@ -93,13 +93,8 @@ bundlerはRubyに標準ライブラリとして添付されるので、個別に
         ```sh
         mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
         ```
-- bundlerのインストールと最新版への更新
-    ``` sh
-    gem install bundler
-    gem update bundler
-    rbenv rehash
-    ```
-    `which bundle`を実行しコマンドへのパスが表示されればインストールに成功している
+- bundlerの確認
+    - bundlerはRubyに標準添付されるため、インストールは不要。`which bundle`を実行しコマンドへのパスが表示されることを確認する
 - redisのインストール
     ``` sh
     brew install redis
@@ -108,7 +103,7 @@ bundlerはRubyに標準ライブラリとして添付されるので、個別に
 
 
 #### Linuxでの前提条件の整え方
-ここではUbuntu 14.04を例に取り、apt-getを用いてセットアップしていきます。
+ここではUbuntu 24.04を例に取り、apt-getを用いてセットアップしていきます。
 
 - 前提環境(必要コマンド)の構築
     ``` sh
@@ -138,13 +133,8 @@ bundlerはRubyに標準ライブラリとして添付されるので、個別に
         ```sh
         mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
         ```
-- bundlerのインストールと最新版への更新
-    ``` sh
-    gem install bundler
-    gem update bundler
-    rbenv rehash
-    ```
-    `which bundle`を実行しコマンドへのパスが表示されればインストールに成功している
+- bundlerの確認
+    - bundlerはRubyに標準添付されるため、インストールは不要。`which bundle`を実行しコマンドへのパスが表示されることを確認する
 - redisのインストール
     ``` sh
     sudo apt-get install redis
@@ -159,7 +149,7 @@ bundlerはRubyに標準ライブラリとして添付されるので、個別に
 git clone --recursive -b master https://github.com/crest-cassia/oacis.git
 ```
 
-クローンしたディレクトリに移動し、以下のコマンドを実行するとRubyのバージョン、bundlerのインストール、MongoDBのバージョン、MongoDBのデーモンが起動していることを確認する事ができます。
+クローンしたディレクトリに移動し、以下のコマンドを実行するとRubyのバージョン、bundlerのインストール、MongoDBのバージョン、MongoDBのデーモンがシングルノードのreplica setとして起動していることを確認する事ができます。
 
 ```shell
 ./bin/check_oacis_env
@@ -292,7 +282,6 @@ bundle exec rake daemon:stop            # tentatively stop OACIS
 git pull origin master                  # get the latest source code of OACIS
 git pull origin master --tags
 git submodule update --init --recursive
-gem update bundler                      # update bundler gem
 bundle install                          # install dependency
 bundle exec rake daemon:start           # restart OACIS
 ```
@@ -331,33 +320,49 @@ bundle exec rake daemon:start           # restart OACIS
 ```
 
 ## OACIS v3からv4への更新
-OACIS v4では利用するソフトウェアスタックが更新されました。**Ruby 3.2以降**（Ruby 2.x系はサポート対象外）と**MongoDB 4.4以降**（同梱するMongoDBドライバが古いサーバのサポートを打ち切ったため）が必要です。内部的にはRails 7.2、Mongoid 9にアップグレードされています。
+OACIS v4では利用するソフトウェアスタックが更新されました。**Ruby 3.4以降**（それより古いRubyはサポート対象外）と、**シングルノードのreplica setとして起動するMongoDB 6.0以降**（OACIS v4はreplica setを必要とするMongoDBのトランザクションを利用するため）が必要です。内部的にはRails 7.2、Mongoid 9にアップグレードされています。
 
-保存されるデータの形式は変わらないため、データの移行作業は不要です。以下の手順で更新してください。
+保存されるデータの形式は変わらないため、データの移行作業は不要です。ただし、MongoDBをシングルノードのreplica setとして再設定する作業は必須です。スタンドアロンのmongodではv4は動作しません。以下の手順で更新してください。
 
 #### Rubyの更新
-前提条件の項で説明した通り、rbenvまたはrvmでRuby 3.2以降（3.4を推奨）をインストールしてください。
+前提条件の項で説明した通り、rbenvまたはrvmでRuby 3.4以降をインストールしてください。
 ``` sh
 rbenv install 3.4.2 && rbenv global 3.4.2
 rbenv rehash
-ruby --version   # 3.2以降であることを確認
+ruby --version   # 3.4以降であることを確認
 ```
 
 #### MongoDBの更新
-MongoDBが4.4より古い場合は4.4以降に更新してください。MongoDBはメジャーバージョン間を段階的にアップグレードする必要があるため、データをダンプし、新しいMongoDBをインストールしてからデータを書き戻すのが簡単です。
+MongoDBが6.0より古い場合は6.0以降に更新してください。MongoDBはメジャーバージョン間を段階的にアップグレードする必要があるため、データをダンプし、新しいMongoDBをインストールしてからデータを書き戻すのが簡単です。
 ``` sh
 mongodump --db oacis_development   # データをバックアップ
-# ... MongoDB 4.4以降をインストール ...
+# ... MongoDB 6.0以降をインストール ...
 mongorestore --db oacis_development dump/oacis_development   # データを書き戻す
 ```
 詳細は[公式ドキュメント](https://docs.mongodb.com/manual/tutorial/upgrade-revision/)を参照してください。
+
+#### MongoDBをシングルノードreplica setとして設定（必須）
+OACIS v4では、単一マシンで運用する場合でもMongoDBをシングルノードのreplica setとして起動する必要があります。
+MongoDBの設定ファイル（Homebrewの場合は `/opt/homebrew/etc/mongod.conf`、Linuxの場合は `/etc/mongod.conf`）に以下を追記してください。
+
+```
+replication:
+  replSetName: rs0
+```
+
+MongoDBを再起動した後、以下を一度だけ実行してreplica setを初期化します。
+
+```sh
+mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'
+```
+
+replica setが設定されていない場合、OACIS v4は起動しません。設定は `./bin/check_oacis_env` で確認できます。
 
 #### OACISの更新と再起動
 ``` sh
 bundle exec rake daemon:stop            # OACISを停止
 git pull origin master                  # 最新のソースコードを取得
 git pull origin master --tags
-gem update bundler                      # bundlerを更新
 bundle install                          # 依存ライブラリをインストール
 bundle exec rake daemon:start           # OACISを再起動
 ```
