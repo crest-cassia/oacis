@@ -53,7 +53,7 @@ In the docker images, step 1 of the tutorial in the next page has already been s
 
 ### Prerequisites
 
-- Ruby 3.4 or later ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
+- Ruby 3.2 or later, 3.4 recommended ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
 - MongoDB 6.0 or later, running as a single-node replica set ([http://www.mongodb.org/](http://www.mongodb.org/)) — see the setup steps below
 - redis ([https://redis.io/](https://redis.io/))
 
@@ -320,16 +320,16 @@ bundle exec rake daemon:start           # restart OACIS
 ```
 
 ## Update OACIS v3 -> v4
-OACIS v4 updates the underlying software stack. It now requires **Ruby 3.4 or later** (older Ruby versions are no longer supported) and **MongoDB 6.0 or later, running as a single-node replica set** (OACIS v4 uses MongoDB transactions, which require a replica set). Internally, OACIS was upgraded to Rails 7.2 and Mongoid 9.
+OACIS v4 updates the underlying software stack. It now requires **Ruby 3.2 or later** (Ruby 2.x is no longer supported; Ruby 3.4 is recommended) and **MongoDB 6.0 or later, running as a single-node replica set** (OACIS v4 uses MongoDB transactions, which require a replica set). Internally, OACIS was upgraded to Rails 7.2 and Mongoid 9.
 
 The stored data format is unchanged, so no data migration is required. Note, however, that reconfiguring MongoDB as a single-node replica set is mandatory — a standalone `mongod` no longer works with v4. Follow the steps below.
 
 #### Updating Ruby
-Install Ruby 3.4 or later with rbenv or rvm, as described in the Prerequisites section above.
+Install Ruby 3.2 or later (Ruby 3.4 is recommended) with rbenv or rvm, as described in the Prerequisites section above.
 ``` sh
 rbenv install 3.4.2 && rbenv global 3.4.2
 rbenv rehash
-ruby --version   # verify it is 3.4 or later
+ruby --version   # verify it is 3.2 or later
 ```
 
 #### Updating MongoDB

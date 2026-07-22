@@ -54,7 +54,7 @@ Linuxだけでなく、Windows、MacOSにも導入することができます。
 
 ### 前提条件
 
-- Ruby 3.4以降 ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
+- Ruby 3.2以降（3.4を推奨） ([https://www.ruby-lang.org/](https://www.ruby-lang.org/))
 - MongoDB 6.0以降、シングルノードのreplica setとして起動していること ([http://www.mongodb.org/](http://www.mongodb.org/)) — 設定手順は後述
 - redis ([https://redis.io/](https://redis.io/))
 
@@ -320,16 +320,16 @@ bundle exec rake daemon:start           # restart OACIS
 ```
 
 ## OACIS v3からv4への更新
-OACIS v4では利用するソフトウェアスタックが更新されました。**Ruby 3.4以降**（それより古いRubyはサポート対象外）と、**シングルノードのreplica setとして起動するMongoDB 6.0以降**（OACIS v4はreplica setを必要とするMongoDBのトランザクションを利用するため）が必要です。内部的にはRails 7.2、Mongoid 9にアップグレードされています。
+OACIS v4では利用するソフトウェアスタックが更新されました。**Ruby 3.2以降**（Ruby 2.x系はサポート対象外。3.4を推奨）と、**シングルノードのreplica setとして起動するMongoDB 6.0以降**（OACIS v4はreplica setを必要とするMongoDBのトランザクションを利用するため）が必要です。内部的にはRails 7.2、Mongoid 9にアップグレードされています。
 
 保存されるデータの形式は変わらないため、データの移行作業は不要です。ただし、MongoDBをシングルノードのreplica setとして再設定する作業は必須です。スタンドアロンのmongodではv4は動作しません。以下の手順で更新してください。
 
 #### Rubyの更新
-前提条件の項で説明した通り、rbenvまたはrvmでRuby 3.4以降をインストールしてください。
+前提条件の項で説明した通り、rbenvまたはrvmでRuby 3.2以降（3.4を推奨）をインストールしてください。
 ``` sh
 rbenv install 3.4.2 && rbenv global 3.4.2
 rbenv rehash
-ruby --version   # 3.4以降であることを確認
+ruby --version   # 3.2以降であることを確認
 ```
 
 #### MongoDBの更新
