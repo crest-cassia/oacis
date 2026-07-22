@@ -430,5 +430,36 @@ describe JobIncluder do
         JobIncluder.send(:move_local_file, host, submittable)
       }.to raise_error("can not move work_directory from #{mounted_work_dir}")
     end
+
+    it "checks the existence of scheduler logs at the mounted path and moves them" do
+      Dir.mktmpdir do |tmpdir|
+        remote_log = Pathname.new("/remote/job.log")
+        mounted_log = Pathname.new(tmpdir).join("job.log")
+        FileUtils.touch(mounted_log)
+        allow(RemoteFilePath).to receive(:scheduler_log_file_paths)
+          .with(host, submittable).and_return([remote_log])
+        allow(JobIncluder).to receive(:map_remote_path_to_mounted_path)
+          .with(host, remote_log).and_return(mounted_log)
+        allow(JobIncluder).to receive(:system).and_return(true)
+        allow(FileUtils).to receive(:mv)
+
+        expect(FileUtils).to receive(:mv).with(mounted_log, submittable.dir)
+
+        JobIncluder.send(:move_local_file, host, submittable)
+      end
+    end
+  end
+
+  describe ".map_remote_path_to_mounted_path" do
+
+    it "expands '~' so that the path is usable without a shell" do
+      host = instance_double(Host, work_base_dir: "~/remote_work",
+                                   mounted_work_base_dir: "~/mounted_work")
+
+      mapped = JobIncluder.send(:map_remote_path_to_mounted_path,
+                                host, Pathname.new("~/remote_work/run_1"))
+
+      expect(mapped).to eq Pathname.new(File.expand_path("~/mounted_work/run_1"))
+    end
   end
 end

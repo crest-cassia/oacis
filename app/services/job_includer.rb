@@ -105,15 +105,17 @@ module JobIncluder
     FileUtils.mv(archive, submittable.dir.join(".."))
 
     RemoteFilePath.scheduler_log_file_paths(host, submittable).each do |path|
-      if path.exist?
-        FileUtils.mv(map_remote_path_to_mounted_path(host, path), submittable.dir)
-      end
+      mounted = map_remote_path_to_mounted_path(host, path)
+      FileUtils.mv(mounted, submittable.dir) if mounted.exist?
     end
   end
 
+  # work_base_dir/mounted_work_base_dir may contain "~" (the default host
+  # configuration does); expand it because these paths are used without a
+  # shell (argv-style system calls, FileUtils, Pathname#exist?).
   def self.map_remote_path_to_mounted_path(host, remote_path)
     relative_path = remote_path.relative_path_from(Pathname.new(host.work_base_dir))
-    Pathname.new(host.mounted_work_base_dir).join(relative_path)
+    Pathname.new(host.mounted_work_base_dir).join(relative_path).expand_path
   end
 
   def self.download_work_dir_if_exists(host, submittable, sh)
