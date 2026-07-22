@@ -18,7 +18,9 @@ module McpServer
         registry.register(
           "list_result_files",
           description: "List the files in the result directory of a run or an analysis " \
-                       "(give exactly one of run_id / analysis_id). Pass relative_path to descend into a subdirectory.",
+                       "(give exactly one of run_id / analysis_id). Pass relative_path to descend into a subdirectory. " \
+                       "base_dir in the response is the result directory; if it is accessible from your filesystem, " \
+                       "prefer reading files there directly (binary files included) over read_result_file.",
           input_schema: {
             "type" => "object",
             "properties" => {
@@ -45,7 +47,7 @@ module McpServer
             }
           end
           {
-            "base_dir" => base.to_s,
+            "base_dir" => Serializers.map_dir(base),
             "entries" => entries,
             "total" => children.size,
             "truncated" => children.size > MAX_ENTRIES
@@ -60,7 +62,8 @@ module McpServer
                        "(give exactly one of run_id / analysis_id). Reads at most max_bytes " \
                        "(default #{DEFAULT_READ_BYTES}, max #{MAX_READ_BYTES}) starting at offset_bytes; " \
                        "when the response says truncated, call again with a larger offset_bytes to page through. " \
-                       "Binary files are rejected.",
+                       "Binary files are rejected. This is a fallback for when the result directory is not " \
+                       "accessible from your filesystem; when it is, read the files under base_dir directly.",
           input_schema: {
             "type" => "object",
             "properties" => {

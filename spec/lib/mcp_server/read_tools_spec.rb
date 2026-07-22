@@ -98,6 +98,7 @@ describe "McpServer read tools" do
       expect(result["run_counts"]).to include("created" => 1, "finished" => 2)
       expect(result["runs"].size).to eq 3
       expect(result["runs"].first).to include("id", "status")
+      expect(result["dir"]).to eq @ps.dir.to_s
     end
 
     it "omits runs when include_runs is false" do
@@ -131,6 +132,7 @@ describe "McpServer read tools" do
       expect(result["result"].keys).to match_array ["Energy", "Flow"]
       expect(result["v"]).to eq @ps.v
       expect(result["submitted_to"]).to eq @run.submitted_to.name
+      expect(result["dir"]).to eq @run.dir.to_s
     end
 
     it "raises not_found for a nonexistent id" do
